@@ -3,15 +3,27 @@ const pkg = require('ptokens-utils');
 require('dotenv').config();
 // import { pBTC } from 'ptokens-pbtc'
 // import pkg from 'ptokens-utils'
-const { HttpProvider } = require('ptokens-providers');
-const { Node } = require('ptokens-node');
+// const { HttpProvider } = require('ptokens-providers');
+// const { Node } = require('ptokens-node');
+const { ethers } = require('hardhat');
+
     
 async function main() {
 
+  const options = {
+    projectId: 'ead605dd65704007ae941fffb7c1d1a7'
+  };
+
   const { constants } = pkg;
   const provider = await hre.ethers.provider;
-  const [signerAddr] = await provider.listAccounts();
-  console.log('signer address: ', signerAddr);
+  // const provider = new ethers.providers.JsonRpcProvider(process.env.ROPSTEN_URL);
+  // const provider = await ethers.getDefaultProvider();
+  // const signerAddr = await provider.listAccounts();
+  // const signer = await provider.getSigner();
+  // const signerAddr = await signer.getAddress();
+  // console.log('signer address: ', signerAddr);
+  
+  console.log(provider);
  
 
   // const pbtc = new pBTC({
@@ -21,19 +33,19 @@ async function main() {
   //   ethProvider: provider,
   // });
 
-  const pbtc = new pBTC({
-      hostBlockchain: 'ETH',
-      hostNetwork: 'testnet_ropsten',
-      nativeBlockchain: 'BTC',
-      nativeNetwork: 'testnet',
-      defaultNode: 'https://pbtconeth-testnet-1a.ngrok.io'
-  });
+  // const pbtc = new pBTC({
+  //     hostBlockchain: 'ETH',
+  //     hostNetwork: 'testnet_ropsten',
+  //     nativeBlockchain: 'BTC',
+  //     nativeNetwork: 'testnet',
+  //     defaultNode: 'https://pbtconeth-testnet-1a.ngrok.io',
+  //     ethProvider: provider,
+  //     ethPrivateKey: process.env.PK
+  // });
   
-  console.log('hi');
-  const depositAddress = await pbtc.getDepositAddress(signerAddr);
-  console.log('BTC deposit address: ', depositAddress.value);
-
-  // console.log('constants: ', constants);
+  // console.log('hi');
+  // const depositAddress = await pbtc.getDepositAddress(signerAddr);
+  // console.log('BTC deposit address: ', depositAddress.value);
 
 
   // depositAddress.waitForDeposit()
@@ -65,12 +77,12 @@ async function main() {
 
 
 
-  // main();
+  main();
 
-  main()
-  .then(() => process.exit(0))
-  .catch((error) => {
-    console.error(error);
-    process.exit(1);
-  });
+  // main()
+  // .then(() => process.exit(0))
+  // .catch((error) => {
+  //   console.error(error);
+  //   process.exit(1);
+  // });
   

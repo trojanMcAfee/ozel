@@ -8,7 +8,7 @@ async function execute() {
     const btcMinterAddr = '0xA9816e2Ca3DC637ED385F50F5Ba732c4a7f6fa4A';
     // const signerAddr = '0x715358348287f44c8113439766b9433282110F6c';
     const amount = 0.003;
-    // const provider = await 
+    const provider = await hre.ethers.provider;
 
     const mint = await renJS.lockAndMint({
         asset: 'BTC',
@@ -28,20 +28,32 @@ async function execute() {
     const depositAddress = mint.gatewayAddress;
     console.log(`Deposit ${amount} BTC in ${depositAddress}`);
 
-    mint.on('Deposit', async (deposit) => {
-
+    mint.on('deposit', async (deposit) => {
         const hash = deposit.txHash();
         console.log('first hash: ', hash);
         console.log('details of deposit: ', deposit.depositDetails);
 
-        const BTCdeposit = Bitcoin.utils.transactionExplorerLink(
-            deposit.depositDetails.transaction,
-            'testnet'
-        );
-        console.log('BTC deposit: ', BTCdeposit);
+        const depositLog = (msg) => {
+            console.log(
+                `BTC deposit: ${Bitcoin.utils.transactionExplorerLink(
+                    deposit.depositDetails.transaction,
+                    'testnet'
+                )}\n
+                RenVM Hash: ${hash}\n
+                Status: ${deposit.status}\n
+                ${msg}`
+            );
+        }
 
-        await deposit.confirmed();
-        await deposit.signed();
+        await deposit.confirmed()
+            .on('target', (target) => depositLog(`0/${target} confirmations`))
+            .on('confirmation', (confs, target) => 
+            depositLog(`${confs}/${target} confirmations`)
+        );
+
+        await deposit.signed()
+            .on("status", (status) => depositLog(`Status: ${status}`));
+            
         await deposit
             .mint()
             .on('transactionHash', (txHash) => {
@@ -50,21 +62,9 @@ async function execute() {
 
         console.log(`Deposited ${amount} BTC`);
 
-        //about to deposit BTC into the address and print to kovan
-        //git repo got unlinked
         
 
-
     });
-
-    
-    
-
-
-
-
-
-
 }
 
 
