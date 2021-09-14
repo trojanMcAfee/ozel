@@ -1,7 +1,7 @@
 require("@nomiclabs/hardhat-waffle");
 require('dotenv').config();
 
-console.log('url2: ', process.env.ROPSTEN_URL);
+// console.log('url2: ', process.env.ROPSTEN_URL);
 
 module.exports = {
   solidity: "0.8.4",
