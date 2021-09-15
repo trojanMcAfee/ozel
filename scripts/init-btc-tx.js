@@ -5,7 +5,7 @@ require('dotenv').config();
 
 async function sendBitcoin(receiverAddr, amountToSend) {
     const sochain_network = "BTCTEST";
-    const testBtcWalletAddr = 'tb1qjvvwsccwuakfc0q59hmfx7q8csamnzj0uhd2zy';
+    const testBtcWalletAddr = 'mubUbyPazdyvhPJYPGWUkFWj7bkw1Yq8ys';
     const decimals = 100000000;
     let fee = 0;
     let inputCount = 0;
@@ -44,9 +44,9 @@ async function sendBitcoin(receiverAddr, amountToSend) {
     }
 
     transaction.to(receiverAddr, satoshisToSend);
-    transaction.fee(fee * satsXfee); //******* */
+    transaction.fee(fee); //******* */
     transaction.change(testBtcWalletAddr);
-    transaction.sign(process.env.PK_BIT);
+    transaction.sign(process.env.PK_TEST);
     const serializedTx = transaction.serialize();
 
     const result = await axios({
@@ -61,19 +61,6 @@ async function sendBitcoin(receiverAddr, amountToSend) {
     return result.data.data;
 }
 
-//change PK and address for that of block.io
-sendBitcoin('2N113a9zBxhoP4GCvwUt53ScN9WfMar4oDR', 0.0001);
-// const result = sendBitcoin('2N113a9zBxhoP4GCvwUt53ScN9WfMar4oDR', 0.0001);
-// console.log('the result: ', result);
 
-// async function getTx(x, y) {
-//     const utxos = await axios.get(
-//         `https://sochain.com/api/v2/get_tx_unspent/${x}/${y}`
-//     );
-//     console.log(utxos.data.data.txs);
-// }
 
-// // const x = getTx();
-// // console.log(x);
-
-// getTx('BTCTEST', 'tb1qjvvwsccwuakfc0q59hmfx7q8csamnzj0uhd2zy');
+sendBitcoin('tb1qva5sqtsj86hrdpaheatlvklf3s7dnt6chu4fa3', 0.0001);

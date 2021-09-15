@@ -21,12 +21,12 @@ async function main() {
   // const wallet = new Wallet(process.env.PK, provider);
   // const signerAddr = await wallet.address;
 
-  // const signerAddr = await provider.listAccounts();
+  const [signerAddr] = await provider.listAccounts();
   // const signer = await provider.getSigner();
   // const signerAddr = await signer.getAddress();
-  // console.log('signer address: ', signerAddr);
+  console.log('signer address: ', signerAddr);
   
-  console.log(provider);
+  // console.log(provider);
  
 
   // const pbtc = new pBTC({
@@ -36,15 +36,15 @@ async function main() {
   //   ethProvider: provider,
   // });
 
-  // const pbtc = new pBTC({
-  //     hostBlockchain: 'ETH',
-  //     hostNetwork: 'testnet_ropsten',
-  //     nativeBlockchain: 'BTC',
-  //     nativeNetwork: 'testnet',
-  //     defaultNode: 'https://pbtconeth-testnet-1a.ngrok.io',
-  //     ethProvider: process.env.ROPSTEN_URL
-  //     // ethPrivateKey: process.env.PK
-  // });
+  const pbtc = new pBTC({
+      hostBlockchain: 'ETH',
+      hostNetwork: 'testnet_ropsten',
+      nativeBlockchain: 'BTC',
+      nativeNetwork: 'testnet',
+      defaultNode: 'https://pbtconeth-testnet-1a.ngrok.io',
+      ethProvider: process.env.ROPSTEN_URL
+      // ethPrivateKey: process.env.PK
+  });
   
   // console.log('hi');
   // const depositAddress = await pbtc.getDepositAddress(signerAddr);
