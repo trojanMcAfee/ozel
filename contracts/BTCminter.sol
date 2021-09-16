@@ -3,7 +3,8 @@ pragma solidity ^0.8.0;
 
 import './interfaces/IGatewayRegistry.sol';
 import './interfaces/IGateway.sol';
-import './interfaces/IERC20.sol';
+// import './interfaces/IERC20.sol';
+
 
 
 contract BTCminter {
@@ -35,11 +36,7 @@ contract BTCminter {
         emit Withdrawal(_to, burnedAmount, _msg);
     }
 
-
     function balance() external view returns(uint) {
         return registry.getTokenBySymbol('BTC').balanceOf(address(this));
     }
-
-
-
 }

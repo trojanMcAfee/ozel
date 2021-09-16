@@ -44,7 +44,7 @@ async function sendBitcoin(receiverAddr, amountToSend) {
     }
 
     transaction.to(receiverAddr, satoshisToSend);
-    transaction.fee(fee); //******* */
+    transaction.fee(fee); 
     transaction.change(testBtcWalletAddr);
     transaction.sign(process.env.PK_TEST);
     const serializedTx = transaction.serialize();
@@ -57,7 +57,7 @@ async function sendBitcoin(receiverAddr, amountToSend) {
         }
     });
 
-    console.log('the result 2: ', result.data.data);
+    console.log('the result: ', result.data.data);
     return result.data.data;
 }
 
