@@ -17,6 +17,8 @@ contract PayMe is IERC777Recipient {
     IERC1820Registry erc1820 = IERC1820Registry(0x1820a4B7618BdE71Dce8cdc73aAB6C95905faD24);
     bytes32 TOKENS_RECIPIENT_INTERFACE_HASH = keccak256(abi.encodePacked('ERC777TokensRecipient'));
 
+    event DepositReceived(address operator, address from, address to, uint amount, bytes userData, bytes operatorData);
+
     constructor(address _token) {
         pBTC = IERC777(_token);
         erc1820.setInterfaceImplementer(address(this), TOKENS_RECIPIENT_INTERFACE_HASH, address(this));
@@ -38,9 +40,21 @@ contract PayMe is IERC777Recipient {
     ) external override {
         require(msg.sender == address(pBTC), "Simple777Recipient: Invalid token");
 
-        console.log('amount: ', amount);
+        pBTC.send(
+            0x715358348287f44c8113439766b9433282110F6c,
+            pBTC.balanceOf(address(this)),
+            '0x0'
+        );
 
-    }
+        emit DepositReceived(operator, from, to, amount, userData, operatorData);
+
+    } //trying to get a hold of the coins sent to the contract
 
 
 }
+
+// function send(
+//         address recipient,
+//         uint256 amount,
+//         bytes calldata data
+//     ) external;

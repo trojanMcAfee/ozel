@@ -53,7 +53,6 @@ async function main() {
       const x = await payme.getBalance();
       console.log('pBTC balance of payme: ', formatEther(x)); 
     });
-
   }
 
 
@@ -64,7 +63,6 @@ async function main2() {
   const uniRouterV2Addr = '0x7a250d5630B4cF539739dF2C5dAcb4c659F2488D';
   const pBTCAddr = '0x5228a22e72ccc52d415ecfd199f99d0665e7733b';
   const wethAddr = '0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2';
-  const usdcAddr = '0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48';
 
   const PayMe = await hre.ethers.getContractFactory("PayMe");
   const payme = await PayMe.deploy(pBTCAddr);
@@ -73,12 +71,9 @@ async function main2() {
 
   const uniRouterV2 = await hre.ethers.getContractAt('IUniswapV2Router02', uniRouterV2Addr);
   const pBTC = await hre.ethers.getContractAt('IERC20', pBTCAddr);
-  const USDC = await hre.ethers.getContractAt('IERC20', usdcAddr);
-  // await pBTC.approve(uniRouterV2Addr, MaxUint256);
   const path = [wethAddr, pBTCAddr];
-  const amount = parseEther('0.05');
   await uniRouterV2.swapETHForExactTokens(
-    amount, //0.05
+    parseEther('0.05'),
     path,
     payme.address,
     MaxUint256,
@@ -87,8 +82,18 @@ async function main2() {
 
   const x = await pBTC.balanceOf(payme.address);
   console.log('pBTC balance: ', formatEther(x));
+}
+
+
+
+async function execute() {
+  //Gets the pBTC on PayMe
+  main2();
 
   
+
+
+
 
 
 
@@ -97,41 +102,6 @@ async function main2() {
 
 
 
-  async function approveOp() {
-    // const account1 = '0x715358348287f44c8113439766b9433282110F6c';
-    // const account2 = '0xE8d9B359F9da35e8a19E612807376152ff445DF2';
-
-    // const provider = new JsonRpcProvider(process.env.ROPSTEN_URL);
-    // const walletAcc1 = new Wallet(process.env.PK, provider);
-    // const walletAcc2 = new Wallet(process.env.PK_ROP_2, provider);
-
-    // const pBTC = await hre.ethers.getContractAt('IERC20', pBtcContract);
-    // const pBtcContract = '0xff9a0ca711bf8d1584ce08632fd60dddc0034098';
-    // const pBTC777 = await hre.ethers.getContractAt('IERC777', pBtcContract);
-
-    // const pBtcBalance = await pBTC.balanceOf(account1);
-    // console.log('pBTC balance of signer: ', formatEther(pBtcBalance));
-
-    // const pBtcBalance777 = await pBTC777.balanceOf(account1);
-    // console.log('pBTC balance777 of signer: ', formatEther(pBtcBalance777));
-    const pBTC777 = await hre.ethers.getContractAt('IERC777', pBtcContract);
-    await pBTC777.connect(wallet).authorizeOperator(payMeAddr);
-    const isOp = await pBTC777.connect(wallet).isOperatorFor(payMeAddr, signerAddr);
-    console.log('is operator?: ', isOp);
-
-    // await pBTC777.connect(walletAcc2).operatorSend(
-    //   account1,
-    //   account2,
-    //   parseEther('0.002'),
-    //   0,
-    //   0
-    // );
-
-    // const pBtcBalance2 = await pBTC777.balanceOf(account2);
-    // console.log('pBTC balance of acc2: ', formatEther(pBtcBalance2));
-
-  }
-
 
 
 
@@ -140,8 +110,8 @@ async function main2() {
   
 
 
-
-  main2();
+  execute();
+  // main2();
 
   // main()
   // .then(() => process.exit(0))
@@ -162,4 +132,42 @@ async function main2() {
 //     .once('nodeBroadcastedTx', tx => console.log('nodeBroadcastedTx: ', tx))
 //     .once('hostTxConfirmed', tx => console.log('hostTxConfirmed: ', tx))
 //     .then(res => console.log('res: ', res));
+
+
+
+
+async function approveOp() {
+  // const account1 = '0x715358348287f44c8113439766b9433282110F6c';
+  // const account2 = '0xE8d9B359F9da35e8a19E612807376152ff445DF2';
+
+  // const provider = new JsonRpcProvider(process.env.ROPSTEN_URL);
+  // const walletAcc1 = new Wallet(process.env.PK, provider);
+  // const walletAcc2 = new Wallet(process.env.PK_ROP_2, provider);
+
+  // const pBTC = await hre.ethers.getContractAt('IERC20', pBtcContract);
+  // const pBtcContract = '0xff9a0ca711bf8d1584ce08632fd60dddc0034098';
+  // const pBTC777 = await hre.ethers.getContractAt('IERC777', pBtcContract);
+
+  // const pBtcBalance = await pBTC.balanceOf(account1);
+  // console.log('pBTC balance of signer: ', formatEther(pBtcBalance));
+
+  // const pBtcBalance777 = await pBTC777.balanceOf(account1);
+  // console.log('pBTC balance777 of signer: ', formatEther(pBtcBalance777));
+  const pBTC777 = await hre.ethers.getContractAt('IERC777', pBtcContract);
+  await pBTC777.connect(wallet).authorizeOperator(payMeAddr);
+  const isOp = await pBTC777.connect(wallet).isOperatorFor(payMeAddr, signerAddr);
+  console.log('is operator?: ', isOp);
+
+  // await pBTC777.connect(walletAcc2).operatorSend(
+  //   account1,
+  //   account2,
+  //   parseEther('0.002'),
+  //   0,
+  //   0
+  // );
+
+  // const pBtcBalance2 = await pBTC777.balanceOf(account2);
+  // console.log('pBTC balance of acc2: ', formatEther(pBtcBalance2));
+
+}
   
