@@ -16,10 +16,10 @@ let signerAddr;
  * From BTC -> pBTC -> pBTC in contract (Ropsten)
  */
 async function main() {
-  // const { constants } = pkg;
-  const payMeAddr = '0x5dEAA27Ae433a3886E1AFA6f6b9Cc9565E9b30CD';
-  const payme = await hre.ethers.getContractAt('PayMe', payMeAddr);
-  signerAddr = await wallet.address;
+  const { constants } = pkg;
+  const payMeAddr = '0xA0F75362b59568326fdFd1c3908216003B6D2c7E'; //0x5dEAA27Ae433a3886E1AFA6f6b9Cc9565E9b30CD (without send)
+  const payme = await hre.ethers.getContractAt('PayMe', payMeAddr); //0x7d21d96cc535A3dEfa7664b2a755bDDD97BD1478
+  signerAddr = await wallet.address; 
   console.log('signer address: ', signerAddr); 
 
   // // Creates the BTC deposit address for pTokens //-----> for mainnet
@@ -28,6 +28,8 @@ async function main() {
   //   network: constants.networks.EthereumMainnet,
   //   ethProvider: process.env.ALCHEMY,
   // });
+
+  // console.log(constants);
 
   const pbtc = new pBTC({
       hostBlockchain: 'ETH',
@@ -110,8 +112,8 @@ async function execute() {
   
 
 
-  execute();
-  // main2();
+  // execute();
+  main();
 
   // main()
   // .then(() => process.exit(0))

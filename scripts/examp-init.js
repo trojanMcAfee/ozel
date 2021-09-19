@@ -3,8 +3,9 @@ const bitcore = require('bitcore-lib');
 require('dotenv').config();
 
 
-async function sendBitcoin(receiverAddr, amountToSend, sendingAddr, senderPK) {
+async function sendBitcoin(receiverAddr, amountToSend) {
     const sochain_network = "BTCTEST";
+    const btcAddr = 'mubUbyPazdyvhPJYPGWUkFWj7bkw1Yq8ys';
     const decimals = 100000000;
     let fee = 0;
     let inputCount = 0;
@@ -13,7 +14,7 @@ async function sendBitcoin(receiverAddr, amountToSend, sendingAddr, senderPK) {
     const satsXfee = 20;
 
     const utxos = await axios.get(
-        `https://sochain.com/api/v2/get_tx_unspent/${sochain_network}/${sendingAddr}`
+        `https://sochain.com/api/v2/get_tx_unspent/${sochain_network}/${btcAddr}`
     );
 
     const transaction = new bitcore.Transaction();
@@ -44,8 +45,8 @@ async function sendBitcoin(receiverAddr, amountToSend, sendingAddr, senderPK) {
 
     transaction.to(receiverAddr, satoshisToSend);
     transaction.fee(fee); 
-    transaction.change(sendingAddr);
-    transaction.sign(senderPK);
+    transaction.change(btcAddr);
+    transaction.sign(process.env.PK_TEST);
     const serializedTx = transaction.serialize();
 
     const result = await axios({
@@ -61,8 +62,6 @@ async function sendBitcoin(receiverAddr, amountToSend, sendingAddr, senderPK) {
 }
 
 
-module.exports = {
-    sendBitcoin
-};
 
-
+sendBitcoin('tb1q296q932z6768eefhk8t3zlctw957dkpxuzwnaw', 0.001); 
+//tb1qva5sqtsj86hrdpaheatlvklf3s7dnt6chu4fa3
