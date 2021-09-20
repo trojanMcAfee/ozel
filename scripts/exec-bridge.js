@@ -24,7 +24,7 @@ async function execute() {
                 }
             ]
         }),
-        nonce: new BN(44).toArrayLike(Buffer, "be", 32) //increment nonce programatically
+        nonce: new BN(45).toArrayLike(Buffer, "be", 32) //increment nonce programatically
     });
     
     return mint;

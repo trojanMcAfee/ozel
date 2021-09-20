@@ -1,15 +1,15 @@
 const { parseUnits } = ethers.utils;
 
-// async function main() {
+async function main() {
 
-//   const registryAddr = '0x557e211EC5fc9a6737d2C6b7a1aDe3e0C11A8D5D';
+  const registryAddr = '0x557e211EC5fc9a6737d2C6b7a1aDe3e0C11A8D5D';
   
-//   const BTCminter = await hre.ethers.getContractFactory("BTCminter");
-//   const btcMinter = await BTCminter.deploy(registryAddr);
-//   await btcMinter.deployed();
-//   console.log("btcMinter deployed to:", btcMinter.address);
+  const BTCminter = await hre.ethers.getContractFactory("BTCminter");
+  const btcMinter = await BTCminter.deploy(registryAddr);
+  await btcMinter.deployed();
+  console.log("btcMinter deployed to:", btcMinter.address);
 
-// }
+}
 
 async function main() {
   const pBTCaddr = '0xff9a0ca711bf8d1584ce08632fd60dddc0034098';
