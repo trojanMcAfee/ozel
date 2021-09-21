@@ -6,18 +6,23 @@ import './interfaces/IGateway.sol';
 import {IRenPool, ITricrypto} from './interfaces/ICurve.sol';
 import '@openzeppelin/contracts/token/ERC20/IERC20.sol';
 import '@uniswap/v2-periphery/contracts/interfaces/IUniswapV2Router02.sol';
-// import './interfaces/IERC20.sol';
+// import '@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol';
 
 import 'hardhat/console.sol';
 
 
 contract PayMe2 {
 
+    // using SafeERC20 for IERC20;
 
     IGatewayRegistry public registry;
     IRenPool renPool = IRenPool(0x93054188d876f558f4a66B2EF1d97d16eDf0895B); // arb: 0x3E01dD8a5E1fb3481F0F589056b428Fc308AF0Fb
-    ITricrypto tricrypto = ITricrypto(0xD51a44d3FaE010294C616388b506AcdA1bfAAE46); //arb: 0x960ea3e3C7FB317332d990873d354E18d7645590
+    ITricrypto tricrypto2 = ITricrypto(0xD51a44d3FaE010294C616388b506AcdA1bfAAE46); //arb: 0x960ea3e3C7FB317332d990873d354E18d7645590
     IERC20 renBTC = IERC20(0xEB4C2781e4ebA804CE9a9803C67d0893436bB27D); //arb: 0xdbf31df14b66535af65aac99c32e9ea844e14501
+    IERC20 WBTC = IERC20(0x2260FAC5E5542a773Aa44fBCfeDf7C193bc2C599);
+    IERC20 USDT = IERC20(0xdAC17F958D2ee523a2206206994597C13D831ec7);
+
+    mapping(address => bool) private users; //can private variables be accesed from outside?
 
     event Deposit(uint amount, bytes msg);
     event Withdrawal(bytes _to, uint256 _amount, bytes _msg);
@@ -26,28 +31,33 @@ contract PayMe2 {
         registry = IGatewayRegistry(_registry);
     }
 
+
+
     function _calculateSlippage(uint _amount) private pure returns(uint slippage) {
-        uint basisPoint = 5; //0.05%;
+        uint basisPoint = 50; //0.05%;
         slippage = _amount - ( (_amount * basisPoint) / 10000);
     }
 
-    /** 
-    i = toke in - 0 renBTC
-    j = token out - 1 wBTC
-    dx = amount
-    min = slippage
-    */
-    function exchangeToWETH(uint _amount) public {
-        uint slippage = _calculateSlippage(_amount);
+    function addUser(address _user) external {
+        require(users[_user] == false, 'User was already added');
+        users[_user] = true;
+    }
+
+    function isUser(address _user) external view returns(bool) {
+        return users[_user];
+    }
+
+    
+    function exchangeToUserToken(uint _amount) public {
         renBTC.approve(address(renPool), _amount); 
-        renPool.exchange(0, 1, _amount, slippage);
+        renPool.exchange(0, 1, _amount, _calculateSlippage(_amount));
+        uint wbtcToConvert = WBTC.balanceOf(address(this));
+        console.log('WBTC balance on PayMe: ', wbtcToConvert);
 
-        IERC20 WBTC = IERC20(0x2260FAC5E5542a773Aa44fBCfeDf7C193bc2C599);
-        console.log('WBTC balance: ', WBTC.balanceOf(address(this)));
-        //exchange the WBTC to WETH 
-
-        tricrypto.exchange(); //seeing on Curve contracts if the price impact can be calculated beforehand
-        
+        WBTC.approve(address(tricrypto2), wbtcToConvert);
+        uint minOut = tricrypto2.get_dy(1, 0, wbtcToConvert);
+        tricrypto2.exchange(1, 0, wbtcToConvert, _calculateSlippage(minOut), true); //checks if it's possible to calculate the value of min_dy beforehand and use that  
+        console.log('USDT balance on PayMe: ', USDT.balanceOf(address(this)) / 10 ** 6);
     }
 
 
@@ -69,4 +79,4 @@ contract PayMe2 {
     }
 
     
-} //delete the 'msg' params, add integration to arbitrum, trade in Curve
+} 

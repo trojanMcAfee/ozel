@@ -14,10 +14,13 @@ interface IRenPool {
 
 interface ITricrypto {
   function exchange(
-    int128 i,
-    int128 j,
+    uint256 i,
+    uint256 j,
     uint256 dx,
     uint256 min_dy,
     bool use_eth
   ) external;
+
+  function get_dy(uint i, uint j, uint dx) external returns(uint256);
+
 }
