@@ -74,7 +74,7 @@ async function simulate() {
     const WBTC = await hre.ethers.getContractAt('IERC20', renBtcAddr);
     const path = [wethAddr, renBtcAddr];
 
-    const registryAddr = '0x557e211EC5fc9a6737d2C6b7a1aDe3e0C11A8D5D';
+    const registryAddr = '0x557e211EC5fc9a6737d2C6b7a1aDe3e0C11A8D5D'; //arb: 0x21C482f153D0317fe85C60bE1F7fa079019fcEbD
     const PayMe = await hre.ethers.getContractFactory("PayMe2");
     const payme = await PayMe.deploy(registryAddr);
     await payme.deployed();
