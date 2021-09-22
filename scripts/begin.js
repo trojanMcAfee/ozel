@@ -57,11 +57,6 @@ async function begin() {
         console.log(`Deposited ${amountToSend} BTC`);
     });
 
-
-
-
-
-
 }
 
 
@@ -84,16 +79,19 @@ async function simulate() {
     await uniRouterV2.swapETHForExactTokens(tradedAmount, path, payme.address, MaxUint256, {
         value: parseEther('100')
     });
-    const renBtcBalance = await renBTC.balanceOf(payme.address);
-    console.log('renBTC balance on Begin: ', renBtcBalance.toString() / 10 ** 8);
+    // const renBtcBalance = await renBTC.balanceOf(payme.address);
+    // console.log('renBTC balance on Begin: ', renBtcBalance.toString() / 10 ** 8);
     
-    await payme.exchangeToUserToken(tradedAmount);
-
     const [callerAddr] = await hre.ethers.provider.listAccounts();
     await payme.addUser(callerAddr);
     const isUser = await payme.isUser(callerAddr);
     console.log('is user?: ', isUser);
-
+    
+    const usdtAddr = '0xdac17f958d2ee523a2206206994597c13d831ec7';
+    const ethAddr = '0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE';
+    const userToken = usdtAddr;
+    
+    await payme.exchangeToUserToken(tradedAmount, callerAddr, userToken);
 
 
 
@@ -106,3 +104,4 @@ async function simulate() {
 // begin();
 
 simulate();
+
