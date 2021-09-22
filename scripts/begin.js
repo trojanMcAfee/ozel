@@ -91,6 +91,7 @@ async function simulate() {
     const ethAddr = '0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE';
     const userToken = usdtAddr;
     
+    //this function is called on deposit() from PayMe2 when receiving the renBTC
     await payme.exchangeToUserToken(tradedAmount, callerAddr, userToken);
 
 

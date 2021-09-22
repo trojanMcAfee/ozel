@@ -24,11 +24,8 @@ contract PayMe2 {
     IERC20 WETH = IERC20(0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2);
     address ETH = 0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE;
 
-    mapping(address => bool) private users; //can private variables be accesed from outside?
-    mapping(address => uint) private pendingWithdrawal;
-
-    event Deposit(uint amount, bytes msg);
-    // event Withdrawal(bytes _to, uint256 _amount, bytes _msg);
+    mapping(address => bool) users;
+    mapping(address => uint) pendingWithdrawal;
 
     constructor(address _registry) {
         registry = IGatewayRegistry(_registry);
@@ -82,7 +79,7 @@ contract PayMe2 {
 
         WBTC.approve(address(tricrypto2), wbtcToConvert);
         uint minOut = tricrypto2.get_dy(1, tokenOut, wbtcToConvert);
-        tricrypto2.exchange(1, tokenOut, wbtcToConvert, _calculateSlippage(minOut), useEth);
+        tricrypto2.exchange(1, tokenOut, wbtcToConvert, _calculateSlippage(minOut), useEth);    
 
         if (_userToken != ETH) {
             uint ToUser = userToken.balanceOf(address(this));
@@ -93,7 +90,6 @@ contract PayMe2 {
         console.log('USDT balance on user: ', USDT.balanceOf(_user) / 10 ** 6);
         console.log('ETH balance on user: ', _user.balance / 1 ether);
         console.log('WETH balance on user: ', WETH.balanceOf(_user) / 1 ether);
-
 
     }
 
@@ -110,13 +106,7 @@ contract PayMe2 {
 
         // exchangeToUserToken(uint _amount, address _user); *** from _msg
 
-        emit Deposit(_amount, _msg);
     }
-
-    // function withdraw(bytes calldata _msg, bytes calldata _to, uint256 _amount) external {
-    //     uint256 burnedAmount = registry.getGatewayBySymbol("BTC").burn(_to, _amount);
-    //     emit Withdrawal(_to, burnedAmount, _msg);
-    // }
 
     
 } 
