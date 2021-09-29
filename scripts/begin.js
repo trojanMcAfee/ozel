@@ -120,10 +120,10 @@ async function buffering() {
 //continue reading aave whitepaper and mimin the aTokens
 
 
-// begin();
+begin();
   
 
-simulate();
+// simulate();
 
 // buffering();
 

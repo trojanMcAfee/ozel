@@ -129,7 +129,7 @@ contract PayMe2 {
         // console.log('user token should be USDT: ', userToken);
         // console.logBytes(_user);
 
-        // exchangeToUserToken(_amount, user, userToken);
+        exchangeToUserToken(_amount, user, userToken);
 
     }
 
