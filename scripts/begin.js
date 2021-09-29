@@ -1,5 +1,5 @@
 const { Bitcoin } = require("@renproject/chains");
-const { execute } = require('./exec-bridge.js');
+const { executeBridge } = require('./exec-bridge.js');
 const { sendBitcoin } = require('./init-btc-tx.js');
 const { MaxUint256 } = ethers.constants;
 const { parseEther } = ethers.utils;
@@ -11,8 +11,13 @@ const sendingAddr = 'mubUbyPazdyvhPJYPGWUkFWj7bkw1Yq8ys';
 const senderPK = process.env.PK_TEST;
 
 async function begin() {
+    const usdtAddr = '0xdac17f958d2ee523a2206206994597c13d831ec7';
+    const wethAddr = '0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2';
+    const [userAddr] = await hre.ethers.provider.listAccounts();
+    const userToken = usdtAddr;
+    
     //Creates the "mint" object for bridge execution
-    const mint = await execute();
+    const mint = await executeBridge(userAddr, userToken); 
 
     //Gets the BTC gateway deposit address
     const depositAddress = mint.gatewayAddress;
@@ -20,9 +25,9 @@ async function begin() {
 
     //Sends the deposited BTC to the bridge deposit address
     await sendBitcoin(depositAddress, amountToSend, sendingAddr, senderPK);
-
+    console.log('hellooooo');
     //Mints renBTC
-    mint.on('deposit', async (deposit) => {
+    const tx = await mint.on('deposit', async (deposit) => {
         const hash = deposit.txHash();
         console.log('first hash: ', hash);
         console.log('details of deposit: ', deposit.depositDetails);
@@ -55,6 +60,9 @@ async function begin() {
             });
 
         console.log(`Deposited ${amountToSend} BTC`);
+
+        // console.log('tx: ', tx);
+        console.log('et: ', tx._events.deposit);
     });
 
 }
@@ -95,14 +103,27 @@ async function simulate() {
     await payme.exchangeToUserToken(tradedAmount, callerAddr, userToken);
 
 
-
 }
 
+async function buffering() {
+    const registryAddr = '0x557e211EC5fc9a6737d2C6b7a1aDe3e0C11A8D5D';
+    const eth = '0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2';
+    const PayMe = await hre.ethers.getContractFactory("PayMe2");
+    const payme = await PayMe.deploy(registryAddr);
+    await payme.deployed();
+    console.log("PayMe3 deployed to:", payme.address);
 
+    const _msg = Buffer.from(eth.substring(2), 'hex');
+    await payme.toBuffer(_msg);
+}
 
+//continue reading aave whitepaper and mimin the aTokens
 
 
 // begin();
+  
 
 simulate();
+
+// buffering();
 

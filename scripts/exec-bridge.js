@@ -4,9 +4,9 @@ const BN = require('bn.js');
 // const hre = require('hardhat');
 
 
-async function execute() {
+async function executeBridge(user, userToken) {
     const renJS = new RenJS('testnet', { useV2TransactionFormat: true });
-    const btcMinterAddr = '0xA9816e2Ca3DC637ED385F50F5Ba732c4a7f6fa4A';
+    const payme = '0xF95D54616c371f12c152E278FC4fCb47341bB0A8'; //btcMinter: '0xA9816e2Ca3DC637ED385F50F5Ba732c4a7f6fa4A';
     const amount = 0.003;
     const provider = await hre.ethers.provider;
 
@@ -14,17 +14,22 @@ async function execute() {
         asset: 'BTC',
         from: Bitcoin(),
         to: Ethereum(provider).Contract({
-            sendTo: btcMinterAddr,
+            sendTo: payme,
             contractFn: 'deposit',
             contractParams: [
                 {
-                    name: 'msg',
+                    name: '_user',
                     type: 'bytes',
-                    value: Buffer.from(`Depositing ${amount} BTC ****`)
+                    value: Buffer.from(user.substring(2), 'hex')
+                },
+                {
+                    name: '_userToken',
+                    type: 'bytes',
+                    value: Buffer.from(userToken.substring(2), 'hex')
                 }
             ]
         }),
-        nonce: new BN(45).toArrayLike(Buffer, "be", 32) //increment nonce programatically
+        nonce: new BN(31).toArrayLike(Buffer, "be", 32) //increment nonce programatically
     });
     
     return mint;
@@ -32,7 +37,7 @@ async function execute() {
 
 
 module.exports = {
-    execute
+    executeBridge
 };
 
 

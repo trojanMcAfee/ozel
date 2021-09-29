@@ -1,5 +1,6 @@
 //SPDX-License-Identifier: UNLICENSED
 pragma solidity ^0.8.0;
+pragma abicoder v2;
 
 import './interfaces/IGatewayRegistry.sol';
 import './interfaces/IGateway.sol';
@@ -93,19 +94,57 @@ contract PayMe2 {
 
     }
 
+    // event Deposit(bytes user, bytes userToken);
 
+    //0x80ad03F5ce41A6DB208bAd7163709cba21ED83b8 / with user and userToken
+    //0x3cd0DdCE7595d79743e3674EC30E77297866561E / empty
+    //0x516365806F142B685397278016FED00F25Af2DBf / with logs
+    //0x11EB9A18fE970cFaF079FeAfdfEd59623feCCaf7 / mix of logs and user and userToken
+    //0xF95D54616c371f12c152E278FC4fCb47341bB0A8 - before mint()
+    //0xcAc56604E56806E12CbaA14266C11fDEd1E2E277 - like docs but with log
     function deposit(
-        bytes calldata _msg, //use this param to indicate the caller and where the final tokens will be sent - exchangeToUserToken()
+        bytes calldata _user, //use this param to indicate the caller and where the final tokens will be sent - exchangeToUserToken()
+        bytes calldata _userToken,
         uint _amount,
         bytes32 _nHash,
         bytes calldata _sig
     ) external {
-        bytes32 pHash = keccak256(abi.encode(_msg));
+        console.log('hiii');
+        bytes32 pHash = keccak256(abi.encode(_user, _userToken));
+        // bytes32 pHash = keccak256(abi.encode(_user));
         IGateway BTCGateway = registry.getGatewayBySymbol('BTC');
         BTCGateway.mint(pHash, _amount, _nHash, _sig);
 
-        // exchangeToUserToken(uint _amount, address _user); *** from _msg
+        // emit Deposit(_user, _userToken); //trying to get these params to call exchage...() --> try with listening to an event
 
+        // console.logBytes(_user);
+        // console.log('hi');
+        // console.logBytes(_userToken);
+        // if (mintedAmount > 0) {
+        //     console.log('hi2');
+        // }
+        address user = _bytesToAddress(_user);
+        address userToken = _bytesToAddress(_userToken);
+        // console.log('user should be 0x715...: ', user);
+        // console.log('user token should be USDT: ', userToken);
+        // console.logBytes(_user);
+
+        // exchangeToUserToken(_amount, user, userToken);
+
+    }
+
+    // function toBuffer(bytes calldata _msg) external view {
+    //     console.log('hi2');
+    //     address x = _bytesToAddress(_msg);
+    //     uint sup = IERC20(x).totalSupply();
+    //     console.log('supply: ', sup);
+    
+    // }
+
+    function _bytesToAddress(bytes memory bys) private pure returns (address addr) {
+        assembly {
+            addr := mload(add(bys,20))
+        } 
     }
 
     
