@@ -27,9 +27,11 @@ contract PayMe2 {
     IERC20 WETH = IERC20(0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2);
     address ETH = 0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE;
     uint dappFee = 10;
+    uint totalVolume = 0;
 
     mapping(address => bool) users;
     mapping(address => uint) pendingWithdrawal;
+    mapping(address => uint) usersPayments;
 
     constructor(address _registry, address _vault) {
         registry = IGatewayRegistry(_registry);
@@ -95,18 +97,30 @@ contract PayMe2 {
 
     receive() external payable {}
 
-    function _calculatePercentage(uint _amount, uint _basisPoint) private pure returns(uint percentage) {
-        percentage = _amount - ( (_amount * _basisPoint) / 10000 ); //5 -> 0.05%;
+    function _calculateAfterPercentage(
+        uint _amount, 
+        uint _basisPoint
+    ) private pure returns(uint result) {
+        result = _amount - ( (_amount * _basisPoint) / 10000 ); //5 -> 0.05%;
     }
 
-    function addUser(address _user) external {
-        require(users[_user] == false, 'User was already added');
-        users[_user] = true;
+    function _calculateFeeAllocationPercentage(
+        uint _amount, 
+        address _user
+    ) private returns(uint userAllocation) {
+        usersPayments[_user] += _amount;
+        totalVolume += _amount;
+        userAllocation = ( (usersPayments[_user] * 10000) / totalVolume ) * 1 ether;
     }
 
-    function isUser(address _user) external view returns(bool) {
-        return users[_user];
-    }
+    // function addUser(address _user) external {
+    //     require(users[_user] == false, 'User was already added');
+    //     users[_user] = true;
+    // }
+
+    // function isUser(address _user) external view returns(bool) {
+    //     return users[_user];
+    // }
 
     function _preSending(address _user) private {
         pendingWithdrawal[_user] = address(this).balance;
@@ -120,7 +134,7 @@ contract PayMe2 {
     }
 
     function _sendsFeeToVault(uint _amount) private returns(uint, bool) {
-        uint fee = _amount - _calculatePercentage(_amount, dappFee); //10 -> 0.1%
+        uint fee = _amount - _calculateAfterPercentage(_amount, dappFee); //10 -> 0.1%
         uint netAmount = _amount - fee;
         bool isTransferred = renBTC.transfer(address(vault), fee);
         return (netAmount, isTransferred);
@@ -132,9 +146,13 @@ contract PayMe2 {
         0 = usdt
     */
     function exchangeToUserToken(uint _amount, address _user, address _userToken) public {
+        uint userAllocation = _calculateFeeAllocationPercentage(_amount, _user);
+        console.log('allocation ', _user, ' : ', userAllocation);
+        
+        //Sends fee to Vault contract
         (uint netAmount, bool isTransferred) = _sendsFeeToVault(_amount);
         require(isTransferred, 'Fee transfer failed');
-        vault.getBalanceVault();
+        // vault.getBalanceVault();
         
         uint tokenOut = _userToken == address(USDT) ? 0 : 2;
         bool useEth = _userToken == address(WETH) ? false : true;
@@ -146,7 +164,7 @@ contract PayMe2 {
 
         //Swaps renBTC for WBTC
         renBTC.approve(address(renPool), netAmount); 
-        slippage = _calculatePercentage(netAmount, 5);
+        slippage = _calculateAfterPercentage(netAmount, 5);
         renPool.exchange(0, 1, netAmount, slippage);
         uint wbtcToConvert = WBTC.balanceOf(address(this));
         console.log('WBTC balance on PayMe: ', wbtcToConvert);
@@ -154,7 +172,7 @@ contract PayMe2 {
         //Swaps WBTC to userToken (USDT, WETH or ETH)
         WBTC.approve(address(tricrypto2), wbtcToConvert);
         uint minOut = tricrypto2.get_dy(1, tokenOut, wbtcToConvert);
-        slippage = _calculatePercentage(minOut, 5);
+        slippage = _calculateAfterPercentage(minOut, 5);
         tricrypto2.exchange(1, tokenOut, wbtcToConvert, slippage, useEth);    
 
         //Sends userToken to user

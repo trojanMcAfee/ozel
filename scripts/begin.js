@@ -2,7 +2,7 @@ const { Bitcoin } = require("@renproject/chains");
 const { executeBridge } = require('./exec-bridge.js');
 const { sendBitcoin } = require('./init-btc-tx.js');
 const { MaxUint256 } = ethers.constants;
-const { parseEther } = ethers.utils;
+const { parseEther, formatEther } = ethers.utils;
 
 const amountToSend = 0.0001;
 
@@ -74,6 +74,9 @@ async function simulate() {
     const wethAddr = '0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2';
     const renBtcAddr = '0xeb4c2781e4eba804ce9a9803c67d0893436bb27d';
     const registryAddr = '0x557e211EC5fc9a6737d2C6b7a1aDe3e0C11A8D5D'; //arb: 0x21C482f153D0317fe85C60bE1F7fa079019fcEbD
+    const usdtAddr = '0xdac17f958d2ee523a2206206994597c13d831ec7';
+    const ethAddr = '0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE';
+    const [callerAddr, caller2Addr] = await hre.ethers.provider.listAccounts();
    
     const Vault = await hre.ethers.getContractFactory('Vault');
     const vault = await Vault.deploy();
@@ -88,24 +91,27 @@ async function simulate() {
     await payme.deployed();
     console.log("PayMe2 deployed to:", payme.address);
     
-    const tradedAmount = 1 * 10 ** 8;
+    //First user
+    let tradedAmount = 1 * 10 ** 8;
     await uniRouterV2.swapETHForExactTokens(tradedAmount, path, payme.address, MaxUint256, {
         value: parseEther('100')
     });
-    // const renBtcBalance = await renBTC.balanceOf(payme.address);
-    // console.log('renBTC balance on Begin: ', renBtcBalance.toString() / 10 ** 8);
-    
-    const [callerAddr] = await hre.ethers.provider.listAccounts();
-    await payme.addUser(callerAddr);
-    const isUser = await payme.isUser(callerAddr);
-    console.log('is user?: ', isUser);
-    
-    const usdtAddr = '0xdac17f958d2ee523a2206206994597c13d831ec7';
-    const ethAddr = '0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE';
-    const userToken = usdtAddr;
-    
+    let userToken = usdtAddr;
     //this function is called on deposit() from PayMe2 when receiving the renBTC
     await payme.exchangeToUserToken(tradedAmount, callerAddr, userToken);
+
+    //Second user
+    tradedAmount = 0.5 * 10 ** 8;
+    await uniRouterV2.swapETHForExactTokens(tradedAmount, path, payme.address, MaxUint256, {
+        value: parseEther('100')
+    });
+    userToken = wethAddr;
+    await payme.exchangeToUserToken(tradedAmount, caller2Addr, userToken);
+
+
+    // tradedAmount = 0.5 * 10 ** 8;
+    // await payme.exchangeToUserToken(tradedAmount, caller2Addr, userToken);
+ 
 
 
 }
