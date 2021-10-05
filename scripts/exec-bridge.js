@@ -5,8 +5,8 @@ const BN = require('bn.js');
 
 
 async function executeBridge(user, userToken) {
-    const renJS = new RenJS('testnet', { useV2TransactionFormat: true });
-    const payme = '0xF95D54616c371f12c152E278FC4fCb47341bB0A8'; //btcMinter: '0xA9816e2Ca3DC637ED385F50F5Ba732c4a7f6fa4A';
+    const renJS = new RenJS('testnet', { useV2TransactionFormat: true }); //org: 0xF95D54616c371f12c152E278FC4fCb47341bB0A8
+    const payme = '0x8c403eA87f37f56d7bc5B913aCb0d47480009fa0'; //btcMinter: '0xA9816e2Ca3DC637ED385F50F5Ba732c4a7f6fa4A';
     const amount = 0.003;
     const provider = await hre.ethers.provider;
 
@@ -29,7 +29,7 @@ async function executeBridge(user, userToken) {
                 }
             ]
         }),
-        nonce: new BN(31).toArrayLike(Buffer, "be", 32) //increment nonce programatically
+        nonce: new BN(34).toArrayLike(Buffer, "be", 32) //increment nonce programatically
     });
     
     return mint;

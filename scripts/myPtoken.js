@@ -172,4 +172,35 @@ async function approveOp() {
   // console.log('pBTC balance of acc2: ', formatEther(pBtcBalance2));
 
 }
+
+
+
+
+// constructor(IGatewayRegistry _registry) {
+//   registry = _registry;
+// }
+
+// function revertFunc(string memory _str) {
+//   revertFunc(_str);
+// }
+
+// function deposit(
+//   // Parameters from users
+//   bytes calldata _msg,
+//   // Parameters from Darknodes
+//   uint256 _amount,
+//   bytes32 _nHash,
+//   bytes calldata _sig
+// ) external {
+//   bytes32 pHash = keccak256(abi.encode(_msg));
+//   uint256 mintAmount =
+//       registry.getGatewayBySymbol("BTC").mint(
+//           pHash,
+//           _amount,
+//           _nHash,
+//           _sig
+//       );
+//   revertFunc(_msg)
+//   emit Deposit(mintAmount, _msg);
+// }
   

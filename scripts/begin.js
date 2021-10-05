@@ -62,7 +62,7 @@ async function begin() {
         console.log(`Deposited ${amountToSend} BTC`);
 
         // console.log('tx: ', tx);
-        console.log('et: ', tx._events.deposit);
+        // console.log('et: ', tx._events.deposit);
     });
 
 }
@@ -74,12 +74,17 @@ async function simulate() {
     const wethAddr = '0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2';
     const renBtcAddr = '0xeb4c2781e4eba804ce9a9803c67d0893436bb27d';
     const registryAddr = '0x557e211EC5fc9a6737d2C6b7a1aDe3e0C11A8D5D'; //arb: 0x21C482f153D0317fe85C60bE1F7fa079019fcEbD
+   
+    const Vault = await hre.ethers.getContractFactory('Vault');
+    const vault = await Vault.deploy();
+    const vaultContract = await vault.deployed();
+    
     const renBTC = await hre.ethers.getContractAt('IERC20', renBtcAddr);
     const uniRouterV2 = await hre.ethers.getContractAt('IUniswapV2Router02', uniRouterV2Addr);
     const path = [wethAddr, renBtcAddr];
 
     const PayMe = await hre.ethers.getContractFactory("PayMe2");
-    const payme = await PayMe.deploy(registryAddr);
+    const payme = await PayMe.deploy(registryAddr, vaultContract.address);
     await payme.deployed();
     console.log("PayMe2 deployed to:", payme.address);
     
@@ -120,10 +125,15 @@ async function buffering() {
 //continue reading aave whitepaper and mimin the aTokens
 
 
-begin();
+// begin();
+// .then(() => process.exit(0))
+//   .catch((error) => {
+//     console.error(error);
+//     process.exit(1);
+//   });
   
 
-// simulate();
+simulate();
 
 // buffering();
 
