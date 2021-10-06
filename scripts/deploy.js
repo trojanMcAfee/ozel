@@ -23,12 +23,22 @@ const { parseUnits } = ethers.utils;
 
 async function main() { //KOVAN
   const registryAddr = '0x557e211EC5fc9a6737d2C6b7a1aDe3e0C11A8D5D'; 
+  const vaultAddr = '0xEcdbfB73eEa09465AcE272AeE763538ACe7Ae24a';
 
   const PayMe = await hre.ethers.getContractFactory("PayMe2");
-  const payme = await PayMe.deploy(registryAddr);
+  const payme = await PayMe.deploy(registryAddr, vaultAddr);
   await payme.deployed();
   console.log("PayMe2 on Kovan deployed to:", payme.address);
 }
+
+
+// async function main() {
+//   const Vault = await hre.ethers.getContractFactory('Vault');
+//   const vault = await Vault.deploy();
+//   const vaultContract = await vault.deployed();
+
+//   console.log('Vault deployed to: ', vaultContract.address);
+// }
   
   
   

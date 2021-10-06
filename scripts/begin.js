@@ -109,8 +109,7 @@ async function simulate() {
     await payme.exchangeToUserToken(tradedAmount, caller2Addr, userToken);
 
 
-    // tradedAmount = 0.5 * 10 ** 8;
-    // await payme.exchangeToUserToken(tradedAmount, caller2Addr, userToken);
+    
  
 
 
@@ -128,7 +127,6 @@ async function buffering() {
     await payme.toBuffer(_msg);
 }
 
-//continue reading aave whitepaper and mimin the aTokens
 
 
 // begin();

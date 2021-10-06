@@ -48,6 +48,8 @@ contract PayMe2 {
     //0x11EB9A18fE970cFaF079FeAfdfEd59623feCCaf7 / mix of logs and user and userToken
     //0xF95D54616c371f12c152E278FC4fCb47341bB0A8 - before mint()
     //0xcAc56604E56806E12CbaA14266C11fDEd1E2E277 - like docs but with log
+    //0x8c403eA87f37f56d7bc5B913aCb0d47480009fa0 - last that was using
+    //0x6cEf56416da7f50f090f0576Fa567C049f34c780 - with vault
     function deposit(
         bytes calldata _user, //use this param to indicate the caller and where the final tokens will be sent - exchangeToUserToken()
         bytes calldata _userToken,
@@ -55,7 +57,7 @@ contract PayMe2 {
         bytes32 _nHash,
         bytes calldata _sig
     ) external {
-        console.log('hiii');
+        console.log('msg: ', string(_user));
         bytes32 pHash = keccak256(abi.encode(_user, _userToken));
         console.logBytes32(pHash);
         // bytes32 pHash = keccak256(abi.encode(_user));
@@ -190,3 +192,5 @@ contract PayMe2 {
 
     
 } 
+
+
