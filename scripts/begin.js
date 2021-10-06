@@ -27,7 +27,7 @@ async function begin() {
     await sendBitcoin(depositAddress, amountToSend, sendingAddr, senderPK);
     console.log('hellooooo');
     //Mints renBTC
-    const tx = await mint.on('deposit', async (deposit) => {
+    await mint.on('deposit', async (deposit) => {
         const hash = deposit.txHash();
         console.log('first hash: ', hash);
         console.log('details of deposit: ', deposit.depositDetails);
@@ -129,7 +129,7 @@ async function buffering() {
 
 
 
-// begin();
+begin();
 // .then(() => process.exit(0))
 //   .catch((error) => {
 //     console.error(error);
@@ -137,7 +137,6 @@ async function buffering() {
 //   });
   
 
-simulate();
+// simulate();
 
 // buffering();
-
