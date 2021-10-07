@@ -22,5 +22,4 @@ interface ITricrypto {
   ) external;
 
   function get_dy(uint i, uint j, uint dx) external returns(uint256);
-
 }

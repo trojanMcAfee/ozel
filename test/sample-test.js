@@ -9,7 +9,7 @@ describe("PayMe", function () {
     const amount = 1;
     const nHash = formatBytes32String('hello');
     const sig = '0x11EB9A18fE970cFaF079FeAfdfEd59623feCCaf7';
-  it("should log deposit messaage", async function () {
+  it("should log deposit message", async function () {
     const PayMe = await ethers.getContractFactory("PayMe2");
     const payme = await PayMe.deploy(registryAddr);
     await payme.deployed();
