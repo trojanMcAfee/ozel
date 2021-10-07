@@ -141,17 +141,19 @@ async function simulate2() {
     });
     let userToken = usdtAddr;
     
-    await payme.setAllowance();
+    await payme.sendRen(); 
+    const x = await renBTC.balanceOf(vault.address);
+    console.log('renBTC balance on begin: ', x.toString());
     //this function is called on deposit() from PayMe2 when receiving the renBTC
-    await vault.exchangeToUserToken(tradedAmount, callerAddr, userToken, payme.address);
+    // await vault.exchangeToUserToken(tradedAmount, callerAddr, userToken, payme.address);
     
-    //Second user
-    tradedAmount = 0.5 * 10 ** 8;
-    await uniRouterV2.swapETHForExactTokens(tradedAmount, path, payme.address, MaxUint256, {
-        value: parseEther('100')
-    });
-    userToken = wethAddr;
-    await vault.exchangeToUserToken(tradedAmount, caller2Addr, userToken, payme.address);
+    // //Second user
+    // tradedAmount = 0.5 * 10 ** 8;
+    // await uniRouterV2.swapETHForExactTokens(tradedAmount, path, payme.address, MaxUint256, {
+    //     value: parseEther('100')
+    // });
+    // userToken = wethAddr;
+    // await vault.exchangeToUserToken(tradedAmount, caller2Addr, userToken, payme.address);
 }
 
 

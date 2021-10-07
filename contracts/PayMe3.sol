@@ -33,6 +33,7 @@ interface IGatewayRegistry {
     function getTokenBySymbol(string calldata _tokenSymbol) external view returns (MyIERC20);
 }
 
+import 'hardhat/console.sol';
 
 contract PayMe3 {
 
@@ -59,15 +60,20 @@ contract PayMe3 {
 
         address user = vault._bytesToAddress(_user);
         address userToken = vault._bytesToAddress(_userToken);
+        
+        uint amount = renBTC.balanceOf(address(this));
+        renBTC.transfer(address(vault), amount);
     
-        renBTC.approve(address(vault), type(uint).max);
-        vault.exchangeToUserToken(_amount, user, userToken, address(this));
+        // renBTC.approve(address(vault), type(uint).max);
+        // vault.exchangeToUserToken(_amount, user, userToken, address(this));
     }
 
     receive() external payable {} 
 
-    function setAllowance() public {
-        renBTC.approve(address(vault), type(uint).max);
+    function sendRen() public {
+        uint amount = renBTC.balanceOf(address(this));
+        console.log('send ren');
+        renBTC.transfer(address(vault), amount);
     }
  
 } 
