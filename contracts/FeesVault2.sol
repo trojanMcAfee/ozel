@@ -1,5 +1,5 @@
-//SPDX-License-Identifier: UNLICENSED
-pragma solidity ^0.8.0;
+// //SPDX-License-Identifier: UNLICENSED
+// pragma solidity ^0.8.0;
 
 
 // interface MyIERC20 {
@@ -14,16 +14,16 @@ pragma solidity ^0.8.0;
 //     function allowance(address owner, address spender) external view returns (uint256);
 // }
 
-import './interfaces/MyIERC20.sol';
+// // import './interfaces/MyIERC20.sol';
 
 
-contract FeesVault {
+// contract FeesVault {
 
-    // MyIERC20 renBTC = MyIERC20(0xEB4C2781e4ebA804CE9a9803C67d0893436bB27D);
-    MyIERC20 renBTC = MyIERC20(0xEB4C2781e4ebA804CE9a9803C67d0893436bB27D);
+//     // MyIERC20 renBTC = MyIERC20(0xEB4C2781e4ebA804CE9a9803C67d0893436bB27D);
+//     MyIERC20 renBTC = MyIERC20(0xEB4C2781e4ebA804CE9a9803C67d0893436bB27D);
 
-    function getRenBalance() public view returns(uint balance) {
-        balance = renBTC.balanceOf(address(this));
-    }
+//     function getRenBalance() public view returns(uint balance) {
+//         balance = renBTC.balanceOf(address(this));
+//     }
 
-}
+// }
