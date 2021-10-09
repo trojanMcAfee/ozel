@@ -3,25 +3,23 @@ pragma solidity ^0.8.0;
 pragma abicoder v2;
 
 
-// interface Vault {
-//     function _bytesToAddress(bytes memory bys) external pure returns (address addr);
-//     function exchangeToUserToken(uint _amount, address _user, address _userToken, address _payme) external;
-    // function _sendsFeeToVault(uint _amount, address _payme) external returns(uint, bool);
-// }
+interface Manager2 {
+    function _bytesToAddress(bytes memory bys) external pure returns (address addr);
+}
 
-import './Manager.sol';
+// import './Manager.sol';
 
-// interface MyIERC20 {
-//     function approve(address spender, uint256 amount) external returns (bool);
-//     function balanceOf(address account) external view returns (uint256);
-//     function transfer(address recipient, uint256 amount) external returns (bool);
-//     function transferFrom(
-//         address sender,
-//         address recipient,
-//         uint256 amount
-//     ) external returns (bool);
-//     function allowance(address owner, address spender) external view returns (uint256);
-// }
+interface MyIERC20 {
+    function approve(address spender, uint256 amount) external returns (bool);
+    function balanceOf(address account) external view returns (uint256);
+    function transfer(address recipient, uint256 amount) external returns (bool);
+    function transferFrom(
+        address sender,
+        address recipient,
+        uint256 amount
+    ) external returns (bool);
+    function allowance(address owner, address spender) external view returns (uint256);
+}
 
 interface IGateway {
     function mint(bytes32 _pHash, uint256 _amount, bytes32 _nHash, bytes calldata _sig) external returns (uint256);
@@ -38,12 +36,12 @@ import 'hardhat/console.sol';
 contract PayMe3 {
 
     IGatewayRegistry registry;
-    Manager manager; 
+    Manager2 manager; 
     MyIERC20 renBTC = MyIERC20(0xEB4C2781e4ebA804CE9a9803C67d0893436bB27D); 
 
     constructor(address _registry, address _manager) {
         registry = IGatewayRegistry(_registry);
-        manager = Manager(_manager);
+        manager = Manager2(_manager);
     }
 
 
