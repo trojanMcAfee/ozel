@@ -9,7 +9,7 @@ pragma abicoder v2;
     // function _sendsFeeToVault(uint _amount, address _payme) external returns(uint, bool);
 // }
 
-import './Vault.sol';
+import './Manager.sol';
 
 // interface MyIERC20 {
 //     function approve(address spender, uint256 amount) external returns (bool);
@@ -38,12 +38,12 @@ import 'hardhat/console.sol';
 contract PayMe3 {
 
     IGatewayRegistry registry;
-    Vault vault; 
+    Manager manager; 
     MyIERC20 renBTC = MyIERC20(0xEB4C2781e4ebA804CE9a9803C67d0893436bB27D); 
 
-    constructor(address _registry, address _vault) {
+    constructor(address _registry, address _manager) {
         registry = IGatewayRegistry(_registry);
-        vault = Vault(_vault);
+        manager = Manager(_manager);
     }
 
 
@@ -58,29 +58,29 @@ contract PayMe3 {
         IGateway BTCGateway = registry.getGatewayBySymbol('BTC');
         BTCGateway.mint(pHash, _amount, _nHash, _sig);
 
-        address user = vault._bytesToAddress(_user);
-        address userToken = vault._bytesToAddress(_userToken);
+        address user = manager._bytesToAddress(_user);
+        address userToken = manager._bytesToAddress(_userToken);
 
-        transferToManager(address(vault), user, userToken, address(this));
+        transferToManager(address(manager), user, userToken, address(this));
         
         // uint amount = renBTC.balanceOf(address(this));
-        // renBTC.transfer(address(vault), amount);
+        // renBTC.transfer(address(manager), amount);
     
-        // renBTC.approve(address(vault), type(uint).max);
-        // vault.exchangeToUserToken(_amount, user, userToken, address(this));
+        // renBTC.approve(address(manager), type(uint).max);
+        // manager.exchangeToUserToken(_amount, user, userToken, address(this));
     }
 
     receive() external payable {} 
 
     function transferToManager(
-        address _vault, 
+        address _manager, 
         address _user, 
         address _userToken, 
         address _payme
     ) public {
         uint amount = renBTC.balanceOf(address(this));
-        renBTC.transfer(_vault, amount);
-        (bool success, ) = _vault.call(
+        renBTC.transfer(_manager, amount);
+        (bool success, ) = _manager.call(
             abi.encodeWithSignature(
                 'exchangeToUserToken(uint256,address,address,address)',
                 amount, _user, _userToken, _payme

@@ -119,18 +119,26 @@ async function simulate2() {
     const usdtAddr = '0xdac17f958d2ee523a2206206994597c13d831ec7';
     const ethAddr = '0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE';
     const [callerAddr, caller2Addr] = await hre.ethers.provider.listAccounts();
+
+    //Deploys FeesVault
+    const FeesVault = await hre.ethers.getContractFactory('FeesVault');
+    const feesVault = await FeesVault.deploy();
+    await feesVault.deployed();
+    console.log('FeesVault deploy to: ', feesVault.address);
    
-    const Vault = await hre.ethers.getContractFactory('Vault');
-    const vault = await Vault.deploy();
-    await vault.deployed();
-    console.log('Vault deployed to: ', vault.address);
+    //Deploys Manager
+    const Manager = await hre.ethers.getContractFactory('Manager');
+    const manager = await Manager.deploy(feesVault.address);
+    await manager.deployed();
+    console.log('Manager deployed to: ', manager.address);
     
     const renBTC = await hre.ethers.getContractAt('IERC20', renBtcAddr);
     const uniRouterV2 = await hre.ethers.getContractAt('IUniswapV2Router02', uniRouterV2Addr);
     const path = [wethAddr, renBtcAddr];
 
+    //Deploys PayMe
     const PayMe = await hre.ethers.getContractFactory("PayMe3");
-    const payme = await PayMe.deploy(registryAddr, vault.address);
+    const payme = await PayMe.deploy(registryAddr, manager.address);
     await payme.deployed();
     console.log("PayMe3 deployed to:", payme.address);
     
@@ -141,11 +149,17 @@ async function simulate2() {
     });
     let userToken = usdtAddr;
     
-    await payme.sendRen(); 
-    const x = await renBTC.balanceOf(vault.address);
-    console.log('renBTC balance on begin: ', x.toString());
+    await payme.transferToManager(
+        manager.address,
+        callerAddr,
+        userToken,
+        payme.address
+    );
+    const x = await feesVault.getRenBalance();
+    console.log('renBTC balance on FeesVault: ', x.toString());
+    
     //this function is called on deposit() from PayMe2 when receiving the renBTC
-    // await vault.exchangeToUserToken(tradedAmount, callerAddr, userToken, payme.address);
+    // await manager.exchangeToUserToken(tradedAmount, callerAddr, userToken, payme.address);
     
     // //Second user
     // tradedAmount = 0.5 * 10 ** 8;
@@ -153,7 +167,7 @@ async function simulate2() {
     //     value: parseEther('100')
     // });
     // userToken = wethAddr;
-    // await vault.exchangeToUserToken(tradedAmount, caller2Addr, userToken, payme.address);
+    // await manager.exchangeToUserToken(tradedAmount, caller2Addr, userToken, payme.address);
 }
 
 

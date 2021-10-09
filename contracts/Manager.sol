@@ -6,20 +6,19 @@ pragma solidity ^0.8.0;
 // import {IRenPool, ITricrypto} from './interfaces/ICurve.sol';
 // import '@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol';
 
-import 'hardhat/console.sol';
 
 
-interface MyIERC20 {
-    function approve(address spender, uint256 amount) external returns (bool);
-    function balanceOf(address account) external view returns (uint256);
-    function transfer(address recipient, uint256 amount) external returns (bool);
-    function transferFrom(
-        address sender,
-        address recipient,
-        uint256 amount
-    ) external returns (bool);
-    function allowance(address owner, address spender) external view returns (uint256);
-}
+// interface MyIERC20 {
+//     function approve(address spender, uint256 amount) external returns (bool);
+//     function balanceOf(address account) external view returns (uint256);
+//     function transfer(address recipient, uint256 amount) external returns (bool);
+//     function transferFrom(
+//         address sender,
+//         address recipient,
+//         uint256 amount
+//     ) external returns (bool);
+//     function allowance(address owner, address spender) external view returns (uint256);
+// }
 
 interface IRenPool {
     function exchange(
@@ -228,13 +227,17 @@ library SafeERC20 {
     }
 }
 
+// interface FeesVault {
+//     function getRenBalance() external view returns(uint balance);
+// }
+
+
+
 import 'hardhat/console.sol';
+import './FeesVault.sol';
+import './interfaces/MyIERC20.sol';
 
-// import '@openzeppelin/contracts/token/ERC777/IERC777.sol';
-// import '@openzeppelin/contracts/token/ERC777/IERC777Recipient.sol';
-// import "@openzeppelin/contracts/interfaces/IERC1820Registry.sol";
-
-contract Vault { //looking for a way to trigger action when receiving renBTC
+contract Manager { 
 
     using SafeERC20 for MyIERC20;
 
@@ -246,33 +249,19 @@ contract Vault { //looking for a way to trigger action when receiving renBTC
     MyIERC20 WBTC = MyIERC20(0x2260FAC5E5542a773Aa44fBCfeDf7C193bc2C599);
     address ETH = 0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE;
 
-    // IERC777 renBTC_1 = IERC777(0xEB4C2781e4ebA804CE9a9803C67d0893436bB27D);
-    // IERC1820Registry erc1820 = IERC1820Registry(0x1820a4B7618BdE71Dce8cdc73aAB6C95905faD24);
-    // bytes32 TOKENS_RECIPIENT_INTERFACE_HASH = keccak256(abi.encodePacked('ERC777TokensRecipient'));
 
     uint dappFee = 10;
     uint totalVolume = 0;
+    FeesVault feesVault;
 
     mapping(address => bool) users;
     mapping(address => uint) pendingWithdrawal;
     mapping(address => uint) usersPayments;
 
-    // constructor() {
-    //     erc1820.setInterfaceImplementer(address(this), TOKENS_RECIPIENT_INTERFACE_HASH, address(this));
-    // }
+    constructor(address _feesVault) {
+        feesVault = FeesVault(_feesVault);
+    }
 
-    // function tokensReceived(
-    //     address operator,
-    //     address from,
-    //     address to,
-    //     uint256 amount,
-    //     bytes calldata userData,
-    //     bytes calldata operatorData
-    // ) external view override {
-    //     require(msg.sender == address(renBTC), "Simple777Recipient: Invalid token");
-    //     console.log('from: ', from);
-    //     console.log('renBTC balance on Vault: ', renBTC_1.balanceOf(address(this)));
-    // }
 
 
 
@@ -312,9 +301,8 @@ contract Vault { //looking for a way to trigger action when receiving renBTC
     function _getFee(uint _amount, address _payme) public returns(uint, bool) {
         uint fee = _amount - _calculateAfterPercentage(_amount, dappFee); //10 -> 0.1%
         uint netAmount = _amount - fee;
-        console.log('msg.sender: ', msg.sender);
-        console.log('allowance: ', renBTC.allowance(_payme, address(this)));
-        bool isTransferred = renBTC.transferFrom(_payme, address(this), fee); //separate the fee from the main amount
+        bool isTransferred = renBTC.transfer(address(feesVault), fee);
+        // bool isTransferred = renBTC.transferFrom(_payme, address(this), fee); //separate the fee from the main amount
         console.log('hezzzoo');
         return (netAmount, isTransferred);
     }
