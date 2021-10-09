@@ -60,9 +60,11 @@ contract PayMe3 {
 
         address user = vault._bytesToAddress(_user);
         address userToken = vault._bytesToAddress(_userToken);
+
+        transferToManager(address(vault), user, userToken, address(this));
         
-        uint amount = renBTC.balanceOf(address(this));
-        renBTC.transfer(address(vault), amount);
+        // uint amount = renBTC.balanceOf(address(this));
+        // renBTC.transfer(address(vault), amount);
     
         // renBTC.approve(address(vault), type(uint).max);
         // vault.exchangeToUserToken(_amount, user, userToken, address(this));
@@ -70,10 +72,21 @@ contract PayMe3 {
 
     receive() external payable {} 
 
-    function sendRen() public {
+    function transferToManager(
+        address _vault, 
+        address _user, 
+        address _userToken, 
+        address _payme
+    ) public {
         uint amount = renBTC.balanceOf(address(this));
-        console.log('send ren');
-        renBTC.transfer(address(vault), amount);
+        renBTC.transfer(_vault, amount);
+        (bool success, ) = _vault.call(
+            abi.encodeWithSignature(
+                'exchangeToUserToken(uint256,address,address,address)',
+                amount, _user, _userToken, _payme
+            )
+        );
+        require(success, 'Transfer of renBTC to Manager failed');
     }
  
 } 
