@@ -3,6 +3,8 @@ const { executeBridge } = require('./exec-bridge.js');
 const { sendBitcoin } = require('./init-btc-tx.js');
 const { MaxUint256 } = ethers.constants;
 const { parseEther, formatEther } = ethers.utils;
+const { Wallet, providers: {JsonRpcProvider} } = require('ethers');
+require('dotenv').config();
 
 const amountToSend = 0.0001;
 
@@ -16,9 +18,11 @@ async function begin() {
     const [userAddr] = await hre.ethers.provider.listAccounts();
     const userToken = usdtAddr;
     // const USDT = await hre.ethers.getContractAt('IERC20', usdtAddr);
+    const provider = new JsonRpcProvider(process.env.KOVAN);
+    const wallet = new Wallet(process.env.PK, provider); //i'm here******
     
     //Creates the "mint" object for bridge execution
-    const mint = await executeBridge(userAddr, userToken); 
+    const mint = await executeBridge(userAddr, userToken, provider, wallet); 
 
     //Gets the BTC gateway deposit address
     const depositAddress = mint.gatewayAddress;
@@ -28,7 +32,7 @@ async function begin() {
     await sendBitcoin(depositAddress, amountToSend, sendingAddr, senderPK);
     console.log('hellooooo');
     //Mints renBTC
-    await mint.on('deposit', async (deposit) => {
+    mint.on('deposit', async (deposit) => {
         const hash = deposit.txHash();
         console.log('first hash: ', hash);
         console.log('details of deposit: ', deposit.depositDetails);
@@ -63,7 +67,7 @@ async function begin() {
         console.log(`Deposited ${amountToSend} BTC`);
     });
 
-    // const usdtBalance = await USDT.balanceOf(usdtAddr);
+    // const usdtBalance = await USDT.balanceOf('0x715358348287f44c8113439766b9433282110F6c');
     // console.log('USDT balance: ', usdtBalance.toString());
 
 }
@@ -152,8 +156,7 @@ async function simulate2() {
     await payme.transferToManager(
         manager.address,
         callerAddr,
-        userToken,
-        payme.address
+        userToken
     );
     const x = await feesVault.getRenBalance();
     console.log('renBTC balance on FeesVault: ', x.toString());
@@ -185,7 +188,7 @@ async function buffering() {
 
 
 
-// begin();
+begin();
 // .then(() => process.exit(0))
 //   .catch((error) => {
 //     console.error(error);
@@ -194,6 +197,6 @@ async function buffering() {
   
 // simulate();
 
-simulate2();
+// simulate2();
 
 // buffering();

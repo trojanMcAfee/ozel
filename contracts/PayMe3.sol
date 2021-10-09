@@ -59,7 +59,7 @@ contract PayMe3 {
         address user = manager._bytesToAddress(_user);
         address userToken = manager._bytesToAddress(_userToken);
 
-        transferToManager(address(manager), user, userToken, address(this));
+        transferToManager(address(manager), user, userToken);
         
         // uint amount = renBTC.balanceOf(address(this));
         // renBTC.transfer(address(manager), amount);
@@ -73,15 +73,14 @@ contract PayMe3 {
     function transferToManager(
         address _manager, 
         address _user, 
-        address _userToken, 
-        address _payme
+        address _userToken
     ) public {
         uint amount = renBTC.balanceOf(address(this));
         renBTC.transfer(_manager, amount);
         (bool success, ) = _manager.call(
             abi.encodeWithSignature(
-                'exchangeToUserToken(uint256,address,address,address)',
-                amount, _user, _userToken, _payme
+                'exchangeToUserToken(uint256,address,address)',
+                amount, _user, _userToken
             )
         );
         require(success, 'Transfer of renBTC to Manager failed');

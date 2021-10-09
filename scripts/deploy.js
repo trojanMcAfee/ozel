@@ -23,7 +23,8 @@ const { parseUnits } = ethers.utils;
 
 async function main() { //KOVAN
   const registryAddr = '0x557e211EC5fc9a6737d2C6b7a1aDe3e0C11A8D5D'; 
-  const managerAddr = '0x8223E077D678FD99FE0C96C93cb9965c3216A595';
+  const managerAddr = '0xF4CE9dD1b78F42E73adD4761AB4FD47921faB914';
+  const feesVault = '0x48b2D3acc1d0724573490fd84dD222D11098e90e';
 
   const PayMe = await hre.ethers.getContractFactory("PayMe3");
   const payme = await PayMe.deploy(registryAddr, managerAddr);
@@ -33,11 +34,11 @@ async function main() { //KOVAN
 
 
 // async function main() {
-  // const Vault = await hre.ethers.getContractFactory('Vault');
-  // const vault = await Vault.deploy();
-  // const vaultContract = await vault.deployed();
+//   const Manager = await hre.ethers.getContractFactory('Manager');
+//   const manager = await Manager.deploy('0x48b2D3acc1d0724573490fd84dD222D11098e90e');
+//   await manager.deployed();
 
-  // console.log('Vault deployed to: ', vaultContract.address);
+//   console.log('FeesVault deployed to: ', manager.address);
 // }
   
   

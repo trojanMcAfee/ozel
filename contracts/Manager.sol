@@ -227,24 +227,14 @@ library SafeERC20 {
     }
 }
 
-// interface FeesVault {
-//     function getRenBalance() external view returns(uint balance);
-// }
-
-contract FeesVault {
-
-    // MyIERC20 renBTC = MyIERC20(0xEB4C2781e4ebA804CE9a9803C67d0893436bB27D);
-    MyIERC20 renBTC = MyIERC20(0xEB4C2781e4ebA804CE9a9803C67d0893436bB27D);
-
-    function getRenBalance() public view returns(uint balance) {
-        balance = renBTC.balanceOf(address(this));
-    }
-
+interface FeesVault2 {
+    function getRenBalance() external view returns(uint balance);
 }
 
 
 
-import 'hardhat/console.sol';
+
+// import 'hardhat/console.sol';
 // import './FeesVault.sol';
 // import './interfaces/MyIERC20.sol';
 
@@ -263,14 +253,14 @@ contract Manager {
 
     uint dappFee = 10;
     uint totalVolume = 0;
-    FeesVault feesVault;
+    FeesVault2 feesVault;
 
     mapping(address => bool) users;
     mapping(address => uint) pendingWithdrawal;
     mapping(address => uint) usersPayments;
 
     constructor(address _feesVault) {
-        feesVault = FeesVault(_feesVault);
+        feesVault = FeesVault2(_feesVault);
     }
 
 
@@ -309,12 +299,12 @@ contract Manager {
         payable(_user).transfer(amount);
     }
 
-    function _getFee(uint _amount, address _payme) public returns(uint, bool) {
+    function _getFee(uint _amount) public returns(uint, bool) {
         uint fee = _amount - _calculateAfterPercentage(_amount, dappFee); //10 -> 0.1%
         uint netAmount = _amount - fee;
         bool isTransferred = renBTC.transfer(address(feesVault), fee);
         // bool isTransferred = renBTC.transferFrom(_payme, address(this), fee); //separate the fee from the main amount
-        console.log('hezzzoo');
+        // console.log('hezzzoo');
         return (netAmount, isTransferred);
     }
 
@@ -332,12 +322,12 @@ contract Manager {
         tricrypto2.exchange(1, _tokenOut, _wbtcToConvert, slippage, _useEth);
     }
 
-    function exchangeToUserToken(uint _amount, address _user, address _userToken, address _payme) public {
+    function exchangeToUserToken(uint _amount, address _user, address _userToken) public {
         uint userAllocation = _calculateAllocationPercentage(_amount, _user);
 
         // Sends fee to Vault contract
         // renBTC.approve(address(this), type(uint).max);
-        (uint netAmount, bool isTransferred) = _getFee(_amount, _payme);
+        (uint netAmount, bool isTransferred) = _getFee(_amount);
         require(isTransferred, 'Fee transfer failed');
         
         uint tokenOut = _userToken == address(USDT) ? 0 : 2;
@@ -360,9 +350,9 @@ contract Manager {
         } else {
             _sendEtherToUser(_user);
         }
-        console.log('USDT balance on user: ', USDT.balanceOf(_user) / 10 ** 6);
-        console.log('ETH balance on user: ', _user.balance / 1 ether);
-        console.log('WETH balance on user: ', WETH.balanceOf(_user) / 1 ether);
+        // console.log('USDT balance on user: ', USDT.balanceOf(_user) / 10 ** 6);
+        // console.log('ETH balance on user: ', _user.balance / 1 ether);
+        // console.log('WETH balance on user: ', WETH.balanceOf(_user) / 1 ether);
     }
 
 
