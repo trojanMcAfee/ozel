@@ -3,26 +3,22 @@ const { executeBridge } = require('./exec-bridge.js');
 const { sendBitcoin } = require('./init-btc-tx.js');
 const { MaxUint256 } = ethers.constants;
 const { parseEther, formatEther } = ethers.utils;
-const { Wallet, providers: {JsonRpcProvider} } = require('ethers');
-require('dotenv').config();
 
-const amountToSend = 0.0001;
+const amountToSend = 0.0002;
 
 //Variables that are supposed to be dynamically created
 const sendingAddr = 'mubUbyPazdyvhPJYPGWUkFWj7bkw1Yq8ys';
 const senderPK = process.env.PK_TEST;
 
-async function begin() {
+async function begin() { //KOVAN
     const usdtAddr = '0xdac17f958d2ee523a2206206994597c13d831ec7';
     const wethAddr = '0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2';
     const [userAddr] = await hre.ethers.provider.listAccounts();
     const userToken = usdtAddr;
-    // const USDT = await hre.ethers.getContractAt('IERC20', usdtAddr);
-    const provider = new JsonRpcProvider(process.env.KOVAN);
-    const wallet = new Wallet(process.env.PK, provider); //i'm here******
+    // const USDT = await hre.ethers.getContractAt('IERC20', usdtAddr); 
     
     //Creates the "mint" object for bridge execution
-    const mint = await executeBridge(userAddr, userToken, provider, wallet); 
+    const mint = await executeBridge(userAddr, userToken); 
 
     //Gets the BTC gateway deposit address
     const depositAddress = mint.gatewayAddress;

@@ -31,7 +31,7 @@ interface IGatewayRegistry {
     function getTokenBySymbol(string calldata _tokenSymbol) external view returns (MyIERC20);
 }
 
-import 'hardhat/console.sol';
+// import 'hardhat/console.sol'; 
 
 contract PayMe3 {
 

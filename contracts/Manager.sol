@@ -265,7 +265,6 @@ contract Manager {
 
 
 
-
     function _calculateAfterPercentage(
         uint _amount, 
         uint _basisPoint
