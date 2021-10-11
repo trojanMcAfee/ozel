@@ -3,45 +3,51 @@ pragma solidity ^0.8.0;
 pragma abicoder v2;
 
 
-interface Manager2 {
-    function _bytesToAddress(bytes memory bys) external pure returns (address addr);
-}
+import './Manager.sol'; 
+// import './interfaces/MyIERC20.sol';
+import '@openzeppelin/contracts/token/ERC20/IERC20.sol';
+import './interfaces/IGatewayRegistry.sol';
+import './interfaces/IGateway.sol';
 
-// import './Manager.sol';
 
-interface MyIERC20 {
-    function approve(address spender, uint256 amount) external returns (bool);
-    function balanceOf(address account) external view returns (uint256);
-    function transfer(address recipient, uint256 amount) external returns (bool);
-    function transferFrom(
-        address sender,
-        address recipient,
-        uint256 amount
-    ) external returns (bool);
-    function allowance(address owner, address spender) external view returns (uint256);
-}
+// interface Manager2 {
+//     function _bytesToAddress(bytes memory bys) external pure returns (address addr);
+// }
 
-interface IGateway {
-    function mint(bytes32 _pHash, uint256 _amount, bytes32 _nHash, bytes calldata _sig) external returns (uint256);
-    function burn(bytes calldata _to, uint256 _amount) external returns (uint256);
-}
 
-interface IGatewayRegistry {
-    function getGatewayBySymbol(string calldata _tokenSymbol) external view returns (IGateway);
-    function getTokenBySymbol(string calldata _tokenSymbol) external view returns (MyIERC20);
-}
+// interface MyIERC20 {
+//     function approve(address spender, uint256 amount) external returns (bool);
+//     function balanceOf(address account) external view returns (uint256);
+//     function transfer(address recipient, uint256 amount) external returns (bool);
+//     function transferFrom(
+//         address sender,
+//         address recipient,
+//         uint256 amount
+//     ) external returns (bool);
+//     function allowance(address owner, address spender) external view returns (uint256);
+// }
 
-// import 'hardhat/console.sol'; 
+// interface IGateway {
+//     function mint(bytes32 _pHash, uint256 _amount, bytes32 _nHash, bytes calldata _sig) external returns (uint256);
+//     function burn(bytes calldata _to, uint256 _amount) external returns (uint256);
+// }
+
+// interface IGatewayRegistry {
+//     function getGatewayBySymbol(string calldata _tokenSymbol) external view returns (IGateway);
+//     function getTokenBySymbol(string calldata _tokenSymbol) external view returns (MyIERC20);
+// }
+
+
 
 contract PayMe3 {
 
     IGatewayRegistry registry;
-    Manager2 manager; 
-    MyIERC20 renBTC = MyIERC20(0xEB4C2781e4ebA804CE9a9803C67d0893436bB27D); 
+    Manager manager; 
+    IERC20 renBTC = IERC20(0xEB4C2781e4ebA804CE9a9803C67d0893436bB27D); 
 
     constructor(address _registry, address _manager) {
         registry = IGatewayRegistry(_registry);
-        manager = Manager2(_manager);
+        manager = Manager(_manager);
     }
 
 

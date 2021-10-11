@@ -29,8 +29,9 @@ async function executeBridge(user, userToken) {
                 }
             ]
         }),
-        nonce: new BN(84).toArrayLike(Buffer, "be", 32) //increment nonce programatically
-    }, {gasLmit: 3000000});
+        nonce: new BN(88).toArrayLike(Buffer, "be", 32), ////increment nonce programatically
+        txConfig: {gas:3000000}
+    });
     
     return mint;
 }

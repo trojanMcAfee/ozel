@@ -184,7 +184,7 @@ async function buffering() {
 
 
 
-begin();
+// begin();
 // .then(() => process.exit(0))
 //   .catch((error) => {
 //     console.error(error);
@@ -193,6 +193,6 @@ begin();
   
 // simulate();
 
-// simulate2();
+simulate2();
 
 // buffering();
