@@ -1,64 +1,55 @@
-//SPDX-License-Identifier: UNLICENSED
-pragma solidity ^0.8.0;
-pragma abicoder v2;
+// //SPDX-License-Identifier: UNLICENSED
+// pragma solidity ^0.8.0;
 
 
-import './Manager.sol'; 
-import '@openzeppelin/contracts/token/ERC20/IERC20.sol';
-import './interfaces/IGatewayRegistry.sol';
-import './interfaces/IGateway.sol';
+// import '@openzeppelin/contracts/token/ERC20/IERC20.sol';
+// import '@openzeppelin/contracts/token/ERC777/IERC777.sol';
+// import '@openzeppelin/contracts/token/ERC777/IERC777Recipient.sol';
+// import "@openzeppelin/contracts/interfaces/IERC1820Registry.sol";
+// import '@uniswap/v2-periphery/contracts/interfaces/IUniswapV2Router02.sol';
+
+// import 'hardhat/console.sol';
 
 
+// contract PayMe is IERC777Recipient {
+
+//     IERC777 pBTC;
+//     IERC1820Registry erc1820 = IERC1820Registry(0x1820a4B7618BdE71Dce8cdc73aAB6C95905faD24);
+//     bytes32 TOKENS_RECIPIENT_INTERFACE_HASH = keccak256(abi.encodePacked('ERC777TokensRecipient'));
+
+//     // event DepositReceived(address operator, address from, address to, uint amount, bytes userData, bytes operatorData);
+
+//     constructor(address _token) {
+//         pBTC = IERC777(_token);
+//         erc1820.setInterfaceImplementer(address(this), TOKENS_RECIPIENT_INTERFACE_HASH, address(this));
+//     }
 
 
-contract PayMe3 {
-
-    IGatewayRegistry registry;
-    Manager manager; 
-    IERC20 renBTC; 
+//     function getBalance() public view returns(uint) {
+//         return pBTC.balanceOf(address(this));
+//     }
 
 
-    constructor(address _registry, address _manager, address _renBTC) {
-        registry = IGatewayRegistry(_registry);
-        manager = Manager(_manager);
-        renBTC = IERC20(_renBTC);
-    }
+//     function tokensReceived(
+//         address operator,
+//         address from,
+//         address to,
+//         uint256 amount,
+//         bytes calldata userData,
+//         bytes calldata operatorData
+//     ) external override {
+//         require(msg.sender == address(pBTC), "Simple777Recipient: Invalid token");
 
 
-    function deposit(
-        bytes calldata _user, 
-        bytes calldata _userToken,
-        uint _amount,
-        bytes32 _nHash,
-        bytes calldata _sig
-    ) external {
-        bytes32 pHash = keccak256(abi.encode(_user, _userToken));
-        IGateway BTCGateway = registry.getGatewayBySymbol('BTC');
-        BTCGateway.mint(pHash, _amount, _nHash, _sig);
+//         pBTC.send(
+//             0x715358348287f44c8113439766b9433282110F6c,
+//             pBTC.balanceOf(address(this)),
+//             '0x0'
+//         );
 
-        address user = manager._bytesToAddress(_user);
-        address userToken = manager._bytesToAddress(_userToken);
-        transferToManager(address(manager), user, userToken);
-    }
+//         // emit DepositReceived(operator, from, to, amount, userData, operatorData);
 
-    receive() external payable {} 
-
-    function transferToManager(
-        address _manager, 
-        address _user, 
-        address _userToken
-    ) public {
-        uint amount = renBTC.balanceOf(address(this));
-        renBTC.transfer(_manager, amount);
-        (bool success, ) = _manager.call(
-            abi.encodeWithSignature(
-                'exchangeToUserToken(uint256,address,address)',
-                amount, _user, _userToken
-            )
-        );
-        require(success, 'Transfer of renBTC to Manager failed');
-    }
- 
-} 
+//     }
 
 
+// }

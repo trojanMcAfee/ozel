@@ -5,7 +5,7 @@ pragma solidity ^0.8.0;
 import '@openzeppelin/contracts/token/ERC20/IERC20.sol';
 import {IRenPool, ITricrypto} from './interfaces/ICurve.sol';
 import '@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol';
-import './FeesVault.sol';
+import './Vault.sol';
 
 import 'hardhat/console.sol';
 
@@ -27,14 +27,14 @@ contract Manager {
 
     uint dappFee = 10;
     uint totalVolume = 0;
-    FeesVault feesVault;
+    Vault vault;
 
     mapping(address => bool) users;
     mapping(address => uint) pendingWithdrawal;
     mapping(address => uint) usersPayments;
 
-    constructor(address _feesVault) {
-        feesVault = FeesVault(_feesVault);
+    constructor(address _vault) {
+        vault = Vault(_vault);
     }
 
 
@@ -75,7 +75,7 @@ contract Manager {
     function _getFee(uint _amount) public returns(uint, bool) {
         uint fee = _amount - _calculateAfterPercentage(_amount, dappFee); //10 -> 0.1%
         uint netAmount = _amount - fee;
-        bool isTransferred = renBTC.transfer(address(feesVault), fee);
+        bool isTransferred = renBTC.transfer(address(vault), fee);
         return (netAmount, isTransferred);
     }
 

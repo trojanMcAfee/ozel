@@ -11,16 +11,15 @@ const sendingAddr = 'mubUbyPazdyvhPJYPGWUkFWj7bkw1Yq8ys';
 const senderPK = process.env.PK_TEST;
 
 //Simulation variables (KOVAN)
-const wethAddr = '0xd0A1E359811322d97991E03f863a0C30C2cF029C'; //mainnet: 0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2
-const usdtAddr = '0xf3e0d7bf58c5d455d31ef1c2d5375904df525105'; //mainnet: 0xdac17f958d2ee523a2206206994597c13d831ec7
-const uniRouterV2Addr = '0x7a250d5630B4cF539739dF2C5dAcb4c659F2488D';
+// const wethAddr = '0xd0A1E359811322d97991E03f863a0C30C2cF029C'; //mainnet: 0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2
+// const usdtAddr = '0xf3e0d7bf58c5d455d31ef1c2d5375904df525105'; //mainnet: 0xdac17f958d2ee523a2206206994597c13d831ec7
+// const uniRouterV2Addr = '0x7a250d5630B4cF539739dF2C5dAcb4c659F2488D';
 
 
 
 async function begin() { //KOVAN
-    // const managerAddr = '0xF4CE9dD1b78F42E73adD4761AB4FD47921faB914';
-    // const payMeAddr = '0x26fA53176d5703aECBB8e29321a53E76c6C7EC78';
-    // const payme = await hre.ethers.getContractAt('PayMe3', payMeAddr);
+    const wethAddr = '0xd0A1E359811322d97991E03f863a0C30C2cF029C';
+    const usdtAddr = '0xf3e0d7bf58c5d455d31ef1c2d5375904df525105';
     const [userAddr] = await hre.ethers.provider.listAccounts();
     const userToken = usdtAddr;
     
@@ -115,35 +114,37 @@ async function simulate() {
 
 
 async function simulate2() {
-    // const uniRouterV2Addr = '0x7a250d5630B4cF539739dF2C5dAcb4c659F2488D';
-    // const wethAddr = '0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2';
+    const uniRouterV2Addr = '0x7a250d5630B4cF539739dF2C5dAcb4c659F2488D';
+    const wethAddr = '0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2';
+    const WETH = await hre.ethers.getContractAt('IERC20', wethAddr);
     const renBtcAddr = '0xeb4c2781e4eba804ce9a9803c67d0893436bb27d';
     const registryAddr = '0x557e211EC5fc9a6737d2C6b7a1aDe3e0C11A8D5D'; //arb: 0x21C482f153D0317fe85C60bE1F7fa079019fcEbD
-    // const usdtAddr = '0xdac17f958d2ee523a2206206994597c13d831ec7';
+    const usdtAddr = '0xdac17f958d2ee523a2206206994597c13d831ec7';
+    const USDT = await hre.ethers.getContractAt('IERC20', usdtAddr);
     const ethAddr = '0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE';
     const [callerAddr, caller2Addr] = await hre.ethers.provider.listAccounts();
-
-    //Deploys FeesVault
-    const FeesVault = await hre.ethers.getContractFactory('FeesVault');
-    const feesVault = await FeesVault.deploy();
-    await feesVault.deployed();
-    console.log('FeesVault deploy to: ', feesVault.address);
-   
-    //Deploys Manager
-    const Manager = await hre.ethers.getContractFactory('Manager');
-    const manager = await Manager.deploy(feesVault.address);
-    await manager.deployed();
-    console.log('Manager deployed to: ', manager.address);
-    
-    const renBTC = await hre.ethers.getContractAt('IERC20', renBtcAddr);
     const uniRouterV2 = await hre.ethers.getContractAt('IUniswapV2Router02', uniRouterV2Addr);
     const path = [wethAddr, renBtcAddr];
 
+    //Deploys Vault
+    const Vault = await hre.ethers.getContractFactory('Vault');
+    const vault = await Vault.deploy();
+    await vault.deployed();
+    console.log('Vault deploy to: ', vault.address);
+   
+    //Deploys Manager
+    const Manager = await hre.ethers.getContractFactory('Manager');
+    const manager = await Manager.deploy(vault.address);
+    await manager.deployed();
+    console.log('Manager deployed to: ', manager.address);
+    
+    // const renBTC = await hre.ethers.getContractAt('IERC20', renBtcAddr);
+
     //Deploys PayMe
-    const PayMe = await hre.ethers.getContractFactory("PayMe3");
-    const payme = await PayMe.deploy(registryAddr, manager.address);
+    const PayMe = await hre.ethers.getContractFactory("PayMe");
+    const payme = await PayMe.deploy(registryAddr, manager.address, renBtcAddr);
     await payme.deployed();
-    console.log("PayMe3 deployed to:", payme.address);
+    console.log("PayMe deployed to:", payme.address);
     
     //First user
     let tradedAmount = 1 * 10 ** 8;
@@ -157,8 +158,10 @@ async function simulate2() {
         callerAddr,
         userToken
     );
-    let renBalance = await feesVault.getRenBalance();
-    console.log('renBTC balance on FeesVault after 1st swap: ', renBalance.toString());
+    let renBalance = await vault.getRenBalance();
+    const usdtBalance = await USDT.balanceOf(callerAddr);
+    console.log('renBTC balance on FeesVault after 1st swap: ', renBalance.toString() / 10 ** 8);
+    console.log('USDT balance of caller 1: ', usdtBalance.toString() / 10 ** 6);
         
     // //Second user
     tradedAmount = 0.5 * 10 ** 8;
@@ -169,11 +172,13 @@ async function simulate2() {
 
     await payme.transferToManager(
         manager.address,
-        callerAddr,
+        caller2Addr,
         userToken
     );
-    renBalance = await feesVault.getRenBalance();
-    console.log('renBTC balance on FeesVault after 2nd swap: ', renBalance.toString());
+    renBalance = await vault.getRenBalance();
+    const wethBalance = await WETH.balanceOf(caller2Addr);
+    console.log('renBTC balance on FeesVault after 2nd swap: ', renBalance.toString() / 10 ** 8);
+    console.log('WETH balance of caller 2: ', formatEther(wethBalance));
 }
 
 
@@ -236,7 +241,7 @@ async function getVars() {
 }
 
 
-getVars();
+// getVars();
 
 // swapForUSDT();
 
@@ -249,6 +254,6 @@ getVars();
   
 // simulate();
 
-// simulate2();
+simulate2();
 
 // buffering();
