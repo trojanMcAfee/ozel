@@ -18,11 +18,9 @@ const uniRouterV2Addr = '0x7a250d5630B4cF539739dF2C5dAcb4c659F2488D';
 
 
 async function begin() { //KOVAN
-    // const usdtAddr = '0xdac17f958d2ee523a2206206994597c13d831ec7';
-    // const wethAddr = '0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2';
-    const managerAddr = '0xF4CE9dD1b78F42E73adD4761AB4FD47921faB914';
-    const payMeAddr = '0x26fA53176d5703aECBB8e29321a53E76c6C7EC78';
-    const payme = await hre.ethers.getContractAt('PayMe3', payMeAddr);
+    // const managerAddr = '0xF4CE9dD1b78F42E73adD4761AB4FD47921faB914';
+    // const payMeAddr = '0x26fA53176d5703aECBB8e29321a53E76c6C7EC78';
+    // const payme = await hre.ethers.getContractAt('PayMe3', payMeAddr);
     const [userAddr] = await hre.ethers.provider.listAccounts();
     const userToken = usdtAddr;
     
@@ -67,11 +65,6 @@ async function begin() { //KOVAN
             .mint()
             .on('transactionHash', async (txHash) => {
                 console.log('Ethereum transaction: ', txHash.toString());
-                await payme.transferToManager(managerAddr, userAddr, userToken, {
-                    gasLimit: 3000000
-                });
-                // const usdtBalance = await USDT.balanceOf(userAddr);
-                // console.log('USDT balance: ', usdtBalance.toString());
             }); 
         console.log(`Deposited ${amountToSend} BTC`);
     });
@@ -231,8 +224,21 @@ async function swapForUSDT() { //KOVAN
 
 }
 
+async function getVars() {
+    const managerAddr = '0xB3aCF146515df785C162BC726f23dD218270b5D7';
+    const manager = await hre.ethers.getContractAt('Manager', managerAddr);
 
-swapForUSDT();
+    const user = await manager.user();
+    const userToken = await manager.userToken();
+    
+    console.log('user: ', user);
+    console.log('user token: ', userToken);
+}
+
+
+getVars();
+
+// swapForUSDT();
 
 // begin();
 // .then(() => process.exit(0))

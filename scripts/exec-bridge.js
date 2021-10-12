@@ -6,9 +6,9 @@ const BN = require('bn.js');
 
 async function executeBridge(user, userToken) {
     const renJS = new RenJS('testnet', { useV2TransactionFormat: true });
-    const payme = '0x26fA53176d5703aECBB8e29321a53E76c6C7EC78'; //verified: 0xF3520c9e345699abC36fFB347565C31A164825A8
-    const amount = 0.003; //with deposit event (address): 0x59013beF700EEe0BD4473cEbeB1f8Be340a49eFF
-    const provider = await hre.ethers.provider; //with no Deposit event: 0x26fA53176d5703aECBB8e29321a53E76c6C7EC78
+    const payme = '0x90E8aB6043DD050FB9102BF9cD26858734d32F3B'; //verified: 0xF3520c9e345699abC36fFB347565C31A164825A8
+    const amount = 0.003; //with correct testBTC and only transfer(): 0x9370bCEEF74f4373D336727f881330DF1A648C77
+    const provider = await hre.ethers.provider; 
 
     const mint = await renJS.lockAndMint({
         asset: 'BTC',
@@ -29,7 +29,7 @@ async function executeBridge(user, userToken) {
                 }
             ]
         }),
-        nonce: new BN(94).toArrayLike(Buffer, "be", 32) ////increment nonce programatically
+        nonce: new BN(96).toArrayLike(Buffer, "be", 32) ////increment nonce programatically
         // txConfig: {gas:3000000}
     });
     
