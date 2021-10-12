@@ -114,17 +114,39 @@ async function simulate() {
 
 
 async function simulate2() {
-    const uniRouterV2Addr = '0x7a250d5630B4cF539739dF2C5dAcb4c659F2488D';
-    const wbtcAddr = '0x2260FAC5E5542a773Aa44fBCfeDf7C193bc2C599';
-    const wethAddr = '0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2';
-    const WETH = await hre.ethers.getContractAt('IERC20', wethAddr);
-    const renBtcAddr = '0xeb4c2781e4eba804ce9a9803c67d0893436bb27d';
-    const registryAddr = '0x557e211EC5fc9a6737d2C6b7a1aDe3e0C11A8D5D'; //arb: 0x21C482f153D0317fe85C60bE1F7fa079019fcEbD
-    const usdtAddr = '0xdac17f958d2ee523a2206206994597c13d831ec7';
-    const USDT = await hre.ethers.getContractAt('IERC20', usdtAddr);
     const ethAddr = '0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE';
-    const [callerAddr, caller2Addr] = await hre.ethers.provider.listAccounts();
+    const uniRouterV2Addr = '0x7a250d5630B4cF539739dF2C5dAcb4c659F2488D';
     const uniRouterV2 = await hre.ethers.getContractAt('IUniswapV2Router02', uniRouterV2Addr);
+    const [callerAddr, caller2Addr] = await hre.ethers.provider.listAccounts();
+    let wethAddr;
+    let wbtcAddr;
+    let renBtcAddr;
+    let registryAddr;
+    let renPoolAddr;
+    let tricryptoAddr;
+    let usdtAddr;
+    
+    let network = 'mainnet';
+    if (network === 'mainnet') {
+        registryAddr = '0x557e211EC5fc9a6737d2C6b7a1aDe3e0C11A8D5D';
+        renPoolAddr = '0x93054188d876f558f4a66B2EF1d97d16eDf0895B';
+        tricryptoAddr = '0xD51a44d3FaE010294C616388b506AcdA1bfAAE46';
+        renBtcAddr = '0xeb4c2781e4eba804ce9a9803c67d0893436bb27d';
+        wbtcAddr = '0x2260FAC5E5542a773Aa44fBCfeDf7C193bc2C599';
+        wethAddr = '0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2';
+        usdtAddr = '0xdac17f958d2ee523a2206206994597c13d831ec7';
+    } else if (network === 'arbitrum') {
+        registryAddr = '0x21C482f153D0317fe85C60bE1F7fa079019fcEbD';
+        renPoolAddr = '0x3E01dD8a5E1fb3481F0F589056b428Fc308AF0Fb';
+        tricryptoAddr = '0x960ea3e3C7FB317332d990873d354E18d7645590';
+        renBtcAddr = '0xdbf31df14b66535af65aac99c32e9ea844e14501';
+        wbtcAddr = '0x2f2a2543b76a4166549f7aab2e75bef0aefc5b0f';
+        wethAddr = '0x82af49447d8a07e3bd95bd0d56f35241523fbab1';
+        usdtAddr = '0xfd086bc7cd5c481dcc9c85ebe478a1c0b69fcbb9';
+    }
+
+    const WETH = await hre.ethers.getContractAt('IERC20', wethAddr);
+    const USDT = await hre.ethers.getContractAt('IERC20', usdtAddr);
     const path = [wethAddr, renBtcAddr];
 
     //Deploys Vault
@@ -135,11 +157,18 @@ async function simulate2() {
    
     //Deploys Manager
     const Manager = await hre.ethers.getContractFactory('Manager');
-    const manager = await Manager.deploy(vault.address);
+    const manager = await Manager.deploy(
+        vault.address,
+        renPoolAddr,
+        tricryptoAddr,
+        renBtcAddr,
+        usdtAddr,
+        wethAddr,
+        wbtcAddr
+    );
     await manager.deployed();
     console.log('Manager deployed to: ', manager.address);
     
-    // const renBTC = await hre.ethers.getContractAt('IERC20', renBtcAddr);
 
     //Deploys PayMe
     const PayMe = await hre.ethers.getContractFactory("PayMe");

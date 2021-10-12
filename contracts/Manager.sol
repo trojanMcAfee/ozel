@@ -16,12 +16,12 @@ contract Manager {
 
     using SafeERC20 for IERC20;
 
-    IRenPool renPool = IRenPool(0x93054188d876f558f4a66B2EF1d97d16eDf0895B); 
-    ITricrypto tricrypto2 = ITricrypto(0xD51a44d3FaE010294C616388b506AcdA1bfAAE46);
-    IERC20 renBTC = IERC20(0xEB4C2781e4ebA804CE9a9803C67d0893436bB27D);
-    IERC20 USDT = IERC20(0xdAC17F958D2ee523a2206206994597C13D831ec7);
-    IERC20 WETH = IERC20(0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2);
-    IERC20 WBTC = IERC20(0x2260FAC5E5542a773Aa44fBCfeDf7C193bc2C599);
+    IRenPool renPool; 
+    ITricrypto tricrypto2;
+    IERC20 renBTC;
+    IERC20 USDT;
+    IERC20 WETH;
+    IERC20 WBTC;
     address ETH = 0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE;
 
 
@@ -33,8 +33,23 @@ contract Manager {
     mapping(address => uint) pendingWithdrawal;
     mapping(address => uint) usersPayments;
 
-    constructor(address _vault) {
+   
+    constructor(
+        address _vault,
+        address _renPool,
+        address _tricrypto,
+        address _renBTC,
+        address _usdt,
+        address _weth,
+        address _wbtc
+    ) {
         vault = Vault(_vault);
+        renPool = IRenPool(_renPool);
+        tricrypto2 = ITricrypto(_tricrypto);
+        renBTC = IERC20(_renBTC);
+        USDT = IERC20(_usdt);
+        WETH = IERC20(_weth);
+        WBTC = IERC20(_wbtc);
     }
 
 
