@@ -45,6 +45,8 @@ contract PayMe3 {
     Manager manager; 
     IERC20 renBTC = IERC20(0xEB4C2781e4ebA804CE9a9803C67d0893436bB27D); 
 
+    // event Deposit(address user, address userToken);
+
     constructor(address _registry, address _manager) {
         registry = IGatewayRegistry(_registry);
         manager = Manager(_manager);
@@ -62,16 +64,10 @@ contract PayMe3 {
         IGateway BTCGateway = registry.getGatewayBySymbol('BTC');
         BTCGateway.mint(pHash, _amount, _nHash, _sig);
 
-        address user = manager._bytesToAddress(_user);
-        address userToken = manager._bytesToAddress(_userToken);
-
-        transferToManager(address(manager), user, userToken);
-        
-        // uint amount = renBTC.balanceOf(address(this));
-        // renBTC.transfer(address(manager), amount);
-    
-        // renBTC.approve(address(manager), type(uint).max);
-        // manager.exchangeToUserToken(_amount, user, userToken, address(this));
+        // address user = manager._bytesToAddress(_user);
+        // address userToken = manager._bytesToAddress(_userToken);
+        // emit Deposit(user, userToken);
+        // transferToManager(address(manager), user, userToken);
     }
 
     receive() external payable {} 

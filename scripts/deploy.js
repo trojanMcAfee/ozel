@@ -24,8 +24,8 @@ const { parseUnits } = ethers.utils;
 async function main() { //KOVAN
   const registryAddr = '0x557e211EC5fc9a6737d2C6b7a1aDe3e0C11A8D5D'; 
   const managerAddr = '0xF4CE9dD1b78F42E73adD4761AB4FD47921faB914';
-  const feesVault = '0x48b2D3acc1d0724573490fd84dD222D11098e90e';
-  const renBTCAddr = '0xEB4C2781e4ebA804CE9a9803C67d0893436bB27D'; 
+  // const feesVault = '0x48b2D3acc1d0724573490fd84dD222D11098e90e';
+  // const renBTCAddr = '0xEB4C2781e4ebA804CE9a9803C67d0893436bB27D'; 
 
   const PayMe = await hre.ethers.getContractFactory("PayMe3");
   const payme = await PayMe.deploy(registryAddr, managerAddr);
