@@ -115,6 +115,7 @@ async function simulate() {
 
 async function simulate2() {
     const uniRouterV2Addr = '0x7a250d5630B4cF539739dF2C5dAcb4c659F2488D';
+    const wbtcAddr = '0x2260FAC5E5542a773Aa44fBCfeDf7C193bc2C599';
     const wethAddr = '0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2';
     const WETH = await hre.ethers.getContractAt('IERC20', wethAddr);
     const renBtcAddr = '0xeb4c2781e4eba804ce9a9803c67d0893436bb27d';
@@ -145,7 +146,8 @@ async function simulate2() {
     const payme = await PayMe.deploy(registryAddr, manager.address, renBtcAddr);
     await payme.deployed();
     console.log("PayMe deployed to:", payme.address);
-    
+    console.log('---------------------------------------');
+
     //First user
     let tradedAmount = 1 * 10 ** 8;
     await uniRouterV2.swapETHForExactTokens(tradedAmount, path, payme.address, MaxUint256, {
@@ -158,11 +160,14 @@ async function simulate2() {
         callerAddr,
         userToken
     );
-    let renBalance = await vault.getRenBalance();
+    let renBalance = await vault.getTokenBalance(renBtcAddr);
+    let wbtcBalance = await vault.getTokenBalance(wbtcAddr);
     const usdtBalance = await USDT.balanceOf(callerAddr);
-    console.log('renBTC balance on FeesVault after 1st swap: ', renBalance.toString() / 10 ** 8);
+    console.log('renBTC balance on Vault after 1st swap: ', renBalance.toString() / 10 ** 8);
+    console.log('WBTC balance on Vault after 1st swap: ', wbtcBalance.toString() / 10 ** 8);
     console.log('USDT balance of caller 1: ', usdtBalance.toString() / 10 ** 6);
-        
+    console.log('---------------------------------------');
+
     // //Second user
     tradedAmount = 0.5 * 10 ** 8;
     await uniRouterV2.swapETHForExactTokens(tradedAmount, path, payme.address, MaxUint256, {
@@ -175,9 +180,11 @@ async function simulate2() {
         caller2Addr,
         userToken
     );
-    renBalance = await vault.getRenBalance();
+    renBalance = await vault.getTokenBalance(renBtcAddr);
+    wbtcBalance = await vault.getTokenBalance(wbtcAddr);
     const wethBalance = await WETH.balanceOf(caller2Addr);
     console.log('renBTC balance on FeesVault after 2nd swap: ', renBalance.toString() / 10 ** 8);
+    console.log('WBTC balance on Vault after 1st swap: ', wbtcBalance.toString() / 10 ** 8);
     console.log('WETH balance of caller 2: ', formatEther(wethBalance));
 }
 
