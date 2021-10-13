@@ -147,6 +147,8 @@ async function simulate2() {
 
     const WETH = await hre.ethers.getContractAt('IERC20', wethAddr);
     const USDT = await hre.ethers.getContractAt('IERC20', usdtAddr);
+    const WBTC = await hre.ethers.getContractAt('IERC20', wbtcAddr);
+    const renBTC = await hre.ethers.getContractAt('IERC20', renBtcAddr);
     const path = [wethAddr, renBtcAddr];
 
     //Deploys Vault
@@ -177,44 +179,74 @@ async function simulate2() {
     console.log("PayMe deployed to:", payme.address);
     console.log('---------------------------------------');
 
+
+
+    /******** SIMULARES UNI SWAPS **********/
     //First user
-    let tradedAmount = 1 * 10 ** 8;
-    await uniRouterV2.swapETHForExactTokens(tradedAmount, path, payme.address, MaxUint256, {
-        value: parseEther('100')
+    async function simulateUniswap() {
+        let tradedAmount = 1 * 10 ** 8;
+        await uniRouterV2.swapETHForExactTokens(tradedAmount, path, payme.address, MaxUint256, {
+            value: parseEther('100')
+        });
+        let userToken = usdtAddr;
+
+        await payme.transferToManager(
+            manager.address,
+            callerAddr,
+            userToken
+        );
+        let renBalance = await vault.getTokenBalance(renBtcAddr);
+        let wbtcBalance = await vault.getTokenBalance(wbtcAddr);
+        const usdtBalance = await USDT.balanceOf(callerAddr);
+        console.log('renBTC balance on Vault after 1st swap: ', renBalance.toString() / 10 ** 8);
+        console.log('WBTC balance on Vault after 1st swap: ', wbtcBalance.toString() / 10 ** 8);
+        console.log('USDT balance of caller 1: ', usdtBalance.toString() / 10 ** 6);
+        console.log('---------------------------------------');
+
+        // //Second user
+        tradedAmount = 0.5 * 10 ** 8;
+        await uniRouterV2.swapETHForExactTokens(tradedAmount, path, payme.address, MaxUint256, {
+            value: parseEther('100')
+        });
+        userToken = wethAddr;
+
+        await payme.transferToManager(
+            manager.address,
+            caller2Addr,
+            userToken
+        );
+        renBalance = await vault.getTokenBalance(renBtcAddr);
+        wbtcBalance = await vault.getTokenBalance(wbtcAddr);
+        const wethBalance = await WETH.balanceOf(caller2Addr);
+        console.log('renBTC balance on FeesVault after 2nd swap: ', renBalance.toString() / 10 ** 8);
+        console.log('WBTC balance on Vault after 1st swap: ', wbtcBalance.toString() / 10 ** 8);
+        console.log('WETH balance of caller 2: ', formatEther(wethBalance));
+    }
+    simulateUniswap();
+    /********* END OF SIMULATES UNI SWAPS *********/
+
+    /**+++++++++ SIMULATES CURVE SWAPS ++++++++**/
+    const IWETH = await hre.ethers.getContractAt('IWETH', wethAddr);
+    await IWETH.deposit({value: parseEther('100')});
+
+    //First user
+    const wethBalance_2 = formatEther(await WETH.balanceOf(callerAddr));
+    console.log('WETH balance caller ******: ', wethBalance_2);
+
+    let amountIn = parseEther('95'); 
+    const tricryptoPool = await hre.ethers.getContractAt('ITricrypto', tricryptoAddr);
+    await tricryptoPool.exchange(2, 1, amountIn, 1, true, {
+        value: amountIn
     });
-    let userToken = usdtAddr;
 
-    await payme.transferToManager(
-        manager.address,
-        callerAddr,
-        userToken
-    );
-    let renBalance = await vault.getTokenBalance(renBtcAddr);
-    let wbtcBalance = await vault.getTokenBalance(wbtcAddr);
-    const usdtBalance = await USDT.balanceOf(callerAddr);
-    console.log('renBTC balance on Vault after 1st swap: ', renBalance.toString() / 10 ** 8);
-    console.log('WBTC balance on Vault after 1st swap: ', wbtcBalance.toString() / 10 ** 8);
-    console.log('USDT balance of caller 1: ', usdtBalance.toString() / 10 ** 6);
-    console.log('---------------------------------------');
+    amountIn = await WBTC.balanceOf(callerAddr);
+    console.log('amount in ++++++++: ', amountIn);
+    const renPool = await hre.ethers.getContractAt('IRenPool', renPoolAddr);
+    await renPool.exchange(1, 0, (7 * 10 ** 8), 0); //reverting - check txs on etherscan contract
 
-    // //Second user
-    tradedAmount = 0.5 * 10 ** 8;
-    await uniRouterV2.swapETHForExactTokens(tradedAmount, path, payme.address, MaxUint256, {
-        value: parseEther('100')
-    });
-    userToken = wethAddr;
+    console.log('renBTC balance caller ******: ', (await renBTC.balanceOf(callerAddr)).toString() / 10 ** 8);
 
-    await payme.transferToManager(
-        manager.address,
-        caller2Addr,
-        userToken
-    );
-    renBalance = await vault.getTokenBalance(renBtcAddr);
-    wbtcBalance = await vault.getTokenBalance(wbtcAddr);
-    const wethBalance = await WETH.balanceOf(caller2Addr);
-    console.log('renBTC balance on FeesVault after 2nd swap: ', renBalance.toString() / 10 ** 8);
-    console.log('WBTC balance on Vault after 1st swap: ', wbtcBalance.toString() / 10 ** 8);
-    console.log('WETH balance of caller 2: ', formatEther(wethBalance));
+
 }
 
 

@@ -16,6 +16,7 @@ contract Manager {
 
     using SafeERC20 for IERC20;
 
+    Vault vault;
     IRenPool renPool; 
     ITricrypto tricrypto2;
     IERC20 renBTC;
@@ -27,7 +28,6 @@ contract Manager {
 
     uint dappFee = 10;
     uint totalVolume = 0;
-    Vault vault;
 
     mapping(address => bool) users;
     mapping(address => uint) pendingWithdrawal;
