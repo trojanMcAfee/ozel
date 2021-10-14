@@ -4,17 +4,12 @@ const { sendBitcoin } = require('./init-btc-tx.js');
 const { MaxUint256 } = ethers.constants;
 const { parseEther, formatEther } = ethers.utils;
 
+
 const amountToSend = 0.002;
 
 //Variables that are supposed to be dynamically created
 const sendingAddr = 'mubUbyPazdyvhPJYPGWUkFWj7bkw1Yq8ys';
 const senderPK = process.env.PK_TEST;
-
-//Simulation variables (KOVAN)
-// const wethAddr = '0xd0A1E359811322d97991E03f863a0C30C2cF029C'; //mainnet: 0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2
-// const usdtAddr = '0xf3e0d7bf58c5d455d31ef1c2d5375904df525105'; //mainnet: 0xdac17f958d2ee523a2206206994597c13d831ec7
-// const uniRouterV2Addr = '0x7a250d5630B4cF539739dF2C5dAcb4c659F2488D';
-
 
 
 async function begin() { //KOVAN
@@ -131,7 +126,7 @@ async function simulate2() {
         registryAddr = '0x557e211EC5fc9a6737d2C6b7a1aDe3e0C11A8D5D';
         renPoolAddr = '0x93054188d876f558f4a66B2EF1d97d16eDf0895B';
         tricryptoAddr = '0xD51a44d3FaE010294C616388b506AcdA1bfAAE46';
-        renBtcAddr = '0xeb4c2781e4eba804ce9a9803c67d0893436bb27d';
+        renBtcAddr = '0xEB4C2781e4ebA804CE9a9803C67d0893436bB27D';
         wbtcAddr = '0x2260FAC5E5542a773Aa44fBCfeDf7C193bc2C599';
         wethAddr = '0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2';
         usdtAddr = '0xdac17f958d2ee523a2206206994597c13d831ec7';
@@ -240,11 +235,12 @@ async function simulate2() {
     });
 
     amountIn = await WBTC.balanceOf(callerAddr);
-    console.log('amount in ++++++++: ', amountIn);
     const renPool = await hre.ethers.getContractAt('IRenPool', renPoolAddr);
-    await renPool.exchange(1, 0, (7 * 10 ** 8), 0); //reverting - check txs on etherscan contract
+    await WBTC.approve(renPoolAddr, MaxUint256);
+    await renPool.exchange(1, 0, 7 * 10 ** 8, 1); 
 
-    console.log('renBTC balance caller ******: ', (await renBTC.balanceOf(callerAddr)).toString() / 10 ** 8);
+
+    console.log('renBTC balance caller ^^^^^^^^^ ', (await renBTC.balanceOf(callerAddr)).toString() / 10 ** 8);
 
 
 }

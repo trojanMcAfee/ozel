@@ -54,7 +54,7 @@ contract Manager {
 
 
 
-    function _calculateAfterPercentage(
+    function _calculateSlippage(
         uint _amount, 
         uint _basisPoint
     ) public pure returns(uint result) {
@@ -88,7 +88,7 @@ contract Manager {
     }
 
     function _getFee(uint _amount) public returns(uint, bool) {
-        uint fee = _amount - _calculateAfterPercentage(_amount, dappFee); //10 -> 0.1%
+        uint fee = _amount - _calculateSlippage(_amount, dappFee); //10 -> 0.1%
         bool isTransferred = WBTC.transfer(address(vault), fee);
         // uint netAmount = _amount - fee;
         uint netAmount = WBTC.balanceOf(address(this));
@@ -97,7 +97,7 @@ contract Manager {
 
     function swapsRenForWBTC(uint _netAmount) public returns(uint wbtcAmount) {
         renBTC.approve(address(renPool), _netAmount); 
-        uint slippage = _calculateAfterPercentage(_netAmount, 5);
+        uint slippage = _calculateSlippage(_netAmount, 5);
         renPool.exchange(0, 1, _netAmount, slippage);
         wbtcAmount = WBTC.balanceOf(address(this));
     }
@@ -105,7 +105,7 @@ contract Manager {
     function swapsWBTCForUserToken(uint _wbtcToConvert, uint _tokenOut, bool _useEth) public {
         WBTC.approve(address(tricrypto2), _wbtcToConvert);
         uint minOut = tricrypto2.get_dy(1, _tokenOut, _wbtcToConvert);
-        uint slippage = _calculateAfterPercentage(minOut, 5);
+        uint slippage = _calculateSlippage(minOut, 5);
         tricrypto2.exchange(1, _tokenOut, _wbtcToConvert, slippage, _useEth);
     }
 
