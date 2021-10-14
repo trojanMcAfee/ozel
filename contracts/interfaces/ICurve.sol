@@ -11,9 +11,6 @@ interface IRenPool {
     ) external;
 
     function add_liquidity(uint256[2] calldata amounts, uint256 min_mint_amount) external;
-
-    function get_virtual_price() external returns(uint256);
-    function get_dy(uint i, uint j, uint dx) external returns(uint256);
 }
 
 

@@ -217,7 +217,7 @@ async function simulate2() {
         console.log('WBTC balance on Vault after 1st swap: ', wbtcBalance.toString() / 10 ** 8);
         console.log('WETH balance of caller 2: ', formatEther(wethBalance));
     }
-    simulateUniswap();
+    // simulateUniswap();
     /********* END OF SIMULATES UNI SWAPS *********/
 
     /**+++++++++ SIMULATES CURVE SWAPS ++++++++**/
@@ -226,7 +226,6 @@ async function simulate2() {
 
     //First user
     const wethBalance_2 = formatEther(await WETH.balanceOf(callerAddr));
-    console.log('WETH balance caller ******: ', wethBalance_2);
 
     let amountIn = parseEther('95'); 
     const tricryptoPool = await hre.ethers.getContractAt('ITricrypto', tricryptoAddr);
@@ -234,14 +233,30 @@ async function simulate2() {
         value: amountIn
     });
 
-    amountIn = await WBTC.balanceOf(callerAddr);
+    amountIn = (await WBTC.balanceOf(callerAddr)).toString();
     const renPool = await hre.ethers.getContractAt('IRenPool', renPoolAddr);
     await WBTC.approve(renPoolAddr, MaxUint256);
-    await renPool.exchange(1, 0, amountIn.toString(), 1); 
+    await renPool.exchange(1, 0, amountIn, 1); 
+    // console.log('renBTC balance caller: ', (await renBTC.balanceOf(callerAddr)).toString() / 10 ** 8);
 
+    const renBtcBalance = (await renBTC.balanceOf(callerAddr)).toString();
+    await renBTC.transfer(payme.address, renBtcBalance);
+    console.log('renBTC balance PayMe: ', (await renBTC.balanceOf(payme.address)).toString() / 10 ** 8);
 
-    console.log('renBTC balance caller ^^^^^^^^^ ', (await renBTC.balanceOf(callerAddr)).toString() / 10 ** 8);
+    let userToken = usdtAddr;
+    await payme.transferToManager(
+        manager.address,
+        callerAddr,
+        userToken
+    );
+    let renBalance = await vault.getTokenBalance(renBtcAddr);
+    let wbtcBalance = await vault.getTokenBalance(wbtcAddr);
+    const usdtBalance = await USDT.balanceOf(callerAddr);
 
+    console.log('renBTC balance on Vault (fees): ', renBalance.toString() / 10 ** 8);
+    console.log('WBTC balance on Vault after swap (fees): ', wbtcBalance.toString() / 10 ** 8);
+    console.log('USDT balance of caller 1: ', usdtBalance.toString() / 10 ** 6);
+    console.log('---------------------------------------');
 
 }
 
