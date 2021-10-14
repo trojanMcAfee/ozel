@@ -299,13 +299,64 @@ async function simulate2() {
         console.log('---------------------------------------');
     }
 
+    await IWETH.deposit({value: parseEther('100')}); 
+    let amountIn = (await WETH.balanceOf(callerAddr)).toString(); 
+    //Swaps ETH for WBTC
+    await tricryptoPool.exchange(2, 1, amountIn, 1, true, {
+        value: amountIn
+    });
+
+    amountIn = (await WBTC.balanceOf(callerAddr)).toString();
+    await WBTC.approve(renPoolAddr, MaxUint256);
+    await renPool.exchange(1, 0, amountIn, 1); 
+    let renBtcBalance = (await renBTC.balanceOf(callerAddr)).toString();
+    await renBTC.transfer(payme.address, renBtcBalance);
+
+    await payme.transferToManager(
+        manager.address,
+        callerAddr,
+        usdtAddr
+    );
+    let wbtcBalance = await vault.getTokenBalance(wbtcAddr);
+    let tokenBalance = await USDT.balanceOf(callerAddr);
+    console.log('WBTC balance on Vault after swap (fees): ', wbtcBalance.toString() / 10 ** 8);
+    console.log('USDT balance of callerAddr: ', tokenBalance.toString() / 10 ** 6);
+    console.log('---------------------------------------'); 
+
+    //*** */
+    await IWETH.deposit({value: parseEther('100')}); 
+    amountIn = (await WETH.balanceOf(callerAddr)).toString(); 
+    //Swaps ETH for WBTC
+    await tricryptoPool.exchange(2, 1, amountIn, 1, true, {
+        value: amountIn
+    });
+
+    amountIn = (await WBTC.balanceOf(callerAddr)).toString();
+    // await WBTC.approve(renPoolAddr, MaxUint256);
+    await renPool.exchange(1, 0, amountIn, 1); 
+    renBtcBalance = (await renBTC.balanceOf(callerAddr)).toString();
+    await renBTC.transfer(payme.address, renBtcBalance);
+
+    await payme.transferToManager(
+        manager.address,
+        caller2Addr,
+        wethAddr
+    );
+    wbtcBalance = await vault.getTokenBalance(wbtcAddr);
+    tokenBalance = await WETH.balanceOf(caller2Addr);
+    console.log('WBTC balance on Vault after swap (fees): ', wbtcBalance.toString() / 10 ** 8);
+    console.log('WETH balance of callerAddr: ', formatEther(tokenBalance));
+    console.log('---------------------------------------');
+
+
+
     //First user
     const signer = await hre.ethers.provider.getSigner(callerAddr);
-    simulateCurveSwap(signer, usdtAddr, 'USDT', callerAddr);
+    // simulateCurveSwap(signer, usdtAddr, 'USDT', callerAddr);
 
     //Second user
     const signer2 = await hre.ethers.provider.getSigner(caller2Addr);
-    simulateCurveSwap(signer2, wethAddr, 'WETH', caller2Addr); //trying to get the second swap to work. Problem in transferToManager()
+    // simulateCurveSwap(signer2, wethAddr, 'WETH', caller2Addr); //trying to get the second swap to work. Problem in transferToManager()
 
     // simulateCurveSwap2(usdtAddr, 'USDT', callerAddr);
     // simulateCurveSwap2(wethAddr, 'WETH', caller2Addr);
