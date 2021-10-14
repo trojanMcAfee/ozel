@@ -121,7 +121,7 @@ contract Manager {
 
         //Swaps renBTC for WBTC
         uint wbtcAmount = swapsRenForWBTC(_amount);
-        console.log('wbtcAmount: ', wbtcAmount);
+        
         // Sends fee to Vault contract
         (uint netAmount, bool isTransferred) = _getFee(wbtcAmount);
         require(isTransferred, 'Fee transfer failed');
@@ -136,9 +136,9 @@ contract Manager {
         } else {
             _sendEtherToUser(_user);
         }
-        console.log('USDT balance on user: ', USDT.balanceOf(_user) / 10 ** 6);
-        console.log('ETH balance on user: ', _user.balance / 1 ether);
-        console.log('WETH balance on user: ', WETH.balanceOf(_user) / 1 ether);
+        // console.log('USDT balance on user: ', USDT.balanceOf(_user) / 10 ** 6);
+        // console.log('ETH balance on user: ', _user.balance / 1 ether);
+        // console.log('WETH balance on user: ', WETH.balanceOf(_user) / 1 ether);
     }
 
 
