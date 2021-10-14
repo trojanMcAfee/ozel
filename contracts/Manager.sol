@@ -53,6 +53,7 @@ contract Manager {
     }
 
 
+
     function _calculateSlippage(
         uint _amount, 
         uint _basisPoint
@@ -88,16 +89,17 @@ contract Manager {
 
     function _getFee(uint _amount) public returns(uint, bool) {
         uint fee = _amount - _calculateSlippage(_amount, dappFee); //10 -> 0.1%
-        uint netAmount = _amount - fee;
-        bool isTransferred = renBTC.transfer(address(vault), fee);
+        bool isTransferred = WBTC.transfer(address(vault), fee);
+        // uint netAmount = _amount - fee;
+        uint netAmount = WBTC.balanceOf(address(this));
         return (netAmount, isTransferred);
     }
 
-    function swapsRenForWBTC(uint _netAmount) public returns(uint wbtcToConvert) {
+    function swapsRenForWBTC(uint _netAmount) public returns(uint wbtcAmount) {
         renBTC.approve(address(renPool), _netAmount); 
         uint slippage = _calculateSlippage(_netAmount, 5);
         renPool.exchange(0, 1, _netAmount, slippage);
-        wbtcToConvert = WBTC.balanceOf(address(this));
+        wbtcAmount = WBTC.balanceOf(address(this));
     }
 
     function swapsWBTCForUserToken(uint _wbtcToConvert, uint _tokenOut, bool _useEth) public {
@@ -109,10 +111,6 @@ contract Manager {
 
     function exchangeToUserToken(uint _amount, address _user, address _userToken) public {
         uint userAllocation = _calculateAllocationPercentage(_amount, _user);
-
-        // Sends fee to Vault contract
-        (uint netAmount, bool isTransferred) = _getFee(_amount);
-        require(isTransferred, 'Fee transfer failed');
         
         uint tokenOut = _userToken == address(USDT) ? 0 : 2;
         bool useEth = _userToken == address(WETH) ? false : true;
@@ -122,10 +120,14 @@ contract Manager {
         }
 
         //Swaps renBTC for WBTC
-        uint wbtcToConvert = swapsRenForWBTC(netAmount);
+        uint wbtcAmount = swapsRenForWBTC(_amount);
+        console.log('wbtcAmount: ', wbtcAmount);
+        // Sends fee to Vault contract
+        (uint netAmount, bool isTransferred) = _getFee(wbtcAmount);
+        require(isTransferred, 'Fee transfer failed');
 
         //Swaps WBTC to userToken (USDT, WETH or ETH)  
-        swapsWBTCForUserToken(wbtcToConvert, tokenOut, useEth); 
+        swapsWBTCForUserToken(netAmount, tokenOut, useEth); 
 
         //Sends userToken to user
         if (_userToken != ETH) {
