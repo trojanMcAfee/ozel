@@ -176,130 +176,13 @@ async function simulate2() {
 
 
 
-    /******** SIMULARES UNI SWAPS **********/
-    //First user
-    async function simulateUniswap() {
-        let tradedAmount = 1 * 10 ** 8;
-        await uniRouterV2.swapETHForExactTokens(tradedAmount, path, payme.address, MaxUint256, {
-            value: parseEther('100')
-        });
-        let userToken = usdtAddr;
-
-        await payme.transferToManager(
-            manager.address,
-            callerAddr,
-            userToken
-        );
-        let renBalance = await vault.getTokenBalance(renBtcAddr);
-        let wbtcBalance = await vault.getTokenBalance(wbtcAddr);
-        const usdtBalance = await USDT.balanceOf(callerAddr);
-        console.log('renBTC balance on Vault after 1st swap: ', renBalance.toString() / 10 ** 8);
-        console.log('WBTC balance on Vault after 1st swap: ', wbtcBalance.toString() / 10 ** 8);
-        console.log('USDT balance of caller 1: ', usdtBalance.toString() / 10 ** 6);
-        console.log('---------------------------------------');
-
-        // //Second user
-        tradedAmount = 0.5 * 10 ** 8;
-        await uniRouterV2.swapETHForExactTokens(tradedAmount, path, payme.address, MaxUint256, {
-            value: parseEther('100')
-        });
-        userToken = wethAddr;
-
-        await payme.transferToManager(
-            manager.address,
-            caller2Addr,
-            userToken
-        );
-        renBalance = await vault.getTokenBalance(renBtcAddr);
-        wbtcBalance = await vault.getTokenBalance(wbtcAddr);
-        const wethBalance = await WETH.balanceOf(caller2Addr);
-        console.log('renBTC balance on FeesVault after 2nd swap: ', renBalance.toString() / 10 ** 8);
-        console.log('WBTC balance on Vault after 1st swap: ', wbtcBalance.toString() / 10 ** 8);
-        console.log('WETH balance of caller 2: ', formatEther(wethBalance));
-    }
-    // simulateUniswap();
-    /********* END OF SIMULATES UNI SWAPS *********/
 
     /**+++++++++ SIMULATES CURVE SWAPS ++++++++**/
     const IWETH = await hre.ethers.getContractAt('IWETH', wethAddr);
     const tricryptoPool = await hre.ethers.getContractAt('ITricrypto', tricryptoAddr);
     const renPool = await hre.ethers.getContractAt('IRenPool', renPoolAddr);
-    
-    async function simulateCurveSwap(signer, userToken, tokenStr, caller) {
-        await IWETH.connect(signer).deposit({value: parseEther('100')});
-        
-        let amountIn = (await WETH.balanceOf(caller)).toString(); 
-        //Swaps ETH for WBTC
-        await tricryptoPool.connect(signer).exchange(2, 1, amountIn, 1, true, {
-            value: amountIn
-        });
-        
-        amountIn = (await WBTC.balanceOf(caller)).toString();
-        //Swaps WBTC for renBTC
-        await WBTC.connect(signer).approve(renPoolAddr, MaxUint256);
-        // console.log('amount in: ', (await WBTC.balanceOf(caller)).toString());
-        await renPool.connect(signer).exchange(1, 0, amountIn, 1); 
 
-        const renBtcBalance = (await renBTC.balanceOf(caller)).toString();
-        await renBTC.connect(signer).transfer(payme.address, renBtcBalance);
-        
-        console.log('ren balance: ', (await renBTC.balanceOf(payme.address)).toString());
-        await payme.transferToManager(
-            manager.address,
-            caller,
-            userToken
-        );
-        console.log('hi');
-        const token = tokenStr === 'USDT' ? USDT : WETH;
-        const decimals = tokenStr === 'USDT' ? 10 ** 6 : 10 ** 18;
-        // const renBalance = await vault.getTokenBalance(renBtcAddr);
-        const wbtcBalance = await vault.getTokenBalance(wbtcAddr);
-        const tokenBalance = await token.balanceOf(caller);
-
-        // console.log('renBTC balance on Vault (fees): ', renBalance.toString() / 10 ** 8);
-        console.log('WBTC balance on Vault after swap (fees): ', wbtcBalance.toString() / 10 ** 8);
-        console.log(tokenStr + ' balance of caller: ', tokenBalance.toString() / decimals);
-        console.log('---------------------------------------');
-    } 
-
-    async function simulateCurveSwap2(userToken, tokenStr, receiver) {
-        await IWETH.deposit({value: parseEther('100')});
-        
-        let amountIn = (await WETH.balanceOf(callerAddr)).toString(); 
-        //Swaps ETH for WBTC
-        await tricryptoPool.exchange(2, 1, amountIn, 1, true, {
-            value: amountIn
-        });
-        
-        amountIn = (await WBTC.balanceOf(callerAddr)).toString();
-        //Swaps WBTC for renBTC
-        await WBTC.approve(renPoolAddr, MaxUint256);
-        // console.log('amount in: ', (await WBTC.balanceOf(caller)).toString());
-        await renPool.exchange(1, 0, amountIn, 1); 
-
-        const renBtcBalance = (await renBTC.balanceOf(callerAddr)).toString();
-        await renBTC.transfer(payme.address, renBtcBalance);
-        
-        // console.log('ren balance: ', (await renBTC.balanceOf(payme.address)).toString());
-        await payme.transferToManager(
-            manager.address,
-            receiver,
-            userToken
-        );
-        // console.log('hi');
-        const token = tokenStr === 'USDT' ? USDT : WETH;
-        const decimals = tokenStr === 'USDT' ? 10 ** 6 : 10 ** 18;
-        // const renBalance = await vault.getTokenBalance(renBtcAddr);
-        const wbtcBalance = await vault.getTokenBalance(wbtcAddr);
-        const tokenBalance = await token.balanceOf(receiver);
-
-        // console.log('renBTC balance on Vault (fees): ', renBalance.toString() / 10 ** 8);
-        console.log('WBTC balance on Vault after swap (fees): ', wbtcBalance.toString() / 10 ** 8);
-        console.log(tokenStr + ' balance of receiver: ', tokenBalance.toString() / decimals);
-        console.log('---------------------------------------');
-    }
-
-    await IWETH.deposit({value: parseEther('100')}); 
+    await IWETH.deposit({value: parseEther('1000')}); 
     let amountIn = (await WETH.balanceOf(callerAddr)).toString(); 
     //Swaps ETH for WBTC
     await tricryptoPool.exchange(2, 1, amountIn, 1, true, {
@@ -310,56 +193,29 @@ async function simulate2() {
     await WBTC.approve(renPoolAddr, MaxUint256);
     await renPool.exchange(1, 0, amountIn, 1); 
     let renBtcBalance = (await renBTC.balanceOf(callerAddr)).toString();
-    await renBTC.transfer(payme.address, renBtcBalance);
+    let oneTenth = Math.floor(renBtcBalance / 10);
 
-    await payme.transferToManager(
-        manager.address,
-        callerAddr,
-        usdtAddr
-    );
-    let wbtcBalance = await vault.getTokenBalance(wbtcAddr);
-    let tokenBalance = await USDT.balanceOf(callerAddr);
-    console.log('WBTC balance on Vault after swap (fees): ', wbtcBalance.toString() / 10 ** 8);
-    console.log('USDT balance of callerAddr: ', tokenBalance.toString() / 10 ** 6);
-    console.log('---------------------------------------'); 
-
-    //*** */
-    await IWETH.deposit({value: parseEther('100')}); 
-    amountIn = (await WETH.balanceOf(callerAddr)).toString(); 
-    //Swaps ETH for WBTC
-    await tricryptoPool.exchange(2, 1, amountIn, 1, true, {
-        value: amountIn
-    });
-
-    amountIn = (await WBTC.balanceOf(callerAddr)).toString();
-    // await WBTC.approve(renPoolAddr, MaxUint256);
-    await renPool.exchange(1, 0, amountIn, 1); 
-    renBtcBalance = (await renBTC.balanceOf(callerAddr)).toString();
-    await renBTC.transfer(payme.address, renBtcBalance);
-
-    await payme.transferToManager(
-        manager.address,
-        caller2Addr,
-        wethAddr
-    );
-    wbtcBalance = await vault.getTokenBalance(wbtcAddr);
-    tokenBalance = await WETH.balanceOf(caller2Addr);
-    console.log('WBTC balance on Vault after swap (fees): ', wbtcBalance.toString() / 10 ** 8);
-    console.log('WETH balance of callerAddr: ', formatEther(tokenBalance));
-    console.log('---------------------------------------');
-
-
+    //Sends renBTC to contracts (simulates BTC bridging) ** MAIN FUNCTION **
+    async function sendsOneTenthRenBTC(caller, userToken, IERC20, tokenStr, decimals) {
+        await renBTC.transfer(payme.address, oneTenth);
+        await payme.transferToManager(
+            manager.address,
+            caller,
+            userToken
+        );
+        let wbtcBalance = await vault.getTokenBalance(wbtcAddr);
+        let tokenBalance = await IERC20.balanceOf(caller);
+        console.log('WBTC balance on Vault after swap (fees): ', wbtcBalance.toString() / 10 ** 8);
+        console.log(tokenStr + ' balance of callerAddr: ', tokenBalance.toString() / decimals);
+        console.log('---------------------------------------'); 
+    }
 
     //First user
-    const signer = await hre.ethers.provider.getSigner(callerAddr);
-    // simulateCurveSwap(signer, usdtAddr, 'USDT', callerAddr);
+    await sendsOneTenthRenBTC(callerAddr, usdtAddr, USDT, 'USDT', 10 ** 6);
 
     //Second user
-    const signer2 = await hre.ethers.provider.getSigner(caller2Addr);
-    // simulateCurveSwap(signer2, wethAddr, 'WETH', caller2Addr); //trying to get the second swap to work. Problem in transferToManager()
-
-    // simulateCurveSwap2(usdtAddr, 'USDT', callerAddr);
-    // simulateCurveSwap2(wethAddr, 'WETH', caller2Addr);
+    await sendsOneTenthRenBTC(caller2Addr, wethAddr, WETH, 'WETH', 10 ** 18);
+    /**+++++++++ END OF SIMULATION CURVE SWAPS ++++++++**/
 
 }
 
