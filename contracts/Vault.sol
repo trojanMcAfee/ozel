@@ -14,4 +14,4 @@ contract Vault {
         balance = IERC20(_token).balanceOf(address(this));
     }
 
-} //reading how Badger works and if I can use it
+} //add the fees to Curve's pool using the allocation per user

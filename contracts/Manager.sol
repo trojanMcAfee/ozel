@@ -70,6 +70,10 @@ contract Manager {
         userAllocation = ( (usersPayments[_user] * 10000) / totalVolume ) * 1 ether;
     }
 
+    function _getDecimalPercentage(uint _userAllocation) public pure returns(uint) {
+        return (_userAllocation / 1 ether) / 100;
+    }
+
     function _bytesToAddress(bytes memory bys) public pure returns (address addr) {
         assembly {
             addr := mload(add(bys,20))
@@ -111,6 +115,7 @@ contract Manager {
 
     function exchangeToUserToken(uint _amount, address _user, address _userToken) public {
         uint userAllocation = _calculateAllocationPercentage(_amount, _user);
+        console.log('user allocation: ', _getDecimalPercentage(userAllocation));
         
         uint tokenOut = _userToken == address(USDT) ? 0 : 2;
         bool useEth = _userToken == address(WETH) ? false : true;
@@ -136,9 +141,6 @@ contract Manager {
         } else {
             _sendEtherToUser(_user);
         }
-        // console.log('USDT balance on user: ', USDT.balanceOf(_user) / 10 ** 6);
-        // console.log('ETH balance on user: ', _user.balance / 1 ether);
-        // console.log('WETH balance on user: ', WETH.balanceOf(_user) / 1 ether);
     }
 
 

@@ -66,49 +66,8 @@ async function begin() { //KOVAN
 }
 
 
-//Sends renBTC to PayMe2 as a simulation
+
 async function simulate() {
-    // const uniRouterV2Addr = '0x7a250d5630B4cF539739dF2C5dAcb4c659F2488D';
-    // const wethAddr = '0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2';
-    const renBtcAddr = '0xeb4c2781e4eba804ce9a9803c67d0893436bb27d';
-    const registryAddr = '0x557e211EC5fc9a6737d2C6b7a1aDe3e0C11A8D5D'; //arb: 0x21C482f153D0317fe85C60bE1F7fa079019fcEbD
-    // const usdtAddr = '0xdac17f958d2ee523a2206206994597c13d831ec7';
-    const ethAddr = '0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE';
-    const [callerAddr, caller2Addr] = await hre.ethers.provider.listAccounts();
-   
-    const Vault = await hre.ethers.getContractFactory('Vault');
-    const vault = await Vault.deploy();
-    const vaultContract = await vault.deployed();
-    
-    const renBTC = await hre.ethers.getContractAt('IERC20', renBtcAddr);
-    const uniRouterV2 = await hre.ethers.getContractAt('IUniswapV2Router02', uniRouterV2Addr);
-    const path = [wethAddr, renBtcAddr];
-
-    const PayMe = await hre.ethers.getContractFactory("PayMe2");
-    const payme = await PayMe.deploy(registryAddr, vaultContract.address);
-    await payme.deployed();
-    console.log("PayMe2 deployed to:", payme.address);
-    
-    //First user
-    let tradedAmount = 1 * 10 ** 8;
-    await uniRouterV2.swapETHForExactTokens(tradedAmount, path, payme.address, MaxUint256, {
-        value: parseEther('100')
-    });
-    let userToken = usdtAddr;
-    //this function is called on deposit() from PayMe2 when receiving the renBTC
-    await payme.exchangeToUserToken(tradedAmount, callerAddr, userToken);
-
-    //Second user
-    tradedAmount = 0.5 * 10 ** 8;
-    await uniRouterV2.swapETHForExactTokens(tradedAmount, path, payme.address, MaxUint256, {
-        value: parseEther('100')
-    });
-    userToken = wethAddr;
-    await payme.exchangeToUserToken(tradedAmount, caller2Addr, userToken);
-}
-
-
-async function simulate2() {
     const ethAddr = '0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE';
     const uniRouterV2Addr = '0x7a250d5630B4cF539739dF2C5dAcb4c659F2488D';
     const uniRouterV2 = await hre.ethers.getContractAt('IUniswapV2Router02', uniRouterV2Addr);
@@ -121,7 +80,7 @@ async function simulate2() {
     let tricryptoAddr;
     let usdtAddr;
     
-    let network = 'mainnet';
+    let network = 'mainnet'; 
     if (network === 'mainnet') {
         registryAddr = '0x557e211EC5fc9a6737d2C6b7a1aDe3e0C11A8D5D';
         renPoolAddr = '0x93054188d876f558f4a66B2EF1d97d16eDf0895B';
@@ -174,14 +133,12 @@ async function simulate2() {
     console.log("PayMe deployed to:", payme.address);
     console.log('---------------------------------------');
 
-
-
-
     /**+++++++++ SIMULATES CURVE SWAPS ++++++++**/
     const IWETH = await hre.ethers.getContractAt('IWETH', wethAddr);
     const tricryptoPool = await hre.ethers.getContractAt('ITricrypto', tricryptoAddr);
     const renPool = await hre.ethers.getContractAt('IRenPool', renPoolAddr);
 
+    //Gets the gross WETH and converts to WBTC
     await IWETH.deposit({value: parseEther('1000')}); 
     let amountIn = (await WETH.balanceOf(callerAddr)).toString(); 
     //Swaps ETH for WBTC
@@ -189,6 +146,7 @@ async function simulate2() {
         value: amountIn
     });
 
+    //Converts to renBTC and divides in 1/10th
     amountIn = (await WBTC.balanceOf(callerAddr)).toString();
     await WBTC.approve(renPoolAddr, MaxUint256);
     await renPool.exchange(1, 0, amountIn, 1); 
@@ -215,6 +173,10 @@ async function simulate2() {
 
     //Second user
     await sendsOneTenthRenBTC(caller2Addr, wethAddr, WETH, 'WETH', 10 ** 18);
+
+    //First user - 2nd transfer
+    await sendsOneTenthRenBTC(callerAddr, usdtAddr, USDT, 'USDT', 10 ** 6);
+
     /**+++++++++ END OF SIMULATION CURVE SWAPS ++++++++**/
 
 }
@@ -232,56 +194,12 @@ async function buffering() {
     await payme.toBuffer(_msg);
 }
 
-async function swapForUSDT() { //KOVAN
-    const USDT = await hre.ethers.getContractAt('IERC20', usdtAddr); 
-    const uniRouterV2 = await hre.ethers.getContractAt('IUniswapV2Router02', uniRouterV2Addr);
-    const [callerAddr] = await hre.ethers.provider.listAccounts();
-    console.log('caller Address: ', callerAddr);
-    
-    const provider = await hre.ethers.provider;
-    const wallet_2 = new ethers.Wallet(process.env.PK_ROP_2, provider);
-    console.log('address 2: ', wallet_2.address);
-    const callerAddr2 = wallet_2.address
-;
-    const path = [wethAddr, usdtAddr];
-    let tradedAmount = 1000 * 10 ** 6;
-    console.log('hi');
-    // await uniRouterV2.swapETHForExactTokens(tradedAmount, path, wallet_2.address, MaxUint256, {
-    //     value: parseEther('100')
-    //     // gasLimit: 2000000
-    // });
-
-    // const factory = await uniRouterV2.factory();
-    // console.log('factory: ', factory);
-    const amount = await uniRouterV2.swapExactETHForTokens(1, path, callerAddr2, MaxUint256, {
-        value: parseEther('0.01'),
-        gasLimit: 3000000
-    });
-    console.log('amount: ', amount); //trying to get some USDT on the kovan account
-
- 
-
-    console.log('hi2');
-    const usdtBalance = await USDT.balanceOf(callerAddr2);
-    console.log('USDT balance: ', usdtBalance.toString() / 10 ** 6);
-
-}
-
-async function getVars() {
-    const managerAddr = '0xB3aCF146515df785C162BC726f23dD218270b5D7';
-    const manager = await hre.ethers.getContractAt('Manager', managerAddr);
-
-    const user = await manager.user();
-    const userToken = await manager.userToken();
-    
-    console.log('user: ', user);
-    console.log('user token: ', userToken);
-}
 
 
-// getVars();
 
-// swapForUSDT();
+
+
+
 
 // begin();
 // .then(() => process.exit(0))
@@ -290,8 +208,6 @@ async function getVars() {
 //     process.exit(1);
 //   });
   
-// simulate();
-
-simulate2();
+simulate();
 
 // buffering();
