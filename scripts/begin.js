@@ -237,7 +237,7 @@ async function simulate2() {
     amountIn = await WBTC.balanceOf(callerAddr);
     const renPool = await hre.ethers.getContractAt('IRenPool', renPoolAddr);
     await WBTC.approve(renPoolAddr, MaxUint256);
-    await renPool.exchange(1, 0, 7 * 10 ** 8, 1); 
+    await renPool.exchange(1, 0, amountIn.toString(), 1); 
 
 
     console.log('renBTC balance caller ^^^^^^^^^ ', (await renBTC.balanceOf(callerAddr)).toString() / 10 ** 8);
