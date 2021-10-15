@@ -9,9 +9,6 @@ interface IRenPool {
       uint256 dx,
       uint256 min_dy
     ) external;
-
-    function add_liquidity(uint256[2] calldata amounts, uint256 min_mint_amount) external;
-    function calc_token_amount(uint256[2] calldata amounts, bool deposit) external returns(uint256);
 }
 
 
@@ -25,4 +22,6 @@ interface ITricrypto {
   ) external payable;
 
   function get_dy(uint i, uint j, uint dx) external returns(uint256);
+  function add_liquidity(uint256[3] calldata amounts, uint256 min_mint_amount) external;
+  function calc_token_amount(uint256[3] calldata amounts, bool deposit) external returns(uint256);
 }

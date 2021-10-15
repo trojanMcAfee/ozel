@@ -79,7 +79,8 @@ async function simulate() {
     let renPoolAddr;
     let tricryptoAddr;
     let usdtAddr;
-    let crvRenWBTC;
+    // let crvRenWBTC;
+    let crvUSD_BTC_ETH;
     
     let network = 'mainnet'; 
     if (network === 'mainnet') {
@@ -90,7 +91,8 @@ async function simulate() {
         wbtcAddr = '0x2260FAC5E5542a773Aa44fBCfeDf7C193bc2C599';
         wethAddr = '0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2';
         usdtAddr = '0xdac17f958d2ee523a2206206994597c13d831ec7';
-        crvRenWBTC = '0x49849c98ae39fff122806c06791fa73784fb3675';
+        // crvRenWBTC = '0x49849c98ae39fff122806c06791fa73784fb3675';
+        crvUSD_BTC_ETH = '0xc4AD29ba4B3c580e6D59105FFf484999997675Ff';
     } else if (network === 'arbitrum') {
         registryAddr = '0x21C482f153D0317fe85C60bE1F7fa079019fcEbD';
         renPoolAddr = '0x3E01dD8a5E1fb3481F0F589056b428Fc308AF0Fb';
@@ -99,7 +101,8 @@ async function simulate() {
         wbtcAddr = '0x2f2a2543b76a4166549f7aab2e75bef0aefc5b0f';
         wethAddr = '0x82af49447d8a07e3bd95bd0d56f35241523fbab1';
         usdtAddr = '0xfd086bc7cd5c481dcc9c85ebe478a1c0b69fcbb9';
-        crvRenWBTC;
+        // crvRenWBTC;
+        crvUSD_BTC_ETH;
     }
 
     const WETH = await hre.ethers.getContractAt('IERC20', wethAddr);

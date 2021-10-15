@@ -3,7 +3,7 @@ pragma solidity ^0.8.0;
 
 
 import '@openzeppelin/contracts/token/ERC20/IERC20.sol';
-import {IRenPool} from './interfaces/ICurve.sol';
+import {ITricrypto} from './interfaces/ICurve.sol';
 import './libraries/Helpers.sol';
 import './interfaces/ICrvLpToken.sol';
 
@@ -16,8 +16,8 @@ contract Vault {
 
     IERC20 renBTC = IERC20(0xEB4C2781e4ebA804CE9a9803C67d0893436bB27D);
     IERC20 WBTC = IERC20(0x2260FAC5E5542a773Aa44fBCfeDf7C193bc2C599);
-    IRenPool renPool = IRenPool(0x93054188d876f558f4a66B2EF1d97d16eDf0895B);
-    ICrvLpToken crvRenWBTC = ICrvLpToken(0x49849C98ae39Fff122806C06791Fa73784FB3675);
+    ITricrypto tricrypto = ITricrypto(0xD51a44d3FaE010294C616388b506AcdA1bfAAE46);
+    ICrvLpToken crvUSD_BTC_ETH = ICrvLpToken(0xc4AD29ba4B3c580e6D59105FFf484999997675Ff);
     
     uint slippageOnCurve = 100; //bp: 100 -> 1%
 
@@ -26,21 +26,22 @@ contract Vault {
         balance = IERC20(_token).balanceOf(address(this));
     }
 
-    function _calculateTokenAmountCurve(uint _wbtcAmountIn) private returns(uint, uint[2] memory) {
-        uint[2] memory amounts;
+    function _calculateTokenAmountCurve(uint _wbtcAmountIn) private returns(uint, uint[3] memory) {
+        uint[3] memory amounts;
         amounts[0] = 0;
         amounts[1] = _wbtcAmountIn;
-        uint tokenAmount = renPool.calc_token_amount(amounts, true);
+        amounts[2] = 0;
+        uint tokenAmount = tricrypto.calc_token_amount(amounts, true);
         return(tokenAmount, amounts);
     }
 
     function depositInCurve() public {
         uint wbtcAmountIn = WBTC.balanceOf(address(this));
-        (uint tokenAmountIn, uint[2] memory amounts) = _calculateTokenAmountCurve(wbtcAmountIn);
+        (uint tokenAmountIn, uint[3] memory amounts) = _calculateTokenAmountCurve(wbtcAmountIn);
         uint minAmount = tokenAmountIn._calculateSlippage(slippageOnCurve);
-        WBTC.approve(address(renPool), tokenAmountIn);
-        renPool.add_liquidity(amounts, minAmount);
-        console.log('crvRenWBTC balance: ', crvRenWBTC.balanceOf(address(this)));
+        WBTC.approve(address(tricrypto), tokenAmountIn);
+        tricrypto.add_liquidity(amounts, minAmount);
+        console.log('crv USD-BTC-ETH token balance: ', crvUSD_BTC_ETH.balanceOf(address(this)));
     }
 
 } 
