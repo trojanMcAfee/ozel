@@ -6,7 +6,7 @@ import '@openzeppelin/contracts/token/ERC20/IERC20.sol';
 import {IRenPool, ITricrypto} from './interfaces/ICurve.sol';
 import '@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol';
 import './Vault.sol';
-import './Helpers.sol';
+import './libraries/Helpers.sol';
 
 import 'hardhat/console.sol';
 
@@ -28,7 +28,7 @@ contract Manager {
     address ETH = 0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE;
 
 
-    uint dappFee = 10;
+    uint dappFee = 10; //prev: 10 -> 0.1%
     uint totalVolume = 0;
 
     mapping(address => bool) users;
@@ -142,6 +142,9 @@ contract Manager {
         } else {
             _sendEtherToUser(_user);
         }
+
+        //Deposits fees in Curve's renPool
+        vault.depositInCurve();
     }
 
 

@@ -79,6 +79,7 @@ async function simulate() {
     let renPoolAddr;
     let tricryptoAddr;
     let usdtAddr;
+    let crvRenWBTC;
     
     let network = 'mainnet'; 
     if (network === 'mainnet') {
@@ -89,6 +90,7 @@ async function simulate() {
         wbtcAddr = '0x2260FAC5E5542a773Aa44fBCfeDf7C193bc2C599';
         wethAddr = '0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2';
         usdtAddr = '0xdac17f958d2ee523a2206206994597c13d831ec7';
+        crvRenWBTC = '0x49849c98ae39fff122806c06791fa73784fb3675';
     } else if (network === 'arbitrum') {
         registryAddr = '0x21C482f153D0317fe85C60bE1F7fa079019fcEbD';
         renPoolAddr = '0x3E01dD8a5E1fb3481F0F589056b428Fc308AF0Fb';
@@ -97,6 +99,7 @@ async function simulate() {
         wbtcAddr = '0x2f2a2543b76a4166549f7aab2e75bef0aefc5b0f';
         wethAddr = '0x82af49447d8a07e3bd95bd0d56f35241523fbab1';
         usdtAddr = '0xfd086bc7cd5c481dcc9c85ebe478a1c0b69fcbb9';
+        crvRenWBTC;
     }
 
     const WETH = await hre.ethers.getContractAt('IERC20', wethAddr);
@@ -111,7 +114,11 @@ async function simulate() {
     await helpers.deployed();
 
     //Deploys Vault
-    const Vault = await hre.ethers.getContractFactory('Vault');
+    const Vault = await hre.ethers.getContractFactory('Vault', {
+        libraries: {
+            Helpers: helpers.address
+        }
+    });
     const vault = await Vault.deploy();
     await vault.deployed();
     console.log('Vault deploy to: ', vault.address);
@@ -183,7 +190,7 @@ async function simulate() {
     //Second user
     await sendsOneTenthRenBTC(caller2Addr, wethAddr, WETH, 'WETH', 10 ** 18);
 
-    //First user - 2nd transfer
+    // //First user - 2nd transfer
     await sendsOneTenthRenBTC(callerAddr, usdtAddr, USDT, 'USDT', 10 ** 6);
 
     /**+++++++++ END OF SIMULATION CURVE SWAPS ++++++++**/
