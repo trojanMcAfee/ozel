@@ -17,7 +17,7 @@ contract Vault {
     IERC20 renBTC = IERC20(0xEB4C2781e4ebA804CE9a9803C67d0893436bB27D);
     IERC20 WBTC = IERC20(0x2260FAC5E5542a773Aa44fBCfeDf7C193bc2C599);
     ITricrypto tricrypto = ITricrypto(0xD51a44d3FaE010294C616388b506AcdA1bfAAE46);
-    ICrvLpToken crvUSD_BTC_ETH = ICrvLpToken(0xc4AD29ba4B3c580e6D59105FFf484999997675Ff);
+    ICrvLpToken crvTricrypto = ICrvLpToken(0xc4AD29ba4B3c580e6D59105FFf484999997675Ff);
     
     uint slippageOnCurve = 100; //bp: 100 -> 1%
 
@@ -41,7 +41,7 @@ contract Vault {
         uint minAmount = tokenAmountIn._calculateSlippage(slippageOnCurve);
         WBTC.approve(address(tricrypto), tokenAmountIn);
         tricrypto.add_liquidity(amounts, minAmount);
-        console.log('crv USD-BTC-ETH token balance: ', crvUSD_BTC_ETH.balanceOf(address(this)));
+        console.log('crv USD-BTC-ETH token balance: ', crvTricrypto.balanceOf(address(this)));
     }
 
 } 
