@@ -6,6 +6,7 @@ import '@openzeppelin/contracts/token/ERC20/IERC20.sol';
 import {IRenPool, ITricrypto} from './interfaces/ICurve.sol';
 import '@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol';
 import './Vault.sol';
+import './Helpers.sol';
 
 import 'hardhat/console.sol';
 
@@ -15,6 +16,7 @@ import 'hardhat/console.sol';
 contract Manager { 
 
     using SafeERC20 for IERC20;
+    using Helpers for uint256;
 
     Vault vault;
     IRenPool renPool; 
@@ -54,12 +56,12 @@ contract Manager {
 
 
 
-    function _calculateSlippage(
-        uint _amount, 
-        uint _basisPoint
-    ) public pure returns(uint result) {
-        result = _amount - ( (_amount * _basisPoint) / 10000 ); //5 -> 0.05%;
-    }
+    // function _calculateSlippage(
+    //     uint _amount, 
+    //     uint _basisPoint
+    // ) public pure returns(uint minAmountOut) {
+    //     minAmountOut = _amount - ( (_amount * _basisPoint) / 10000 ); //5 -> 0.05%; 
+    // }
 
     function _calculateAllocationPercentage(
         uint _amount, 
@@ -92,16 +94,15 @@ contract Manager {
     }
 
     function _getFee(uint _amount) public returns(uint, bool) {
-        uint fee = _amount - _calculateSlippage(_amount, dappFee); //10 -> 0.1%
+        uint fee = _amount - _amount._calculateSlippage(dappFee); //10 -> 0.1%
         bool isTransferred = WBTC.transfer(address(vault), fee);
-        // uint netAmount = _amount - fee;
         uint netAmount = WBTC.balanceOf(address(this));
         return (netAmount, isTransferred);
     }
 
     function swapsRenForWBTC(uint _netAmount) public returns(uint wbtcAmount) {
         renBTC.approve(address(renPool), _netAmount); 
-        uint slippage = _calculateSlippage(_netAmount, 5);
+        uint slippage = _netAmount._calculateSlippage(5);
         renPool.exchange(0, 1, _netAmount, slippage);
         wbtcAmount = WBTC.balanceOf(address(this));
     }
@@ -109,7 +110,7 @@ contract Manager {
     function swapsWBTCForUserToken(uint _wbtcToConvert, uint _tokenOut, bool _useEth) public {
         WBTC.approve(address(tricrypto2), _wbtcToConvert);
         uint minOut = tricrypto2.get_dy(1, _tokenOut, _wbtcToConvert);
-        uint slippage = _calculateSlippage(minOut, 5);
+        uint slippage = minOut._calculateSlippage(5);
         tricrypto2.exchange(1, _tokenOut, _wbtcToConvert, slippage, _useEth);
     }
 
@@ -127,7 +128,7 @@ contract Manager {
         //Swaps renBTC for WBTC
         uint wbtcAmount = swapsRenForWBTC(_amount);
         
-        // Sends fee to Vault contract
+        //Sends fee (in WBTC) to Vault contract
         (uint netAmount, bool isTransferred) = _getFee(wbtcAmount);
         require(isTransferred, 'Fee transfer failed');
 

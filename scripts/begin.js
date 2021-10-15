@@ -105,6 +105,11 @@ async function simulate() {
     const renBTC = await hre.ethers.getContractAt('IERC20', renBtcAddr);
     const path = [wethAddr, renBtcAddr];
 
+    //Deploys Helpers library
+    const Helpers = await hre.ethers.getContractFactory('Helpers');
+    const helpers = await Helpers.deploy();
+    await helpers.deployed();
+
     //Deploys Vault
     const Vault = await hre.ethers.getContractFactory('Vault');
     const vault = await Vault.deploy();
@@ -112,7 +117,11 @@ async function simulate() {
     console.log('Vault deploy to: ', vault.address);
    
     //Deploys Manager
-    const Manager = await hre.ethers.getContractFactory('Manager');
+    const Manager = await hre.ethers.getContractFactory('Manager', {
+        libraries: {
+            Helpers: helpers.address
+        }
+    });
     const manager = await Manager.deploy(
         vault.address,
         renPoolAddr,
