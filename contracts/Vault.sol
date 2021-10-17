@@ -21,6 +21,11 @@ contract Vault {
     
     uint slippageOnCurve = 100; //bp: 100 -> 1%
 
+    /**
+    BTC: 1 / USDT: 0 / WETH: 2
+     */
+
+
 
     function getTokenBalance(address _token) public view returns(uint balance) {
         balance = IERC20(_token).balanceOf(address(this));
@@ -37,11 +42,21 @@ contract Vault {
 
     function depositInCurve() public {
         uint wbtcAmountIn = WBTC.balanceOf(address(this));
+        console.log('WBTC fees to be deposited in Curve: ', wbtcAmountIn);
         (uint tokenAmountIn, uint[3] memory amounts) = _calculateTokenAmountCurve(wbtcAmountIn);
         uint minAmount = tokenAmountIn._calculateSlippage(slippageOnCurve);
+
         WBTC.approve(address(tricrypto), tokenAmountIn);
         tricrypto.add_liquidity(amounts, minAmount);
-        console.log('crv USD-BTC-ETH token balance: ', crvTricrypto.balanceOf(address(this)));
+        console.log('crvTricrypto token balance: ', crvTricrypto.balanceOf(address(this)));
     }
 
+    function getTotalInUSD() public view returns(uint total) {
+        uint virtualPrice = tricrypto.get_virtual_price();
+        total = virtualPrice * crvTricrypto.balanceOf(address(this)); //divide between 10 ** 36 to get USD
+    }
+
+    
+
 } 
+

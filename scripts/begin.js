@@ -102,7 +102,7 @@ async function simulate() {
         wethAddr = '0x82af49447d8a07e3bd95bd0d56f35241523fbab1';
         usdtAddr = '0xfd086bc7cd5c481dcc9c85ebe478a1c0b69fcbb9';
         // crvRenWBTC;
-        crvTricrypto;
+        crvTricrypto = '0x8e0B8c8BB9db49a46697F3a5Bb8A308e744821D2';
     }
 
     const WETH = await hre.ethers.getContractAt('IERC20', wethAddr);
@@ -182,7 +182,7 @@ async function simulate() {
         );
         let wbtcBalance = await vault.getTokenBalance(wbtcAddr);
         let tokenBalance = await IERC20.balanceOf(caller);
-        console.log('WBTC balance on Vault after swap (fees): ', wbtcBalance.toString() / 10 ** 8);
+        // console.log('WBTC balance on Vault after swap (fees): ', wbtcBalance.toString() / 10 ** 8);
         console.log(tokenStr + ' balance of callerAddr: ', tokenBalance.toString() / decimals);
         console.log('---------------------------------------'); 
     }

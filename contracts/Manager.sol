@@ -63,13 +63,26 @@ contract Manager {
     //     minAmountOut = _amount - ( (_amount * _basisPoint) / 10000 ); //5 -> 0.05%; 
     // }
 
-    function _calculateAllocationPercentage(
+    // remove_liquidity_one_coin(uint256 token_amount, uint256 i, uint256 min_amount)
+
+    /***** Put it in Vault.sol *****/
+    function withdrawUserShare(address _user, address _userToken) public {
+
+    }
+    /**************************/
+
+    function _calculateAllocationPercentage(address _user) public view returns(uint) {
+        return (((usersPayments[_user] * 10000) / totalVolume) * 1 ether) / 100;
+    }
+
+
+    function _updateAllocationPercentage(
         uint _amount, 
         address _user
     ) public returns(uint userAllocation) {
         usersPayments[_user] += _amount;
         totalVolume += _amount;
-        userAllocation = ( (usersPayments[_user] * 10000) / totalVolume ) * 1 ether;
+        userAllocation = _calculateAllocationPercentage(_user);
     }
 
     function _getDecimalPercentage(uint _userAllocation) public pure returns(uint) {
@@ -115,8 +128,9 @@ contract Manager {
     }
 
     function exchangeToUserToken(uint _amount, address _user, address _userToken) public {
-        uint userAllocation = _calculateAllocationPercentage(_amount, _user);
-        console.log('user allocation: ', _getDecimalPercentage(userAllocation));
+        uint userAllocation = _updateAllocationPercentage(_amount, _user);
+        // console.log('user allocation: ', _getDecimalPercentage(userAllocation));
+        console.log('user allocation: ', userAllocation);
         
         uint tokenOut = _userToken == address(USDT) ? 0 : 2;
         bool useEth = _userToken == address(WETH) ? false : true;
