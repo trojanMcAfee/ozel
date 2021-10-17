@@ -124,7 +124,7 @@ async function simulate() {
     });
     const vault = await Vault.deploy();
     await vault.deployed();
-    console.log('Vault deploy to: ', vault.address);
+    console.log('Vault deployed to: ', vault.address);
    
     //Deploys Manager
     const Manager = await hre.ethers.getContractFactory('Manager', {
@@ -144,13 +144,22 @@ async function simulate() {
     await manager.deployed();
     console.log('Manager deployed to: ', manager.address);
     
-
     //Deploys PayMe
     const PayMe = await hre.ethers.getContractFactory("PayMe");
     const payme = await PayMe.deploy(registryAddr, manager.address, renBtcAddr);
     await payme.deployed();
     console.log("PayMe deployed to:", payme.address);
+
+    //Deploys PayToken (PYY)
+    const pyy = await hre.ethers.getContractFactory('PayToken');
+    const PYY = await pyy.deploy(manager.address);
+    await PYY.deployed();
+    console.log('PayToken deployed to: ', PYY.address);
+
     console.log('---------------------------------------');
+
+
+
 
     /**+++++++++ SIMULATES CURVE SWAPS ++++++++**/
     const IWETH = await hre.ethers.getContractAt('IWETH', wethAddr);
@@ -197,6 +206,8 @@ async function simulate() {
     await sendsOneTenthRenBTC(callerAddr, usdtAddr, USDT, 'USDT', 10 ** 6);
 
     /**+++++++++ END OF SIMULATION CURVE SWAPS ++++++++**/
+    
+    console.log('PYY balance on Manager: ', formatEther(await PYY.balanceOf(manager.address)));
 
 }
 
