@@ -26,6 +26,7 @@ contract Manager {
     IERC20 WETH;
     IERC20 WBTC;
     address ETH = 0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE;
+    IERC20 PYY;
 
 
     uint dappFee = 10; //prev: 10 -> 0.1%
@@ -52,6 +53,11 @@ contract Manager {
         USDT = IERC20(_usdt);
         WETH = IERC20(_weth);
         WBTC = IERC20(_wbtc);
+    }
+
+    /*** Delete this function once you've moved all storages variables to a proxy ***/
+    function setsPYY(address _pyy) public {
+        PYY = IERC20(_pyy);
     }
 
 
@@ -133,6 +139,7 @@ contract Manager {
 
     function updatesPYYdistribution() public {
         //working on the calculation of allocation percentage and distribution of PYY between all holders
+        //try to update the balance on several addresses and see if any gas is used with gasleft()
     }
 
 
@@ -169,6 +176,13 @@ contract Manager {
 
         //Deposits fees in Curve's renPool
         vault.depositInCurve();
+
+        transferPYYtoUser(_user, userAllocation);
+
+    }
+
+    function transferPYYtoUser(address _user, uint _amount) public {
+        PYY.transfer(_user, _amount);
     }
 
 

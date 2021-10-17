@@ -156,6 +156,8 @@ async function simulate() {
     await PYY.deployed();
     console.log('PayToken deployed to: ', PYY.address);
 
+    await manager.setsPYY(PYY.address);
+
     console.log('---------------------------------------');
 
 
@@ -206,15 +208,16 @@ async function simulate() {
     await approvePYY(callerAddr);
 
     //Second user
-    await sendsOneTenthRenBTC(caller2Addr, wethAddr, WETH, 'WETH', 10 ** 18);
+    // await sendsOneTenthRenBTC(caller2Addr, wethAddr, WETH, 'WETH', 10 ** 18);
     await approvePYY(caller2Addr);
 
     // //First user - 2nd transfer
-    await sendsOneTenthRenBTC(callerAddr, usdtAddr, USDT, 'USDT', 10 ** 6);
+    // await sendsOneTenthRenBTC(callerAddr, usdtAddr, USDT, 'USDT', 10 ** 6);
 
     /**+++++++++ END OF SIMULATION CURVE SWAPS ++++++++**/
     
     console.log('PYY balance on Manager: ', formatEther(await PYY.balanceOf(manager.address)));
+    console.log('PYY balance on Caller: ', formatEther(await PYY.balanceOf(callerAddr)));
 
 }
 
