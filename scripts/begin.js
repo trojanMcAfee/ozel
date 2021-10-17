@@ -189,18 +189,25 @@ async function simulate() {
             caller,
             userToken
         );
-        let wbtcBalance = await vault.getTokenBalance(wbtcAddr);
+        // let wbtcBalance = await vault.getTokenBalance(wbtcAddr);
         let tokenBalance = await IERC20.balanceOf(caller);
         // console.log('WBTC balance on Vault after swap (fees): ', wbtcBalance.toString() / 10 ** 8);
         console.log(tokenStr + ' balance of callerAddr: ', tokenBalance.toString() / decimals);
         console.log('---------------------------------------'); 
     }
 
+    async function approvePYY(caller) {
+        const signer = await hre.ethers.provider.getSigner(caller);
+        await PYY.connect(signer).approve(manager.address, MaxUint256);
+    }
+
     //First user
     await sendsOneTenthRenBTC(callerAddr, usdtAddr, USDT, 'USDT', 10 ** 6);
+    await approvePYY(callerAddr);
 
     //Second user
     await sendsOneTenthRenBTC(caller2Addr, wethAddr, WETH, 'WETH', 10 ** 18);
+    await approvePYY(caller2Addr);
 
     // //First user - 2nd transfer
     await sendsOneTenthRenBTC(callerAddr, usdtAddr, USDT, 'USDT', 10 ** 6);

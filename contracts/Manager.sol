@@ -63,10 +63,11 @@ contract Manager {
     //     minAmountOut = _amount - ( (_amount * _basisPoint) / 10000 ); //5 -> 0.05%; 
     // }
 
-    // remove_liquidity_one_coin(uint256 token_amount, uint256 i, uint256 min_amount)
 
     /***** Put it in Vault.sol *****/
     function withdrawUserShare(address _user, address _userToken) public {
+
+    // remove_liquidity_one_coin(uint256 token_amount, uint256 i, uint256 min_amount)
 
     }
     /**************************/
@@ -89,9 +90,9 @@ contract Manager {
         return (_userAllocation / 1 ether) / 100;
     }
 
-    function _bytesToAddress(bytes memory bys) public pure returns (address addr) {
+    function _bytesToAddress(bytes memory _bytes) public pure returns (address addr) {
         assembly {
-            addr := mload(add(bys,20))
+            addr := mload(add(_bytes,20))
         } 
     }
 
@@ -113,6 +114,8 @@ contract Manager {
         return (netAmount, isTransferred);
     }
 
+
+    /***** Helper swapping functions ******/
     function swapsRenForWBTC(uint _netAmount) public returns(uint wbtcAmount) {
         renBTC.approve(address(renPool), _netAmount); 
         uint slippage = _netAmount._calculateSlippage(5);
@@ -126,6 +129,13 @@ contract Manager {
         uint slippage = minOut._calculateSlippage(5);
         tricrypto2.exchange(1, _tokenOut, _wbtcToConvert, slippage, _useEth);
     }
+    /*****************/
+
+    function updatesPYYdistribution() public {
+        //working on the calculation of allocation percentage and distribution of PYY between all holders
+    }
+
+
 
     function exchangeToUserToken(uint _amount, address _user, address _userToken) public {
         uint userAllocation = _updateAllocationPercentage(_amount, _user);
