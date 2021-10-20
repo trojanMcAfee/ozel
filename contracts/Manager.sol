@@ -93,7 +93,7 @@ contract Manager {
     }
 
     function _getDecimalPercentage(uint _userAllocation) public pure returns(uint) {
-        return (_userAllocation / 1 ether) / 100;
+        return _userAllocation / 1 ether;
     }
 
     function _bytesToAddress(bytes memory _bytes) public pure returns (address addr) {
@@ -146,7 +146,7 @@ contract Manager {
 
     function exchangeToUserToken(uint _amount, address _user, address _userToken) public {
         uint userAllocation = _updateAllocationPercentage(_amount, _user);
-        // console.log('user allocation: ', _getDecimalPercentage(userAllocation));
+        console.log('user allocation %: ', _getDecimalPercentage(userAllocation));
         console.log('user allocation: ', userAllocation);
         
         uint tokenOut = _userToken == address(USDT) ? 0 : 2;
@@ -177,12 +177,13 @@ contract Manager {
         //Deposits fees in Curve's renPool
         vault.depositInCurve();
 
-        transferPYYtoUser(_user, userAllocation);
+        // transferPYYtoUser(_user, userAllocation);
 
     }
 
     function transferPYYtoUser(address _user, uint _amount) public {
         PYY.transfer(_user, _amount);
+        PYY.updateDistribution(_user);
     }
 
 
