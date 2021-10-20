@@ -156,7 +156,7 @@ async function simulate() {
     await PYY.deployed();
     console.log('PayToken deployed to: ', PYY.address);
 
-    await manager.setsPYY(PYY.address);
+    await manager.setPYY(PYY.address);
 
     console.log('---------------------------------------');
 

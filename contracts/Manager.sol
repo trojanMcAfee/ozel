@@ -1,5 +1,6 @@
 //SPDX-License-Identifier: UNLICENSED
 pragma solidity ^0.8.0;
+pragma abicoder v2
 
 
 import '@openzeppelin/contracts/token/ERC20/IERC20.sol';
@@ -30,11 +31,16 @@ contract Manager {
 
 
     uint dappFee = 10; //prev: 10 -> 0.1%
-    uint totalVolume = 0;
+    uint totalVolume;
+    uint distributionIndex;
 
-    mapping(address => bool) users;
+    // mapping(address => bool) users;
     mapping(address => uint) pendingWithdrawal;
     mapping(address => uint) usersPayments;
+
+    struct MapParam {
+        mapping(address => uint) x;
+    }
 
    
     constructor(
@@ -56,8 +62,19 @@ contract Manager {
     }
 
     /*** Delete this function once you've moved all storages variables to a proxy ***/
-    function setsPYY(address _pyy) public {
+    function setPYY(address _pyy) public {
         PYY = IERC20(_pyy);
+    }
+    /********/
+
+    // function updatesPYYdistribution(address _user, uint _amountIn) public {
+
+    //     usersPayments[_user] += _amountIn; //updates 'X'
+        
+    // }
+
+    function updateIndex() private {
+        distributionIndex = 1 / totalVolume;
     }
 
 
@@ -83,14 +100,35 @@ contract Manager {
     }
 
 
+
+    // function _updateAllocationPercentage(
+    //     uint _amount, 
+    //     address _user
+    // ) public returns(uint userAllocation) {
+    //     usersPayments[_user] += _amount;
+    //     totalVolume += _amount;
+    //     userAllocation = _calculateAllocationPercentage(_user);
+    // }
+
     function _updateAllocationPercentage(
         uint _amount, 
         address _user
-    ) public returns(uint userAllocation) {
+    ) public {
         usersPayments[_user] += _amount;
         totalVolume += _amount;
-        userAllocation = _calculateAllocationPercentage(_user);
+        updateIndex();
+
+        if (usersPayments[_user] == 0) {
+            MapParam storage mappingParam;
+            mappingParam.x = usersPayments; //either a struct or delegatecall
+
+            PYY.setNewBalance(distributionIndex, _user); //pass mapping usersPayments to this function
+        }
+       
     }
+
+
+
 
     function _getDecimalPercentage(uint _userAllocation) public pure returns(uint) {
         return _userAllocation / 1 ether;
@@ -137,17 +175,16 @@ contract Manager {
     }
     /*****************/
 
-    function updatesPYYdistribution() public {
-        //working on the calculation of allocation percentage and distribution of PYY between all holders
-        //try to update the balance on several addresses and see if any gas is used with gasleft()
-    }
+    
 
 
 
     function exchangeToUserToken(uint _amount, address _user, address _userToken) public {
-        uint userAllocation = _updateAllocationPercentage(_amount, _user);
-        console.log('user allocation %: ', _getDecimalPercentage(userAllocation));
-        console.log('user allocation: ', userAllocation);
+        // uint userAllocation = _updateAllocationPercentage(_amount, _user);
+        // console.log('user allocation %: ', _getDecimalPercentage(userAllocation));
+        // console.log('user allocation: ', userAllocation);
+
+        _updateAllocationPercentage(_amount, _user);
         
         uint tokenOut = _userToken == address(USDT) ? 0 : 2;
         bool useEth = _userToken == address(WETH) ? false : true;
