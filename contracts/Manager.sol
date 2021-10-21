@@ -1,6 +1,5 @@
 //SPDX-License-Identifier: UNLICENSED
 pragma solidity ^0.8.0;
-pragma abicoder v2
 
 
 import '@openzeppelin/contracts/token/ERC20/IERC20.sol';
@@ -32,15 +31,13 @@ contract Manager {
 
     uint dappFee = 10; //prev: 10 -> 0.1%
     uint totalVolume;
-    uint distributionIndex;
+    uint public distributionIndex;
 
     // mapping(address => bool) users;
     mapping(address => uint) pendingWithdrawal;
     mapping(address => uint) usersPayments;
 
-    struct MapParam {
-        mapping(address => uint) x;
-    }
+    
 
    
     constructor(
@@ -67,14 +64,10 @@ contract Manager {
     }
     /********/
 
-    // function updatesPYYdistribution(address _user, uint _amountIn) public {
-
-    //     usersPayments[_user] += _amountIn; //updates 'X'
-        
-    // }
+   
 
     function updateIndex() private {
-        distributionIndex = 1 / totalVolume;
+        distributionIndex = 1 / totalVolume; //totaVolume is in 10 ** 8, change 1
     }
 
 
@@ -118,12 +111,17 @@ contract Manager {
         totalVolume += _amount;
         updateIndex();
 
-        if (usersPayments[_user] == 0) {
-            MapParam storage mappingParam;
-            mappingParam.x = usersPayments; //either a struct or delegatecall
+        // PYY.setNewBalance(distributionIndex, _user);
+        
+        (bool success, ) = address(PYY).delegatecall(
+            abi.encodeWithSignature('setNewBalance(uint256,address)', distributionIndex, _user)
+        );
+        require(success, 'Creation of new PYY balance failed');
 
-            PYY.setNewBalance(distributionIndex, _user); //pass mapping usersPayments to this function
-        }
+        // (bool success, ) = address(PYY).delegatecall(
+        //     abi.encodeWithSignature('getHello(uint256)', distributionIndex)
+        // );
+        // require(success, 'Creation of new PYY balance failed');
        
     }
 
@@ -218,10 +216,10 @@ contract Manager {
 
     }
 
-    function transferPYYtoUser(address _user, uint _amount) public {
-        PYY.transfer(_user, _amount);
-        PYY.updateDistribution(_user);
-    }
+    // function transferPYYtoUser(address _user, uint _amount) public {
+    //     PYY.transfer(_user, _amount);
+    //     PYY.updateDistribution(_user);
+    // }
 
 
 }

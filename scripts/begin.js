@@ -72,6 +72,8 @@ async function simulate() {
     const uniRouterV2Addr = '0x7a250d5630B4cF539739dF2C5dAcb4c659F2488D';
     const uniRouterV2 = await hre.ethers.getContractAt('IUniswapV2Router02', uniRouterV2Addr);
     const [callerAddr, caller2Addr] = await hre.ethers.provider.listAccounts();
+    console.log('Caller 1: ', callerAddr);
+    console.log('Caller 2: ', caller2Addr);
     let wethAddr;
     let wbtcAddr;
     let renBtcAddr;
@@ -186,14 +188,16 @@ async function simulate() {
     //Sends renBTC to contracts (simulates BTC bridging) ** MAIN FUNCTION **
     async function sendsOneTenthRenBTC(caller, userToken, IERC20, tokenStr, decimals) {
         await renBTC.transfer(payme.address, oneTenth);
-        await payme.transferToManager(
+        const tx = await payme.transferToManager(
             manager.address,
             caller,
             userToken
         );
-        // let wbtcBalance = await vault.getTokenBalance(wbtcAddr);
+        console.log('index: ', (await manager.distributionIndex()).toString());
+
+
+
         let tokenBalance = await IERC20.balanceOf(caller);
-        // console.log('WBTC balance on Vault after swap (fees): ', wbtcBalance.toString() / 10 ** 8);
         console.log(tokenStr + ' balance of callerAddr: ', tokenBalance.toString() / decimals);
         console.log('---------------------------------------'); 
     }
@@ -206,18 +210,23 @@ async function simulate() {
     //First user
     await sendsOneTenthRenBTC(callerAddr, usdtAddr, USDT, 'USDT', 10 ** 6);
     await approvePYY(callerAddr);
+    console.log('PYY balance on caller 1: ', formatEther(await PYY.balanceOf(callerAddr)));
 
     //Second user
     // await sendsOneTenthRenBTC(caller2Addr, wethAddr, WETH, 'WETH', 10 ** 18);
     await approvePYY(caller2Addr);
+    // console.log('PYY balance on caller 2: ', formatEther(await PYY.balanceOf(caller2Addr)));
+
 
     // //First user - 2nd transfer
     // await sendsOneTenthRenBTC(callerAddr, usdtAddr, USDT, 'USDT', 10 ** 6);
+    // console.log('2nd PYY balance on caller 1: ', formatEther(await PYY.balanceOf(callerAddr)));
+
 
     /**+++++++++ END OF SIMULATION CURVE SWAPS ++++++++**/
     
     console.log('PYY balance on Manager: ', formatEther(await PYY.balanceOf(manager.address)));
-    console.log('PYY balance on Caller: ', formatEther(await PYY.balanceOf(callerAddr)));
+    // console.log('PYY balance on Caller: ', formatEther(await PYY.balanceOf(callerAddr)));
 
 }
 
