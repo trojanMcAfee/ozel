@@ -39,7 +39,7 @@ contract PayToken is ERC20 {
 
 
     constructor(address _manager) ERC20('PayToken', 'PYY') {
-        // _mint(_manager, 100 * 1 ether);
+        _mint(_manager, 100 * 1 ether); //trying to get the coins per user
         manager = _manager;
     }
 
@@ -68,8 +68,9 @@ contract PayToken is ERC20 {
 
 
     function setNewBalance(uint _index, address _user) public {
-        console.log('holzzz');
-        // _balances[_user] = (_index * usersPayments[_user] * 100) * 1 ether;
+        uint x = (_index * usersPayments[_user] * 100) * 1 ether;
+        console.log('this is x: ', x);
+        _balances[_user] = (_index * usersPayments[_user] * 100) * 1 ether;
         console.log('holaaaaa');
     }
 

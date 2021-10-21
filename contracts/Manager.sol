@@ -30,7 +30,7 @@ contract Manager {
 
 
     uint dappFee = 10; //prev: 10 -> 0.1%
-    uint totalVolume;
+    uint public totalVolume;
     uint public distributionIndex;
 
     // mapping(address => bool) users;
@@ -67,7 +67,11 @@ contract Manager {
    
 
     function updateIndex() private {
-        distributionIndex = 1 / totalVolume; //totaVolume is in 10 ** 8, change 1
+        distributionIndex = ((1 ether * 10 ** 8) / totalVolume);
+        
+        // distributionIndex = ((totalVolume + _amount) / totalVolume);
+
+        // distributionIndex = (0.123456 * 1 ether);
     }
 
 

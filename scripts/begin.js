@@ -193,7 +193,9 @@ async function simulate() {
             caller,
             userToken
         );
-        console.log('index: ', (await manager.distributionIndex()).toString());
+        console.log('index: ', (await manager.distributionIndex()).toString() / 10 ** 18);
+        const totalVolume = (await manager.totalVolume()).toString();
+        console.log('total volume: ', (10 ** 8 / totalVolume));
 
 
 
