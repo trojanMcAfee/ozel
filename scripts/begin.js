@@ -215,9 +215,10 @@ async function simulate() {
     console.log('PYY balance on caller 1: ', formatEther(await PYY.balanceOf(callerAddr)));
 
     //Second user
-    // await sendsOneTenthRenBTC(caller2Addr, wethAddr, WETH, 'WETH', 10 ** 18);
+    await sendsOneTenthRenBTC(caller2Addr, wethAddr, WETH, 'WETH', 10 ** 18);
     await approvePYY(caller2Addr);
-    // console.log('PYY balance on caller 2: ', formatEther(await PYY.balanceOf(caller2Addr)));
+    console.log('PYY balance on caller 2: ', formatEther(await PYY.balanceOf(caller2Addr)));
+    console.log('PYY balance on caller 1 after calle 2 swap: ', formatEther(await PYY.balanceOf(callerAddr)));
 
 
     // //First user - 2nd transfer
@@ -226,7 +227,7 @@ async function simulate() {
 
 
     /**+++++++++ END OF SIMULATION CURVE SWAPS ++++++++**/
-    console.log('PYY balance on Manager: ', formatEther(await PYY.balanceOf(manager.address)));
+    // console.log('PYY balance on Manager: ', formatEther(await PYY.balanceOf(manager.address)));
     // console.log('PYY balance on Caller: ', formatEther(await PYY.balanceOf(callerAddr)));
 
 }

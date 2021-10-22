@@ -34,7 +34,7 @@ contract Manager {
     uint public distributionIndex;
 
     mapping(address => uint) pendingWithdrawal;
-    mapping(address => uint) usersPayments;
+    mapping(address => uint) public usersPayments;
 
     
 
@@ -63,7 +63,8 @@ contract Manager {
     }
     /********/
 
-   
+
+
 
     function updateIndex() private {
         distributionIndex = ((1 ether * 10 ** 8) / totalVolume);
@@ -110,23 +111,7 @@ contract Manager {
         usersPayments[_user] += _amount;
         totalVolume += _amount;
         updateIndex();
-        console.log('user payment in Manager: ', usersPayments[_user]);
-        // PYY.setNewBalance(distributionIndex, _user);
-        PYY.setNewBalance(distributionIndex, _user, usersPayments[_user]);
-        
-        // (bool success, ) = address(PYY).delegatecall(
-        //     abi.encodeWithSignature(
-        //         'setNewBalance(uint256,address,uint256)', 
-        //         distributionIndex, _user, usersPayments[_user]
-        //     )
-        // );
-        // require(success, 'Creation of new PYY balance failed');
-
-        // (bool success, ) = address(PYY).delegatecall(
-        //     abi.encodeWithSignature('getHello(uint256)', distributionIndex)
-        // );
-        // require(success, 'Creation of new PYY balance failed');
-       
+        // PYY.setNewBalance(distributionIndex, _user, usersPayments[_user]);
     }
 
 
@@ -202,11 +187,8 @@ contract Manager {
         (uint netAmount, bool isTransferred) = _getFee(wbtcAmount);
         require(isTransferred, 'Fee transfer failed');
         
-        console.log('_user: ', _user);
-        console.log('PYY balance on User in-cont: ', PYY.balanceOf(_user));
         //Swaps WBTC to userToken (USDT, WETH or ETH)  
-        swapsWBTCForUserToken(netAmount, tokenOut, useEth); // <--------****
-        console.log('tttt');
+        swapsWBTCForUserToken(netAmount, tokenOut, useEth);
 
         //Sends userToken to user
         if (_userToken != ETH) {
@@ -218,16 +200,9 @@ contract Manager {
         
         //Deposits fees in Curve's renPool
         vault.depositInCurve();
-
-        // transferPYYtoUser(_user, userAllocation);
         
 
     }
-
-    // function transferPYYtoUser(address _user, uint _amount) public {
-    //     PYY.transfer(_user, _amount);
-    //     PYY.updateDistribution(_user);
-    // }
 
 
 }
