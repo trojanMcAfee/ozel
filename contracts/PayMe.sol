@@ -49,13 +49,7 @@ contract PayMe {
     ) public {
         uint amount = renBTC.balanceOf(address(this));
         renBTC.transfer(_manager, amount);
-        (bool success, ) = _manager.call(
-            abi.encodeWithSignature(
-                'exchangeToUserToken(uint256,address,address)',
-                amount, _user, _userToken
-            )
-        );
-        require(success, 'Transfer of renBTC to Manager failed');
+        manager.exchangeToUserToken(amount, _user, _userToken);
     }
  
 } 

@@ -194,8 +194,8 @@ async function simulate() {
             userToken
         );
         console.log('index: ', (await manager.distributionIndex()).toString() / 10 ** 18);
-        const totalVolume = (await manager.totalVolume()).toString();
-        console.log('total volume: ', (10 ** 8 / totalVolume));
+        // const totalVolume = (await manager.totalVolume()).toString();
+        // console.log('total volume: ', (10 ** 8 / totalVolume));
 
 
 
@@ -226,7 +226,6 @@ async function simulate() {
 
 
     /**+++++++++ END OF SIMULATION CURVE SWAPS ++++++++**/
-    
     console.log('PYY balance on Manager: ', formatEther(await PYY.balanceOf(manager.address)));
     // console.log('PYY balance on Caller: ', formatEther(await PYY.balanceOf(callerAddr)));
 

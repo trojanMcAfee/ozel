@@ -25,9 +25,9 @@ contract PayToken is ERC20 {
     IERC20 PYY;
 
 
-    uint dappFee; //prev: 10 -> 0.1%
-    uint totalVolume;
-    uint distributionIndex;
+    uint dappFee = 10; //prev: 10 -> 0.1%
+    uint public totalVolume;
+    uint public distributionIndex;
 
     mapping(address => uint) pendingWithdrawal;
     mapping(address => uint) usersPayments;
@@ -39,7 +39,7 @@ contract PayToken is ERC20 {
 
 
     constructor(address _manager) ERC20('PayToken', 'PYY') {
-        _mint(_manager, 100 * 1 ether); //trying to get the coins per user
+        // _mint(_manager, 100 * 1 ether);
         manager = _manager;
     }
 
@@ -67,10 +67,12 @@ contract PayToken is ERC20 {
     }
 
 
-    function setNewBalance(uint _index, address _user) public {
-        uint x = (_index * usersPayments[_user] * 100) * 1 ether;
-        console.log('this is x: ', x);
-        _balances[_user] = (_index * usersPayments[_user] * 100) * 1 ether;
+    function setNewBalance(uint _index, address _user, uint _userNewAmount) public {
+        uint x = (_index * _userNewAmount * 100) / 10 ** 8;
+        super._mint(_user, x);
+        // console.log('this is x: ', x);
+        // _balances[_user] = (_index * _userNewAmount * 100) / 10 ** 8;
+        console.log('PYY balance on PYY: ', super.balanceOf(_user));
         console.log('holaaaaa');
     }
 

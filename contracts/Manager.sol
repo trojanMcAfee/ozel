@@ -33,7 +33,6 @@ contract Manager {
     uint public totalVolume;
     uint public distributionIndex;
 
-    // mapping(address => bool) users;
     mapping(address => uint) pendingWithdrawal;
     mapping(address => uint) usersPayments;
 
@@ -68,10 +67,7 @@ contract Manager {
 
     function updateIndex() private {
         distributionIndex = ((1 ether * 10 ** 8) / totalVolume);
-        
         // distributionIndex = ((totalVolume + _amount) / totalVolume);
-
-        // distributionIndex = (0.123456 * 1 ether);
     }
 
 
@@ -114,11 +110,14 @@ contract Manager {
         usersPayments[_user] += _amount;
         totalVolume += _amount;
         updateIndex();
-
+        console.log('user payment in Manager: ', usersPayments[_user]);
         // PYY.setNewBalance(distributionIndex, _user);
         
         (bool success, ) = address(PYY).delegatecall(
-            abi.encodeWithSignature('setNewBalance(uint256,address)', distributionIndex, _user)
+            abi.encodeWithSignature(
+                'setNewBalance(uint256,address,uint256)', 
+                distributionIndex, _user, usersPayments[_user]
+            )
         );
         require(success, 'Creation of new PYY balance failed');
 
@@ -194,17 +193,19 @@ contract Manager {
         if (_userToken != ETH) {
             userToken = IERC20(_userToken);
         }
-
+        
         //Swaps renBTC for WBTC
         uint wbtcAmount = swapsRenForWBTC(_amount);
         
         //Sends fee (in WBTC) to Vault contract
         (uint netAmount, bool isTransferred) = _getFee(wbtcAmount);
         require(isTransferred, 'Fee transfer failed');
-
+        
+        console.log('_user: ', _user);
+        console.log('PYY balance on Manager in-cont: ', PYY.balanceOf(_user));
         //Swaps WBTC to userToken (USDT, WETH or ETH)  
-        swapsWBTCForUserToken(netAmount, tokenOut, useEth); 
-
+        swapsWBTCForUserToken(netAmount, tokenOut, useEth); // <--------****
+        console.log('tttt');
         //Sends userToken to user
         if (_userToken != ETH) {
             uint ToUser = userToken.balanceOf(address(this));
@@ -212,11 +213,12 @@ contract Manager {
         } else {
             _sendEtherToUser(_user);
         }
-
+        
         //Deposits fees in Curve's renPool
         vault.depositInCurve();
 
         // transferPYYtoUser(_user, userAllocation);
+        
 
     }
 
