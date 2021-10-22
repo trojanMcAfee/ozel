@@ -213,22 +213,31 @@ async function simulate() {
     await sendsOneTenthRenBTC(callerAddr, usdtAddr, USDT, 'USDT', 10 ** 6);
     await approvePYY(callerAddr);
     console.log('PYY balance on caller 1: ', formatEther(await PYY.balanceOf(callerAddr)));
+    console.log('---------------------------------------'); 
 
     //Second user
     await sendsOneTenthRenBTC(caller2Addr, wethAddr, WETH, 'WETH', 10 ** 18);
     await approvePYY(caller2Addr);
     console.log('PYY balance on caller 2: ', formatEther(await PYY.balanceOf(caller2Addr)));
-    console.log('PYY balance on caller 1 after calle 2 swap: ', formatEther(await PYY.balanceOf(callerAddr)));
-
+    console.log('PYY balance on caller 1 after caller2 swap: ', formatEther(await PYY.balanceOf(callerAddr)));
+    console.log('---------------------------------------'); 
 
     // //First user - 2nd transfer
-    // await sendsOneTenthRenBTC(callerAddr, usdtAddr, USDT, 'USDT', 10 ** 6);
-    // console.log('2nd PYY balance on caller 1: ', formatEther(await PYY.balanceOf(callerAddr)));
+    await sendsOneTenthRenBTC(callerAddr, usdtAddr, USDT, 'USDT', 10 ** 6);
+    console.log('PYY balance on caller 1 after 2nd swap: ', formatEther(await PYY.balanceOf(callerAddr)));
+    console.log('PYY balance on caller 2 after caller1 2nd swap: ', formatEther(await PYY.balanceOf(caller2Addr)));
+    console.log('---------------------------------------'); 
+    
+    //Transfer half of PYY from caller1 to caller2
+    console.log('Transfer half of PYY');
+    const halfPYYbalance = await PYY.balanceOf(callerAddr) / 2;
+    await PYY.transfer(caller2Addr, halfPYYbalance); //----> error
+    console.log('2');
+    console.log('PYY balance on caller 1 after 2nd swap: ', formatEther(await PYY.balanceOf(callerAddr)));
+    console.log('PYY balance on caller 2 after caller1 2nd swap: ', formatEther(await PYY.balanceOf(caller2Addr)));
 
 
     /**+++++++++ END OF SIMULATION CURVE SWAPS ++++++++**/
-    // console.log('PYY balance on Manager: ', formatEther(await PYY.balanceOf(manager.address)));
-    // console.log('PYY balance on Caller: ', formatEther(await PYY.balanceOf(callerAddr)));
 
 }
 

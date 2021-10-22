@@ -9,14 +9,10 @@ import 'hardhat/console.sol';
 
 contract PayToken is ERC20 {
 
-
     uint flag = 0;
-    // address public manager;
     Manager manager;
 
-
     constructor(address _manager) ERC20('PayToken', 'PYY') {
-        // manager = _manager;
         manager = Manager(_manager);
     }
 
@@ -37,25 +33,42 @@ contract PayToken is ERC20 {
         flag++;
     }
 
-    // event Index(uint indexed x);
-    // function getHello(uint x) public {
-    //     console.log('the number: ', x);
-    //     emit Index(x);
+
+    // function setNewBalance(uint _index, address _user, uint _userNewAmount) external override {
+    //     // uint x = (_index * _userNewAmount * 100) / 10 ** 8;
+    //     // super._mint(_user, x);
+    //     // console.log('this is x: ', x);
+    //     _balances[_user] = (_index * _userNewAmount * 100) / 10 ** 8;
+    //     // console.log('PYY balance on PYY: ', super.balanceOf(_user));
+    //     // console.log('holaaaaa');
     // }
-
-
-    function setNewBalance(uint _index, address _user, uint _userNewAmount) external override {
-        // uint x = (_index * _userNewAmount * 100) / 10 ** 8;
-        // super._mint(_user, x);
-        // console.log('this is x: ', x);
-        _balances[_user] = (_index * _userNewAmount * 100) / 10 ** 8;
-        // console.log('PYY balance on PYY: ', super.balanceOf(_user));
-        // console.log('holaaaaa');
-    }
 
     function balanceOf(address account) public view override returns (uint256) {
         uint index = manager.distributionIndex();
         uint userPayments = manager.usersPayments(account);
         return (index * userPayments * 100 ) / 10 ** 8;
     }
+
+    function _transfer(
+        address sender,
+        address recipient,
+        uint256 amount
+    ) internal override {
+        require(sender != address(0), "ERC20: transfer from the zero address");
+        require(recipient != address(0), "ERC20: transfer to the zero address");
+
+        _beforeTokenTransfer(sender, recipient, amount);
+
+        uint256 senderBalance = manager.usersPayments(sender);
+        require(senderBalance >= amount, "ERC20: transfer amount exceeds balance");
+        unchecked {
+            manager.transferUserAllocation(sender, recipient, amount);
+        }
+
+        emit Transfer(sender, recipient, amount);
+
+        _afterTokenTransfer(sender, recipient, amount);
+    }
+
+    
 }

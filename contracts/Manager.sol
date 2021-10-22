@@ -72,7 +72,7 @@ contract Manager {
     }
 
 
-
+    /*** On Helpers.sol ***/
     // function _calculateSlippage(
     //     uint _amount, 
     //     uint _basisPoint
@@ -83,15 +83,14 @@ contract Manager {
 
     /***** Put it in Vault.sol *****/
     function withdrawUserShare(address _user, address _userToken) public {
-
     // remove_liquidity_one_coin(uint256 token_amount, uint256 i, uint256 min_amount)
-
     }
     /**************************/
 
-    function _calculateAllocationPercentage(address _user) public view returns(uint) {
-        return (((usersPayments[_user] * 10000) / totalVolume) * 1 ether) / 100;
-    }
+
+    // function _calculateAllocationPercentage(address _user) public view returns(uint) {
+    //     return (((usersPayments[_user] * 10000) / totalVolume) * 1 ether) / 100;
+    // }
 
 
 
@@ -104,22 +103,26 @@ contract Manager {
     //     userAllocation = _calculateAllocationPercentage(_user);
     // }
 
-    function _updateAllocationPercentage(
+    function updateManagerState(
         uint _amount, 
         address _user
     ) public {
         usersPayments[_user] += _amount;
         totalVolume += _amount;
         updateIndex();
-        // PYY.setNewBalance(distributionIndex, _user, usersPayments[_user]);
+    }
+
+    function transferUserAllocation(address _sender, address _receiver, uint _amount) public {
+        usersPayments[_sender] -= _amount;
+        usersPayments[_receiver] += _amount;
     }
 
 
 
 
-    function _getDecimalPercentage(uint _userAllocation) public pure returns(uint) {
-        return _userAllocation / 1 ether;
-    }
+    // function _getDecimalPercentage(uint _userAllocation) public pure returns(uint) {
+    //     return _userAllocation / 1 ether;
+    // }
 
     function _bytesToAddress(bytes memory _bytes) public pure returns (address addr) {
         assembly {
@@ -171,7 +174,7 @@ contract Manager {
         // console.log('user allocation %: ', _getDecimalPercentage(userAllocation));
         // console.log('user allocation: ', userAllocation);
 
-        _updateAllocationPercentage(_amount, _user);
+        updateManagerState(_amount, _user);
         
         uint tokenOut = _userToken == address(USDT) ? 0 : 2;
         bool useEth = _userToken == address(WETH) ? false : true;
