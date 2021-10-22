@@ -112,14 +112,15 @@ contract Manager {
         updateIndex();
         console.log('user payment in Manager: ', usersPayments[_user]);
         // PYY.setNewBalance(distributionIndex, _user);
+        PYY.setNewBalance(distributionIndex, _user, usersPayments[_user]);
         
-        (bool success, ) = address(PYY).delegatecall(
-            abi.encodeWithSignature(
-                'setNewBalance(uint256,address,uint256)', 
-                distributionIndex, _user, usersPayments[_user]
-            )
-        );
-        require(success, 'Creation of new PYY balance failed');
+        // (bool success, ) = address(PYY).delegatecall(
+        //     abi.encodeWithSignature(
+        //         'setNewBalance(uint256,address,uint256)', 
+        //         distributionIndex, _user, usersPayments[_user]
+        //     )
+        // );
+        // require(success, 'Creation of new PYY balance failed');
 
         // (bool success, ) = address(PYY).delegatecall(
         //     abi.encodeWithSignature('getHello(uint256)', distributionIndex)
@@ -202,10 +203,11 @@ contract Manager {
         require(isTransferred, 'Fee transfer failed');
         
         console.log('_user: ', _user);
-        console.log('PYY balance on Manager in-cont: ', PYY.balanceOf(_user));
+        console.log('PYY balance on User in-cont: ', PYY.balanceOf(_user));
         //Swaps WBTC to userToken (USDT, WETH or ETH)  
         swapsWBTCForUserToken(netAmount, tokenOut, useEth); // <--------****
         console.log('tttt');
+
         //Sends userToken to user
         if (_userToken != ETH) {
             uint ToUser = userToken.balanceOf(address(this));

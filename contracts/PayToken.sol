@@ -67,7 +67,7 @@ contract PayToken is ERC20 {
     }
 
 
-    function setNewBalance(uint _index, address _user, uint _userNewAmount) public {
+    function setNewBalance(uint _index, address _user, uint _userNewAmount) public override {
         uint x = (_index * _userNewAmount * 100) / 10 ** 8;
         super._mint(_user, x);
         // console.log('this is x: ', x);
