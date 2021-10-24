@@ -230,8 +230,9 @@ async function simulate() {
     
     //Transfer half of PYY from caller1 to caller2
     console.log('Transfer half of PYY');
-    const halfPYYbalance = await PYY.balanceOf(callerAddr) / 2;
-    await PYY.transfer(caller2Addr, halfPYYbalance); //----> error
+    const halfPYYbalance = formatEther(await PYY.balanceOf(callerAddr)) / 2;
+    console.log('x: ', halfPYYbalance);
+    await PYY.transfer(caller2Addr, parseEther(halfPYYbalance.toString())); //----> error
     console.log('2');
     console.log('PYY balance on caller 1 after 2nd swap: ', formatEther(await PYY.balanceOf(callerAddr)));
     console.log('PYY balance on caller 2 after caller1 2nd swap: ', formatEther(await PYY.balanceOf(caller2Addr)));

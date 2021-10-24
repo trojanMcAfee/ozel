@@ -29,7 +29,7 @@ contract Manager {
     IERC20 PYY;
 
 
-    uint dappFee = 10; //prev: 10 -> 0.1%
+    uint dappFee = 10; //prev: 10 -> 0.1% / 100-1 / 1000-10 / 10000 - 100%
     uint public totalVolume;
     uint public distributionIndex;
 
@@ -113,8 +113,22 @@ contract Manager {
     }
 
     function transferUserAllocation(address _sender, address _receiver, uint _amount) public {
-        usersPayments[_sender] -= _amount;
-        usersPayments[_receiver] += _amount;
+        console.log('usersPayments[_sender]: ', usersPayments[_sender]);
+        console.log('amount: ', _amount);
+        uint amountToTransfer = getAllocationToTransfer(_amount, _sender);
+        usersPayments[_sender] -= amountToTransfer;
+        usersPayments[_receiver] += amountToTransfer;
+    }
+
+    function getAllocationToTransfer(uint _amount, address _user) public view returns(uint) {
+
+
+        uint percentageToTransfer = (_amount * 10000) / PYY.balanceOf(_user);
+        
+
+
+
+        return (percentageToTransfer * usersPayments[_user]) / 10000;
     }
 
 
