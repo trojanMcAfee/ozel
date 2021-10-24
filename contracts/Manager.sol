@@ -10,6 +10,8 @@ import './libraries/Helpers.sol';
 
 import 'hardhat/console.sol';
 
+import './interfaces/ICrvLpToken.sol';
+
 
 
 
@@ -27,6 +29,9 @@ contract Manager {
     IERC20 WBTC;
     address ETH = 0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE;
     IERC20 PYY;
+
+    ICrvLpToken crvTricrypto = ICrvLpToken(0xc4AD29ba4B3c580e6D59105FFf484999997675Ff);
+
 
 
     uint dappFee = 10; //prev: 10 -> 0.1% / 100-1 / 1000-10 / 10000 - 100%
@@ -68,7 +73,6 @@ contract Manager {
 
     function updateIndex() private {
         distributionIndex = ((1 ether * 10 ** 8) / totalVolume);
-        // distributionIndex = ((totalVolume + _amount) / totalVolume);
     }
 
 
@@ -81,11 +85,23 @@ contract Manager {
     // }
 
 
-    /***** Put it in Vault.sol *****/
-    function withdrawUserShare(address _user, address _userToken) public {
-    // remove_liquidity_one_coin(uint256 token_amount, uint256 i, uint256 min_amount)
-    }
-    /**************************/
+    // /***** Put it in Vault.sol *****/
+    // // function withdrawUserShare(address _user, address _userToken) public {
+    //     // remove_liquidity_one_coin(uint256 token_amount, uint256 i, uint256 min_amount)
+    // // }
+
+    // function withdrawUserShare(uint _user, uint _userAllocation, uint _userToken) public {
+    //     uint vaultBalance = crvTricrypto.balanceOf(address(vault));
+    //     uint userShareTokens = ((_userAllocation * vaultBalance) / 100 * 1 ether) / 10 ** 36;
+    //     if (_userToken == usdtAddr)
+
+    //     tricrypto2.remove_liquidity_one_coin(userShareTokens, i, min_amount);
+
+        
+        
+        
+    // }
+    // /**************************/
 
 
     // function _calculateAllocationPercentage(address _user) public view returns(uint) {
@@ -113,24 +129,17 @@ contract Manager {
     }
 
     function transferUserAllocation(address _sender, address _receiver, uint _amount) public {
-        console.log('usersPayments[_sender]: ', usersPayments[_sender]);
-        console.log('amount: ', _amount);
-        uint amountToTransfer = getAllocationToTransfer(_amount, _sender);
+        uint amountToTransfer = _getAllocationToTransfer(_amount, _sender);
         usersPayments[_sender] -= amountToTransfer;
         usersPayments[_receiver] += amountToTransfer;
     }
 
-    function getAllocationToTransfer(uint _amount, address _user) public view returns(uint) {
-
-
+    function _getAllocationToTransfer(uint _amount, address _user) public view returns(uint) {
         uint percentageToTransfer = (_amount * 10000) / PYY.balanceOf(_user);
-        
-
-
-
         return (percentageToTransfer * usersPayments[_user]) / 10000;
     }
 
+   
 
 
 

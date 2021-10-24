@@ -210,12 +210,14 @@ async function simulate() {
     }
 
     //First user
+    console.log('1st user first transfer');
     await sendsOneTenthRenBTC(callerAddr, usdtAddr, USDT, 'USDT', 10 ** 6);
     await approvePYY(callerAddr);
     console.log('PYY balance on caller 1: ', formatEther(await PYY.balanceOf(callerAddr)));
     console.log('---------------------------------------'); 
 
     //Second user
+    console.log('2nd user first transfer');
     await sendsOneTenthRenBTC(caller2Addr, wethAddr, WETH, 'WETH', 10 ** 18);
     await approvePYY(caller2Addr);
     console.log('PYY balance on caller 2: ', formatEther(await PYY.balanceOf(caller2Addr)));
@@ -223,6 +225,7 @@ async function simulate() {
     console.log('---------------------------------------'); 
 
     // //First user - 2nd transfer
+    console.log('1st user second transfer');
     await sendsOneTenthRenBTC(callerAddr, usdtAddr, USDT, 'USDT', 10 ** 6);
     console.log('PYY balance on caller 1 after 2nd swap: ', formatEther(await PYY.balanceOf(callerAddr)));
     console.log('PYY balance on caller 2 after caller1 2nd swap: ', formatEther(await PYY.balanceOf(caller2Addr)));
@@ -231,12 +234,12 @@ async function simulate() {
     //Transfer half of PYY from caller1 to caller2
     console.log('Transfer half of PYY');
     const halfPYYbalance = formatEther(await PYY.balanceOf(callerAddr)) / 2;
-    console.log('x: ', halfPYYbalance);
-    await PYY.transfer(caller2Addr, parseEther(halfPYYbalance.toString())); //----> error
-    console.log('2');
-    console.log('PYY balance on caller 1 after 2nd swap: ', formatEther(await PYY.balanceOf(callerAddr)));
-    console.log('PYY balance on caller 2 after caller1 2nd swap: ', formatEther(await PYY.balanceOf(caller2Addr)));
+    await PYY.transfer(caller2Addr, parseEther(halfPYYbalance.toString())); 
+    console.log('PYY balance on caller 1 after transferring half: ', formatEther(await PYY.balanceOf(callerAddr)));
+    console.log('PYY balance on caller 2 after getting half: ', formatEther(await PYY.balanceOf(caller2Addr)));
 
+    console.log('withdraw 1st user half share');
+    await vault.withdrawUserShare(callerAddr, parseEther(halfPYYbalance.toString()), usdtAddr);
 
     /**+++++++++ END OF SIMULATION CURVE SWAPS ++++++++**/
 

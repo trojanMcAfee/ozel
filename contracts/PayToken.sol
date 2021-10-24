@@ -60,12 +60,10 @@ contract PayToken is ERC20 {
         _beforeTokenTransfer(sender, recipient, amount);
 
         uint256 senderBalance = balanceOf(sender);
-        console.log('sender: ', senderBalance);
-        console.log('amount: ', amount);
         require(senderBalance >= amount, "ERC20: transfer amount exceeds balance");
-        // unchecked {
+        unchecked {
             manager.transferUserAllocation(sender, recipient, amount);
-        // }
+        }
 
         emit Transfer(sender, recipient, amount);
 
