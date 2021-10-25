@@ -81,7 +81,6 @@ contract Vault {
     }
 
 
-
     
     function withdrawUserShare(address _user, uint _userAllocation, address _userToken) public {
         uint vaultBalance = crvTricrypto.balanceOf(address(this));
