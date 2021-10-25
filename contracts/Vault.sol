@@ -80,8 +80,6 @@ contract Vault {
         return (((_userAllocation * 10000) / _balance) * 1 ether) / 100;
     }
 
-    // manager.usersPayments(_user) --- 100%
-    //         x --------------- allocationPercentage
 
 
     
@@ -91,15 +89,7 @@ contract Vault {
 
         uint allocationPercentage = calculateAllocationPercentage(_userAllocation, PYY.balanceOf(_user));
         uint amountToReduce = getAllocationToAmount(allocationPercentage, manager.usersPayments(_user));
-
-        console.log('amountToReduce: ', amountToReduce);
-        console.log('volume pre: ', manager.totalVolume());
         manager.modifyPaymentsAndVolumeExternally(_user, amountToReduce);
-        console.log('volume post: ', manager.totalVolume());
-
-        // revert();
-        // uint newTotalVolume = getAllocationToAmount(_userAllocation, manager.totalVolume());
-        // manager.modifyPaymentsAndVolumeExternally(_user, 1, newTotalVolume); //newAmountPayments
 
         uint i;
         if (_userToken == address(USDT)) {

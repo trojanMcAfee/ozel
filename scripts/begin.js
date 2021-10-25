@@ -259,6 +259,16 @@ async function simulate() {
     console.log('PYY balance on caller 2: ', formatEther(await PYY.balanceOf(caller2Addr)));
     const toTransfer = formatEther(await PYY.balanceOf(caller2Addr)) / 3;
     await PYY.connect(signer2).transfer(callerAddr, parseEther(toTransfer.toString())); 
+    console.log('After PYY transfer');
+    console.log('PYY balance on caller 1: ', formatEther(await PYY.balanceOf(callerAddr)));
+    console.log('PYY balance on caller 2: ', formatEther(await PYY.balanceOf(caller2Addr)));
+    console.log('Withdrawing 1/3');
+    await vault.withdrawUserShare(caller2Addr, parseEther(toTransfer.toString()), wethAddr);
+    const wethBalance = await WETH.balanceOf(caller2Addr);
+    console.log('WETH balance from fees of caller2: ', formatEther(wethBalance));
+    console.log('PYY balance on caller 1: ', formatEther(await PYY.balanceOf(callerAddr)));
+    console.log('PYY balance on caller 2: ', formatEther(await PYY.balanceOf(caller2Addr)));
+
 
     /**+++++++++ END OF SIMULATION CURVE SWAPS ++++++++**/
 

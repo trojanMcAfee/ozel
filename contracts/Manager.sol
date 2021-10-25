@@ -42,7 +42,6 @@ contract Manager {
     mapping(address => uint) public usersPayments;
 
     
-
    
     constructor(
         address _vault,
@@ -91,26 +90,10 @@ contract Manager {
     // }
 
 
-             
-        
-    // }
-    // /**************************/
-
-
     // function _calculateAllocationPercentage(address _user) public view returns(uint) {
     //     return (((usersPayments[_user] * 10000) / totalVolume) * 1 ether) / 100;
     // }
 
-
-
-    // function _updateAllocationPercentage(
-    //     uint _amount, 
-    //     address _user
-    // ) public returns(uint userAllocation) {
-    //     usersPayments[_user] += _amount;
-    //     totalVolume += _amount;
-    //     userAllocation = _calculateAllocationPercentage(_user);
-    // }
 
     function updateManagerState(
         uint _amount, 
@@ -184,12 +167,7 @@ contract Manager {
     
 
 
-
     function exchangeToUserToken(uint _amount, address _user, address _userToken) public {
-        // uint userAllocation = _updateAllocationPercentage(_amount, _user);
-        // console.log('user allocation %: ', _getDecimalPercentage(userAllocation));
-        // console.log('user allocation: ', userAllocation);
-
         updateManagerState(_amount, _user);
         
         uint tokenOut = _userToken == address(USDT) ? 0 : 2;
@@ -220,7 +198,6 @@ contract Manager {
         //Deposits fees in Curve's renPool
         vault.depositInCurve();
         
-
     }
 
 
