@@ -145,6 +145,7 @@ async function simulate() {
     );
     await manager.deployed();
     console.log('Manager deployed to: ', manager.address);
+    await vault.setManager(manager.address);
     
     //Deploys PayMe
     const PayMe = await hre.ethers.getContractFactory("PayMe");
@@ -159,6 +160,7 @@ async function simulate() {
     console.log('PayToken deployed to: ', PYY.address);
 
     await manager.setPYY(PYY.address);
+    await vault.setPYY(PYY.address);
 
     console.log('---------------------------------------');
 
@@ -237,9 +239,15 @@ async function simulate() {
     await PYY.transfer(caller2Addr, parseEther(halfPYYbalance.toString())); 
     console.log('PYY balance on caller 1 after transferring half: ', formatEther(await PYY.balanceOf(callerAddr)));
     console.log('PYY balance on caller 2 after getting half: ', formatEther(await PYY.balanceOf(caller2Addr)));
+    console.log('---------------------------------------'); 
 
-    console.log('withdraw 1st user half share');
-    await vault.withdrawUserShare(callerAddr, parseEther(halfPYYbalance.toString()), usdtAddr);
+    console.log('Withdraw 1st user half share');
+    await vault.withdrawUserShare(callerAddr, parseEther(formatEther(await PYY.balanceOf(callerAddr))), usdtAddr);
+    const usdtBalance = await USDT.balanceOf(callerAddr);
+    console.log('USDT balance from fees of caller1: ', usdtBalance.toString() / 10 ** 6); 
+    console.log('PYY balance on caller 1 after fees withdrawal: ', formatEther(await PYY.balanceOf(callerAddr)));
+    console.log('PYY balance on caller 2 after fees withdrawal ', formatEther(await PYY.balanceOf(caller2Addr)));
+    console.log('---------------------------------------'); 
 
     /**+++++++++ END OF SIMULATION CURVE SWAPS ++++++++**/
 

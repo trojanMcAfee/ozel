@@ -22,26 +22,17 @@ contract PayToken is ERC20 {
     // }
 
 
-    function _beforeTokenTransfer(
-        address from, 
-        address to, 
-        uint256 amount
-    ) internal virtual override {
-        super._beforeTokenTransfer(from, to, amount);
+    // function _beforeTokenTransfer(
+    //     address from, 
+    //     address to, 
+    //     uint256 amount
+    // ) internal virtual override {
+    //     super._beforeTokenTransfer(from, to, amount);
 
-        console.log('token flag: ', flag);
-        flag++;
-    }
-
-
-    // function setNewBalance(uint _index, address _user, uint _userNewAmount) external override {
-    //     // uint x = (_index * _userNewAmount * 100) / 10 ** 8;
-    //     // super._mint(_user, x);
-    //     // console.log('this is x: ', x);
-    //     _balances[_user] = (_index * _userNewAmount * 100) / 10 ** 8;
-    //     // console.log('PYY balance on PYY: ', super.balanceOf(_user));
-    //     // console.log('holaaaaa');
+    //     console.log('token flag: ', flag);
+    //     flag++;
     // }
+
 
     function balanceOf(address account) public view override returns (uint256) {
         uint index = manager.distributionIndex();

@@ -6,6 +6,7 @@ import '@openzeppelin/contracts/token/ERC20/IERC20.sol';
 import {ITricrypto} from './interfaces/ICurve.sol';
 import './libraries/Helpers.sol';
 import './interfaces/ICrvLpToken.sol';
+import './Manager.sol';
 
 import 'hardhat/console.sol';
 
@@ -21,13 +22,22 @@ contract Vault {
     IERC20 USDT = IERC20(0xdAC17F958D2ee523a2206206994597C13D831ec7);
     IERC20 WETH = IERC20(0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2);
 
-
-    
+    Manager manager;
     uint slippageOnCurve = 100; //bp: 100 -> 1%
+    IERC20 PYY;
 
     /**
     BTC: 1 / USDT: 0 / WETH: 2
      */
+
+    function setManager(address _manager) external {
+        manager = Manager(_manager);
+    }
+
+    function setPYY(address _pyy) public {
+        PYY = IERC20(_pyy);
+    }
+
 
 
 
@@ -60,34 +70,59 @@ contract Vault {
         total = virtualPrice * crvTricrypto.balanceOf(address(this)); //divide between 10 ** 36 to get USD
     }
 
-    /***** Put it in Vault.sol *****/
-    // function withdrawUserShare(address _user, address _userToken) public {
-        // remove_liquidity_one_coin(uint256 token_amount, uint256 i, uint256 min_amount)
-    // }
+    function getAllocationToAmount(uint _userAllocation, uint _balance) public pure returns(uint) {
+        return ((_userAllocation * _balance) / 100 * 1 ether) / 10 ** 36;
+    }
+    
+    
 
-    function withdrawUserShare(uint _user, uint _userAllocation, address _userToken) public {
+    function calculateAllocationPercentage(uint _userAllocation, uint _balance) public pure returns(uint) {
+        return (((_userAllocation * 10000) / _balance) * 1 ether) / 100;
+    }
+
+    // manager.usersPayments(_user) --- 100%
+    //         x --------------- allocationPercentage
+
+
+    
+    function withdrawUserShare(address _user, uint _userAllocation, address _userToken) public {
         uint vaultBalance = crvTricrypto.balanceOf(address(this));
-        uint userShareTokens = ((_userAllocation * vaultBalance) / 100 * 1 ether) / 10 ** 36;
-        int128 i;
-        uint y;
+        uint userShareTokens = getAllocationToAmount(_userAllocation, vaultBalance);
+
+        uint allocationPercentage = calculateAllocationPercentage(_userAllocation, PYY.balanceOf(_user));
+        uint amountToReduce = getAllocationToAmount(allocationPercentage, manager.usersPayments(_user));
+
+        console.log('amountToReduce: ', amountToReduce);
+        console.log('volume pre: ', manager.totalVolume());
+        manager.modifyPaymentsAndVolumeExternally(_user, amountToReduce);
+        console.log('volume post: ', manager.totalVolume());
+
+        // revert();
+        // uint newTotalVolume = getAllocationToAmount(_userAllocation, manager.totalVolume());
+        // manager.modifyPaymentsAndVolumeExternally(_user, 1, newTotalVolume); //newAmountPayments
+
+        uint i;
         if (_userToken == address(USDT)) {
             i = 0;
-            y = 0;
         } else if (_userToken == address(WBTC)) {
             i = 1;
-            y = 1;
         } else if (_userToken == address(WETH)) {
             i = 2;
-            y = 2;
         }
+
         uint tokenAmountIn = tricrypto.calc_withdraw_one_coin(userShareTokens, i);
         uint minAmount = tokenAmountIn._calculateSlippage(slippageOnCurve);
-        tricrypto.remove_liquidity_one_coin(userShareTokens, y, minAmount);
-        uint x = IERC20(_userToken).balanceOf(address(this));
-        console.log('x: ', x); //withdrawing user's share in USDT from Curve
- 
+        tricrypto.remove_liquidity_one_coin(userShareTokens, i, minAmount);
+
+        uint userTokens = IERC20(_userToken).balanceOf(address(this));
+        (bool success, ) = _userToken.call(
+            abi.encodeWithSignature(
+                'transfer(address,uint256)', 
+                _user, userTokens
+            )
+        );
+        require(success, 'userToken transfer to user failed'); 
     }
-    /**************************/
 
     
 

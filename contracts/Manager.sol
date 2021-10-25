@@ -75,6 +75,12 @@ contract Manager {
         distributionIndex = ((1 ether * 10 ** 8) / totalVolume);
     }
 
+    function modifyPaymentsAndVolumeExternally(address _user, uint _newAmount) external {
+        usersPayments[_user] -= _newAmount;
+        totalVolume -= _newAmount;
+        updateIndex();
+    }
+
 
     /*** On Helpers.sol ***/
     // function _calculateSlippage(
@@ -85,20 +91,7 @@ contract Manager {
     // }
 
 
-    // /***** Put it in Vault.sol *****/
-    // // function withdrawUserShare(address _user, address _userToken) public {
-    //     // remove_liquidity_one_coin(uint256 token_amount, uint256 i, uint256 min_amount)
-    // // }
-
-    // function withdrawUserShare(uint _user, uint _userAllocation, uint _userToken) public {
-    //     uint vaultBalance = crvTricrypto.balanceOf(address(vault));
-    //     uint userShareTokens = ((_userAllocation * vaultBalance) / 100 * 1 ether) / 10 ** 36;
-    //     if (_userToken == usdtAddr)
-
-    //     tricrypto2.remove_liquidity_one_coin(userShareTokens, i, min_amount);
-
-        
-        
+             
         
     // }
     // /**************************/
