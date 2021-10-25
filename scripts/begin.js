@@ -259,8 +259,6 @@ async function simulate() {
     console.log('PYY balance on caller 2: ', formatEther(await PYY.balanceOf(caller2Addr)));
     const toTransfer = formatEther(await PYY.balanceOf(caller2Addr)) / 3;
     await PYY.connect(signer2).transfer(callerAddr, parseEther(toTransfer.toString())); 
-    console.log('PYY balance on caller 1: ', formatEther(await PYY.balanceOf(callerAddr)));
-    console.log('PYY balance on caller 2: ', formatEther(await PYY.balanceOf(caller2Addr)));
 
     /**+++++++++ END OF SIMULATION CURVE SWAPS ++++++++**/
 
