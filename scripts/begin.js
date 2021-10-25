@@ -210,6 +210,8 @@ async function simulate() {
         const signer = await hre.ethers.provider.getSigner(caller);
         await PYY.connect(signer).approve(manager.address, MaxUint256);
     }
+    //Caller 2 signer
+    const signer2 = await hre.ethers.provider.getSigner(caller2Addr);
 
     //First user
     console.log('1st user first transfer');
@@ -241,6 +243,7 @@ async function simulate() {
     console.log('PYY balance on caller 2 after getting half: ', formatEther(await PYY.balanceOf(caller2Addr)));
     console.log('---------------------------------------'); 
 
+    //1st user withdraw remaining share (half)
     console.log('Withdraw 1st user half share');
     await vault.withdrawUserShare(callerAddr, parseEther(formatEther(await PYY.balanceOf(callerAddr))), usdtAddr);
     const usdtBalance = await USDT.balanceOf(callerAddr);
@@ -248,6 +251,16 @@ async function simulate() {
     console.log('PYY balance on caller 1 after fees withdrawal: ', formatEther(await PYY.balanceOf(callerAddr)));
     console.log('PYY balance on caller 2 after fees withdrawal ', formatEther(await PYY.balanceOf(caller2Addr)));
     console.log('---------------------------------------'); 
+
+    //1st user third transfer (ETH)
+    console.log('1st user third transfer (ETH)');
+    await sendsOneTenthRenBTC(callerAddr, wethAddr, WETH, 'WETH', 10 ** 18);
+    console.log('PYY balance on caller 1: ', formatEther(await PYY.balanceOf(callerAddr)));
+    console.log('PYY balance on caller 2: ', formatEther(await PYY.balanceOf(caller2Addr)));
+    const toTransfer = formatEther(await PYY.balanceOf(caller2Addr)) / 3;
+    await PYY.connect(signer2).transfer(callerAddr, parseEther(toTransfer.toString())); 
+    console.log('PYY balance on caller 1: ', formatEther(await PYY.balanceOf(callerAddr)));
+    console.log('PYY balance on caller 2: ', formatEther(await PYY.balanceOf(caller2Addr)));
 
     /**+++++++++ END OF SIMULATION CURVE SWAPS ++++++++**/
 
