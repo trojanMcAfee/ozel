@@ -9,7 +9,7 @@ import 'hardhat/console.sol';
 
 contract PayToken is ERC20 {
 
-    uint flag = 0;
+    // uint flag = 0;
     Manager manager;
 
     constructor(address _manager) ERC20('PayToken', 'PYY') {

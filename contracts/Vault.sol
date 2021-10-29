@@ -11,7 +11,7 @@ import './Manager.sol';
 import 'hardhat/console.sol';
 
 
-contract Vault {
+contract Vault { //Remember to write a function to withdraw/convert CRV 
 
     using Helpers for uint256;
 
