@@ -288,10 +288,80 @@ async function buffering() {
 }
 
 
+async function diamond() {
+
+    const { getSelectors, FacetCutAction } = require('./libraries/diamond.js');
+
+    const signers = await hre.ethers.getSigners();
+    const signer1 = signers[0];
+    const callerAddr = signer1.address;
+    console.log('caller1: ', callerAddr);
+
+    //Deploys DiamondCutFacet
+    const DiamondCutFacet = await hre.ethers.getContractFactory('DiamondCutFacet');
+    const diamondCutFacet = await DiamondCutFacet.deploy();
+    await diamondCutFacet.deployed();
+    console.log('DiamondCutFacet deployed to: ', diamondCutFacet.address);
+
+    //Deploys Diamond
+    const Diamond = await hre.ethers.getContractFactory('Diamond');
+    const diamond = await Diamond.deploy(callerAddr, diamondCutFacet.address);
+    await diamond.deployed();
+    console.log('Diamond deployed to: ', diamond.address);  
+
+    //Deploys DiamondInit
+    const DiamondInit = await hre.ethers.getContractFactory('DiamondInit');
+    const diamondInit = await DiamondInit.deploy();
+    await diamondInit.deployed();
+    console.log('DiamondInit deployed to: ', diamondInit.address);
+
+    //Deploy Facets
+    console.log('');
+    console.log('Deploying Facets');
+    const FacetNames = [
+        'DiamondLoupeFacet',
+        'DummyFacet'
+    ];
+
+    const cut = [];
+    for (let FacetName of FacetNames) {
+        const Facet = await hre.ethers.getContractFactory(FacetName);
+        const facet = await Facet.deploy();
+        await facet.deployed();
+        console.log(`${FacetName} deployed to: ${facet.address}`);
+        cut.push({
+            facetAddress: facet.address,
+            action: FacetCutAction.Add,
+            functionSelectors: getSelectors(facet)
+        });
+    }
+
+    //Upgrade Diamond with Facets
+    console.log('');
+    console.log('Diamond cut: ', cut);
+    const diamondCut = await hre.ethers.getContractAt('IDiamondCut', diamond.address);
+    let tx;
+    let receipt;
+    // call to the init function
+    let functionCall = diamondInit.interface.encodeFunctionData('init');
+    tx = await diamondCut.diamondCut(cut, diamondInit.address, functionCall);
+    console.log('Diamond cut tx: ', tx.hash);
+    receipt = await tx.wait();
+    if (!receipt.status) {
+        throw Error(`Diamond upgrade failed: ${tx.hash}`);
+    }
+    console.log('Completed diamond cut');
+    return diamond.address;
+
+
+
+}
 
 
 
 
+
+diamond();
 
 
 // begin();
@@ -301,6 +371,6 @@ async function buffering() {
 //     process.exit(1);
 //   });
   
-simulate();
+// simulate();
 
 // buffering();

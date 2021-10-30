@@ -55,7 +55,7 @@ async function deployDiamond () {
   let receipt
   // call to init function
   let functionCall = diamondInit.interface.encodeFunctionData('init')
-  tx = await diamondCut.diamondCut(cut, diamondInit.address, functionCall)
+  tx = await diamondCut.diamondCut(cut, diamondInit.address, functionCall) //----> finding where this line comes from
   console.log('Diamond cut tx: ', tx.hash)
   receipt = await tx.wait()
   if (!receipt.status) {
