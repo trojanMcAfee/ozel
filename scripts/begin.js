@@ -324,10 +324,12 @@ async function diamond() {
     ];
 
     const cut = [];
+    const FacetsContracts = [];
     for (let FacetName of FacetNames) {
         const Facet = await hre.ethers.getContractFactory(FacetName);
         const facet = await Facet.deploy();
         await facet.deployed();
+        FacetsContracts.push(facet);
         console.log(`${FacetName} deployed to: ${facet.address}`);
         cut.push({
             facetAddress: facet.address,
@@ -351,7 +353,11 @@ async function diamond() {
         throw Error(`Diamond upgrade failed: ${tx.hash}`);
     }
     console.log('Completed diamond cut');
-    return diamond.address;
+    // return diamond.address;
+
+    //Interacts with facets
+    const [ diamondLoupeFacet, dummyFacet ] = FacetsContracts;
+    await dummyFacet.getHello();
 
 
 

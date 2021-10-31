@@ -21,6 +21,8 @@ import '../interfaces/IGatewayRegistry.sol';
 import '../interfaces/IGateway.sol';
 import '../Manager.sol'; 
 
+import '../AppStorage.sol'; 
+
 
 // It is exapected that this contract is customized if you want to deploy your diamond
 // with data from a deployment script. Use the init function to initialize state variables
@@ -28,6 +30,7 @@ import '../Manager.sol';
 
 contract DiamondInit {    
 
+    AppStorage internal s;
     // You can add parameters to this function in order to pass in 
     // data to set your own state variables
     function init() external {
@@ -39,6 +42,7 @@ contract DiamondInit {
         ds.supportedInterfaces[type(IERC173).interfaceId] = true;
 
         console.log('ttttttt');
+        ds.ETH = 0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE;
 
         // IGatewayRegistry registry;
         // Manager manager; 
@@ -51,8 +55,7 @@ contract DiamondInit {
         // IERC20 USDT;
         // IERC20 WETH;
         // IERC20 WBTC;
-        ds.eth = 0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE;
-        address ETH = 0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE;
+        // address ETH = 0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE;
         // IERC20 PYY;
         // ICrvLpToken crvTricrypto = ICrvLpToken(0xc4AD29ba4B3c580e6D59105FFf484999997675Ff);
 

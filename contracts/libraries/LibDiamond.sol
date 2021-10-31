@@ -32,7 +32,8 @@ library LibDiamond {
         // Used to implement ERC-165.
         mapping(bytes4 => bool) supportedInterfaces;
         // owner of the contract
-        address contractOwner; //-----> trying to see if it's possible to add new var to this Struct or I have to create a new Struct
+        address contractOwner; 
+        address ETH;
     }
 
     function diamondStorage() internal pure returns (DiamondStorage storage ds) {
