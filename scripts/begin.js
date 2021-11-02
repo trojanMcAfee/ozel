@@ -355,9 +355,11 @@ async function diamond() {
     console.log('Completed diamond cut');
     // return diamond.address;
 
+    
     //Interacts with facets
     const [ diamondLoupeFacet, dummyFacet ] = FacetsContracts;
-    await dummyFacet.getHello();
+    // await dummyFacet.getHello();
+    await diamond.getOwner();
 
 
 

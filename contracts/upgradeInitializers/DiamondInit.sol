@@ -43,6 +43,7 @@ contract DiamondInit {
 
         console.log('ttttttt');
         ds.ETH = 0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE;
+        s.num = 23;
 
         // IGatewayRegistry registry;
         // Manager manager; 

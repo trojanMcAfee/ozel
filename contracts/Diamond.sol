@@ -11,6 +11,8 @@ pragma solidity ^0.8.0;
 import { LibDiamond } from "./libraries/LibDiamond.sol";
 import { IDiamondCut } from "./interfaces/IDiamondCut.sol";
 
+import 'hardhat/console.sol';
+
 contract Diamond {    
 
     constructor(address _contractOwner, address _diamondCutFacet) payable {        
@@ -30,7 +32,8 @@ contract Diamond {
 
     // Find facet for function that is called and execute the
     // function if a facet is found and return any value.
-    fallback() external payable {
+    fallback() external payable { //------ check these files on aavegotchi
+        console.logBytes4(msg.sig);
         LibDiamond.DiamondStorage storage ds;
         bytes32 position = LibDiamond.DIAMOND_STORAGE_POSITION;
         // get diamond storage
@@ -39,6 +42,7 @@ contract Diamond {
         }
         // get facet from function selector
         address facet = ds.selectorToFacetAndPosition[msg.sig].facetAddress;
+        console.log('facet: ', facet);
         require(facet != address(0), "Diamond: Function does not exist");
         // Execute external function from facet using delegatecall and return any value.
         assembly {
