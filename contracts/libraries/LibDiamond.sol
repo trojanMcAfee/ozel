@@ -24,8 +24,11 @@ library LibDiamond {
         // maps function selector to the facet address and
         // the position of the selector in the facetFunctionSelectors.selectors array
         mapping(bytes4 => FacetAddressAndPosition) selectorToFacetAndPosition;
-        // maps facet addresses to function selectors
+        // // maps facet addresses to function selectors
         mapping(address => FacetFunctionSelectors) facetFunctionSelectors;
+
+        mapping(bytes4 => address) facets;
+
         // facet addresses
         address[] facetAddresses;
         // Used to query if a contract implements an interface.

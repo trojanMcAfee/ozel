@@ -338,6 +338,11 @@ async function diamond() {
         });
     }
 
+    const selecLoup = getSelectors(FacetsContracts[0]).filter((el, i) => i <= 4);
+    const selecDummy = getSelectors(FacetsContracts[1]).filter((el, i) => i <= 1);
+    const selectors = [selecLoup, selecDummy];
+    const facetAddresses = [FacetsContracts[0].address, FacetsContracts[1].address];
+
     //Upgrade Diamond with Facets
     console.log('');
     console.log('Diamond cut: ', cut);
@@ -345,7 +350,10 @@ async function diamond() {
     let tx;
     let receipt;
     // call to the init function
-    let functionCall = diamondInit.interface.encodeFunctionData('init');
+    let functionCall = diamondInit.interface.encodeFunctionData('init', [
+        selectors, //-----> make this 2D array into a 1D with spread op
+        facetAddresses
+    ]);
     tx = await diamondCut.diamondCut(cut, diamondInit.address, functionCall);
     console.log('Diamond cut tx: ', tx.hash);
     receipt = await tx.wait();

@@ -32,8 +32,8 @@ contract Diamond {
 
     // Find facet for function that is called and execute the
     // function if a facet is found and return any value.
-    fallback() external payable { //------ check these files on aavegotchi
-        console.logBytes4(msg.sig);
+    fallback() external payable { 
+        console.logBytes(msg.data);
         LibDiamond.DiamondStorage storage ds;
         bytes32 position = LibDiamond.DIAMOND_STORAGE_POSITION;
         // get diamond storage
@@ -41,7 +41,7 @@ contract Diamond {
             ds.slot := position
         }
         // get facet from function selector
-        address facet = ds.selectorToFacetAndPosition[msg.sig].facetAddress;
+        address facet = ds.facets[msg.sig];
         console.log('facet: ', facet);
         require(facet != address(0), "Diamond: Function does not exist");
         // Execute external function from facet using delegatecall and return any value.

@@ -33,13 +33,29 @@ contract DiamondInit {
     AppStorage internal s;
     // You can add parameters to this function in order to pass in 
     // data to set your own state variables
-    function init() external {
+    function init(bytes4[] memory _selectors, address[] memory _facetAddresses) external {
         // adding ERC165 data
         LibDiamond.DiamondStorage storage ds = LibDiamond.diamondStorage();
         ds.supportedInterfaces[type(IERC165).interfaceId] = true;
         ds.supportedInterfaces[type(IDiamondCut).interfaceId] = true;
         ds.supportedInterfaces[type(IDiamondLoupe).interfaceId] = true;
         ds.supportedInterfaces[type(IERC173).interfaceId] = true;
+
+        // ds.facets[_selectors[0][0]] = _facetAddresses[0];
+        // console.log('y: ', ds.facets[_selectors[0][0]]);
+        // revert();
+
+        // ds.facetAddresses = _facetAddresses;
+        // ds.facetFunctionSelectors[_facetAddresses[0]] = 
+        // ds.selectorToFacetAndPosition[_selectLoup]
+
+        for (uint i = 0; i < _selectors.length; i++) {
+            for (uint y = 0; y < _selectors[i].length; y++) {
+                bytes4 selector = _selectors[i][y];
+                ds.facets[selector] = _facetAddresses[i];
+            }
+        } // -----> assign each selector to address on ds, and check on msg.sig if it's right now 
+        
 
         console.log('ttttttt');
         ds.ETH = 0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE;
