@@ -378,18 +378,15 @@ async function diamond() {
 async function diamond2() {
     const diamond = require('diamond-util');
 
-    const ghstContract = '0xdAC17F958D2ee523a2206206994597C13D831ec7';
-    const uniV2PoolContract = '0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48';
-
     const signers = await hre.ethers.getSigners();
     const callerAddr = await signers[0].getAddress();
 
-    const diamondCutFacet = await hre.ethers.getContractFactory('DiamondCutFacet');
-    const diamondLoupeFacet = await hre.ethers.getContractFactory('DiamondLoupeFacet');
-    const dummyFacet = await hre.ethers.getContractFactory('DummyFacet');
-
-    console.log('zzz: ', diamondCutFacet instanceof ethers.Contract); //<---- chechk
-    return;
+    const DiamondCutFacet = await hre.ethers.getContractFactory('DiamondCutFacet');
+    const diamondCutFacet = await DiamondCutFacet.deploy();
+    const DiamondLoupeFacet = await hre.ethers.getContractFactory('DiamondLoupeFacet');
+    const diamondLoupeFacet = await DiamondLoupeFacet.deploy();
+    const DummyFacet = await hre.ethers.getContractFactory('DummyFacet');
+    const dummyFacet = await DummyFacet.deploy();
 
     const deployedDiamond = await diamond.deploy({
         diamondName: 'Diamond',
@@ -398,10 +395,13 @@ async function diamond2() {
             ['DiamondLoupeFacet', diamondLoupeFacet],
             ['DummyFacet', dummyFacet]
         ],
-        owner: callerAddr,
-        otherArgs: [ghstContract, uniV2PoolContract]
+        args: '',
+        overrides: {callerAddr}
     });
     console.log('Diamond deployed to: ', deployedDiamond.address);
+    const x = await deployedDiamond.interface;
+    console.log('x: ', x);
+    await deployedDiamond.getOwner(); //says there's no function. Keep reading posts on the topic
 
 }
 

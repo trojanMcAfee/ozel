@@ -30,20 +30,13 @@ contract Diamond {
     //     LibDiamond.diamondCut(cut, address(0), "");        
     // }
 
-    struct ConstructorArgs {
-        address owner;
-        address ghstContract;
-        address uniV2PoolContract;
-    }
 
 
-    constructor(IDiamondCut.FacetCut[] memory _diamondCut, ConstructorArgs memory _args) payable {        
+    constructor(IDiamondCut.FacetCut[] memory _diamondCut, address _contractOwner) payable {        
+        LibDiamond.setContractOwner(_contractOwner);
         LibDiamond.diamondCut(_diamondCut, address(0), '');
-        console.log('owner: ', _args.owner);
-        console.log('ghstContract: ', _args.ghstContract);
-        console.log('uni: ', _args.uniV2PoolContract);
-        revert('revert in constructor');
     }
+
 
 
 
