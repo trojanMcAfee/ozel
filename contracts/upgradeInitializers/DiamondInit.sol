@@ -51,7 +51,7 @@ contract DiamondInit {
         for (uint z = 0; z < _selectors.length; z++) {
             console.logBytes4( _selectors[z]);
         }
-        revert();
+        revert('reverted hereee');
 
         for (uint i = 0; i < _selectors.length; i++) {
             for (uint y = 0; y < _selectors[i].length; y++) {

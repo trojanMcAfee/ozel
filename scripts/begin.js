@@ -1,8 +1,10 @@
 const { Bitcoin } = require("@renproject/chains");
+const { ethers } = require("ethers");
 const { executeBridge } = require('./exec-bridge.js');
 const { sendBitcoin } = require('./init-btc-tx.js');
 const { MaxUint256 } = ethers.constants;
 const { parseEther, formatEther } = ethers.utils;
+
 
 
 const amountToSend = 0.002;
@@ -352,7 +354,7 @@ async function diamond() {
     let receipt;
     // call to the init function
     let functionCall = diamondInit.interface.encodeFunctionData('init', [
-        selectors, //-----> make this 2D array into a 1D with spread op
+        selectors, 
         facetAddresses
     ]);
     tx = await diamondCut.diamondCut(cut, diamondInit.address, functionCall);
@@ -367,10 +369,39 @@ async function diamond() {
     
     //Interacts with facets
     const [ diamondLoupeFacet, dummyFacet ] = FacetsContracts;
-    // await dummyFacet.getHello();
+    // await diamond.getHello();
     await diamond.getOwner();
 
+}
 
+
+async function diamond2() {
+    const diamond = require('diamond-util');
+
+    const ghstContract = '0xdAC17F958D2ee523a2206206994597C13D831ec7';
+    const uniV2PoolContract = '0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48';
+
+    const signers = await hre.ethers.getSigners();
+    const callerAddr = await signers[0].getAddress();
+
+    const diamondCutFacet = await hre.ethers.getContractFactory('DiamondCutFacet');
+    const diamondLoupeFacet = await hre.ethers.getContractFactory('DiamondLoupeFacet');
+    const dummyFacet = await hre.ethers.getContractFactory('DummyFacet');
+
+    console.log('zzz: ', diamondCutFacet instanceof ethers.Contract); //<---- chechk
+    return;
+
+    const deployedDiamond = await diamond.deploy({
+        diamondName: 'Diamond',
+        facets: [
+            ['DiamondCutFacet', diamondCutFacet],
+            ['DiamondLoupeFacet', diamondLoupeFacet],
+            ['DummyFacet', dummyFacet]
+        ],
+        owner: callerAddr,
+        otherArgs: [ghstContract, uniV2PoolContract]
+    });
+    console.log('Diamond deployed to: ', deployedDiamond.address);
 
 }
 
@@ -378,7 +409,9 @@ async function diamond() {
 
 
 
-diamond();
+// diamond();
+
+diamond2();
 
 
 // begin();
