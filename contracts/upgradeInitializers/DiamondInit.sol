@@ -48,6 +48,10 @@ contract DiamondInit {
         // ds.facetAddresses = _facetAddresses;
         // ds.facetFunctionSelectors[_facetAddresses[0]] = 
         // ds.selectorToFacetAndPosition[_selectLoup]
+        for (uint z = 0; z < _selectors.length; z++) {
+            console.logBytes4( _selectors[z]);
+        }
+        revert();
 
         for (uint i = 0; i < _selectors.length; i++) {
             for (uint y = 0; y < _selectors[i].length; y++) {

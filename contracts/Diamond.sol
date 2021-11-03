@@ -33,7 +33,8 @@ contract Diamond {
     // Find facet for function that is called and execute the
     // function if a facet is found and return any value.
     fallback() external payable { 
-        console.logBytes(msg.data);
+        console.log('msg.sig: ');
+        console.logBytes4(msg.sig);
         LibDiamond.DiamondStorage storage ds;
         bytes32 position = LibDiamond.DIAMOND_STORAGE_POSITION;
         // get diamond storage

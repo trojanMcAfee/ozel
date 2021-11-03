@@ -340,7 +340,8 @@ async function diamond() {
 
     const selecLoup = getSelectors(FacetsContracts[0]).filter((el, i) => i <= 4);
     const selecDummy = getSelectors(FacetsContracts[1]).filter((el, i) => i <= 1);
-    const selectors = [selecLoup, selecDummy];
+    const selectors = [...selecLoup, ...selecDummy];
+    console.log('selectors: ', selectors);
     const facetAddresses = [FacetsContracts[0].address, FacetsContracts[1].address];
 
     //Upgrade Diamond with Facets
