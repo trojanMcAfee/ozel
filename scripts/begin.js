@@ -375,6 +375,7 @@ async function diamond() {
 }
 
 
+
 async function diamond2() {
     const diamond = require('diamond-util');
 
@@ -401,7 +402,117 @@ async function diamond2() {
     console.log('Diamond deployed to: ', deployedDiamond.address);
     const x = await deployedDiamond.interface;
     console.log('x: ', x);
-    await deployedDiamond.getOwner(); //says there's no function. Keep reading posts on the topic
+    await deployedDiamond.getOwner();
+
+}
+
+
+
+
+async function diamond3() {
+    // const diamond = require('diamond-util');
+
+    const { getSelectors, FacetCutAction } = require('./libraries/diamond.js');
+
+    const signers = await hre.ethers.getSigners();
+    const signer1 = signers[0];
+    const callerAddr = signer1.address;
+    console.log('caller1: ', callerAddr);
+
+    //Deploys DiamondCutFacet
+    const DiamondCutFacet = await hre.ethers.getContractFactory('DiamondCutFacet');
+    const diamondCutFacet = await DiamondCutFacet.deploy();
+    await diamondCutFacet.deployed();
+    console.log('DiamondCutFacet deployed to: ', diamondCutFacet.address);
+
+    //Deploy Facets
+    console.log('');
+    console.log('Deploying Facets');
+    const FacetNames = [
+        'DiamondLoupeFacet',
+        'DummyFacet'
+    ];
+
+    const cut = [];
+    const FacetsContracts = [];
+    for (let FacetName of FacetNames) {
+        const Facet = await hre.ethers.getContractFactory(FacetName);
+        const facet = await Facet.deploy();
+        await facet.deployed();
+        FacetsContracts.push(facet);
+        console.log(`${FacetName} deployed to: ${facet.address}`);
+        cut.push({
+            facetAddress: facet.address,
+            action: FacetCutAction.Add,
+            functionSelectors: getSelectors(facet)
+        });
+    }
+    const facetAddresses = [FacetsContracts[0].address, FacetsContracts[1].address];
+
+    //Deploys DiamondInit
+    const DiamondInit = await hre.ethers.getContractFactory('DiamondInit');
+    const diamondInit = await DiamondInit.deploy();
+    await diamondInit.deployed();
+    console.log('DiamondInit deployed to: ', diamondInit.address);
+
+    const selecLoup = getSelectors(FacetsContracts[0]).filter((el, i) => i <= 4);
+    const selecDummy = getSelectors(FacetsContracts[1]).filter((el, i) => i <= 1);
+    const selectors = [...selecLoup, ...selecDummy];
+    // console.log('selectors: ', selectors);
+
+    // call to the init function
+    let functionCall = diamondInit.interface.encodeFunctionData('init', [
+        selectors, 
+        facetAddresses
+    ]);
+
+    //Deploys Diamond
+    const Diamond = await hre.ethers.getContractFactory('Diamond');
+    const diamond = await Diamond.deploy(
+        callerAddr, 
+        diamondCutFacet.address,
+        selecDummy,
+        facetAddresses[1],
+        diamondInit.address,
+        functionCall
+    );
+    await diamond.deployed();
+    console.log('Diamond deployed to: ', diamond.address);
+
+
+
+
+
+
+    
+  
+
+
+    
+
+    
+
+    //Upgrade Diamond with Facets
+    // console.log('');
+    // console.log('Diamond cut: ', cut);
+    // const diamondCut = await hre.ethers.getContractAt('IDiamondCut', diamond.address);
+    // let tx;
+    // let receipt;
+    
+    // tx = await diamondCut.diamondCut(cut, diamondInit.address, functionCall);
+    // console.log('Diamond cut tx: ', tx.hash);
+    // receipt = await tx.wait();
+    // if (!receipt.status) {
+    //     throw Error(`Diamond upgrade failed: ${tx.hash}`);
+    // }
+    console.log('Completed diamond cut');
+    // return diamond.address;
+
+    
+    //Interacts with facets
+    const [ diamondLoupeFacet, dummyFacet ] = FacetsContracts;
+    // await diamond.getHello();
+    await diamond.getOwner();
 
 }
 
@@ -412,6 +523,8 @@ async function diamond2() {
 // diamond();
 
 diamond2();
+
+// diamond3();
 
 
 // begin();

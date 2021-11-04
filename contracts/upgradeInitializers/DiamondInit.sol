@@ -34,6 +34,7 @@ contract DiamondInit {
     // You can add parameters to this function in order to pass in 
     // data to set your own state variables
     function init(bytes4[] memory _selectors, address[] memory _facetAddresses) external {
+        console.log('yatzi');
         // adding ERC165 data
         LibDiamond.DiamondStorage storage ds = LibDiamond.diamondStorage();
         ds.supportedInterfaces[type(IERC165).interfaceId] = true;
@@ -51,14 +52,14 @@ contract DiamondInit {
         for (uint z = 0; z < _selectors.length; z++) {
             console.logBytes4( _selectors[z]);
         }
-        revert('reverted hereee');
+        // revert('reverted hereee');
 
-        for (uint i = 0; i < _selectors.length; i++) {
-            for (uint y = 0; y < _selectors[i].length; y++) {
-                bytes4 selector = _selectors[i][y];
-                ds.facets[selector] = _facetAddresses[i];
-            }
-        } // -----> assign each selector to address on ds, and check on msg.sig if it's right now 
+        // for (uint i = 0; i < _selectors.length; i++) {
+        //     for (uint y = 0; y < _selectors[i].length; y++) {
+        //         bytes4 selector = _selectors[i][y];
+        //         ds.facets[selector] = _facetAddresses[i];
+        //     }
+        // } // -----> assign each selector to address on ds, and check on msg.sig if it's right now 
         
 
         console.log('ttttttt');

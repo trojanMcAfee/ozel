@@ -11,12 +11,14 @@ pragma solidity ^0.8.0;
 import { LibDiamond } from "./libraries/LibDiamond.sol";
 import { IDiamondCut } from "./interfaces/IDiamondCut.sol";
 
+import './facets/DummyFacet.sol';
+
 import 'hardhat/console.sol';
 
 contract Diamond {    
 
     // constructor(address _contractOwner, address _diamondCutFacet) payable {        
-    //     LibDiamond.setContractOwner(_contractOwner);
+    //     LibDiamond.setContractOwner(_contractOwner); 
 
     //     // Add the diamondCut external function from the diamondCutFacet
     //     IDiamondCut.FacetCut[] memory cut = new IDiamondCut.FacetCut[](1);
@@ -31,10 +33,43 @@ contract Diamond {
     // }
 
 
+    // constructor(
+    //     address _contractOwner, 
+    //     address _diamondCutFacet,
+    //     bytes4[] memory _selectDummy, 
+    //     address _dummyFacet,
+    //     address _init,
+    //     bytes memory _calldata
+    // ) payable {        
+    //     LibDiamond.setContractOwner(_contractOwner);
+
+    //     // Add the diamondCut external function from the diamondCutFacet
+    //     IDiamondCut.FacetCut[] memory cut = new IDiamondCut.FacetCut[](2);
+    //     bytes4[] memory functionSelectors = new bytes4[](1);
+    //     functionSelectors[0] = IDiamondCut.diamondCut.selector; //---> msg.sig problematic
+    //     cut[0] = IDiamondCut.FacetCut({
+    //         facetAddress: _diamondCutFacet, 
+    //         action: IDiamondCut.FacetCutAction.Add, 
+    //         functionSelectors: functionSelectors
+    //     });
+
+    //     functionSelectors = new bytes4[](2);
+    //     functionSelectors[0] = _selectDummy[0];
+    //     functionSelectors[1] = _selectDummy[1];
+    //     cut[1] = IDiamondCut.FacetCut({
+    //         facetAddress: _dummyFacet, 
+    //         action: IDiamondCut.FacetCutAction.Add, 
+    //         functionSelectors: functionSelectors
+    //     });
+        
+    //     LibDiamond.diamondCut(cut, address(0), "");        
+    // }
+
+
 
     constructor(IDiamondCut.FacetCut[] memory _diamondCut, address _contractOwner) payable {        
+        LibDiamond.diamondCut(_diamondCut, address(0), new bytes(0));
         LibDiamond.setContractOwner(_contractOwner);
-        LibDiamond.diamondCut(_diamondCut, address(0), '');
     }
 
 
