@@ -400,8 +400,25 @@ async function diamond2() {
         overrides: {callerAddr}
     });
     console.log('Diamond deployed to: ', deployedDiamond.address);
-    const x = await deployedDiamond.interface;
-    console.log('x: ', x);
+
+    function utf8ToHex(str) {
+        return '0x' + Array.from(str).map(c =>
+          c.charCodeAt(0) < 128 ? c.charCodeAt(0).toString(16) :
+          encodeURIComponent(c).replace(/\%/g,'').toLowerCase()
+        ).join('');
+      }
+    
+      const sigHex = utf8ToHex('getOwner()');
+      const signature = keccak256(sigHex).substr(0, 10);
+      console.log('x: ', signature);
+    
+      const tx = {
+        to: test.address,
+      };
+      await signer.sendTransaction(tx);
+
+
+
     await deployedDiamond.getOwner();
 
 }
