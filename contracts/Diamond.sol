@@ -11,6 +11,9 @@ pragma solidity ^0.8.0;
 import { LibDiamond } from "./libraries/LibDiamond.sol";
 import { IDiamondCut } from "./interfaces/IDiamondCut.sol";
 
+import { IDiamondLoupe } from "./interfaces/IDiamondLoupe.sol";
+import { IERC173 } from "./interfaces/IERC173.sol";
+
 import './facets/DummyFacet.sol';
 
 import 'hardhat/console.sol';
@@ -67,9 +70,26 @@ contract Diamond {
 
 
 
-    constructor(IDiamondCut.FacetCut[] memory _diamondCut, address _contractOwner) payable {        
+    constructor(IDiamondCut.FacetCut[] memory _diamondCut, address _contractOwner, LibDiamond.Facets memory _facets) payable {        
         LibDiamond.diamondCut(_diamondCut, address(0), new bytes(0));
+        console.log('owner2: ', _contractOwner);
         LibDiamond.setContractOwner(_contractOwner);
+
+        LibDiamond.DiamondStorage storage ds = LibDiamond.diamondStorage();
+        for (uint i; i < _facets.selectors.length; i++) {
+            bytes4[] memory selectors = _facets.selectors[i];
+            for (uint j; j < selectors.length; j++) {
+                ds.facets[selectors[j]] = _facets.addresses[i];
+            }
+        }
+
+        ds.supportedInterfaces[type(IERC165).interfaceId] = true;
+        ds.supportedInterfaces[type(IDiamondCut).interfaceId] = true;
+        ds.supportedInterfaces[type(IDiamondLoupe).interfaceId] = true;
+        ds.supportedInterfaces[type(IERC173).interfaceId] = true;
+
+
+
     }
 
 
@@ -78,7 +98,6 @@ contract Diamond {
     // Find facet for function that is called and execute the
     // function if a facet is found and return any value.
     fallback() external payable { 
-        console.log('msg.sender: ', msg.sender);
         console.log('msg.sig: ');
         console.logBytes4(msg.sig);
         LibDiamond.DiamondStorage storage ds;
@@ -91,7 +110,7 @@ contract Diamond {
         address facet = ds.facets[msg.sig];
         console.log('facet: ', facet);
         require(facet != address(0), "Diamond: Function does not exist");
-        revert('yeeeeeiiiiii');
+        // revert('yeeeeeiiiiii');
         // Execute external function from facet using delegatecall and return any value.
         assembly {
             // copy function selector and any arguments

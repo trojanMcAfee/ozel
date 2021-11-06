@@ -17,13 +17,14 @@ contract DummyFacet {
         bool x = ds.supportedInterfaces[type(IERC165).interfaceId];
 
         console.log('num: ', s.num);
-        console.log('eth: ', ds.ETH);
+        // console.log('eth: ', ds.ETH);
         console.log('owner: ', ds.contractOwner);
         console.log('in Dummy: ', x);
     }
 
     function getOwner() public view {
         LibDiamond.DiamondStorage storage ds = LibDiamond.diamondStorage();
+        console.log('hiiiii');
         console.log('owner: ', ds.contractOwner);
     }
 

@@ -3,7 +3,7 @@ const { ethers } = require("ethers");
 const { executeBridge } = require('./exec-bridge.js');
 const { sendBitcoin } = require('./init-btc-tx.js');
 const { MaxUint256 } = ethers.constants;
-const { parseEther, formatEther } = ethers.utils;
+const { parseEther, formatEther, keccak256 } = ethers.utils;
 
 
 
@@ -378,10 +378,13 @@ async function diamond() {
 
 async function diamond2() {
     const diamond = require('diamond-util');
+    const { getSelectors, FacetCutAction } = require('./libraries/diamond.js');
 
     const signers = await hre.ethers.getSigners();
-    const callerAddr = await signers[0].getAddress();
+    const signer = signers[0];
+    const callerAddr = await signer.getAddress();
 
+    //Facets
     const DiamondCutFacet = await hre.ethers.getContractFactory('DiamondCutFacet');
     const diamondCutFacet = await DiamondCutFacet.deploy();
     const DiamondLoupeFacet = await hre.ethers.getContractFactory('DiamondLoupeFacet');
@@ -389,6 +392,17 @@ async function diamond2() {
     const DummyFacet = await hre.ethers.getContractFactory('DummyFacet');
     const dummyFacet = await DummyFacet.deploy();
 
+    //Selectors
+    const selecCut = getSelectors(diamondCutFacet).filter((el, i) => i <= 4);
+    const selecLoup = getSelectors(diamondLoupeFacet).filter((el, i) => i <= 4);
+    const selecDummy = getSelectors(dummyFacet).filter((el, i) => i <= 1);
+
+    const FacetsStruct = [
+        [selecCut, selecLoup, selecDummy],
+        [diamondCutFacet.address, diamondLoupeFacet.address, dummyFacet.address]
+    ];
+
+    //Deploys diamond
     const deployedDiamond = await diamond.deploy({
         diamondName: 'Diamond',
         facets: [
@@ -397,9 +411,29 @@ async function diamond2() {
             ['DummyFacet', dummyFacet]
         ],
         args: '',
-        overrides: {callerAddr}
+        overrides: {callerAddr, FacetsStruct}
     });
     console.log('Diamond deployed to: ', deployedDiamond.address);
+
+    // //Selectors
+    // const selecCut = getSelectors(diamondCutFacet).filter((el, i) => i <= 4);
+    // const selecLoup = getSelectors(diamondLoupeFacet).filter((el, i) => i <= 4);
+    // const selecDummy = getSelectors(dummyFacet).filter((el, i) => i <= 1);
+
+    // const FacetsStruct = [
+    //     [selecCut, selecLoup, selecDummy],
+    //     [diamondCutFacet.address, diamondLoupeFacet.address, dummyFacet.address]
+    // ];
+
+    // //Diamond Init
+    // const DiamondInit = await hre.ethers.getContractFactory('DiamondInit');
+    // const diamondInit = await DiamondInit.deploy();
+    // await diamondInit.deployed();
+    // await diamondInit.init(
+    //     [selecCut, selecLoup, selecDummy],
+    //     [diamondCutFacet.address, diamondLoupeFacet.address, dummyFacet.address]
+    // );
+    
 
     function utf8ToHex(str) {
         return '0x' + Array.from(str).map(c =>
@@ -410,16 +444,15 @@ async function diamond2() {
     
       const sigHex = utf8ToHex('getOwner()');
       const signature = keccak256(sigHex).substr(0, 10);
-      console.log('x: ', signature);
+      console.log('signature: ', signature);
     
-      const tx = {
-        to: test.address,
-      };
-      await signer.sendTransaction(tx);
+      await signer.sendTransaction({
+          to: deployedDiamond.address,
+          data: signature
+      });
 
 
 
-    await deployedDiamond.getOwner();
 
 }
 

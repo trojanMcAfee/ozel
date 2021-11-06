@@ -20,6 +20,16 @@ library LibDiamond {
         uint256 facetAddressPosition; // position of facetAddress in facetAddresses array
     }
 
+    // struct SelectorToFacet {
+    //     bytes4[] functionSelectors;
+    //     address facetAddress;
+    // }
+
+    struct Facets {
+        bytes4[][] selectors;
+        address[] addresses;
+    }
+
     struct DiamondStorage {
         // maps function selector to the facet address and
         // the position of the selector in the facetFunctionSelectors.selectors array
@@ -28,6 +38,7 @@ library LibDiamond {
         mapping(address => FacetFunctionSelectors) facetFunctionSelectors;
 
         mapping(bytes4 => address) facets;
+        // mapping(bytes4 => SelectorToFacet) selectorToFacet;
 
         // facet addresses
         address[] facetAddresses;
@@ -36,7 +47,6 @@ library LibDiamond {
         mapping(bytes4 => bool) supportedInterfaces;
         // owner of the contract
         address contractOwner; 
-        address ETH;
     }
 
     function diamondStorage() internal pure returns (DiamondStorage storage ds) {

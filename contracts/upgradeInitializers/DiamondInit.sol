@@ -33,7 +33,7 @@ contract DiamondInit {
     AppStorage internal s;
     // You can add parameters to this function in order to pass in 
     // data to set your own state variables
-    function init(bytes4[] memory _selectors, address[] memory _facetAddresses) external {
+    function init(bytes4[][] memory _selectors, address[] memory _facetAddresses) external {
         console.log('yatzi');
         // adding ERC165 data
         LibDiamond.DiamondStorage storage ds = LibDiamond.diamondStorage();
@@ -42,6 +42,13 @@ contract DiamondInit {
         ds.supportedInterfaces[type(IDiamondLoupe).interfaceId] = true;
         ds.supportedInterfaces[type(IERC173).interfaceId] = true;
 
+        for (uint i; i < _selectors.length; i++) {
+            bytes4[] memory selectors = _selectors[i];
+            for (uint j; j < selectors.length; j++) {
+                ds.facets[selectors[j]] = _facetAddresses[i];
+            }
+        }
+        console.log('facet: ', ds.facets[0x893d20e8]);
         // ds.facets[_selectors[0][0]] = _facetAddresses[0];
         // console.log('y: ', ds.facets[_selectors[0][0]]);
         // revert();
@@ -49,9 +56,11 @@ contract DiamondInit {
         // ds.facetAddresses = _facetAddresses;
         // ds.facetFunctionSelectors[_facetAddresses[0]] = 
         // ds.selectorToFacetAndPosition[_selectLoup]
-        for (uint z = 0; z < _selectors.length; z++) {
-            console.logBytes4( _selectors[z]);
-        }
+
+        // for (uint z = 0; z < _selectors.length; z++) {
+        //     console.logBytes4( _selectors[z]);
+        // }
+
         // revert('reverted hereee');
 
         // for (uint i = 0; i < _selectors.length; i++) {
@@ -63,7 +72,7 @@ contract DiamondInit {
         
 
         console.log('ttttttt');
-        ds.ETH = 0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE;
+        // ds.ETH = 0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE;
         s.num = 23;
 
         // IGatewayRegistry registry;
