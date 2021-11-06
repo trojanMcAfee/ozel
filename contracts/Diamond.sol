@@ -70,23 +70,26 @@ contract Diamond {
 
 
 
-    constructor(IDiamondCut.FacetCut[] memory _diamondCut, address _contractOwner, LibDiamond.Facets memory _facets) payable {        
+    constructor(IDiamondCut.FacetCut[] memory _diamondCut, address _contractOwner, bytes memory _calldata, address _init) payable {        
         LibDiamond.diamondCut(_diamondCut, address(0), new bytes(0));
         console.log('owner2: ', _contractOwner);
         LibDiamond.setContractOwner(_contractOwner);
 
-        LibDiamond.DiamondStorage storage ds = LibDiamond.diamondStorage();
-        for (uint i; i < _facets.selectors.length; i++) {
-            bytes4[] memory selectors = _facets.selectors[i];
-            for (uint j; j < selectors.length; j++) {
-                ds.facets[selectors[j]] = _facets.addresses[i];
-            }
-        }
+        (bool success, ) = _init.delegatecall(_calldata);
+        require(success, 'Diamond: Init failed');
 
-        ds.supportedInterfaces[type(IERC165).interfaceId] = true;
-        ds.supportedInterfaces[type(IDiamondCut).interfaceId] = true;
-        ds.supportedInterfaces[type(IDiamondLoupe).interfaceId] = true;
-        ds.supportedInterfaces[type(IERC173).interfaceId] = true;
+        // LibDiamond.DiamondStorage storage ds = LibDiamond.diamondStorage();
+        // for (uint i; i < _facets.selectors.length; i++) {
+        //     bytes4[] memory selectors = _facets.selectors[i];
+        //     for (uint j; j < selectors.length; j++) {
+        //         ds.facets[selectors[j]] = _facets.addresses[i];
+        //     }
+        // }
+
+        // ds.supportedInterfaces[type(IERC165).interfaceId] = true;
+        // ds.supportedInterfaces[type(IDiamondCut).interfaceId] = true;
+        // ds.supportedInterfaces[type(IDiamondLoupe).interfaceId] = true;
+        // ds.supportedInterfaces[type(IERC173).interfaceId] = true;
 
 
 

@@ -402,6 +402,14 @@ async function diamond2() {
         [diamondCutFacet.address, diamondLoupeFacet.address, dummyFacet.address]
     ];
 
+    //Deploys DiamondInit
+    const DiamondInit = await hre.ethers.getContractFactory('DiamondInit');
+    const diamondInit = await DiamondInit.deploy();
+    await diamondInit.deployed();
+    const functionCall = diamondInit.interface.encodeFunctionData('init', [
+        FacetsStruct
+    ]);
+
     //Deploys diamond
     const deployedDiamond = await diamond.deploy({
         diamondName: 'Diamond',
@@ -411,7 +419,7 @@ async function diamond2() {
             ['DummyFacet', dummyFacet]
         ],
         args: '',
-        overrides: {callerAddr, FacetsStruct}
+        overrides: {callerAddr, functionCall, diamondInit: diamondInit.address}
     });
     console.log('Diamond deployed to: ', deployedDiamond.address);
 
