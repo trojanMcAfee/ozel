@@ -16,19 +16,22 @@ import { IERC165 } from "../interfaces/IERC165.sol";
 
 import 'hardhat/console.sol';
 
-import '@openzeppelin/contracts/token/ERC20/IERC20.sol';
-import '../interfaces/IGatewayRegistry.sol';
-import '../interfaces/IGateway.sol';
-import '../Manager.sol'; 
 
 import '../AppStorage.sol'; 
+
+import '../interfaces/IGatewayRegistry.sol';
+import '../interfaces/IGateway.sol';
+import '../Manager.sol';
+import '@openzeppelin/contracts/token/ERC20/IERC20.sol';
+import {IRenPool, ITricrypto} from '../interfaces/ICurve.sol';
+import '../Vault.sol';
 
 
 // It is exapected that this contract is customized if you want to deploy your diamond
 // with data from a deployment script. Use the init function to initialize state variables
 // of your diamond. Add parameters to the init funciton if you need to.
 
-contract DiamondInit {    
+contract DiamondInit {    //moving variables - need to be passed to init and put on LibDiamond
 
     AppStorage internal s;
     // You can add parameters to this function in order to pass in 
@@ -48,6 +51,8 @@ contract DiamondInit {
                 ds.facets[selectors[j]] = _facets.addresses[i];
             }
         }
+
+        s.registry = IGatewayRegistry();
 
         // for (uint i; i < _selectors.length; i++) {
         //     bytes4[] memory selectors = _selectors[i];
