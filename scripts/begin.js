@@ -422,42 +422,28 @@ async function diamond2() {
         overrides: {callerAddr, functionCall, diamondInit: diamondInit.address}
     });
     console.log('Diamond deployed to: ', deployedDiamond.address);
-
-    // //Selectors
-    // const selecCut = getSelectors(diamondCutFacet).filter((el, i) => i <= 4);
-    // const selecLoup = getSelectors(diamondLoupeFacet).filter((el, i) => i <= 4);
-    // const selecDummy = getSelectors(dummyFacet).filter((el, i) => i <= 1);
-
-    // const FacetsStruct = [
-    //     [selecCut, selecLoup, selecDummy],
-    //     [diamondCutFacet.address, diamondLoupeFacet.address, dummyFacet.address]
-    // ];
-
-    // //Diamond Init
-    // const DiamondInit = await hre.ethers.getContractFactory('DiamondInit');
-    // const diamondInit = await DiamondInit.deploy();
-    // await diamondInit.deployed();
-    // await diamondInit.init(
-    //     [selecCut, selecLoup, selecDummy],
-    //     [diamondCutFacet.address, diamondLoupeFacet.address, dummyFacet.address]
-    // );
     
 
-    function utf8ToHex(str) {
-        return '0x' + Array.from(str).map(c =>
-          c.charCodeAt(0) < 128 ? c.charCodeAt(0).toString(16) :
-          encodeURIComponent(c).replace(/\%/g,'').toLowerCase()
-        ).join('');
-      }
-    
-      const sigHex = utf8ToHex('getOwner()');
-      const signature = keccak256(sigHex).substr(0, 10);
-      console.log('signature: ', signature);
-    
-      await signer.sendTransaction({
-          to: deployedDiamond.address,
-          data: signature
-      });
+    async function runFallback(method) {
+        function utf8ToHex(str) {
+            return '0x' + Array.from(str).map(c =>
+              c.charCodeAt(0) < 128 ? c.charCodeAt(0).toString(16) :
+              encodeURIComponent(c).replace(/\%/g,'').toLowerCase()
+            ).join('');
+        }
+        
+        const sigHex = utf8ToHex(method);
+        const signature = keccak256(sigHex).substr(0, 10);
+        console.log('signature: ', signature);
+
+        await signer.sendTransaction({
+            to: deployedDiamond.address,
+            data: signature
+        });
+    }
+
+    runFallback('getOwner()');
+    runFallback('getHello()');
 
 
 
