@@ -30,6 +30,12 @@ library LibDiamond {
         address[] addresses;
     }
 
+    struct VarsAndAddresses {
+        address[] contracts;
+        address[] erc20s;
+        uint[] appVars;
+    }
+
     struct DiamondStorage {
         // maps function selector to the facet address and
         // the position of the selector in the facetFunctionSelectors.selectors array

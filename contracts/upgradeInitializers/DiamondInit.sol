@@ -36,7 +36,10 @@ contract DiamondInit {    //moving variables - need to be passed to init and put
     AppStorage internal s;
     // You can add parameters to this function in order to pass in 
     // data to set your own state variables
-    function init(LibDiamond.Facets memory _facets) external {
+    function init(
+        LibDiamond.Facets memory _facets, 
+        LibDiamond.VarsAndAddresses memory _vars
+    ) external {
         console.log('yatzi');
         // adding ERC165 data
         LibDiamond.DiamondStorage storage ds = LibDiamond.diamondStorage();
@@ -52,7 +55,10 @@ contract DiamondInit {    //moving variables - need to be passed to init and put
             }
         }
 
-        s.registry = IGatewayRegistry();
+        console.log('reg2: ', _vars.contracts[0]);
+
+
+
 
         // for (uint i; i < _selectors.length; i++) {
         //     bytes4[] memory selectors = _selectors[i];
