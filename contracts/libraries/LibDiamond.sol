@@ -36,6 +36,11 @@ library LibDiamond {
         uint[] appVars;
     }
 
+    struct PYYERC20 {
+        string name;
+        string symbol;
+    }
+
     struct DiamondStorage {
         // maps function selector to the facet address and
         // the position of the selector in the facetFunctionSelectors.selectors array

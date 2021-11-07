@@ -1,20 +1,24 @@
 //SPDX-License-Identifier: UNLICENSED
 pragma solidity ^0.8.0;
 
-import '@openzeppelin/contracts/token/ERC20/ERC20.sol';
+import './MyERC20/MyERC20.sol';
 import './Manager.sol';
+
+import './AppStorage.sol';
 
 import 'hardhat/console.sol';
 
 
-contract PayToken is ERC20 {
+contract PayToken is MyERC20 {
+
+    AppStorage internal s;
 
     // uint flag = 0;
-    Manager manager;
+    // Manager manager;
 
-    constructor(address _manager) ERC20('PayToken', 'PYY') {
-        manager = Manager(_manager);
-    }
+    // constructor(address _manager) ERC20('PayToken', 'PYY') {
+    //     manager = Manager(_manager);
+    // }
 
     // modifier onlyManager {
     //     require(_msgSender() == manager, 'Manager not setting new balance');
@@ -35,9 +39,9 @@ contract PayToken is ERC20 {
 
 
     function balanceOf(address account) public view override returns (uint256) {
-        uint index = manager.distributionIndex();
-        uint userPayments = manager.usersPayments(account);
-        return (index * userPayments * 100 ) / 10 ** 8;
+        // uint index = s.distributionIndex;
+        // uint userPayments = s.usersPayments[account];
+        return (s.distributionIndex * s.usersPayments[account] * 100 ) / 10 ** 8;
     }
 
     function _transfer(
@@ -53,7 +57,7 @@ contract PayToken is ERC20 {
         uint256 senderBalance = balanceOf(sender);
         require(senderBalance >= amount, "ERC20: transfer amount exceeds balance");
         unchecked {
-            manager.transferUserAllocation(sender, recipient, amount);
+            s.manager.transferUserAllocation(sender, recipient, amount);
         }
 
         emit Transfer(sender, recipient, amount);

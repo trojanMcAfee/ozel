@@ -37,8 +37,8 @@ contract DiamondInit {    //moving variables - need to be passed to init and put
     // You can add parameters to this function in order to pass in 
     // data to set your own state variables
     function init(
-        LibDiamond.Facets memory _facets, 
-        LibDiamond.VarsAndAddresses memory _vars
+        LibDiamond.Facets memory _facets
+        // LibDiamond.VarsAndAddresses memory _vars
     ) external {
         console.log('yatzi');
         // adding ERC165 data
@@ -55,7 +55,10 @@ contract DiamondInit {    //moving variables - need to be passed to init and put
             }
         }
 
-        console.log('reg2: ', _vars.contracts[0]);
+        console.log('selector: ');
+        revert('hereee');
+        console.logBytes4(_facets.selectors[0][0]);
+        // console.log('reg2: ', _vars.contracts[0]);
 
 
 

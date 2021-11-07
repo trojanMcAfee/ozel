@@ -452,9 +452,9 @@ async function diamond2() {
     
     const managerFacet = await deployFacet('ManagerFacet', 'Helpers');
     const vaultFacet = await deployFacet('VaultFacet', 'Helpers');
-    
-    const PYY = await deployFacet('PayToken'); //check error in terminal
-
+    console.log('hiii');
+    const PYY = await deployFacet('PayToken'); 
+    console.log('foooo');
     //Selectors
     const selecCut = getSelectors(diamondCutFacet).filter((el, i) => i <= 4);
     const selecLoup = getSelectors(diamondLoupeFacet).filter((el, i) => i <= 4);
@@ -500,8 +500,8 @@ async function diamond2() {
     const diamondInit = await DiamondInit.deploy();
     await diamondInit.deployed();
     const functionCall = diamondInit.interface.encodeFunctionData('init', [
-        FacetsStruct,
-        VarsAndAddrStruct
+        FacetsStruct
+        // VarsAndAddrStruct
     ]);
 
     //Deploys diamond
