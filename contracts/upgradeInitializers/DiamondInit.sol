@@ -86,7 +86,7 @@ contract DiamondInit {    //moving variables - need to be passed to init and put
         
 
         console.log('selector: ');
-        revert('hereee');
+        // revert('hereee');
 
         console.log('zzzzzzz');
 

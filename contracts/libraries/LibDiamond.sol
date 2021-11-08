@@ -38,10 +38,6 @@ library LibDiamond {
         address ETH;
     }
 
-    // struct PYYERC20 {
-    //     string name;
-    //     string symbol;
-    // }
 
     struct DiamondStorage {
         // maps function selector to the facet address and

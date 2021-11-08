@@ -24,7 +24,6 @@ contract DummyFacet {
 
     function getOwner() public view {
         LibDiamond.DiamondStorage storage ds = LibDiamond.diamondStorage();
-        console.log('hiiiii');
         console.log('owner: ', ds.contractOwner);
     }
 

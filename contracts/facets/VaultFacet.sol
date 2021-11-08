@@ -24,17 +24,6 @@ contract VaultFacet { //Remember to write a function to withdraw/convert CRV
     BTC: 1 / USDT: 0 / WETH: 2
      */
 
-    // function setManager(address _manager) external {
-    //     s.manager = ManagerFacet(_manager);
-    // }
-
-    // function setPYY(address _pyy) public {
-    //     s.PYY = IERC20(_pyy);
-    // }
-
-
-
-
     function getTokenBalance(address _token) public view returns(uint balance) {
         balance = IERC20Facet(_token).balanceOf(address(this));
     }

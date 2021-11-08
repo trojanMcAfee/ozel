@@ -12,33 +12,6 @@ import '../AppStorage.sol';
 
 contract PayTokenFacet is ERC20Facet {
 
-    
-
-    // uint flag = 0;
-    // Manager manager;
-
-    // constructor(address _manager) ERC20('PayToken', 'PYY') {
-    //     manager = Manager(_manager);
-    // }
-
-    // modifier onlyManager {
-    //     require(_msgSender() == manager, 'Manager not setting new balance');
-    //     _;
-    // }
-
-
-    // function _beforeTokenTransfer(
-    //     address from, 
-    //     address to, 
-    //     uint256 amount
-    // ) internal virtual override {
-    //     super._beforeTokenTransfer(from, to, amount);
-
-    //     console.log('token flag: ', flag);
-    //     flag++;
-    // }
-
-
     function balanceOf(address account) public view override returns (uint256) {
         return (s.distributionIndex * s.usersPayments[account] * 100 ) / 10 ** 8;
     }
@@ -62,7 +35,5 @@ contract PayTokenFacet is ERC20Facet {
         emit Transfer(sender, recipient, amount);
 
         _afterTokenTransfer(sender, recipient, amount);
-    }
-
-    
+    } 
 }

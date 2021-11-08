@@ -36,14 +36,6 @@ import '../../AppStorage.sol';
  * allowances. See {IERC20-approve}.
  */
 contract ERC20Facet is MyContext, IERC20Facet, MyIERC20Metadata {
-    // mapping(address => uint256) internal _balances;
-
-    // mapping(address => mapping(address => uint256)) private _allowances;
-
-    // uint256 private _totalSupply;
-
-    // string private _name;
-    // string private _symbol;
     AppStorage internal s;
 
     /**
@@ -55,10 +47,6 @@ contract ERC20Facet is MyContext, IERC20Facet, MyIERC20Metadata {
      * All two of these values are immutable: they can only be set once during
      * construction.
      */
-    // constructor(string memory name_, string memory symbol_) {
-    //     _name = name_;
-    //     _symbol = symbol_;
-    // }
 
     /**
      * @dev Returns the name of the token.

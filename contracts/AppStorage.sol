@@ -33,10 +33,10 @@ struct AppStorage {
 
     mapping(address => uint) pendingWithdrawal;
     mapping(address => uint) usersPayments;
+    mapping(bool => PYYERC20) py; 
 
     address ETH;
 
-    mapping(bool => PYYERC20) py; 
 
 
 }
