@@ -8,7 +8,7 @@ import "./MyContext.sol";
 
 import 'hardhat/console.sol';
 
-import {AppStorage, PYYERC20} from '../../AppStorage.sol';
+import '../../AppStorage.sol';
 
 /**
  * @dev Implementation of the {IERC20} interface.
@@ -45,7 +45,6 @@ contract ERC20Facet is MyContext, IERC20Facet, MyIERC20Metadata {
     // string private _name;
     // string private _symbol;
     AppStorage internal s;
-    PYYERC20 internal p;
 
     /**
      * @dev Sets the values for {name} and {symbol}.
@@ -65,7 +64,7 @@ contract ERC20Facet is MyContext, IERC20Facet, MyIERC20Metadata {
      * @dev Returns the name of the token.
      */
     function name() public view virtual override returns (string memory) {
-        return p._name;
+        return s.py[true]._name;
     }
 
     /**
@@ -73,7 +72,7 @@ contract ERC20Facet is MyContext, IERC20Facet, MyIERC20Metadata {
      * name.
      */
     function symbol() public view virtual override returns (string memory) {
-        return p._symbol;
+        return s.py[true]._symbol; 
     }
 
     /**
@@ -97,14 +96,14 @@ contract ERC20Facet is MyContext, IERC20Facet, MyIERC20Metadata {
      * @dev See {IERC20-totalSupply}.
      */
     function totalSupply() public view virtual override returns (uint256) {
-        return p._totalSupply;
+        return s.py[true]._totalSupply;
     }
 
     /**
      * @dev See {IERC20-balanceOf}.
      */
     function balanceOf(address account) public view virtual override returns (uint256) {
-        return p._balances[account];
+        return s.py[true]._balances[account];
     }
 
     /**
@@ -124,7 +123,7 @@ contract ERC20Facet is MyContext, IERC20Facet, MyIERC20Metadata {
      * @dev See {IERC20-allowance}.
      */
     function allowance(address owner, address spender) public view virtual override returns (uint256) {
-        return p._allowances[owner][spender];
+        return s.py[true]._allowances[owner][spender];
     }
 
     /**
@@ -159,7 +158,7 @@ contract ERC20Facet is MyContext, IERC20Facet, MyIERC20Metadata {
     ) public virtual override returns (bool) {
         _transfer(sender, recipient, amount);
 
-        uint256 currentAllowance = p._allowances[sender][_msgSender()];
+        uint256 currentAllowance = s.py[true]._allowances[sender][_msgSender()];
         require(currentAllowance >= amount, "ERC20: transfer amount exceeds allowance");
         unchecked {
             _approve(sender, _msgSender(), currentAllowance - amount);
@@ -181,7 +180,7 @@ contract ERC20Facet is MyContext, IERC20Facet, MyIERC20Metadata {
      * - `spender` cannot be the zero address.
      */
     function increaseAllowance(address spender, uint256 addedValue) public virtual returns (bool) {
-        _approve(_msgSender(), spender, p._allowances[_msgSender()][spender] + addedValue);
+        _approve(_msgSender(), spender, s.py[true]._allowances[_msgSender()][spender] + addedValue);
         return true;
     }
 
@@ -200,7 +199,7 @@ contract ERC20Facet is MyContext, IERC20Facet, MyIERC20Metadata {
      * `subtractedValue`.
      */
     function decreaseAllowance(address spender, uint256 subtractedValue) public virtual returns (bool) {
-        uint256 currentAllowance = p._allowances[_msgSender()][spender];
+        uint256 currentAllowance = s.py[true]._allowances[_msgSender()][spender];
         require(currentAllowance >= subtractedValue, "ERC20: decreased allowance below zero");
         unchecked {
             _approve(_msgSender(), spender, currentAllowance - subtractedValue);
@@ -233,12 +232,12 @@ contract ERC20Facet is MyContext, IERC20Facet, MyIERC20Metadata {
 
         _beforeTokenTransfer(sender, recipient, amount);
 
-        uint256 senderBalance = p._balances[sender];
+        uint256 senderBalance = s.py[true]._balances[sender];
         require(senderBalance >= amount, "ERC20: transfer amount exceeds balance");
         unchecked {
-            p._balances[sender] = senderBalance - amount;
+            s.py[true]._balances[sender] = senderBalance - amount;
         }
-        p._balances[recipient] += amount;
+        s.py[true]._balances[recipient] += amount;
 
         emit Transfer(sender, recipient, amount);
 
@@ -259,8 +258,8 @@ contract ERC20Facet is MyContext, IERC20Facet, MyIERC20Metadata {
 
         _beforeTokenTransfer(address(0), account, amount);
 
-        p._totalSupply += amount;
-        p._balances[account] += amount;
+        s.py[true]._totalSupply += amount;
+        s.py[true]._balances[account] += amount;
         emit Transfer(address(0), account, amount);
 
         _afterTokenTransfer(address(0), account, amount);
@@ -282,12 +281,12 @@ contract ERC20Facet is MyContext, IERC20Facet, MyIERC20Metadata {
 
         _beforeTokenTransfer(account, address(0), amount);
 
-        uint256 accountBalance = p._balances[account];
+        uint256 accountBalance = s.py[true]._balances[account];
         require(accountBalance >= amount, "ERC20: burn amount exceeds balance");
         unchecked {
-            p._balances[account] = accountBalance - amount;
+            s.py[true]._balances[account] = accountBalance - amount;
         }
-        p._totalSupply -= amount;
+        s.py[true]._totalSupply -= amount;
 
         emit Transfer(account, address(0), amount);
 
@@ -315,7 +314,7 @@ contract ERC20Facet is MyContext, IERC20Facet, MyIERC20Metadata {
         require(owner != address(0), "ERC20: approve from the zero address");
         require(spender != address(0), "ERC20: approve to the zero address");
 
-        p._allowances[owner][spender] = amount;
+        s.py[true]._allowances[owner][spender] = amount;
         emit Approval(owner, spender, amount);
     }
 

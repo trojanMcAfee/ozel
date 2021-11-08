@@ -36,6 +36,8 @@ struct AppStorage {
 
     address ETH;
 
+    mapping(bool => PYYERC20) py; 
+
 
 }
 

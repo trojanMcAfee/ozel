@@ -17,7 +17,7 @@ import { IERC165 } from "../interfaces/IERC165.sol";
 import 'hardhat/console.sol';
 
 
-import {AppStorage, PYYERC20} from '../AppStorage.sol'; 
+import '../AppStorage.sol'; 
 
 import '../interfaces/IGatewayRegistry.sol';
 import '../interfaces/IGateway.sol';
@@ -36,7 +36,6 @@ import '../interfaces/ICrvLpToken.sol';
 contract DiamondInit {    //moving variables - need to be passed to init and put on LibDiamond
 
     AppStorage internal s;
-    PYYERC20 internal p;
     // You can add parameters to this function in order to pass in 
     // data to set your own state variables
     function init(
@@ -79,8 +78,8 @@ contract DiamondInit {    //moving variables - need to be passed to init and put
         s.slippageOnCurve = _vars.appVars[1];
 
         //Sets name and symbol on PayToken
-        p._name = _vars.pyyVars[0];
-        p._symbol = _vars.pyyVars[1];
+        s.py[true]._name = _vars.pyyVars[0];
+        s.py[true]._symbol = _vars.pyyVars[1];
 
         //Sets ETH address
         s.ETH = _vars.ETH;
