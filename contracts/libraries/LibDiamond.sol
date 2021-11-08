@@ -34,12 +34,13 @@ library LibDiamond {
         address[] contracts;
         address[] erc20s;
         uint[] appVars;
+        string[] pyyVars;
     }
 
-    struct PYYERC20 {
-        string name;
-        string symbol;
-    }
+    // struct PYYERC20 {
+    //     string name;
+    //     string symbol;
+    // }
 
     struct DiamondStorage {
         // maps function selector to the facet address and

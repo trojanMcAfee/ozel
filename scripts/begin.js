@@ -452,20 +452,17 @@ async function diamond2() {
     
     const managerFacet = await deployFacet('ManagerFacet', 'Helpers');
     const vaultFacet = await deployFacet('VaultFacet', 'Helpers');
-    console.log('hiii');
-    const PYY = await deployFacet('PayToken'); 
-    console.log('foooo');
+    const PYY = await deployFacet('PayTokenFacet'); 
+
     //Selectors
     const selecCut = getSelectors(diamondCutFacet).filter((el, i) => i <= 4);
     const selecLoup = getSelectors(diamondLoupeFacet).filter((el, i) => i <= 4);
     const selecDummy = getSelectors(dummyFacet).filter((el, i) => i <= 1);
 
-    const FacetsStruct = [
-        [selecCut, selecLoup, selecDummy],
-        [diamondCutFacet.address, diamondLoupeFacet.address, dummyFacet.address]
-    ];
-
     //State variables
+    const tokenName = 'PayToken';
+    const tokenSymbol = 'PYY';
+    
     const contractsAddr = [
         registryAddr,
         managerFacet.address,
@@ -480,19 +477,26 @@ async function diamond2() {
         usdtAddr,
         wethAddr,
         wbtcAddr,
-        PYY.address,
-        ETH
+        PYY.address
     ];
-
+    
     const appVars = [
+        ETH,
         dappFee,
         slippageOnCurve
     ];
 
+    //Data structs for init()
     const VarsAndAddrStruct = [
         contractsAddr,
         erc20sAddr,
-        appVars
+        appVars,
+        [tokenName, tokenSymbol]
+    ];
+
+    const FacetsStruct = [
+        [selecCut, selecLoup, selecDummy],
+        [diamondCutFacet.address, diamondLoupeFacet.address, dummyFacet.address]
     ];
 
     //Deploys DiamondInit
@@ -500,8 +504,8 @@ async function diamond2() {
     const diamondInit = await DiamondInit.deploy();
     await diamondInit.deployed();
     const functionCall = diamondInit.interface.encodeFunctionData('init', [
-        FacetsStruct
-        // VarsAndAddrStruct
+        FacetsStruct,
+        VarsAndAddrStruct
     ]);
 
     //Deploys diamond
@@ -537,7 +541,7 @@ async function diamond2() {
     }
 
     runFallback('getOwner()');
-    runFallback('getHello()');
+    // runFallback('getHello()');
 
 
 

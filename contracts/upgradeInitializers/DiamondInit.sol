@@ -17,14 +17,16 @@ import { IERC165 } from "../interfaces/IERC165.sol";
 import 'hardhat/console.sol';
 
 
-import '../AppStorage.sol'; 
+import {AppStorage, PYYERC20} from '../AppStorage.sol'; 
 
 import '../interfaces/IGatewayRegistry.sol';
 import '../interfaces/IGateway.sol';
-import '../Manager.sol';
+import '../facets/ManagerFacet.sol';
 import '@openzeppelin/contracts/token/ERC20/IERC20.sol';
 import {IRenPool, ITricrypto} from '../interfaces/ICurve.sol';
-import '../Vault.sol';
+import '../facets/VaultFacet.sol';
+import '../facets/ERC20Facet/IERC20Facet.sol';
+import '../interfaces/ICrvLpToken.sol';
 
 
 // It is exapected that this contract is customized if you want to deploy your diamond
@@ -34,11 +36,12 @@ import '../Vault.sol';
 contract DiamondInit {    //moving variables - need to be passed to init and put on LibDiamond
 
     AppStorage internal s;
+    PYYERC20 internal p;
     // You can add parameters to this function in order to pass in 
     // data to set your own state variables
     function init(
-        LibDiamond.Facets memory _facets
-        // LibDiamond.VarsAndAddresses memory _vars
+        LibDiamond.Facets memory _facets,
+        LibDiamond.VarsAndAddresses memory _vars
     ) external {
         console.log('yatzi');
         // adding ERC165 data
@@ -48,17 +51,41 @@ contract DiamondInit {    //moving variables - need to be passed to init and put
         ds.supportedInterfaces[type(IDiamondLoupe).interfaceId] = true;
         ds.supportedInterfaces[type(IERC173).interfaceId] = true;
 
+        //Ads selectors to Facets mapping
         for (uint i; i < _facets.selectors.length; i++) {
             bytes4[] memory selectors = _facets.selectors[i];
             for (uint j; j < selectors.length; j++) {
                 ds.facets[selectors[j]] = _facets.addresses[i];
             }
         }
+        
+        //Sets name and symbol on PayToken
+        p._name = 'PayToken';
+        p._symbol = 'PYY';
+
+        //Sets addresses on contracts
+        s.registry = IGatewayRegistry(_vars.contracts[0]);
+        s.manager = ManagerFacet(_vars.contracts[1]);
+        s.tricrypto = ITricrypto(_vars.contracts[2]);
+        s.vault = VaultFacet(_vars.contracts[3]);
+        s. renPool = IRenPool(_vars.contracts[4]);
+        s.crvTricrypto = ICrvLpToken(_vars.contracts[5]);
+
+        //Sets ERC20 instances
+        console.log('renBTC: ', _vars.erc20s[0]);
+        // s.renBTC = IERC20Facet(_vars.erc20s[0]);
+        // s.USDT = IERC20Facet(_vars.erc20s[]);
+        // s.WETH = IERC20Facet(_vars.erc20s[]);
+        // s.WBTC = IERC20Facet(_vars.erc20s[]);
+        // s.PYY = IERC20Facet(_vars.erc20s[]);
+
+        //Sets app's general variables
+        // s.ETH = 
+        // s.dappFee = 
+        // s.slippageOnCurve =
 
         console.log('selector: ');
         revert('hereee');
-        console.logBytes4(_facets.selectors[0][0]);
-        // console.log('reg2: ', _vars.contracts[0]);
 
 
 
