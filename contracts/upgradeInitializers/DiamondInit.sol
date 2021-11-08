@@ -58,10 +58,6 @@ contract DiamondInit {    //moving variables - need to be passed to init and put
                 ds.facets[selectors[j]] = _facets.addresses[i];
             }
         }
-        
-        //Sets name and symbol on PayToken
-        p._name = 'PayToken';
-        p._symbol = 'PYY';
 
         //Sets addresses on contracts
         s.registry = IGatewayRegistry(_vars.contracts[0]);
@@ -72,75 +68,26 @@ contract DiamondInit {    //moving variables - need to be passed to init and put
         s.crvTricrypto = ICrvLpToken(_vars.contracts[5]);
 
         //Sets ERC20 instances
-        console.log('renBTC: ', _vars.erc20s[0]);
-        // s.renBTC = IERC20Facet(_vars.erc20s[0]);
-        // s.USDT = IERC20Facet(_vars.erc20s[]);
-        // s.WETH = IERC20Facet(_vars.erc20s[]);
-        // s.WBTC = IERC20Facet(_vars.erc20s[]);
-        // s.PYY = IERC20Facet(_vars.erc20s[]);
+        s.renBTC = IERC20Facet(_vars.erc20s[0]);
+        s.USDT = IERC20Facet(_vars.erc20s[1]);
+        s.WETH = IERC20Facet(_vars.erc20s[2]);
+        s.WBTC = IERC20Facet(_vars.erc20s[3]);
+        s.PYY = IERC20Facet(_vars.erc20s[4]);
 
         //Sets app's general variables
-        // s.ETH = 
-        // s.dappFee = 
-        // s.slippageOnCurve =
+        s.dappFee = _vars.appVars[0];
+        s.slippageOnCurve = _vars.appVars[1];
+
+        //Sets name and symbol on PayToken
+        p._name = _vars.pyyVars[0];
+        p._symbol = _vars.pyyVars[1];
+
+        //Sets ETH address
+        s.ETH = _vars.ETH;
+        
 
         console.log('selector: ');
         revert('hereee');
-
-
-
-
-        // for (uint i; i < _selectors.length; i++) {
-        //     bytes4[] memory selectors = _selectors[i];
-        //     for (uint j; j < selectors.length; j++) {
-        //         ds.facets[selectors[j]] = _facetAddresses[i];
-        //     }
-        // }
-        // console.log('facet: ', ds.facets[0x893d20e8]);
-        // ds.facets[_selectors[0][0]] = _facetAddresses[0];
-        // console.log('y: ', ds.facets[_selectors[0][0]]);
-        // revert();
-
-        // ds.facetAddresses = _facetAddresses;
-        // ds.facetFunctionSelectors[_facetAddresses[0]] = 
-        // ds.selectorToFacetAndPosition[_selectLoup]
-
-        // for (uint z = 0; z < _selectors.length; z++) {
-        //     console.logBytes4( _selectors[z]);
-        // }
-
-        // revert('reverted hereee');
-
-        // for (uint i = 0; i < _selectors.length; i++) {
-        //     for (uint y = 0; y < _selectors[i].length; y++) {
-        //         bytes4 selector = _selectors[i][y];
-        //         ds.facets[selector] = _facetAddresses[i];
-        //     }
-        // } // -----> assign each selector to address on ds, and check on msg.sig if it's right now 
-        
-
-        console.log('ttttttt');
-        // ds.ETH = 0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE;
-        s.num = 23;
-
-        // IGatewayRegistry registry;
-        // Manager manager; 
-        // IERC20 renBTC;
-
-        // Vault vault;
-        // IRenPool renPool; 
-        // ITricrypto tricrypto2;
-
-        // IERC20 USDT;
-        // IERC20 WETH;
-        // IERC20 WBTC;
-        // address ETH = 0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE;
-        // IERC20 PYY;
-        // ICrvLpToken crvTricrypto = ICrvLpToken(0xc4AD29ba4B3c580e6D59105FFf484999997675Ff);
-
-        // uint dappFee = 10; //prev: 10 -> 0.1% / 100-1 / 1000-10 / 10000 - 100%
-        // uint totalVolume;
-        // uint distributionIndex;
 
         console.log('zzzzzzz');
 

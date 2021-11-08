@@ -2,7 +2,8 @@
 pragma solidity ^0.8.0;
 
 
-import '@openzeppelin/contracts/token/ERC20/IERC20.sol';
+// import '@openzeppelin/contracts/token/ERC20/IERC20.sol';
+import './ERC20Facet/IERC20Facet.sol';
 import {ITricrypto} from '../interfaces/ICurve.sol';
 import '../libraries/Helpers.sol';
 import '../interfaces/ICrvLpToken.sol';
@@ -23,19 +24,19 @@ contract VaultFacet { //Remember to write a function to withdraw/convert CRV
     BTC: 1 / USDT: 0 / WETH: 2
      */
 
-    function setManager(address _manager) external {
-        s.manager = ManagerFacet(_manager);
-    }
+    // function setManager(address _manager) external {
+    //     s.manager = ManagerFacet(_manager);
+    // }
 
-    function setPYY(address _pyy) public {
-        s.PYY = IERC20(_pyy);
-    }
+    // function setPYY(address _pyy) public {
+    //     s.PYY = IERC20(_pyy);
+    // }
 
 
 
 
     function getTokenBalance(address _token) public view returns(uint balance) {
-        balance = IERC20(_token).balanceOf(address(this));
+        balance = IERC20Facet(_token).balanceOf(address(this));
     }
 
     function _calculateTokenAmountCurve(uint _wbtcAmountIn) private returns(uint, uint[3] memory) {
@@ -96,7 +97,7 @@ contract VaultFacet { //Remember to write a function to withdraw/convert CRV
         uint minAmount = tokenAmountIn._calculateSlippage(s.slippageOnCurve);
         s.tricrypto.remove_liquidity_one_coin(userShareTokens, i, minAmount);
 
-        uint userTokens = IERC20(_userToken).balanceOf(address(this));
+        uint userTokens = IERC20Facet(_userToken).balanceOf(address(this));
         (bool success, ) = _userToken.call(
             abi.encodeWithSignature(
                 'transfer(address,uint256)', 

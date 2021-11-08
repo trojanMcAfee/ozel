@@ -481,7 +481,6 @@ async function diamond2() {
     ];
     
     const appVars = [
-        ETH,
         dappFee,
         slippageOnCurve
     ];
@@ -491,7 +490,8 @@ async function diamond2() {
         contractsAddr,
         erc20sAddr,
         appVars,
-        [tokenName, tokenSymbol]
+        [tokenName, tokenSymbol],
+        ETH
     ];
 
     const FacetsStruct = [

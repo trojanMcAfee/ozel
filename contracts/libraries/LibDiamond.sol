@@ -35,6 +35,7 @@ library LibDiamond {
         address[] erc20s;
         uint[] appVars;
         string[] pyyVars;
+        address ETH;
     }
 
     // struct PYYERC20 {

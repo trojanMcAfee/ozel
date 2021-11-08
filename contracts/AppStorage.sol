@@ -5,7 +5,7 @@ import './interfaces/IGatewayRegistry.sol';
 import './interfaces/IGateway.sol';
 import './facets/ManagerFacet.sol';
 // import '@openzeppelin/contracts/token/ERC20/IERC20.sol';
-import ''; // ----> set to IERC20Face and cont. on DiamondInit
+import './facets/ERC20Facet/IERC20Facet.sol';
 import {IRenPool, ITricrypto} from './interfaces/ICurve.sol';
 import './facets/VaultFacet.sol';
 
@@ -20,13 +20,12 @@ struct AppStorage {
     IRenPool renPool; 
     ICrvLpToken crvTricrypto;
 
-    IERC20 renBTC;
-    IERC20 USDT;
-    IERC20 WETH;
-    IERC20 WBTC;
-    IERC20 PYY;
+    IERC20Facet renBTC;
+    IERC20Facet USDT;
+    IERC20Facet WETH;
+    IERC20Facet WBTC;
+    IERC20Facet PYY;
 
-    address ETH;
     uint dappFee;
     uint slippageOnCurve;
     uint totalVolume;
@@ -35,6 +34,7 @@ struct AppStorage {
     mapping(address => uint) pendingWithdrawal;
     mapping(address => uint) usersPayments;
 
+    address ETH;
 
 
 }
