@@ -87,6 +87,8 @@ describe("PayMe app", function () {
   let DiamondInit, diamondInit, deployedDiamond;
   let functionCall, library;
 
+  let LibDiamond, libDiamond;
+
   before(async () => {
     signers = await hre.ethers.getSigners();
     signer = signers[0];
@@ -164,6 +166,11 @@ describe("PayMe app", function () {
       overrides: {callerAddr, functionCall, diamondInit: diamondInit.address}
     });
     console.log('Diamond deployed to: ', deployedDiamond.address);
+
+    //Deploys LibDimaond
+    LibDimaond = await hre.ethers.getContractFactory('LibDiamond');
+    libDiamond = await LibDimaond.deploy();
+    await libDiamond.deployed();
   });
 
 
@@ -171,5 +178,10 @@ describe("PayMe app", function () {
   it("should log deposit message", async function () {
     console.log('caller: ', callerAddr);
     runFallback('getOwner()');
+
+    // const x = libDiamond.diamondStorage();
+    // console.log('x: ', x);
+
+
   });
 });

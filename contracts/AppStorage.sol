@@ -37,8 +37,6 @@ struct AppStorage {
 
     address ETH;
 
-
-
 }
 
 struct PYYERC20 {
@@ -47,4 +45,13 @@ struct PYYERC20 {
     uint  _totalSupply;
     string  _name;
     string  _symbol;
+}
+
+contract Getters {
+    AppStorage internal s;
+
+    function getDistributionIndex() external view returns(uint) {
+        return s.distributionIndex;
+    }
+
 }

@@ -375,9 +375,20 @@ async function diamond2() {
     const diamond = require('diamond-util');
     const { getSelectors } = require('./libraries/diamond.js');
 
-    const signers = await hre.ethers.getSigners();
-    const signer = signers[0];
-    const callerAddr = await signer.getAddress();
+    const [callerAddr, caller2Addr] = await hre.ethers.provider.listAccounts();
+    console.log('--');
+    console.log('Caller 1: ', callerAddr);
+    console.log('Caller 2: ', caller2Addr);
+    console.log('--');
+
+    const WETH = await hre.ethers.getContractAt('IERC20Facet', wethAddr);
+    const USDT = await hre.ethers.getContractAt('IERC20Facet', usdtAddr);
+    const WBTC = await hre.ethers.getContractAt('IERC20Facet', wbtcAddr);
+    const renBTC = await hre.ethers.getContractAt('IERC20Facet', renBtcAddr);
+
+    // const signers = await hre.ethers.getSigners();
+    // const signer = signers[0];
+    // const callerAddr = await signer.getAddress();
 
     async function deployFacet(facetName, withLib, libDeployed) {
         let Contract, library;
@@ -404,6 +415,7 @@ async function diamond2() {
     
     const [managerFacet, library] = await deployFacet('ManagerFacet', 'Helpers');
     const vaultFacet = await deployFacet('VaultFacet', 'Helpers', library);
+    const paymeFacet = await deployFacet('PayMeFacet');
     const PYY = await deployFacet('PayTokenFacet'); 
 
     //Selectors
@@ -466,12 +478,18 @@ async function diamond2() {
         facets: [
             ['DiamondCutFacet', diamondCutFacet],
             ['DiamondLoupeFacet', diamondLoupeFacet],
-            ['DummyFacet', dummyFacet]
+            ['DummyFacet', dummyFacet],
+            ['PayMeFacet', paymeFacet]
         ],
         args: '',
         overrides: {callerAddr, functionCall, diamondInit: diamondInit.address}
     });
     console.log('Diamond deployed to: ', deployedDiamond.address);
+
+    //Deploys Getters contract
+    const Getters = await hre.ethers.getContractFactory('Getters');
+    const getters = await Getters.deploy();
+    await getters.deployed();
     
 
     async function runFallback(method) {
@@ -481,7 +499,9 @@ async function diamond2() {
               encodeURIComponent(c).replace(/\%/g,'').toLowerCase()
             ).join('');
         }
-        
+
+        const signers = await hre.ethers.getSigners();
+        const signer = signers[0];
         const sigHex = utf8ToHex(method);
         const signature = keccak256(sigHex).substr(0, 10);
 
@@ -493,6 +513,108 @@ async function diamond2() {
 
     runFallback('getOwner()');
     // runFallback('getHello()');
+
+
+    
+    /**+++++++++ SIMULATES CURVE SWAPS ++++++++**/
+    const IWETH = await hre.ethers.getContractAt('IWETH', wethAddr);
+    const tricryptoPool = await hre.ethers.getContractAt('ITricrypto', tricryptoAddr);
+    const renPool = await hre.ethers.getContractAt('IRenPool', renPoolAddr);
+
+    //Gets the gross WETH and converts to WBTC
+    await IWETH.deposit({value: parseEther('1000')}); 
+    let amountIn = (await WETH.balanceOf(callerAddr)).toString(); 
+    //Swaps ETH for WBTC
+    await tricryptoPool.exchange(2, 1, amountIn, 1, true, {
+        value: amountIn
+    });
+
+    //Converts to renBTC and divides in 1/10th
+    amountIn = (await WBTC.balanceOf(callerAddr)).toString();
+    await WBTC.approve(renPoolAddr, MaxUint256);
+    await renPool.exchange(1, 0, amountIn, 1); 
+    let renBtcBalance = (await renBTC.balanceOf(callerAddr)).toString();
+    let oneTenth = Math.floor(renBtcBalance / 10);
+
+    //Sends renBTC to contracts (simulates BTC bridging) ** MAIN FUNCTION **
+    async function sendsOneTenthRenBTC(caller, userToken, IERC20, tokenStr, decimals) {
+        await renBTC.transfer(paymeFacet.address, oneTenth); //---> is it possible to transfer to an impl
+        await paymeFacet.transferToManager(
+            managerFacet.address,
+            caller,
+            userToken
+        );
+        console.log('index: ', (await getters.getDistributionIndex()).toString() / 10 ** 18);
+        let tokenBalance = await IERC20.balanceOf(caller);
+        console.log(tokenStr + ' balance of callerAddr: ', tokenBalance.toString() / decimals);
+        console.log('---------------------------------------'); 
+    }
+
+    async function approvePYY(caller) {
+        const signer = await hre.ethers.provider.getSigner(caller);
+        await PYY.connect(signer).approve(managerFacet.address, MaxUint256);
+    }
+    //Caller 2 signer
+    const signer2 = await hre.ethers.provider.getSigner(caller2Addr);
+
+    //First user
+    console.log('1st user first transfer');
+    await sendsOneTenthRenBTC(callerAddr, usdtAddr, USDT, 'USDT', 10 ** 6);
+    await approvePYY(callerAddr);
+    console.log('PYY balance on caller 1: ', formatEther(await PYY.balanceOf(callerAddr)));
+    console.log('---------------------------------------'); 
+
+    //Second user
+    console.log('2nd user first transfer');
+    await sendsOneTenthRenBTC(caller2Addr, wethAddr, WETH, 'WETH', 10 ** 18);
+    await approvePYY(caller2Addr);
+    console.log('PYY balance on caller 2: ', formatEther(await PYY.balanceOf(caller2Addr)));
+    console.log('PYY balance on caller 1 after caller2 swap: ', formatEther(await PYY.balanceOf(callerAddr)));
+    console.log('---------------------------------------'); 
+
+    // //First user - 2nd transfer
+    console.log('1st user second transfer');
+    await sendsOneTenthRenBTC(callerAddr, usdtAddr, USDT, 'USDT', 10 ** 6);
+    console.log('PYY balance on caller 1 after 2nd swap: ', formatEther(await PYY.balanceOf(callerAddr)));
+    console.log('PYY balance on caller 2 after caller1 2nd swap: ', formatEther(await PYY.balanceOf(caller2Addr)));
+    console.log('---------------------------------------'); 
+    
+    //Transfer half of PYY from caller1 to caller2
+    console.log('Transfer half of PYY');
+    const halfPYYbalance = formatEther(await PYY.balanceOf(callerAddr)) / 2;
+    await PYY.transfer(caller2Addr, parseEther(halfPYYbalance.toString())); 
+    console.log('PYY balance on caller 1 after transferring half: ', formatEther(await PYY.balanceOf(callerAddr)));
+    console.log('PYY balance on caller 2 after getting half: ', formatEther(await PYY.balanceOf(caller2Addr)));
+    console.log('---------------------------------------'); 
+
+    //1st user withdraw remaining share (half)
+    console.log('Withdraw 1st user half share');
+    await vault.withdrawUserShare(callerAddr, parseEther(formatEther(await PYY.balanceOf(callerAddr))), usdtAddr);
+    const usdtBalance = await USDT.balanceOf(callerAddr);
+    console.log('USDT balance from fees of caller1: ', usdtBalance.toString() / 10 ** 6); 
+    console.log('PYY balance on caller 1 after fees withdrawal: ', formatEther(await PYY.balanceOf(callerAddr)));
+    console.log('PYY balance on caller 2 after fees withdrawal ', formatEther(await PYY.balanceOf(caller2Addr)));
+    console.log('---------------------------------------'); 
+
+    //1st user third transfer (ETH)
+    console.log('1st user third transfer (ETH)');
+    await sendsOneTenthRenBTC(callerAddr, wethAddr, WETH, 'WETH', 10 ** 18);
+    console.log('PYY balance on caller 1: ', formatEther(await PYY.balanceOf(callerAddr)));
+    console.log('PYY balance on caller 2: ', formatEther(await PYY.balanceOf(caller2Addr)));
+    const toTransfer = formatEther(await PYY.balanceOf(caller2Addr)) / 3;
+    await PYY.connect(signer2).transfer(callerAddr, parseEther(toTransfer.toString())); 
+    console.log('After PYY transfer');
+    console.log('PYY balance on caller 1: ', formatEther(await PYY.balanceOf(callerAddr)));
+    console.log('PYY balance on caller 2: ', formatEther(await PYY.balanceOf(caller2Addr)));
+    console.log('Withdrawing 1/3');
+    await vault.withdrawUserShare(caller2Addr, parseEther(toTransfer.toString()), wethAddr);
+    const wethBalance = await WETH.balanceOf(caller2Addr);
+    console.log('WETH balance from fees of caller2: ', formatEther(wethBalance));
+    console.log('PYY balance on caller 1: ', formatEther(await PYY.balanceOf(callerAddr)));
+    console.log('PYY balance on caller 2: ', formatEther(await PYY.balanceOf(caller2Addr)));
+
+
+    /**+++++++++ END OF SIMULATION CURVE SWAPS ++++++++**/
 
 
 

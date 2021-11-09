@@ -33,7 +33,7 @@ import '../interfaces/ICrvLpToken.sol';
 // with data from a deployment script. Use the init function to initialize state variables
 // of your diamond. Add parameters to the init funciton if you need to.
 
-contract DiamondInit {    //moving variables - need to be passed to init and put on LibDiamond
+contract DiamondInit {    
 
     AppStorage internal s;
     // You can add parameters to this function in order to pass in 
