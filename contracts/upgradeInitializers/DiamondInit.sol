@@ -66,7 +66,7 @@ contract DiamondInit {
         s.manager = ManagerFacet(_vars.contracts[1]);
         s.tricrypto = ITricrypto(_vars.contracts[2]);
         s.vault = VaultFacet(_vars.contracts[3]);
-        s. renPool = IRenPool(_vars.contracts[4]);
+        s.renPool = IRenPool(_vars.contracts[4]);
         s.crvTricrypto = ICrvLpToken(_vars.contracts[5]);
         s.payme = PayMeFacet(payable(_vars.contracts[6]));
 
@@ -81,7 +81,7 @@ contract DiamondInit {
         s.dappFee = _vars.appVars[0];
         s.slippageOnCurve = _vars.appVars[1];
 
-        //Sets name and symbol on PayToken
+        //Sets name and symbol on PayToken (PYY)
         s.py[true]._name = _vars.pyyVars[0];
         s.py[true]._symbol = _vars.pyyVars[1];
 

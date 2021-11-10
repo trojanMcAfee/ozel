@@ -14,10 +14,14 @@ import { IDiamondCut } from "./interfaces/IDiamondCut.sol";
 import { IDiamondLoupe } from "./interfaces/IDiamondLoupe.sol";
 import { IERC173 } from "./interfaces/IERC173.sol";
 
+// import './AppStorage.sol';
+
 
 import 'hardhat/console.sol';
 
 contract Diamond {    
+
+    // AppStorage internal s;
 
 
     constructor(IDiamondCut.FacetCut[] memory _diamondCut, address _contractOwner, bytes memory _functionCall, address _init) payable {        
@@ -36,12 +40,6 @@ contract Diamond {
             ds.slot := position
         }
         // get facet from function selector
-        // console.log('msg.sig: ');
-        // console.logBytes4(msg.sig);
-        // // console.log('exists?: ', ds.facets[0x9f814b40]);
-        // // revert('revert here in contract');
-        // console.log('msg.data: ');
-        // console.logBytes(msg.data);
         address facet = ds.facets[msg.sig];
         require(facet != address(0), "Diamond: Function does not exist");
         // Execute external function from facet using delegatecall and return any value.

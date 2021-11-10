@@ -425,6 +425,8 @@ async function diamond2() {
     
     const selecPayme = getSelectors(paymeFacet).filter((el) => typeof el === 'string');
     const selecManager = getSelectors(managerFacet).filter((el) => typeof el === 'string');
+    const selecPYY = getSelectors(PYY).filter((el) => typeof el === 'string');
+
 
     //State variables
     const tokenName = 'PayToken';
@@ -463,13 +465,14 @@ async function diamond2() {
     ];
 
     const FacetsStruct = [
-        [selecCut, selecLoup, selecDummy, selecPayme, selecManager],
+        [selecCut, selecLoup, selecDummy, selecPayme, selecManager, selecPYY],
         [
             diamondCutFacet.address, 
             diamondLoupeFacet.address, 
             dummyFacet.address,
             paymeFacet.address,
-            managerFacet.address
+            managerFacet.address,
+            PYY.address
         ]
     ];
 
@@ -489,7 +492,9 @@ async function diamond2() {
             ['DiamondCutFacet', diamondCutFacet],
             ['DiamondLoupeFacet', diamondLoupeFacet],
             ['DummyFacet', dummyFacet],
-            ['PayMeFacet', paymeFacet]
+            ['PayMeFacet', paymeFacet],
+            ['ManagerFacet', managerFacet],
+            ['PayTokenFacet', PYY]
         ],
         args: '',
         overrides: {callerAddr, functionCall, diamondInit: diamondInit.address}
@@ -500,6 +505,7 @@ async function diamond2() {
     const Getters = await hre.ethers.getContractFactory('Getters');
     const getters = await Getters.deploy();
     await getters.deployed();
+
     
 
     async function runFallback2(method) {
@@ -537,15 +543,14 @@ async function diamond2() {
         });
     }
 
-    async function runFallback(method, managerAddr, userAddr, userToken) {
+    async function runFallback(method, userAddr, userToken) {
         const signers = await hre.ethers.getSigners();
         const signer = signers[0];
         const abi = [
-            'function transferToManager(address _manager, address _user, address _userToken)'
+            'function transferToManager(address _user, address _userToken)'
         ];
         const iface = new ethers.utils.Interface(abi);
         const encodedData = iface.encodeFunctionData(method, [
-            managerAddr,
             userAddr,
             userToken
         ]);
@@ -559,6 +564,20 @@ async function diamond2() {
     // console.log('revert here');
     // return;
     // runFallback('getHello()');
+
+    (async () => {
+        const signers = await hre.ethers.getSigners();
+        const signer = signers[0];
+        const abi = [
+            'function getVar() view'
+        ];
+        const iface = new ethers.utils.Interface(abi);
+        const encodedData = iface.encodeFunctionData('getVar');
+        await signer.sendTransaction({
+            to: deployedDiamond.address,
+            data: encodedData
+        });
+    })();
 
 
     
@@ -584,13 +603,10 @@ async function diamond2() {
 
     //Sends renBTC to contracts (simulates BTC bridging) ** MAIN FUNCTION **
     async function sendsOneTenthRenBTC(caller, userToken, IERC20, tokenStr, decimals) {
-        await renBTC.transfer(paymeFacet.address, oneTenth);
-        let renBtcBalance = (await renBTC.balanceOf(paymeFacet.address)).toString();
-        console.log('begin: renBTC balance - ', renBtcBalance);
+        await renBTC.transfer(deployedDiamond.address, oneTenth);
         console.log('fooo1');
         await runFallback(
             'transferToManager',
-            managerFacet.address,
             caller,
             userToken
         );
@@ -614,7 +630,7 @@ async function diamond2() {
     await approvePYY(callerAddr);
     console.log('PYY balance on caller 1: ', formatEther(await PYY.balanceOf(callerAddr)));
     console.log('---------------------------------------'); 
-    console.log('revert here');
+    console.log('begin: revert here');
     return;
 
     //Second user

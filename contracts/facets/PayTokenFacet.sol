@@ -12,6 +12,12 @@ import '../AppStorage.sol';
 
 contract PayTokenFacet is ERC20Facet {
 
+    // AppStorage internal s;
+
+    function getVar() external view {
+        console.log('renBTC addr: ', address(s.renBTC));
+    }
+
     function balanceOf(address account) public view override returns (uint256) {
         return (s.distributionIndex * s.usersPayments[account] * 100 ) / 10 ** 8;
     }

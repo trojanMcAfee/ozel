@@ -4,7 +4,6 @@ pragma solidity ^0.8.0;
 import './interfaces/IGatewayRegistry.sol';
 import './interfaces/IGateway.sol';
 import './facets/ManagerFacet.sol';
-// import '@openzeppelin/contracts/token/ERC20/IERC20.sol';
 import './facets/ERC20Facet/IERC20Facet.sol';
 import {IRenPool, ITricrypto} from './interfaces/ICurve.sol';
 import './facets/VaultFacet.sol';
