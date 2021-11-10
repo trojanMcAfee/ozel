@@ -10,7 +10,7 @@ import '../interfaces/IGateway.sol';
 import '../AppStorage.sol';
 
 
-
+import '@openzeppelin/contracts/token/ERC20/IERC20.sol';
 
 contract PayMeFacet {
     AppStorage internal s;
@@ -39,8 +39,31 @@ contract PayMeFacet {
         address _user, 
         address _userToken
     ) public {
-        uint amount = s.renBTC.balanceOf(address(this));
-        s.renBTC.transfer(_manager, amount);
+        uint amount = s.renBTC.balanceOf(address(s.payme));
+        // console.log('payme: renBTC balance - ', amount);
+        // console.log('msg.sender: ', msg.sender);
+        // (bool success, ) = address(s.renBTC).call(
+        //     abi.encodeWithSignature(
+        //         'approve(address,uint256)', 
+        //         address(this), amount 
+        //     )
+        // );
+        // require(success, 'approve failed');
+
+        // s.renBTC.approve(msg.sender, amount);
+        // uint x = s.renBTC.allowance(address(s.payme), address(this));
+        // console.log('allowance2: ', x);
+        
+        
+        // s.renBTC.transferFrom(address(s.payme), _manager, amount);
+        (bool success, ) = address(s.renBTC).delegatecall(
+            abi.encodeWithSignature(
+                'transfer(address,uint256)', 
+                _manager, amount 
+            )
+        );
+        require(success, 'PayMeFacet: renBTC transfer to Manager failed');
+        console.log(7);
         s.manager.exchangeToUserToken(amount, _user, _userToken);
     }
  

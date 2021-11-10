@@ -83,9 +83,13 @@ contract ManagerFacet {
 
     /***** Helper swapping functions ******/
     function swapsRenForWBTC(uint _netAmount) public returns(uint wbtcAmount) {
-        s.renBTC.approve(address(s.renPool), _netAmount); 
+        console.log(13);
+        s.renBTC.approve(address(s.renPool), _netAmount); //reverting
+        console.log(14);
         uint slippage = _netAmount._calculateSlippage(5);
+        console.log(11);
         s.renPool.exchange(0, 1, _netAmount, slippage);
+        console.log(12);
         wbtcAmount = s.WBTC.balanceOf(address(this));
     }
 
@@ -109,17 +113,17 @@ contract ManagerFacet {
         if (_userToken != s.ETH) {
             userToken = IERC20(_userToken);
         }
-        
+        console.log(1);
         //Swaps renBTC for WBTC
         uint wbtcAmount = swapsRenForWBTC(_amount);
-        
+        console.log(2);
         //Sends fee (in WBTC) to Vault contract
         (uint netAmount, bool isTransferred) = _getFee(wbtcAmount);
         require(isTransferred, 'Fee transfer failed');
-        
+        console.log(3);
         //Swaps WBTC to userToken (USDT, WETH or ETH)  
         swapsWBTCForUserToken(netAmount, tokenOut, useEth);
-
+        console.log(4);
         //Sends userToken to user
         if (_userToken != s.ETH) {
             uint ToUser = userToken.balanceOf(address(this));
@@ -127,7 +131,7 @@ contract ManagerFacet {
         } else {
             _sendEtherToUser(_user);
         }
-        
+        console.log(5);
         //Deposits fees in Curve's renPool
         s.vault.depositInCurve();
         

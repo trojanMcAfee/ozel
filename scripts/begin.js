@@ -3,7 +3,7 @@ const { ethers } = require("ethers");
 const { executeBridge } = require('./exec-bridge.js');
 const { sendBitcoin } = require('./init-btc-tx.js');
 const { MaxUint256 } = ethers.constants;
-const { parseEther, formatEther, keccak256 } = ethers.utils;
+const { parseEther, formatEther, keccak256, defaultAbiCoder: abiCoder } = ethers.utils;
 
 let wethAddr;
 let wbtcAddr;
@@ -419,9 +419,12 @@ async function diamond2() {
     const PYY = await deployFacet('PayTokenFacet'); 
 
     //Selectors
-    const selecCut = getSelectors(diamondCutFacet).filter((el, i) => i <= 4);
-    const selecLoup = getSelectors(diamondLoupeFacet).filter((el, i) => i <= 4);
-    const selecDummy = getSelectors(dummyFacet).filter((el, i) => i <= 1);
+    const selecCut = getSelectors(diamondCutFacet).filter((el) => typeof el === 'string');
+    const selecLoup = getSelectors(diamondLoupeFacet).filter((el) => typeof el === 'string');
+    const selecDummy = getSelectors(dummyFacet).filter((el) => typeof el === 'string');
+    
+    const selecPayme = getSelectors(paymeFacet).filter((el) => typeof el === 'string');
+    const selecManager = getSelectors(managerFacet).filter((el) => typeof el === 'string');
 
     //State variables
     const tokenName = 'PayToken';
@@ -433,7 +436,8 @@ async function diamond2() {
         tricryptoAddr,
         vaultFacet.address,
         renPoolAddr,
-        crvTricrypto
+        crvTricrypto,
+        paymeFacet.address
     ];
 
     const erc20sAddr = [
@@ -459,8 +463,14 @@ async function diamond2() {
     ];
 
     const FacetsStruct = [
-        [selecCut, selecLoup, selecDummy],
-        [diamondCutFacet.address, diamondLoupeFacet.address, dummyFacet.address]
+        [selecCut, selecLoup, selecDummy, selecPayme, selecManager],
+        [
+            diamondCutFacet.address, 
+            diamondLoupeFacet.address, 
+            dummyFacet.address,
+            paymeFacet.address,
+            managerFacet.address
+        ]
     ];
 
     //Deploys DiamondInit
@@ -492,7 +502,7 @@ async function diamond2() {
     await getters.deployed();
     
 
-    async function runFallback(method) {
+    async function runFallback2(method) {
         function utf8ToHex(str) {
             return '0x' + Array.from(str).map(c =>
               c.charCodeAt(0) < 128 ? c.charCodeAt(0).toString(16) :
@@ -504,14 +514,50 @@ async function diamond2() {
         const signer = signers[0];
         const sigHex = utf8ToHex(method);
         const signature = keccak256(sigHex).substr(0, 10);
+        console.log('type: ', typeof signature);
+
+        const encodedParams = abiCoder.encode(['uint', 'string'], [1234, 'Hello world']);
+        // console.log('params: ', encodedParams);
+        // const decodedParams = abiCoder.decode(['uint', 'string'], encodedParams);
+        // console.log('decoded params: ', decodedParams);
+
+
+        const abi = [
+            'function getOwner2(uint num, string str) view'
+        ];
+        const iface = new ethers.utils.Interface(abi);
+        const encodedData = iface.encodeFunctionData('getOwner2', [
+            23,
+            'hello world'
+        ]);
 
         await signer.sendTransaction({
             to: deployedDiamond.address,
-            data: signature
+            data: encodedData
         });
     }
 
-    runFallback('getOwner()');
+    async function runFallback(method, managerAddr, userAddr, userToken) {
+        const signers = await hre.ethers.getSigners();
+        const signer = signers[0];
+        const abi = [
+            'function transferToManager(address _manager, address _user, address _userToken)'
+        ];
+        const iface = new ethers.utils.Interface(abi);
+        const encodedData = iface.encodeFunctionData(method, [
+            managerAddr,
+            userAddr,
+            userToken
+        ]);
+        await signer.sendTransaction({
+            to: deployedDiamond.address,
+            data: encodedData
+        });
+    }
+
+    // runFallback('getOwner()');
+    // console.log('revert here');
+    // return;
     // runFallback('getHello()');
 
 
@@ -538,18 +584,23 @@ async function diamond2() {
 
     //Sends renBTC to contracts (simulates BTC bridging) ** MAIN FUNCTION **
     async function sendsOneTenthRenBTC(caller, userToken, IERC20, tokenStr, decimals) {
-        await renBTC.transfer(paymeFacet.address, oneTenth); //---> is it possible to transfer to an impl
-        await paymeFacet.transferToManager(
+        await renBTC.transfer(paymeFacet.address, oneTenth);
+        let renBtcBalance = (await renBTC.balanceOf(paymeFacet.address)).toString();
+        console.log('begin: renBTC balance - ', renBtcBalance);
+        console.log('fooo1');
+        await runFallback(
+            'transferToManager',
             managerFacet.address,
             caller,
             userToken
         );
+        console.log('fooo2');
         console.log('index: ', (await getters.getDistributionIndex()).toString() / 10 ** 18);
         let tokenBalance = await IERC20.balanceOf(caller);
         console.log(tokenStr + ' balance of callerAddr: ', tokenBalance.toString() / decimals);
         console.log('---------------------------------------'); 
     }
-
+    
     async function approvePYY(caller) {
         const signer = await hre.ethers.provider.getSigner(caller);
         await PYY.connect(signer).approve(managerFacet.address, MaxUint256);
@@ -563,6 +614,8 @@ async function diamond2() {
     await approvePYY(callerAddr);
     console.log('PYY balance on caller 1: ', formatEther(await PYY.balanceOf(callerAddr)));
     console.log('---------------------------------------'); 
+    console.log('revert here');
+    return;
 
     //Second user
     console.log('2nd user first transfer');

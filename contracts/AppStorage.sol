@@ -8,6 +8,8 @@ import './facets/ManagerFacet.sol';
 import './facets/ERC20Facet/IERC20Facet.sol';
 import {IRenPool, ITricrypto} from './interfaces/ICurve.sol';
 import './facets/VaultFacet.sol';
+import '@openzeppelin/contracts/token/ERC20/IERC20.sol';
+import './facets/PayMeFacet.sol';
 
 
 struct AppStorage {
@@ -19,11 +21,12 @@ struct AppStorage {
     VaultFacet vault;
     IRenPool renPool; 
     ICrvLpToken crvTricrypto;
+    PayMeFacet payme;
 
-    IERC20Facet renBTC;
-    IERC20Facet USDT;
-    IERC20Facet WETH;
-    IERC20Facet WBTC;
+    IERC20 renBTC;
+    IERC20 USDT;
+    IERC20 WETH;
+    IERC20 WBTC;
     IERC20Facet PYY;
 
     uint dappFee;

@@ -27,6 +27,7 @@ import {IRenPool, ITricrypto} from '../interfaces/ICurve.sol';
 import '../facets/VaultFacet.sol';
 import '../facets/ERC20Facet/IERC20Facet.sol';
 import '../interfaces/ICrvLpToken.sol';
+import '../facets/PayMeFacet.sol';
 
 
 // It is exapected that this contract is customized if you want to deploy your diamond
@@ -58,6 +59,8 @@ contract DiamondInit {
             }
         }
 
+        //TODO: add addresses to DiamondStorage() *********
+
         //Sets addresses on contracts
         s.registry = IGatewayRegistry(_vars.contracts[0]);
         s.manager = ManagerFacet(_vars.contracts[1]);
@@ -65,12 +68,13 @@ contract DiamondInit {
         s.vault = VaultFacet(_vars.contracts[3]);
         s. renPool = IRenPool(_vars.contracts[4]);
         s.crvTricrypto = ICrvLpToken(_vars.contracts[5]);
+        s.payme = PayMeFacet(payable(_vars.contracts[6]));
 
         //Sets ERC20 instances
-        s.renBTC = IERC20Facet(_vars.erc20s[0]);
-        s.USDT = IERC20Facet(_vars.erc20s[1]);
-        s.WETH = IERC20Facet(_vars.erc20s[2]);
-        s.WBTC = IERC20Facet(_vars.erc20s[3]);
+        s.renBTC = IERC20(_vars.erc20s[0]);
+        s.USDT = IERC20(_vars.erc20s[1]);
+        s.WETH = IERC20(_vars.erc20s[2]);
+        s.WBTC = IERC20(_vars.erc20s[3]);
         s.PYY = IERC20Facet(_vars.erc20s[4]);
 
         //Sets app's general variables

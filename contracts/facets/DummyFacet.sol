@@ -24,12 +24,12 @@ contract DummyFacet {
 
     function getOwner() public view {
         LibDiamond.DiamondStorage storage ds = LibDiamond.diamondStorage();
-        console.log('owner: ', ds.contractOwner);
+        console.log('owner in Dummy: ', ds.contractOwner);
     }
 
-    function getOwner2() public view {
-        LibDiamond.DiamondStorage storage ds = LibDiamond.diamondStorage();
-        console.log('owner: ', ds.contractOwner);
+    function getOwner2(uint _num, string memory _str) public view {
+        console.log('this is num: ', _num);
+        console.log('this is str: ', _str);
     }
 
 
