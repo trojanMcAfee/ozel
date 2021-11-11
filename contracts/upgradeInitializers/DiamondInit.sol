@@ -18,6 +18,7 @@ import 'hardhat/console.sol';
 
 
 import '../AppStorage.sol'; 
+import {Getters} from '../AppStorage.sol'; 
 
 import '../interfaces/IGatewayRegistry.sol';
 import '../interfaces/IGateway.sol';
@@ -59,7 +60,7 @@ contract DiamondInit {
             }
         }
 
-        //TODO: add addresses to DiamondStorage() *********
+        //TODO: add addresses to DiamondStorage()
 
         //Sets addresses on contracts
         s.registry = IGatewayRegistry(_vars.contracts[0]);
@@ -69,6 +70,7 @@ contract DiamondInit {
         s.renPool = IRenPool(_vars.contracts[4]);
         s.crvTricrypto = ICrvLpToken(_vars.contracts[5]);
         s.payme = PayMeFacet(payable(_vars.contracts[6]));
+        s.getters = Getters(_vars.contracts[7]);
 
         //Sets ERC20 instances
         s.renBTC = IERC20(_vars.erc20s[0]);

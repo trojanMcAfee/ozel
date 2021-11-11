@@ -415,8 +415,10 @@ async function diamond2() {
     
     const [managerFacet, library] = await deployFacet('ManagerFacet', 'Helpers');
     const vaultFacet = await deployFacet('VaultFacet', 'Helpers', library);
-    const paymeFacet = await deployFacet('PayMeFacet');
+    const paymeFacet = await deployFacet('PayMeFacet', 'Helpers', library);
     const PYY = await deployFacet('PayTokenFacet'); 
+
+    const gettersFacet = await deployFacet('Getters');
 
     //Selectors
     const selecCut = getSelectors(diamondCutFacet).filter((el) => typeof el === 'string');
@@ -439,7 +441,8 @@ async function diamond2() {
         vaultFacet.address,
         renPoolAddr,
         crvTricrypto,
-        paymeFacet.address
+        paymeFacet.address,
+        gettersFacet.address
     ];
 
     const erc20sAddr = [
@@ -543,7 +546,7 @@ async function diamond2() {
         });
     }
 
-    async function runFallback(method, userAddr, userToken) {
+    async function runFallback3(method, userAddr, userToken) {
         const signers = await hre.ethers.getSigners();
         const signer = signers[0];
         const abi = [
@@ -560,24 +563,42 @@ async function diamond2() {
         });
     }
 
+    async function runFallback(amount, method, userAddr, userToken) {
+        const signers = await hre.ethers.getSigners();
+        const signer = signers[0];
+        const abi = [
+            'function exchangeToUserToken(uint _amount, address _user, address _userToken)'
+        ];
+        const iface = new ethers.utils.Interface(abi);
+        const encodedData = iface.encodeFunctionData(method, [
+            amount,
+            userAddr,
+            userToken
+        ]);
+        await signer.sendTransaction({
+            to: deployedDiamond.address,
+            data: encodedData
+        });
+    }
+
     // runFallback('getOwner()');
     // console.log('revert here');
     // return;
     // runFallback('getHello()');
 
-    (async () => {
-        const signers = await hre.ethers.getSigners();
-        const signer = signers[0];
-        const abi = [
-            'function getVar() view'
-        ];
-        const iface = new ethers.utils.Interface(abi);
-        const encodedData = iface.encodeFunctionData('getVar');
-        await signer.sendTransaction({
-            to: deployedDiamond.address,
-            data: encodedData
-        });
-    })();
+    // (async () => {
+    //     const signers = await hre.ethers.getSigners();
+    //     const signer = signers[0];
+    //     const abi = [
+    //         'function getVar() view'
+    //     ];
+    //     const iface = new ethers.utils.Interface(abi);
+    //     const encodedData = iface.encodeFunctionData('getVar');
+    //     await signer.sendTransaction({
+    //         to: deployedDiamond.address,
+    //         data: encodedData
+    //     });
+    // })();
 
 
     
@@ -605,8 +626,14 @@ async function diamond2() {
     async function sendsOneTenthRenBTC(caller, userToken, IERC20, tokenStr, decimals) {
         await renBTC.transfer(deployedDiamond.address, oneTenth);
         console.log('fooo1');
+        // await runFallback(
+        //     'transferToManager',
+        //     caller,
+        //     userToken
+        // );
         await runFallback(
-            'transferToManager',
+            'exchangeToUserToken',
+            oneTenth,
             caller,
             userToken
         );

@@ -13,17 +13,23 @@ import '../AppStorage.sol';
 
 import 'hardhat/console.sol';
 
+// import {Exchange} from '../libraries/Helpers.sol';
+import {Getters} from '../AppStorage.sol';
+
 
 
 
 
 contract ManagerFacet { 
-    AppStorage s; //don't have access to AppStorage (it's only here)
-    //proven on PYY facet
+    AppStorage s; 
 
     using SafeERC20 for IERC20;
     using Helpers for uint256;
     using Helpers for address;
+
+    // function getVar() external view {
+    //     console.log('renBTC addr***: ', address(s.renBTC));
+    // }
 
 
 
@@ -85,38 +91,28 @@ contract ManagerFacet {
     /***** Helper swapping functions ******/
     function swapsRenForWBTC(uint _netAmount) public returns(uint wbtcAmount) {
         console.log(13);
-        // address(s.renBTC).delegateTo(
-        //     'approve(address,uint256)',
-        //     address(s.renPool),
-        //     _netAmount,
-        //     'ManagerFacet',
-        //     'swapsRenForWBTC'
-        // );
-        // (bool success, ) = address(s.renBTC).delegatecall(
-        //     abi.encodeWithSignature(
-        //         'approve(address,uint256)', 
-        //         s.renPool, _netAmount
-        //     )
-        // );
-        // require(success, 'ManagerFacet: swapsRenForWBTC approve failed');
         console.log('msg.sender: ', msg.sender);
         console.log('address(this): ', address(this));
         console.log(15);
-        console.log(address(s.renBTC));
-        revert('here');
-        s.renBTC.approve(address(s.renPool), _netAmount); 
+        s.renBTC.approve(address(s.renPool), _netAmount); //original ***
+
+        // (bool x, ) = address(s.renBTC).call(
+        //     abi.encodeWithSignature(
+        //         'approve(address,uint256)', 
+        //         address(s.renPool), _netAmount
+        //     )
+        // );
+        // require(x, 'filll');
+
+        console.log('allowance: ', s.renBTC.allowance(address(s.manager), address(s.renPool)));
 
         console.log(14);
-        uint slippage = _netAmount._calculateSlippage(5);
+        uint slippage = _netAmount._calculateSlippage(5); //pass this as a general variable to the Diamond
         console.log(11);
-
-        // address(s.renPool).delegateTo(
-        //     'exchange(int128,int128,uint256,uint256)',
-
-        // );
+        revert('hereeee');
 
         s.renPool.exchange(0, 1, _netAmount, slippage);
-
+        
         console.log(12);
         wbtcAmount = s.WBTC.balanceOf(address(this));
     }
@@ -134,6 +130,11 @@ contract ManagerFacet {
 
     function exchangeToUserToken(uint _amount, address _user, address _userToken) public {
         updateManagerState(_amount, _user);
+
+        // (bool x, ) = address(s.getters).call(
+        //     abi.encodeWithSignature('getVar(uint256)', _amount)
+        // );
+        // require(x, 'sss');
         
         uint tokenOut = _userToken == address(s.USDT) ? 0 : 2;
         bool useEth = _userToken == address(s.WETH) ? false : true;
@@ -144,6 +145,12 @@ contract ManagerFacet {
         console.log(1);
         //Swaps renBTC for WBTC
         uint wbtcAmount = swapsRenForWBTC(_amount);
+        // uint wbtcAmount = 1;
+        // (bool x, ) = address(Helpers).delegatecall(
+        //     abi.encodeWithSignature('swapsRenForWBTC(uint256)', _amount)
+        // );
+        // require(x, 'ffff');
+
         console.log(2);
         //Sends fee (in WBTC) to Vault contract
         (uint netAmount, bool isTransferred) = _getFee(wbtcAmount);
