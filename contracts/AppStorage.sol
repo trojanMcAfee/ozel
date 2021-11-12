@@ -23,7 +23,7 @@ struct AppStorage {
     IRenPool renPool; 
     ICrvLpToken crvTricrypto;
     PayMeFacet payme;
-    Getters getters;
+    GettersFacet getters;
 
     IERC20 renBTC;
     IERC20 USDT;
@@ -53,30 +53,36 @@ struct PYYERC20 {
     string  _symbol;
 }
 
-contract Getters {
+// function getDistributionIndex() view returns(uint) {
+//         AppStorage storage s;
+//         return s.distributionIndex;
+//     } 
+
+contract GettersFacet {
     AppStorage s;
 
+    function diamondStorage() internal pure returns(AppStorage storage ds) {
+        assembly {
+            ds.slot := 0
+        }
+    }
+
     function getDistributionIndex() external view returns(uint) {
+        // AppStorage storage s = diamondStorage();
         return s.distributionIndex;
     }
 
-    
-
-    function getVar(uint _netAmount) external {
-        
-        console.log('msg.sender: ', msg.sender);
-        console.log('address(this): ', address(this));
-        
-        s.renBTC.approve(address(s.renPool), _netAmount);
-        console.log('allowance: ', s.renBTC.allowance(address(s.manager), address(s.renPool)));
-        revert('fooozz');
-
+    function logVar() external view {
+        AppStorage storage s = diamondStorage();
+        console.log('renBTC ex: ', address(s.renBTC));
     }
 
+}
 
-    
-
-
-    
-
+library LibAppStorage {
+    function diamondStorage() internal pure returns (AppStorage storage ds) {
+        assembly {
+            ds.slot := 0
+        }
+    }
 }

@@ -14,14 +14,14 @@ import { IDiamondCut } from "./interfaces/IDiamondCut.sol";
 import { IDiamondLoupe } from "./interfaces/IDiamondLoupe.sol";
 import { IERC173 } from "./interfaces/IERC173.sol";
 
-// import './AppStorage.sol';
+import './AppStorage.sol';
 
 
 import 'hardhat/console.sol';
 
 contract Diamond {    
 
-    // AppStorage internal s;
+    // AppStorage public s;
 
 
     constructor(IDiamondCut.FacetCut[] memory _diamondCut, address _contractOwner, bytes memory _functionCall, address _init) payable {        

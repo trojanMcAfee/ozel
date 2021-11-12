@@ -18,7 +18,7 @@ import 'hardhat/console.sol';
 
 
 import '../AppStorage.sol'; 
-import {Getters} from '../AppStorage.sol'; 
+import {GettersFacet} from '../AppStorage.sol'; 
 
 import '../interfaces/IGatewayRegistry.sol';
 import '../interfaces/IGateway.sol';
@@ -70,7 +70,7 @@ contract DiamondInit {
         s.renPool = IRenPool(_vars.contracts[4]);
         s.crvTricrypto = ICrvLpToken(_vars.contracts[5]);
         s.payme = PayMeFacet(payable(_vars.contracts[6]));
-        s.getters = Getters(_vars.contracts[7]);
+        s.getters = GettersFacet(_vars.contracts[7]);
 
         //Sets ERC20 instances
         s.renBTC = IERC20(_vars.erc20s[0]);

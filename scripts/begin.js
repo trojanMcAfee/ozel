@@ -394,10 +394,10 @@ async function diamond2() {
         let Contract, library;
         if (withLib) {
             library = !libDeployed ? await deployFacet(withLib) : libDeployed;
+            const lb = {};
+            lb[withLib] = library.address;
             Contract = await hre.ethers.getContractFactory(facetName, {
-                libraries: {
-                    Helpers: library.address 
-                }
+                libraries: lb
             });
         } else {
             Contract = await hre.ethers.getContractFactory(facetName);
@@ -410,7 +410,7 @@ async function diamond2() {
 
     //Facets
     const diamondCutFacet = await deployFacet('DiamondCutFacet');
-    const diamondLoupeFacet = await deployFacet('DiamondLoupeFacet');
+    const diamondLoupeFacet = await deployFacet('DiamondLoupeFacet'); 
     const dummyFacet = await deployFacet('DummyFacet');
     
     const [managerFacet, library] = await deployFacet('ManagerFacet', 'Helpers');
@@ -418,7 +418,7 @@ async function diamond2() {
     const paymeFacet = await deployFacet('PayMeFacet');
     const PYY = await deployFacet('PayTokenFacet'); 
 
-    const gettersFacet = await deployFacet('Getters');
+    const gettersFacet = await deployFacet('GettersFacet');
 
     //Selectors
     const selecCut = getSelectors(diamondCutFacet).filter((el) => typeof el === 'string');
@@ -428,6 +428,8 @@ async function diamond2() {
     const selecPayme = getSelectors(paymeFacet).filter((el) => typeof el === 'string');
     const selecManager = getSelectors(managerFacet).filter((el) => typeof el === 'string');
     const selecPYY = getSelectors(PYY).filter((el) => typeof el === 'string');
+
+    const selectGetters = getSelectors(gettersFacet).filter((el) => typeof el === 'string');
 
 
     //State variables
@@ -468,14 +470,23 @@ async function diamond2() {
     ];
 
     const FacetsStruct = [
-        [selecCut, selecLoup, selecDummy, selecPayme, selecManager, selecPYY],
+        [
+            selecCut, 
+            selecLoup, 
+            selecDummy, 
+            selecPayme, 
+            selecManager, 
+            selecPYY,
+            selectGetters
+        ],
         [
             diamondCutFacet.address, 
             diamondLoupeFacet.address, 
             dummyFacet.address,
             paymeFacet.address,
             managerFacet.address,
-            PYY.address
+            PYY.address,
+            gettersFacet.address
         ]
     ];
 
@@ -497,7 +508,8 @@ async function diamond2() {
             ['DummyFacet', dummyFacet],
             ['PayMeFacet', paymeFacet],
             ['ManagerFacet', managerFacet],
-            ['PayTokenFacet', PYY]
+            ['PayTokenFacet', PYY],
+            ['GettersFacet', gettersFacet]
         ],
         args: '',
         overrides: {callerAddr, functionCall, diamondInit: diamondInit.address}
@@ -505,9 +517,9 @@ async function diamond2() {
     console.log('Diamond deployed to: ', deployedDiamond.address);
 
     //Deploys Getters contract
-    const Getters = await hre.ethers.getContractFactory('Getters');
-    const getters = await Getters.deploy();
-    await getters.deployed();
+    // const Getters = await hre.ethers.getContractFactory('Getters');
+    // const getters = await Getters.deploy();
+    // await getters.deployed();
 
     
 
@@ -600,6 +612,14 @@ async function diamond2() {
     //     });
     // })();
 
+    // const LibDiamond = await hre.ethers.getContractFactory('LibDiamond');
+    // const libDiamond = await LibDiamond.deploy();
+    // await libDiamond.deployed();
+
+    // const ds = await libDiamond.getDiamondStorage();
+    // console.log('ds: ', ds);
+    // return;
+
 
     
     /**+++++++++ SIMULATES CURVE SWAPS ++++++++**/
@@ -637,8 +657,12 @@ async function diamond2() {
         //     caller,
         //     userToken
         // );
+
+        //---> trying to set the getters for state variables
         console.log('fooo2');
-        console.log('index: ', (await getters.getDistributionIndex()).toString() / 10 ** 18);
+        console.log('index: ', (await gettersFacet.getDistributionIndex()).toString() / 10 ** 18);
+        console.log('index2: ', (await library.getDistributionIndex()).toString() / 10 ** 18);
+        console.log('index3: ', await gettersFacet.logVar());
         let tokenBalance = await IERC20.balanceOf(caller);
         console.log(tokenStr + ' balance of callerAddr: ', tokenBalance.toString() / decimals);
         console.log('---------------------------------------'); 

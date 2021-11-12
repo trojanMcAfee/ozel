@@ -14,7 +14,7 @@ import '../AppStorage.sol';
 import 'hardhat/console.sol';
 
 // import {Exchange} from '../libraries/Helpers.sol';
-import {Getters} from '../AppStorage.sol';
+import {GettersFacet} from '../AppStorage.sol';
 
 
 
@@ -27,9 +27,6 @@ contract ManagerFacet {
     using Helpers for uint256;
     using Helpers for address;
 
-    // function getVar() external view {
-    //     console.log('renBTC addr***: ', address(s.renBTC));
-    // }
 
 
 

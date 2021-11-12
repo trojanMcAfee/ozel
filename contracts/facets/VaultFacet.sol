@@ -51,7 +51,7 @@ contract VaultFacet { //Remember to write a function to withdraw/convert CRV
 
         s.tricrypto.add_liquidity(amounts, minAmount);
 
-        console.log(6);
+        console.log(6); //looks like it worked but PYY balance is still 0 on begin
         console.log('crvTricrypto token balance: ', s.crvTricrypto.balanceOf(address(this)));
     }
 
