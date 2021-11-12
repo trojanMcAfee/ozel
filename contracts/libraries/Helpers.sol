@@ -39,10 +39,11 @@ library Helpers {
 
     function swapsRenForWBTC(uint _netAmount) public returns(uint wbtcAmount) {
         AppStorage storage s = diamondStorage();
-
+        console.log('r: ', address(s.renBTC));
         console.log(13);
         console.log('msg.sender: ', msg.sender);
         console.log('address(this))): ', address(this));
+        revert();
         console.log(15);
         // s.renBTC.approve(address(s.renPool), _netAmount); //original ***
 
@@ -79,7 +80,7 @@ abstract contract Exchange {
         
         console.log('msg.sender: ', msg.sender);
         console.log('address(this): ', address(this));
-        
+
         s.renBTC.approve(address(s.renPool), _netAmount);
         console.log('allowance: ', s.renBTC.allowance(address(s.manager), address(s.renPool)));
         revert('fooozz');

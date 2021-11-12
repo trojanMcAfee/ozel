@@ -12,8 +12,8 @@ import '../AppStorage.sol';
 
 import '@openzeppelin/contracts/token/ERC20/IERC20.sol';
 
-contract PayMeFacet is ManagerFacet {
-    // AppStorage s;
+contract PayMeFacet {
+    AppStorage s;
 
 
     function deposit(
@@ -36,7 +36,7 @@ contract PayMeFacet is ManagerFacet {
 
     function transferToManager(address _user, address _userToken) public {
         uint amount = s.renBTC.balanceOf(address(this));
-        s.renBTC.transfer(address(s.manager), amount);
+        // s.renBTC.transfer(address(s.manager), amount);
         // s.manager.exchangeToUserToken(amount, _user, _userToken); //original **
 
         (bool success, ) = address(s.manager).delegatecall(

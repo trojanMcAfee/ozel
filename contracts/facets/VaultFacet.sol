@@ -16,7 +16,7 @@ import 'hardhat/console.sol';
 
 contract VaultFacet { //Remember to write a function to withdraw/convert CRV 
 
-    AppStorage internal s;
+    AppStorage s;
 
     using Helpers for uint256;
 
@@ -37,14 +37,21 @@ contract VaultFacet { //Remember to write a function to withdraw/convert CRV
         return(tokenAmount, amounts);
     }
 
-    function depositInCurve() public {
-        uint wbtcAmountIn = s.WBTC.balanceOf(address(this));
+    function depositInCurve(uint _fee) public {
+        console.log(1);
+        uint wbtcAmountIn = _fee;
+        console.log(2);
         console.log('WBTC fees to be deposited in Curve: ', wbtcAmountIn);
         (uint tokenAmountIn, uint[3] memory amounts) = _calculateTokenAmountCurve(wbtcAmountIn);
         uint minAmount = tokenAmountIn._calculateSlippage(s.slippageOnCurve);
-
+        
+        console.log(3);
         s.WBTC.approve(address(s.tricrypto), tokenAmountIn);
+        console.log(4);
+
         s.tricrypto.add_liquidity(amounts, minAmount);
+
+        console.log(6);
         console.log('crvTricrypto token balance: ', s.crvTricrypto.balanceOf(address(this)));
     }
 

@@ -415,7 +415,7 @@ async function diamond2() {
     
     const [managerFacet, library] = await deployFacet('ManagerFacet', 'Helpers');
     const vaultFacet = await deployFacet('VaultFacet', 'Helpers', library);
-    const paymeFacet = await deployFacet('PayMeFacet', 'Helpers', library);
+    const paymeFacet = await deployFacet('PayMeFacet');
     const PYY = await deployFacet('PayTokenFacet'); 
 
     const gettersFacet = await deployFacet('Getters');
@@ -546,7 +546,7 @@ async function diamond2() {
         });
     }
 
-    async function runFallback3(method, userAddr, userToken) {
+    async function runFallback(method, userAddr, userToken) {
         const signers = await hre.ethers.getSigners();
         const signer = signers[0];
         const abi = [
@@ -563,7 +563,7 @@ async function diamond2() {
         });
     }
 
-    async function runFallback(amount, method, userAddr, userToken) {
+    async function runFallback3(amount, method, userAddr, userToken) {
         const signers = await hre.ethers.getSigners();
         const signer = signers[0];
         const abi = [
@@ -626,17 +626,17 @@ async function diamond2() {
     async function sendsOneTenthRenBTC(caller, userToken, IERC20, tokenStr, decimals) {
         await renBTC.transfer(deployedDiamond.address, oneTenth);
         console.log('fooo1');
-        // await runFallback(
-        //     'transferToManager',
-        //     caller,
-        //     userToken
-        // );
         await runFallback(
-            'exchangeToUserToken',
-            oneTenth,
+            'transferToManager',
             caller,
             userToken
         );
+        // await runFallback(
+        //     'exchangeToUserToken',
+        //     oneTenth,
+        //     caller,
+        //     userToken
+        // );
         console.log('fooo2');
         console.log('index: ', (await getters.getDistributionIndex()).toString() / 10 ** 18);
         let tokenBalance = await IERC20.balanceOf(caller);

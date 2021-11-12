@@ -80,40 +80,20 @@ contract ManagerFacet {
         payable(_user).transfer(amount);
     }
 
-    function _getFee(uint _amount) public returns(uint, bool) {
+    function _getFee(uint _amount) public returns(uint, uint) {
         uint fee = _amount - _amount._calculateSlippage(s.dappFee); //10 -> 0.1%
-        bool isTransferred = s.WBTC.transfer(address(s.vault), fee);
-        uint netAmount = s.WBTC.balanceOf(address(this));
-        return (netAmount, isTransferred);
+        // bool isTransferred = s.WBTC.transfer(address(s.vault), fee);
+        s.feesVault += fee;
+        uint netAmount = s.WBTC.balanceOf(address(this)) - fee;
+        return (netAmount, fee);
     }
 
 
     /***** Helper swapping functions ******/
     function swapsRenForWBTC(uint _netAmount) public returns(uint wbtcAmount) {
-        console.log(13);
-        console.log('msg.sender: ', msg.sender);
-        console.log('address(this): ', address(this));
-        console.log(15);
-        s.renBTC.approve(address(s.renPool), _netAmount); //original ***
-
-        // (bool x, ) = address(s.renBTC).call(
-        //     abi.encodeWithSignature(
-        //         'approve(address,uint256)', 
-        //         address(s.renPool), _netAmount
-        //     )
-        // );
-        // require(x, 'filll');
-
-        console.log('allowance: ', s.renBTC.allowance(address(s.manager), address(s.renPool)));
-
-        console.log(14);
+        s.renBTC.approve(address(s.renPool), _netAmount);
         uint slippage = _netAmount._calculateSlippage(5); //pass this as a general variable to the Diamond
-        console.log(11);
-        revert('hereeee');
-
         s.renPool.exchange(0, 1, _netAmount, slippage);
-        
-        console.log(12);
         wbtcAmount = s.WBTC.balanceOf(address(this));
     }
 
@@ -130,11 +110,6 @@ contract ManagerFacet {
 
     function exchangeToUserToken(uint _amount, address _user, address _userToken) public {
         updateManagerState(_amount, _user);
-
-        // (bool x, ) = address(s.getters).call(
-        //     abi.encodeWithSignature('getVar(uint256)', _amount)
-        // );
-        // require(x, 'sss');
         
         uint tokenOut = _userToken == address(s.USDT) ? 0 : 2;
         bool useEth = _userToken == address(s.WETH) ? false : true;
@@ -142,23 +117,17 @@ contract ManagerFacet {
         if (_userToken != s.ETH) {
             userToken = IERC20(_userToken);
         }
-        console.log(1);
+
         //Swaps renBTC for WBTC
         uint wbtcAmount = swapsRenForWBTC(_amount);
-        // uint wbtcAmount = 1;
-        // (bool x, ) = address(Helpers).delegatecall(
-        //     abi.encodeWithSignature('swapsRenForWBTC(uint256)', _amount)
-        // );
-        // require(x, 'ffff');
 
-        console.log(2);
         //Sends fee (in WBTC) to Vault contract
-        (uint netAmount, bool isTransferred) = _getFee(wbtcAmount);
-        require(isTransferred, 'Fee transfer failed');
-        console.log(3);
+        (uint netAmount, uint fee) = _getFee(wbtcAmount);
+        // require(isTransferred, 'Fee transfer failed');
+       
         //Swaps WBTC to userToken (USDT, WETH or ETH)  
         swapsWBTCForUserToken(netAmount, tokenOut, useEth);
-        console.log(4);
+       
         //Sends userToken to user
         if (_userToken != s.ETH) {
             uint ToUser = userToken.balanceOf(address(this));
@@ -168,7 +137,12 @@ contract ManagerFacet {
         }
         console.log(5);
         //Deposits fees in Curve's renPool
-        s.vault.depositInCurve();
+        // s.vault.depositInCurve();
+
+        (bool success, ) = address(s.vault).delegatecall(
+            abi.encodeWithSignature('depositInCurve(uint256)', fee)
+        );
+        require(success);
         
     }
 
