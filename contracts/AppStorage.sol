@@ -59,7 +59,7 @@ struct PYYERC20 {
 //     } 
 
 contract GettersFacet {
-    AppStorage s;
+    // AppStorage s;
 
     function diamondStorage() internal pure returns(AppStorage storage ds) {
         assembly {
@@ -67,10 +67,10 @@ contract GettersFacet {
         }
     }
 
-    function getDistributionIndex() external view returns(uint) {
-        // AppStorage storage s = diamondStorage();
-        return s.distributionIndex;
-    }
+    // function getDistributionIndex() external view returns(uint) {
+    //     // AppStorage storage s = diamondStorage();
+    //     return s.distributionIndex;
+    // }
 
     function logVar() external view {
         AppStorage storage s = diamondStorage();

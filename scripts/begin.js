@@ -612,9 +612,9 @@ async function diamond2() {
     //     });
     // })();
 
-    // const LibDiamond = await hre.ethers.getContractFactory('LibDiamond');
-    // const libDiamond = await LibDiamond.deploy();
-    // await libDiamond.deployed();
+    const LibDiamond = await hre.ethers.getContractFactory('LibDiamond');
+    const libDiamond = await LibDiamond.deploy();
+    await libDiamond.deployed();
 
     // const ds = await libDiamond.getDiamondStorage();
     // console.log('ds: ', ds);
@@ -658,11 +658,11 @@ async function diamond2() {
         //     userToken
         // );
 
-        //---> trying to set the getters for state variables
+        
         console.log('fooo2');
-        console.log('index: ', (await gettersFacet.getDistributionIndex()).toString() / 10 ** 18);
-        console.log('index2: ', (await library.getDistributionIndex()).toString() / 10 ** 18);
-        console.log('index3: ', await gettersFacet.logVar());
+        // console.log('index: ', (await gettersFacet.getDistributionIndex()).toString() / 10 ** 18);
+        // console.log('index2: ', (await library.getDistributionIndex()).toString() / 10 ** 18);
+        // await gettersFacet.logVar();
         let tokenBalance = await IERC20.balanceOf(caller);
         console.log(tokenStr + ' balance of callerAddr: ', tokenBalance.toString() / decimals);
         console.log('---------------------------------------'); 
@@ -681,6 +681,14 @@ async function diamond2() {
     await approvePYY(callerAddr);
     console.log('PYY balance on caller 1: ', formatEther(await PYY.balanceOf(callerAddr)));
     console.log('---------------------------------------'); 
+
+    // console.log('index: ', (await gettersFacet.getDistributionIndex()).toString() / 10 ** 18);
+    console.log('index2: ', (await library.getDistributionIndex()).toString() / 10 ** 18);
+    await gettersFacet.logVar();
+
+    const x = await hre.ethers.provider.getStorageAt(dummyFacet.address, 0);
+    console.log('x: ', x);
+
     console.log('begin: revert here');
     return;
 

@@ -10,7 +10,7 @@ import 'hardhat/console.sol';
 import '../AppStorage.sol';
 
 contract DummyFacet {
-    AppStorage internal s;
+    AppStorage s;
 
     function getHello() public view {
         LibDiamond.DiamondStorage storage ds = LibDiamond.diamondStorage();
