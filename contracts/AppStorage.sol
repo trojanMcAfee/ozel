@@ -14,7 +14,7 @@ import './libraries/Helpers.sol';
 
 
 struct AppStorage {
-    uint num;
+    // uint num;
 
     IGatewayRegistry registry;
     ManagerFacet manager; 
@@ -23,7 +23,7 @@ struct AppStorage {
     IRenPool renPool; 
     ICrvLpToken crvTricrypto;
     PayMeFacet payme;
-    GettersFacet getters;
+    // GettersFacet getters;
 
     IERC20 renBTC;
     IERC20 USDT;
@@ -53,36 +53,26 @@ struct PYYERC20 {
     string  _symbol;
 }
 
-// function getDistributionIndex() view returns(uint) {
-//         AppStorage storage s;
+
+
+// contract GettersFacet is DiamondInit {
+//     // AppStorage public s;
+
+//     // function diamondStorage() internal pure returns(AppStorage storage ds) {
+//     //     assembly {
+//     //         ds.slot := 0
+//     //     }
+//     // }
+
+//     function getDistributionIndex() external view returns(uint) {
+//         // AppStorage storage s = diamondStorage();
 //         return s.distributionIndex;
-//     } 
+//     }
 
-contract GettersFacet {
-    // AppStorage s;
+//     function logVar() external view {
+//         // AppStorage storage s = diamondStorage();
+//         console.log('renBTC ex: ', address(s.renBTC));
+//     }
 
-    function diamondStorage() internal pure returns(AppStorage storage ds) {
-        assembly {
-            ds.slot := 0
-        }
-    }
+// }
 
-    // function getDistributionIndex() external view returns(uint) {
-    //     // AppStorage storage s = diamondStorage();
-    //     return s.distributionIndex;
-    // }
-
-    function logVar() external view {
-        AppStorage storage s = diamondStorage();
-        console.log('renBTC ex: ', address(s.renBTC));
-    }
-
-}
-
-library LibAppStorage {
-    function diamondStorage() internal pure returns (AppStorage storage ds) {
-        assembly {
-            ds.slot := 0
-        }
-    }
-}

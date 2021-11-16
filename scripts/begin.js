@@ -418,7 +418,7 @@ async function diamond2() {
     const paymeFacet = await deployFacet('PayMeFacet');
     const PYY = await deployFacet('PayTokenFacet'); 
 
-    const gettersFacet = await deployFacet('GettersFacet');
+    // const gettersFacet = await deployFacet('GettersFacet');
 
     //Selectors
     const selecCut = getSelectors(diamondCutFacet).filter((el) => typeof el === 'string');
@@ -429,7 +429,7 @@ async function diamond2() {
     const selecManager = getSelectors(managerFacet).filter((el) => typeof el === 'string');
     const selecPYY = getSelectors(PYY).filter((el) => typeof el === 'string');
 
-    const selectGetters = getSelectors(gettersFacet).filter((el) => typeof el === 'string');
+    // const selectGetters = getSelectors(gettersFacet).filter((el) => typeof el === 'string');
 
 
     //State variables
@@ -443,8 +443,8 @@ async function diamond2() {
         vaultFacet.address,
         renPoolAddr,
         crvTricrypto,
-        paymeFacet.address,
-        gettersFacet.address
+        paymeFacet.address
+        // gettersFacet.address
     ];
 
     const erc20sAddr = [
@@ -476,8 +476,8 @@ async function diamond2() {
             selecDummy, 
             selecPayme, 
             selecManager, 
-            selecPYY,
-            selectGetters
+            selecPYY
+            // selectGetters
         ],
         [
             diamondCutFacet.address, 
@@ -485,12 +485,12 @@ async function diamond2() {
             dummyFacet.address,
             paymeFacet.address,
             managerFacet.address,
-            PYY.address,
-            gettersFacet.address
+            PYY.address
+            // gettersFacet.address
         ]
     ];
 
-    //Deploys DiamondInit
+    //Deploy DiamondInit
     const DiamondInit = await hre.ethers.getContractFactory('DiamondInit');
     const diamondInit = await DiamondInit.deploy();
     await diamondInit.deployed();
@@ -498,6 +498,11 @@ async function diamond2() {
         FacetsStruct,
         VarsAndAddrStruct
     ]);
+
+    //Deploy Getters 
+    const Getters = await hre.ethers.getContractFactory('Getters');
+    const getters = await Getters.deploy(diamondInit.address);
+    await getters.deployed();
 
     //Deploys diamond
     const deployedDiamond = await diamond.deploy({
@@ -508,8 +513,8 @@ async function diamond2() {
             ['DummyFacet', dummyFacet],
             ['PayMeFacet', paymeFacet],
             ['ManagerFacet', managerFacet],
-            ['PayTokenFacet', PYY],
-            ['GettersFacet', gettersFacet]
+            ['PayTokenFacet', PYY]
+            // ['GettersFacet', gettersFacet]
         ],
         args: '',
         overrides: {callerAddr, functionCall, diamondInit: diamondInit.address}
@@ -612,9 +617,9 @@ async function diamond2() {
     //     });
     // })();
 
-    const LibDiamond = await hre.ethers.getContractFactory('LibDiamond');
-    const libDiamond = await LibDiamond.deploy();
-    await libDiamond.deployed();
+    // const LibDiamond = await hre.ethers.getContractFactory('LibDiamond');
+    // const libDiamond = await LibDiamond.deploy();
+    // await libDiamond.deployed();
 
     // const ds = await libDiamond.getDiamondStorage();
     // console.log('ds: ', ds);
@@ -660,7 +665,7 @@ async function diamond2() {
 
         
         console.log('fooo2');
-        // console.log('index: ', (await gettersFacet.getDistributionIndex()).toString() / 10 ** 18);
+        console.log('index: ', (await getters.getDistributionIndex()).toString() / 10 ** 18);
         // console.log('index2: ', (await library.getDistributionIndex()).toString() / 10 ** 18);
         // await gettersFacet.logVar();
         let tokenBalance = await IERC20.balanceOf(caller);
@@ -683,11 +688,11 @@ async function diamond2() {
     console.log('---------------------------------------'); 
 
     // console.log('index: ', (await gettersFacet.getDistributionIndex()).toString() / 10 ** 18);
-    console.log('index2: ', (await library.getDistributionIndex()).toString() / 10 ** 18);
-    await gettersFacet.logVar();
+    // console.log('index2: ', (await library.getDistributionIndex()).toString() / 10 ** 18);
+    // await gettersFacet.logVar();
 
-    const x = await hre.ethers.provider.getStorageAt(dummyFacet.address, 0);
-    console.log('x: ', x);
+    // const x = await hre.ethers.provider.getStorageAt(dummyFacet.address, 0);
+    // console.log('x: ', x);
 
     console.log('begin: revert here');
     return;

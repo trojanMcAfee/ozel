@@ -12,15 +12,15 @@ import '../AppStorage.sol';
 contract DummyFacet {
     AppStorage s;
 
-    function getHello() public view {
-        LibDiamond.DiamondStorage storage ds = LibDiamond.diamondStorage();
-        bool x = ds.supportedInterfaces[type(IERC165).interfaceId];
+    // function getHello() public view {
+    //     LibDiamond.DiamondStorage storage ds = LibDiamond.diamondStorage();
+    //     bool x = ds.supportedInterfaces[type(IERC165).interfaceId];
 
-        console.log('num: ', s.num);
-        // console.log('eth: ', ds.ETH);
-        console.log('owner: ', ds.contractOwner);
-        console.log('in Dummy: ', x);
-    }
+    //     console.log('num: ', s.num);
+    //     // console.log('eth: ', ds.ETH);
+    //     console.log('owner: ', ds.contractOwner);
+    //     console.log('in Dummy: ', x);
+    // }
 
     function getOwner() public view {
         LibDiamond.DiamondStorage storage ds = LibDiamond.diamondStorage();
