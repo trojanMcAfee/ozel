@@ -35,7 +35,7 @@ import '../facets/PayMeFacet.sol';
 // with data from a deployment script. Use the init function to initialize state variables
 // of your diamond. Add parameters to the init funciton if you need to.
 
-contract DiamondInit {    
+contract DiamondInit {    //works if getters are here
 
     AppStorage s;
     // You can add parameters to this function in order to pass in 
