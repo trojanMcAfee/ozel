@@ -14,23 +14,12 @@ contract GettersFacet {
     
     event GetIndex(uint _index);
 
-    // function diamondStorage() internal pure returns(AppStorage storage ds) {
-    //     assembly {
-    //         ds.slot := 0
-    //     }
-    // }
 
     function getDistributionIndex() external returns(uint256) {
-        // AppStorage storage s = diamondStorage();
-        // (,,,,,,,IERC20 renBTC,,,,,,,,,,) = init.s();
         emit GetIndex(s.distributionIndex);
-        // return address(s.USDT);
         return s.distributionIndex;
     }
 
-    // function logVar() external view {
-    //     // AppStorage storage s = diamondStorage();
-    //     console.log('renBTC ex: ', address(s.renBTC));
-    // }
+   
 
 }

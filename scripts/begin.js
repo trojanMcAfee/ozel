@@ -558,7 +558,7 @@ async function diamond2() {
         });
     }
 
-    async function runFallback(method, userAddr, userToken) {
+    async function runFallback3(method, userAddr, userToken) {
         const signers = await hre.ethers.getSigners();
         const signer = signers[0];
         const abi = [
@@ -576,13 +576,7 @@ async function diamond2() {
     }
 
 
-    // await runFallback(
-    //     'transferToManager',
-    //     caller,
-    //     userToken
-    // );
-
-    async function runFallback3(method, signature, args, dir = 0, type) {
+    async function runFallback(method, signature, args, dir = 0, type = '') {
         const signers = await hre.ethers.getSigners();
         const signer = signers[0];
         const abi = [signature];
@@ -598,6 +592,7 @@ async function diamond2() {
                     to: deployedDiamond.address,
                     data: encodedData
                 });
+                return;
             case 1:
                 encodedData = iface.encodeFunctionData(method);
                 const tx = await signer.sendTransaction({
@@ -635,33 +630,22 @@ async function diamond2() {
     let oneTenth = Math.floor(renBtcBalance / 10);
 
     //Sends renBTC to contracts (simulates BTC bridging) ** MAIN FUNCTION **
-    async function sendsOneTenthRenBTC(caller, userToken, IERC20, tokenStr, decimals) {
+    async function sendsOneTenthRenBTC(userAddr, userToken, IERC20, tokenStr, decimals) {
         await renBTC.transfer(deployedDiamond.address, oneTenth);
-        console.log('fooo1');
         await runFallback(
             'transferToManager',
-            caller,
-            userToken
+            'function transferToManager(address _user, address _userToken)',
+            {userAddr, userToken}  
         );
-        // await runFallback(
-        //     'exchangeToUserToken',
-        //     oneTenth,
-        //     caller,
-        //     userToken
-        // );
-        
-        console.log('fooo2');
-        // console.log('index^^: ', await deployedDiamond.getDistributionIndex());
-        const distributionIndex = await runFallback3(
+        const distributionIndex = await runFallback(
             'getDistributionIndex',
             'function getDistributionIndex() returns (uint256)',
             '',
             1,
             'uint256'
         );
-        console.log('index}}: ', distributionIndex.toString() / 10 ** 18);
-        // console.log('index2: ', (await library.getDistributionIndex()).toString() / 10 ** 18);
-        let tokenBalance = await IERC20.balanceOf(caller);
+        console.log('index: ', distributionIndex.toString() / 10 ** 18);
+        let tokenBalance = await IERC20.balanceOf(userAddr);
         console.log(tokenStr + ' balance of callerAddr: ', tokenBalance.toString() / decimals);
         console.log('---------------------------------------'); 
     }
@@ -680,12 +664,8 @@ async function diamond2() {
     console.log('PYY balance on caller 1: ', formatEther(await PYY.balanceOf(callerAddr)));
     console.log('---------------------------------------'); 
 
-    // console.log('index: ', (await gettersFacet.getDistributionIndex()).toString() / 10 ** 18);
-    // console.log('index2: ', (await library.getDistributionIndex()).toString() / 10 ** 18);
-    // await gettersFacet.logVar();
-
-    // const x = await hre.ethers.provider.getStorageAt(dummyFacet.address, 0);
-    // console.log('x: ', x);
+    const x = await PYY.balanceOf(callerAddr);
+    console.log('x: ', x);
 
     console.log('begin: revert here');
     return;
