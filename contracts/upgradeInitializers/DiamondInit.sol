@@ -29,7 +29,9 @@ import '../facets/VaultFacet.sol';
 import '../facets/ERC20Facet/IERC20Facet.sol';
 import '../interfaces/ICrvLpToken.sol';
 import '../facets/PayMeFacet.sol';
+import '../facets/GettersFacet.sol';
 
+// import './GettersInit.sol';
 
 // It is exapected that this contract is customized if you want to deploy your diamond
 // with data from a deployment script. Use the init function to initialize state variables
@@ -37,7 +39,7 @@ import '../facets/PayMeFacet.sol';
 
 contract DiamondInit {    //works if getters are here
 
-    AppStorage s;
+    AppStorage internal s;
     // You can add parameters to this function in order to pass in 
     // data to set your own state variables
     function init(
@@ -70,7 +72,7 @@ contract DiamondInit {    //works if getters are here
         s.renPool = IRenPool(_vars.contracts[4]);
         s.crvTricrypto = ICrvLpToken(_vars.contracts[5]);
         s.payme = PayMeFacet(payable(_vars.contracts[6]));
-        // s.getters = GettersFacet(_vars.contracts[7]);
+        s.getters = GettersFacet(_vars.contracts[7]);
 
         //Sets ERC20 instances
         s.renBTC = IERC20(_vars.erc20s[0]);
@@ -103,6 +105,11 @@ contract DiamondInit {    //works if getters are here
         // in order to set state variables in the diamond during deployment or an upgrade
         // More info here: https://eips.ethereum.org/EIPS/eip-2535#diamond-interface 
     }
+
+
+    // function getDistributionIndex() external view returns(address) {
+    //     return address(s.renBTC);
+    // }
 
 
 }

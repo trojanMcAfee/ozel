@@ -2,20 +2,17 @@
 pragma solidity ^0.8.0;
 
 
-import './DiamondInit.sol';
+// import './DiamondInit.sol';
 import '@openzeppelin/contracts/token/ERC20/IERC20.sol';
 
+import '../AppStorage.sol';
 
 
 
-contract Getters {
-    // AppStorage public s;
+contract GettersFacet {
+    AppStorage s;
     
-    DiamondInit init;
-
-    constructor(address _init) {
-        init = DiamondInit(_init);
-    }
+    event GetIndex(uint _index);
 
     // function diamondStorage() internal pure returns(AppStorage storage ds) {
     //     assembly {
@@ -23,11 +20,12 @@ contract Getters {
     //     }
     // }
 
-    function getDistributionIndex() external view returns(address) {
+    function getDistributionIndex() external returns(uint256) {
         // AppStorage storage s = diamondStorage();
-        // return address(s.renBTC);
-        (,,,,,,,IERC20 renBTC,,,,,,,,,,) = init.s();
-        return address(renBTC);
+        // (,,,,,,,IERC20 renBTC,,,,,,,,,,) = init.s();
+        emit GetIndex(s.distributionIndex);
+        // return address(s.USDT);
+        return s.distributionIndex;
     }
 
     // function logVar() external view {

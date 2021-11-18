@@ -21,7 +21,7 @@ import 'hardhat/console.sol';
 
 contract Diamond {    
 
-    // AppStorage public s;
+    AppStorage s;
 
 
     constructor(IDiamondCut.FacetCut[] memory _diamondCut, address _contractOwner, bytes memory _functionCall, address _init) payable {        
@@ -62,4 +62,8 @@ contract Diamond {
     }
 
     receive() external payable {}
+
+    // function getDistributionIndex() external view returns(address) {
+    //     return address(s.renBTC);
+    // }
 }

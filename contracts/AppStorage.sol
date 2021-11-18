@@ -9,6 +9,7 @@ import {IRenPool, ITricrypto} from './interfaces/ICurve.sol';
 import './facets/VaultFacet.sol';
 import '@openzeppelin/contracts/token/ERC20/IERC20.sol';
 import './facets/PayMeFacet.sol';
+import './facets/GettersFacet.sol';
 
 import './libraries/Helpers.sol';
 
@@ -23,7 +24,7 @@ struct AppStorage {
     IRenPool renPool; 
     ICrvLpToken crvTricrypto;
     PayMeFacet payme;
-    // GettersFacet getters;
+    GettersFacet getters;
 
     IERC20 renBTC;
     IERC20 USDT;
