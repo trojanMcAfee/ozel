@@ -582,6 +582,14 @@ async function diamond2() {
         const abi = [signature];
         const iface = new ethers.utils.Interface(abi);
         let encodedData;
+
+        // const callArgs = [];
+        // if (Object.keys(args).length < 2) {
+        //     const x = args[Object.keys(args)[0]];
+        //     console.log('first key: ', x);
+        //     // callArgs[0] = args[args];
+        // }
+
         switch(dir) {
             case 0: 
                 encodedData = iface.encodeFunctionData(method, [
@@ -661,6 +669,18 @@ async function diamond2() {
     console.log('1st user first transfer');
     await sendsOneTenthRenBTC(callerAddr, usdtAddr, USDT, 'USDT', 10 ** 6);
     await approvePYY(callerAddr);
+
+    // const balancePYY = await runFallback(
+    //     'balanceOf',
+    //     'function balanceOf(address account) view returns (uint256)',
+    //     {callerAddr},
+    //     1,
+    //     'uint2565'
+    // ); 
+
+    //trying to get this to work. Must run with one key on args{}. 
+    //Check also in runFallback()
+
     console.log('PYY balance on caller 1: ', formatEther(await PYY.balanceOf(callerAddr)));
     console.log('---------------------------------------'); 
 
