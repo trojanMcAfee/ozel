@@ -132,6 +132,7 @@ contract ManagerFacet {
         } else {
             _sendEtherToUser(_user);
         }
+        
         console.log(5);
         //Deposits fees in Curve's renPool
         // s.vault.depositInCurve();

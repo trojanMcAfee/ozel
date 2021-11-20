@@ -38,20 +38,12 @@ contract VaultFacet { //Remember to write a function to withdraw/convert CRV
     }
 
     function depositInCurve(uint _fee) public {
-        console.log(1);
         uint wbtcAmountIn = _fee;
-        console.log(2);
         console.log('WBTC fees to be deposited in Curve: ', wbtcAmountIn);
         (uint tokenAmountIn, uint[3] memory amounts) = _calculateTokenAmountCurve(wbtcAmountIn);
         uint minAmount = tokenAmountIn._calculateSlippage(s.slippageOnCurve);
-        
-        console.log(3);
         s.WBTC.approve(address(s.tricrypto), tokenAmountIn);
-        console.log(4);
-
         s.tricrypto.add_liquidity(amounts, minAmount);
-
-        console.log(6); //looks like it worked but PYY balance is still 0 on begin
         console.log('crvTricrypto token balance: ', s.crvTricrypto.balanceOf(address(this)));
     }
 
