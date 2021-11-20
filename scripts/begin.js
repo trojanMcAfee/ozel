@@ -575,6 +575,14 @@ async function diamond2() {
         });
     }
 
+    // const balancePYY = await runFallback(
+    //     'balanceOf',
+    //     'function balanceOf(address account) view returns (uint256)',
+    //     {callerAddr},
+    //     0,
+    //     'uint256'
+    // );
+
 
     async function runFallback(method, signature, args, dir = 0, type = '') {
         const signers = await hre.ethers.getSigners();
@@ -582,34 +590,46 @@ async function diamond2() {
         const abi = [signature];
         const iface = new ethers.utils.Interface(abi);
         let encodedData;
+        const callArgs = [];
+        let tx;
+        let decodedData;
 
-        // const callArgs = [];
-        // if (Object.keys(args).length < 2) {
-        //     const x = args[Object.keys(args)[0]];
-        //     console.log('first key: ', x);
-        //     // callArgs[0] = args[args];
-        // }
+        if (Object.keys(args).length < 2) {
+            callArgs[0] = args[Object.keys(args)[0]];
+        } else {
+            let i = 0;
+            for (let key in args) {
+                callArgs[i] = args[key];
+                i++;
+            }
+        }
 
         switch(dir) {
             case 0: 
-                encodedData = iface.encodeFunctionData(method, [
-                    args.userAddr,
-                    args.userToken
-                ]);
-                await signer.sendTransaction({
-                    to: deployedDiamond.address,
-                    data: encodedData
-                });
-                return;
+                encodedData = iface.encodeFunctionData(method, callArgs);
+                if (callArgs.length === 1) {
+                    tx = await signer.call({
+                        to: deployedDiamond.address,
+                        data: encodedData
+                    });
+                    [ decodedData ] = abiCoder.decode([type], tx);
+                    return decodedData;
+                } else {
+                    await signer.sendTransaction({
+                        to: deployedDiamond.address,
+                        data: encodedData
+                    });
+                    return;
+                }
             case 1:
                 encodedData = iface.encodeFunctionData(method);
-                const tx = await signer.sendTransaction({
+                tx = await signer.sendTransaction({
                     to: deployedDiamond.address,
                     data: encodedData
                 });
                 const receipt = await tx.wait();
                 const { data } = receipt.logs[0];
-                const [ decodedData ] = abiCoder.decode([type], data);
+                [ decodedData ] = abiCoder.decode([type], data);
                 return decodedData;
         }
     }
@@ -670,22 +690,23 @@ async function diamond2() {
     await sendsOneTenthRenBTC(callerAddr, usdtAddr, USDT, 'USDT', 10 ** 6);
     await approvePYY(callerAddr);
 
-    // const balancePYY = await runFallback(
-    //     'balanceOf',
-    //     'function balanceOf(address account) view returns (uint256)',
-    //     {callerAddr},
-    //     1,
-    //     'uint2565'
-    // ); 
+
+    console.log('hiiii');
+    const balancePYY = await runFallback(
+        'balanceOf',
+        'function balanceOf(address account) view returns (uint256)',
+        {callerAddr},
+        0,
+        'uint256'
+    ); 
 
     //trying to get this to work. Must run with one key on args{}. 
-    //Check also in runFallback()
+    //Check also in runFallback()   
 
-    console.log('PYY balance on caller 1: ', formatEther(await PYY.balanceOf(callerAddr)));
+    console.log('PYY balance on caller 1: ', formatEther(balancePYY));
+    // console.log('PYY balance on caller 1: ', formatEther(await PYY.balanceOf(callerAddr)));
     console.log('---------------------------------------'); 
 
-    const x = await PYY.balanceOf(callerAddr);
-    console.log('x: ', x);
 
     console.log('begin: revert here');
     return;
