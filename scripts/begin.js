@@ -575,24 +575,31 @@ async function diamond2() {
         });
     }
 
-    // const balancePYY = await runFallback(
-    //     'balanceOf',
-    //     'function balanceOf(address account) view returns (uint256)',
-    //     {callerAddr},
-    //     0,
-    //     'uint256'
-    // );
 
 
-    async function runFallback(method, signature, args, dir = 0, type = '') {
+    async function callDiamondProxy(method, args, dir = 0, type = '') {
         const signers = await hre.ethers.getSigners();
         const signer = signers[0];
-        const abi = [signature];
-        const iface = new ethers.utils.Interface(abi);
+        const abi = [];
+        let iface;
         let encodedData;
         const callArgs = [];
         let tx;
         let decodedData;
+        let signature;
+        const signatures = {
+            transferToManager: 'function transferToManager(address _user, address _userToken)',
+            getDistributionIndex: 'function getDistributionIndex() returns (uint256)',
+            balanceOf: 'function balanceOf(address account) view returns (uint256)'
+        };
+
+        for (let sign in signatures) {
+            if (sign === method) {
+                signature = signatures[sign];
+            }
+        }
+        abi.push(signature);
+        iface = new ethers.utils.Interface(abi);
 
         if (Object.keys(args).length < 2) {
             callArgs[0] = args[Object.keys(args)[0]];
@@ -660,14 +667,12 @@ async function diamond2() {
     //Sends renBTC to contracts (simulates BTC bridging) ** MAIN FUNCTION **
     async function sendsOneTenthRenBTC(userAddr, userToken, IERC20, tokenStr, decimals) {
         await renBTC.transfer(deployedDiamond.address, oneTenth);
-        await runFallback(
+        await callDiamondProxy(
             'transferToManager',
-            'function transferToManager(address _user, address _userToken)',
             {userAddr, userToken}  
         );
-        const distributionIndex = await runFallback(
+        const distributionIndex = await callDiamondProxy(
             'getDistributionIndex',
-            'function getDistributionIndex() returns (uint256)',
             '',
             1,
             'uint256'
@@ -692,9 +697,8 @@ async function diamond2() {
 
 
     console.log('hiiii');
-    const balancePYY = await runFallback(
+    const balancePYY = await callDiamondProxy(
         'balanceOf',
-        'function balanceOf(address account) view returns (uint256)',
         {callerAddr},
         0,
         'uint256'
