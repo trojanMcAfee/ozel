@@ -79,7 +79,6 @@ contract ManagerFacet {
 
     function _getFee(uint _amount) public returns(uint, uint) {
         uint fee = _amount - _amount._calculateSlippage(s.dappFee); //10 -> 0.1%
-        // bool isTransferred = s.WBTC.transfer(address(s.vault), fee);
         s.feesVault += fee;
         uint netAmount = s.WBTC.balanceOf(address(this)) - fee;
         return (netAmount, fee);
@@ -133,10 +132,7 @@ contract ManagerFacet {
             _sendEtherToUser(_user);
         }
         
-        console.log(5);
         //Deposits fees in Curve's renPool
-        // s.vault.depositInCurve();
-
         (bool success, ) = address(s.vault).delegatecall(
             abi.encodeWithSignature('depositInCurve(uint256)', fee)
         );

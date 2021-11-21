@@ -696,7 +696,7 @@ async function diamond2() {
     await approvePYY(callerAddr);
 
 
-    console.log('hiiii');
+     //works perfect. See if it's possible to refactor on its on balanceOf func
     const balancePYY = await callDiamondProxy(
         'balanceOf',
         {callerAddr},
