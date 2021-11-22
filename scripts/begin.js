@@ -381,14 +381,11 @@ async function diamond2() {
     console.log('Caller 2: ', caller2Addr);
     console.log('--');
 
-    const WETH = await hre.ethers.getContractAt('IERC20Facet', wethAddr);
-    const USDT = await hre.ethers.getContractAt('IERC20Facet', usdtAddr);
-    const WBTC = await hre.ethers.getContractAt('IERC20Facet', wbtcAddr);
-    const renBTC = await hre.ethers.getContractAt('IERC20Facet', renBtcAddr);
-
-    // const signers = await hre.ethers.getSigners();
-    // const signer = signers[0];
-    // const callerAddr = await signer.getAddress();
+    const WETH = await hre.ethers.getContractAt('IERC20', wethAddr);
+    const USDT = await hre.ethers.getContractAt('IERC20', usdtAddr);
+    const WBTC = await hre.ethers.getContractAt('IERC20', wbtcAddr);
+    const renBTC = await hre.ethers.getContractAt('IERC20', renBtcAddr);
+    const crvTri = await hre.ethers.getContractAt('IERC20', crvTricrypto);
 
     async function deployFacet(facetName, withLib, libDeployed) {
         let Contract, library;
@@ -499,11 +496,6 @@ async function diamond2() {
         VarsAndAddrStruct
     ]);
 
-    //Deploy Getters 
-    // const Getters = await hre.ethers.getContractFactory('GettersInit');
-    // const getters = await Getters.deploy();
-    // await getters.deployed();
-
     //Deploys diamond
     const deployedDiamond = await diamond.deploy({
         diamondName: 'Diamond',
@@ -522,58 +514,6 @@ async function diamond2() {
     console.log('Diamond deployed to: ', deployedDiamond.address);
 
     
-
-    async function runFallback2(method) {
-        function utf8ToHex(str) {
-            return '0x' + Array.from(str).map(c =>
-              c.charCodeAt(0) < 128 ? c.charCodeAt(0).toString(16) :
-              encodeURIComponent(c).replace(/\%/g,'').toLowerCase()
-            ).join('');
-        }
-
-        const signers = await hre.ethers.getSigners();
-        const signer = signers[0];
-        const sigHex = utf8ToHex(method);
-        const signature = keccak256(sigHex).substr(0, 10);
-        console.log('type: ', typeof signature);
-
-        const encodedParams = abiCoder.encode(['uint', 'string'], [1234, 'Hello world']);
-        // console.log('params: ', encodedParams);
-        // const decodedParams = abiCoder.decode(['uint', 'string'], encodedParams);
-        // console.log('decoded params: ', decodedParams);
-
-
-        const abi = [
-            'function getOwner2(uint num, string str) view'
-        ];
-        const iface = new ethers.utils.Interface(abi);
-        const encodedData = iface.encodeFunctionData('getOwner2', [
-            23,
-            'hello world'
-        ]);
-
-        await signer.sendTransaction({
-            to: deployedDiamond.address,
-            data: encodedData
-        });
-    }
-
-    async function runFallback3(method, userAddr, userToken) {
-        const signers = await hre.ethers.getSigners();
-        const signer = signers[0];
-        const abi = [
-            'function transferToManager(address _user, address _userToken)'
-        ];
-        const iface = new ethers.utils.Interface(abi);
-        const encodedData = iface.encodeFunctionData(method, [
-            userAddr,
-            userToken
-        ]);
-        await signer.sendTransaction({
-            to: deployedDiamond.address,
-            data: encodedData
-        });
-    }
 
 
     //-----Helpers func--------//
@@ -690,7 +630,7 @@ async function diamond2() {
         console.log('index: ', distributionIndex.toString() / 10 ** 18);
         let tokenBalance = await IERC20.balanceOf(userAddr);
         console.log(tokenStr + ' balance of callerAddr: ', tokenBalance.toString() / decimals);
-        console.log('---------------------------------------'); 
+        console.log('.'); 
     }
     
     async function approvePYY(caller) {
@@ -705,19 +645,24 @@ async function diamond2() {
     await sendsOneTenthRenBTC(callerAddr, usdtAddr, USDT, 'USDT', 10 ** 6);
     await approvePYY(callerAddr);
     console.log('PYY balance on caller 1: ', formatEther(await balanceOfPYY(callerAddr)));
+    console.log('crvTricrypto token balance on diamondProxy: ', formatEther(await crvTri.balanceOf(deployedDiamond.address)));
     console.log('---------------------------------------'); 
-
-
-    console.log('begin: revert here');
-    return;
 
     //Second user
     console.log('2nd user first transfer');
     await sendsOneTenthRenBTC(caller2Addr, wethAddr, WETH, 'WETH', 10 ** 18);
     await approvePYY(caller2Addr);
-    console.log('PYY balance on caller 2: ', formatEther(await PYY.balanceOf(caller2Addr)));
-    console.log('PYY balance on caller 1 after caller2 swap: ', formatEther(await PYY.balanceOf(callerAddr)));
+    console.log('PYY balance on caller 2: ', formatEther(await balanceOfPYY(caller2Addr)));
+    console.log('PYY balance on caller 1 after caller2 swap: ', formatEther(await balanceOfPYY(callerAddr)));
+    console.log('crvTricrypto token balance on diamondProxy: ', formatEther(await crvTri.balanceOf(deployedDiamond.address)));
     console.log('---------------------------------------'); 
+
+
+
+    console.log('begin: revert here');
+    return;
+
+
 
     // //First user - 2nd transfer
     console.log('1st user second transfer');
