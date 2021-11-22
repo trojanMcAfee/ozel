@@ -530,7 +530,8 @@ async function diamond2() {
         const signatures = {
             transferToManager: 'function transferToManager(address _user, address _userToken)',
             getDistributionIndex: 'function getDistributionIndex() returns (uint256)',
-            balanceOf: 'function balanceOf(address account) view returns (uint256)'
+            balanceOf: 'function balanceOf(address account) view returns (uint256)',
+            transfer: 'function transfer(address recipient, uint256 amount) returns (bool)'
         };
 
         for (let sign in signatures) {
@@ -539,6 +540,7 @@ async function diamond2() {
             }
         }
         abi.push(signature);
+        console.log('signature: ', signature);
         iface = new ethers.utils.Interface(abi);
 
         if (Object.keys(args).length < 2) {
@@ -555,6 +557,7 @@ async function diamond2() {
             case 0: 
                 encodedData = iface.encodeFunctionData(method, callArgs);
                 if (callArgs.length === 1) {
+                    console.log('here2');
                     tx = await signer.call({
                         to: deployedDiamond.address,
                         data: encodedData
@@ -562,11 +565,26 @@ async function diamond2() {
                     [ decodedData ] = abiCoder.decode([type], tx);
                     return decodedData;
                 } else {
+                    console.log('here');
+                    console.log('callArgs: ', callArgs);
+                    console.log('encodedData: ', encodedData);
+
+                    if (callArgs.length === 2) { //remove if later
+                        tx = await signer.sendTransaction({
+                            to: deployedDiamond.address,
+                            data: encodedData
+                        });
+                        return;
+
+                    } else {
+
                     await signer.sendTransaction({
                         to: deployedDiamond.address,
                         data: encodedData
                     });
                     return;
+
+                    }
                 }
             case 1:
                 encodedData = iface.encodeFunctionData(method);
@@ -668,9 +686,22 @@ async function diamond2() {
     //Transfer half of PYY from caller1 to caller2
     console.log('Transfer half of PYY');
     const halfPYYbalance = formatEther(await balanceOfPYY(callerAddr)) / 2;
+    console.log('full: ', formatEther(await balanceOfPYY(callerAddr)));
     console.log('half: ', halfPYYbalance);    
-    await PYY.transfer(caller2Addr, parseEther(halfPYYbalance.toString())); 
-    return;
+
+
+    async function transferPYY(recipient, amount) {
+        console.log('parse amount: ', amount);
+        await callDiamondProxy(
+            'transfer',
+            {recipient, amount},
+        ); 
+    }
+
+    await transferPYY(caller2Addr, parseEther(halfPYYbalance.toString()))
+    // await PYY.transfer(caller2Addr, parseEther(halfPYYbalance.toString())); 
+    console.log('done');
+    // return;
 
     console.log('PYY balance on caller 1 after transferring half: ', formatEther(await balanceOfPYY(callerAddr)));
     console.log('PYY balance on caller 2 after getting half: ', formatEther(await balanceOfPYY(caller2Addr)));

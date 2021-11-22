@@ -36,9 +36,6 @@ contract PayMeFacet {
 
     function transferToManager(address _user, address _userToken) public {
         uint amount = s.renBTC.balanceOf(address(this));
-        // s.renBTC.transfer(address(s.manager), amount);
-        // s.manager.exchangeToUserToken(amount, _user, _userToken); //original **
-
         (bool success, ) = address(s.manager).delegatecall(
             abi.encodeWithSignature(
                 'exchangeToUserToken(uint256,address,address)', 
