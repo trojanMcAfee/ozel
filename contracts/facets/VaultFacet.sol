@@ -11,7 +11,6 @@ import './ManagerFacet.sol';
 
 import '../AppStorage.sol';
 
-import 'hardhat/console.sol';
 
 
 contract VaultFacet { //Remember to write a function to withdraw/convert CRV 
@@ -37,14 +36,13 @@ contract VaultFacet { //Remember to write a function to withdraw/convert CRV
         return(tokenAmount, amounts);
     }
 
+    
+
     function depositInCurve(uint _fee) public {
-        console.log('WBTC fees to be deposited in Curve: ', _fee);
         (uint tokenAmountIn, uint[3] memory amounts) = _calculateTokenAmountCurve(_fee);
         uint minAmount = tokenAmountIn._calculateSlippage(s.slippageOnCurve);
         s.WBTC.approve(address(s.tricrypto), tokenAmountIn);
-        console.log('minAmount: ', minAmount); //If I remove this, the funciton stops working
         s.tricrypto.add_liquidity(amounts, minAmount);
-        console.log('crvTricrypto token balance: ', s.crvTricrypto.balanceOf(address(this)));
     }
 
     function getTotalInUSD() public view returns(uint total) {

@@ -8,12 +8,6 @@ import '../AppStorage.sol';
 
 library Helpers {
 
-    function diamondStorage() internal pure returns(AppStorage storage ds) {
-        assembly {
-            ds.slot := 0
-        }
-    }
-
 
     function _calculateSlippage(
         uint _amount, 
@@ -36,10 +30,7 @@ library Helpers {
         require(success, string(abi.encodePacked(_contract, ': ', _method, ' failed')));
     }
 
-    function getDistributionIndex() external view returns(uint) {
-        AppStorage storage s = diamondStorage();
-        return s.distributionIndex;
-    }
+    
 
 
 
