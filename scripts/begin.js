@@ -658,23 +658,26 @@ async function diamond2() {
     console.log('---------------------------------------'); 
 
     // //First user - 2nd transfer
-    console.log('1st user second transfer');
+    console.log('1st user second transfer'); //failing for some reason (console.log issue)*****
     await sendsOneTenthRenBTC(callerAddr, usdtAddr, USDT, 'USDT', 10 ** 6);
     console.log('PYY balance on caller 1 after 2nd swap: ', formatEther(await balanceOfPYY(callerAddr)));
     console.log('PYY balance on caller 2 after caller1 2nd swap: ', formatEther(await balanceOfPYY(caller2Addr)));
     console.log('crvTricrypto token balance on diamondProxy: ', formatEther(await crvTri.balanceOf(deployedDiamond.address)));
     console.log('---------------------------------------'); 
-
-    console.log('begin: revert here');
-    return;
     
     //Transfer half of PYY from caller1 to caller2
     console.log('Transfer half of PYY');
-    const halfPYYbalance = formatEther(await PYY.balanceOf(callerAddr)) / 2;
+    const halfPYYbalance = formatEther(await balanceOfPYY(callerAddr)) / 2;
+    console.log('half: ', halfPYYbalance);    
     await PYY.transfer(caller2Addr, parseEther(halfPYYbalance.toString())); 
-    console.log('PYY balance on caller 1 after transferring half: ', formatEther(await PYY.balanceOf(callerAddr)));
-    console.log('PYY balance on caller 2 after getting half: ', formatEther(await PYY.balanceOf(caller2Addr)));
+    return;
+
+    console.log('PYY balance on caller 1 after transferring half: ', formatEther(await balanceOfPYY(callerAddr)));
+    console.log('PYY balance on caller 2 after getting half: ', formatEther(await balanceOfPYY(caller2Addr)));
     console.log('---------------------------------------'); 
+
+    console.log('begin: revert here');
+    return;
 
     //1st user withdraw remaining share (half)
     console.log('Withdraw 1st user half share');

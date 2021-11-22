@@ -14,7 +14,7 @@ import { IDiamondCut } from "../interfaces/IDiamondCut.sol";
 import { IERC173 } from "../interfaces/IERC173.sol";
 import { IERC165 } from "../interfaces/IERC165.sol";
 
-import 'hardhat/console.sol';
+// import 'hardhat/console.sol';
 
 
 import '../AppStorage.sol'; 
@@ -93,10 +93,10 @@ contract DiamondInit {
         s.ETH = _vars.ETH;
         
 
-        console.log('selector: ');
+        // console.log('selector: ');
         // revert('hereee');
 
-        console.log('zzzzzzz');
+        // console.log('zzzzzzz');
 
         // add your own state variables 
         // EIP-2535 specifies that the `diamondCut` function takes two optional 
