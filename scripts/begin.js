@@ -576,7 +576,7 @@ async function diamond2() {
     }
 
 
-
+    //-----Helpers func--------//
     async function callDiamondProxy(method, args, dir = 0, type = '') {
         const signers = await hre.ethers.getSigners();
         const signer = signers[0];
@@ -641,6 +641,16 @@ async function diamond2() {
         }
     }
 
+    async function balanceOfPYY(user) {
+        return await callDiamondProxy(
+            'balanceOf',
+            {user},
+            0,
+            'uint256'
+        ); 
+    }
+    //-----Helpers func--------//
+
 
 
     
@@ -694,21 +704,7 @@ async function diamond2() {
     console.log('1st user first transfer');
     await sendsOneTenthRenBTC(callerAddr, usdtAddr, USDT, 'USDT', 10 ** 6);
     await approvePYY(callerAddr);
-
-
-     //works perfect. See if it's possible to refactor on its on balanceOf func
-    const balancePYY = await callDiamondProxy(
-        'balanceOf',
-        {callerAddr},
-        0,
-        'uint256'
-    ); 
-
-    //trying to get this to work. Must run with one key on args{}. 
-    //Check also in runFallback()   
-
-    console.log('PYY balance on caller 1: ', formatEther(balancePYY));
-    // console.log('PYY balance on caller 1: ', formatEther(await PYY.balanceOf(callerAddr)));
+    console.log('PYY balance on caller 1: ', formatEther(await balanceOfPYY(callerAddr)));
     console.log('---------------------------------------'); 
 
 
