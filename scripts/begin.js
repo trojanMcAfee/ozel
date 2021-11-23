@@ -528,7 +528,7 @@ async function diamond2() {
         let decodedData;
         let signature;
         const signatures = {
-            transferToManager: 'function transferToManager(address _user, address _userToken)',
+            transferToManager: 'function transferToManager(address _user, address _userToken)', //delete if not used
             getDistributionIndex: 'function getDistributionIndex() returns (uint256)',
             balanceOf: 'function balanceOf(address account) view returns (uint256)',
             transfer: 'function transfer(address recipient, uint256 amount) returns (bool)',
@@ -541,7 +541,6 @@ async function diamond2() {
             }
         }
         abi.push(signature);
-        console.log('signature: ', signature);
         iface = new ethers.utils.Interface(abi);
 
         if (Object.keys(args).length < 2) {
@@ -558,7 +557,6 @@ async function diamond2() {
             case 0: 
                 encodedData = iface.encodeFunctionData(method, callArgs);
                 if (callArgs.length === 1) {
-                    console.log('here2');
                     tx = await signer.call({
                         to: deployedDiamond.address,
                         data: encodedData
@@ -566,31 +564,11 @@ async function diamond2() {
                     [ decodedData ] = abiCoder.decode([type], tx);
                     return decodedData;
                 } else {
-                    console.log('here');
-                    console.log('callArgs: ', callArgs);
-                    console.log('encodedData: ', encodedData);
-
-                    if (callArgs.length >= 2) { //remove if later
-                        const estimate = await signer.estimateGas({
-                            to: deployedDiamond.address,
-                            data: encodedData
-                        });
-                        console.log('estimate: ', estimate.toString());
-
-                        tx = await signer.sendTransaction({
-                            to: deployedDiamond.address,
-                            data: encodedData
-                        });
-                        return;
-                    } else {
-                        console.log('world');
-                        await signer.sendTransaction({
-                            to: deployedDiamond.address,
-                            data: encodedData
-                        });
-                        return;
-
-                    }
+                    await signer.sendTransaction({
+                        to: deployedDiamond.address,
+                        data: encodedData
+                    });
+                    return;
                 }
             case 1:
                 encodedData = iface.encodeFunctionData(method);
@@ -611,6 +589,13 @@ async function diamond2() {
             {user},
             0,
             'uint256'
+        ); 
+    }
+
+    async function transferPYY(recipient, amount) {
+        await callDiamondProxy(
+            'transfer',
+            {recipient, amount},
         ); 
     }
     //-----Helpers func--------//
@@ -641,17 +626,11 @@ async function diamond2() {
     //Sends renBTC to contracts (simulates BTC bridging) ** MAIN FUNCTION **
     async function sendsOneTenthRenBTC(userAddr, userToken, IERC20, tokenStr, decimals) {
         await renBTC.transfer(deployedDiamond.address, oneTenth);
-        // await callDiamondProxy(
-        //     'transferToManager',
-        //     {userAddr, userToken}  
-        // );
-
         const balanceRenBTC = await renBTC.balanceOf(deployedDiamond.address);
         await callDiamondProxy(
             'exchangeToUserToken',
             {balanceRenBTC, userAddr, userToken}
         );
-
 
         const distributionIndex = await callDiamondProxy(
             'getDistributionIndex',
@@ -699,24 +678,8 @@ async function diamond2() {
     
     //Transfer half of PYY from caller1 to caller2
     console.log('Transfer half of PYY');
-    const halfPYYbalance = formatEther(await balanceOfPYY(callerAddr)) / 2;
-    console.log('full: ', formatEther(await balanceOfPYY(callerAddr)));
-    console.log('half: ', halfPYYbalance);    
-
-    // return;
-
-    async function transferPYY(recipient, amount) {
-        await callDiamondProxy(
-            'transfer',
-            {recipient, amount},
-        ); 
-    }
-
-    await transferPYY(caller2Addr, parseEther(halfPYYbalance.toString()))
-    // await PYY.transfer(caller2Addr, parseEther(halfPYYbalance.toString())); 
-    console.log('done');
-    // return;
-
+    const halfPYYbalance = formatEther(await balanceOfPYY(callerAddr)) / 2;  
+    await transferPYY(caller2Addr, parseEther(halfPYYbalance.toString()));
     console.log('PYY balance on caller 1 after transferring half: ', formatEther(await balanceOfPYY(callerAddr)));
     console.log('PYY balance on caller 2 after getting half: ', formatEther(await balanceOfPYY(caller2Addr)));
     console.log('---------------------------------------'); 

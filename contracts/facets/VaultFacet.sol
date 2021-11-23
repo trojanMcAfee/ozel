@@ -35,7 +35,6 @@ contract VaultFacet { //Remember to write a function to withdraw/convert CRV
         uint tokenAmount = s.tricrypto.calc_token_amount(amounts, true);
         return(tokenAmount, amounts);
     }
-
     
 
     function depositInCurve(uint _fee) public {
