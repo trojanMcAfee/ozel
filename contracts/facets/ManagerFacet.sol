@@ -142,9 +142,6 @@ contract ManagerFacet {
             abi.encodeWithSignature('depositInCurve(uint256)', fee)
         );
         require(success);
-
-        // s.vault.depositInCurve(fee);
-        
     }
 
 

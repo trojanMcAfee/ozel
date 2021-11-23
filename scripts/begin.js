@@ -532,7 +532,8 @@ async function diamond2() {
             getDistributionIndex: 'function getDistributionIndex() returns (uint256)',
             balanceOf: 'function balanceOf(address account) view returns (uint256)',
             transfer: 'function transfer(address recipient, uint256 amount) returns (bool)',
-            exchangeToUserToken: 'function exchangeToUserToken(uint _amount, address _user, address _userToken)'
+            exchangeToUserToken: 'function exchangeToUserToken(uint _amount, address _user, address _userToken)',
+            withdrawUserShare: 'function withdrawUserShare(address _user, uint _userAllocation, address _userToken)'
         };
 
         for (let sign in signatures) {
@@ -542,7 +543,7 @@ async function diamond2() {
         }
         abi.push(signature);
         iface = new ethers.utils.Interface(abi);
-
+        // console.log('iface: ', iface.fragments[0].name);
         if (Object.keys(args).length < 2) {
             callArgs[0] = args[Object.keys(args)[0]];
         } else {
@@ -564,10 +565,20 @@ async function diamond2() {
                     [ decodedData ] = abiCoder.decode([type], tx);
                     return decodedData;
                 } else {
-                    await signer.sendTransaction({
+                    const unsignedTx = {
                         to: deployedDiamond.address,
                         data: encodedData
-                    });
+                    };
+                    if (iface.fragments[0].name === 'exchangeToUserToken') {
+                        const estGas = await signer.estimateGas(unsignedTx);
+                        console.log(1);
+                        console.log('estGas: ', estGas);
+                        unsignedTx.gasLimit = estGas.toString() * 1.10;
+                        console.log('unsignedTx: ', unsignedTx);
+                    }
+                    console.log(2);
+                    await signer.sendTransaction(unsignedTx);
+                    console.log(3); //incrasing gasLimit so it doesn't run out of gas
                     return;
                 }
             case 1:
@@ -684,17 +695,34 @@ async function diamond2() {
     console.log('PYY balance on caller 2 after getting half: ', formatEther(await balanceOfPYY(caller2Addr)));
     console.log('---------------------------------------'); 
 
+    //1st user withdraw remaining share (half)
+    console.log('Withdraw 1st user half share'); 
+    // await vault.withdrawUserShare(callerAddr, parseEther(formatEther(await balanceOfPYY(callerAddr))), usdtAddr);
+    async function withdrawSharePYY(callerAddr, balancePYY, usdtAddr) {
+        await callDiamondProxy(
+            'withdrawUserShare',
+            {
+                callerAddr,
+                balancePYY,
+                usdtAddr
+            }
+            );
+        }
+        
+    await withdrawSharePYY(callerAddr, parseEther(formatEther(await balanceOfPYY(callerAddr))), usdtAddr);
+
+
+    const usdtBalance = await USDT.balanceOf(callerAddr);
+    console.log('USDT balance from fees of caller1: ', usdtBalance.toString() / 10 ** 6); 
+    console.log('PYY balance on caller 1 after fees withdrawal: ', formatEther(await balanceOfPYY(callerAddr)));
+    console.log('PYY balance on caller 2 after fees withdrawal ', formatEther(await balanceOfPYY(caller2Addr)));
+    console.log('---------------------------------------'); 
+
+
     console.log('begin: revert here');
     return;
 
-    //1st user withdraw remaining share (half)
-    console.log('Withdraw 1st user half share');
-    await vault.withdrawUserShare(callerAddr, parseEther(formatEther(await PYY.balanceOf(callerAddr))), usdtAddr);
-    const usdtBalance = await USDT.balanceOf(callerAddr);
-    console.log('USDT balance from fees of caller1: ', usdtBalance.toString() / 10 ** 6); 
-    console.log('PYY balance on caller 1 after fees withdrawal: ', formatEther(await PYY.balanceOf(callerAddr)));
-    console.log('PYY balance on caller 2 after fees withdrawal ', formatEther(await PYY.balanceOf(caller2Addr)));
-    console.log('---------------------------------------'); 
+
 
     //1st user third transfer (ETH)
     console.log('1st user third transfer (ETH)');
