@@ -557,28 +557,20 @@ async function diamond2() {
         switch(dir) {
             case 0: 
                 encodedData = iface.encodeFunctionData(method, callArgs);
+                const unsignedTx = {
+                    to: deployedDiamond.address,
+                    data: encodedData
+                };
                 if (callArgs.length === 1) {
-                    tx = await signer.call({
-                        to: deployedDiamond.address,
-                        data: encodedData
-                    });
+                    tx = await signer.call(unsignedTx);
                     [ decodedData ] = abiCoder.decode([type], tx);
                     return decodedData;
                 } else {
-                    const unsignedTx = {
-                        to: deployedDiamond.address,
-                        data: encodedData
-                    };
                     if (iface.fragments[0].name === 'exchangeToUserToken') {
                         const estGas = await signer.estimateGas(unsignedTx);
-                        console.log(1);
-                        console.log('estGas: ', estGas);
-                        unsignedTx.gasLimit = estGas.toString() * 1.10;
-                        console.log('unsignedTx: ', unsignedTx);
+                        unsignedTx.gasLimit = Math.floor(estGas.toString() * 1.10);
                     }
-                    console.log(2);
                     await signer.sendTransaction(unsignedTx);
-                    console.log(3); //incrasing gasLimit so it doesn't run out of gas
                     return;
                 }
             case 1:
