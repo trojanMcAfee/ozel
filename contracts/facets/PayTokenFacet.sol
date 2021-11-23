@@ -36,9 +36,16 @@ contract PayTokenFacet is ERC20Facet { //trying to come up in a way to separate 
 
         uint256 senderBalance = balanceOf(sender);
         require(senderBalance >= amount, "ERC20Facet: transfer amount exceeds balance");
-        unchecked {
-            s.manager.transferUserAllocation(sender, recipient, amount);
-        }
+        // unchecked {
+        //     s.manager.transferUserAllocation(sender, recipient, amount);
+        // }
+        (bool success, ) = address(s.manager).delegatecall(
+            abi.encodeWithSignature(
+                'transferUserAllocation(address,address,uint256)', 
+                sender, recipient, amount
+            )
+        );
+        require(success, 'PayTokenFacet: transfer override failed');
 
         emit Transfer(sender, recipient, amount);
 

@@ -29,21 +29,23 @@ contract PayMeFacet {
 
         address user = s.manager._bytesToAddress(_user);
         address userToken = s.manager._bytesToAddress(_userToken);
-        transferToManager(user, userToken);
+        // transferToManager(user, userToken);
+        uint amount = s.renBTC.balanceOf(address(this));
+        s.manager.exchangeToUserToken(amount, user, userToken);
     }
 
     receive() external payable {} 
 
-    function transferToManager(address _user, address _userToken) public {
-        uint amount = s.renBTC.balanceOf(address(this));
-        (bool success, ) = address(s.manager).delegatecall(
-            abi.encodeWithSignature(
-                'exchangeToUserToken(uint256,address,address)', 
-                amount, _user, _userToken
-            )
-        );
-        require(success, 'PayMeFacet: transferToManager failed');
-    }
+    // function transferToManager(address _user, address _userToken) public {
+    //     uint amount = s.renBTC.balanceOf(address(this));
+    //     (bool success, ) = address(s.manager).delegatecall(
+    //         abi.encodeWithSignature(
+    //             'exchangeToUserToken(uint256,address,address)', 
+    //             amount, _user, _userToken
+    //         )
+    //     );
+    //     require(success, 'PayMeFacet: transferToManager failed');
+    // }
  
 } 
 

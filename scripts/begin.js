@@ -531,7 +531,8 @@ async function diamond2() {
             transferToManager: 'function transferToManager(address _user, address _userToken)',
             getDistributionIndex: 'function getDistributionIndex() returns (uint256)',
             balanceOf: 'function balanceOf(address account) view returns (uint256)',
-            transfer: 'function transfer(address recipient, uint256 amount) returns (bool)'
+            transfer: 'function transfer(address recipient, uint256 amount) returns (bool)',
+            exchangeToUserToken: 'function exchangeToUserToken(uint _amount, address _user, address _userToken)'
         };
 
         for (let sign in signatures) {
@@ -578,11 +579,11 @@ async function diamond2() {
 
                     } else {
 
-                    await signer.sendTransaction({
-                        to: deployedDiamond.address,
-                        data: encodedData
-                    });
-                    return;
+                        await signer.sendTransaction({
+                            to: deployedDiamond.address,
+                            data: encodedData
+                        });
+                        return;
 
                     }
                 }
@@ -635,10 +636,18 @@ async function diamond2() {
     //Sends renBTC to contracts (simulates BTC bridging) ** MAIN FUNCTION **
     async function sendsOneTenthRenBTC(userAddr, userToken, IERC20, tokenStr, decimals) {
         await renBTC.transfer(deployedDiamond.address, oneTenth);
+        // await callDiamondProxy(
+        //     'transferToManager',
+        //     {userAddr, userToken}  
+        // );
+
+        const balanceRenBTC = await renBTC.balanceOf(deployedDiamond.address);
         await callDiamondProxy(
-            'transferToManager',
-            {userAddr, userToken}  
+            'exchangeToUserToken',
+            {balanceRenBTC, userAddr, userToken}
         );
+
+
         const distributionIndex = await callDiamondProxy(
             'getDistributionIndex',
             '',
@@ -689,9 +698,9 @@ async function diamond2() {
     console.log('full: ', formatEther(await balanceOfPYY(callerAddr)));
     console.log('half: ', halfPYYbalance);    
 
+    // return;
 
     async function transferPYY(recipient, amount) {
-        console.log('parse amount: ', amount);
         await callDiamondProxy(
             'transfer',
             {recipient, amount},
