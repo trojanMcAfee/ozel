@@ -7,17 +7,12 @@ import './ManagerFacet.sol';
 
 // import 'hardhat/console.sol';
 
-import '../AppStorage.sol';
+// import '../AppStorage.sol';
 
 
-contract PayTokenFacet is ERC20Facet { //trying to come up in a way to separate PYY contract from deployedDiamond
+contract PayTokenFacet is ERC20Facet { 
 
-    // AppStorage internal s;
-
-    // fallback() external {
-    //     console.log('msg.sig:');
-    //     console.logBytes4(msg.sig);
-    // }
+   
     
 
     function balanceOf(address account) public view override returns (uint256) {
@@ -43,7 +38,7 @@ contract PayTokenFacet is ERC20Facet { //trying to come up in a way to separate 
             abi.encodeWithSignature(
                 'transferUserAllocation(address,address,uint256)', 
                 sender, recipient, amount
-            )
+            ) 
         );
         require(success, 'PayTokenFacet: transfer override failed');
 

@@ -570,15 +570,20 @@ async function diamond2() {
                     console.log('callArgs: ', callArgs);
                     console.log('encodedData: ', encodedData);
 
-                    if (callArgs.length === 2) { //remove if later
+                    if (callArgs.length >= 2) { //remove if later
+                        const estimate = await signer.estimateGas({
+                            to: deployedDiamond.address,
+                            data: encodedData
+                        });
+                        console.log('estimate: ', estimate.toString());
+
                         tx = await signer.sendTransaction({
                             to: deployedDiamond.address,
                             data: encodedData
                         });
                         return;
-
                     } else {
-
+                        console.log('world');
                         await signer.sendTransaction({
                             to: deployedDiamond.address,
                             data: encodedData
@@ -685,7 +690,7 @@ async function diamond2() {
     console.log('---------------------------------------'); 
 
     // //First user - 2nd transfer
-    console.log('1st user second transfer'); //failing for some reason (console.log issue)*****
+    console.log('1st user second transfer'); 
     await sendsOneTenthRenBTC(callerAddr, usdtAddr, USDT, 'USDT', 10 ** 6);
     console.log('PYY balance on caller 1 after 2nd swap: ', formatEther(await balanceOfPYY(callerAddr)));
     console.log('PYY balance on caller 2 after caller1 2nd swap: ', formatEther(await balanceOfPYY(caller2Addr)));

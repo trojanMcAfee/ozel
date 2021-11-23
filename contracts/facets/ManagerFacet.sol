@@ -50,13 +50,25 @@ contract ManagerFacet {
     }
 
     function transferUserAllocation(address _sender, address _receiver, uint _amount) public {
+        console.log(1);
         uint amountToTransfer = _getAllocationToTransfer(_amount, _sender);
+        console.log(2);
         s.usersPayments[_sender] -= amountToTransfer;
         s.usersPayments[_receiver] += amountToTransfer;
     }
 
-    function _getAllocationToTransfer(uint _amount, address _user) public view returns(uint) {
-        uint percentageToTransfer = (_amount * 10000) / s.PYY.balanceOf(_user);
+    function _getAllocationToTransfer(uint _amount, address _user) public returns(uint) {
+        console.log(3);
+        console.log('s.PYY: ', address(s.PYY));
+        console.log('s.PYYbalanceOf: ', s.PYY.balanceOf(_user));
+
+        (bool success, bytes memory returnData) = address(s.PYY).delegatecall(
+            abi.encodeWithSignature('balanceOf(address)', _user)
+        );
+        require(success);
+        (uint balancePYY) = abi.decode(returnData, (uint));
+        uint percentageToTransfer = (_amount * 10000) / balancePYY;
+        console.log(4);
         return (percentageToTransfer * s.usersPayments[_user]) / 10000;
     }
 
