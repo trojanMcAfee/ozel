@@ -285,89 +285,7 @@ async function buffering() {
 }
 
 
-async function diamond() {
 
-    const { getSelectors, FacetCutAction } = require('./libraries/diamond.js');
-
-    const signers = await hre.ethers.getSigners();
-    const signer1 = signers[0];
-    const callerAddr = signer1.address;
-    console.log('caller1: ', callerAddr);
-
-    //Deploys DiamondCutFacet
-    const DiamondCutFacet = await hre.ethers.getContractFactory('DiamondCutFacet');
-    const diamondCutFacet = await DiamondCutFacet.deploy();
-    await diamondCutFacet.deployed();
-    console.log('DiamondCutFacet deployed to: ', diamondCutFacet.address);
-
-    //Deploys Diamond
-    const Diamond = await hre.ethers.getContractFactory('Diamond');
-    const diamond = await Diamond.deploy(callerAddr, diamondCutFacet.address);
-    await diamond.deployed();
-    console.log('Diamond deployed to: ', diamond.address);  
-
-    //Deploys DiamondInit
-    const DiamondInit = await hre.ethers.getContractFactory('DiamondInit');
-    const diamondInit = await DiamondInit.deploy();
-    await diamondInit.deployed();
-    console.log('DiamondInit deployed to: ', diamondInit.address);
-
-    //Deploy Facets
-    console.log('');
-    console.log('Deploying Facets');
-    const FacetNames = [
-        'DiamondLoupeFacet',
-        'DummyFacet'
-    ];
-
-    const cut = [];
-    const FacetsContracts = [];
-    for (let FacetName of FacetNames) {
-        const Facet = await hre.ethers.getContractFactory(FacetName);
-        const facet = await Facet.deploy();
-        await facet.deployed();
-        FacetsContracts.push(facet);
-        console.log(`${FacetName} deployed to: ${facet.address}`);
-        cut.push({
-            facetAddress: facet.address,
-            action: FacetCutAction.Add,
-            functionSelectors: getSelectors(facet)
-        });
-    }
-
-    const selecLoup = getSelectors(FacetsContracts[0]).filter((el, i) => i <= 4);
-    const selecDummy = getSelectors(FacetsContracts[1]).filter((el, i) => i <= 1);
-    const selectors = [...selecLoup, ...selecDummy];
-    console.log('selectors: ', selectors);
-    const facetAddresses = [FacetsContracts[0].address, FacetsContracts[1].address];
-
-    //Upgrade Diamond with Facets
-    console.log('');
-    console.log('Diamond cut: ', cut);
-    const diamondCut = await hre.ethers.getContractAt('IDiamondCut', diamond.address);
-    let tx;
-    let receipt;
-    // call to the init function
-    let functionCall = diamondInit.interface.encodeFunctionData('init', [
-        selectors, 
-        facetAddresses
-    ]);
-    tx = await diamondCut.diamondCut(cut, diamondInit.address, functionCall);
-    console.log('Diamond cut tx: ', tx.hash);
-    receipt = await tx.wait();
-    if (!receipt.status) {
-        throw Error(`Diamond upgrade failed: ${tx.hash}`);
-    }
-    console.log('Completed diamond cut');
-    // return diamond.address;
-
-    
-    //Interacts with facets
-    const [ diamondLoupeFacet, dummyFacet ] = FacetsContracts;
-    // await diamond.getHello();
-    await diamond.getOwner();
-
-}
 
 
 
@@ -520,9 +438,9 @@ async function diamond2() {
 
 
     //-----Helpers func--------//
-    async function callDiamondProxy(method, args, dir = 0, type = '') {
+    async function callDiamondProxy(method, args, dir = 0, type = '', signerIndex = 0) { //put this params in one obj
         const signers = await hre.ethers.getSigners();
-        const signer = signers[0];
+        const signer = signers[signerIndex];
         const abi = [];
         let iface;
         let encodedData;
@@ -598,11 +516,30 @@ async function diamond2() {
         ); 
     }
 
-    async function transferPYY(recipient, amount) {
+    async function transferPYY(recipient, amount, signerIndex = 0) { 
         await callDiamondProxy(
             'transfer',
             {recipient, amount},
+            0,
+            '',
+            signerIndex
         ); 
+    }
+
+    async function withdrawSharePYY(callerAddr, balancePYY, usdtAddr) {
+        await callDiamondProxy(
+            'withdrawUserShare',
+            {
+                callerAddr,
+                balancePYY,
+                usdtAddr
+            }
+            );
+    }
+
+    async function approvePYY(caller) {
+        const signer = await hre.ethers.provider.getSigner(caller);
+        await PYY.connect(signer).approve(managerFacet.address, MaxUint256);
     }
     //-----Helpers func--------//
 
@@ -650,10 +587,6 @@ async function diamond2() {
         console.log('.'); 
     }
     
-    async function approvePYY(caller) {
-        const signer = await hre.ethers.provider.getSigner(caller);
-        await PYY.connect(signer).approve(managerFacet.address, MaxUint256);
-    }
     //Caller 2 signer
     const signer2 = await hre.ethers.provider.getSigner(caller2Addr);
 
@@ -689,54 +622,47 @@ async function diamond2() {
     console.log('PYY balance on caller 1 after transferring half: ', formatEther(await balanceOfPYY(callerAddr)));
     console.log('PYY balance on caller 2 after getting half: ', formatEther(await balanceOfPYY(caller2Addr)));
     console.log('---------------------------------------'); 
-
+    
     //1st user withdraw remaining share (half)
-    console.log('Withdraw 1st user half share'); 
-    // await vault.withdrawUserShare(callerAddr, parseEther(formatEther(await balanceOfPYY(callerAddr))), usdtAddr);
-    async function withdrawSharePYY(callerAddr, balancePYY, usdtAddr) {
-        await callDiamondProxy(
-            'withdrawUserShare',
-            {
-                callerAddr,
-                balancePYY,
-                usdtAddr
-            }
-            );
-        }
-        
+    console.log('Withdraw 1st user half share (remainder)');  
     await withdrawSharePYY(callerAddr, parseEther(formatEther(await balanceOfPYY(callerAddr))), usdtAddr);
-
-
     const usdtBalance = await USDT.balanceOf(callerAddr);
     console.log('USDT balance from fees of caller1: ', usdtBalance.toString() / 10 ** 6); 
     console.log('PYY balance on caller 1 after fees withdrawal: ', formatEther(await balanceOfPYY(callerAddr)));
     console.log('PYY balance on caller 2 after fees withdrawal ', formatEther(await balanceOfPYY(caller2Addr)));
     console.log('---------------------------------------'); 
 
-
-    console.log('begin: revert here');
-    return;
-
-
-
     //1st user third transfer (ETH)
     console.log('1st user third transfer (ETH)');
     await sendsOneTenthRenBTC(callerAddr, wethAddr, WETH, 'WETH', 10 ** 18);
-    console.log('PYY balance on caller 1: ', formatEther(await PYY.balanceOf(callerAddr)));
-    console.log('PYY balance on caller 2: ', formatEther(await PYY.balanceOf(caller2Addr)));
-    const toTransfer = formatEther(await PYY.balanceOf(caller2Addr)) / 3;
-    await PYY.connect(signer2).transfer(callerAddr, parseEther(toTransfer.toString())); 
+    console.log('PYY balance on caller 1: ', formatEther(await balanceOfPYY(callerAddr)));
+    console.log('PYY balance on caller 2: ', formatEther(await balanceOfPYY(caller2Addr)));
+    const toTransfer = formatEther(await balanceOfPYY(caller2Addr)) / 3;
+
+    // transferPYY(recipient, amount, signerIndex = 0)
+    await transferPYY(callerAddr, parseEther(toTransfer.toString()), 1);
+
+    // await PYY.connect(signer2).transfer(callerAddr, parseEther(toTransfer.toString())); 
+    console.log('.');
+
     console.log('After PYY transfer');
-    console.log('PYY balance on caller 1: ', formatEther(await PYY.balanceOf(callerAddr)));
-    console.log('PYY balance on caller 2: ', formatEther(await PYY.balanceOf(caller2Addr)));
+    console.log('PYY balance on caller 1: ', formatEther(await balanceOfPYY(callerAddr)));
+    console.log('PYY balance on caller 2: ', formatEther(await balanceOfPYY(caller2Addr)));
+    console.log('.');
+
     console.log('Withdrawing 1/3');
-    await vault.withdrawUserShare(caller2Addr, parseEther(toTransfer.toString()), wethAddr);
+
+    await withdrawSharePYY(caller2Addr, parseEther(toTransfer.toString()), wethAddr);
+    // await vault.withdrawUserShare(caller2Addr, parseEther(toTransfer.toString()), wethAddr);
+
     const wethBalance = await WETH.balanceOf(caller2Addr);
     console.log('WETH balance from fees of caller2: ', formatEther(wethBalance));
-    console.log('PYY balance on caller 1: ', formatEther(await PYY.balanceOf(callerAddr)));
-    console.log('PYY balance on caller 2: ', formatEther(await PYY.balanceOf(caller2Addr)));
+    console.log('PYY balance on caller 1: ', formatEther(await balanceOfPYY(callerAddr)));
+    console.log('PYY balance on caller 2: ', formatEther(await balanceOfPYY(caller2Addr)));
+    console.log('.');
+    console.log('crvTricrypto token balance on diamondProxy: ', formatEther(await crvTri.balanceOf(deployedDiamond.address)));
 
-
+    console.log('done :)');
     /**+++++++++ END OF SIMULATION CURVE SWAPS ++++++++**/
 
 
@@ -747,122 +673,12 @@ async function diamond2() {
 
 
 
-async function diamond3() {
-    // const diamond = require('diamond-util');
-
-    const { getSelectors, FacetCutAction } = require('./libraries/diamond.js');
-
-    const signers = await hre.ethers.getSigners();
-    const signer1 = signers[0];
-    const callerAddr = signer1.address;
-    console.log('caller1: ', callerAddr);
-
-    //Deploys DiamondCutFacet
-    const DiamondCutFacet = await hre.ethers.getContractFactory('DiamondCutFacet');
-    const diamondCutFacet = await DiamondCutFacet.deploy();
-    await diamondCutFacet.deployed();
-    console.log('DiamondCutFacet deployed to: ', diamondCutFacet.address);
-
-    //Deploy Facets
-    console.log('');
-    console.log('Deploying Facets');
-    const FacetNames = [
-        'DiamondLoupeFacet',
-        'DummyFacet'
-    ];
-
-    const cut = [];
-    const FacetsContracts = [];
-    for (let FacetName of FacetNames) {
-        const Facet = await hre.ethers.getContractFactory(FacetName);
-        const facet = await Facet.deploy();
-        await facet.deployed();
-        FacetsContracts.push(facet);
-        console.log(`${FacetName} deployed to: ${facet.address}`);
-        cut.push({
-            facetAddress: facet.address,
-            action: FacetCutAction.Add,
-            functionSelectors: getSelectors(facet)
-        });
-    }
-    const facetAddresses = [FacetsContracts[0].address, FacetsContracts[1].address];
-
-    //Deploys DiamondInit
-    const DiamondInit = await hre.ethers.getContractFactory('DiamondInit');
-    const diamondInit = await DiamondInit.deploy();
-    await diamondInit.deployed();
-    console.log('DiamondInit deployed to: ', diamondInit.address);
-
-    const selecLoup = getSelectors(FacetsContracts[0]).filter((el, i) => i <= 4);
-    const selecDummy = getSelectors(FacetsContracts[1]).filter((el, i) => i <= 1);
-    const selectors = [...selecLoup, ...selecDummy];
-    // console.log('selectors: ', selectors);
-
-    // call to the init function
-    let functionCall = diamondInit.interface.encodeFunctionData('init', [
-        selectors, 
-        facetAddresses
-    ]);
-
-    //Deploys Diamond
-    const Diamond = await hre.ethers.getContractFactory('Diamond');
-    const diamond = await Diamond.deploy(
-        callerAddr, 
-        diamondCutFacet.address,
-        selecDummy,
-        facetAddresses[1],
-        diamondInit.address,
-        functionCall
-    );
-    await diamond.deployed();
-    console.log('Diamond deployed to: ', diamond.address);
 
 
 
-
-
-
-    
-  
-
-
-    
-
-    
-
-    //Upgrade Diamond with Facets
-    // console.log('');
-    // console.log('Diamond cut: ', cut);
-    // const diamondCut = await hre.ethers.getContractAt('IDiamondCut', diamond.address);
-    // let tx;
-    // let receipt;
-    
-    // tx = await diamondCut.diamondCut(cut, diamondInit.address, functionCall);
-    // console.log('Diamond cut tx: ', tx.hash);
-    // receipt = await tx.wait();
-    // if (!receipt.status) {
-    //     throw Error(`Diamond upgrade failed: ${tx.hash}`);
-    // }
-    console.log('Completed diamond cut');
-    // return diamond.address;
-
-    
-    //Interacts with facets
-    const [ diamondLoupeFacet, dummyFacet ] = FacetsContracts;
-    // await diamond.getHello();
-    await diamond.getOwner();
-
-}
-
-
-
-
-
-// diamond();
 
 diamond2();
 
-// diamond3();
 
 
 // begin();

@@ -61,6 +61,7 @@ contract ManagerFacet {
         );
         require(success);
         (uint balancePYY) = abi.decode(returnData, (uint));
+        
         uint percentageToTransfer = (_amount * 10000) / balancePYY;
         return (percentageToTransfer * s.usersPayments[_user]) / 10000;
     }

@@ -53,12 +53,10 @@ contract VaultFacet { //Remember to write a function to withdraw/convert CRV
         return ((_userAllocation * _balance) / 100 * 1 ether) / 10 ** 36;
     }
     
-    
 
     function calculateAllocationPercentage(uint _userAllocation, uint _balance) public pure returns(uint) {
         return (((_userAllocation * 10000) / _balance) * 1 ether) / 100;
     }
-
 
     
     function withdrawUserShare(address _user, uint _userAllocation, address _userToken) public {
@@ -73,7 +71,6 @@ contract VaultFacet { //Remember to write a function to withdraw/convert CRV
 
         uint allocationPercentage = calculateAllocationPercentage(_userAllocation, balancePYY);
         uint amountToReduce = getAllocationToAmount(allocationPercentage, s.usersPayments[_user]);
-        console.log(4);
 
         (success, ) = address(s.manager).delegatecall(
             abi.encodeWithSignature(
@@ -82,10 +79,6 @@ contract VaultFacet { //Remember to write a function to withdraw/convert CRV
             )
         );
         require(success, 'VaultFacet: modifyPaymentsAndVolumeExternally() failed');
-
-
-        // s.manager.modifyPaymentsAndVolumeExternally(_user, amountToReduce);
-        console.log(5);
 
         uint i;
         if (_userToken == address(s.USDT)) {
@@ -96,13 +89,9 @@ contract VaultFacet { //Remember to write a function to withdraw/convert CRV
             i = 2;
         }
 
-        console.log(6);
         uint tokenAmountIn = s.tricrypto.calc_withdraw_one_coin(userShareTokens, i);
-        console.log(7);
         uint minAmount = tokenAmountIn._calculateSlippage(s.slippageOnCurve);
-        console.log(8);
         s.tricrypto.remove_liquidity_one_coin(userShareTokens, i, minAmount);
-        console.log(9);
 
         uint userTokens = IERC20Facet(_userToken).balanceOf(address(this));
         (success, ) = _userToken.call(
@@ -111,7 +100,7 @@ contract VaultFacet { //Remember to write a function to withdraw/convert CRV
                 _user, userTokens
             )
         );
-        require(success, 'userToken transfer to user failed'); 
+        require(success, 'VaultFacet: call transfer() failed'); 
     }
 
     
