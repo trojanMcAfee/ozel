@@ -65,9 +65,27 @@ contract VaultFacet { //Remember to write a function to withdraw/convert CRV
         uint vaultBalance = s.crvTricrypto.balanceOf(address(this));
         uint userShareTokens = getAllocationToAmount(_userAllocation, vaultBalance);
 
-        uint allocationPercentage = calculateAllocationPercentage(_userAllocation, s.PYY.balanceOf(_user));
+        (bool success, bytes memory data) = address(s.PYY).delegatecall(
+            abi.encodeWithSignature('balanceOf(address)', _user)
+        );
+        require(success, 'VaultFacet: balanceOfPYY failed');
+        (uint balancePYY) = abi.decode(data, (uint));
+
+        uint allocationPercentage = calculateAllocationPercentage(_userAllocation, balancePYY);
         uint amountToReduce = getAllocationToAmount(allocationPercentage, s.usersPayments[_user]);
-        s.manager.modifyPaymentsAndVolumeExternally(_user, amountToReduce);
+        console.log(4);
+
+        (success, ) = address(s.manager).delegatecall(
+            abi.encodeWithSignature(
+                'modifyPaymentsAndVolumeExternally(address,uint256)', 
+                _user, amountToReduce
+            )
+        );
+        require(success, 'VaultFacet: modifyPaymentsAndVolumeExternally() failed');
+
+
+        // s.manager.modifyPaymentsAndVolumeExternally(_user, amountToReduce);
+        console.log(5);
 
         uint i;
         if (_userToken == address(s.USDT)) {
@@ -78,12 +96,16 @@ contract VaultFacet { //Remember to write a function to withdraw/convert CRV
             i = 2;
         }
 
+        console.log(6);
         uint tokenAmountIn = s.tricrypto.calc_withdraw_one_coin(userShareTokens, i);
+        console.log(7);
         uint minAmount = tokenAmountIn._calculateSlippage(s.slippageOnCurve);
+        console.log(8);
         s.tricrypto.remove_liquidity_one_coin(userShareTokens, i, minAmount);
+        console.log(9);
 
         uint userTokens = IERC20Facet(_userToken).balanceOf(address(this));
-        (bool success, ) = _userToken.call(
+        (success, ) = _userToken.call(
             abi.encodeWithSignature(
                 'transfer(address,uint256)', 
                 _user, userTokens

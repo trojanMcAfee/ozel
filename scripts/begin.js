@@ -425,8 +425,8 @@ async function diamond2() {
     const selecPayme = getSelectors(paymeFacet).filter((el) => typeof el === 'string');
     const selecManager = getSelectors(managerFacet).filter((el) => typeof el === 'string');
     const selecPYY = getSelectors(PYY).filter((el) => typeof el === 'string');
-
     const selectGetters = getSelectors(gettersFacet).filter((el) => typeof el === 'string');
+    const selecVault = getSelectors(vaultFacet).filter((el) => typeof el === 'string');
 
 
     //State variables
@@ -474,7 +474,8 @@ async function diamond2() {
             selecPayme, 
             selecManager, 
             selecPYY,
-            selectGetters
+            selectGetters,
+            selecVault
         ],
         [
             diamondCutFacet.address, 
@@ -483,7 +484,8 @@ async function diamond2() {
             paymeFacet.address,
             managerFacet.address,
             PYY.address,
-            gettersFacet.address
+            gettersFacet.address,
+            vaultFacet.address
         ]
     ];
 
@@ -506,7 +508,8 @@ async function diamond2() {
             ['PayMeFacet', paymeFacet],
             ['ManagerFacet', managerFacet],
             ['PayTokenFacet', PYY],
-            ['GettersFacet', gettersFacet]
+            ['GettersFacet', gettersFacet],
+            ['VaultFacet', vaultFacet]
         ],
         args: '',
         overrides: {callerAddr, functionCall, diamondInit: diamondInit.address}
@@ -543,7 +546,7 @@ async function diamond2() {
         }
         abi.push(signature);
         iface = new ethers.utils.Interface(abi);
-        // console.log('iface: ', iface.fragments[0].name);
+        
         if (Object.keys(args).length < 2) {
             callArgs[0] = args[Object.keys(args)[0]];
         } else {

@@ -46,7 +46,6 @@ contract DiamondInit {
         LibDiamond.Facets memory _facets,
         LibDiamond.VarsAndAddresses memory _vars
     ) external {
-        console.log('yatzi');
         // adding ERC165 data
         LibDiamond.DiamondStorage storage ds = LibDiamond.diamondStorage();
         ds.supportedInterfaces[type(IERC165).interfaceId] = true;
