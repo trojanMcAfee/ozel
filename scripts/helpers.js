@@ -1,4 +1,15 @@
-const { deployedDiamond } = require('./begin.js');
+const { deployedDiamond } = require('./deploy.js');
+// let {deployedDiamond} = require('./stateVars.js');
+
+
+// function logDiamond() {
+//     console.log('diamond: ', deployedDiamond);
+// }
+
+// function getDeployedDiamond(deployedDiamond) {
+//     return deployedDiamond
+// }
+
 
 async function callDiamondProxy(method, args, dir = 0, type = '', signerIndex = 0) { //put this params in one obj
     const signers = await hre.ethers.getSigners();
