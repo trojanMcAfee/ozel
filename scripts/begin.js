@@ -611,17 +611,26 @@ async function diamond2() {
     async function sendsOneTenthRenBTC(userAddr, userToken, IERC20, tokenStr, decimals) {
         await renBTC.transfer(deployedDiamond.address, oneTenth);
         const balanceRenBTC = await renBTC.balanceOf(deployedDiamond.address);
-        await callDiamondProxy(
-            'exchangeToUserToken',
-            {balanceRenBTC, userAddr, userToken}
-        );
+        // await callDiamondProxy(
+        //     'exchangeToUserToken',
+        //     {balanceRenBTC, userAddr, userToken} 
+        // );
+        await callDiamondProxy({
+            method: 'exchangeToUserToken',
+            args: {balanceRenBTC, userAddr, userToken},
+        });
 
-        const distributionIndex = await callDiamondProxy(
-            'getDistributionIndex',
-            '',
-            1,
-            'uint256'
-        );
+        // const distributionIndex = await callDiamondProxy(
+        //     'getDistributionIndex',
+        //     '',
+        //     1,
+        //     'uint256'
+        // );
+        const distributionIndex = await callDiamondProxy({
+            method: 'getDistributionIndex',
+            dir: 1,
+            type: 'uint256'
+        });
         console.log('index: ', distributionIndex.toString() / 10 ** 18);
         let tokenBalance = await IERC20.balanceOf(userAddr);
         console.log(tokenStr + ' balance of callerAddr: ', tokenBalance.toString() / decimals);

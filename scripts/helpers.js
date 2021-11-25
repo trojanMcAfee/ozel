@@ -10,10 +10,12 @@ const { deployedDiamond } = require('./deploy.js');
 //     return deployedDiamond
 // }
 
+//trying to get deployedDiamond from --------------------------------------->
+//to here (circular dependency)
 
-async function callDiamondProxy(method, args, dir = 0, type = '', signerIndex = 0) { //put this params in one obj
+async function callDiamondProxy(params) { //put this params in one obj
     const signers = await hre.ethers.getSigners();
-    const signer = signers[signerIndex];
+    const signer = signers[params.signerIndex === undefined ? 0 : params.dir];
     const abi = [];
     let iface;
     let encodedData;
@@ -29,35 +31,36 @@ async function callDiamondProxy(method, args, dir = 0, type = '', signerIndex = 
         exchangeToUserToken: 'function exchangeToUserToken(uint _amount, address _user, address _userToken)',
         withdrawUserShare: 'function withdrawUserShare(address _user, uint _userAllocation, address _userToken)'
     };
+    // const path = params.dir === undefined ? 0 : params.dir; 
 
     for (let sign in signatures) {
-        if (sign === method) {
+        if (sign === params.method) {
             signature = signatures[sign];
         }
     }
     abi.push(signature);
     iface = new ethers.utils.Interface(abi);
     
-    if (Object.keys(args).length < 2) {
-        callArgs[0] = args[Object.keys(args)[0]];
+    if (Object.keys(params.args).length < 2) {
+        callArgs[0] = params.args[Object.keys(params.args)[0]];
     } else {
         let i = 0;
-        for (let key in args) {
-            callArgs[i] = args[key];
+        for (let key in params.args) {
+            callArgs[i] = params.args[key];
             i++;
         }
     }
 
-    switch(dir) {
+    switch(params.dir === undefined ? 0 : params.dir) {
         case 0: 
-            encodedData = iface.encodeFunctionData(method, callArgs);
+            encodedData = iface.encodeFunctionData(params.method, callArgs);
             const unsignedTx = {
                 to: deployedDiamond.address,
                 data: encodedData
             };
             if (callArgs.length === 1) {
                 tx = await signer.call(unsignedTx);
-                [ decodedData ] = abiCoder.decode([type], tx);
+                [ decodedData ] = abiCoder.decode([params.type], tx);
                 return decodedData;
             } else {
                 if (iface.fragments[0].name === 'exchangeToUserToken') {
@@ -68,46 +71,39 @@ async function callDiamondProxy(method, args, dir = 0, type = '', signerIndex = 
                 return;
             }
         case 1:
-            encodedData = iface.encodeFunctionData(method);
+            encodedData = iface.encodeFunctionData(params.method);
             tx = await signer.sendTransaction({
                 to: deployedDiamond.address,
                 data: encodedData
             });
             const receipt = await tx.wait();
             const { data } = receipt.logs[0];
-            [ decodedData ] = abiCoder.decode([type], data);
+            [ decodedData ] = abiCoder.decode([params.type], data);
             return decodedData;
     }
 }
 
 async function balanceOfPYY(user) {
-    return await callDiamondProxy(
-        'balanceOf',
-        {user},
-        0,
-        'uint256'
-    ); 
+    return await callDiamondProxy({
+        method: 'balanceOf',
+        args: {user},
+        dir: 0,
+        type: 'uint256'
+    }); 
 }
 
-async function transferPYY(recipient, amount, signerIndex = 0) { 
-    await callDiamondProxy(
-        'transfer',
-        {recipient, amount},
-        0,
-        '',
-        signerIndex
-    ); 
+async function transferPYY(recipient, amount) { 
+    await callDiamondProxy({
+        method: 'transfer',
+        args: {recipient, amount},
+    }); 
 }
 
 async function withdrawSharePYY(callerAddr, balancePYY, usdtAddr) {
-    await callDiamondProxy(
-        'withdrawUserShare',
-        {
-            callerAddr,
-            balancePYY,
-            usdtAddr
-        }
-        );
+    await callDiamondProxy({
+        method: 'withdrawUserShare',
+        args: {callerAddr, balancePYY, usdtAddr}
+    });
 }
 
 async function approvePYY(caller) {
