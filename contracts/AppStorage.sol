@@ -11,12 +11,9 @@ import '@openzeppelin/contracts/token/ERC20/IERC20.sol';
 import './facets/PayMeFacet.sol';
 import './facets/GettersFacet.sol';
 
-import './libraries/Helpers.sol';
 
 
 struct AppStorage {
-    // uint num;
-
     IGatewayRegistry registry;
     ManagerFacet manager; 
     ITricrypto tricrypto;
@@ -54,27 +51,4 @@ struct PYYERC20 {
     string  _name;
     string  _symbol;
 }
-
-
-
-// contract GettersFacet is DiamondInit {
-//     // AppStorage public s;
-
-//     // function diamondStorage() internal pure returns(AppStorage storage ds) {
-//     //     assembly {
-//     //         ds.slot := 0
-//     //     }
-//     // }
-
-//     function getDistributionIndex() external view returns(uint) {
-//         // AppStorage storage s = diamondStorage();
-//         return s.distributionIndex;
-//     }
-
-//     function logVar() external view {
-//         // AppStorage storage s = diamondStorage();
-//         console.log('renBTC ex: ', address(s.renBTC));
-//     }
-
-// }
 

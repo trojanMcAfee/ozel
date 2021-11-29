@@ -76,8 +76,6 @@ contract ManagerFacet {
         return (netAmount, fee);
     }
 
-
-    /***** Helper swapping functions ******/
     function swapsRenForWBTC(uint _netAmount) public returns(uint wbtcAmount) {
         s.renBTC.approve(address(s.renPool), _netAmount);
         uint slippage = _netAmount._calculateSlippage(s.slippageTradingCurve); 
@@ -91,10 +89,6 @@ contract ManagerFacet {
         uint slippage = minOut._calculateSlippage(s.slippageTradingCurve);
         s.tricrypto.exchange(1, _tokenOut, _wbtcToConvert, slippage, _useEth);
     }
-    /*****************/ // <------- see if i can move these two func to Helpers.sol
-
-    
-
 
     function exchangeToUserToken(uint _amount, address _user, address _userToken) public {
         updateManagerState(_amount, _user);

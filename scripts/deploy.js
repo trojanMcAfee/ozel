@@ -47,7 +47,6 @@ function getSelectorsFromAllFacets(facets) {
 
 
 async function deploy() {
-
     const [callerAddr, caller2Addr] = await hre.ethers.provider.listAccounts();
     console.log('--');
     console.log('Caller 1: ', callerAddr);

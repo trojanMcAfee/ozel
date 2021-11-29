@@ -10,14 +10,12 @@ pragma solidity ^0.8.0;
 
 import { LibDiamond } from "./libraries/LibDiamond.sol";
 import { IDiamondCut } from "./interfaces/IDiamondCut.sol";
-
 import { IDiamondLoupe } from "./interfaces/IDiamondLoupe.sol";
 import { IERC173 } from "./interfaces/IERC173.sol";
-
 import './AppStorage.sol';
 
-
 import 'hardhat/console.sol';
+
 
 contract Diamond {    
 
@@ -62,8 +60,4 @@ contract Diamond {
     }
 
     receive() external payable {}
-
-    // function getDistributionIndex() external view returns(address) {
-    //     return address(s.renBTC);
-    // }
 }
