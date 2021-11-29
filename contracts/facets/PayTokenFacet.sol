@@ -31,9 +31,6 @@ contract PayTokenFacet is ERC20Facet {
 
         uint256 senderBalance = balanceOf(sender);
         require(senderBalance >= amount, "ERC20Facet: transfer amount exceeds balance");
-        // unchecked {
-        //     s.manager.transferUserAllocation(sender, recipient, amount);
-        // }
         (bool success, ) = address(s.manager).delegatecall(
             abi.encodeWithSignature(
                 'transferUserAllocation(address,address,uint256)', 

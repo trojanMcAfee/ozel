@@ -36,6 +36,14 @@ async function deployFacet(facetName, withLib, libDeployed) {
     return withLib && !libDeployed ? [contract, library] : contract;
 }
 
+function getSelectorsFromAllFacets(facets) {
+    const selectors = [];
+    for (let i = 0; i < facets.length; i++) {
+        selectors.push(getSelectors(facets[i]).filter((el) => typeof el === 'string'));
+    }
+    return selectors;
+}
+
 
 async function deploy() {
 
@@ -54,25 +62,30 @@ async function deploy() {
     //Facets
     const diamondCutFacet = await deployFacet('DiamondCutFacet');
     const diamondLoupeFacet = await deployFacet('DiamondLoupeFacet'); 
-    const dummyFacet = await deployFacet('DummyFacet');
-
     const [managerFacet, library] = await deployFacet('ManagerFacet', 'Helpers');
     const vaultFacet = await deployFacet('VaultFacet', 'Helpers', library);
     const paymeFacet = await deployFacet('PayMeFacet');
     const PYY = await deployFacet('PayTokenFacet'); 
     const gettersFacet = await deployFacet('GettersFacet');
 
-
     //Selectors
-    const selecCut = getSelectors(diamondCutFacet).filter((el) => typeof el === 'string');
-    const selecLoup = getSelectors(diamondLoupeFacet).filter((el) => typeof el === 'string');
-    const selecDummy = getSelectors(dummyFacet).filter((el) => typeof el === 'string');
-
-    const selecPayme = getSelectors(paymeFacet).filter((el) => typeof el === 'string');
-    const selecManager = getSelectors(managerFacet).filter((el) => typeof el === 'string');
-    const selecPYY = getSelectors(PYY).filter((el) => typeof el === 'string');
-    const selectGetters = getSelectors(gettersFacet).filter((el) => typeof el === 'string');
-    const selecVault = getSelectors(vaultFacet).filter((el) => typeof el === 'string');
+    const [
+        selecCut,
+        selecLoup,
+        selecPayme,
+        selecManager,
+        selecPYY,
+        selectGetters,
+        selecVault
+    ] = getSelectorsFromAllFacets([
+        diamondCutFacet,
+        diamondLoupeFacet,
+        paymeFacet,
+        managerFacet,
+        PYY,
+        gettersFacet,
+        vaultFacet
+    ]);
 
     const contractsAddr = [
         registryAddr,
@@ -111,7 +124,6 @@ async function deploy() {
         [
             selecCut, 
             selecLoup, 
-            selecDummy, 
             selecPayme, 
             selecManager, 
             selecPYY,
@@ -121,7 +133,6 @@ async function deploy() {
         [
             diamondCutFacet.address, 
             diamondLoupeFacet.address, 
-            dummyFacet.address,
             paymeFacet.address,
             managerFacet.address,
             PYY.address,
@@ -140,14 +151,12 @@ async function deploy() {
         VarsAndAddrStruct
     ]);
 
-
     //Deploys diamond
     const deployedDiamond = await diamond.deploy({
         diamondName: 'Diamond',
         facets: [
             ['DiamondCutFacet', diamondCutFacet],
             ['DiamondLoupeFacet', diamondLoupeFacet],
-            ['DummyFacet', dummyFacet],
             ['PayMeFacet', paymeFacet],
             ['ManagerFacet', managerFacet],
             ['PayTokenFacet', PYY],
@@ -158,7 +167,6 @@ async function deploy() {
         overrides: {callerAddr, functionCall, diamondInit: diamondInit.address}
     });
     console.log('Diamond deployed to: ', deployedDiamond.address);
-
 
     return {
         deployedDiamond, 

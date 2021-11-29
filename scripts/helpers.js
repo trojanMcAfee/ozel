@@ -135,7 +135,6 @@ async function sendsOneTenthRenBTC(oneTenth, userAddr, userToken, IERC20, tokenS
 
 
 module.exports = {
-    callDiamondProxy,
     balanceOfPYY,
     transferPYY,
     withdrawSharePYY,

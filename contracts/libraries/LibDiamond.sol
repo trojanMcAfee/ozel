@@ -67,12 +67,6 @@ library LibDiamond {
         }
     }
 
-    // function getDiamondStorage() external view {
-    //     DiamondStorage storage ds = diamondStorage();
-    //     address owner = ds.contractOwner;
-    //     console.log('owner: ', owner);
-    // }
-
     event OwnershipTransferred(address indexed previousOwner, address indexed newOwner);
 
     function setContractOwner(address _newOwner) internal {
