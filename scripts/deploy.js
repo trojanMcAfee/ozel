@@ -74,7 +74,6 @@ async function deploy() {
     const selectGetters = getSelectors(gettersFacet).filter((el) => typeof el === 'string');
     const selecVault = getSelectors(vaultFacet).filter((el) => typeof el === 'string');
 
-
     const contractsAddr = [
         registryAddr,
         managerFacet.address,

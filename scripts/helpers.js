@@ -1,22 +1,11 @@
-// const { deployedDiamond } = require('./deploy.js');
-// let {deployedDiamond} = require('./stateVars.js');
 const { defaultAbiCoder: abiCoder } = ethers.utils;
 const { MaxUint256 } = ethers.constants;
-
-
-
-// function logDiamond() {
-//     console.log('diamond: ', deployedDiamond);
-// }
-
-// function getDeployedDiamond(deployedDiamond) {
-//     return deployedDiamond
-// }
 
 
 let deployedDiamond;
 let PYY;
 let managerFacet;
+
 
 async function getVarsForHelpers(diamond, pyy, manager) {
     deployedDiamond = diamond;
@@ -24,9 +13,9 @@ async function getVarsForHelpers(diamond, pyy, manager) {
     managerFacet = manager;
 }
 
-async function callDiamondProxy(params) { //put this params in one obj
+async function callDiamondProxy(params) { 
     const signers = await hre.ethers.getSigners();
-    const signer = signers[params.signerIndex === undefined ? 0 : params.signerIndex];
+    const signer = signers[!params.signerIndex ? 0 : params.signerIndex];
     const abi = [];
     let iface;
     let encodedData;
@@ -35,14 +24,12 @@ async function callDiamondProxy(params) { //put this params in one obj
     let decodedData;
     let signature;
     const signatures = {
-        transferToManager: 'function transferToManager(address _user, address _userToken)', //delete if not used
         getDistributionIndex: 'function getDistributionIndex() returns (uint256)',
         balanceOf: 'function balanceOf(address account) view returns (uint256)',
         transfer: 'function transfer(address recipient, uint256 amount) returns (bool)',
         exchangeToUserToken: 'function exchangeToUserToken(uint _amount, address _user, address _userToken)',
         withdrawUserShare: 'function withdrawUserShare(address _user, uint _userAllocation, address _userToken)'
     };
-    // const path = params.dir === undefined ? 0 : params.dir; 
 
     for (let sign in signatures) {
         if (sign === params.method) {
@@ -64,7 +51,7 @@ async function callDiamondProxy(params) { //put this params in one obj
         }
     }
 
-    switch(params.dir === undefined ? 0 : params.dir) {
+    switch(!params.dir ? 0 : params.dir) {
         case 0: 
             encodedData = iface.encodeFunctionData(params.method, callArgs);
             const unsignedTx = {
