@@ -11,10 +11,18 @@ library Helpers {
 
     function _calculateSlippage(
         uint _amount, 
-        uint _basisPoint //pass this as a general variable to the Diamond
+        uint _basisPoint
     ) public pure returns(uint minAmountOut) {
-        minAmountOut = _amount - ( (_amount * _basisPoint) / 10000 ); //5 -> 0.05%; 
+        minAmountOut = _amount - ( (_amount * _basisPoint) / 10000 );  
     }
+
+    function _bytesToAddress(bytes memory _bytes) public pure returns (address addr) {
+        assembly {
+            addr := mload(add(_bytes,20))
+        } 
+    }
+
+
 
     function delegateTo(
         address _callee, 
@@ -29,11 +37,6 @@ library Helpers {
         );
         require(success, string(abi.encodePacked(_contract, ': ', _method, ' failed')));
     }
-
-    
-
-
-
     
 
 }

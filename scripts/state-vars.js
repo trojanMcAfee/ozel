@@ -10,6 +10,7 @@ let crvTricrypto;
 const ETH = '0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE';
 const dappFee = 10; //prev: 10 -> 0.1% / 100-1 / 1000-10 / 10000 - 100%
 const slippageOnCurve = 100; //bp: 100 -> 1%
+const slippageTradingCurve = 5; //5 -> 0.05%;
 const tokenName = 'PayToken';
 const tokenSymbol = 'PYY';
 
@@ -51,5 +52,6 @@ module.exports = {
     dappFee,
     slippageOnCurve,
     tokenName,
-    tokenSymbol
+    tokenSymbol,
+    slippageTradingCurve
 };

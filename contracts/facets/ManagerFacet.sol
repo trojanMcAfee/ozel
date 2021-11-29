@@ -8,15 +8,9 @@ import '@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol';
 import './VaultFacet.sol';
 import '../libraries/Helpers.sol';
 import '../interfaces/ICrvLpToken.sol';
-
 import '../AppStorage.sol';
 
 import 'hardhat/console.sol';
-
-// import {Exchange} from '../libraries/Helpers.sol';
-// import {GettersFacet} from '../AppStorage.sol';
-
-
 
 
 
@@ -26,8 +20,6 @@ contract ManagerFacet {
     using SafeERC20 for IERC20;
     using Helpers for uint256;
     using Helpers for address;
-
-
 
 
     function updateIndex() private {
@@ -66,12 +58,6 @@ contract ManagerFacet {
         return (percentageToTransfer * s.usersPayments[_user]) / 10000;
     }
 
-    function _bytesToAddress(bytes memory _bytes) public pure returns (address addr) {
-        assembly {
-            addr := mload(add(_bytes,20))
-        } 
-    }
-
     function _preSending(address _user) private {
         s.pendingWithdrawal[_user] = address(this).balance;
     }
@@ -84,7 +70,7 @@ contract ManagerFacet {
     }
 
     function _getFee(uint _amount) public returns(uint, uint) {
-        uint fee = _amount - _amount._calculateSlippage(s.dappFee); //10 -> 0.1%
+        uint fee = _amount - _amount._calculateSlippage(s.dappFee);
         s.feesVault += fee;
         uint netAmount = s.WBTC.balanceOf(address(this)) - fee;
         return (netAmount, fee);
@@ -94,7 +80,7 @@ contract ManagerFacet {
     /***** Helper swapping functions ******/
     function swapsRenForWBTC(uint _netAmount) public returns(uint wbtcAmount) {
         s.renBTC.approve(address(s.renPool), _netAmount);
-        uint slippage = _netAmount._calculateSlippage(5); //pass this as a general variable to the Diamond
+        uint slippage = _netAmount._calculateSlippage(s.slippageTradingCurve); 
         s.renPool.exchange(0, 1, _netAmount, slippage);
         wbtcAmount = s.WBTC.balanceOf(address(this));
     }
@@ -102,10 +88,10 @@ contract ManagerFacet {
     function swapsWBTCForUserToken(uint _wbtcToConvert, uint _tokenOut, bool _useEth) public {
         s.WBTC.approve(address(s.tricrypto), _wbtcToConvert);
         uint minOut = s.tricrypto.get_dy(1, _tokenOut, _wbtcToConvert);
-        uint slippage = minOut._calculateSlippage(5);
+        uint slippage = minOut._calculateSlippage(s.slippageTradingCurve);
         s.tricrypto.exchange(1, _tokenOut, _wbtcToConvert, slippage, _useEth);
     }
-    /*****************/
+    /*****************/ // <------- see if i can move these two func to Helpers.sol
 
     
 

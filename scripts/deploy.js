@@ -14,7 +14,8 @@ const {
     dappFee,
     slippageOnCurve,
     tokenName,
-    tokenSymbol
+    tokenSymbol,
+    slippageTradingCurve
 } = require('./state-vars.js');
 
 
@@ -64,7 +65,7 @@ async function deploy() {
     const diamondLoupeFacet = await deployFacet('DiamondLoupeFacet'); 
     const [managerFacet, library] = await deployFacet('ManagerFacet', 'Helpers');
     const vaultFacet = await deployFacet('VaultFacet', 'Helpers', library);
-    const paymeFacet = await deployFacet('PayMeFacet');
+    const paymeFacet = await deployFacet('PayMeFacet', 'Helpers', library);
     const PYY = await deployFacet('PayTokenFacet'); 
     const gettersFacet = await deployFacet('GettersFacet');
 
@@ -108,7 +109,8 @@ async function deploy() {
 
     const appVars = [
         dappFee,
-        slippageOnCurve
+        slippageOnCurve,
+        slippageTradingCurve
     ];
 
     //Data structs for init()

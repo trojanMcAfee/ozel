@@ -1,19 +1,11 @@
 //SPDX-License-Identifier: UNLICENSED
 pragma solidity ^0.8.0;
 
-// import '@openzeppelin/contracts/token/ERC20/ERC20.sol';
 import './ERC20Facet/ERC20Facet.sol';
 import './ManagerFacet.sol';
 
-// import 'hardhat/console.sol';
-
-// import '../AppStorage.sol';
-
 
 contract PayTokenFacet is ERC20Facet { 
-
-   
-    
 
     function balanceOf(address account) public view override returns (uint256) {
         return (s.distributionIndex * s.usersPayments[account] * 100 ) / 10 ** 8;

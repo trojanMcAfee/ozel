@@ -34,6 +34,7 @@ struct AppStorage {
 
     uint dappFee;
     uint slippageOnCurve;
+    uint slippageTradingCurve;
     uint totalVolume;
     uint distributionIndex;
     uint feesVault;
