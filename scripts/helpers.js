@@ -1,5 +1,8 @@
-const { deployedDiamond } = require('./deploy.js');
+// const { deployedDiamond } = require('./deploy.js');
 // let {deployedDiamond} = require('./stateVars.js');
+const { defaultAbiCoder: abiCoder } = ethers.utils;
+const { MaxUint256 } = ethers.constants;
+
 
 
 // function logDiamond() {
@@ -10,12 +13,20 @@ const { deployedDiamond } = require('./deploy.js');
 //     return deployedDiamond
 // }
 
-//trying to get deployedDiamond from --------------------------------------->
-//to here (circular dependency)
+
+let deployedDiamond;
+let PYY;
+let managerFacet;
+
+async function getVarsForHelpers(diamond, pyy, manager) {
+    deployedDiamond = diamond;
+    PYY = pyy;
+    managerFacet = manager;
+}
 
 async function callDiamondProxy(params) { //put this params in one obj
     const signers = await hre.ethers.getSigners();
-    const signer = signers[params.signerIndex === undefined ? 0 : params.dir];
+    const signer = signers[params.signerIndex === undefined ? 0 : params.signerIndex];
     const abi = [];
     let iface;
     let encodedData;
@@ -41,13 +52,15 @@ async function callDiamondProxy(params) { //put this params in one obj
     abi.push(signature);
     iface = new ethers.utils.Interface(abi);
     
-    if (Object.keys(params.args).length < 2) {
-        callArgs[0] = params.args[Object.keys(params.args)[0]];
-    } else {
-        let i = 0;
-        for (let key in params.args) {
-            callArgs[i] = params.args[key];
-            i++;
+    if (params.args) {
+        if (Object.keys(params.args).length < 2) {
+            callArgs[0] = params.args[Object.keys(params.args)[0]];
+        } else {
+            let i = 0;
+            for (let key in params.args) {
+                callArgs[i] = params.args[key];
+                i++;
+            }
         }
     }
 
@@ -92,10 +105,11 @@ async function balanceOfPYY(user) {
     }); 
 }
 
-async function transferPYY(recipient, amount) { 
+async function transferPYY(recipient, amount, signerIndex) { 
     await callDiamondProxy({
         method: 'transfer',
         args: {recipient, amount},
+        signerIndex
     }); 
 }
 
@@ -117,5 +131,6 @@ module.exports = {
     balanceOfPYY,
     transferPYY,
     withdrawSharePYY,
-    approvePYY
+    approvePYY, 
+    getVarsForHelpers
 };

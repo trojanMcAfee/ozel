@@ -10,7 +10,8 @@ const {
     balanceOfPYY, 
     transferPYY, 
     withdrawSharePYY, 
-    approvePYY
+    approvePYY,
+    getVarsForHelpers
 } = require('./helpers.js');
 
 const {
@@ -338,8 +339,12 @@ async function diamond2() {
         renBTC,
         crvTri,
         callerAddr, 
-        caller2Addr
+        caller2Addr,
+        PYY,
+        managerFacet
     } = deployedVars;
+    
+    getVarsForHelpers(deployedDiamond, PYY, managerFacet);
 
 
     // async function deployFacet(facetName, withLib, libDeployed) {
@@ -619,7 +624,6 @@ async function diamond2() {
             method: 'exchangeToUserToken',
             args: {balanceRenBTC, userAddr, userToken},
         });
-
         // const distributionIndex = await callDiamondProxy(
         //     'getDistributionIndex',
         //     '',
@@ -687,11 +691,11 @@ async function diamond2() {
     await sendsOneTenthRenBTC(callerAddr, wethAddr, WETH, 'WETH', 10 ** 18);
     console.log('PYY balance on caller 1: ', formatEther(await balanceOfPYY(callerAddr)));
     console.log('PYY balance on caller 2: ', formatEther(await balanceOfPYY(caller2Addr)));
+    console.log('.');
+    
+    console.log('After PYY transfer');
     const toTransfer = formatEther(await balanceOfPYY(caller2Addr)) / 3;
     await transferPYY(callerAddr, parseEther(toTransfer.toString()), 1);
-    console.log('.');
-
-    console.log('After PYY transfer');
     console.log('PYY balance on caller 1: ', formatEther(await balanceOfPYY(callerAddr)));
     console.log('PYY balance on caller 2: ', formatEther(await balanceOfPYY(caller2Addr)));
     console.log('.');

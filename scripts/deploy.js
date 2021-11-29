@@ -169,7 +169,9 @@ async function deploy() {
         renBTC,
         crvTri,
         callerAddr, 
-        caller2Addr
+        caller2Addr,
+        PYY,
+        managerFacet
     };
 
 }
