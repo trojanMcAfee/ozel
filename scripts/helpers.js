@@ -5,12 +5,14 @@ const { MaxUint256 } = ethers.constants;
 let deployedDiamond;
 let PYY;
 let managerFacet;
+let renBTC;
 
 
-async function getVarsForHelpers(diamond, pyy, manager) {
+async function getVarsForHelpers(diamond, pyy, manager, ren) {
     deployedDiamond = diamond;
     PYY = pyy;
     managerFacet = manager;
+    renBTC = ren;
 }
 
 async function callDiamondProxy(params) { 
@@ -112,6 +114,25 @@ async function approvePYY(caller) {
     await PYY.connect(signer).approve(managerFacet.address, MaxUint256);
 }
 
+//Sends renBTC to contracts (simulates BTC bridging) ** MAIN FUNCTION **
+async function sendsOneTenthRenBTC(oneTenth, userAddr, userToken, IERC20, tokenStr, decimals) {
+    await renBTC.transfer(deployedDiamond.address, oneTenth);
+    const balanceRenBTC = await renBTC.balanceOf(deployedDiamond.address);
+    await callDiamondProxy({
+        method: 'exchangeToUserToken',
+        args: {balanceRenBTC, userAddr, userToken},
+    });
+    const distributionIndex = await callDiamondProxy({
+        method: 'getDistributionIndex',
+        dir: 1,
+        type: 'uint256'
+    });
+    console.log('index: ', distributionIndex.toString() / 10 ** 18);
+    let tokenBalance = await IERC20.balanceOf(userAddr);
+    console.log(tokenStr + ' balance of callerAddr: ', tokenBalance.toString() / decimals);
+    console.log('.'); 
+}
+
 
 module.exports = {
     callDiamondProxy,
@@ -119,5 +140,6 @@ module.exports = {
     transferPYY,
     withdrawSharePYY,
     approvePYY, 
-    getVarsForHelpers
+    getVarsForHelpers,
+    sendsOneTenthRenBTC
 };

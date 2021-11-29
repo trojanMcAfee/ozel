@@ -12,7 +12,8 @@ const {
     transferPYY, 
     withdrawSharePYY, 
     approvePYY,
-    getVarsForHelpers
+    getVarsForHelpers,
+    sendsOneTenthRenBTC
 } = require('./helpers.js');
 
 const {
@@ -289,7 +290,7 @@ async function diamond2() {
         managerFacet
     } = deployedVars;
     
-    getVarsForHelpers(deployedDiamond, PYY, managerFacet);
+    getVarsForHelpers(deployedDiamond, PYY, managerFacet, renBTC);
 
     /**+++++++++ SIMULATES CURVE SWAPS ++++++++**/
     const IWETH = await hre.ethers.getContractAt('IWETH', wethAddr);
@@ -312,30 +313,30 @@ async function diamond2() {
     let oneTenth = Math.floor(renBtcBalance / 10);
 
     //Sends renBTC to contracts (simulates BTC bridging) ** MAIN FUNCTION **
-    async function sendsOneTenthRenBTC(userAddr, userToken, IERC20, tokenStr, decimals) {
-        await renBTC.transfer(deployedDiamond.address, oneTenth);
-        const balanceRenBTC = await renBTC.balanceOf(deployedDiamond.address);
-        await callDiamondProxy({
-            method: 'exchangeToUserToken',
-            args: {balanceRenBTC, userAddr, userToken},
-        });
-        const distributionIndex = await callDiamondProxy({
-            method: 'getDistributionIndex',
-            dir: 1,
-            type: 'uint256'
-        });
-        console.log('index: ', distributionIndex.toString() / 10 ** 18);
-        let tokenBalance = await IERC20.balanceOf(userAddr);
-        console.log(tokenStr + ' balance of callerAddr: ', tokenBalance.toString() / decimals);
-        console.log('.'); 
-    }
+    // async function sendsOneTenthRenBTC(userAddr, userToken, IERC20, tokenStr, decimals) {
+    //     await renBTC.transfer(deployedDiamond.address, oneTenth);
+    //     const balanceRenBTC = await renBTC.balanceOf(deployedDiamond.address);
+    //     await callDiamondProxy({
+    //         method: 'exchangeToUserToken',
+    //         args: {balanceRenBTC, userAddr, userToken},
+    //     });
+    //     const distributionIndex = await callDiamondProxy({
+    //         method: 'getDistributionIndex',
+    //         dir: 1,
+    //         type: 'uint256'
+    //     });
+    //     console.log('index: ', distributionIndex.toString() / 10 ** 18);
+    //     let tokenBalance = await IERC20.balanceOf(userAddr);
+    //     console.log(tokenStr + ' balance of callerAddr: ', tokenBalance.toString() / decimals);
+    //     console.log('.'); 
+    // }
     
     //Caller 2 signer
     const signer2 = await hre.ethers.provider.getSigner(caller2Addr);
 
     //First user
     console.log('1st user first transfer');
-    await sendsOneTenthRenBTC(callerAddr, usdtAddr, USDT, 'USDT', 10 ** 6);
+    await sendsOneTenthRenBTC(oneTenth, callerAddr, usdtAddr, USDT, 'USDT', 10 ** 6);
     await approvePYY(callerAddr);
     console.log('PYY balance on caller 1: ', formatEther(await balanceOfPYY(callerAddr)));
     console.log('crvTricrypto token balance on diamondProxy: ', formatEther(await crvTri.balanceOf(deployedDiamond.address)));
@@ -343,7 +344,7 @@ async function diamond2() {
 
     //Second user
     console.log('2nd user first transfer');
-    await sendsOneTenthRenBTC(caller2Addr, wethAddr, WETH, 'WETH', 10 ** 18);
+    await sendsOneTenthRenBTC(oneTenth, caller2Addr, wethAddr, WETH, 'WETH', 10 ** 18);
     await approvePYY(caller2Addr);
     console.log('PYY balance on caller 2: ', formatEther(await balanceOfPYY(caller2Addr)));
     console.log('PYY balance on caller 1 after caller2 swap: ', formatEther(await balanceOfPYY(callerAddr)));
@@ -352,7 +353,7 @@ async function diamond2() {
 
     // //First user - 2nd transfer
     console.log('1st user second transfer'); 
-    await sendsOneTenthRenBTC(callerAddr, usdtAddr, USDT, 'USDT', 10 ** 6);
+    await sendsOneTenthRenBTC(oneTenth, callerAddr, usdtAddr, USDT, 'USDT', 10 ** 6);
     console.log('PYY balance on caller 1 after 2nd swap: ', formatEther(await balanceOfPYY(callerAddr)));
     console.log('PYY balance on caller 2 after caller1 2nd swap: ', formatEther(await balanceOfPYY(caller2Addr)));
     console.log('crvTricrypto token balance on diamondProxy: ', formatEther(await crvTri.balanceOf(deployedDiamond.address)));
@@ -377,7 +378,7 @@ async function diamond2() {
 
     //1st user third transfer (ETH)
     console.log('1st user third transfer (ETH)');
-    await sendsOneTenthRenBTC(callerAddr, wethAddr, WETH, 'WETH', 10 ** 18);
+    await sendsOneTenthRenBTC(oneTenth, callerAddr, wethAddr, WETH, 'WETH', 10 ** 18);
     console.log('PYY balance on caller 1: ', formatEther(await balanceOfPYY(callerAddr)));
     console.log('PYY balance on caller 2: ', formatEther(await balanceOfPYY(caller2Addr)));
     console.log('.');
