@@ -2,15 +2,13 @@
 
 pragma solidity ^0.8.0;
 
-import "./IERC20.sol";
-import "./extensions/IERC20Metadata.sol";
-import "../../utils/Context.sol";
+import "./IERC20Facet.sol";
+import "./MyIERC20Metadata.sol";
+import "./MyContext.sol";
 
 import 'hardhat/console.sol';
 
-// import {IRenPool, ITricrypto} from '../../../../../contracts/interfaces/ICurve.sol';
-// import '../../../../../contracts/Vault.sol';
-// import '../../../../../contracts/libraries/Helpers.sol';
+import '../../AppStorage.sol';
 
 /**
  * @dev Implementation of the {IERC20} interface.
@@ -37,39 +35,8 @@ import 'hardhat/console.sol';
  * functions have been added to mitigate the well-known issues around setting
  * allowances. See {IERC20-approve}.
  */
-contract ERC20 is Context, IERC20, IERC20Metadata {
-
-    /*** Manager's variables *****/
-    // Vault vault;
-    // IRenPool renPool; 
-    // ITricrypto tricrypto2;
-    // IERC20 renBTC;
-    // IERC20 USDT;
-    // IERC20 WETH;
-    // IERC20 WBTC;
-    // address ETH;
-    // IERC20 PYY;
-
-    // uint dappFee;
-    // uint totalVolume;
-    // uint distributionIndex;
-
-    // mapping(address => uint) pendingWithdrawal;
-    mapping(address => uint) usersPayments;
-    /**********/
-
-
-
-    mapping(address => uint256) private _balances;
-
-    mapping(address => mapping(address => uint256)) private _allowances;
-
-    uint256 private _totalSupply;
-
-    string private _name;
-    string private _symbol;
-
-    address private manager;
+contract ERC20Facet is MyContext, IERC20Facet, MyIERC20Metadata {
+    AppStorage internal s;
 
     /**
      * @dev Sets the values for {name} and {symbol}.
@@ -80,22 +47,12 @@ contract ERC20 is Context, IERC20, IERC20Metadata {
      * All two of these values are immutable: they can only be set once during
      * construction.
      */
-    constructor(string memory name_, string memory symbol_, address _manager) {
-        _name = name_;
-        _symbol = symbol_;
-        manager = _manager;
-    }
-
-    modifier onlyManager {
-        require(_msgSender() == manager);
-        _;
-    }
 
     /**
      * @dev Returns the name of the token.
      */
     function name() public view virtual override returns (string memory) {
-        return _name;
+        return s.py[true]._name;
     }
 
     /**
@@ -103,7 +60,7 @@ contract ERC20 is Context, IERC20, IERC20Metadata {
      * name.
      */
     function symbol() public view virtual override returns (string memory) {
-        return _symbol;
+        return s.py[true]._symbol; 
     }
 
     /**
@@ -127,14 +84,14 @@ contract ERC20 is Context, IERC20, IERC20Metadata {
      * @dev See {IERC20-totalSupply}.
      */
     function totalSupply() public view virtual override returns (uint256) {
-        return _totalSupply;
+        return s.py[true]._totalSupply;
     }
 
     /**
      * @dev See {IERC20-balanceOf}.
      */
     function balanceOf(address account) public view virtual override returns (uint256) {
-        return _balances[account];
+        return s.py[true]._balances[account];
     }
 
     /**
@@ -154,7 +111,7 @@ contract ERC20 is Context, IERC20, IERC20Metadata {
      * @dev See {IERC20-allowance}.
      */
     function allowance(address owner, address spender) public view virtual override returns (uint256) {
-        return _allowances[owner][spender];
+        return s.py[true]._allowances[owner][spender];
     }
 
     /**
@@ -189,7 +146,7 @@ contract ERC20 is Context, IERC20, IERC20Metadata {
     ) public virtual override returns (bool) {
         _transfer(sender, recipient, amount);
 
-        uint256 currentAllowance = _allowances[sender][_msgSender()];
+        uint256 currentAllowance = s.py[true]._allowances[sender][_msgSender()];
         require(currentAllowance >= amount, "ERC20: transfer amount exceeds allowance");
         unchecked {
             _approve(sender, _msgSender(), currentAllowance - amount);
@@ -211,7 +168,7 @@ contract ERC20 is Context, IERC20, IERC20Metadata {
      * - `spender` cannot be the zero address.
      */
     function increaseAllowance(address spender, uint256 addedValue) public virtual returns (bool) {
-        _approve(_msgSender(), spender, _allowances[_msgSender()][spender] + addedValue);
+        _approve(_msgSender(), spender, s.py[true]._allowances[_msgSender()][spender] + addedValue);
         return true;
     }
 
@@ -230,7 +187,7 @@ contract ERC20 is Context, IERC20, IERC20Metadata {
      * `subtractedValue`.
      */
     function decreaseAllowance(address spender, uint256 subtractedValue) public virtual returns (bool) {
-        uint256 currentAllowance = _allowances[_msgSender()][spender];
+        uint256 currentAllowance = s.py[true]._allowances[_msgSender()][spender];
         require(currentAllowance >= subtractedValue, "ERC20: decreased allowance below zero");
         unchecked {
             _approve(_msgSender(), spender, currentAllowance - subtractedValue);
@@ -263,12 +220,12 @@ contract ERC20 is Context, IERC20, IERC20Metadata {
 
         _beforeTokenTransfer(sender, recipient, amount);
 
-        uint256 senderBalance = _balances[sender];
+        uint256 senderBalance = s.py[true]._balances[sender];
         require(senderBalance >= amount, "ERC20: transfer amount exceeds balance");
         unchecked {
-            _balances[sender] = senderBalance - amount;
+            s.py[true]._balances[sender] = senderBalance - amount;
         }
-        _balances[recipient] += amount;
+        s.py[true]._balances[recipient] += amount;
 
         emit Transfer(sender, recipient, amount);
 
@@ -289,8 +246,8 @@ contract ERC20 is Context, IERC20, IERC20Metadata {
 
         _beforeTokenTransfer(address(0), account, amount);
 
-        _totalSupply += amount;
-        _balances[account] += amount;
+        s.py[true]._totalSupply += amount;
+        s.py[true]._balances[account] += amount;
         emit Transfer(address(0), account, amount);
 
         _afterTokenTransfer(address(0), account, amount);
@@ -312,12 +269,12 @@ contract ERC20 is Context, IERC20, IERC20Metadata {
 
         _beforeTokenTransfer(account, address(0), amount);
 
-        uint256 accountBalance = _balances[account];
+        uint256 accountBalance = s.py[true]._balances[account];
         require(accountBalance >= amount, "ERC20: burn amount exceeds balance");
         unchecked {
-            _balances[account] = accountBalance - amount;
+            s.py[true]._balances[account] = accountBalance - amount;
         }
-        _totalSupply -= amount;
+        s.py[true]._totalSupply -= amount;
 
         emit Transfer(account, address(0), amount);
 
@@ -345,7 +302,7 @@ contract ERC20 is Context, IERC20, IERC20Metadata {
         require(owner != address(0), "ERC20: approve from the zero address");
         require(spender != address(0), "ERC20: approve to the zero address");
 
-        _allowances[owner][spender] = amount;
+        s.py[true]._allowances[owner][spender] = amount;
         emit Approval(owner, spender, amount);
     }
 
@@ -390,21 +347,5 @@ contract ERC20 is Context, IERC20, IERC20Metadata {
     ) internal virtual {}
 
 
-
-    function updateDistribution(address account) external override { //---> onlyManager
-        console.log('gas before: ', gasleft());
-
-        _balances[account] += 1;
-
-        console.log('gas after: ', gasleft());
-
-
-    }
-
-    //needs usersPayments mapping from Manager.sol    
-    function setNewBalance(uint _index, address _user) public onlyManager {
-        _balances[_user] = (_index * usersPayments[_user] * 100) * 1 ether;
-        console.log('holaaaaa');
-    }
-
+    
 }
