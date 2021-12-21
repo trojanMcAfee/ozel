@@ -21,12 +21,10 @@ async function run() {
             const tx = bitcoin.Transaction.fromHex(rawtx);
             let address1;
             let address2;
-            if (tx.outs[0]) {
+            try {
                 address1 = bitcoin.address.fromOutputScript(tx.outs[0].script, bitcoin.networks.testnet); 
-            }
-            if (tx.outs[1]) {
                 address2 = bitcoin.address.fromOutputScript(tx.outs[1].script, bitcoin.networks.testnet);
-            }
+            } catch(e) {}
             if (testAddress === address1 || testAddress === address2) {
                 const matchingAddress = testAddress === address1 ? address1 : address2;
                 const txid = tx.getId();
