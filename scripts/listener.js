@@ -1,6 +1,41 @@
 const axios = require('axios');
 const bitcore = require('bitcore-lib');
+
+const bitcoin = require('bitcoinjs-lib');
+const zmq = require('zeromq');
+
 require('dotenv').config();
+
+
+async function run() {
+    const sock = new zmq.Subscriber;
+
+    sock.connect("tcp://127.0.0.1:29000");
+    sock.subscribe('rawtx');
+    console.log('Subscriber connected to port 29000');
+
+    for await (const [topic, msg] of sock) {
+        if (topic.toString() === 'rawtx') {
+            const rawtx = msg.toString('hex');
+    
+            //use bitcoinjs-lib to decode the raw tx
+            const tx = bitcoin.Transaction.fromHex(rawtx);
+            const txid = tx.getId();
+            console.log('Tx Hash Id: ', txid);
+
+            let address = bitcoin.address.fromOutputScript(tx.outs[0].script, bitcoin.networks.testnet); //testnet-regtest-mainnet or bitcoin (?)
+            console.log('Receiving address 1: ', address);
+
+            console.log('.');
+            address = bitcoin.address.fromOutputScript(tx.outs[1].script, bitcoin.networks.testnet); 
+            console.log('Receiving address 2: ', address);
+
+        }
+    }
+
+}
+
+run();
 
 
 async function listenFor() {
@@ -21,7 +56,7 @@ async function listenFor() {
 
 }
 
-listenFor();
+// listenFor();
 
 
 async function sendBitcoin(receiverAddr, amountToSend, sendingAddr, senderPK) {
