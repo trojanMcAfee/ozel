@@ -15,30 +15,24 @@ async function run() {
     console.log('Subscriber connected to port 29000');
 
     for await (const [topic, msg] of sock) {
-        const addressCLI = 'tb1q6vu09zjwx8hxwvh2pr630pt78ayd4d6eelc3ta';
         const testAddress = 'mubUbyPazdyvhPJYPGWUkFWj7bkw1Yq8ys';
         if (topic.toString() === 'rawtx') {
             const rawtx = msg.toString('hex');
             const tx = bitcoin.Transaction.fromHex(rawtx);
-            const address1 = bitcoin.address.fromOutputScript(tx.outs[0].script, bitcoin.networks.testnet); 
-            const address2 = bitcoin.address.fromOutputScript(tx.outs[1].script, bitcoin.networks.testnet);
-            // const txid = tx.getId();
-            // console.log('Tx Hash Id: ', txid);
-
+            let address1;
+            let address2;
+            if (tx.outs[0]) {
+                address1 = bitcoin.address.fromOutputScript(tx.outs[0].script, bitcoin.networks.testnet); 
+            }
+            if (tx.outs[1]) {
+                address2 = bitcoin.address.fromOutputScript(tx.outs[1].script, bitcoin.networks.testnet);
+            }
             if (testAddress === address1 || testAddress === address2) {
                 const matchingAddress = testAddress === address1 ? address1 : address2;
                 const txid = tx.getId();
                 console.log('Tx Hash Id: ', txid);
                 console.log('address: ', matchingAddress);
             }
-
-            // let address = bitcoin.address.fromOutputScript(tx.outs[0].script, bitcoin.networks.testnet); //testnet-regtest-mainnet or bitcoin (?)
-            // console.log('Receiving address 1: ', address1);
-
-            // console.log('.');
-            // address = bitcoin.address.fromOutputScript(tx.outs[1].script, bitcoin.networks.testnet); 
-            // console.log('Receiving address 2: ', address2);
-
         }
     }
 
