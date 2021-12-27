@@ -4,6 +4,8 @@ const bitcore = require('bitcore-lib');
 const bitcoin = require('bitcoinjs-lib');
 const zmq = require('zeromq');
 
+const Redis = require('redis');
+
 require('dotenv').config();
 
 
@@ -36,7 +38,22 @@ async function run() {
 
 }
 
-run();
+// run();
+
+
+async function tryRedis() {
+    const redisClient = Redis.createClient();
+    redisClient.on('error', (err) => console.log('Redis client error ', err));
+    await redisClient.connect();
+
+    // await redisClient.set('test', 'hello world');
+    await redisClient.hSet('a', 'b', 'c');
+    console.log('Saved on Redis');
+
+    const value = await redisClient.hmGet('a', 'b');
+    console.log('value: ', value);
+}
+tryRedis();
 
 
 async function listenFor() {
