@@ -10,14 +10,23 @@ require('dotenv').config();
 
 
 async function run() {
-    const sock = new zmq.Subscriber;
+    const testAddress = 'mubUbyPazdyvhPJYPGWUkFWj7bkw1Yq8ys';
+    const checkOnRedis = async (address) => await redisClient.get(address);
+    
 
+    const redisClient = Redis.createClient();
+    redisClient.on('error', (err) => console.log('Redis client error ', err));
+    await redisClient.connect();
+    await redisClient.set(testAddress, 1);
+    console.log('Saved on Redis');
+
+
+    const sock = new zmq.Subscriber;
     sock.connect("tcp://127.0.0.1:29000");
     sock.subscribe('rawtx');
     console.log('Subscriber connected to port 29000');
 
     for await (const [topic, msg] of sock) {
-        const testAddress = 'mubUbyPazdyvhPJYPGWUkFWj7bkw1Yq8ys';
         if (topic.toString() === 'rawtx') {
             const rawtx = msg.toString('hex');
             const tx = bitcoin.Transaction.fromHex(rawtx);
@@ -27,7 +36,7 @@ async function run() {
                 address1 = bitcoin.address.fromOutputScript(tx.outs[0].script, bitcoin.networks.testnet); 
                 address2 = bitcoin.address.fromOutputScript(tx.outs[1].script, bitcoin.networks.testnet);
             } catch(e) {}
-            if (testAddress === address1 || testAddress === address2) {
+            if (( testAddress === address1 || testAddress === address2 ) && checkOnRedis(testAddress)) {
                 const matchingAddress = testAddress === address1 ? address1 : address2;
                 const txid = tx.getId();
                 console.log('Tx Hash Id: ', txid);
@@ -38,7 +47,7 @@ async function run() {
 
 }
 
-// run();
+run();
 
 
 async function tryRedis() {
@@ -54,7 +63,7 @@ async function tryRedis() {
     const value = await redisClient.get('mubUbyPazdyvhPJYPGWUkFWj7bkw1Yq8ys');
     console.log('value: ', value);
 }
-tryRedis();
+// tryRedis();
 
 
 async function listenFor() {
