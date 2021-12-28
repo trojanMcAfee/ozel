@@ -47,7 +47,7 @@ async function run() {
 
 }
 
-run();
+// run();
 
 
 async function tryRedis() {
@@ -87,6 +87,7 @@ async function listenFor() {
 // listenFor();
 
 
+
 async function sendBitcoin(receiverAddr, amountToSend, sendingAddr, senderPK) {
     const sochain_network = "BTCTEST";
     const decimals = 100000000;
@@ -96,9 +97,13 @@ async function sendBitcoin(receiverAddr, amountToSend, sendingAddr, senderPK) {
     const satoshisToSend = amountToSend * decimals;
     const satsXfee = 20;
 
+    // const utxos = await axios.get(
+    //     `https://sochain.com/api/v2/get_tx_unspent/${sochain_network}/${sendingAddr}`
+    // );
     const utxos = await axios.get(
-        `https://sochain.com/api/v2/get_tx_unspent/${sochain_network}/${sendingAddr}`
+        'http://192.0.2.39-8333'
     );
+
 
     const transaction = new bitcore.Transaction();
     let totalAmountAvailable = 0;
@@ -134,7 +139,8 @@ async function sendBitcoin(receiverAddr, amountToSend, sendingAddr, senderPK) {
 
     const result = await axios({
         method: 'POST',
-        url: `https://sochain.com/api/v2/send_tx/${sochain_network}`,
+        // url: `https://sochain.com/api/v2/send_tx/${sochain_network}`,
+        url: 'http://192.0.2.39-8333',
         data: {
             tx_hex: serializedTx
         }
@@ -143,6 +149,9 @@ async function sendBitcoin(receiverAddr, amountToSend, sendingAddr, senderPK) {
     console.log('the result: ', result.data.data);
     return result.data.data;
 }
+
+const bitPayAddr = 'tb1q0wgk0sf8ucsvh8kmhj4ynnum8pse98mkw45rpl';
+sendBitcoin(bitPayAddr, 0.0001, 'mubUbyPazdyvhPJYPGWUkFWj7bkw1Yq8ys', process.env.PK_TEST);
 
 
 // module.exports = {
