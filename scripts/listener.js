@@ -46,11 +46,12 @@ async function tryRedis() {
     redisClient.on('error', (err) => console.log('Redis client error ', err));
     await redisClient.connect();
 
-    // await redisClient.set('test', 'hello world');
-    await redisClient.hSet('a', 'b', 'c');
+    await redisClient.set('mubUbyPazdyvhPJYPGWUkFWj7bkw1Yq8ys', 1);
+    // await redisClient.hSet('a', 'b', 'c');
     console.log('Saved on Redis');
 
-    const value = await redisClient.hmGet('a', 'b');
+    // const value = await redisClient.hmGet('a', 'b');
+    const value = await redisClient.get('mubUbyPazdyvhPJYPGWUkFWj7bkw1Yq8ys');
     console.log('value: ', value);
 }
 tryRedis();
