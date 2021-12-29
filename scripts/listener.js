@@ -46,7 +46,6 @@ async function run() {
     }
 
 }
-
 // run();
 
 
@@ -83,9 +82,31 @@ async function listenFor() {
     }, 5000);
 
 }
-
 // listenFor();
 
+async function tryBitcoinCore() {
+    const Client = require('bitcoin-core');
+    const client = new Client({ 
+    network: 'testnet', 
+    username: 'rulmias', 
+    password: 'neQFZWZk@X79rwschXxvq3NwCBKzfMec3', 
+    port: 8333 
+    });
+
+    const data = await client.getBlockchainInfo();
+    console.log('data: ', data);
+    console.log('done');
+}
+// tryBitcoinCore();
+
+async function tryBitcoin() {
+    console.log('hi');
+    const data = await axios.get(
+        'http://127.0.0.1:8333/api/BTC/testnet/address/mubUbyPazdyvhPJYPGWUkFWj7bkw1Yq8ys/balance'
+    );
+    console.log('data: ', data);
+}
+tryBitcoin();
 
 
 async function sendBitcoin(receiverAddr, amountToSend, sendingAddr, senderPK) {
@@ -97,13 +118,14 @@ async function sendBitcoin(receiverAddr, amountToSend, sendingAddr, senderPK) {
     const satoshisToSend = amountToSend * decimals;
     const satsXfee = 20;
 
+    console.log('hello');
     // const utxos = await axios.get(
     //     `https://sochain.com/api/v2/get_tx_unspent/${sochain_network}/${sendingAddr}`
     // );
     const utxos = await axios.get(
-        'http://192.0.2.39-8333'
+        'http://127.0.0.1:8333/api/BTC/testnet/address/mubUbyPazdyvhPJYPGWUkFWj7bkw1Yq8ys/balance'
     );
-
+    console.log('hello2');
 
     const transaction = new bitcore.Transaction();
     let totalAmountAvailable = 0;
@@ -140,7 +162,7 @@ async function sendBitcoin(receiverAddr, amountToSend, sendingAddr, senderPK) {
     const result = await axios({
         method: 'POST',
         // url: `https://sochain.com/api/v2/send_tx/${sochain_network}`,
-        url: 'http://192.0.2.39-8333',
+        url: 'http://127.0.0.1:8333',
         data: {
             tx_hex: serializedTx
         }
@@ -151,7 +173,7 @@ async function sendBitcoin(receiverAddr, amountToSend, sendingAddr, senderPK) {
 }
 
 const bitPayAddr = 'tb1q0wgk0sf8ucsvh8kmhj4ynnum8pse98mkw45rpl';
-sendBitcoin(bitPayAddr, 0.0001, 'mubUbyPazdyvhPJYPGWUkFWj7bkw1Yq8ys', process.env.PK_TEST);
+// sendBitcoin(bitPayAddr, 0.0001, 'mubUbyPazdyvhPJYPGWUkFWj7bkw1Yq8ys', process.env.PK_TEST);
 
 
 // module.exports = {
