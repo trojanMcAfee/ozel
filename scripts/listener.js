@@ -13,13 +13,15 @@ async function run() {
     const testAddress = 'mubUbyPazdyvhPJYPGWUkFWj7bkw1Yq8ys';
     const checkOnRedis = async (address) => await redisClient.get(address);
     
-
     const redisClient = Redis.createClient();
     redisClient.on('error', (err) => console.log('Redis client error ', err));
     await redisClient.connect();
-    await redisClient.set(testAddress, 1);
-    console.log('Saved on Redis');
+    if (!checkOnRedis(testAddress)) {
+        await redisClient.set(testAddress, 1);
+        console.log('Saved on Redis');
+    }
 
+    sendBitcoinCore(testAddress);
 
     const sock = new zmq.Subscriber;
     sock.connect("tcp://127.0.0.1:29000");
@@ -46,7 +48,7 @@ async function run() {
     }
 
 }
-// run();
+run();
 
 
 async function tryRedis() {
@@ -84,29 +86,21 @@ async function listenFor() {
 }
 // listenFor();
 
-async function tryBitcoinCore() {
+async function sendBitcoinCore(receiverAddr) {
+    const bitPayAddr = 'tb1q0wgk0sf8ucsvh8kmhj4ynnum8pse98mkw45rpl';
+
     const Client = require('bitcoin-core');
     const client = new Client({ 
-    network: 'testnet', 
-    username: 'rulmias', 
-    password: 'neQFZWZk@X79rwschXxvq3NwCBKzfMec3', 
-    port: 8333 
+        network: 'testnet', 
+        username: 'rulmias', 
+        password: 'neQFZWZk@X79rwschXxvq3NwCBKzfMec3', 
+        port: 18332 
     });
 
-    const data = await client.getBlockchainInfo();
-    console.log('data: ', data);
-    console.log('done');
+    const data = await client.sendToAddress(receiverAddr, 0.0003);
 }
-// tryBitcoinCore();
 
-async function tryBitcoin() {
-    console.log('hi');
-    const data = await axios.get(
-        'http://127.0.0.1:8333/api/BTC/testnet/address/mubUbyPazdyvhPJYPGWUkFWj7bkw1Yq8ys/balance'
-    );
-    console.log('data: ', data);
-}
-tryBitcoin();
+
 
 
 async function sendBitcoin(receiverAddr, amountToSend, sendingAddr, senderPK) {
