@@ -2,6 +2,9 @@ const bitcoin = require('bitcoinjs-lib');
 const zmq = require('zeromq');
 const Redis = require('redis');
 const Client = require('bitcoin-core');
+
+const { executeBridge } = require('./exec-bridge.js'); 
+
 require('dotenv').config();
 
 
@@ -9,6 +12,16 @@ const bitPayAddr = 'tb1q0wgk0sf8ucsvh8kmhj4ynnum8pse98mkw45rpl';
 const testAddress = 'mubUbyPazdyvhPJYPGWUkFWj7bkw1Yq8ys';
 
 async function run() {
+    const bitcoinClient = new Client({ 
+        network: 'testnet', 
+        username: 'rulmias', 
+        password: 'neQFZWZk@X79rwschXxvq3NwCBKzfMec3', 
+        port: 18332 
+    });
+
+    //after solving the address gap limit, create an address within my wallet, send btc to it (save it redis), parse with zeromq
+    //and move the btc to renVM ----> basically do a simulation of the app
+
     const checkOnRedis = async (address) => await redisClient.get(address);
     
     const redisClient = Redis.createClient();
