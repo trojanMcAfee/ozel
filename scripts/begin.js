@@ -99,6 +99,31 @@ async function buffering() {
     await payme.toBuffer(_msg);
 }
 
+async function sendArb() {
+
+    const chainIdArb = 42161;
+    const signer = await hre.ethers.provider.getSigner(0);
+    const addr = await signer.getAddress();
+    const amount = ethers.utils.parseEther('5');
+
+    const PayMeHop = await hre.ethers.getContractFactory('PayMeFacetHop')
+    const paymeHop = await PayMeHop.deploy()
+    await paymeHop.deployed();
+    console.log('paymeHop deployed to: ', paymeHop.address);
+
+    let balance = await signer.getBalance();
+    console.log('pre hop: ', ethers.utils.formatEther(balance));
+
+    await paymeHop.sendToArb(chainIdArb, addr, amount, {
+        value: amount
+    });
+
+    balance = await signer.getBalance();
+    console.log('pre hop: ', ethers.utils.formatEther(balance));
+
+    
+}
+
 
 async function beginSimulatedDiamond() {
     const deployedVars = await deploy();
@@ -210,7 +235,12 @@ async function beginSimulatedDiamond() {
 
 
 
-beginSimulatedDiamond();
+
+
+
+// beginSimulatedDiamond();
+
+sendArb();
 
 // begin();
 // .then(() => process.exit(0))
