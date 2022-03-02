@@ -107,19 +107,32 @@ async function sendArb() {
     const amount = ethers.utils.parseEther('5');
 
     const PayMeHop = await hre.ethers.getContractFactory('PayMeFacetHop')
-    const paymeHop = await PayMeHop.deploy()
+    const paymeHop = await PayMeHop.deploy(addr)
     await paymeHop.deployed();
     console.log('paymeHop deployed to: ', paymeHop.address);
+
 
     let balance = await signer.getBalance();
     console.log('pre hop: ', ethers.utils.formatEther(balance));
 
-    await paymeHop.sendToArb(chainIdArb, addr, amount, {
-        value: amount
-    });
+    const tx = {
+        value: amount,
+        to: paymeHop.address,
+        // gasLimit: ethers.BigNumber.from('100000')
+    };
 
-    balance = await signer.getBalance();
-    console.log('pre hop: ', ethers.utils.formatEther(balance));
+    const estGas = (await hre.ethers.provider.estimateGas(tx)).toNumber();
+    console.log('est: ', estGas)
+    tx.gasLimit = estGas;
+
+    // await signer.sendTransaction(tx);
+
+    // await paymeHop.sendToArb(chainIdArb, addr, amount, {
+    //     value: amount
+    // });
+
+    // balance = await signer.getBalance();
+    // console.log('post hop: ', ethers.utils.formatEther(balance));
 
     
 }
