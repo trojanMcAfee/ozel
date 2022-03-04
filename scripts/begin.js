@@ -125,7 +125,7 @@ async function sendArb() {
     console.log('est: ', estGas)
     tx.gasLimit = estGas;
 
-    // await signer.sendTransaction(tx);
+    await signer.sendTransaction(tx);
 
     // await paymeHop.sendToArb(chainIdArb, addr, amount, {
     //     value: amount
