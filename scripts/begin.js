@@ -99,6 +99,42 @@ async function buffering() {
     await payme.toBuffer(_msg);
 }
 
+async function tryGelatoRopsten2() {
+    const pokeMeAddr = '0x9C4771560d84222fD8B7d9f15C59193388cC81B3';
+
+    const signer = await hre.ethers.provider.getSigner(0);
+
+    const Resolver = await hre.ethers.getContractFactory('Resolver')
+    const resolver = await Resolver.deploy(pokeMeAddr);
+    await resolver.deployed();
+    console.log('resolver deployed to: ', resolver.address);
+
+    await resolver.startTask();
+    console.log('task started');
+
+  
+
+}
+
+async function tryGelatoRopsten() {
+    const resolverAddr = '0xc2892fFa0669850e0B10a4043352FB22Ef1333f3';
+    const provider = await hre.ethers.provider;
+    const signer = provider.getSigner(0);
+
+    let balance = await provider.getBalance(resolverAddr);
+    console.log('bal: ', ethers.utils.formatEther(balance));
+
+    const tx = {
+        to: resolverAddr,
+        value: ethers.utils.parseEther('0.001')
+    }
+
+    await signer.sendTransaction(tx);
+    console.log('eth sent');
+
+
+}
+
 async function sendArb() {
 
     const chainIdArb = 42161;
@@ -249,11 +285,11 @@ async function beginSimulatedDiamond() {
 
 
 
-
+tryGelatoRopsten();
 
 // beginSimulatedDiamond();
 
-sendArb();
+// sendArb();
 
 // begin();
 // .then(() => process.exit(0))
