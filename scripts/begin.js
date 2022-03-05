@@ -100,37 +100,70 @@ async function buffering() {
 }
 
 async function tryGelatoRopsten2() {
-    const pokeMeAddr = '0x9C4771560d84222fD8B7d9f15C59193388cC81B3';
+    const pokeMeAddr = '0x9C4771560d84222fD8B7d9f15C59193388cC81B3'; //Ops Addr
 
     const signer = await hre.ethers.provider.getSigner(0);
+    const signerAddr = await signer.getAddress();
+    console.log('signer address: ', signerAddr);
 
     const Resolver = await hre.ethers.getContractFactory('Resolver')
-    const resolver = await Resolver.deploy(pokeMeAddr);
+    const resolver = await Resolver.deploy(pokeMeAddr, signerAddr);
     await resolver.deployed();
     console.log('resolver deployed to: ', resolver.address);
 
-    await resolver.startTask();
-    console.log('task started');
+    // const tx = await resolver.startTask();
+    // const receipt = await tx.wait(); 
 
-  
+    // console.log('receipt: ', receipt);
+
+    // console.log('task Id raw: ', taskId);
+    // console.log('task Id: ', taskId.toString());
+
+    toTask(resolver);
 
 }
 
+async function toTask(resolver) {
+    // const resolverAddr = '0x329C49519Db27bF3d5E000d3CE5CABB4aF8917D8';
+    // const resolver = await hre.ethers.getContractAt('Resolver', resolverAddr);
+    // console.log('resolver address: ', resolver.address);
+
+    const tx = await resolver.startTask({
+        gasLimit: ethers.BigNumber.from('200000')
+    });
+    console.log('transaction: ', tx);
+    const receipt = await tx.wait();
+    // console.log('receipt: ', receipt);
+    const { data } = receipt.events[0];
+
+    const abiCoder = ethers.utils.defaultAbiCoder;
+    const args = [
+        "address", "address", "bytes4", "address", "bytes32",
+        "bytes", "bool", "address", "bytes32"
+    ];
+    const decodedData = abiCoder.decode(args, data);
+    console.log('task id: ', decodedData[4]);
+    
+}
+
 async function tryGelatoRopsten() {
-    const resolverAddr = '0xc2892fFa0669850e0B10a4043352FB22Ef1333f3';
+    const resolverAddr = '0xA1fE693Ca917756eCeF19b6217BA1b56b3e65d2D'; //custom
     const provider = await hre.ethers.provider;
     const signer = provider.getSigner(0);
 
     let balance = await provider.getBalance(resolverAddr);
-    console.log('bal: ', ethers.utils.formatEther(balance));
+    console.log('bal pre: ', ethers.utils.formatEther(balance));
 
     const tx = {
         to: resolverAddr,
-        value: ethers.utils.parseEther('0.001')
+        value: ethers.utils.parseEther('0.01')
     }
 
     await signer.sendTransaction(tx);
     console.log('eth sent');
+
+    balance = await provider.getBalance(resolverAddr);
+    console.log('bal post: ', ethers.utils.formatEther(balance));
 
 
 }
@@ -283,7 +316,7 @@ async function beginSimulatedDiamond() {
 
 
 
-
+// toTask();
 
 tryGelatoRopsten();
 

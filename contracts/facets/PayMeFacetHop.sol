@@ -3,42 +3,42 @@ pragma solidity ^0.8.0;
 
 
 import '../interfaces/IL1_ETH_Bridge.sol';
+import './OpsReady.sol';
+
 import 'hardhat/console.sol';
 
-interface IOps {
-    function createTask(
-        address execAddr,
-        bytes4 execSelector,
-        address resolverAddr,
-        bytes calldata resolverData
-    ) external returns(bytes32 task);
-}
 
 
-contract Resolver {
+contract Resolver is OpsReady {
 
-    IOps opsGel;
+    address public immutable owner;
 
-    constructor(address _opsGel) {
-        opsGel = IOps(_opsGel);
+    constructor(address _opsGel, address _owner) OpsReady(_opsGel) {
+        owner = _owner;
     }
 
     receive() external payable {}
 
 
-    function sayHello() external view returns(uint) {
-        // console.log('msg.sender on sayHello: ', msg.sender);
-        return address(this).balance;
+    function sayHello() external onlyOps {
+        (uint fee, ) = opsGel.getFeeDetails();
+        _transfer(fee, ETH);
+
+        (bool success, ) = owner.call{value: address(this).balance}("");
+        require(success, 'Resolver: ETH transfer failed');
+
     }
 
-     function startTask() external {
-        opsGel.createTask(
+    function startTask() external returns(bytes32 taskId) {
+        // (, address feeToken) = opsGel.getFeeDetails();
+
+        (taskId) = opsGel.createTaskNoPrepayment(
             address(this),
             this.sayHello.selector,
             address(this),
-            abi.encodeWithSelector(this.sayHello.selector)
+            abi.encodeWithSelector(this.checker.selector),
+            ETH
         );
-        // console.log('msg.sender on startTask: ', msg.sender);
     }
 
     function checker() 
@@ -46,12 +46,9 @@ contract Resolver {
         view 
         returns(bool canExec, bytes memory execPayload) 
     {
-        // console.log('checking...');
         if (address(this).balance > 0) {
             canExec = true;
-            // console.log('checked!');
         }
-
         execPayload = abi.encodeWithSelector(this.sayHello.selector);
     }
 
@@ -90,15 +87,15 @@ contract PayMeFacetHop {
 
     // *** GELATO PART ******
 
-    function startTask() external {
-        opsGel.createTask(
-            address(this),
-            this.sendToArb.selector,
-            address(this),
-            abi.encodeWithSelector(this.sendToArb.selector)
-        );
-        console.log('msg.sender on startTask: ', msg.sender);
-    }
+    // function startTask() external {
+    //     opsGel.createTask(
+    //         address(this),
+    //         this.sendToArb.selector,
+    //         address(this),
+    //         abi.encodeWithSelector(this.sendToArb.selector)
+    //     );
+    //     console.log('msg.sender on startTask: ', msg.sender);
+    // }
 
     function checker() ///the func that gets checked by Gelato (?)
         external 
