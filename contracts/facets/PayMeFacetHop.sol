@@ -9,49 +9,6 @@ import 'hardhat/console.sol';
 
 
 
-contract Resolver is OpsReady {
-
-    // address public immutable owner;
-
-    constructor(address _opsGel) OpsReady(_opsGel) {}
-
-    // receive() external payable {}
-
-
-    // function sayHello() external onlyOps {
-    //     (uint fee, ) = opsGel.getFeeDetails();
-    //     _transfer(fee, ETH);
-
-    //     (bool success, ) = owner.call{value: address(this).balance}("");
-    //     require(success, 'Resolver: ETH transfer failed');
-
-    // }
-
-    // function startTask() external returns(bytes32 taskId) {
-    //     (taskId) = opsGel.createTaskNoPrepayment(
-    //         address(this),
-    //         this.sayHello.selector,
-    //         address(this),
-    //         abi.encodeWithSelector(this.checker.selector),
-    //         ETH
-    //     );
-    // }
-
-    // function checker() 
-    //     external 
-    //     view 
-    //     returns(bool canExec, bytes memory execPayload) 
-    // {
-    //     if (address(this).balance > 0) {
-    //         canExec = true;
-    //     }
-    //     execPayload = abi.encodeWithSelector(this.sayHello.selector);
-    // }
-
-}
-
-
-
 
 contract PayMeFacetHop is OpsReady { 
 
@@ -72,19 +29,10 @@ contract PayMeFacetHop is OpsReady {
 
     // *** HOP PART ***** 
 
-    // function sendToArb() public payable onlyOps { //PokeMe.sol calls this func
-    //     hop.sendToL2{value: msg.value}(
-    //         chainId, owner, msg.value, 0, 0, nullAddr, 0
-    //     );
-    // }
-
-    function sayHello() external onlyOps {
-        (uint fee, ) = opsGel.getFeeDetails();
-        _transfer(fee, ETH);
-
-        (bool success, ) = owner.call{value: address(this).balance}("");
-        require(success, 'Resolver: ETH transfer failed');
-
+    function sendToArb() external payable onlyOps { //impertionate onlyOps in hardhat and try calling this function from a mainnet fork
+        hop.sendToL2{value: address(this).balance}(
+            chainId, owner, address(this).balance, 0, 0, nullAddr, 0
+        );
     }
 
     // *** GELATO PART ******
@@ -92,22 +40,18 @@ contract PayMeFacetHop is OpsReady {
     function startTask() external returns(bytes32 taskId) {
         (taskId) = opsGel.createTaskNoPrepayment(
             address(this),
-            this.sayHello.selector,
+            this.sendToArb.selector,
             address(this),
             abi.encodeWithSelector(this.checker.selector),
             ETH
         );
     }
 
-    function checker() 
-        external 
-        view 
-        returns(bool canExec, bytes memory execPayload) 
-    {
+    function checker() external view returns(bool canExec, bytes memory execPayload) {
         if (address(this).balance > 0) {
             canExec = true;
         }
-        execPayload = abi.encodeWithSelector(this.sayHello.selector);
+        execPayload = abi.encodeWithSelector(this.sendToArb.selector);
     }
 
 }
