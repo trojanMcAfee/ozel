@@ -12,7 +12,6 @@ import '../interfaces/IOps.sol';
 
 contract OpsReady {
     IOps opsGel;
-    // address public immutable ops;
     address payable public immutable gelato;
     address public constant ETH = 0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE;
 

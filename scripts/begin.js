@@ -111,29 +111,16 @@ async function tryGelatoRopsten2() {
     await resolver.deployed();
     console.log('resolver deployed to: ', resolver.address);
 
-    // const tx = await resolver.startTask();
-    // const receipt = await tx.wait(); 
-
-    // console.log('receipt: ', receipt);
-
-    // console.log('task Id raw: ', taskId);
-    // console.log('task Id: ', taskId.toString());
-
     toTask(resolver);
 
 }
 
 async function toTask(resolver) {
-    // const resolverAddr = '0x329C49519Db27bF3d5E000d3CE5CABB4aF8917D8';
-    // const resolver = await hre.ethers.getContractAt('Resolver', resolverAddr);
-    // console.log('resolver address: ', resolver.address);
-
     const tx = await resolver.startTask({
         gasLimit: ethers.BigNumber.from('200000')
     });
-    console.log('transaction: ', tx);
+    // console.log('transaction: ', tx);
     const receipt = await tx.wait();
-    // console.log('receipt: ', receipt);
     const { data } = receipt.events[0];
 
     const abiCoder = ethers.utils.defaultAbiCoder;
@@ -169,32 +156,45 @@ async function tryGelatoRopsten() {
 }
 
 async function sendArb() {
-
     const chainIdArb = 42161;
+    const pokeMeOpsAddr = '0x9C4771560d84222fD8B7d9f15C59193388cC81B3';
+
     const signer = await hre.ethers.provider.getSigner(0);
-    const addr = await signer.getAddress();
+    const signerAddr = await signer.getAddress();
     const amount = ethers.utils.parseEther('5');
 
-    const PayMeHop = await hre.ethers.getContractFactory('PayMeFacetHop')
-    const paymeHop = await PayMeHop.deploy(addr)
+    const PayMeHop = await hre.ethers.getContractFactory('PayMeFacetHop');
+    const paymeHop = await PayMeHop.deploy(signerAddr, pokeMeOpsAddr);
     await paymeHop.deployed();
     console.log('paymeHop deployed to: ', paymeHop.address);
 
+    await toTask(paymeHop);
+    
+}
 
-    let balance = await signer.getBalance();
-    console.log('pre hop: ', ethers.utils.formatEther(balance));
+async function sendTx() {
+    const signer = await hre.ethers.provider.getSigner(0);
+    const amount = ethers.utils.parseEther('0.01');
+    const paymeHopAddr = '0x6795EBE5Cbf810a46680C79D348f2DF82DD7a1e1';
 
     const tx = {
         value: amount,
-        to: paymeHop.address,
+        to: paymeHopAddr
         // gasLimit: ethers.BigNumber.from('100000')
     };
 
-    const estGas = (await hre.ethers.provider.estimateGas(tx)).toNumber();
-    console.log('est: ', estGas)
-    tx.gasLimit = estGas;
-
     await signer.sendTransaction(tx);
+    console.log('eth sent');
+
+    // let balance = await signer.getBalance();
+    // console.log('pre hop: ', ethers.utils.formatEther(balance));
+
+
+    // const estGas = (await hre.ethers.provider.estimateGas(tx)).toNumber();
+    // console.log('est: ', estGas)
+    // tx.gasLimit = estGas;
+
+    // await signer.sendTransaction(tx);
 
     // await paymeHop.sendToArb(chainIdArb, addr, amount, {
     //     value: amount
@@ -203,9 +203,11 @@ async function sendArb() {
     // balance = await signer.getBalance();
     // console.log('post hop: ', ethers.utils.formatEther(balance));
 
-    
+
 }
 
+
+//-----------------------------------------
 
 async function beginSimulatedDiamond() {
     const deployedVars = await deploy();
@@ -318,11 +320,13 @@ async function beginSimulatedDiamond() {
 
 // toTask();
 
-tryGelatoRopsten();
+// tryGelatoRopsten();
 
 // beginSimulatedDiamond();
 
 // sendArb();
+
+sendTx();
 
 // begin();
 // .then(() => process.exit(0))
