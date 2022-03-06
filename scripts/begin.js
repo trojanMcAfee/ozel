@@ -175,6 +175,7 @@ async function sendTx() {
     const signer = await hre.ethers.provider.getSigner(0);
     const amount = ethers.utils.parseEther('0.01');
     const paymeHopAddr = '0x5cE094564Ef7e63aD9975769bd29Ee6d12624974';
+    
 
     const tx = {
         value: amount,
@@ -185,25 +186,34 @@ async function sendTx() {
     await signer.sendTransaction(tx);
     console.log('eth sent');
 
-    // let balance = await signer.getBalance();
-    // console.log('pre hop: ', ethers.utils.formatEther(balance));
-
-
-    // const estGas = (await hre.ethers.provider.estimateGas(tx)).toNumber();
-    // console.log('est: ', estGas)
-    // tx.gasLimit = estGas;
-
-    // await signer.sendTransaction(tx);
-
-    // await paymeHop.sendToArb(chainIdArb, addr, amount, {
-    //     value: amount
-    // });
-
-    // balance = await signer.getBalance();
-    // console.log('post hop: ', ethers.utils.formatEther(balance));
-
+   
 
 }
+
+async function impersonateTx() { //mainnet
+    const pokeMeAddr = '0xB3f5503f93d5Ef84b06993a1975B9D21B962892F'; //mainnet
+    
+    const signer = await hre.ethers.provider.getSigner(0);
+    const signerAddr = await signer.getAddress();
+    const PaymeHop = await hre.ethers.getContractFactory('PayMeFacetHop');
+    const paymeHop = await PaymeHop.deploy(signerAddr, pokeMeAddr);
+    await paymeHop.deployed();
+
+    await signer.sendTransaction({
+        to: paymeHop.address,
+        value: ethers.utils.parseEther('7')
+    });
+
+    let balance = await hre.ethers.provider.getBalance(paymeHop.address);
+    console.log('pre balance: ', ethers.utils.formatEther(balance));
+
+    await paymeHop.sendToArb();
+
+    balance = await hre.ethers.provider.getBalance(paymeHop.address);
+    console.log('post balance: ', ethers.utils.formatEther(balance));
+}
+
+
 
 
 //-----------------------------------------
@@ -325,7 +335,9 @@ async function beginSimulatedDiamond() {
 
 // sendArb();
 
-sendTx();
+// sendTx();
+
+impersonateTx();
 
 // begin();
 // .then(() => process.exit(0))

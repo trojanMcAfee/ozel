@@ -12,8 +12,7 @@ import 'hardhat/console.sol';
 
 contract PayMeFacetHop is OpsReady { 
 
-    IL1_ETH_Bridge hop = IL1_ETH_Bridge(0xb8901acB165ed027E32754E0FFe830802919727f); 
-    // IOps opsGel = IOps(0xB3f5503f93d5Ef84b06993a1975B9D21B962892F);
+    IL1_ETH_Bridge hop = IL1_ETH_Bridge(0xb8901acB165ed027E32754E0FFe830802919727f); //mainnet 
 
     uint chainId = 42161;  //Arbitrum
 
@@ -29,7 +28,7 @@ contract PayMeFacetHop is OpsReady {
 
     // *** HOP PART ***** 
 
-    function sendToArb() external payable onlyOps { //impertionate onlyOps in hardhat and try calling this function from a mainnet fork
+    function sendToArb() external payable { 
         hop.sendToL2{value: address(this).balance}(
             chainId, owner, address(this).balance, 0, 0, nullAddr, 0
         );
