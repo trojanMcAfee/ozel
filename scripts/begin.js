@@ -25,65 +25,9 @@ const {
 
 
 
-const amountToSend = 0.002;
 
-//Variables that are supposed to be dynamically created
-const sendingAddr = 'mubUbyPazdyvhPJYPGWUkFWj7bkw1Yq8ys';
 const senderPK = process.env.PK_TEST;
 
-
-async function begin() { //KOVAN
-    const wethAddr = '0xd0A1E359811322d97991E03f863a0C30C2cF029C';
-    const usdtAddr = '0xf3e0d7bf58c5d455d31ef1c2d5375904df525105';
-    const [userAddr] = await hre.ethers.provider.listAccounts();
-    const userToken = usdtAddr;
-    
-    //Creates the "mint" object for bridge execution
-    const mint = await executeBridge(userAddr, userToken); 
-
-    //Gets the BTC gateway deposit address
-    const depositAddress = mint.gatewayAddress;
-    console.log('BTC deposit address: ', depositAddress);
-
-    //Sends the deposited BTC to the bridge deposit address
-    await sendBitcoin(depositAddress, amountToSend, sendingAddr, senderPK);
-    
-    //Mints renBTC
-    await mint.on('deposit', async (deposit) => {
-        const hash = deposit.txHash();
-        console.log('first hash: ', hash);
-        console.log('details of deposit: ', deposit.depositDetails);
-
-        const depositLog = (msg) => {
-            console.log(
-                `BTC deposit: ${Bitcoin.utils.transactionExplorerLink(
-                    deposit.depositDetails.transaction,
-                    'testnet'
-                )}\n
-                RenVM Hash: ${hash}\n
-                Status: ${deposit.status}\n
-                ${msg}`
-            );
-        }
-
-        await deposit.confirmed()
-            .on('target', (target) => depositLog(`0/${target} confirmations`))
-            .on('confirmation', (confs, target) => 
-            depositLog(`${confs}/${target} confirmations`)
-        );
-
-        await deposit.signed()
-            .on("status", (status) => depositLog(`Status: ${status}`));
-            
-        await deposit
-            .mint()
-            .on('transactionHash', async (txHash) => {
-                console.log('Ethereum transaction: ', txHash.toString());
-            }); 
-        console.log(`Deposited ${amountToSend} BTC`);
-    });
-
-}
 
 
 
@@ -115,22 +59,6 @@ async function tryGelatoRopsten2() {
 
 }
 
-async function createTask(resolver) {
-    const tx = await resolver.startTask({
-        gasLimit: ethers.BigNumber.from('200000')
-    });
-    const receipt = await tx.wait();
-    const { data } = receipt.events[0];
-
-    const abiCoder = ethers.utils.defaultAbiCoder;
-    const args = [
-        "address", "address", "bytes4", "address", "bytes32",
-        "bytes", "bool", "address", "bytes32"
-    ];
-    const decodedData = abiCoder.decode(args, data);
-    console.log('task id: ', decodedData[4]);
-    
-}
 
 async function tryGelatoRopsten() {
     const resolverAddr = '0xA1fE693Ca917756eCeF19b6217BA1b56b3e65d2D'; //custom
@@ -154,22 +82,6 @@ async function tryGelatoRopsten() {
 
 }
 
-async function sendArb() {
-    // const chainIdArb = 42161;
-    const pokeMeOpsAddr = '0x9C4771560d84222fD8B7d9f15C59193388cC81B3';
-
-    const signer = await hre.ethers.provider.getSigner(0);
-    const signerAddr = await signer.getAddress();
-    // const amount = ethers.utils.parseEther('5');
-
-    const PayMeHop = await hre.ethers.getContractFactory('PayMeFacetHop');
-    const paymeHop = await PayMeHop.deploy(signerAddr, pokeMeOpsAddr);
-    await paymeHop.deployed();
-    console.log('paymeHop deployed to: ', paymeHop.address);
-
-    await createTask(paymeHop);
-    
-}
 
 async function sendTx() {
     const signer = await hre.ethers.provider.getSigner(0);
@@ -190,33 +102,58 @@ async function sendTx() {
 
 }
 
-async function impersonateTx() { //mainnet
-    const pokeMeAddr = '0xB3f5503f93d5Ef84b06993a1975B9D21B962892F'; //mainnet
-    
-    const signer = await hre.ethers.provider.getSigner(0);
-    const signerAddr = await signer.getAddress();
-    const PaymeHop = await hre.ethers.getContractFactory('PayMeFacetHop');
-    const paymeHop = await PaymeHop.deploy(signerAddr, pokeMeAddr);
-    await paymeHop.deployed();
-
-    await signer.sendTransaction({
-        to: paymeHop.address,
-        value: ethers.utils.parseEther('7')
-    });
-
-    let balance = await hre.ethers.provider.getBalance(paymeHop.address);
-    console.log('pre balance: ', ethers.utils.formatEther(balance));
-
-    await paymeHop.sendToArb();
-
-    balance = await hre.ethers.provider.getBalance(paymeHop.address);
-    console.log('post balance: ', ethers.utils.formatEther(balance));
-}
 
 
 
 
 //-----------------------------------------
+
+async function createTask(resolver) {
+    const tx = await resolver.startTask({
+        gasLimit: ethers.BigNumber.from('200000')
+    });
+    const receipt = await tx.wait();
+    const { data } = receipt.events[0];
+
+    const abiCoder = ethers.utils.defaultAbiCoder;
+    const args = [
+        "address", "address", "bytes4", "address", "bytes32",
+        "bytes", "bool", "address", "bytes32"
+    ];
+    const decodedData = abiCoder.decode(args, data);
+    console.log('task id: ', decodedData[4]);
+    
+}
+
+//Deploys PayMeFacetHop in mainnet and routes ETH to Manager in Arbitrum
+async function sendArb() { //mainnet
+    // const provider = await hre.ethers.provider;
+    const chainId = 42161;
+    const pokeMeOpsAddr = '0xB3f5503f93d5Ef84b06993a1975B9D21B962892F'; //ropsten: 0x9C4771560d84222fD8B7d9f15C59193388cC81B3
+    const hopBridge = '0xb8901acB165ed027E32754E0FFe830802919727f';
+    const managerArb = '0xb8901acB165ed027E32754E0FFe830802919727f'; //fake
+
+    const signer = await hre.ethers.provider.getSigner(0);
+    const signerAddr = await signer.getAddress();
+
+    const PayMeHop = await hre.ethers.getContractFactory('PayMeFacetHop');
+    const paymeHop = await PayMeHop.deploy(
+        signerAddr, pokeMeOpsAddr, chainId, hopBridge, managerArb
+    );
+    await paymeHop.deployed();
+    console.log('paymeHop deployed to: ', paymeHop.address);
+
+    // await createTask(paymeHop);
+
+    const tx = {
+        to: paymeHop.address,
+        data: '0xb02e182e',
+        value: ethers.utils.parseEther('1')
+    };
+    const est = await hre.ethers.provider.estimateGas(tx);
+    console.log('est: ', est.toString());
+    
+}
 
 async function beginSimulatedDiamond() {
     const deployedVars = await deploy();
@@ -333,13 +270,12 @@ async function beginSimulatedDiamond() {
 
 // beginSimulatedDiamond();
 
-// sendArb();
+sendArb();
 
 // sendTx();
 
-impersonateTx();
+// impersonateTx();
 
-// begin();
 // .then(() => process.exit(0))
 //   .catch((error) => {
 //     console.error(error);

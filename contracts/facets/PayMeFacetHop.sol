@@ -12,15 +12,25 @@ import 'hardhat/console.sol';
 
 contract PayMeFacetHop is OpsReady { 
 
-    IL1_ETH_Bridge hop = IL1_ETH_Bridge(0xb8901acB165ed027E32754E0FFe830802919727f); //mainnet 
+    IL1_ETH_Bridge hop; 
 
-    uint chainId = 42161;  //Arbitrum
+    uint chainId; 
 
-    address nullAddr = 0x0000000000000000000000000000000000000000;
+    address public constant nullAddr = 0x0000000000000000000000000000000000000000;
     address public immutable owner;
+    address public immutable manager;
 
-    constructor(address _owner, address _opsGel) OpsReady(_opsGel) {
+    constructor(
+        address _owner, 
+        address _opsGel,
+        uint _chainId,
+        address _hop,
+        address _manager
+    ) OpsReady(_opsGel) {
         owner = _owner;
+        chainId = _chainId;
+        hop = IL1_ETH_Bridge(_hop);
+        manager = _manager;
     }
 
     receive() external payable {}
@@ -28,11 +38,18 @@ contract PayMeFacetHop is OpsReady {
 
     // *** HOP PART ***** 
 
-    function sendToArb() external payable { 
-        hop.sendToL2{value: address(this).balance}(
-            chainId, owner, address(this).balance, 0, 0, nullAddr, 0
+    // function sendToArb() external { <--------- REAL ONE
+    //     hop.sendToL2{value: address(this).balance}(
+    //         chainId, manager, address(this).balance, 0, 0, nullAddr, 0
+    //     );
+    // }
+
+    function sendToArb() external payable { // <----- FOR TESTING 
+        hop.sendToL2{value: msg.value}(
+            chainId, manager, msg.value, 0, 0, nullAddr, 0
         );
     }
+    //check if i can include here a abi.encode msg to arbitrum using "sendCrossDomainMessage"
 
     // *** GELATO PART ******
 
