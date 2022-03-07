@@ -72,7 +72,7 @@ contract ManagerFacet {
     function _getFee(uint _amount) public returns(uint, uint) {
         uint fee = _amount - _amount._calculateSlippage(s.dappFee);
         s.feesVault += fee;
-        uint netAmount = s.WBTC.balanceOf(address(this)) - fee;
+        uint netAmount = address(this).balance - fee;
         return (netAmount, fee);
     }
 
@@ -83,40 +83,40 @@ contract ManagerFacet {
         wbtcAmount = s.WBTC.balanceOf(address(this));
     }
 
-    function swapsWBTCForUserToken(uint _wbtcToConvert, uint _tokenOut, bool _useEth) public {
-        s.WBTC.approve(address(s.tricrypto), _wbtcToConvert);
-        uint minOut = s.tricrypto.get_dy(1, _tokenOut, _wbtcToConvert);
+    function swapsForUserToken(uint _amountIn, uint _amountOut) public {
+        // s.WBTC.approve(address(s.tricrypto), _amountIn);
+        uint minOut = s.tricrypto.get_dy(2, _amountOut, _amountIn);
         uint slippage = minOut._calculateSlippage(s.slippageTradingCurve);
-        s.tricrypto.exchange(1, _tokenOut, _wbtcToConvert, slippage, _useEth);
+        s.tricrypto.exchange{value: _amountIn}(2, _amountOut, _amountIn, slippage, true);
     }
 
     function exchangeToUserToken(uint _amount, address _user, address _userToken) external {
         updateManagerState(_amount, _user);
         
         uint tokenOut = _userToken == address(s.USDT) ? 0 : 2;
-        bool useEth = _userToken == address(s.WETH) ? false : true;
+        // bool useEth = _userToken == address(s.WETH) ? false : true; //can't be ETH
         IERC20 userToken;
-        if (_userToken != s.ETH) {
-            userToken = IERC20(_userToken);
-        }
+        // if (_userToken != s.ETH) {
+        userToken = IERC20(_userToken);
+        // }
 
         //Swaps renBTC for WBTC
-        uint wbtcAmount = swapsRenForWBTC(_amount);
+        // uint wbtcAmount = swapsRenForWBTC(_amount);
 
         //Sends fee (in WBTC) to Vault contract
-        (uint netAmount, uint fee) = _getFee(wbtcAmount);
+        (uint netAmount, uint fee) = _getFee(_amount);
         // require(isTransferred, 'Fee transfer failed');
        
         //Swaps WBTC to userToken (USDT, WETH or ETH)  
-        swapsWBTCForUserToken(netAmount, tokenOut, useEth);
+        swapsForUserToken(netAmount, tokenOut);
        
         //Sends userToken to user
-        if (_userToken != s.ETH) {
-            uint ToUser = userToken.balanceOf(address(this));
-            userToken.safeTransfer(_user, ToUser);
-        } else {
-            _sendEtherToUser(_user);
-        }
+        // if (_userToken != s.ETH) {
+        //     uint ToUser = userToken.balanceOf(address(this));
+        //     userToken.safeTransfer(_user, ToUser);
+        // } else {
+        _sendEtherToUser(_user);
+        // }
         
         //Deposits fees in Curve's renPool
         (bool success, ) = address(s.vault).delegatecall(
@@ -125,5 +125,5 @@ contract ManagerFacet {
         require(success);
     }
 
-
+    //connection PayMeFacethop with ManagerFacer
 }
