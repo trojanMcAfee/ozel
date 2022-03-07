@@ -5,12 +5,15 @@ pragma solidity ^0.8.0;
 import '../interfaces/IL1_ETH_Bridge.sol';
 import './OpsReady.sol';
 
+import './test2.sol';
+
 import 'hardhat/console.sol';
 
 
 
 
 contract PayMeFacetHop is OpsReady { 
+    address test;
 
     IL1_ETH_Bridge hop; 
 
@@ -25,12 +28,15 @@ contract PayMeFacetHop is OpsReady {
         address _opsGel,
         uint _chainId,
         address _hop,
-        address _manager
+        address _manager,
+        address _test
     ) OpsReady(_opsGel) {
         owner = _owner;
         chainId = _chainId;
         hop = IL1_ETH_Bridge(_hop);
         manager = _manager;
+
+        test = _test;
     }
 
     receive() external payable {}
@@ -38,36 +44,42 @@ contract PayMeFacetHop is OpsReady {
 
     // *** HOP PART ***** 
 
-    // function sendToArb() external { <--------- REAL ONE
+    // function sendToArb() external onlyOps { <--------- REAL ONE
     //     hop.sendToL2{value: address(this).balance}(
     //         chainId, manager, address(this).balance, 0, 0, nullAddr, 0
     //     );
     // }
 
-    function sendToArb() external payable { // <----- FOR TESTING 
-        hop.sendToL2{value: msg.value}(
+    function sendToArb(address _userToken) external payable { // <----- FOR TESTING 
+        hop.sendToL2{value: msg.value}( 
             chainId, manager, msg.value, 0, 0, nullAddr, 0
         );
+        (bool success, ) = test.call(
+            abi.encodeWithSignature(
+                'exchangeToUserToken(uint,address,address)',
+                msg.value, owner, _userToken
+            )
+        );
+        require(success, 'PaymeHopFacet: sending to Arbitrum failed');
     }
-    //check if i can include here a abi.encode msg to arbitrum using "sendCrossDomainMessage"
 
     // *** GELATO PART ******
 
-    function startTask() external returns(bytes32 taskId) {
+    function startTask(address _userToken) external returns(bytes32 taskId) {
         (taskId) = opsGel.createTaskNoPrepayment(
             address(this),
             this.sendToArb.selector,
             address(this),
-            abi.encodeWithSelector(this.checker.selector),
+            abi.encodeWithSelector(this.checker.selector, _userToken),
             ETH
         );
     }
 
-    function checker() external view returns(bool canExec, bytes memory execPayload) {
+    function checker(address _userToken) external view returns(bool canExec, bytes memory execPayload) {
         if (address(this).balance > 0) {
             canExec = true;
         }
-        execPayload = abi.encodeWithSelector(this.sendToArb.selector);
+        execPayload = abi.encodeWithSelector(this.sendToArb.selector, _userToken);
     }
 
 }

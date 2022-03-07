@@ -136,14 +136,21 @@ async function sendArb() { //mainnet
     const signer = await hre.ethers.provider.getSigner(0);
     const signerAddr = await signer.getAddress();
 
+    const Test = await hre.ethers.getContractFactory('Test2');
+    const test = await Test.deploy();
+    await test.deployed();
+
     const PayMeHop = await hre.ethers.getContractFactory('PayMeFacetHop');
     const paymeHop = await PayMeHop.deploy(
-        signerAddr, pokeMeOpsAddr, chainId, hopBridge, managerArb
+        signerAddr, pokeMeOpsAddr, chainId, hopBridge, managerArb, test.address
     );
     await paymeHop.deployed();
     console.log('paymeHop deployed to: ', paymeHop.address);
 
     // await createTask(paymeHop);
+
+    // await paymeHop.sendToArb(); 
+    // console.log('done');
 
     const tx = {
         to: paymeHop.address,

@@ -90,7 +90,7 @@ contract ManagerFacet {
         s.tricrypto.exchange(1, _tokenOut, _wbtcToConvert, slippage, _useEth);
     }
 
-    function exchangeToUserToken(uint _amount, address _user, address _userToken) public {
+    function exchangeToUserToken(uint _amount, address _user, address _userToken) external {
         updateManagerState(_amount, _user);
         
         uint tokenOut = _userToken == address(s.USDT) ? 0 : 2;
