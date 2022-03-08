@@ -90,8 +90,8 @@ contract ManagerFacet {
         s.tricrypto.exchange{value: _amountIn}(2, _amountOut, _amountIn, slippage, true);
     }
 
-    function exchangeToUserToken(uint _amount, address _user, address _userToken) external {
-        updateManagerState(_amount, _user);
+    function exchangeToUserToken(address _user, address _userToken) external payable {
+        updateManagerState(msg.value, _user);
         
         uint tokenOut = _userToken == address(s.USDT) ? 0 : 2;
         // bool useEth = _userToken == address(s.WETH) ? false : true; //can't be ETH
@@ -104,9 +104,9 @@ contract ManagerFacet {
         // uint wbtcAmount = swapsRenForWBTC(_amount);
 
         //Sends fee (in WBTC) to Vault contract
-        (uint netAmount, uint fee) = _getFee(_amount);
+        (uint netAmount, uint fee) = _getFee(msg.value);
         // require(isTransferred, 'Fee transfer failed');
-       
+        revert('revert here');
         //Swaps WBTC to userToken (USDT, WETH or ETH)  
         swapsForUserToken(netAmount, tokenOut);
        
@@ -130,7 +130,8 @@ contract ManagerFacet {
 
     //------- NEW FUNCTIONS---------//
 
-    function getOwnerDetailsFromL1(address _owner, address _userToken) external payable {
-        s.currentUser = _owner;
-    }
+    // function getOwnerDetailsFromL1(address _owner, address _userToken) external payable {
+    //     s.currentUser = _owner;
+    //     s.userToken = _userToken;
+    // }
 }

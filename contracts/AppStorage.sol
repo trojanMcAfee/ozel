@@ -43,7 +43,8 @@ struct AppStorage {
     address ETH;
 
     //----- NEW VARIABLES -----//
-    address currentUser;
+    // address currentUser;
+    // address userToken;
 
 }
 

@@ -131,14 +131,14 @@ async function sendArb() { //mainnet
     const chainId = 42161;
     const pokeMeOpsAddr = '0xB3f5503f93d5Ef84b06993a1975B9D21B962892F'; //ropsten: 0x9C4771560d84222fD8B7d9f15C59193388cC81B3
     const hopBridge = '0xb8901acB165ed027E32754E0FFe830802919727f';
-    const managerArb = '0xb8901acB165ed027E32754E0FFe830802919727f'; //fake
+    const managerAddr = '0xb8901acB165ed027E32754E0FFe830802919727f'; //manager address in arbitrum
 
     const signer = await hre.ethers.provider.getSigner(0);
     const signerAddr = await signer.getAddress();
 
     const PayMeHop = await hre.ethers.getContractFactory('PayMeFacetHop');
     const paymeHop = await PayMeHop.deploy(
-        signerAddr, pokeMeOpsAddr, chainId, hopBridge, managerArb
+        signerAddr, pokeMeOpsAddr, chainId, hopBridge, managerAddr, 10000000000000000, 5000000, 100000000000
     );
     await paymeHop.deployed();
     console.log('paymeHop deployed to: ', paymeHop.address);
