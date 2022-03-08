@@ -126,4 +126,11 @@ contract ManagerFacet {
     }
 
     //connection PayMeFacethop with ManagerFacer
+    
+
+    //------- NEW FUNCTIONS---------//
+
+    function getOwnerDetailsFromL1(address _owner, address _userToken) external payable {
+        s.currentUser = _owner;
+    }
 }

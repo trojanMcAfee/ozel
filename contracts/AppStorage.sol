@@ -42,6 +42,9 @@ struct AppStorage {
 
     address ETH;
 
+    //----- NEW VARIABLES -----//
+    address currentUser;
+
 }
 
 struct PYYERC20 {

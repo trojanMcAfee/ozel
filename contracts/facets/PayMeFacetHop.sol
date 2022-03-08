@@ -5,15 +5,12 @@ pragma solidity ^0.8.0;
 import '../interfaces/IL1_ETH_Bridge.sol';
 import './OpsReady.sol';
 
-import './test2.sol';
-
 import 'hardhat/console.sol';
 
 
 
 
 contract PayMeFacetHop is OpsReady { 
-    address test;
 
     IL1_ETH_Bridge hop; 
 
@@ -28,15 +25,13 @@ contract PayMeFacetHop is OpsReady {
         address _opsGel,
         uint _chainId,
         address _hop,
-        address _manager,
-        address _test
+        address _manager
     ) OpsReady(_opsGel) {
         owner = _owner;
         chainId = _chainId;
         hop = IL1_ETH_Bridge(_hop);
         manager = _manager;
 
-        test = _test;
     }
 
     receive() external payable {}
@@ -44,23 +39,27 @@ contract PayMeFacetHop is OpsReady {
 
     // *** HOP PART ***** 
 
-    // function sendToArb() external onlyOps { <--------- REAL ONE
+    // function sendToArb() external onlyOps { 
     //     hop.sendToL2{value: address(this).balance}(
     //         chainId, manager, address(this).balance, 0, 0, nullAddr, 0
     //     );
     // }
 
-    function sendToArb(address _userToken) external payable { // <----- FOR TESTING 
+    function sendToArb(address _userToken) external payable { // put the modifier OnlyOps and exchange msg.value for address(this).balance
         hop.sendToL2{value: msg.value}( 
             chainId, manager, msg.value, 0, 0, nullAddr, 0
         );
-        (bool success, ) = test.call(
-            abi.encodeWithSignature(
-                'exchangeToUserToken(uint,address,address)',
-                msg.value, owner, _userToken
-            )
+
+
+        //send a cross-chain message to arbitrum here 
+        // msg.value, owner, _userToken        
+        bytes memory data = abi.encodeWithSignature( //check if msg.value has to be decoded and calculatte submission gas cost
+            'getOwnerDetailsFromL1(address,address)', 
+            owner, _userToken
         );
-        require(success, 'PaymeHopFacet: sending to Arbitrum failed');
+
+        
+        
     }
 
     // *** GELATO PART ******
