@@ -12,7 +12,7 @@ const {
     withdrawSharePYY, 
     approvePYY,
     getVarsForHelpers,
-    sendsOneTenthRenBTC
+    sendETH
 } = require('./helpers.js');
 
 const {
@@ -125,13 +125,28 @@ async function createTask(resolver) {
     
 }
 
+//Deploys the fake manager on arbitrum testnet 
+async function fakeManager() {
+    const l2Provider = new ethers.providers.JsonRpcProvider(process.env.ARB_TESTNET);
+    const signer = new ethers.Wallet(process.env.PK);
+    const l2Signer = signer.connect(l2Provider);
+
+    const Test2 = await ( //***** check the error on the console **** */
+        await hre.ethers.getContractFactory('Test2')
+    ).connect(l2Signer);
+    const test2 = await Test2.deploy();
+    await test2.deployed();
+    console.log('fake manager deployed in arbitrum testnet to: ', test2.address);
+    return test2.address;
+}
+
 //Deploys PayMeFacetHop in mainnet and routes ETH to Manager in Arbitrum
 async function sendArb() { //mainnet
-    // const provider = await hre.ethers.provider;
     const chainId = 42161;
     const pokeMeOpsAddr = '0xB3f5503f93d5Ef84b06993a1975B9D21B962892F'; //ropsten: 0x9C4771560d84222fD8B7d9f15C59193388cC81B3
     const hopBridge = '0xb8901acB165ed027E32754E0FFe830802919727f';
-    const managerAddr = '0xb8901acB165ed027E32754E0FFe830802919727f'; //manager address in arbitrum
+    const managerAddr = await fakeManager(); //manager address in arbitrum
+    const usdtAddr = '0xfd086bc7cd5c481dcc9c85ebe478a1c0b69fcbb9'; //arb mainnet
 
     const signer = await hre.ethers.provider.getSigner(0);
     const signerAddr = await signer.getAddress();
@@ -145,7 +160,29 @@ async function sendArb() { //mainnet
 
     // await createTask(paymeHop);
 
-    await paymeHop.sendToArb();
+    const value = parseEther('0.01');
+    const iface = new ethers.utils.Interface(
+        'function exchangeToUserToken(address _user, address _userToken)'
+    );
+    const data = iface.encodeFunctionData('exchangeToUserToken', [
+        signerAddr,
+        usdtAddr
+    ]);
+
+    let tx = {
+        to: paymeHop.address,
+        data,
+        value
+    }
+
+    const estGas = await hre.ethers.provider.estimateGas(tx);
+    console.log('estimated gas: ', estGas.toString());
+
+    tx = await paymeHop.sendToArb({
+        value
+    });
+    const receipt = await tx.wait();
+    console.log('receipt: ', receipt);
 
     // const tx = {
     //     to: paymeHop.address,
@@ -177,32 +214,10 @@ async function beginSimulatedDiamond() {
     
     getVarsForHelpers(deployedDiamond, PYY, managerFacet, renBTC);
 
-    /**+++++++++ SIMULATES CURVE SWAPS ++++++++**/
-    // const IWETH = await hre.ethers.getContractAt('IWETH', wethAddr);
-    // const tricryptoPool = await hre.ethers.getContractAt('ITricrypto', tricryptoAddr);
-    // const renPool = await hre.ethers.getContractAt('IRenPool', renPoolAddr);
-
-    //Gets the gross WETH and converts to WBTC
-    // await IWETH.deposit({value: parseEther('1000')}); 
-    // let amountIn = (await WETH.balanceOf(callerAddr)).toString(); 
-    // //Swaps ETH for WBTC
-    // await tricryptoPool.exchange(2, 1, amountIn, 1, true, {
-    //     value: amountIn
-    // });
-
-    // //Converts to renBTC and divides in 1/10th
-    // amountIn = (await WBTC.balanceOf(callerAddr)).toString();
-    // await WBTC.approve(renPoolAddr, MaxUint256);
-    // await renPool.exchange(1, 0, amountIn, 1); 
-    // let renBtcBalance = (await renBTC.balanceOf(callerAddr)).toString();
-    // let oneTenth = Math.floor(renBtcBalance / 10);
-
-
     //First user
     console.log('1st user first transfer');
-    const oneTenth = 1;
 
-    await sendsOneTenthRenBTC(oneTenth, callerAddr, usdtAddr, USDT, 'USDT', 10 ** 6);
+    await sendETH(callerAddr, usdtAddr, USDT, 'USDT', 10 ** 6);
     await approvePYY(callerAddr);
     console.log('PYY balance on caller 1: ', formatEther(await balanceOfPYY(callerAddr)));
     console.log('crvTricrypto token balance on diamondProxy: ', formatEther(await crvTri.balanceOf(deployedDiamond.address)));
@@ -210,7 +225,7 @@ async function beginSimulatedDiamond() {
 
     //Second user
     console.log('2nd user first transfer');
-    await sendsOneTenthRenBTC(oneTenth, caller2Addr, usdtAddr, USDT, 'USDT', 10 ** 6);
+    await sendETH(caller2Addr, usdtAddr, USDT, 'USDT', 10 ** 6);
     await approvePYY(caller2Addr);
     console.log('PYY balance on caller 2: ', formatEther(await balanceOfPYY(caller2Addr)));
     console.log('PYY balance on caller 1 after caller2 swap: ', formatEther(await balanceOfPYY(callerAddr)));
@@ -219,7 +234,7 @@ async function beginSimulatedDiamond() {
 
     // //First user - 2nd transfer
     console.log('1st user second transfer'); 
-    await sendsOneTenthRenBTC(oneTenth, callerAddr, usdtAddr, USDT, 'USDT', 10 ** 6);
+    await sendETH(callerAddr, usdtAddr, USDT, 'USDT', 10 ** 6);
     console.log('PYY balance on caller 1 after 2nd swap: ', formatEther(await balanceOfPYY(callerAddr)));
     console.log('PYY balance on caller 2 after caller1 2nd swap: ', formatEther(await balanceOfPYY(caller2Addr)));
     console.log('crvTricrypto token balance on diamondProxy: ', formatEther(await crvTri.balanceOf(deployedDiamond.address)));
@@ -244,7 +259,7 @@ async function beginSimulatedDiamond() {
 
     //1st user third transfer
     console.log('1st user third transfer');
-    await sendsOneTenthRenBTC(oneTenth, callerAddr, usdtAddr, USDT, 'USDT', 10 ** 6);
+    await sendETH(callerAddr, usdtAddr, USDT, 'USDT', 10 ** 6);
     console.log('PYY balance on caller 1: ', formatEther(await balanceOfPYY(callerAddr)));
     console.log('PYY balance on caller 2: ', formatEther(await balanceOfPYY(caller2Addr)));
     console.log('.');
@@ -276,9 +291,9 @@ async function beginSimulatedDiamond() {
 
 // tryGelatoRopsten();
 
-beginSimulatedDiamond();
+// beginSimulatedDiamond();
 
-// sendArb();
+sendArb();
 
 // sendTx();
 

@@ -26,6 +26,10 @@ module.exports = {
     kovan: {
       url: process.env.KOVAN,
       accounts: [process.env.PK]
+    },
+    rinkeby: {
+      url: process.env.RINKEBY,
+      accounts: [process.env.PK]
     }
   }
 };

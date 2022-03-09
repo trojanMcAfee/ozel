@@ -115,14 +115,8 @@ async function approvePYY(caller) {
     await PYY.connect(signer).approve(managerFacet.address, MaxUint256);
 }
 
-//Sends renBTC to contracts (simulates BTC bridging) ** MAIN FUNCTION **
-async function sendsOneTenthRenBTC(oneTenth, userAddr, userToken, IERC20, tokenStr, decimals) {
-    // await renBTC.transfer(deployedDiamond.address, oneTenth);
-    // const balanceRenBTC = await renBTC.balanceOf(deployedDiamond.address);
-    // await callDiamondProxy({
-    //     method: 'exchangeToUserToken',
-    //     args: {balanceRenBTC, userAddr, userToken},
-    // });
+//Sends ETH to contracts (simulates ETH bridging) ** MAIN FUNCTION **
+async function sendETH(userAddr, userToken, IERC20, tokenStr, decimals) {
     const value = ethers.utils.parseEther('100');
     await callDiamondProxy({
         method: 'exchangeToUserToken',
@@ -148,5 +142,5 @@ module.exports = {
     withdrawSharePYY,
     approvePYY, 
     getVarsForHelpers,
-    sendsOneTenthRenBTC
+    sendETH
 };
