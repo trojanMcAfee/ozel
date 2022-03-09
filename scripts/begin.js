@@ -157,25 +157,6 @@ async function sendArb() { //mainnet
     
 }
 
-// async function beginSimulatedDiamond2() {
-//     const deployedVars = await deploy();
-//     const {
-//         deployedDiamond, 
-//         WETH,
-//         USDT,
-//         WBTC,
-//         renBTC,
-//         crvTri,
-//         callerAddr, 
-//         caller2Addr,
-//         PYY,
-//         managerFacet
-//     } = deployedVars;
-
-//     getVarsForHelpers(deployedDiamond, PYY, managerFacet, renBTC);
-
-
-// }
 
 
 
@@ -227,12 +208,9 @@ async function beginSimulatedDiamond() {
     console.log('crvTricrypto token balance on diamondProxy: ', formatEther(await crvTri.balanceOf(deployedDiamond.address)));
     console.log('---------------------------------------'); 
 
-    console.log('return there');
-    return;
-
     //Second user
     console.log('2nd user first transfer');
-    await sendsOneTenthRenBTC(oneTenth, caller2Addr, wethAddr, WETH, 'WETH', 10 ** 18);
+    await sendsOneTenthRenBTC(oneTenth, caller2Addr, usdtAddr, USDT, 'USDT', 10 ** 6);
     await approvePYY(caller2Addr);
     console.log('PYY balance on caller 2: ', formatEther(await balanceOfPYY(caller2Addr)));
     console.log('PYY balance on caller 1 after caller2 swap: ', formatEther(await balanceOfPYY(callerAddr)));
@@ -258,15 +236,15 @@ async function beginSimulatedDiamond() {
     //1st user withdraw remaining share (half)
     console.log('Withdraw 1st user half share (remainder)');  
     await withdrawSharePYY(callerAddr, parseEther(formatEther(await balanceOfPYY(callerAddr))), usdtAddr);
-    const usdtBalance = await USDT.balanceOf(callerAddr);
+    let usdtBalance = await USDT.balanceOf(callerAddr);
     console.log('USDT balance from fees of caller1: ', usdtBalance.toString() / 10 ** 6); 
     console.log('PYY balance on caller 1 after fees withdrawal: ', formatEther(await balanceOfPYY(callerAddr)));
     console.log('PYY balance on caller 2 after fees withdrawal ', formatEther(await balanceOfPYY(caller2Addr)));
     console.log('---------------------------------------'); 
 
-    //1st user third transfer (ETH)
-    console.log('1st user third transfer (ETH)');
-    await sendsOneTenthRenBTC(oneTenth, callerAddr, wethAddr, WETH, 'WETH', 10 ** 18);
+    //1st user third transfer
+    console.log('1st user third transfer');
+    await sendsOneTenthRenBTC(oneTenth, callerAddr, usdtAddr, USDT, 'USDT', 10 ** 6);
     console.log('PYY balance on caller 1: ', formatEther(await balanceOfPYY(callerAddr)));
     console.log('PYY balance on caller 2: ', formatEther(await balanceOfPYY(caller2Addr)));
     console.log('.');
@@ -279,9 +257,9 @@ async function beginSimulatedDiamond() {
     console.log('.');
 
     console.log('Withdrawing 1/3');
-    await withdrawSharePYY(caller2Addr, parseEther(toTransfer.toString()), wethAddr);
-    const wethBalance = await WETH.balanceOf(caller2Addr);
-    console.log('WETH balance from fees of caller2: ', formatEther(wethBalance));
+    await withdrawSharePYY(caller2Addr, parseEther(toTransfer.toString()), usdtAddr);
+    usdtBalance = await USDT.balanceOf(caller2Addr);
+    console.log('USDT balance from fees of caller2: ', formatEther(usdtBalance));
     console.log('PYY balance on caller 1: ', formatEther(await balanceOfPYY(callerAddr)));
     console.log('PYY balance on caller 2: ', formatEther(await balanceOfPYY(caller2Addr)));
     console.log('.');

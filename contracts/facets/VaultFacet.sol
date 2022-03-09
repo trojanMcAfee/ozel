@@ -26,20 +26,20 @@ contract VaultFacet { //Remember to write a function to withdraw/convert CRV
         balance = IERC20Facet(_token).balanceOf(address(this));
     }
 
-    function _calculateTokenAmountCurve(uint _wbtcAmountIn) private returns(uint, uint[3] memory) {
+    function _calculateTokenAmountCurve(uint _wethAmountIn) private returns(uint, uint[3] memory) {
         uint[3] memory amounts;
         amounts[0] = 0;
-        amounts[1] = _wbtcAmountIn;
-        amounts[2] = 0;
+        amounts[1] = 0;
+        amounts[2] = _wethAmountIn;
         uint tokenAmount = s.tricrypto.calc_token_amount(amounts, true);
-        return(tokenAmount, amounts);
+        return (tokenAmount, amounts);
     }
     
 
-    function depositInCurve(uint _fee) public {
+    function depositInCurve(uint _fee) public payable {
         (uint tokenAmountIn, uint[3] memory amounts) = _calculateTokenAmountCurve(_fee);
         uint minAmount = tokenAmountIn._calculateSlippage(s.slippageOnCurve);
-        s.WBTC.approve(address(s.tricrypto), tokenAmountIn);
+        s.WETH.approve(address(s.tricrypto), tokenAmountIn);
         s.tricrypto.add_liquidity(amounts, minAmount);
     }
 

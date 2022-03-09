@@ -103,10 +103,10 @@ async function transferPYY(recipient, amount, signerIndex) {
     }); 
 }
 
-async function withdrawSharePYY(callerAddr, balancePYY, usdtAddr) {
+async function withdrawSharePYY(callerAddr, balancePYY, userAddr) {
     await callDiamondProxy({
         method: 'withdrawUserShare',
-        args: {callerAddr, balancePYY, usdtAddr}
+        args: {callerAddr, balancePYY, userAddr}
     });
 }
 
@@ -123,7 +123,7 @@ async function sendsOneTenthRenBTC(oneTenth, userAddr, userToken, IERC20, tokenS
     //     method: 'exchangeToUserToken',
     //     args: {balanceRenBTC, userAddr, userToken},
     // });
-    const value = ethers.utils.parseEther('1');
+    const value = ethers.utils.parseEther('100');
     await callDiamondProxy({
         method: 'exchangeToUserToken',
         args: {userAddr, userToken},

@@ -60,16 +60,16 @@ contract ManagerFacet {
         return (percentageToTransfer * s.usersPayments[_user]) / 10000;
     }
 
-    function _preSending(address _user) private {
-        s.pendingWithdrawal[_user] = address(this).balance;
-    }
+    // function _preSending(address _user) private {
+    //     s.pendingWithdrawal[_user] = address(this).balance;
+    // }
 
-    function _sendEtherToUser(address _user) public {
-        _preSending(_user);
-        uint amount = s.pendingWithdrawal[_user];
-        s.pendingWithdrawal[_user] = 0;
-        payable(_user).transfer(amount);
-    }
+    // function _sendEtherToUser(address _user) public {
+    //     _preSending(_user);
+    //     uint amount = s.pendingWithdrawal[_user];
+    //     s.pendingWithdrawal[_user] = 0;
+    //     payable(_user).transfer(amount);
+    // }
 
     function _getFee(uint _amount) public returns(uint, uint) {
         uint fee = _amount - _amount._calculateSlippage(s.dappFee);
@@ -78,14 +78,14 @@ contract ManagerFacet {
         return (netAmount, fee);
     }
 
-    function swapsRenForWBTC(uint _netAmount) public returns(uint wbtcAmount) {
-        s.renBTC.approve(address(s.renPool), _netAmount);
-        uint slippage = _netAmount._calculateSlippage(s.slippageTradingCurve); 
-        s.renPool.exchange(0, 1, _netAmount, slippage);
-        wbtcAmount = s.WBTC.balanceOf(address(this));
-    }
+    // function swapsRenForWBTC(uint _netAmount) public returns(uint wbtcAmount) {
+    //     s.renBTC.approve(address(s.renPool), _netAmount);
+    //     uint slippage = _netAmount._calculateSlippage(s.slippageTradingCurve); 
+    //     s.renPool.exchange(0, 1, _netAmount, slippage);
+    //     wbtcAmount = s.WBTC.balanceOf(address(this));
+    // }
 
-    function swapsForUserToken(uint _amountIn, uint _tokenOut) public {
+    function swapsForUserToken(uint _amountIn, uint _tokenOut) public payable {
         // s.WBTC.approve(address(s.tricrypto), _amountIn);
         uint minOut = s.tricrypto.get_dy(2, _tokenOut, _amountIn);
         uint slippage = minOut._calculateSlippage(s.slippageTradingCurve);
@@ -101,9 +101,9 @@ contract ManagerFacet {
         
         uint tokenOut = _userToken == address(s.USDT) ? 0 : 2;
         // bool useEth = _userToken == address(s.WETH) ? false : true; //can't be ETH
-        IERC20 userToken;
+        IERC20 userToken = IERC20(_userToken);
         // if (_userToken != s.ETH) {
-        userToken = IERC20(_userToken);
+        // userToken = IERC20(_userToken);
         // }
 
         //Swaps renBTC for WBTC
@@ -112,10 +112,10 @@ contract ManagerFacet {
         //Sends fee (in WBTC) to Vault contract
         (uint netAmount, uint fee) = _getFee(msg.value);
         // require(isTransferred, 'Fee transfer failed');
-        console.log(1);
+        
         //Swaps WBTC to userToken (USDT, WETH or ETH)  
         swapsForUserToken(netAmount, tokenOut);
-       console.log(2);
+      
         //Sends userToken to user
         // if (_userToken != s.ETH) {
             uint ToUser = userToken.balanceOf(address(this));
@@ -123,15 +123,14 @@ contract ManagerFacet {
         // } else {
         // _sendEtherToUser(_user);
         // }
-        console.log(3);
-        console.log('fee: ', fee);
+        
         s.WETH.deposit{value: fee}();
+
         //Deposits fees in Curve's renPool
         (bool success, ) = address(s.vault).delegatecall(
             abi.encodeWithSignature('depositInCurve(uint256)', fee)
         );
         require(success);
-        console.log(4);
     }
 
     //connection PayMeFacethop with ManagerFacer
