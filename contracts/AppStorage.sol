@@ -8,10 +8,10 @@ import './facets/ERC20Facet/IERC20Facet.sol';
 import {IRenPool, ITricrypto} from './interfaces/ICurve.sol';
 import './facets/VaultFacet.sol';
 import '@openzeppelin/contracts/token/ERC20/IERC20.sol';
-import './facets/PayMeFacet.sol';
+// import './facets/PayMeFacet.sol';
 import './facets/GettersFacet.sol';
 
-
+import './interfaces/IWETH.sol';
 
 struct AppStorage {
     IGatewayRegistry registry;
@@ -20,12 +20,12 @@ struct AppStorage {
     VaultFacet vault;
     IRenPool renPool; 
     ICrvLpToken crvTricrypto;
-    PayMeFacet payme;
+    // PayMeFacet payme;
     GettersFacet getters;
 
     IERC20 renBTC;
     IERC20 USDT;
-    IERC20 WETH;
+    IWETH WETH;
     IERC20 WBTC;
     IERC20Facet PYY;
 

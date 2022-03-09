@@ -157,6 +157,28 @@ async function sendArb() { //mainnet
     
 }
 
+// async function beginSimulatedDiamond2() {
+//     const deployedVars = await deploy();
+//     const {
+//         deployedDiamond, 
+//         WETH,
+//         USDT,
+//         WBTC,
+//         renBTC,
+//         crvTri,
+//         callerAddr, 
+//         caller2Addr,
+//         PYY,
+//         managerFacet
+//     } = deployedVars;
+
+//     getVarsForHelpers(deployedDiamond, PYY, managerFacet, renBTC);
+
+
+// }
+
+
+
 async function beginSimulatedDiamond() {
     const deployedVars = await deploy();
     const {
@@ -175,32 +197,38 @@ async function beginSimulatedDiamond() {
     getVarsForHelpers(deployedDiamond, PYY, managerFacet, renBTC);
 
     /**+++++++++ SIMULATES CURVE SWAPS ++++++++**/
-    const IWETH = await hre.ethers.getContractAt('IWETH', wethAddr);
-    const tricryptoPool = await hre.ethers.getContractAt('ITricrypto', tricryptoAddr);
-    const renPool = await hre.ethers.getContractAt('IRenPool', renPoolAddr);
+    // const IWETH = await hre.ethers.getContractAt('IWETH', wethAddr);
+    // const tricryptoPool = await hre.ethers.getContractAt('ITricrypto', tricryptoAddr);
+    // const renPool = await hre.ethers.getContractAt('IRenPool', renPoolAddr);
 
     //Gets the gross WETH and converts to WBTC
-    await IWETH.deposit({value: parseEther('1000')}); 
-    let amountIn = (await WETH.balanceOf(callerAddr)).toString(); 
-    //Swaps ETH for WBTC
-    await tricryptoPool.exchange(2, 1, amountIn, 1, true, {
-        value: amountIn
-    });
+    // await IWETH.deposit({value: parseEther('1000')}); 
+    // let amountIn = (await WETH.balanceOf(callerAddr)).toString(); 
+    // //Swaps ETH for WBTC
+    // await tricryptoPool.exchange(2, 1, amountIn, 1, true, {
+    //     value: amountIn
+    // });
 
-    //Converts to renBTC and divides in 1/10th
-    amountIn = (await WBTC.balanceOf(callerAddr)).toString();
-    await WBTC.approve(renPoolAddr, MaxUint256);
-    await renPool.exchange(1, 0, amountIn, 1); 
-    let renBtcBalance = (await renBTC.balanceOf(callerAddr)).toString();
-    let oneTenth = Math.floor(renBtcBalance / 10);
+    // //Converts to renBTC and divides in 1/10th
+    // amountIn = (await WBTC.balanceOf(callerAddr)).toString();
+    // await WBTC.approve(renPoolAddr, MaxUint256);
+    // await renPool.exchange(1, 0, amountIn, 1); 
+    // let renBtcBalance = (await renBTC.balanceOf(callerAddr)).toString();
+    // let oneTenth = Math.floor(renBtcBalance / 10);
+
 
     //First user
     console.log('1st user first transfer');
+    const oneTenth = 1;
+
     await sendsOneTenthRenBTC(oneTenth, callerAddr, usdtAddr, USDT, 'USDT', 10 ** 6);
     await approvePYY(callerAddr);
     console.log('PYY balance on caller 1: ', formatEther(await balanceOfPYY(callerAddr)));
     console.log('crvTricrypto token balance on diamondProxy: ', formatEther(await crvTri.balanceOf(deployedDiamond.address)));
     console.log('---------------------------------------'); 
+
+    console.log('return there');
+    return;
 
     //Second user
     console.log('2nd user first transfer');
@@ -270,9 +298,9 @@ async function beginSimulatedDiamond() {
 
 // tryGelatoRopsten();
 
-// beginSimulatedDiamond();
+beginSimulatedDiamond();
 
-sendArb();
+// sendArb();
 
 // sendTx();
 

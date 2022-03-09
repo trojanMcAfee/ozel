@@ -29,7 +29,7 @@ async function callDiamondProxy(params) {
         getDistributionIndex: 'function getDistributionIndex() returns (uint256)',
         balanceOf: 'function balanceOf(address account) view returns (uint256)',
         transfer: 'function transfer(address recipient, uint256 amount) returns (bool)',
-        exchangeToUserToken: 'function exchangeToUserToken(uint _amount, address _user, address _userToken)',
+        exchangeToUserToken: 'function exchangeToUserToken(address _user, address _userToken)',
         withdrawUserShare: 'function withdrawUserShare(address _user, uint _userAllocation, address _userToken)'
     };
 
@@ -58,7 +58,8 @@ async function callDiamondProxy(params) {
             encodedData = iface.encodeFunctionData(params.method, callArgs);
             const unsignedTx = {
                 to: deployedDiamond.address,
-                data: encodedData
+                data: encodedData,
+                value: params.value
             };
             if (callArgs.length === 1) {
                 tx = await signer.call(unsignedTx);
@@ -116,12 +117,19 @@ async function approvePYY(caller) {
 
 //Sends renBTC to contracts (simulates BTC bridging) ** MAIN FUNCTION **
 async function sendsOneTenthRenBTC(oneTenth, userAddr, userToken, IERC20, tokenStr, decimals) {
-    await renBTC.transfer(deployedDiamond.address, oneTenth);
-    const balanceRenBTC = await renBTC.balanceOf(deployedDiamond.address);
+    // await renBTC.transfer(deployedDiamond.address, oneTenth);
+    // const balanceRenBTC = await renBTC.balanceOf(deployedDiamond.address);
+    // await callDiamondProxy({
+    //     method: 'exchangeToUserToken',
+    //     args: {balanceRenBTC, userAddr, userToken},
+    // });
+    const value = ethers.utils.parseEther('1');
     await callDiamondProxy({
         method: 'exchangeToUserToken',
-        args: {balanceRenBTC, userAddr, userToken},
+        args: {userAddr, userToken},
+        value
     });
+
     const distributionIndex = await callDiamondProxy({
         method: 'getDistributionIndex',
         dir: 1,

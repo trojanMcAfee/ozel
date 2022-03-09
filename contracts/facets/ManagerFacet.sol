@@ -12,6 +12,8 @@ import '../AppStorage.sol';
 
 import 'hardhat/console.sol';
 
+// import '../interfaces/IWETH.sol';
+
 
 
 contract ManagerFacet { 
@@ -83,12 +85,16 @@ contract ManagerFacet {
         wbtcAmount = s.WBTC.balanceOf(address(this));
     }
 
-    function swapsForUserToken(uint _amountIn, uint _amountOut) public {
+    function swapsForUserToken(uint _amountIn, uint _tokenOut) public {
         // s.WBTC.approve(address(s.tricrypto), _amountIn);
-        uint minOut = s.tricrypto.get_dy(2, _amountOut, _amountIn);
+        uint minOut = s.tricrypto.get_dy(2, _tokenOut, _amountIn);
         uint slippage = minOut._calculateSlippage(s.slippageTradingCurve);
-        s.tricrypto.exchange{value: _amountIn}(2, _amountOut, _amountIn, slippage, true);
+        s.tricrypto.exchange{value: _amountIn}(2, _tokenOut, _amountIn, slippage, true);
     }
+
+    /**
+    BTC: 1 / USDT: 0 / WETH: 2
+     */
 
     function exchangeToUserToken(address _user, address _userToken) external payable {
         updateManagerState(msg.value, _user);
@@ -106,23 +112,26 @@ contract ManagerFacet {
         //Sends fee (in WBTC) to Vault contract
         (uint netAmount, uint fee) = _getFee(msg.value);
         // require(isTransferred, 'Fee transfer failed');
-        revert('revert here');
+        console.log(1);
         //Swaps WBTC to userToken (USDT, WETH or ETH)  
         swapsForUserToken(netAmount, tokenOut);
-       
+       console.log(2);
         //Sends userToken to user
         // if (_userToken != s.ETH) {
-        //     uint ToUser = userToken.balanceOf(address(this));
-        //     userToken.safeTransfer(_user, ToUser);
+            uint ToUser = userToken.balanceOf(address(this));
+            userToken.safeTransfer(_user, ToUser);
         // } else {
-        _sendEtherToUser(_user);
+        // _sendEtherToUser(_user);
         // }
-        
+        console.log(3);
+        console.log('fee: ', fee);
+        s.WETH.deposit{value: fee}();
         //Deposits fees in Curve's renPool
         (bool success, ) = address(s.vault).delegatecall(
             abi.encodeWithSignature('depositInCurve(uint256)', fee)
         );
         require(success);
+        console.log(4);
     }
 
     //connection PayMeFacethop with ManagerFacer

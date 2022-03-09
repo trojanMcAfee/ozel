@@ -64,7 +64,7 @@ async function deploy() {
     const diamondLoupeFacet = await deployFacet('DiamondLoupeFacet'); 
     const [managerFacet, library] = await deployFacet('ManagerFacet', 'Helpers');
     const vaultFacet = await deployFacet('VaultFacet', 'Helpers', library);
-    const paymeFacet = await deployFacet('PayMeFacet', 'Helpers', library);
+    // const paymeFacet = await deployFacet('PayMeFacet', 'Helpers', library);
     const PYY = await deployFacet('PayTokenFacet'); 
     const gettersFacet = await deployFacet('GettersFacet');
 
@@ -72,7 +72,7 @@ async function deploy() {
     const [
         selecCut,
         selecLoup,
-        selecPayme,
+        // selecPayme,
         selecManager,
         selecPYY,
         selectGetters,
@@ -80,7 +80,7 @@ async function deploy() {
     ] = getSelectorsFromAllFacets([
         diamondCutFacet,
         diamondLoupeFacet,
-        paymeFacet,
+        // paymeFacet,
         managerFacet,
         PYY,
         gettersFacet,
@@ -94,7 +94,7 @@ async function deploy() {
         vaultFacet.address,
         renPoolAddr,
         crvTricrypto,
-        paymeFacet.address,
+        // paymeFacet.address,
         gettersFacet.address
     ];
 
@@ -125,7 +125,7 @@ async function deploy() {
         [
             selecCut, 
             selecLoup, 
-            selecPayme, 
+            // selecPayme, 
             selecManager, 
             selecPYY,
             selectGetters,
@@ -134,7 +134,7 @@ async function deploy() {
         [
             diamondCutFacet.address, 
             diamondLoupeFacet.address, 
-            paymeFacet.address,
+            // paymeFacet.address,
             managerFacet.address,
             PYY.address,
             gettersFacet.address,
@@ -158,7 +158,7 @@ async function deploy() {
         facets: [
             ['DiamondCutFacet', diamondCutFacet],
             ['DiamondLoupeFacet', diamondLoupeFacet],
-            ['PayMeFacet', paymeFacet],
+            // ['PayMeFacet', paymeFacet],
             ['ManagerFacet', managerFacet],
             ['PayTokenFacet', PYY],
             ['GettersFacet', gettersFacet],
