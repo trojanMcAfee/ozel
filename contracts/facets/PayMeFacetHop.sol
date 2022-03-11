@@ -27,7 +27,7 @@ contract PayMeFacetHop is OpsReady {
     uint gasPriceBid;
     //***************** */
 
-    DelayedInbox inbox = DelayedInbox(0x578BAde599406A8fE3d24Fd7f7211c0911F5B29e); //rinkeby
+    DelayedInbox inbox;
 
     constructor(
         address _owner, 
@@ -35,6 +35,7 @@ contract PayMeFacetHop is OpsReady {
         uint _chainId,
         address _hop,
         address _manager,
+        address _inbox,
         uint _maxSubmissionCost,
         uint _maxGas,
         uint _gasPriceBid
@@ -43,6 +44,7 @@ contract PayMeFacetHop is OpsReady {
         chainId = _chainId;
         hop = IL1_ETH_Bridge(_hop);
         manager = _manager;
+        inbox = DelayedInbox(_inbox);
 
         maxSubmissionCost = _maxSubmissionCost;
         maxGas = _maxGas;

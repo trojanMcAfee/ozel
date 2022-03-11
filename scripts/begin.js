@@ -140,27 +140,49 @@ async function fakeManager() {
     return test2.address;
 }
 
+
+let chainId; //arbitrum
+let pokeMeOpsAddr; //gelato
+let hopBridge;
+let usdtAddrArb;
+let inbox;
+
+let network = 'rinkeby';
+
+switch (network) {
+    case 'rinkeby':
+        chainId = 421611;
+        pokeMeOpsAddr = '0x8c089073A9594a4FB03Fa99feee3effF0e2Bc58a';
+        hopBridge = '0xb8901acB165ed027E32754E0FFe830802919727f'; //no testnet
+        usdtAddrArb = '0x3B00Ef435fA4FcFF5C209a37d1f3dcff37c705aD';
+        inbox = '0x578BAde599406A8fE3d24Fd7f7211c0911F5B29e';
+    case 'mainnet':
+        chainId = 42161;
+        pokeMeOpsAddr = '0xB3f5503f93d5Ef84b06993a1975B9D21B962892F';
+        hopBridge = '0xb8901acB165ed027E32754E0FFe830802919727f';
+        usdtAddrArb = '0xfd086bc7cd5c481dcc9c85ebe478a1c0b69fcbb9';
+        inbox = '0x4Dbd4fc535Ac27206064B68FfCf827b0A60BAB3f';
+    case 'ropsten':
+        pokeMeOpsAddr = '0x9C4771560d84222fD8B7d9f15C59193388cC81B3';
+}
+
+
 //Deploys PayMeFacetHop in mainnet and routes ETH to Manager in Arbitrum
 async function sendArb() { //mainnet
-    const chainId = 42161;
-    const pokeMeOpsAddr = '0xB3f5503f93d5Ef84b06993a1975B9D21B962892F'; //ropsten: 0x9C4771560d84222fD8B7d9f15C59193388cC81B3
-    const hopBridge = '0xb8901acB165ed027E32754E0FFe830802919727f';
     const managerAddr = await fakeManager(); //manager address in arbitrum
-    const usdtAddr = '0xfd086bc7cd5c481dcc9c85ebe478a1c0b69fcbb9'; //arb mainnet
     const maxSubmissionCost = parseEther('0.01');
     const maxGas = parseEther((5e-12).toFixed(12));
     const gasPriceBid = parseEther((1e-7).toFixed(7));
-    console.log(1);
 
     const signer = await hre.ethers.provider.getSigner(0);
     const signerAddr = await signer.getAddress();
-    console.log(2);
 
     const PayMeHop = await hre.ethers.getContractFactory('PayMeFacetHop');
     const paymeHop = await PayMeHop.deploy(
-        signerAddr, pokeMeOpsAddr, chainId, hopBridge, managerAddr, maxSubmissionCost, maxGas, gasPriceBid
-    , { gasLimit: ethers.BigNumber.from('150000') });
-    console.log(3);
+        signerAddr, pokeMeOpsAddr, chainId, 
+        hopBridge, managerAddr, inbox, 
+        maxSubmissionCost, maxGas, gasPriceBid
+    , { gasLimit: ethers.BigNumber.from('1000000') });
 
     await paymeHop.deployed();
     console.log('paymeHop deployed to: ', paymeHop.address);
@@ -168,13 +190,11 @@ async function sendArb() { //mainnet
     // await createTask(paymeHop);
 
     const value = parseEther('0.01');
-    const iface = new ethers.utils.Interface(
-        'function exchangeToUserToken(address _user, address _userToken)'
-    );
-    const data = iface.encodeFunctionData('exchangeToUserToken', [
-        signerAddr,
-        usdtAddr
+    const iface = new ethers.utils.Interface([
+        'function sendToArb(address _userToken)'
     ]);
+    const data = iface.encodeFunctionData('sendToArb', [usdtAddrArb]);
+    console.log(3);
 
     let tx = {
         to: paymeHop.address,
@@ -185,9 +205,11 @@ async function sendArb() { //mainnet
     const estGas = await hre.ethers.provider.estimateGas(tx);
     console.log('estimated gas: ', estGas.toString());
 
+    console.log(1);
     tx = await paymeHop.sendToArb({
         value
     });
+    console.log(2);
     const receipt = await tx.wait();
     console.log('receipt: ', receipt);
 
