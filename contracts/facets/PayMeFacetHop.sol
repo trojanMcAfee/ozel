@@ -6,7 +6,7 @@ import '../interfaces/IL1_ETH_Bridge.sol';
 import '../interfaces/DelayedInbox.sol';
 import './OpsReady.sol';
 
-import 'hardhat/console.sol';
+import 'hardhat/console.sol'; 
 
 
 
@@ -18,8 +18,8 @@ contract PayMeFacetHop is OpsReady {
     uint chainId; 
 
     address public constant nullAddr = 0x0000000000000000000000000000000000000000;
-    address public immutable owner;
-    address public immutable manager;
+    address public owner;
+    address public manager;
 
     //*** Hard coded values in constructor. Should be dynamically created by querying L2 (check Greeter Arb exer) */
     uint maxSubmissionCost;
@@ -75,7 +75,7 @@ contract PayMeFacetHop is OpsReady {
             'exchangeToUserToken(address,address)', 
             owner, _userToken
         );
-
+        
         //user ticketID later on to check the sequencer's inbox for unconfirmed txs
         ticketID = inbox.createRetryableTicket{value: msg.value}(
             manager, 

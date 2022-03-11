@@ -5,6 +5,7 @@ const { sendBitcoin } = require('./init-btc-tx.js');
 const { MaxUint256, WeiPerEther } = ethers.constants;
 const { parseEther, formatEther, keccak256, defaultAbiCoder: abiCoder } = ethers.utils;
 const { deploy } = require('./deploy.js');
+require('dotenv').config();
 
 const {
     balanceOfPYY, 
@@ -127,17 +128,21 @@ async function createTask(resolver) {
 
 //Deploys the fake manager on arbitrum testnet 
 async function fakeManager() {
-    const l2Provider = new ethers.providers.JsonRpcProvider(process.env.ARB_TESTNET);
     const signer = new ethers.Wallet(process.env.PK);
+    const l2Provider = new ethers.providers.JsonRpcProvider(process.env.ARB_TESTNET);
     const l2Signer = signer.connect(l2Provider);
 
-    const Test2 = await ( 
-        await hre.ethers.getContractFactory('Test2')
-    ).connect(l2Signer);
+    // const Test2 = await ( 
+    //     await hre.ethers.getContractFactory('Test2')
+    // ).connect(l2Signer);
+    const Test2 = await hre.ethers.getContractFactory('Test2');
+    if (network === 'rinkeby') {
+        Test2.connect(l2Signer);
+    }
     const test2 = await Test2.deploy();
     await test2.deployed();
     console.log('fake manager deployed in arbitrum testnet to: ', test2.address);
-    return test2.address;
+    return test2;
 }
 
 
@@ -145,42 +150,50 @@ let chainId; //arbitrum
 let pokeMeOpsAddr; //gelato
 let hopBridge;
 let usdtAddrArb;
-let inbox;
+let inbox; //arbitrum rinkeby
 
 let network = 'rinkeby';
 
-switch (network) {
+switch(network) {
     case 'rinkeby':
         chainId = 421611;
         pokeMeOpsAddr = '0x8c089073A9594a4FB03Fa99feee3effF0e2Bc58a';
         hopBridge = '0xb8901acB165ed027E32754E0FFe830802919727f'; //no testnet
         usdtAddrArb = '0x3B00Ef435fA4FcFF5C209a37d1f3dcff37c705aD';
         inbox = '0x578BAde599406A8fE3d24Fd7f7211c0911F5B29e';
+        break;
     case 'mainnet':
         chainId = 42161;
         pokeMeOpsAddr = '0xB3f5503f93d5Ef84b06993a1975B9D21B962892F';
         hopBridge = '0xb8901acB165ed027E32754E0FFe830802919727f';
         usdtAddrArb = '0xfd086bc7cd5c481dcc9c85ebe478a1c0b69fcbb9';
         inbox = '0x4Dbd4fc535Ac27206064B68FfCf827b0A60BAB3f';
+        break;
     case 'ropsten':
         pokeMeOpsAddr = '0x9C4771560d84222fD8B7d9f15C59193388cC81B3';
+        break;
 }
 
 
 //Deploys PayMeFacetHop in mainnet and routes ETH to Manager in Arbitrum
 async function sendArb() { //mainnet
-    const managerAddr = await fakeManager(); //manager address in arbitrum
+    // const signer = new ethers.Wallet(process.env.PK);
+    // const signerAddr = await signer.getAddress();
+    // const l1ProviderRinkeby = new ethers.providers.JsonRpcProvider(process.env.RINKEBY);
+    // const l1Signer = signer.connect(l1ProviderRinkeby);
+    
+    const manager = await fakeManager(); //manager address in arbitrum
+    return;
     const maxSubmissionCost = parseEther('0.01');
     const maxGas = parseEther((5e-12).toFixed(12));
     const gasPriceBid = parseEther((1e-7).toFixed(7));
 
-    const signer = await hre.ethers.provider.getSigner(0);
-    const signerAddr = await signer.getAddress();
-
-    const PayMeHop = await hre.ethers.getContractFactory('PayMeFacetHop');
+    const PayMeHop = await (
+        await hre.ethers.getContractFactory('PayMeFacetHop')
+    ).connect(l1Signer);
     const paymeHop = await PayMeHop.deploy(
         signerAddr, pokeMeOpsAddr, chainId, 
-        hopBridge, managerAddr, inbox, 
+        hopBridge, manager.address, inbox, 
         maxSubmissionCost, maxGas, gasPriceBid
     , { gasLimit: ethers.BigNumber.from('1000000') });
 
@@ -194,7 +207,6 @@ async function sendArb() { //mainnet
         'function sendToArb(address _userToken)'
     ]);
     const data = iface.encodeFunctionData('sendToArb', [usdtAddrArb]);
-    console.log(3);
 
     let tx = {
         to: paymeHop.address,
@@ -205,13 +217,16 @@ async function sendArb() { //mainnet
     const estGas = await hre.ethers.provider.estimateGas(tx);
     console.log('estimated gas: ', estGas.toString());
 
-    console.log(1);
-    tx = await paymeHop.sendToArb({
-        value
-    });
-    console.log(2);
+    tx = await paymeHop.sendToArb(usdtAddrArb, {value});
     const receipt = await tx.wait();
     console.log('receipt: ', receipt);
+
+    const user =(await manager.user()).toString();
+    const userToken = (await manager.userToken()).toString();
+    console.log('user: ', user);
+    console.log('userToken: ', userToken);
+
+    
 
     // const tx = {
     //     to: paymeHop.address,

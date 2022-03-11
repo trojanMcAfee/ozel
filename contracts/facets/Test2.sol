@@ -9,6 +9,8 @@ contract Test2 {
 
     event UserDetails(address user, address userToken);
 
+    receive() external payable {}
+
 
     function exchangeToUserToken(address _user, address _userToken) external {
         user = _user;
