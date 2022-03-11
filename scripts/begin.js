@@ -2,7 +2,7 @@ const { Bitcoin } = require("@renproject/chains");
 const { ethers } = require("ethers");
 const { executeBridge } = require('./exec-bridge.js');
 const { sendBitcoin } = require('./init-btc-tx.js');
-const { MaxUint256 } = ethers.constants;
+const { MaxUint256, WeiPerEther } = ethers.constants;
 const { parseEther, formatEther, keccak256, defaultAbiCoder: abiCoder } = ethers.utils;
 const { deploy } = require('./deploy.js');
 
@@ -131,7 +131,7 @@ async function fakeManager() {
     const signer = new ethers.Wallet(process.env.PK);
     const l2Signer = signer.connect(l2Provider);
 
-    const Test2 = await ( //***** check the error on the console **** */
+    const Test2 = await ( 
         await hre.ethers.getContractFactory('Test2')
     ).connect(l2Signer);
     const test2 = await Test2.deploy();
@@ -147,14 +147,21 @@ async function sendArb() { //mainnet
     const hopBridge = '0xb8901acB165ed027E32754E0FFe830802919727f';
     const managerAddr = await fakeManager(); //manager address in arbitrum
     const usdtAddr = '0xfd086bc7cd5c481dcc9c85ebe478a1c0b69fcbb9'; //arb mainnet
+    const maxSubmissionCost = parseEther('0.01');
+    const maxGas = parseEther((5e-12).toFixed(12));
+    const gasPriceBid = parseEther((1e-7).toFixed(7));
+    console.log(1);
 
     const signer = await hre.ethers.provider.getSigner(0);
     const signerAddr = await signer.getAddress();
+    console.log(2);
 
     const PayMeHop = await hre.ethers.getContractFactory('PayMeFacetHop');
     const paymeHop = await PayMeHop.deploy(
-        signerAddr, pokeMeOpsAddr, chainId, hopBridge, managerAddr, 10000000000000000, 5000000, 100000000000
-    );
+        signerAddr, pokeMeOpsAddr, chainId, hopBridge, managerAddr, maxSubmissionCost, maxGas, gasPriceBid
+    , { gasLimit: ethers.BigNumber.from('150000') });
+    console.log(3);
+
     await paymeHop.deployed();
     console.log('paymeHop deployed to: ', paymeHop.address);
 
