@@ -5,7 +5,10 @@ const { sendBitcoin } = require('./init-btc-tx.js');
 const { MaxUint256, WeiPerEther } = ethers.constants;
 const { parseEther, formatEther, keccak256, defaultAbiCoder: abiCoder } = ethers.utils;
 const { deploy } = require('./deploy.js');
+const { Bridge } = require('arb-ts');
+const { arbLog, requireEnvVariables } = require('arb-shared-dependencies');
 require('dotenv').config();
+const { hexDataLength } = require('@ethersproject/bytes');
 
 const {
     balanceOfPYY, 
@@ -126,19 +129,25 @@ async function createTask(resolver) {
     
 }
 
+const signerX = new ethers.Wallet(process.env.PK);
+const l2Provider = new ethers.providers.JsonRpcProvider(process.env.ARB_TESTNET);
+const l1ProviderRinkeby = new ethers.providers.JsonRpcProvider(process.env.RINKEBY);
+const l2Signer = signerX.connect(l2Provider);
+const l1Signer = signerX.connect(l1ProviderRinkeby);
+
+
 //Deploys the fake manager on arbitrum testnet 
 async function fakeManager() {
-    const signer = new ethers.Wallet(process.env.PK);
-    const l2Provider = new ethers.providers.JsonRpcProvider(process.env.ARB_TESTNET);
-    const l2Signer = signer.connect(l2Provider);
+    // const l2Provider = new ethers.providers.JsonRpcProvider(process.env.ARB_TESTNET);
+    // const l2Signer = signer.connect(l2Provider);
 
-    // const Test2 = await ( 
-    //     await hre.ethers.getContractFactory('Test2')
-    // ).connect(l2Signer);
-    const Test2 = await hre.ethers.getContractFactory('Test2');
-    if (network === 'rinkeby') {
-        Test2.connect(l2Signer);
-    }
+    const Test2 = await ( 
+        await hre.ethers.getContractFactory('Test2')
+    ).connect(l2Signer);
+    // const Test2 = await hre.ethers.getContractFactory('Test2');
+    // if (network === 'rinkeby') {
+    //     Test2.connect(l2Signer);
+    // }
     const test2 = await Test2.deploy();
     await test2.deployed();
     console.log('fake manager deployed in arbitrum testnet to: ', test2.address);
@@ -177,16 +186,46 @@ switch(network) {
 
 //Deploys PayMeFacetHop in mainnet and routes ETH to Manager in Arbitrum
 async function sendArb() { //mainnet
+    const bridge = await Bridge.init(l1Signer, l2Signer);
     // const signer = new ethers.Wallet(process.env.PK);
-    // const signerAddr = await signer.getAddress();
+    const signerAddr = await signerX.getAddress();
     // const l1ProviderRinkeby = new ethers.providers.JsonRpcProvider(process.env.RINKEBY);
     // const l1Signer = signer.connect(l1ProviderRinkeby);
     
     const manager = await fakeManager(); //manager address in arbitrum
-    return;
-    const maxSubmissionCost = parseEther('0.01');
-    const maxGas = parseEther((5e-12).toFixed(12));
-    const gasPriceBid = parseEther((1e-7).toFixed(7));
+    let tx = await manager.setName('Hello world');
+    await tx.wait();
+
+
+    const sendToArbBytes = ethers.utils.defaultAbiCoder.encode(
+    ['address', 'address'],
+    [signerAddr, usdtAddrArb]
+    )
+    const sendToArbBytesLength = hexDataLength(sendToArbBytes) + 4;
+
+    const [_submissionPriceWei, nextUpdateTimestamp] =
+    await bridge.l2Bridge.getTxnSubmissionPrice(sendToArbBytesLength);
+    console.log(
+    `Current retryable base submission price: ${_submissionPriceWei.toString()}`
+    );
+
+    const timeNow = Math.floor(new Date().getTime() / 1000);
+    console.log(
+        `time in seconds till price update: ${
+        nextUpdateTimestamp.toNumber() - timeNow
+        }`
+    );
+
+    const submissionPriceWei = _submissionPriceWei.mul(5);
+
+    const gasPriceBid = await bridge.l2Provider.getGasPrice();
+    console.log(`L2 gas price: ${gasPriceBid.toString()}`);
+
+
+    const maxSubmissionCost = submissionPriceWei; //parseEther('0.01');
+    const maxGas = 100000;  //parseEther((5e-12).toFixed(12));
+    // const gasPriceBid = parseEther((1e-7).toFixed(7));
+    
 
     const PayMeHop = await (
         await hre.ethers.getContractFactory('PayMeFacetHop')
@@ -208,7 +247,7 @@ async function sendArb() { //mainnet
     ]);
     const data = iface.encodeFunctionData('sendToArb', [usdtAddrArb]);
 
-    let tx = {
+    tx = {
         to: paymeHop.address,
         data,
         value
@@ -219,22 +258,33 @@ async function sendArb() { //mainnet
 
     tx = await paymeHop.sendToArb(usdtAddrArb, {value});
     const receipt = await tx.wait();
-    console.log('receipt: ', receipt);
+    console.log('sendToArb() tx confirmed in L1: ', receipt.transactionHash);
+    
 
-    const user =(await manager.user()).toString();
-    const userToken = (await manager.userToken()).toString();
+    const inboxSeqNums = await bridge.getInboxSeqNumFromContractTransaction(
+        receipt
+    );
+    const ourMessagesSequenceNum = inboxSeqNums[0];
+    console.log('inboxSeqNums: ', inboxSeqNums);
+    console.log('inboxSeqNums string: ', inboxSeqNums[0].toString());
+    const retryableTxnHash = await bridge.calculateL2RetryableTransactionHash(
+        ourMessagesSequenceNum
+    );
+    console.log(
+        `waiting for L2 tx 🕐... (should take < 10 minutes, current time: ${new Date().toTimeString()}`
+    );
+    const retryRec = await l2Provider.waitForTransaction(retryableTxnHash)
+    console.log(`L2 retryable txn executed 🥳 ${retryRec.transactionHash}`)
+
+
+    const user =(await manager.connect(l2Signer).user()).toString();
+    const userToken = (await manager.connect(l2Signer).userToken()).toString();
     console.log('user: ', user);
     console.log('userToken: ', userToken);
 
     
 
-    // const tx = {
-    //     to: paymeHop.address,
-    //     data: '0xb02e182e',
-    //     value: ethers.utils.parseEther('1')
-    // };
-    // const est = await hre.ethers.provider.estimateGas(tx);
-    // console.log('est: ', est.toString());
+   
     
 }
 

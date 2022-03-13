@@ -5,6 +5,7 @@ pragma solidity ^0.8.0;
 import '../interfaces/IL1_ETH_Bridge.sol';
 import '../interfaces/DelayedInbox.sol';
 import './OpsReady.sol';
+import './Test2.sol';
 
 import 'hardhat/console.sol'; 
 
@@ -71,8 +72,13 @@ contract PayMeFacetHop is OpsReady {
 
         //send a cross-chain message to arbitrum here 
         // msg.value, owner, _userToken        
-        bytes memory data = abi.encodeWithSignature(
-            'exchangeToUserToken(address,address)', 
+        // bytes memory data = abi.encodeWithSignature(
+        //     'exchangeToUserToken(address,address)', 
+        //     owner, _userToken
+        // );
+
+        bytes memory data = abi.encodeWithSelector(
+            Test2(payable(manager)).exchangeToUserToken.selector, 
             owner, _userToken
         );
         
