@@ -30,6 +30,10 @@ module.exports = {
     rinkeby: {
       url: process.env.RINKEBY,
       accounts: [process.env.PK]
+    },
+    arb: {
+      url: process.env.ARB_TESTNET,
+      accounts: [process.env.PK]
     }
   }
 };

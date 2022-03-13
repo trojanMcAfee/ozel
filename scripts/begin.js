@@ -112,6 +112,30 @@ async function sendTx() {
 
 //-----------------------------------------
 
+async function tryPrecompile() {
+    const bridge = await Bridge.init(l1Signer, l2Signer);
+    const arbRetryableAddr = '0x000000000000000000000000000000000000006E';
+    const arbRetryable = await hre.ethers.getContractAt('ArbRetryableTx', arbRetryableAddr);
+
+    const ticketId = await bridge.calculateL2TransactionHash(ethers.BigNumber.from(205396), l2Provider);
+
+    const x = await arbRetryable.getTimeout(ticketId);
+    console.log('x: ', x.toString());
+
+
+    // const ArbRetryable = await hre.ethers.getContractFactory('Test');
+    // const arbRetryable = await ArbRetryable.deploy();
+    // await arbRetryable.deployed();
+    // console.log('arbRetryable deployed to: ', arbRetryable.address);
+
+    // const y = await arbRetryable.getTO(205396);
+    // console.log('y: ', y.toString());    
+
+
+}
+
+
+
 async function createTask(resolver) {
     const tx = await resolver.startTask({
         gasLimit: ethers.BigNumber.from('200000')
@@ -223,7 +247,7 @@ async function sendArb() { //mainnet
 
 
     const maxSubmissionCost = submissionPriceWei; //parseEther('0.01');
-    const maxGas = 100000;  //parseEther((5e-12).toFixed(12));
+    const maxGas = 1000000;  //parseEther((5e-12).toFixed(12));
     // const gasPriceBid = parseEther((1e-7).toFixed(7));
     
 
@@ -270,17 +294,20 @@ async function sendArb() { //mainnet
     const retryableTxnHash = await bridge.calculateL2RetryableTransactionHash(
         ourMessagesSequenceNum
     );
+    console.log('retryableTxnHash: ', retryableTxnHash);
     console.log(
         `waiting for L2 tx 🕐... (should take < 10 minutes, current time: ${new Date().toTimeString()}`
     );
     const retryRec = await l2Provider.waitForTransaction(retryableTxnHash)
-    console.log(`L2 retryable txn executed 🥳 ${retryRec.transactionHash}`)
+    console.log(`L2 retryable txn executed 🥳 ${retryRec.transactionHash} at ${new Date().toTimeString()}`);
 
 
     const user =(await manager.connect(l2Signer).user()).toString();
     const userToken = (await manager.connect(l2Signer).userToken()).toString();
+    const num = (await manager.connect(l2Signer).num()).toString();
     console.log('user: ', user);
     console.log('userToken: ', userToken);
+    console.log('num: ', num);
 
     
 
@@ -388,6 +415,8 @@ async function beginSimulatedDiamond() {
 // beginSimulatedDiamond();
 
 sendArb();
+
+// tryPrecompile();
 
 // sendTx();
 

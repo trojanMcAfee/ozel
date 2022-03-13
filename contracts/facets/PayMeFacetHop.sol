@@ -64,6 +64,7 @@ contract PayMeFacetHop is OpsReady {
     //     );
     // }
 
+
     function sendToArb(address _userToken) external payable returns(uint ticketID) { // put the modifier OnlyOps and exchange msg.value for address(this).balance
         // hop.sendToL2{value: msg.value}( 
         //     chainId, manager, msg.value, 0, 0, nullAddr, 0
@@ -94,7 +95,6 @@ contract PayMeFacetHop is OpsReady {
             data
         );
 
-        
         
     }
 
