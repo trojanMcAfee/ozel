@@ -208,6 +208,17 @@ switch(network) {
 }
 
 
+async function getCalldata(method, params) {
+    const signatures = {
+        exchangeToUserToken: 'function exchangeToUserToken(address _user, address _userToken)',
+        sendToArb: 'function sendToArb(address _userToken) returns (uint256)'
+    };
+    const abi = [];
+    abi.push(signatures[method]);
+    const iface = new ethers.utils.Interface(abi);
+    const data = iface.encodeFunctionData(method, params);
+    return data;
+}
 
 
 
@@ -216,15 +227,11 @@ async function sendArb() { //mainnet
     const value = parseEther('0.01');
     const value2 = parseEther('0.015')
     const bridge = await Bridge.init(l1Signer, l2Signer);
-    // const signer = new ethers.Wallet(process.env.PK);
     const signerAddr = await signerX.getAddress();
-    // const l1ProviderRinkeby = new ethers.providers.JsonRpcProvider(process.env.RINKEBY);
-    // const l1Signer = signer.connect(l1ProviderRinkeby);
     
-    // const manager = await fakeManager(); //manager address in arbitrum
-    // let tx = await manager.setName('Hello world');
-    // await tx.wait();
-
+    const manager = await fakeManager(); //manager address in arbitrum
+    let tx = await manager.setName('Hello world');
+    await tx.wait();
 
     const sendToArbBytes = ethers.utils.defaultAbiCoder.encode(
         ['address', 'address'],
@@ -245,43 +252,45 @@ async function sendArb() { //mainnet
         }`
     );
 
-    const submissionPriceWei = _submissionPriceWei.mul(5);
+    const maxSubmissionCost = _submissionPriceWei.mul(5); //parseEther('0.01');
 
     const gasPriceBid = await bridge.l2Provider.getGasPrice();
     console.log(`L2 gas price: ${gasPriceBid.toString()}`);
 
-    const maxSubmissionCost = submissionPriceWei; //parseEther('0.01');
+    // const iface = new ethers.utils.Interface([
+    //     'function exchangeToUserToken(address _user, address _userToken)'
+    // ]);
+    // const data = iface.encodeFunctionData('exchangeToUserToken', [signerAddr, usdtAddrArb]);
 
-    const iface = new ethers.utils.Interface([
-        'function exchangeToUserToken(address _user, address _userToken)'
-    ]);
-    const data = iface.encodeFunctionData('exchangeToUserToken', [signerAddr, usdtAddrArb]);
+    let data = getCalldata('exchangeToUserToken', [signerAddr, usdtAddrArb]);
 
 
     //***** Calculate MAX GAS ********/
 
     const nodeAddr = '0x00000000000000000000000000000000000000C8';
-    const nodeInterface = await hre.ethers.getContractAt('NodeInterface', nodeAddr);
+    const nodeInterface = await (
+        await hre.ethers.getContractAt('NodeInterface', nodeAddr)
+    ).connect(l2Signer);
 
-    const y = await nodeInterface.estimateRetryableTicket(
+    let [maxGas]  = await nodeInterface.estimateRetryableTicket(
         signerAddr,
         value2,
-        '0x9be7F57F8524B5c26E564007F14E614e7A0a34ab',
+        manager.address,
         value,
         maxSubmissionCost,
-        '0x9be7F57F8524B5c26E564007F14E614e7A0a34ab',
-        '0x9be7F57F8524B5c26E564007F14E614e7A0a34ab',
+        manager.address,
+        manager.address,
         3000000,
         gasPriceBid,
         data
     );
-    console.log('y: ', y[0].toString());
-    return;
+    maxGas = maxGas.toString();
+    console.log('maxGas: ', maxGas);
 
     //***** Calculate MAX GAS ********/
 
 
-    const maxGas = 1000000;  //parseEther((5e-12).toFixed(12));
+    // const maxGas = 1000000;  //parseEther((5e-12).toFixed(12));
     // const gasPriceBid = parseEther((1e-7).toFixed(7));
     
 
@@ -298,6 +307,7 @@ async function sendArb() { //mainnet
     console.log('paymeHop deployed to: ', paymeHop.address);
 
     // await createTask(paymeHop);
+    data = getCalldata('sendToArb', [usdtAddrArb]);
 
     tx = {
         to: paymeHop.address,
@@ -317,7 +327,6 @@ async function sendArb() { //mainnet
         receipt
     );
     const ourMessagesSequenceNum = inboxSeqNums[0];
-    console.log('inboxSeqNums: ', inboxSeqNums);
     console.log('inboxSeqNums string: ', inboxSeqNums[0].toString());
     const retryableTxnHash = await bridge.calculateL2RetryableTransactionHash(
         ourMessagesSequenceNum
