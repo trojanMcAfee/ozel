@@ -15,7 +15,7 @@ interface NodeInterface {
         uint256 maxGas,
         uint256 gasPriceBid,
         bytes calldata data
-    ) external returns (uint256, uint256);
+    ) external pure returns (uint256, uint256);
 
 
 }

@@ -226,9 +226,9 @@ async function sendArb() { //mainnet
 
 
     const sendToArbBytes = ethers.utils.defaultAbiCoder.encode(
-    ['address', 'address'],
-    [signerAddr, usdtAddrArb]
-    )
+        ['address', 'address'],
+        [signerAddr, usdtAddrArb]
+    );
     const sendToArbBytesLength = hexDataLength(sendToArbBytes) + 4;
 
     const [_submissionPriceWei, nextUpdateTimestamp] =
@@ -252,9 +252,9 @@ async function sendArb() { //mainnet
     const maxSubmissionCost = submissionPriceWei; //parseEther('0.01');
 
     const iface = new ethers.utils.Interface([
-        'function sendToArb(address _userToken)'
+        'function exchangeToUserToken(address _user, address _userToken)'
     ]);
-    const data = iface.encodeFunctionData('sendToArb', [usdtAddrArb]);
+    const data = iface.encodeFunctionData('exchangeToUserToken', [signerAddr, usdtAddrArb]);
 
 
     //***** Calculate MAX GAS ********/
