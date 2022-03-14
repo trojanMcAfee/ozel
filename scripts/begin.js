@@ -208,17 +208,21 @@ switch(network) {
 }
 
 
+
+
+
 //Deploys PayMeFacetHop in mainnet and routes ETH to Manager in Arbitrum
 async function sendArb() { //mainnet
+    const value = parseEther('0.01');
     const bridge = await Bridge.init(l1Signer, l2Signer);
     // const signer = new ethers.Wallet(process.env.PK);
     const signerAddr = await signerX.getAddress();
     // const l1ProviderRinkeby = new ethers.providers.JsonRpcProvider(process.env.RINKEBY);
     // const l1Signer = signer.connect(l1ProviderRinkeby);
     
-    const manager = await fakeManager(); //manager address in arbitrum
-    let tx = await manager.setName('Hello world');
-    await tx.wait();
+    // const manager = await fakeManager(); //manager address in arbitrum
+    // let tx = await manager.setName('Hello world');
+    // await tx.wait();
 
 
     const sendToArbBytes = ethers.utils.defaultAbiCoder.encode(
@@ -245,8 +249,38 @@ async function sendArb() { //mainnet
     const gasPriceBid = await bridge.l2Provider.getGasPrice();
     console.log(`L2 gas price: ${gasPriceBid.toString()}`);
 
-
     const maxSubmissionCost = submissionPriceWei; //parseEther('0.01');
+
+    const iface = new ethers.utils.Interface([
+        'function sendToArb(address _userToken)'
+    ]);
+    const data = iface.encodeFunctionData('sendToArb', [usdtAddrArb]);
+
+
+    //***** Calculate MAX GAS ********/
+
+    const nodeAddr = '0x00000000000000000000000000000000000000C8';
+    const nodeInterface = await hre.ethers.getContractAt('NodeInterface', nodeAddr);
+
+    console.log('hi');
+    const y = await nodeInterface.estimateRetryableTicket(
+        signerAddr,
+        0,
+        '0x9be7F57F8524B5c26E564007F14E614e7A0a34ab',
+        value,
+        maxSubmissionCost,
+        '0x9be7F57F8524B5c26E564007F14E614e7A0a34ab',
+        '0x9be7F57F8524B5c26E564007F14E614e7A0a34ab',
+        5000000,
+        gasPriceBid,
+        value
+    );
+    console.log('y: ', y);
+    return;
+
+    //***** Calculate MAX GAS ********/
+
+
     const maxGas = 1000000;  //parseEther((5e-12).toFixed(12));
     // const gasPriceBid = parseEther((1e-7).toFixed(7));
     
@@ -264,12 +298,6 @@ async function sendArb() { //mainnet
     console.log('paymeHop deployed to: ', paymeHop.address);
 
     // await createTask(paymeHop);
-
-    const value = parseEther('0.01');
-    const iface = new ethers.utils.Interface([
-        'function sendToArb(address _userToken)'
-    ]);
-    const data = iface.encodeFunctionData('sendToArb', [usdtAddrArb]);
 
     tx = {
         to: paymeHop.address,
