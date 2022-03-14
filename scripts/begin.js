@@ -214,6 +214,7 @@ switch(network) {
 //Deploys PayMeFacetHop in mainnet and routes ETH to Manager in Arbitrum
 async function sendArb() { //mainnet
     const value = parseEther('0.01');
+    const value2 = parseEther('0.015')
     const bridge = await Bridge.init(l1Signer, l2Signer);
     // const signer = new ethers.Wallet(process.env.PK);
     const signerAddr = await signerX.getAddress();
@@ -262,20 +263,19 @@ async function sendArb() { //mainnet
     const nodeAddr = '0x00000000000000000000000000000000000000C8';
     const nodeInterface = await hre.ethers.getContractAt('NodeInterface', nodeAddr);
 
-    console.log('hi');
     const y = await nodeInterface.estimateRetryableTicket(
         signerAddr,
-        0,
+        value2,
         '0x9be7F57F8524B5c26E564007F14E614e7A0a34ab',
         value,
         maxSubmissionCost,
         '0x9be7F57F8524B5c26E564007F14E614e7A0a34ab',
         '0x9be7F57F8524B5c26E564007F14E614e7A0a34ab',
-        5000000,
+        3000000,
         gasPriceBid,
-        value
+        data
     );
-    console.log('y: ', y);
+    console.log('y: ', y[0].toString());
     return;
 
     //***** Calculate MAX GAS ********/
