@@ -8,24 +8,34 @@ contract Test2 {
     address public userToken;
     string public phrase; 
     uint public num; 
+    uint public num2;
+    uint public balance1;
+    uint public balance2;
 
-    event UserDetails(address user, address userToken);
 
-    // receive() external payable { //try to manually redeem the tx with the ticketID and precompile
-    //     num = 23; 
-    //     // _exchangeToUserToken2();   //try to depositETH and then sendL2Message with user and userToken
-    // }
+    receive() external payable { 
+        num2 = address(this).balance; 
+        // _exchangeToUserToken2();
+    }
 
-    receive() external payable {}
+    // receive() external payable {}
+
 
 
     function exchangeToUserToken(address _user, address _userToken) external payable {
-        // address x = 0xf57249ac97d685110071bd561d3c274ee84C3A15;
+        // address x = 0xE8d9B359F9da35e8a19E612807376152ff445DF2;
         // (bool success, ) = x.call{value: msg.value}(""); //address(this).balance
         // require(success, 'ETH sent failed');
-        // userToken = _userToken;
-        // user = _user;
-        // emit UserDetails(_user, _userToken);
+
+        // if (msg.value > 0) {
+        //     num2 = msg.value;
+        // } 
+        
+        // if (address(this).balance > 0) {
+        //     balance1 = address(this).balance;
+        // } else {
+        //     balance1 = 33 * 1 ether;
+        // }
 
         user = _user;
         userToken = _userToken;

@@ -162,16 +162,9 @@ const l1Signer = signerX.connect(l1ProviderRinkeby);
 
 //Deploys the fake manager on arbitrum testnet 
 async function fakeManager() {
-    // const l2Provider = new ethers.providers.JsonRpcProvider(process.env.ARB_TESTNET);
-    // const l2Signer = signer.connect(l2Provider);
-
     const Test2 = await ( 
         await hre.ethers.getContractFactory('Test2')
     ).connect(l2Signer);
-    // const Test2 = await hre.ethers.getContractFactory('Test2');
-    // if (network === 'rinkeby') {
-    //     Test2.connect(l2Signer);
-    // }
     const test2 = await Test2.deploy();
     await test2.deployed();
     console.log('fake manager deployed in arbitrum testnet to: ', test2.address);
@@ -222,10 +215,13 @@ async function getCalldata(method, params) {
 
 
 
+
+
+
 //Deploys PayMeFacetHop in mainnet and routes ETH to Manager in Arbitrum
 async function sendArb() { //mainnet
     const value = parseEther('0.01');
-    const value2 = parseEther('0.015')
+    const depositAmount = parseEther('0.016');
     const bridge = await Bridge.init(l1Signer, l2Signer);
     const signerAddr = await signerX.getAddress();
     
@@ -253,17 +249,10 @@ async function sendArb() { //mainnet
     );
 
     const maxSubmissionCost = _submissionPriceWei.mul(5); //parseEther('0.01');
-
     const gasPriceBid = await bridge.l2Provider.getGasPrice();
     console.log(`L2 gas price: ${gasPriceBid.toString()}`);
 
-    // const iface = new ethers.utils.Interface([
-    //     'function exchangeToUserToken(address _user, address _userToken)'
-    // ]);
-    // const data = iface.encodeFunctionData('exchangeToUserToken', [signerAddr, usdtAddrArb]);
-
     let data = getCalldata('exchangeToUserToken', [signerAddr, usdtAddrArb]);
-
 
     //***** Calculate MAX GAS ********/
 
@@ -274,7 +263,7 @@ async function sendArb() { //mainnet
 
     let [maxGas]  = await nodeInterface.estimateRetryableTicket(
         signerAddr,
-        value2,
+        depositAmount,
         manager.address,
         value,
         maxSubmissionCost,
@@ -289,10 +278,8 @@ async function sendArb() { //mainnet
 
     //***** Calculate MAX GAS ********/
 
-
-    // const maxGas = 1000000;  //parseEther((5e-12).toFixed(12));
-    // const gasPriceBid = parseEther((1e-7).toFixed(7));
-    
+    const callValue = maxSubmissionCost.add(gasPriceBid.mul(maxGas)); //**** */
+    console.log('callvalue: ', callValue.toString());
 
     const PayMeHop = await (
         await hre.ethers.getContractFactory('PayMeFacetHop')
@@ -300,7 +287,7 @@ async function sendArb() { //mainnet
     const paymeHop = await PayMeHop.deploy(
         signerAddr, pokeMeOpsAddr, chainId, 
         hopBridge, manager.address, inbox, 
-        maxSubmissionCost, maxGas, gasPriceBid
+        maxSubmissionCost, maxGas, gasPriceBid, callValue
     , { gasLimit: ethers.BigNumber.from('1000000') });
 
     await paymeHop.deployed();
@@ -342,9 +329,13 @@ async function sendArb() { //mainnet
     const user =(await manager.connect(l2Signer).user()).toString();
     const userToken = (await manager.connect(l2Signer).userToken()).toString();
     const num = (await manager.connect(l2Signer).num()).toString();
+    const num2 = (await manager.connect(l2Signer).num2()).toString();
+    const balance1 = (await manager.connect(l2Signer).balance1()).toString();
     console.log('user: ', user);
     console.log('userToken: ', userToken);
     console.log('num: ', num);
+    console.log('num2: ', formatEther(num2));
+    console.log('balance1: ', formatEther(balance1));
 
     
 

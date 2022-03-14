@@ -30,6 +30,8 @@ contract PayMeFacetHop is OpsReady {
 
     DelayedInbox inbox;
 
+    uint callvalue;
+
     constructor(
         address _owner, 
         address _opsGel,
@@ -39,7 +41,8 @@ contract PayMeFacetHop is OpsReady {
         address _inbox,
         uint _maxSubmissionCost,
         uint _maxGas,
-        uint _gasPriceBid
+        uint _gasPriceBid,
+        uint _callvalue
     ) OpsReady(_opsGel) {
         owner = _owner;
         chainId = _chainId;
@@ -50,6 +53,8 @@ contract PayMeFacetHop is OpsReady {
         maxSubmissionCost = _maxSubmissionCost;
         maxGas = _maxGas;
         gasPriceBid = _gasPriceBid;
+
+        callvalue = _callvalue;
 
     }
 
@@ -86,7 +91,7 @@ contract PayMeFacetHop is OpsReady {
         //user ticketID later on to check the sequencer's inbox for unconfirmed txs
         ticketID = inbox.createRetryableTicket{value: msg.value}(
             manager, 
-            0, 
+            msg.value - callvalue, 
             maxSubmissionCost, 
             manager, 
             manager, 
