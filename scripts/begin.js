@@ -204,14 +204,14 @@ switch(network) {
 async function getCalldata(method, params) {
     const signatures = {
         exchangeToUserToken: 'function exchangeToUserToken(address _user, address _userToken)',
-        sendToArb: 'function sendToArb(address _userToken) returns (uint256)'
+        sendToArb: 'function sendToArb(address _userToken, uint256 _callvalue) returns (uint256)'
     };
     const abi = [];
     abi.push(signatures[method]);
     const iface = new ethers.utils.Interface(abi);
     const data = iface.encodeFunctionData(method, params);
     return data;
-}
+} 
 
 
 
@@ -287,14 +287,14 @@ async function sendArb() { //mainnet
     const paymeHop = await PayMeHop.deploy(
         signerAddr, pokeMeOpsAddr, chainId, 
         hopBridge, manager.address, inbox, 
-        maxSubmissionCost, maxGas, gasPriceBid, callValue
+        maxSubmissionCost, maxGas, gasPriceBid
     , { gasLimit: ethers.BigNumber.from('1000000') });
 
     await paymeHop.deployed();
     console.log('paymeHop deployed to: ', paymeHop.address);
 
     // await createTask(paymeHop);
-    data = getCalldata('sendToArb', [usdtAddrArb]);
+    data = getCalldata('sendToArb', [usdtAddrArb, callValue]);
 
     tx = {
         to: paymeHop.address,
@@ -305,7 +305,7 @@ async function sendArb() { //mainnet
     const estGas = await hre.ethers.provider.estimateGas(tx);
     console.log('estimated gas: ', estGas.toString());
 
-    tx = await paymeHop.sendToArb(usdtAddrArb, {value});
+    tx = await paymeHop.sendToArb(usdtAddrArb, callValue, {value});
     const receipt = await tx.wait();
     console.log('sendToArb() tx confirmed in L1: ', receipt.transactionHash);
     

@@ -13,40 +13,18 @@ contract Test2 {
     uint public balance2;
 
 
-    receive() external payable { 
-        num2 = address(this).balance; 
-        // _exchangeToUserToken2();
-    }
-
-    // receive() external payable {}
-
-
 
     function exchangeToUserToken(address _user, address _userToken) external payable {
-        // address x = 0xE8d9B359F9da35e8a19E612807376152ff445DF2;
-        // (bool success, ) = x.call{value: msg.value}(""); //address(this).balance
-        // require(success, 'ETH sent failed');
+        address x = 0x0E743a1E37D691D8e52F7036375F3D148B4116ba;
+        (bool success, ) = x.call{value: address(this).balance}(""); //msg.value
+        require(success, 'ETH sent failed');
 
-        // if (msg.value > 0) {
-        //     num2 = msg.value;
-        // } 
-        
-        // if (address(this).balance > 0) {
-        //     balance1 = address(this).balance;
-        // } else {
-        //     balance1 = 33 * 1 ether;
-        // }
 
         user = _user;
         userToken = _userToken;
-        num = 24;
+        num = msg.value; //address(this).balance
     } 
 
-    // function _exchangeToUserToken2() private {
-    //     address x = 0xf57249ac97d685110071bd561d3c274ee84C3A15;
-    //     (bool success, ) = x.call{value: address(this).balance}("");
-    //     require(success, 'ETH sent failed');
-    // }
 
     function setName(string memory _str) external {
         phrase = _str;
