@@ -22,13 +22,13 @@ contract PayMeFacetHop is OpsReady {
     address public owner;
     address public manager;
 
-    //*** Hard coded values in constructor. Should be dynamically created by querying L2 (check Greeter Arb exer) */
     uint maxSubmissionCost;
     uint maxGas;
     uint gasPriceBid;
-    //***************** */
 
     DelayedInbox inbox;
+
+    event ThrowTicket(uint ticketID);
 
 
     constructor(
@@ -59,25 +59,7 @@ contract PayMeFacetHop is OpsReady {
 
     // *** HOP PART ***** 
 
-    // function sendToArb() external onlyOps { 
-    //     hop.sendToL2{value: address(this).balance}(
-    //         chainId, manager, address(this).balance, 0, 0, nullAddr, 0
-    //     );
-    // }
-
-
-    function sendToArb(address _userToken, uint _callvalue) external payable returns(uint ticketID) { // put the modifier OnlyOps and exchange msg.value for address(this).balance
-        // hop.sendToL2{value: msg.value}( 
-        //     chainId, manager, msg.value, 0, 0, nullAddr, 0
-        // );
-
-
-        //send a cross-chain message to arbitrum here 
-        // msg.value, owner, _userToken        
-        // bytes memory data = abi.encodeWithSignature(
-        //     'exchangeToUserToken(address,address)', 
-        //     owner, _userToken
-        // );
+    function sendToArb(address _userToken, uint _callvalue) external payable { // put the modifier OnlyOps and exchange msg.value for address(this).balance
 
         bytes memory data = abi.encodeWithSelector(
             Test2(payable(manager)).exchangeToUserToken.selector, 
@@ -85,7 +67,7 @@ contract PayMeFacetHop is OpsReady {
         );
         
         //user ticketID later on to check the sequencer's inbox for unconfirmed txs
-        ticketID = inbox.createRetryableTicket{value: msg.value}(
+        uint ticketID = inbox.createRetryableTicket{value: msg.value}(
             manager, 
             msg.value - _callvalue, 
             maxSubmissionCost, 
@@ -96,26 +78,29 @@ contract PayMeFacetHop is OpsReady {
             data
         );
 
+        emit ThrowTicket(ticketID);
         
     }
 
     // *** GELATO PART ******
 
-    function startTask(address _userToken) external returns(bytes32 taskId) {
+    function startTask(address _userToken, uint _callvalue) external returns(bytes32 taskId) {
         (taskId) = opsGel.createTaskNoPrepayment(
             address(this),
             this.sendToArb.selector,
             address(this),
-            abi.encodeWithSelector(this.checker.selector, _userToken),
+            abi.encodeWithSelector(this.checker.selector, _userToken, _callvalue),
             ETH
         );
     }
 
-    function checker(address _userToken) external view returns(bool canExec, bytes memory execPayload) {
+    function checker(address _userToken, uint _callvalue) external view returns(bool canExec, bytes memory execPayload) {
         if (address(this).balance > 0) {
             canExec = true;
         }
-        execPayload = abi.encodeWithSelector(this.sendToArb.selector, _userToken);
+        execPayload = abi.encodeWithSelector(
+            this.sendToArb.selector, _userToken, _callvalue
+        );
     }
 
 }

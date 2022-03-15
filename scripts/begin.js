@@ -87,22 +87,16 @@ async function tryGelatoRopsten() {
 }
 
 
-async function sendTx() {
+async function sendTx(receiver) {
     const signer = await hre.ethers.provider.getSigner(0);
     const amount = ethers.utils.parseEther('0.01');
-    const paymeHopAddr = '0x5cE094564Ef7e63aD9975769bd29Ee6d12624974';
-    
 
-    const tx = {
+    const tx = await signer.sendTransaction({
         value: amount,
-        to: paymeHopAddr
-        // gasLimit: ethers.BigNumber.from('100000')
-    };
-
-    await signer.sendTransaction(tx);
-    console.log('eth sent');
-
-   
+        to: receiver
+    });
+    const receipt = await tx.wait();
+    console.log('eth sent with hash: ', receipt.transactionHash);
 
 }
 
@@ -136,8 +130,8 @@ async function tryPrecompile() {
 
 
 
-async function createTask(resolver) {
-    const tx = await resolver.startTask({
+async function createTask(resolver, userToken, callvalue) {
+    const tx = await resolver.startTask(userToken, callvalue, {
         gasLimit: ethers.BigNumber.from('200000')
     });
     const receipt = await tx.wait();
@@ -278,7 +272,7 @@ async function sendArb() { //mainnet
 
     //***** Calculate MAX GAS ********/
 
-    const callValue = maxSubmissionCost.add(gasPriceBid.mul(maxGas)); //**** */
+    const callValue = maxSubmissionCost.add(gasPriceBid.mul(maxGas)); 
     console.log('callvalue: ', callValue.toString());
 
     const PayMeHop = await (
@@ -293,49 +287,95 @@ async function sendArb() { //mainnet
     await paymeHop.deployed();
     console.log('paymeHop deployed to: ', paymeHop.address);
 
-    // await createTask(paymeHop);
+    await createTask(paymeHop, usdtAddrArb, callValue); // <---------------
+
+
     data = getCalldata('sendToArb', [usdtAddrArb, callValue]);
 
     tx = {
         to: paymeHop.address,
         data,
         value
-    }
+    };
 
     const estGas = await hre.ethers.provider.estimateGas(tx);
     console.log('estimated gas: ', estGas.toString());
 
-    tx = await paymeHop.sendToArb(usdtAddrArb, callValue, {value});
-    const receipt = await tx.wait();
-    console.log('sendToArb() tx confirmed in L1: ', receipt.transactionHash);
+
+    const filter = {
+    address: paymeHop.address,
+    topics: [
+        ethers.utils.id("ThrowTicket(uint256)")
+    ]
+    };
+
+    await hre.ethers.provider.once(filter, async (encodedData) => {
+        const { data } = encodedData;
+        const ourMessagesSequenceNum = ethers.utils.defaultAbiCoder.decode(['uint'], data);
+
+        console.log('inboxSeqNums string: ', inboxSeqNums[0].toString());
+        const retryableTxnHash = await bridge.calculateL2RetryableTransactionHash(
+            ourMessagesSequenceNum
+        );
+        console.log('retryableTxnHash: ', retryableTxnHash);
+        console.log(
+            `waiting for L2 tx 🕐... (should take < 10 minutes, current time: ${new Date().toTimeString()}`
+        );
+        const retryRec = await l2Provider.waitForTransaction(retryableTxnHash)
+        console.log(`L2 retryable txn executed 🥳 ${retryRec.transactionHash} at ${new Date().toTimeString()}`);
+
+
+        const user =(await manager.connect(l2Signer).user()).toString();
+        const userToken = (await manager.connect(l2Signer).userToken()).toString();
+        const num = (await manager.connect(l2Signer).num()).toString();
+        const num2 = (await manager.connect(l2Signer).num2()).toString();
+        const balance1 = (await manager.connect(l2Signer).balance1()).toString();
+        console.log('user: ', user);
+        console.log('userToken: ', userToken);
+        console.log('num: ', num);
+        console.log('num2: ', formatEther(num2));
+        console.log('balance1: ', formatEther(balance1));
+    });
+
+
+
+    //**** TRIGGER *******/
+
+    await sendTx(paymeHop.address);
+
+    // tx = await paymeHop.sendToArb(usdtAddrArb, callValue, {value});
+    // const receipt = await tx.wait();
+    // console.log('sendToArb() tx confirmed in L1: ', receipt.transactionHash);
+
+    //*****************/
     
 
-    const inboxSeqNums = await bridge.getInboxSeqNumFromContractTransaction(
-        receipt
-    );
-    const ourMessagesSequenceNum = inboxSeqNums[0];
-    console.log('inboxSeqNums string: ', inboxSeqNums[0].toString());
-    const retryableTxnHash = await bridge.calculateL2RetryableTransactionHash(
-        ourMessagesSequenceNum
-    );
-    console.log('retryableTxnHash: ', retryableTxnHash);
-    console.log(
-        `waiting for L2 tx 🕐... (should take < 10 minutes, current time: ${new Date().toTimeString()}`
-    );
-    const retryRec = await l2Provider.waitForTransaction(retryableTxnHash)
-    console.log(`L2 retryable txn executed 🥳 ${retryRec.transactionHash} at ${new Date().toTimeString()}`);
+    // const inboxSeqNums = await bridge.getInboxSeqNumFromContractTransaction(
+    //     receipt
+    // );
+    // const ourMessagesSequenceNum = inboxSeqNums[0];
+    // console.log('inboxSeqNums string: ', inboxSeqNums[0].toString());
+    // const retryableTxnHash = await bridge.calculateL2RetryableTransactionHash(
+    //     ourMessagesSequenceNum
+    // );
+    // console.log('retryableTxnHash: ', retryableTxnHash);
+    // console.log(
+    //     `waiting for L2 tx 🕐... (should take < 10 minutes, current time: ${new Date().toTimeString()}`
+    // );
+    // const retryRec = await l2Provider.waitForTransaction(retryableTxnHash)
+    // console.log(`L2 retryable txn executed 🥳 ${retryRec.transactionHash} at ${new Date().toTimeString()}`);
 
 
-    const user =(await manager.connect(l2Signer).user()).toString();
-    const userToken = (await manager.connect(l2Signer).userToken()).toString();
-    const num = (await manager.connect(l2Signer).num()).toString();
-    const num2 = (await manager.connect(l2Signer).num2()).toString();
-    const balance1 = (await manager.connect(l2Signer).balance1()).toString();
-    console.log('user: ', user);
-    console.log('userToken: ', userToken);
-    console.log('num: ', num);
-    console.log('num2: ', formatEther(num2));
-    console.log('balance1: ', formatEther(balance1));
+    // const user =(await manager.connect(l2Signer).user()).toString();
+    // const userToken = (await manager.connect(l2Signer).userToken()).toString();
+    // const num = (await manager.connect(l2Signer).num()).toString();
+    // const num2 = (await manager.connect(l2Signer).num2()).toString();
+    // const balance1 = (await manager.connect(l2Signer).balance1()).toString();
+    // console.log('user: ', user);
+    // console.log('userToken: ', userToken);
+    // console.log('num: ', num);
+    // console.log('num2: ', formatEther(num2));
+    // console.log('balance1: ', formatEther(balance1));
 
     
 
@@ -371,6 +411,7 @@ async function beginSimulatedDiamond() {
     console.log('PYY balance on caller 1: ', formatEther(await balanceOfPYY(callerAddr)));
     console.log('crvTricrypto token balance on diamondProxy: ', formatEther(await crvTri.balanceOf(deployedDiamond.address)));
     console.log('---------------------------------------'); 
+    return;
 
     //Second user
     console.log('2nd user first transfer');
