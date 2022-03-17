@@ -1,7 +1,4 @@
-const { Bitcoin } = require("@renproject/chains");
 const { ethers } = require("ethers");
-const { executeBridge } = require('./exec-bridge.js');
-const { sendBitcoin } = require('./init-btc-tx.js');
 const { MaxUint256, WeiPerEther } = ethers.constants;
 const { parseEther, formatEther, keccak256, defaultAbiCoder: abiCoder } = ethers.utils;
 const { deploy } = require('./deploy.js');
@@ -16,7 +13,8 @@ const {
     withdrawSharePYY, 
     approvePYY,
     getVarsForHelpers,
-    sendETH
+    sendETH,
+    getCalldata
 } = require('./helpers.js');
 
 const {
@@ -101,7 +99,6 @@ async function sendTx(receiver) {
     });
     const receipt = await tx.wait();
     console.log('eth sent with hash: ', receipt.transactionHash);
-
 }
 
 
@@ -171,17 +168,6 @@ switch(network) {
 }
 
 
-async function getCalldata(method, params) {
-    const signatures = {
-        exchangeToUserToken: 'function exchangeToUserToken(address _user, address _userToken)',
-        sendToArb: 'function sendToArb(address _userToken, uint256 _callvalue) returns (uint256)'
-    };
-    const abi = [];
-    abi.push(signatures[method]);
-    const iface = new ethers.utils.Interface(abi);
-    const data = iface.encodeFunctionData(method, params);
-    return data;
-} 
 
 
 
@@ -341,8 +327,6 @@ async function beginSimulatedDiamond() {
         deployedDiamond, 
         WETH,
         USDT,
-        WBTC,
-        renBTC,
         crvTri,
         callerAddr, 
         caller2Addr,
@@ -350,7 +334,7 @@ async function beginSimulatedDiamond() {
         managerFacet
     } = deployedVars;
     
-    getVarsForHelpers(deployedDiamond, PYY, managerFacet, renBTC);
+    getVarsForHelpers(deployedDiamond, PYY, managerFacet); 
 
     //First user
     console.log('1st user first transfer');
@@ -360,6 +344,8 @@ async function beginSimulatedDiamond() {
     console.log('PYY balance on caller 1: ', formatEther(await balanceOfPYY(callerAddr)));
     console.log('crvTricrypto token balance on diamondProxy: ', formatEther(await crvTri.balanceOf(deployedDiamond.address)));
     console.log('---------------------------------------'); 
+
+    console.log('return here');
     return;
 
     //Second user
@@ -430,9 +416,9 @@ async function beginSimulatedDiamond() {
 
 // tryGelatoRopsten();
 
-// beginSimulatedDiamond();
+beginSimulatedDiamond();
 
-sendArb2();
+// sendArb2();
 
 // tryPrecompile();
 

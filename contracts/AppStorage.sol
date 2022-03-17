@@ -14,19 +14,14 @@ import './facets/GettersFacet.sol';
 import './interfaces/IWETH.sol';
 
 struct AppStorage {
-    IGatewayRegistry registry;
     ManagerFacet manager; 
     ITricrypto tricrypto;
     VaultFacet vault;
-    IRenPool renPool; 
     ICrvLpToken crvTricrypto;
-    // PayMeFacet payme;
     GettersFacet getters;
 
-    IERC20 renBTC;
     IERC20 USDT;
     IWETH WETH;
-    IERC20 WBTC;
     IERC20Facet PYY;
 
     uint dappFee;
@@ -41,11 +36,6 @@ struct AppStorage {
     mapping(bool => PYYERC20) py; 
 
     address ETH;
-
-    //----- NEW VARIABLES -----//
-    // address currentUser;
-    // address userToken;
-
 }
 
 struct PYYERC20 {

@@ -5,14 +5,12 @@ const { MaxUint256 } = ethers.constants;
 let deployedDiamond;
 let PYY;
 let managerFacet;
-let renBTC;
 
 
-async function getVarsForHelpers(diamond, pyy, manager, ren) {
+async function getVarsForHelpers(diamond, pyy, manager) { //...,ren
     deployedDiamond = diamond;
     PYY = pyy;
     managerFacet = manager;
-    renBTC = ren;
 }
 
 async function callDiamondProxy(params) { 
@@ -136,11 +134,27 @@ async function sendETH(userAddr, userToken, IERC20, tokenStr, decimals) {
 }
 
 
+async function getCalldata(method, params) {
+    const signatures = {
+        exchangeToUserToken: 'function exchangeToUserToken(address _user, address _userToken)',
+        sendToArb: 'function sendToArb(address _userToken, uint256 _callvalue) returns (uint256)'
+    };
+    const abi = [];
+    abi.push(signatures[method]);
+    const iface = new ethers.utils.Interface(abi);
+    const data = iface.encodeFunctionData(method, params);
+    return data;
+} 
+
+
+
+
 module.exports = {
     balanceOfPYY,
     transferPYY,
     withdrawSharePYY,
     approvePYY, 
     getVarsForHelpers,
-    sendETH
+    sendETH,
+    getCalldata
 };

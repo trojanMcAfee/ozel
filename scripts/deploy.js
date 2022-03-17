@@ -3,10 +3,6 @@ const { getSelectors } = require('./libraries/diamond.js');
 
 const {
     wethAddr,
-    wbtcAddr,
-    renBtcAddr,
-    registryAddr,
-    renPoolAddr,
     tricryptoAddr,
     usdtAddr,
     crvTricrypto,
@@ -55,8 +51,6 @@ async function deploy() {
 
     const WETH = await hre.ethers.getContractAt('IERC20', wethAddr);
     const USDT = await hre.ethers.getContractAt('IERC20', usdtAddr);
-    const WBTC = await hre.ethers.getContractAt('IERC20', wbtcAddr);
-    const renBTC = await hre.ethers.getContractAt('IERC20', renBtcAddr);
     const crvTri = await hre.ethers.getContractAt('IERC20', crvTricrypto);
 
     //Facets
@@ -64,7 +58,6 @@ async function deploy() {
     const diamondLoupeFacet = await deployFacet('DiamondLoupeFacet'); 
     const [managerFacet, library] = await deployFacet('ManagerFacet', 'Helpers');
     const vaultFacet = await deployFacet('VaultFacet', 'Helpers', library);
-    // const paymeFacet = await deployFacet('PayMeFacet', 'Helpers', library);
     const PYY = await deployFacet('PayTokenFacet'); 
     const gettersFacet = await deployFacet('GettersFacet');
 
@@ -72,7 +65,6 @@ async function deploy() {
     const [
         selecCut,
         selecLoup,
-        // selecPayme,
         selecManager,
         selecPYY,
         selectGetters,
@@ -80,7 +72,6 @@ async function deploy() {
     ] = getSelectorsFromAllFacets([
         diamondCutFacet,
         diamondLoupeFacet,
-        // paymeFacet,
         managerFacet,
         PYY,
         gettersFacet,
@@ -88,21 +79,16 @@ async function deploy() {
     ]);
 
     const contractsAddr = [
-        registryAddr,
         managerFacet.address,
         tricryptoAddr,
         vaultFacet.address,
-        renPoolAddr,
         crvTricrypto,
-        // paymeFacet.address,
         gettersFacet.address
     ];
 
     const erc20sAddr = [
-        renBtcAddr,
         usdtAddr,
         wethAddr,
-        wbtcAddr,
         PYY.address
     ];
 
@@ -125,7 +111,6 @@ async function deploy() {
         [
             selecCut, 
             selecLoup, 
-            // selecPayme, 
             selecManager, 
             selecPYY,
             selectGetters,
@@ -134,7 +119,6 @@ async function deploy() {
         [
             diamondCutFacet.address, 
             diamondLoupeFacet.address, 
-            // paymeFacet.address,
             managerFacet.address,
             PYY.address,
             gettersFacet.address,
@@ -158,7 +142,6 @@ async function deploy() {
         facets: [
             ['DiamondCutFacet', diamondCutFacet],
             ['DiamondLoupeFacet', diamondLoupeFacet],
-            // ['PayMeFacet', paymeFacet],
             ['ManagerFacet', managerFacet],
             ['PayTokenFacet', PYY],
             ['GettersFacet', gettersFacet],
@@ -173,8 +156,6 @@ async function deploy() {
         deployedDiamond, 
         WETH,
         USDT,
-        WBTC,
-        renBTC,
         crvTri,
         callerAddr, 
         caller2Addr,

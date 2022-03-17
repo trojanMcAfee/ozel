@@ -82,8 +82,6 @@ contract VaultFacet { //Remember to write a function to withdraw/convert CRV
         uint i;
         if (_userToken == address(s.USDT)) {
             i = 0;
-        } else if (_userToken == address(s.WBTC)) {
-            i = 1;
         } else if (_userToken == address(s.WETH)) {
             i = 2;
         }

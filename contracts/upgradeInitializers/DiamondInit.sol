@@ -14,15 +14,12 @@ import { IDiamondCut } from "../interfaces/IDiamondCut.sol";
 import { IERC173 } from "../interfaces/IERC173.sol";
 import { IERC165 } from "../interfaces/IERC165.sol";
 import '../AppStorage.sol'; 
-import '../interfaces/IGatewayRegistry.sol';
-import '../interfaces/IGateway.sol';
 import '../facets/ManagerFacet.sol';
 import '@openzeppelin/contracts/token/ERC20/IERC20.sol';
 import {IRenPool, ITricrypto} from '../interfaces/ICurve.sol';
 import '../facets/VaultFacet.sol';
 import '../facets/ERC20Facet/IERC20Facet.sol';
 import '../interfaces/ICrvLpToken.sol';
-// import '../facets/PayMeFacet.sol';
 import '../facets/GettersFacet.sol';
 
 import 'hardhat/console.sol';
@@ -56,21 +53,16 @@ contract DiamondInit {
         }
 
         //Sets addresses on contracts
-        s.registry = IGatewayRegistry(_vars.contracts[0]);
-        s.manager = ManagerFacet(_vars.contracts[1]);
-        s.tricrypto = ITricrypto(_vars.contracts[2]);
-        s.vault = VaultFacet(_vars.contracts[3]);
-        s.renPool = IRenPool(_vars.contracts[4]);
-        s.crvTricrypto = ICrvLpToken(_vars.contracts[5]);
-        // s.payme = PayMeFacet(payable(_vars.contracts[6]));
-        s.getters = GettersFacet(_vars.contracts[6]);
+        s.manager = ManagerFacet(_vars.contracts[0]);
+        s.tricrypto = ITricrypto(_vars.contracts[1]);
+        s.vault = VaultFacet(_vars.contracts[2]);
+        s.crvTricrypto = ICrvLpToken(_vars.contracts[3]);
+        s.getters = GettersFacet(_vars.contracts[4]);
 
         //Sets ERC20 instances
-        s.renBTC = IERC20(_vars.erc20s[0]);
-        s.USDT = IERC20(_vars.erc20s[1]);
-        s.WETH = IWETH(_vars.erc20s[2]);
-        s.WBTC = IERC20(_vars.erc20s[3]);
-        s.PYY = IERC20Facet(_vars.erc20s[4]);
+        s.USDT = IERC20(_vars.erc20s[0]);
+        s.WETH = IWETH(_vars.erc20s[1]);
+        s.PYY = IERC20Facet(_vars.erc20s[2]);
 
         //Sets app's general variables
         s.dappFee = _vars.appVars[0];

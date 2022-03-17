@@ -1,7 +1,7 @@
 let wethAddr;
 let wbtcAddr;
 let renBtcAddr;
-let registryAddr;
+// let registryAddr;
 let renPoolAddr;
 let tricryptoAddr;
 let usdtAddr;
@@ -17,7 +17,7 @@ const tokenSymbol = 'PYY';
 
 let network = 'mainnet'; 
 if (network === 'mainnet') {
-    registryAddr = '0x557e211EC5fc9a6737d2C6b7a1aDe3e0C11A8D5D';
+    // registryAddr = '0x557e211EC5fc9a6737d2C6b7a1aDe3e0C11A8D5D'; //kovan (renBTC)
     renPoolAddr = '0x93054188d876f558f4a66B2EF1d97d16eDf0895B';
     tricryptoAddr = '0xD51a44d3FaE010294C616388b506AcdA1bfAAE46';
     renBtcAddr = '0xEB4C2781e4ebA804CE9a9803C67d0893436bB27D';
@@ -27,7 +27,7 @@ if (network === 'mainnet') {
     // crvRenWBTC = '0x49849c98ae39fff122806c06791fa73784fb3675';
     crvTricrypto = '0xc4AD29ba4B3c580e6D59105FFf484999997675Ff';
 } else if (network === 'arbitrum') {
-    registryAddr = '0x21C482f153D0317fe85C60bE1F7fa079019fcEbD';
+    // registryAddr = '0x21C482f153D0317fe85C60bE1F7fa079019fcEbD';
     renPoolAddr = '0x3E01dD8a5E1fb3481F0F589056b428Fc308AF0Fb';
     tricryptoAddr = '0x960ea3e3C7FB317332d990873d354E18d7645590';
     renBtcAddr = '0xdbf31df14b66535af65aac99c32e9ea844e14501';
@@ -43,7 +43,7 @@ module.exports = {
     wethAddr,
     wbtcAddr,
     renBtcAddr,
-    registryAddr,
+    // registryAddr,
     renPoolAddr,
     tricryptoAddr,
     usdtAddr,
