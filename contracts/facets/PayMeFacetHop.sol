@@ -14,8 +14,6 @@ import 'hardhat/console.sol';
 
 contract PayMeFacetHop is OpsReady { 
 
-    IL1_ETH_Bridge hop; 
-
     uint chainId; 
 
     address public constant nullAddr = 0x0000000000000000000000000000000000000000;
@@ -35,7 +33,6 @@ contract PayMeFacetHop is OpsReady {
         address _owner, 
         address _opsGel,
         uint _chainId,
-        address _hop,
         address _manager,
         address _inbox,
         uint _maxSubmissionCost,
@@ -44,10 +41,8 @@ contract PayMeFacetHop is OpsReady {
     ) OpsReady(_opsGel) {
         owner = _owner;
         chainId = _chainId;
-        hop = IL1_ETH_Bridge(_hop);
         manager = _manager;
         inbox = DelayedInbox(_inbox);
-
         maxSubmissionCost = _maxSubmissionCost;
         maxGas = _maxGas;
         gasPriceBid = _gasPriceBid;
@@ -57,9 +52,8 @@ contract PayMeFacetHop is OpsReady {
     receive() external payable {}
 
 
-    // *** HOP PART ***** 
 
-    function sendToArb(address _userToken, uint _callvalue) external { // put the modifier OnlyOps and exchange msg.value for address(this).balance
+    function sendToArb(address _userToken, uint _callvalue) external onlyOps { 
         (uint fee, ) = opsGel.getFeeDetails();
         _transfer(fee, ETH);
 
@@ -68,7 +62,6 @@ contract PayMeFacetHop is OpsReady {
             owner, _userToken
         );
 
-        
         // user ticketID later on to check the sequencer's inbox for unconfirmed txs
         uint ticketID = inbox.createRetryableTicket{value: address(this).balance}(
             manager, 
@@ -82,7 +75,6 @@ contract PayMeFacetHop is OpsReady {
         );
 
         emit ThrowTicket(ticketID);
-        
     }
 
     // *** GELATO PART ******
