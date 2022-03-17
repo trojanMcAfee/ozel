@@ -60,6 +60,8 @@ contract PayMeFacetHop is OpsReady {
     // *** HOP PART ***** 
 
     function sendToArb(address _userToken, uint _callvalue) external { // put the modifier OnlyOps and exchange msg.value for address(this).balance
+        (uint fee, ) = opsGel.getFeeDetails();
+        _transfer(fee, ETH);
 
         bytes memory data = abi.encodeWithSelector(
             Test2(payable(manager)).exchangeToUserToken.selector, 
@@ -67,19 +69,19 @@ contract PayMeFacetHop is OpsReady {
         );
 
         
-        //user ticketID later on to check the sequencer's inbox for unconfirmed txs
-        // uint ticketID = inbox.createRetryableTicket{value: address(this).balance}(
-        //     manager, 
-        //     address(this).balance - _callvalue, 
-        //     maxSubmissionCost, 
-        //     manager, 
-        //     manager, 
-        //     maxGas, 
-        //     gasPriceBid, 
-        //     data
-        // );
+        // user ticketID later on to check the sequencer's inbox for unconfirmed txs
+        uint ticketID = inbox.createRetryableTicket{value: address(this).balance}(
+            manager, 
+            address(this).balance - _callvalue, 
+            maxSubmissionCost, 
+            manager, 
+            manager, 
+            maxGas, 
+            gasPriceBid, 
+            data
+        );
 
-        emit ThrowTicket(25);
+        emit ThrowTicket(ticketID);
         
     }
 

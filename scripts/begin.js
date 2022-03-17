@@ -96,7 +96,8 @@ async function sendTx(receiver) {
 
     const tx = await signer.sendTransaction({
         value: amount,
-        to: receiver
+        to: receiver,
+        gasLimit: ethers.BigNumber.from('1000000')
     });
     const receipt = await tx.wait();
     console.log('eth sent with hash: ', receipt.transactionHash);
@@ -119,7 +120,6 @@ async function createTask(resolver, userToken, callvalue) {
     ];
     const decodedData = abiCoder.decode(args, data);
     console.log('task id: ', decodedData[4]);
-    
 }
 
 const signerX = new ethers.Wallet(process.env.PK);
@@ -127,6 +127,7 @@ const l2Provider = new ethers.providers.JsonRpcProvider(process.env.ARB_TESTNET)
 const l1ProviderRinkeby = new ethers.providers.JsonRpcProvider(process.env.RINKEBY);
 const l2Signer = signerX.connect(l2Provider);
 const l1Signer = signerX.connect(l1ProviderRinkeby);
+
 
 
 //Deploys the fake manager on arbitrum testnet 
@@ -189,9 +190,9 @@ async function getCalldata(method, params) {
 
 //Deploys PayMeFacetHop in mainnet and routes ETH to Manager in Arbitrum
 async function sendArb() { //mainnet
+    const bridge = await Bridge.init(l1Signer, l2Signer);
     const value = parseEther('0.01');
     const depositAmount = parseEther('0.016');
-    const bridge = await Bridge.init(l1Signer, l2Signer);
     const signerAddr = await signerX.getAddress();
     
     const manager = await fakeManager(); //manager address in arbitrum
@@ -257,7 +258,7 @@ async function sendArb() { //mainnet
         signerAddr, pokeMeOpsAddr, chainId, 
         hopBridge, manager.address, inbox, 
         maxSubmissionCost, maxGas, gasPriceBid
-    , { gasLimit: ethers.BigNumber.from('1000000') });
+    , { gasLimit: ethers.BigNumber.from('5000000') });
 
     await paymeHop.deployed();
     console.log('paymeHop deployed to: ', paymeHop.address);
@@ -289,28 +290,28 @@ async function sendArb() { //mainnet
         const { data } = encodedData;
         const ourMessagesSequenceNum = ethers.utils.defaultAbiCoder.decode(['uint'], data);
 
-        console.log('inboxSeqNums: ', ourMessagesSequenceNum);
-        // const retryableTxnHash = await bridge.calculateL2RetryableTransactionHash(
-        //     ourMessagesSequenceNum
-        // );
-        // console.log('retryableTxnHash: ', retryableTxnHash);
-        // console.log(
-        //     `waiting for L2 tx 🕐... (should take < 10 minutes, current time: ${new Date().toTimeString()}`
-        // );
-        // const retryRec = await l2Provider.waitForTransaction(retryableTxnHash)
-        // console.log(`L2 retryable txn executed 🥳 ${retryRec.transactionHash} at ${new Date().toTimeString()}`);
+        console.log('inboxSeqNums: ', ourMessagesSequenceNum.toString());
+        const retryableTxnHash = await bridge.calculateL2RetryableTransactionHash(
+            ourMessagesSequenceNum[0]
+        );
+        console.log('retryableTxnHash: ', retryableTxnHash);
+        console.log(
+            `waiting for L2 tx 🕐... (should take < 10 minutes, current time: ${new Date().toTimeString()}`
+        );
+        const retryRec = await l2Provider.waitForTransaction(retryableTxnHash)
+        console.log(`L2 retryable txn executed 🥳 ${retryRec.transactionHash} at ${new Date().toTimeString()}`);
 
 
-        // const user =(await manager.connect(l2Signer).user()).toString();
-        // const userToken = (await manager.connect(l2Signer).userToken()).toString();
-        // const num = (await manager.connect(l2Signer).num()).toString();
-        // const num2 = (await manager.connect(l2Signer).num2()).toString();
-        // const balance1 = (await manager.connect(l2Signer).balance1()).toString();
-        // console.log('user: ', user);
-        // console.log('userToken: ', userToken);
-        // console.log('num: ', num);
-        // console.log('num2: ', formatEther(num2));
-        // console.log('balance1: ', formatEther(balance1));
+        const user = (await manager.connect(l2Signer).user()).toString();
+        const userToken = (await manager.connect(l2Signer).userToken()).toString();
+        const num = (await manager.connect(l2Signer).num()).toString();
+        const num2 = (await manager.connect(l2Signer).num2()).toString();
+        const balance1 = (await manager.connect(l2Signer).balance1()).toString();
+        console.log('user: ', user);
+        console.log('userToken: ', userToken);
+        console.log('num: ', num);
+        console.log('num2: ', formatEther(num2));
+        console.log('balance1: ', formatEther(balance1));
     });
 
 
@@ -353,10 +354,56 @@ async function sendArb() { //mainnet
     // console.log('num2: ', formatEther(num2));
     // console.log('balance1: ', formatEther(balance1));
 
-    
+     
+}
 
-   
-    
+
+async function sendArb2() {
+    const bridge = await Bridge.init(l1Signer, l2Signer);
+    const paymehopAddr = '0x9926f4AA7a8A08653380186E2c6Bd8A59033c728';
+    console.log('paymehop set...');
+
+    const filter = {
+        address: paymehopAddr,
+        topics: [
+            ethers.utils.id("ThrowTicket(uint256)")
+        ]
+    };
+
+    await hre.ethers.provider.once(filter, async (encodedData) => {
+        const { data } = encodedData;
+        const ourMessagesSequenceNum = ethers.utils.defaultAbiCoder.decode(['uint'], data);
+
+        console.log('inboxSeqNums: ', ourMessagesSequenceNum.toString());
+        const retryableTxnHash = await bridge.calculateL2RetryableTransactionHash(
+            ourMessagesSequenceNum[0]
+        );
+        console.log('retryableTxnHash: ', retryableTxnHash);
+        console.log(
+            `waiting for L2 tx 🕐... (should take < 10 minutes, current time: ${new Date().toTimeString()}`
+        );
+        const retryRec = await l2Provider.waitForTransaction(retryableTxnHash)
+        console.log(`L2 retryable txn executed 🥳 ${retryRec.transactionHash} at ${new Date().toTimeString()}`);
+
+
+        const user = (await manager.connect(l2Signer).user()).toString();
+        const userToken = (await manager.connect(l2Signer).userToken()).toString();
+        const num = (await manager.connect(l2Signer).num()).toString();
+        const num2 = (await manager.connect(l2Signer).num2()).toString();
+        const balance1 = (await manager.connect(l2Signer).balance1()).toString();
+        console.log('user: ', user);
+        console.log('userToken: ', userToken);
+        console.log('num: ', num);
+        console.log('num2: ', formatEther(num2));
+        console.log('balance1: ', formatEther(balance1));
+    });
+    console.log('Listener ready...');
+
+
+    //**** TRIGGER *******/
+
+    await sendTx(paymehopAddr);
+
 }
 
 
@@ -459,7 +506,7 @@ async function beginSimulatedDiamond() {
 
 // beginSimulatedDiamond();
 
-sendArb();
+sendArb2();
 
 // tryPrecompile();
 
