@@ -21,7 +21,6 @@ struct AppStorage {
     GettersFacet getters;
 
     IERC20 USDT;
-    IWETH WETH;
     IERC20Facet PYY;
 
     uint dappFee;

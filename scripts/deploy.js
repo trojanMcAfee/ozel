@@ -42,6 +42,7 @@ function getSelectorsFromAllFacets(facets) {
 }
 
 
+//Deploys contracts in Arbitrum
 async function deploy() {
     const [callerAddr, caller2Addr] = await hre.ethers.provider.listAccounts();
     console.log('--');
@@ -49,14 +50,14 @@ async function deploy() {
     console.log('Caller 2: ', caller2Addr);
     console.log('--');
 
-    const WETH = await hre.ethers.getContractAt('IERC20', wethAddr);
+    // const WETH = await hre.ethers.getContractAt('IERC20', wethAddr);
     const USDT = await hre.ethers.getContractAt('IERC20', usdtAddr);
     const crvTri = await hre.ethers.getContractAt('IERC20', crvTricrypto);
 
     //Facets
     const diamondCutFacet = await deployFacet('DiamondCutFacet');
     const diamondLoupeFacet = await deployFacet('DiamondLoupeFacet'); 
-    const [managerFacet, library] = await deployFacet('ManagerFacet', 'Helpers');
+    const [ managerFacet, library ] = await deployFacet('ManagerFacet', 'Helpers');
     const vaultFacet = await deployFacet('VaultFacet', 'Helpers', library);
     const PYY = await deployFacet('PayTokenFacet'); 
     const gettersFacet = await deployFacet('GettersFacet');
@@ -88,7 +89,7 @@ async function deploy() {
 
     const erc20sAddr = [
         usdtAddr,
-        wethAddr,
+        // wethAddr,
         PYY.address
     ];
 
@@ -154,7 +155,7 @@ async function deploy() {
 
     return {
         deployedDiamond, 
-        WETH,
+        // WETH,
         USDT,
         crvTri,
         callerAddr, 
