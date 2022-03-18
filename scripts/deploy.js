@@ -4,7 +4,7 @@ const { getSelectors } = require('./libraries/diamond.js');
 const {
     wethAddr,
     tricryptoAddr,
-    usdtAddr,
+    usdtAddrArb,
     crvTricrypto,
     ETH,
     dappFee,
@@ -51,7 +51,7 @@ async function deploy() {
     console.log('--');
 
     // const WETH = await hre.ethers.getContractAt('IERC20', wethAddr);
-    const USDT = await hre.ethers.getContractAt('IERC20', usdtAddr);
+    const USDT = await hre.ethers.getContractAt('IERC20', usdtAddrArb);
     const crvTri = await hre.ethers.getContractAt('IERC20', crvTricrypto);
 
     //Facets
@@ -88,8 +88,8 @@ async function deploy() {
     ];
 
     const erc20sAddr = [
-        usdtAddr,
-        // wethAddr,
+        usdtAddrArb,
+        wethAddr,
         PYY.address
     ];
 

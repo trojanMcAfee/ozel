@@ -12,7 +12,7 @@ import '../AppStorage.sol';
 
 import 'hardhat/console.sol';
 
-// import '../interfaces/IWETH.sol';
+import '../interfaces/IWETH.sol';
 
 
 
@@ -90,7 +90,7 @@ contract ManagerFacet {
         swapsForUserToken(netAmount, tokenOut);
       
         //Sends userToken to user
-        uint ToUser = userToken.balanceOf(address(this));
+        uint ToUser = IERC20(userToken).balanceOf(address(this));
         userToken.safeTransfer(_user, ToUser);
         
         s.WETH.deposit{value: fee}();

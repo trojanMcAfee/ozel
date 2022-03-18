@@ -61,7 +61,8 @@ contract DiamondInit {
 
         //Sets ERC20 instances
         s.USDT = IERC20(_vars.erc20s[0]);
-        s.PYY = IERC20Facet(_vars.erc20s[1]);
+        s.WETH = IWETH(_vars.erc20s[1]);
+        s.PYY = IERC20Facet(_vars.erc20s[2]);
 
         //Sets app's general variables
         s.dappFee = _vars.appVars[0];

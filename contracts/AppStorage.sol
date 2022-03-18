@@ -1,8 +1,6 @@
 // SPDX-License-Identifier: UNLICENSED
 pragma solidity ^0.8.0;
 
-import './interfaces/IGatewayRegistry.sol';
-import './interfaces/IGateway.sol';
 import './facets/ManagerFacet.sol';
 import './facets/ERC20Facet/IERC20Facet.sol';
 import {IRenPool, ITricrypto} from './interfaces/ICurve.sol';
@@ -21,6 +19,7 @@ struct AppStorage {
     GettersFacet getters;
 
     IERC20 USDT;
+    IWETH WETH;
     IERC20Facet PYY;
 
     uint dappFee;

@@ -1,11 +1,9 @@
 const { ethers } = require("ethers");
-const { MaxUint256, WeiPerEther } = ethers.constants;
-const { parseEther, formatEther, keccak256, defaultAbiCoder: abiCoder } = ethers.utils;
+const { parseEther, formatEther, defaultAbiCoder: abiCoder } = ethers.utils;
 const { deploy } = require('./deploy.js');
 const { Bridge } = require('arb-ts');
-const { arbLog, requireEnvVariables } = require('arb-shared-dependencies');
-require('dotenv').config();
 const { hexDataLength } = require('@ethersproject/bytes');
+require('dotenv').config();
 
 const {
     balanceOfPYY, 
@@ -348,9 +346,9 @@ async function beginSimulatedDiamond() {
 
 // tryGelatoRopsten();
 
-// beginSimulatedDiamond();
+beginSimulatedDiamond();
 
-sendArb();
+// sendArb();
 
 // tryPrecompile();
 
