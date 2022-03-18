@@ -41,7 +41,6 @@ switch(network) {
 
         //*** new */
         tricryptoAddr = '0x960ea3e3C7FB317332d990873d354E18d7645590';
-        wethAddr = '0x82af49447d8a07e3bd95bd0d56f35241523fbab1';
         crvTricrypto = '0x8e0B8c8BB9db49a46697F3a5Bb8A308e744821D2';
         break;
    
@@ -51,7 +50,6 @@ switch(network) {
 
 
 module.exports = {
-    wethAddr,
     tricryptoAddr,
     crvTricrypto,
     ETH,

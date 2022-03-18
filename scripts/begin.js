@@ -252,7 +252,6 @@ async function beginSimulatedDiamond() {
     const deployedVars = await deploy();
     const {
         deployedDiamond, 
-        // WETH,
         USDT,
         crvTri,
         callerAddr, 
