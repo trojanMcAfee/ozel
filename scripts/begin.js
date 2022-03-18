@@ -162,29 +162,39 @@ switch(network) {
         usdtAddrArb = '0xfd086bc7cd5c481dcc9c85ebe478a1c0b69fcbb9';
         inbox = '0x4Dbd4fc535Ac27206064B68FfCf827b0A60BAB3f';
         break;
-    case 'ropsten':
-        pokeMeOpsAddr = '0x9C4771560d84222fD8B7d9f15C59193388cC81B3';
-        break;
 }
 
 
-
-
-
-
-
-
-//Deploys PayMeFacetHop in mainnet and routes ETH to Manager in Arbitrum
-async function sendArb() { //mainnet
-    const bridge = await Bridge.init(l1Signer, l2Signer);
-    const value = parseEther('0.01');
+async function calculateMaxGas(
+    signerAddr, manager, value, maxSubmissionCost, gasPriceBid
+) {
+    const data = getCalldata('exchangeToUserToken', [signerAddr, usdtAddrArb]);
     const depositAmount = parseEther('0.016');
-    const signerAddr = await signerX.getAddress();
-    
-    const manager = await fakeManager(); //manager address in arbitrum
-    let tx = await manager.setName('Hello world');
-    await tx.wait();
+    const nodeAddr = '0x00000000000000000000000000000000000000C8';
+    const nodeInterface = await (
+        await hre.ethers.getContractAt('NodeInterface', nodeAddr)
+    ).connect(l2Signer);
 
+    let [maxGas]  = await nodeInterface.estimateRetryableTicket(
+        signerAddr,
+        depositAmount,
+        manager.address,
+        value,
+        maxSubmissionCost,
+        manager.address,
+        manager.address,
+        3000000,
+        gasPriceBid,
+        data
+    );
+    maxGas = maxGas.toString();
+    console.log('maxGas: ', maxGas);
+
+    return maxGas; 
+}
+
+
+async function getGasDetailsL2(signerAddr, bridge) {
     const sendToArbBytes = ethers.utils.defaultAbiCoder.encode(
         ['address', 'address'],
         [signerAddr, usdtAddrArb]
@@ -208,29 +218,81 @@ async function sendArb() { //mainnet
     const gasPriceBid = await bridge.l2Provider.getGasPrice();
     console.log(`L2 gas price: ${gasPriceBid.toString()}`);
 
-    let data = getCalldata('exchangeToUserToken', [signerAddr, usdtAddrArb]);
+    return {
+        maxSubmissionCost,
+        gasPriceBid
+    }
+}
+
+
+
+
+
+
+
+
+//Deploys PayMeFacetHop in mainnet and routes ETH to Manager in Arbitrum
+async function sendArb() { //mainnet
+    const bridge = await Bridge.init(l1Signer, l2Signer);
+    const value = parseEther('0.01');
+    // const depositAmount = parseEther('0.016');
+    const signerAddr = await signerX.getAddress();
+    
+    const manager = await fakeManager(); //manager address in arbitrum
+    let tx = await manager.setName('Hello world');
+    await tx.wait();
+
+
+    // const sendToArbBytes = ethers.utils.defaultAbiCoder.encode(
+    //     ['address', 'address'],
+    //     [signerAddr, usdtAddrArb]
+    // );
+    // const sendToArbBytesLength = hexDataLength(sendToArbBytes) + 4;
+
+    // const [_submissionPriceWei, nextUpdateTimestamp] =
+    // await bridge.l2Bridge.getTxnSubmissionPrice(sendToArbBytesLength);
+    // console.log(
+    // `Current retryable base submission price: ${_submissionPriceWei.toString()}`
+    // );
+
+    // const timeNow = Math.floor(new Date().getTime() / 1000);
+    // console.log(
+    //     `time in seconds till price update: ${
+    //     nextUpdateTimestamp.toNumber() - timeNow
+    //     }`
+    // );
+
+    // const maxSubmissionCost = _submissionPriceWei.mul(5); //parseEther('0.01');
+    // const gasPriceBid = await bridge.l2Provider.getGasPrice();
+    // console.log(`L2 gas price: ${gasPriceBid.toString()}`);
+
+    const { maxSubmissionCost, gasPriceBid } = await getGasDetailsL2(signerAddr, bridge);
 
     //***** Calculate MAX GAS ********/
 
-    const nodeAddr = '0x00000000000000000000000000000000000000C8';
-    const nodeInterface = await (
-        await hre.ethers.getContractAt('NodeInterface', nodeAddr)
-    ).connect(l2Signer);
+    // let data = getCalldata('exchangeToUserToken', [signerAddr, usdtAddrArb]);
 
-    let [maxGas]  = await nodeInterface.estimateRetryableTicket(
-        signerAddr,
-        depositAmount,
-        manager.address,
-        value,
-        maxSubmissionCost,
-        manager.address,
-        manager.address,
-        3000000,
-        gasPriceBid,
-        data
-    );
-    maxGas = maxGas.toString();
-    console.log('maxGas: ', maxGas);
+    // const nodeAddr = '0x00000000000000000000000000000000000000C8';
+    // const nodeInterface = await (
+    //     await hre.ethers.getContractAt('NodeInterface', nodeAddr)
+    // ).connect(l2Signer);
+
+    // let [maxGas]  = await nodeInterface.estimateRetryableTicket(
+    //     signerAddr,
+    //     depositAmount,
+    //     manager.address,
+    //     value,
+    //     maxSubmissionCost,
+    //     manager.address,
+    //     manager.address,
+    //     3000000,
+    //     gasPriceBid,
+    //     data
+    // );
+    // maxGas = maxGas.toString();
+    // console.log('maxGas: ', maxGas);
+    
+    const maxGas = await calculateMaxGas(signerAddr, manager, value, maxSubmissionCost, gasPriceBid);
 
     //***** Calculate MAX GAS ********/
 
@@ -416,9 +478,9 @@ async function beginSimulatedDiamond() {
 
 // tryGelatoRopsten();
 
-beginSimulatedDiamond();
+// beginSimulatedDiamond();
 
-// sendArb2();
+sendArb();
 
 // tryPrecompile();
 
