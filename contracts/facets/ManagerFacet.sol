@@ -79,6 +79,13 @@ contract ManagerFacet {
 
     function exchangeToUserToken(address _user, address _userToken) external payable {
         updateManagerState(msg.value, _user);
+        uint tokenOut;
+
+        // if (_userToken == s.WBTC || _userToken == s.renBTC) {
+        //     tokenOut = 1;
+        // } else {
+        //     tokenOut = 0;
+        // }
         
         uint tokenOut = _userToken == address(s.USDT) ? 0 : 2;
         IERC20 userToken = IERC20(_userToken);
