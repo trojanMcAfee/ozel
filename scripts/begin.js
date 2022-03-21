@@ -20,6 +20,7 @@ const {
     pokeMeOpsAddr,
     hopBridge,
     usdtAddrArb,
+    wbtcAddr,
     inbox,
     signerX,
     l2Provider,
@@ -251,6 +252,10 @@ async function beginSimulatedDiamond() {
     const {
         deployedDiamond, 
         USDT,
+        WBTC,
+        renBTC,
+        USDC,
+        MIM,
         crvTri,
         callerAddr, 
         caller2Addr,
@@ -275,17 +280,17 @@ async function beginSimulatedDiamond() {
     console.log('crvTricrypto token balance on diamondProxy: ', formatEther(await crvTri.balanceOf(deployedDiamond.address)));
     console.log('---------------------------------------'); 
 
-    console.log('return here');
-    return;
-
     //Second user
     console.log('2nd user first transfer');
-    await sendETH(caller2Addr, usdtAddrArb, USDT, 'USDT', 10 ** 6);
+    await sendETH(caller2Addr, wbtcAddr, WBTC, 'WBTC', 10 ** 8);
     await approvePYY(caller2Addr);
     console.log('PYY balance on caller 2: ', formatEther(await balanceOfPYY(caller2Addr)));
     console.log('PYY balance on caller 1 after caller2 swap: ', formatEther(await balanceOfPYY(callerAddr)));
     console.log('crvTricrypto token balance on diamondProxy: ', formatEther(await crvTri.balanceOf(deployedDiamond.address)));
     console.log('---------------------------------------'); 
+
+    console.log('return here');
+    return;
 
     // //First user - 2nd transfer
     console.log('1st user second transfer'); 

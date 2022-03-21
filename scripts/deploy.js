@@ -11,7 +11,7 @@ const {
     renPoolAddr,
     usdcAddr,
     mimAddr,
-    mimPooAddr,
+    mimPoolAddr,
     ETH,
     dappFee,
     slippageOnCurve,
@@ -58,6 +58,10 @@ async function deploy() {
 
     // const WETH = await hre.ethers.getContractAt('IERC20', wethAddr);
     const USDT = await hre.ethers.getContractAt('IERC20', usdtAddrArb);
+    const WBTC = await hre.ethers.getContractAt('IERC20', wbtcAddr);
+    const renBTC = await hre.ethers.getContractAt('IERC20', renBtcAddr);
+    const USDC = await hre.ethers.getContractAt('IERC20', usdcAddr);
+    const MIM = await hre.ethers.getContractAt('IERC20', mimAddr);
     const crvTri = await hre.ethers.getContractAt('IERC20', crvTricrypto);
 
     //Facets
@@ -92,7 +96,7 @@ async function deploy() {
         crvTricrypto,
         gettersFacet.address,
         renPoolAddr,
-        mimPooAddr
+        mimPoolAddr
     ];
 
     const erc20sAddr = [
@@ -167,8 +171,11 @@ async function deploy() {
 
     return {
         deployedDiamond, 
-        // WETH,
         USDT,
+        WBTC,
+        renBTC,
+        USDC,
+        MIM,
         crvTri,
         callerAddr, 
         caller2Addr,

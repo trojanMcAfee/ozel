@@ -9,7 +9,7 @@ import '@openzeppelin/contracts/token/ERC20/IERC20.sol';
 import './facets/GettersFacet.sol';
 import './interfaces/IWETH.sol';
 
-struct AppStorage {
+struct AppStorage { 
     ManagerFacet manager; 
     ITricrypto tricrypto;
     VaultFacet vault;

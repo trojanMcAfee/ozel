@@ -10,7 +10,7 @@ interface IRen {
       uint256 min_dy
     ) external;
 
-    function get_dy(uint i, uint j, uint dx) external returns(uint256);
+    function get_dy(int128 i, int128 j, uint256 dx) external returns(uint256);
 }
 
 
@@ -39,6 +39,6 @@ interface IMIM {
     uint256 min_dy
   ) external returns (uint256);
 
-  function get_dy_underlying(uint i, uint j, uint dx) external returns(uint256);
+  function get_dy_underlying(int128 i, int128 j, uint dx) external returns(uint256);
 }
 
