@@ -3,24 +3,28 @@ pragma solidity ^0.8.0;
 
 import './facets/ManagerFacet.sol';
 import './facets/ERC20Facet/IERC20Facet.sol';
-import {IRenPool, ITricrypto} from './interfaces/ICurve.sol';
+import {IRen, ITricrypto, IMIM} from './interfaces/ICurve.sol';
 import './facets/VaultFacet.sol';
 import '@openzeppelin/contracts/token/ERC20/IERC20.sol';
-// import './facets/PayMeFacet.sol';
 import './facets/GettersFacet.sol';
-
 import './interfaces/IWETH.sol';
 
 struct AppStorage {
     ManagerFacet manager; 
     ITricrypto tricrypto;
     VaultFacet vault;
-    ICrvLpToken crvTricrypto;
+    ICrvLpToken crvTricrypto; //where does the interface here come from???
     GettersFacet getters;
+    IRen renPool;
+    IMIM mimPool;
 
     IERC20 USDT;
-    IWETH WETH;
+    IERC20 WBTC;
+    IERC20 renBTC;
+    IERC20 USDC;
+    IERC20 MIM;
     IERC20Facet PYY;
+    IWETH WETH;
 
     uint dappFee;
     uint slippageOnCurve;

@@ -7,12 +7,13 @@ import {IRenPool, ITricrypto} from '../interfaces/ICurve.sol';
 import '@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol';
 import './VaultFacet.sol';
 import '../libraries/Helpers.sol';
-import '../interfaces/ICrvLpToken.sol';
 import '../AppStorage.sol';
+import '../interfaces/ICrvLpToken.sol';
+import '../interfaces/IWETH.sol';
+// import '../interfaces/IRen.sol';
 
 import 'hardhat/console.sol';
 
-import '../interfaces/IWETH.sol';
 
 
 
@@ -67,10 +68,36 @@ contract ManagerFacet {
         return (netAmount, fee);
     }
 
-    function swapsForUserToken(uint _amountIn, uint _tokenOut) public payable {
+    function _finalRouteUserToken(uint _tokenIn, uint _tokenOut, IERC20 _contractIn) private {
+        uint minOut = 
+    }
+
+    function swapsForUserToken(uint _amountIn, uint _tokenOut, address _userToken) public payable {
+
         uint minOut = s.tricrypto.get_dy(2, _tokenOut, _amountIn);
         uint slippage = minOut._calculateSlippage(s.slippageTradingCurve);
         s.tricrypto.exchange{value: _amountIn}(2, _tokenOut, _amountIn, slippage, true);
+
+        if (_userToken == address(s.renBTC)) { //checking if I can define a struct in memory in this func and pass IERC20 + interface to _finalRouteUserToken()
+            //renBTC: 1 / WBTC: 0
+            uint tokenIn = 0;
+            minOut = s.renPool.get_dy(tokenIn, 1, s.WBTC.balanceOf(address(this)));
+            slippage = minOut._calculateSlippage(s.slippageTradingCurve);
+            s.renPool.exchange(tokenIn, 1, s.WBTC.balanceOf(address(this)), slippage);
+        } else if (_userToken == address(s.MIM)) {
+            //MIM: 0 / USDT: 2 / USDC: 1
+            tokenIn = 2;
+            minOut = s.mimPool.get_dy(tokenIn, 0, s.USDT.balanceOf(address(this)));
+            slippage = minOut._calculateSlippage(s.slippageTradingCurve);
+            s.mimPool.exchange_underlying(tokenIn, 0, s.USDT.balanceOf(address(this)), slippage);
+        } else if (_userToken == address(s.USDC)) {
+            tokenIn = 2;
+            minOut = s.mimPool.get_dy(tokenIn, 1, s.USDT.balanceOf(address(this)));
+            slippage = minOut._calculateSlippage(s.slippageTradingCurve);
+            s.mimPool.exchange_underlying(tokenIn, 1, s.USDT.balanceOf(address(this)), slippage);
+        }
+
+
     }
 
     /**
@@ -81,24 +108,21 @@ contract ManagerFacet {
         updateManagerState(msg.value, _user);
         uint tokenOut;
 
-        // if (_userToken == s.WBTC || _userToken == s.renBTC) {
-        //     tokenOut = 1;
-        // } else {
-        //     tokenOut = 0;
-        // }
-        
-        uint tokenOut = _userToken == address(s.USDT) ? 0 : 2;
-        IERC20 userToken = IERC20(_userToken);
+        if (_userToken == address(s.WBTC) || _userToken == address(s.renBTC)) {
+            tokenOut = 1;
+        } else {
+            tokenOut = 0;
+        }
 
         //Sends fee to Vault contract
         (uint netAmount, uint fee) = _getFee(msg.value);
         
         //Swaps ETH to userToken (USDT)  
-        swapsForUserToken(netAmount, tokenOut);
+        swapsForUserToken(netAmount, tokenOut, _userToken);
       
         //Sends userToken to user
-        uint ToUser = IERC20(userToken).balanceOf(address(this));
-        userToken.safeTransfer(_user, ToUser);
+        uint ToUser = IERC20(_userToken).balanceOf(address(this));
+        IERC20(_userToken).safeTransfer(_user, ToUser);
         
         s.WETH.deposit{value: fee}();
 

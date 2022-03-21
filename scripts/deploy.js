@@ -6,6 +6,12 @@ const {
     tricryptoAddr,
     usdtAddrArb,
     crvTricrypto,
+    wbtcAddr,
+    renBtcAddr,
+    renPoolAddr,
+    usdcAddr,
+    mimAddr,
+    mimPooAddr,
     ETH,
     dappFee,
     slippageOnCurve,
@@ -84,13 +90,19 @@ async function deploy() {
         tricryptoAddr,
         vaultFacet.address,
         crvTricrypto,
-        gettersFacet.address
+        gettersFacet.address,
+        renPoolAddr,
+        mimPooAddr
     ];
 
     const erc20sAddr = [
         usdtAddrArb,
-        wethAddr,
-        PYY.address
+        wbtcAddr,
+        renBtcAddr,
+        usdcAddr,
+        mimAddr,
+        PYY.address,
+        wethAddr
     ];
 
     const appVars = [
