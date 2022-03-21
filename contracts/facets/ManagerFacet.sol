@@ -71,56 +71,40 @@ contract ManagerFacet {
     function _finalRouteUserToken(int128 _tokenIn, int128 _tokenOut, IERC20 _contractIn) private {
         uint minOut;
         uint slippage;
+        uint inBalance = _contractIn.balanceOf(address(this));
 
         if (_tokenIn == 0) {
-            minOut = s.renPool.get_dy(_tokenIn, _tokenOut, _contractIn.balanceOf(address(this)));
+            minOut = s.renPool.get_dy(_tokenIn, _tokenOut, inBalance);
             slippage = minOut._calculateSlippage(s.slippageTradingCurve);
-            s.renPool.exchange(_tokenIn, _tokenOut, _contractIn.balanceOf(address(this)), slippage);
+            s.renPool.exchange(_tokenIn, _tokenOut, inBalance, slippage);
+        } else if (_tokenIn == 1) {
+            minOut = s.crv2Pool.get_dy(_tokenIn, _tokenOut, inBalance);
+            slippage = minOut._calculateSlippage(s.slippageTradingCurve);
+            s.USDT.approve(address(s.crv2Pool), inBalance);
+            s.crv2Pool.exchange(_tokenIn, _tokenOut, inBalance, slippage);
         } else if (_tokenIn == 2) {
-            if (_tokenOut == 0) {
-                minOut = s.mimPool.get_dy_underlying(_tokenIn, _tokenOut, _contractIn.balanceOf(address(this)));
-                slippage = minOut._calculateSlippage(s.slippageTradingCurve);
-                s.mimPool.exchange_underlying(_tokenIn, _tokenOut, _contractIn.balanceOf(address(this)), slippage);
-            } else if (_tokenOut == 1) {
-                minOut = s.mimPool.get_dy_underlying(_tokenIn, _tokenOut, _contractIn.balanceOf(address(this)));
-                slippage = minOut._calculateSlippage(s.slippageTradingCurve);
-                s.mimPool.exchange_underlying(_tokenIn, _tokenOut, _contractIn.balanceOf(address(this)), slippage);
-            }
+            minOut = s.mimPool.get_dy_underlying(_tokenIn, _tokenOut, inBalance);
+            slippage = minOut._calculateSlippage(s.slippageTradingCurve);
+            s.USDT.approve(address(s.mimPool), inBalance);
+            s.mimPool.exchange_underlying(_tokenIn, _tokenOut, inBalance, slippage);
         }
     }
 
     function swapsForUserToken(uint _amountIn, uint _baseTokenOut, address _userToken) public payable {
-
         uint minOut = s.tricrypto.get_dy(2, _baseTokenOut, _amountIn);
         uint slippage = minOut._calculateSlippage(s.slippageTradingCurve);
         s.tricrypto.exchange{value: _amountIn}(2, _baseTokenOut, _amountIn, slippage, true);
 
         if (_userToken == address(s.renBTC)) { 
             //renBTC: 1 / WBTC: 0
-            // uint tokenIn = 0;
-            // minOut = s.renPool.get_dy(tokenIn, 1, s.WBTC.balanceOf(address(this)));
-            // slippage = minOut._calculateSlippage(s.slippageTradingCurve);
-            // s.renPool.exchange(tokenIn, 1, s.WBTC.balanceOf(address(this)), slippage);
-
             _finalRouteUserToken(0, 1, s.WBTC);
         } else if (_userToken == address(s.MIM)) {
             //MIM: 0 / USDT: 2 / USDC: 1
-            // tokenIn = 2;
-            // minOut = s.mimPool.get_dy(tokenIn, 0, s.USDT.balanceOf(address(this)));
-            // slippage = minOut._calculateSlippage(s.slippageTradingCurve);
-            // s.mimPool.exchange_underlying(tokenIn, 0, s.USDT.balanceOf(address(this)), slippage);
-
             _finalRouteUserToken(2, 0, s.USDT);
         } else if (_userToken == address(s.USDC)) {
-            // tokenIn = 2;
-            // minOut = s.mimPool.get_dy(tokenIn, 1, s.USDT.balanceOf(address(this)));
-            // slippage = minOut._calculateSlippage(s.slippageTradingCurve);
-            // s.mimPool.exchange_underlying(tokenIn, 1, s.USDT.balanceOf(address(this)), slippage);
-
-            _finalRouteUserToken(2, 1, s.USDT);
+            //USDC: 0 / USDT: 1
+            _finalRouteUserToken(1, 0, s.USDT);
         }
-
-
     }
 
     /**
@@ -138,14 +122,14 @@ contract ManagerFacet {
         }
 
         //Sends fee to Vault contract
-        (uint netAmount, uint fee) = _getFee(msg.value);
+        (uint netAmountIn, uint fee) = _getFee(msg.value);
         
         //Swaps ETH to userToken (Base: USDT/WBTC - Route: MIM/USDC/renBTC/WBTC)  
-        swapsForUserToken(netAmount, baseTokenOut, _userToken);
+        swapsForUserToken(netAmountIn, baseTokenOut, _userToken);
       
         //Sends userToken to user
-        uint ToUser = IERC20(_userToken).balanceOf(address(this));
-        IERC20(_userToken).safeTransfer(_user, ToUser);
+        uint toUser = IERC20(_userToken).balanceOf(address(this));
+        IERC20(_userToken).safeTransfer(_user, toUser);
         
         s.WETH.deposit{value: fee}();
 

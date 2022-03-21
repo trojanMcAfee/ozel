@@ -60,6 +60,7 @@ contract DiamondInit {
         s.getters = GettersFacet(_vars.contracts[4]);
         s.renPool = IRen(_vars.contracts[5]);
         s.mimPool = IMIM(_vars.contracts[6]);
+        s.crv2Pool = I2crv(_vars.contracts[7]);
 
         //Sets ERC20 instances
         s.USDT = IERC20(_vars.erc20s[0]);

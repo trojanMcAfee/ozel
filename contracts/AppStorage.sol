@@ -3,11 +3,12 @@ pragma solidity ^0.8.0;
 
 import './facets/ManagerFacet.sol';
 import './facets/ERC20Facet/IERC20Facet.sol';
-import {IRen, ITricrypto, IMIM} from './interfaces/ICurve.sol';
+import {IRen, ITricrypto, IMIM, I2crv} from './interfaces/ICurve.sol';
 import './facets/VaultFacet.sol';
 import '@openzeppelin/contracts/token/ERC20/IERC20.sol';
 import './facets/GettersFacet.sol';
 import './interfaces/IWETH.sol';
+
 
 struct AppStorage { 
     ManagerFacet manager; 
@@ -17,6 +18,7 @@ struct AppStorage {
     GettersFacet getters;
     IRen renPool;
     IMIM mimPool;
+    I2crv crv2Pool;
 
     IERC20 USDT;
     IERC20 WBTC;

@@ -13,6 +13,17 @@ interface IRen {
     function get_dy(int128 i, int128 j, uint256 dx) external returns(uint256);
 }
 
+interface I2crv {
+  function exchange(
+      int128 i,
+      int128 j,
+      uint256 dx,
+      uint256 min_dy
+    ) external returns(uint256);
+
+    function get_dy(int128 i, int128 j, uint256 dx) external returns(uint256);
+}
+
 
 interface ITricrypto {
   function exchange(

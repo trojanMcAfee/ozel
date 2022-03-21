@@ -113,7 +113,7 @@ async function approvePYY(caller) {
     await PYY.connect(signer).approve(managerFacet.address, MaxUint256);
 }
 
-//Sends ETH to contracts (simulates ETH bridging) ** MAIN FUNCTION **
+//Sends ETH to contracts (simulates ETH bridging) **** MAIN FUNCTION ****
 async function sendETH(userAddr, userToken, IERC20, tokenStr, decimals) {
     const value = ethers.utils.parseEther('100');
     await callDiamondProxy({

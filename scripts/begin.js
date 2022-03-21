@@ -21,6 +21,9 @@ const {
     hopBridge,
     usdtAddrArb,
     wbtcAddr,
+    renBtcAddr,
+    usdcAddr,
+    mimAddr,
     inbox,
     signerX,
     l2Provider,
@@ -289,16 +292,17 @@ async function beginSimulatedDiamond() {
     console.log('crvTricrypto token balance on diamondProxy: ', formatEther(await crvTri.balanceOf(deployedDiamond.address)));
     console.log('---------------------------------------'); 
 
-    console.log('return here');
-    return;
 
     // //First user - 2nd transfer
     console.log('1st user second transfer'); 
-    await sendETH(callerAddr, usdtAddrArb, USDT, 'USDT', 10 ** 6);
+    await sendETH(callerAddr, mimAddr, MIM, 'MIM', 10 ** 18); //in Arb, USDC has 6
     console.log('PYY balance on caller 1 after 2nd swap: ', formatEther(await balanceOfPYY(callerAddr)));
     console.log('PYY balance on caller 2 after caller1 2nd swap: ', formatEther(await balanceOfPYY(caller2Addr)));
     console.log('crvTricrypto token balance on diamondProxy: ', formatEther(await crvTri.balanceOf(deployedDiamond.address)));
     console.log('---------------------------------------'); 
+
+    console.log('return here');
+    return;
     
     //Transfer half of PYY from caller1 to caller2
     console.log('Transfer half of PYY');

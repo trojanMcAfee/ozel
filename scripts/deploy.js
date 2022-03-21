@@ -12,6 +12,7 @@ const {
     usdcAddr,
     mimAddr,
     mimPoolAddr,
+    crv2PoolAddr,
     ETH,
     dappFee,
     slippageOnCurve,
@@ -96,7 +97,8 @@ async function deploy() {
         crvTricrypto,
         gettersFacet.address,
         renPoolAddr,
-        mimPoolAddr
+        mimPoolAddr,
+        crv2PoolAddr
     ];
 
     const erc20sAddr = [
