@@ -57,7 +57,7 @@ async function deploy() {
     console.log('Caller 2: ', caller2Addr);
     console.log('--');
 
-    // const WETH = await hre.ethers.getContractAt('IERC20', wethAddr);
+    const WETH = await hre.ethers.getContractAt('IERC20', wethAddr);
     const USDT = await hre.ethers.getContractAt('IERC20', usdtAddrArb);
     const WBTC = await hre.ethers.getContractAt('IERC20', wbtcAddr);
     const renBTC = await hre.ethers.getContractAt('IERC20', renBtcAddr);
@@ -173,6 +173,7 @@ async function deploy() {
 
     return {
         deployedDiamond, 
+        WETH,
         USDT,
         WBTC,
         renBTC,

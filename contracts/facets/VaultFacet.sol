@@ -9,6 +9,7 @@ import '../interfaces/ICrvLpToken.sol';
 import './ManagerFacet.sol';
 
 import '../AppStorage.sol';
+import '../interfaces/IWETH.sol';
 
 
 
@@ -80,8 +81,8 @@ contract VaultFacet { //Remember to write a function to withdraw/convert CRV
         require(success, 'VaultFacet: modifyPaymentsAndVolumeExternally failed');
 
         uint i;
-        if (_userToken == address(s.USDT)) {
-            i = 0;
+        if (_userToken == address(s.USDT)) { 
+            i = 2; //0
         } else if (_userToken == address(s.WETH)) {
             i = 2;
         }
@@ -94,13 +95,11 @@ contract VaultFacet { //Remember to write a function to withdraw/convert CRV
         (success, ) = _userToken.call(
             abi.encodeWithSignature(
                 'transfer(address,uint256)', 
-                _user, userTokens
-            )
+                _user, userTokens 
+            ) 
         );
         require(success, 'VaultFacet: call transfer() failed'); 
     }
-
-    
 
 } 
 
