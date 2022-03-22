@@ -26,11 +26,8 @@ contract ManagerFacet {
 
 
     function updateIndex() private { 
-        console.log(5);
-        console.log('s.totalVolume: ', s.totalVolume);
         s.distributionIndex = 
             s.totalVolume != 0 ? ((1 ether * 10 ** 8) / s.totalVolume) : 0;
-        console.log(6);
     }
 
     function modifyPaymentsAndVolumeExternally(address _user, uint _newAmount) external {
