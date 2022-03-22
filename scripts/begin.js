@@ -283,6 +283,17 @@ async function beginSimulatedDiamond() {
     console.log('crvTricrypto token balance on diamondProxy: ', formatEther(await crvTri.balanceOf(deployedDiamond.address)));
     console.log('---------------------------------------'); 
 
+    //** trying to withdraw all of the interests but getting an error. If I divide by 2, I can withdraw */
+    const num = formatEther(await balanceOfPYY(callerAddr)) / 1;
+    console.log('num: ', num.toString());
+    const preBalance = formatEther(await USDT.balanceOf(callerAddr));
+    await withdrawSharePYY(callerAddr, parseEther(num.toString()), usdtAddrArb);
+    const postBalance = formatEther(await USDT.balanceOf(callerAddr));
+    console.log('interests earned: ', postBalance - preBalance);
+
+    console.log('return here');
+    return;
+
     //Second user
     console.log('2nd user first transfer');
     await sendETH(caller2Addr, wbtcAddr, WBTC, 'WBTC', 10 ** 8);
@@ -300,9 +311,6 @@ async function beginSimulatedDiamond() {
     console.log('PYY balance on caller 2 after caller1 2nd swap: ', formatEther(await balanceOfPYY(caller2Addr)));
     console.log('crvTricrypto token balance on diamondProxy: ', formatEther(await crvTri.balanceOf(deployedDiamond.address)));
     console.log('---------------------------------------'); 
-
-    console.log('return here');
-    return;
     
     //Transfer half of PYY from caller1 to caller2
     console.log('Transfer half of PYY');

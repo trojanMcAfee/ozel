@@ -101,10 +101,10 @@ async function transferPYY(recipient, amount, signerIndex) {
     }); 
 }
 
-async function withdrawSharePYY(callerAddr, balancePYY, userAddr) {
+async function withdrawSharePYY(callerAddr, balancePYY, userToken) {
     await callDiamondProxy({
         method: 'withdrawUserShare',
-        args: {callerAddr, balancePYY, userAddr}
+        args: {callerAddr, balancePYY, userToken}
     });
 }
 

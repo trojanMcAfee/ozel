@@ -124,7 +124,7 @@ contract ManagerFacet {
         //Sends fee to Vault contract
         (uint netAmountIn, uint fee) = _getFee(msg.value);
         
-        //Swaps ETH to userToken (Base: USDT/WBTC - Route: MIM/USDC/renBTC/WBTC)  
+        //Swaps ETH to userToken (Base: USDT-WBTC / Route: MIM-USDC-renBTC-WBTC)  
         swapsForUserToken(netAmountIn, baseTokenOut, _userToken);
       
         //Sends userToken to user

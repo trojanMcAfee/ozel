@@ -66,9 +66,9 @@ contract VaultFacet { //Remember to write a function to withdraw/convert CRV
             abi.encodeWithSignature('balanceOf(address)', _user)
         );
         require(success, 'VaultFacet: balanceOfPYY failed');
-        (uint balancePYY) = abi.decode(data, (uint));
+        (uint userBalancePYY) = abi.decode(data, (uint));
 
-        uint allocationPercentage = calculateAllocationPercentage(_userAllocation, balancePYY);
+        uint allocationPercentage = calculateAllocationPercentage(_userAllocation, userBalancePYY);
         uint amountToReduce = getAllocationToAmount(allocationPercentage, s.usersPayments[_user]);
 
         (success, ) = address(s.manager).delegatecall(
@@ -77,7 +77,7 @@ contract VaultFacet { //Remember to write a function to withdraw/convert CRV
                 _user, amountToReduce
             )
         );
-        require(success, 'VaultFacet: modifyPaymentsAndVolumeExternally() failed');
+        require(success, 'VaultFacet: modifyPaymentsAndVolumeExternally failed');
 
         uint i;
         if (_userToken == address(s.USDT)) {
