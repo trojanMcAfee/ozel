@@ -283,7 +283,7 @@ async function beginSimulatedDiamond() {
     console.log('crvTricrypto token balance on diamondProxy: ', formatEther(await crvTri.balanceOf(deployedDiamond.address)));
     console.log('---------------------------------------'); 
 
-    //** trying to withdraw all of the interests but getting an error. If I divide by 2, I can withdraw */
+    
     const num = formatEther(await balanceOfPYY(callerAddr)) / 1;
     console.log('num: ', num.toString());
     const preBalance = formatEther(await USDT.balanceOf(callerAddr));

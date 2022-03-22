@@ -68,8 +68,15 @@ contract VaultFacet { //Remember to write a function to withdraw/convert CRV
         require(success, 'VaultFacet: balanceOfPYY failed');
         (uint userBalancePYY) = abi.decode(data, (uint));
 
+        console.log('_userAllocation: ', _userAllocation);
+
         uint allocationPercentage = calculateAllocationPercentage(_userAllocation, userBalancePYY);
+        console.log('allocationPercentage: ', allocationPercentage);
+        
         uint amountToReduce = getAllocationToAmount(allocationPercentage, s.usersPayments[_user]);
+
+        console.log('user: ', _user);
+        console.log('amountToReduce: ', amountToReduce);
 
         (success, ) = address(s.manager).delegatecall(
             abi.encodeWithSignature(
