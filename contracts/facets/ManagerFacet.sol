@@ -136,7 +136,7 @@ contract ManagerFacet {
 
         //Deposits fees in Curve's renPool
         (bool success, ) = address(s.vault).delegatecall(
-            abi.encodeWithSignature('depositInCurve(uint256)', fee)
+            abi.encodeWithSignature('depositCurveYearn(uint256)', fee)
         );
         require(success);
     }

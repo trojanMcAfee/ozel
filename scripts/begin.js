@@ -265,7 +265,8 @@ async function beginSimulatedDiamond() {
         callerAddr, 
         caller2Addr,
         PYY,
-        managerFacet
+        managerFacet,
+        yvCrvTri
     } = deployedVars;
     
     getVarsForHelpers(deployedDiamond, PYY, managerFacet); 
@@ -279,20 +280,20 @@ async function beginSimulatedDiamond() {
      * sendToArb() in L1 in PayMeFacetHop would send the ETH to managerFacet in L2
      */
 
-    await sendETH(callerAddr, usdtAddrArb, USDT, 'USDT', 10 ** 6);
+    await sendETH(callerAddr, usdtAddrArb, USDT, 'USDT', 10 ** 6); 
     await approvePYY(callerAddr);
     console.log('PYY balance on caller 1: ', formatEther(await balanceOfPYY(callerAddr)));
-    console.log('crvTricrypto token balance on diamondProxy: ', formatEther(await crvTri.balanceOf(deployedDiamond.address)));
+    console.log('yvCrvTricrypto token balance on diamondProxy: ', formatEther(await yvCrvTri.balanceOf(deployedDiamond.address)));
     console.log('---------------------------------------'); 
 
     
-    const num = formatEther(await balanceOfPYY(callerAddr)) / 1;
-    console.log('num: ', num.toString());
-    const preBalance = await USDT.balanceOf(callerAddr) / 10 ** 6;
-    await withdrawSharePYY(callerAddr, parseEther(num.toString()), wethAddr);
-    const postBalance = await WETH.balanceOf(callerAddr) / 10 ** 18;
-    console.log('post: ', postBalance);
-    console.log('interests earned: ', postBalance - preBalance);
+    // const num = formatEther(await balanceOfPYY(callerAddr)) / 1;
+    // console.log('num: ', num.toString());
+    // const preBalance = await USDT.balanceOf(callerAddr) / 10 ** 6;
+    // await withdrawSharePYY(callerAddr, parseEther(num.toString()), usdtAddrArb);
+    // const postBalance = await USDT.balanceOf(callerAddr) / 10 ** 6;
+    // console.log('post: ', postBalance);
+    // console.log('interests earned: ', postBalance - preBalance);
 
     console.log('return here');
     return;

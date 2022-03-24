@@ -13,6 +13,7 @@ const {
     mimAddr,
     mimPoolAddr,
     crv2PoolAddr,
+    yTricryptoPoolAddr,
     ETH,
     dappFee,
     slippageOnCurve,
@@ -64,6 +65,7 @@ async function deploy() {
     const USDC = await hre.ethers.getContractAt('IERC20', usdcAddr);
     const MIM = await hre.ethers.getContractAt('IERC20', mimAddr);
     const crvTri = await hre.ethers.getContractAt('IERC20', crvTricrypto);
+    const yvCrvTri = await hre.ethers.getContractAt('IYtricrypto', yTricryptoPoolAddr);
 
     //Facets
     const diamondCutFacet = await deployFacet('DiamondCutFacet');
@@ -98,7 +100,8 @@ async function deploy() {
         gettersFacet.address,
         renPoolAddr,
         mimPoolAddr,
-        crv2PoolAddr
+        crv2PoolAddr,
+        yTricryptoPoolAddr
     ];
 
     const erc20sAddr = [
@@ -183,7 +186,8 @@ async function deploy() {
         callerAddr, 
         caller2Addr,
         PYY,
-        managerFacet
+        managerFacet,
+        yvCrvTri
     };
 
 }

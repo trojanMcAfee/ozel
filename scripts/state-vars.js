@@ -8,6 +8,7 @@ let crvTricrypto;
 let renPoolAddr;
 let mimPoolAddr;
 let crv2PoolAddr;
+let yTricryptoPoolAddr;
 const ETH = '0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE';
 const dappFee = 10; //prev: 10 -> 0.1% / 100-1 / 1000-10 / 10000 - 100%
 const slippageOnCurve = 100; //bp: 100 -> 1%
@@ -56,6 +57,7 @@ switch(network) {
         mimAddr = '0x99D8a9C45b2ecA8864373A26D1459e3Dff1e17F3';
         mimPoolAddr = '0x5a6A4D54456819380173272A5E8E9B9904BdF41B'; //it differs from arb as 3crv to 2crv
         crv2PoolAddr = '0xbEbc44782C7dB0a1A60Cb6fe97d0b483032FF1C7'; //crv3
+        yTricryptoPoolAddr = '';
         break; 
     case 'arbitrum':
         pokeMeOpsAddr = '0xB3f5503f93d5Ef84b06993a1975B9D21B962892F'; //mainnet
@@ -73,6 +75,7 @@ switch(network) {
         mimAddr = '0xFEa7a6a0B346362BF88A9e4A88416B77a57D6c2A';
         mimPoolAddr = '0x30dF229cefa463e991e29D42DB0bae2e122B2AC7';
         crv2PoolAddr = '0x7f90122BF0700F9E7e1F688fe926940E8839F353';
+        yTricryptoPoolAddr = '0x239e14A19DFF93a17339DCC444f74406C17f8E67';
 } 
 
 
@@ -89,6 +92,7 @@ module.exports = {
     renPoolAddr,
     mimPoolAddr,
     crv2PoolAddr,
+    yTricryptoPoolAddr,
     ETH,
     dappFee,
     slippageOnCurve,

@@ -8,6 +8,7 @@ import './facets/VaultFacet.sol';
 import '@openzeppelin/contracts/token/ERC20/IERC20.sol';
 import './facets/GettersFacet.sol';
 import './interfaces/IWETH.sol';
+import './interfaces/IYtricrypto.sol';
 
 
 struct AppStorage { 
@@ -19,6 +20,7 @@ struct AppStorage {
     IRen renPool;
     IMIM mimPool;
     I2crv crv2Pool;
+    IYtricrypto yTriPool;
 
     IERC20 USDT;
     IERC20 WBTC;

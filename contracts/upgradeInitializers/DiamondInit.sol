@@ -25,6 +25,7 @@ import '../facets/GettersFacet.sol';
 import 'hardhat/console.sol';
 
 import '../interfaces/IWETH.sol';
+import '../interfaces/IYtricrypto.sol';
 
 
 
@@ -61,6 +62,7 @@ contract DiamondInit {
         s.renPool = IRen(_vars.contracts[5]);
         s.mimPool = IMIM(_vars.contracts[6]);
         s.crv2Pool = I2crv(_vars.contracts[7]);
+        s.yTriPool = IYtricrypto(_vars.contracts[8]);
 
         //Sets ERC20 instances
         s.USDT = IERC20(_vars.erc20s[0]);

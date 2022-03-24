@@ -13,7 +13,7 @@ import '../interfaces/IWETH.sol';
 
 
 
-contract VaultFacet { //Remember to write a function to withdraw/convert CRV 
+contract VaultFacet { 
 
     AppStorage s;
 
@@ -37,11 +37,16 @@ contract VaultFacet { //Remember to write a function to withdraw/convert CRV
     }
     
 
-    function depositInCurve(uint _fee) public payable {
+    function depositCurveYearn(uint _fee) public payable {
+        //Deposit WETH in Curve Tricrypto pool
         (uint tokenAmountIn, uint[3] memory amounts) = _calculateTokenAmountCurve(_fee);
         uint minAmount = tokenAmountIn._calculateSlippage(s.slippageOnCurve);
         s.WETH.approve(address(s.tricrypto), tokenAmountIn);
         s.tricrypto.add_liquidity(amounts, minAmount);
+
+        //Deposit crvTricrypto in Yearn
+        s.crvTricrypto.approve(address(s.yTriPool), s.crvTricrypto.balanceOf(address(this)));
+        s.yTriPool.deposit(s.crvTricrypto.balanceOf(address(this)));
     }
 
     function getTotalInUSD() public view returns(uint total) {
@@ -82,7 +87,7 @@ contract VaultFacet { //Remember to write a function to withdraw/convert CRV
 
         uint i;
         if (_userToken == address(s.USDT)) { 
-            i = 2; //0
+            i = 0; //0
         } else if (_userToken == address(s.WETH)) {
             i = 2;
         }
