@@ -22,6 +22,8 @@ interface I2crv {
     ) external returns(uint256);
 
     function get_dy(int128 i, int128 j, uint256 dx) external returns(uint256);
+    function calc_withdraw_one_coin(uint256 token_amount, int128 i) external returns(uint256);
+    function remove_liquidity_one_coin(uint256 token_amount, int128 i, uint256 min_amount) external;
 }
 
 
@@ -51,5 +53,7 @@ interface IMIM {
   ) external returns (uint256);
 
   function get_dy_underlying(int128 i, int128 j, uint dx) external returns(uint256);
+  function calc_withdraw_one_coin(uint256 token_amount, int128 i) external returns(uint256);
+  function remove_liquidity_one_coin(uint256 token_amount, int128 i, uint256 min_amount) external;
 }
 

@@ -86,14 +86,17 @@ contract VaultFacet {
         );
         require(success, 'VaultFacet: modifyPaymentsAndVolumeExternally failed');
 
-        uint i;
+        uint i; //crv2- USDT: 1 , USDC: 0 / mim- MIM: 0 , CRV2lp: 1
+        uint tokenAmountIn;
+        uint minAmount;
+        address curvePool;
         if (_userToken == address(s.USDT)) { 
             i = 0; 
         } else if (_userToken == address(s.WETH)) {
             i = 2;
         }
 
-        uint tokenAmountIn = s.tricrypto.calc_withdraw_one_coin(userShareTokens, i);
+        uint tokenAmountIn = s.tricrypto.calc_withdraw_one_coin(userShareTokens, i); //grab these three, put them into a func and then on each if block
         uint minAmount = tokenAmountIn._calculateSlippage(s.slippageOnCurve);
         s.tricrypto.remove_liquidity_one_coin(userShareTokens, i, minAmount);
 
