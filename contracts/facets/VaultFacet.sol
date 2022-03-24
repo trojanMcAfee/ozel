@@ -65,6 +65,7 @@ contract VaultFacet {
 
     
     function withdrawUserShare(address _user, uint _userAllocation, address _userToken) public {
+        s.yTriPool.withdraw(s.yTriPool.balanceOf(address(this)));
         uint vaultBalance = s.crvTricrypto.balanceOf(address(this));
         uint userShareTokens = getAllocationToAmount(_userAllocation, vaultBalance);
 
@@ -87,7 +88,7 @@ contract VaultFacet {
 
         uint i;
         if (_userToken == address(s.USDT)) { 
-            i = 0; //0
+            i = 0; 
         } else if (_userToken == address(s.WETH)) {
             i = 2;
         }

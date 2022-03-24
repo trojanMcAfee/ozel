@@ -287,13 +287,13 @@ async function beginSimulatedDiamond() {
     console.log('---------------------------------------'); 
 
     
-    // const num = formatEther(await balanceOfPYY(callerAddr)) / 1;
-    // console.log('num: ', num.toString());
-    // const preBalance = await USDT.balanceOf(callerAddr) / 10 ** 6;
-    // await withdrawSharePYY(callerAddr, parseEther(num.toString()), usdtAddrArb);
-    // const postBalance = await USDT.balanceOf(callerAddr) / 10 ** 6;
-    // console.log('post: ', postBalance);
-    // console.log('interests earned: ', postBalance - preBalance);
+    const num = formatEther(await balanceOfPYY(callerAddr)) / 1;
+    console.log('num: ', num.toString());
+    const preBalance = await USDT.balanceOf(callerAddr) / 10 ** 6;
+    await withdrawSharePYY(callerAddr, parseEther(num.toString()), usdtAddrArb);
+    const postBalance = await USDT.balanceOf(callerAddr) / 10 ** 6;
+    console.log('post: ', postBalance);
+    console.log('interests earned: ', postBalance - preBalance);
 
     console.log('return here');
     return;
