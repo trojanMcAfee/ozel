@@ -19,6 +19,12 @@ contract VaultFacet {
 
     using Helpers for uint256;
 
+    struct TokenLiq {
+        uint amountIn;
+        uint[2] biLiq;
+        uint[3] triLiq;
+    }
+
     /**
     BTC: 1 / USDT: 0 / WETH: 2
      */
@@ -27,22 +33,67 @@ contract VaultFacet {
         balance = IERC20Facet(_token).balanceOf(address(this));
     }
 
-    function _calculateTokenAmountCurve(uint _wethAmountIn) private returns(uint, uint[3] memory) {
-        uint[3] memory amounts;
-        amounts[0] = 0;
-        amounts[1] = 0;
-        amounts[2] = _wethAmountIn;
-        uint tokenAmount = s.tricrypto.calc_token_amount(amounts, true);
-        return (tokenAmount, amounts);
-    }
+    function _calculateTokenAmountCurve(uint amountIn_, uint length_) private returns(TokenLiq memory tokens) {
+        // TokenLiq memory tokens;
+        uint tokenAmount;
+
+        if (length_ == 3) { 
+            uint[3] memory amounts;
+            amounts[0] = 0;
+            amounts[1] = 0;
+            amounts[2] = amountIn_;
+            tokenAmount = s.tricrypto.calc_token_amount(amounts, true);
+            tokens.amountIn = tokenAmount;
+            tokens.triLiq = amounts;
+        } else if (length_ == 2) {
+            uint[2] memory amounts;
+            amounts[0] = 0;
+            amounts[1] = amountIn_;
+            tokenAmount = s.crv2Pool.calc_token_amount(amounts, true);
+            tokens.amountIn = tokenAmount;
+            tokens.biLiq = amounts;
+        }
+
+        // uint tokenAmount = s.tricrypto.calc_token_amount(amounts, true);
+        
+
+        // // uint[] memory amounts = new uint[](length_);
+        // // uint[3] memory amounts;
+        // // uint tokenAmount;
+
+        // for (uint i=0; i < amounts.length; i++) {
+        //     // if (i == amounts.length - 1) {
+        //     //     amounts[i] = amountIn_;
+        //     // } else {
+        //     //     amounts[i] = 0;
+        //     // }
+        //     i == amounts.length - 1 ?
+        //         amounts[i] = amountIn_ :
+        //            amounts[i] = 0; 
+        // }
+
+        // if (length_ == 3) {
+        //     tokenAmount = s.tricrypto.calc_token_amount(amounts, true);
+        // }
+
+
+
+        // uint[3] memory amounts;
+        // amounts[0] = 0;
+        // amounts[1] = 0;
+        // amounts[2] = _wethAmountIn;
+        // uint tokenAmount = s.tricrypto.calc_token_amount(amounts, true);
+        // return (tokenAmount, amounts);
+    } 
     
 
     function depositCurveYearn(uint _fee) public payable {
         //Deposit WETH in Curve Tricrypto pool
-        (uint tokenAmountIn, uint[3] memory amounts) = _calculateTokenAmountCurve(_fee);
-        uint minAmount = tokenAmountIn._calculateSlippage(s.slippageOnCurve);
-        s.WETH.approve(address(s.tricrypto), tokenAmountIn);
-        s.tricrypto.add_liquidity(amounts, minAmount);
+        // (uint tokenAmountIn, uint[3] memory amounts) = _calculateTokenAmountCurve(_fee);
+        (TokenLiq memory tokens) = _calculateTokenAmountCurve(_fee, 3);
+        uint minAmount = tokens.amountIn._calculateSlippage(s.slippageOnCurve);
+        s.WETH.approve(address(s.tricrypto), tokens.amountIn);
+        s.tricrypto.add_liquidity(tokens.triLiq, minAmount);
 
         //Deposit crvTricrypto in Yearn
         s.crvTricrypto.approve(address(s.yTriPool), s.crvTricrypto.balanceOf(address(this)));
@@ -86,19 +137,34 @@ contract VaultFacet {
         );
         require(success, 'VaultFacet: modifyPaymentsAndVolumeExternally failed');
 
-        uint i; //crv2- USDT: 1 , USDC: 0 / mim- MIM: 0 , CRV2lp: 1
-        uint tokenAmountIn;
-        uint minAmount;
-        address curvePool;
-        if (_userToken == address(s.USDT)) { 
-            i = 0; 
-        } else if (_userToken == address(s.WETH)) {
-            i = 2;
+        //tricrypto= USDT: 0 / crv2- USDT: 1 , USDC: 0 / mim- MIM: 0 , CRV2lp: 1
+        uint tokenAmountIn = s.tricrypto.calc_withdraw_one_coin(userShareTokens, 0);
+        uint minOut = tokenAmountIn._calculateSlippage(s.slippageOnCurve);
+        s.tricrypto.remove_liquidity_one_coin(userShareTokens, 0, minOut);
+        uint inBalance = s.USDT.balanceOf(address(this));
+        uint slippage;
+
+        if (_userToken != address(s.USDT)) {
+            s.USDT.approve(address(s.crv2Pool), inBalance);
         }
 
-        uint tokenAmountIn = s.tricrypto.calc_withdraw_one_coin(userShareTokens, i); //grab these three, put them into a func and then on each if block
-        uint minAmount = tokenAmountIn._calculateSlippage(s.slippageOnCurve);
-        s.tricrypto.remove_liquidity_one_coin(userShareTokens, i, minAmount);
+        if (_userToken == address(s.USDC)) { 
+            minOut = s.crv2Pool.get_dy(1, 0, inBalance);
+            slippage = minOut._calculateSlippage(s.slippageOnCurve);
+            s.USDT.approve(address(s.crv2Pool), inBalance);
+            s.crv2Pool.exchange(1, 0, inBalance, slippage);
+        } else if (_userToken == address(s.MIM)) {
+            (TokenLiq memory tokens) = _calculateTokenAmountCurve(inBalance, 2);
+            minOut = tokens.amountIn._calculateSlippage(s.slippageOnCurve);
+            s.crv2Pool.add_liquidity(tokens.biLiq, minOut);
+
+            inBalance = s.crv2Pool.balanceOf(address(this));
+            minOut = s.mimPool.get_dy(1, 0, inBalance);
+            slippage = minOut._calculateSlippage(s.slippageOnCurve);
+            s.crv2Pool.approve(address(s.mimPool), inBalance);
+            s.mimPool.exchange(1, 0, s.crv2Pool.balanceOf(address(this)), slippage);
+        }
+
 
         uint userTokens = IERC20Facet(_userToken).balanceOf(address(this));
         (success, ) = _userToken.call(

@@ -288,10 +288,10 @@ async function beginSimulatedDiamond() {
 
     
     const num = formatEther(await balanceOfPYY(callerAddr)) / 1;
-    console.log('num: ', num.toString());
-    const preBalance = await USDT.balanceOf(callerAddr) / 10 ** 6;
-    await withdrawSharePYY(callerAddr, parseEther(num.toString()), usdtAddrArb);
-    const postBalance = await USDT.balanceOf(callerAddr) / 10 ** 6;
+    console.log('num: ', num.toString());  
+    const preBalance = await MIM.balanceOf(callerAddr) / 10 ** 18;
+    await withdrawSharePYY(callerAddr, parseEther(num.toString()), mimAddr);
+    const postBalance = await MIM.balanceOf(callerAddr) / 10 ** 18;
     console.log('post: ', postBalance);
     console.log('interests earned: ', postBalance - preBalance);
 
