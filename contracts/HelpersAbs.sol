@@ -55,7 +55,7 @@ abstract contract HelpersAbs {
             slippage = calculateSlippage(minOut, s.slippageTradingCurve);
             s.USDT.approve(address(s.fraxPool), inBalance);
             s.fraxPool.exchange_underlying(tokenIn_, tokenOut_, inBalance, slippage);
-        }
+        } 
 
     }
 

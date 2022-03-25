@@ -16,7 +16,12 @@ import { IERC165 } from "../interfaces/IERC165.sol";
 import '../AppStorage.sol'; 
 import '../facets/ManagerFacet.sol';
 import '@openzeppelin/contracts/token/ERC20/IERC20.sol';
-import {IRen, ITricrypto, IMIM, IFrax} from '../interfaces/ICurve.sol';
+import {
+    IRen, 
+    ITricrypto, 
+    IMIM, 
+    IFrax
+} from '../interfaces/ICurve.sol';
 import '../facets/VaultFacet.sol';
 import '../facets/ERC20Facet/IERC20Facet.sol';
 import '../interfaces/ICrvLpToken.sol';

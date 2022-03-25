@@ -9,6 +9,8 @@ let renPoolAddr;
 let mimPoolAddr;
 let crv2PoolAddr;
 let yTricryptoPoolAddr;
+let fraxPoolAddr;
+let fraxAddr;
 const ETH = '0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE';
 const dappFee = 10; //prev: 10 -> 0.1% / 100-1 / 1000-10 / 10000 - 100%
 const slippageOnCurve = 100; //bp: 100 -> 1%

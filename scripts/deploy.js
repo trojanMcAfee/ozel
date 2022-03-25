@@ -16,6 +16,7 @@ const {
     crv2PoolAddr,
     yTricryptoPoolAddr,
     fraxPoolAddr,
+    eurPoolAddr,
     ETH,
     dappFee,
     slippageOnCurve,
@@ -107,7 +108,7 @@ async function deploy() {
         mimPoolAddr,
         crv2PoolAddr,
         yTricryptoPoolAddr,
-        fraxPoolAddr
+        fraxPoolAddr,
     ];
 
     const erc20sAddr = [
@@ -118,7 +119,7 @@ async function deploy() {
         mimAddr,
         PYY.address,
         wethAddr,
-        fraxAddr
+        fraxAddr,
     ];
 
     const appVars = [

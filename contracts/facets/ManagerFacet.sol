@@ -87,7 +87,7 @@ contract ManagerFacet is HelpersAbs {
         } else if (_userToken == address(s.FRAX)){
             //FRAX: 0 / USDT: 2 / USDC: 1
             executeFinalTrade(2, 0, s.USDT, _userToken);
-        }
+        } 
     }
 
     /**
