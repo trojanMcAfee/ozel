@@ -103,6 +103,8 @@ contract VaultFacet is HelpersAbs {
             executeFinalTrade(1, 0, s.USDT);
         } else if (_userToken == address(s.MIM)) {
             executeFinalTrade(2, 0, s.USDT);
+        } else if (_userToken == address(s.FRAX)) {
+            executeFinalTrade(2, 0, s.USDT, _userToken);
         }
 
 

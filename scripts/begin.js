@@ -24,6 +24,7 @@ const {
     renBtcAddr,
     usdcAddr,
     mimAddr,
+    fraxAddr,
     inbox,
     signerX,
     l2Provider,
@@ -261,6 +262,7 @@ async function beginSimulatedDiamond() {
         renBTC,
         USDC,
         MIM,
+        FRAX,
         crvTri,
         callerAddr, 
         caller2Addr,
@@ -280,7 +282,7 @@ async function beginSimulatedDiamond() {
      * sendToArb() in L1 in PayMeFacetHop would send the ETH to managerFacet in L2
      */
 
-    await sendETH(callerAddr, mimAddr, MIM, 'MIM', 10 ** 18); 
+    await sendETH(callerAddr, fraxAddr, FRAX, 'FRAX', 10 ** 18); 
     await approvePYY(callerAddr);
     console.log('PYY balance on caller 1: ', formatEther(await balanceOfPYY(callerAddr)));
     console.log('yvCrvTricrypto token balance on diamondProxy: ', formatEther(await yvCrvTri.balanceOf(deployedDiamond.address)));
@@ -289,9 +291,9 @@ async function beginSimulatedDiamond() {
     
     const num = formatEther(await balanceOfPYY(callerAddr)) / 1;
     console.log('num: ', num.toString());  
-    const preBalance = await MIM.balanceOf(callerAddr) / 10 ** 18;
-    await withdrawSharePYY(callerAddr, parseEther(num.toString()), mimAddr);
-    const postBalance = await MIM.balanceOf(callerAddr) / 10 ** 18;
+    const preBalance = await FRAX.balanceOf(callerAddr) / 10 ** 18;
+    await withdrawSharePYY(callerAddr, parseEther(num.toString()), fraxAddr);
+    const postBalance = await FRAX.balanceOf(callerAddr) / 10 ** 18;
     console.log('post: ', postBalance);
     console.log('interests earned: ', postBalance - preBalance);
 

@@ -40,5 +40,24 @@ abstract contract HelpersAbs {
         }
     }
 
+    function executeFinalTrade(
+        int128 tokenIn_, 
+        int128 tokenOut_, 
+        IERC20 contractIn_, 
+        address userToken_
+    ) internal {
+        uint minOut;
+        uint slippage;
+        uint inBalance = contractIn_.balanceOf(address(this));
+
+        if (userToken_ == address(s.FRAX)) {
+            minOut = s.fraxPool.get_dy_underlying(tokenIn_, tokenOut_, inBalance);
+            slippage = calculateSlippage(minOut, s.slippageTradingCurve);
+            s.USDT.approve(address(s.fraxPool), inBalance);
+            s.fraxPool.exchange_underlying(tokenIn_, tokenOut_, inBalance, slippage);
+        }
+
+    }
+
 
 }

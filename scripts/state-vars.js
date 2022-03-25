@@ -76,6 +76,8 @@ switch(network) {
         mimPoolAddr = '0x30dF229cefa463e991e29D42DB0bae2e122B2AC7';
         crv2PoolAddr = '0x7f90122BF0700F9E7e1F688fe926940E8839F353';
         yTricryptoPoolAddr = '0x239e14A19DFF93a17339DCC444f74406C17f8E67';
+        fraxPoolAddr = '0xf07d553B195080F84F582e88ecdD54bAa122b279';
+        fraxAddr = '0x17FC002b466eEc40DaE837Fc4bE5c67993ddBd6F';
 } 
 
 
@@ -93,6 +95,8 @@ module.exports = {
     mimPoolAddr,
     crv2PoolAddr,
     yTricryptoPoolAddr,
+    fraxPoolAddr,
+    fraxAddr,
     ETH,
     dappFee,
     slippageOnCurve,

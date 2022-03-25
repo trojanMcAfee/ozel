@@ -16,7 +16,7 @@ import { IERC165 } from "../interfaces/IERC165.sol";
 import '../AppStorage.sol'; 
 import '../facets/ManagerFacet.sol';
 import '@openzeppelin/contracts/token/ERC20/IERC20.sol';
-import {IRen, ITricrypto, IMIM} from '../interfaces/ICurve.sol';
+import {IRen, ITricrypto, IMIM, IFrax} from '../interfaces/ICurve.sol';
 import '../facets/VaultFacet.sol';
 import '../facets/ERC20Facet/IERC20Facet.sol';
 import '../interfaces/ICrvLpToken.sol';
@@ -63,6 +63,7 @@ contract DiamondInit {
         s.mimPool = IMIM(_vars.contracts[6]);
         s.crv2Pool = I2crv(_vars.contracts[7]);
         s.yTriPool = IYtricrypto(_vars.contracts[8]);
+        s.fraxPool = IFrax(_vars.contracts[9]);
 
         //Sets ERC20 instances
         s.USDT = IERC20(_vars.erc20s[0]);
@@ -72,6 +73,7 @@ contract DiamondInit {
         s.MIM = IERC20(_vars.erc20s[4]);
         s.PYY = IERC20Facet(_vars.erc20s[5]);
         s.WETH = IWETH(_vars.erc20s[6]);
+        s.FRAX = IERC20(_vars.erc20s[7]);
 
         //Sets app's general variables
         s.dappFee = _vars.appVars[0];
