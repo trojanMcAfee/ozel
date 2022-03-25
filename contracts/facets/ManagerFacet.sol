@@ -11,18 +11,19 @@ import '../AppStorage.sol';
 import '../interfaces/ICrvLpToken.sol';
 import '../interfaces/IWETH.sol';
 // import '../interfaces/IRen.sol';
+import '../HelpersAbs.sol';
 
 import 'hardhat/console.sol';
 
 
 
 
-contract ManagerFacet { 
-    AppStorage s; 
+contract ManagerFacet is HelpersAbs { 
+    // AppStorage s; 
 
     using SafeERC20 for IERC20;
-    using Helpers for uint256;
-    using Helpers for address;
+    // using Helpers for uint256;
+    // using Helpers for address;
 
 
     function updateIndex() private { 
@@ -62,50 +63,50 @@ contract ManagerFacet {
         return (percentageToTransfer * s.usersPayments[_user]) / 10000;
     }
 
-    function _getFee(uint _amount) public returns(uint, uint) {
-        uint fee = _amount - _amount._calculateSlippage(s.dappFee);
+    function _getFee(uint amount_) public returns(uint, uint) {
+        uint fee = amount_ - calculateSlippage(amount_, s.dappFee);
         s.feesVault += fee;
         uint netAmount = address(this).balance - fee;
         return (netAmount, fee);
     }
 
-    function _finalRouteUserToken(int128 _tokenIn, int128 _tokenOut, IERC20 _contractIn) private {
-        uint minOut;
-        uint slippage;
-        uint inBalance = _contractIn.balanceOf(address(this));
+    // function _finalRouteUserToken(int128 _tokenIn, int128 _tokenOut, IERC20 _contractIn) private {
+    //     uint minOut;
+    //     uint slippage;
+    //     uint inBalance = _contractIn.balanceOf(address(this));
 
-        if (_tokenIn == 0) {
-            minOut = s.renPool.get_dy(_tokenIn, _tokenOut, inBalance);
-            slippage = minOut._calculateSlippage(s.slippageTradingCurve);
-            s.renPool.exchange(_tokenIn, _tokenOut, inBalance, slippage);
-        } else if (_tokenIn == 1) {
-            minOut = s.crv2Pool.get_dy(_tokenIn, _tokenOut, inBalance);
-            slippage = minOut._calculateSlippage(s.slippageTradingCurve);
-            s.USDT.approve(address(s.crv2Pool), inBalance);
-            s.crv2Pool.exchange(_tokenIn, _tokenOut, inBalance, slippage);
-        } else if (_tokenIn == 2) {
-            minOut = s.mimPool.get_dy_underlying(_tokenIn, _tokenOut, inBalance);
-            slippage = minOut._calculateSlippage(s.slippageTradingCurve);
-            s.USDT.approve(address(s.mimPool), inBalance);
-            s.mimPool.exchange_underlying(_tokenIn, _tokenOut, inBalance, slippage);
-        }
-    }
+    //     if (_tokenIn == 0) {
+    //         minOut = s.renPool.get_dy(_tokenIn, _tokenOut, inBalance);
+    //         slippage = minOut._calculateSlippage(s.slippageTradingCurve);
+    //         s.renPool.exchange(_tokenIn, _tokenOut, inBalance, slippage);
+    //     } else if (_tokenIn == 1) {
+    //         minOut = s.crv2Pool.get_dy(_tokenIn, _tokenOut, inBalance);
+    //         slippage = minOut._calculateSlippage(s.slippageTradingCurve);
+    //         s.USDT.approve(address(s.crv2Pool), inBalance);
+    //         s.crv2Pool.exchange(_tokenIn, _tokenOut, inBalance, slippage);
+    //     } else if (_tokenIn == 2) {
+    //         minOut = s.mimPool.get_dy_underlying(_tokenIn, _tokenOut, inBalance);
+    //         slippage = minOut._calculateSlippage(s.slippageTradingCurve);
+    //         s.USDT.approve(address(s.mimPool), inBalance);
+    //         s.mimPool.exchange_underlying(_tokenIn, _tokenOut, inBalance, slippage);
+    //     }
+    // } 
 
     function swapsForUserToken(uint _amountIn, uint _baseTokenOut, address _userToken) public payable {
         uint minOut = s.tricrypto.get_dy(2, _baseTokenOut, _amountIn);
-        uint slippage = minOut._calculateSlippage(s.slippageTradingCurve);
+        uint slippage = calculateSlippage(minOut, s.slippageTradingCurve);
         s.tricrypto.exchange{value: _amountIn}(2, _baseTokenOut, _amountIn, slippage, true);
 
         if (_userToken == address(s.renBTC)) { 
             //renBTC: 1 / WBTC: 0
-            _finalRouteUserToken(0, 1, s.WBTC);
+            executeFinalTrade(0, 1, s.WBTC);
         } else if (_userToken == address(s.MIM)) {
             //MIM: 0 / USDT: 2 / USDC: 1
-            _finalRouteUserToken(2, 0, s.USDT);
+            executeFinalTrade(2, 0, s.USDT);
         } else if (_userToken == address(s.USDC)) {
             //USDC: 0 / USDT: 1
-            _finalRouteUserToken(1, 0, s.USDT);
-        }
+            executeFinalTrade(1, 0, s.USDT);
+        } 
     }
 
     /**

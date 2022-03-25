@@ -70,8 +70,10 @@ async function deploy() {
     //Facets
     const diamondCutFacet = await deployFacet('DiamondCutFacet');
     const diamondLoupeFacet = await deployFacet('DiamondLoupeFacet'); 
-    const [ managerFacet, library ] = await deployFacet('ManagerFacet', 'Helpers');
-    const vaultFacet = await deployFacet('VaultFacet', 'Helpers', library);
+    const managerFacet = await deployFacet('ManagerFacet');
+    // const [ managerFacet, library ] = await deployFacet('ManagerFacet', 'Helpers');
+    const vaultFacet = await deployFacet('VaultFacet');
+    // const vaultFacet = await deployFacet('VaultFacet', 'Helpers', library);
     const PYY = await deployFacet('PayTokenFacet'); 
     const gettersFacet = await deployFacet('GettersFacet');
 

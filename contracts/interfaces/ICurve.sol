@@ -69,3 +69,10 @@ interface IMIM {
   function remove_liquidity_one_coin(uint256 token_amount, int128 i, uint256 min_amount) external;
 }
 
+
+interface IFrax {
+
+  
+  function get_dy(int128 i, int128 j, uint dx) external returns(uint256);
+}
+

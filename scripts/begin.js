@@ -280,7 +280,7 @@ async function beginSimulatedDiamond() {
      * sendToArb() in L1 in PayMeFacetHop would send the ETH to managerFacet in L2
      */
 
-    await sendETH(callerAddr, usdtAddrArb, USDT, 'USDT', 10 ** 6); 
+    await sendETH(callerAddr, mimAddr, MIM, 'MIM', 10 ** 18); 
     await approvePYY(callerAddr);
     console.log('PYY balance on caller 1: ', formatEther(await balanceOfPYY(callerAddr)));
     console.log('yvCrvTricrypto token balance on diamondProxy: ', formatEther(await yvCrvTri.balanceOf(deployedDiamond.address)));
