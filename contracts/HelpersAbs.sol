@@ -59,5 +59,19 @@ abstract contract HelpersAbs {
 
     }
 
+    function updateManagerState(
+        uint _amount, 
+        address _user
+    ) public {
+        s.usersPayments[_user] += _amount;
+        s.totalVolume += _amount;
+        updateIndex();
+    }
+
+    function updateIndex() public { 
+        s.distributionIndex = 
+            s.totalVolume != 0 ? ((1 ether * 10 ** 8) / s.totalVolume) : 0;
+    }
+
 
 }

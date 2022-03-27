@@ -57,10 +57,18 @@ contract PayMeFacetHop is OpsReady {
         (uint fee, ) = opsGel.getFeeDetails();
         _transfer(fee, ETH);
 
+        // --- deposits to Manager ----
         bytes memory data = abi.encodeWithSelector(
             Test2(payable(manager)).exchangeToUserToken.selector, 
             owner, _userToken
         );
+
+        // ---- deposits to ERC4626
+         
+        // bytes memory data = abi.encodeWithSelector(
+        //     Test2(payable(manager)).deposit.selector, 
+        //     owner, _userToken
+        // );
 
         // user ticketID later on to check the sequencer's inbox for unconfirmed txs
         uint ticketID = inbox.createRetryableTicket{value: address(this).balance}(

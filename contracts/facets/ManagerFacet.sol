@@ -15,10 +15,12 @@ import '../HelpersAbs.sol';
 
 import 'hardhat/console.sol';
 
+import './ERC4626Facet/ERC4626Facet.sol';
 
 
 
-contract ManagerFacet is HelpersAbs { 
+
+abstract contract ManagerFacet is ERC4626Facet { //need to find a way to share storage between ERC20 and Helpers without inherinting Helpers on ERC20
     // AppStorage s; 
 
     using SafeERC20 for IERC20;
@@ -26,25 +28,25 @@ contract ManagerFacet is HelpersAbs {
     // using Helpers for address;
 
 
-    function updateIndex() private { 
-        s.distributionIndex = 
-            s.totalVolume != 0 ? ((1 ether * 10 ** 8) / s.totalVolume) : 0;
-    }
+    // function updateIndex() private { 
+    //     s.distributionIndex = 
+    //         s.totalVolume != 0 ? ((1 ether * 10 ** 8) / s.totalVolume) : 0;
+    // }
 
-    function modifyPaymentsAndVolumeExternally(address _user, uint _newAmount) external {
-        s.usersPayments[_user] -= _newAmount;
-        s.totalVolume -= _newAmount;
-        updateIndex();
-    }
+    // function modifyPaymentsAndVolumeExternally(address _user, uint _newAmount) external {
+    //     s.usersPayments[_user] -= _newAmount;
+    //     s.totalVolume -= _newAmount;
+    //     updateIndex();
+    // }
 
-    function updateManagerState(
-        uint _amount, 
-        address _user
-    ) public {
-        s.usersPayments[_user] += _amount;
-        s.totalVolume += _amount;
-        updateIndex();
-    }
+    // function updateManagerState(
+    //     uint _amount, 
+    //     address _user
+    // ) public {
+    //     s.usersPayments[_user] += _amount;
+    //     s.totalVolume += _amount;
+    //     updateIndex();
+    // }
 
     function transferUserAllocation(address _sender, address _receiver, uint _amount) public {
         uint amountToTransfer = _getAllocationToTransfer(_amount, _sender);
@@ -95,8 +97,14 @@ contract ManagerFacet is HelpersAbs {
      */
 
     function exchangeToUserToken(address _user, address _userToken) external payable {
-        updateManagerState(msg.value, _user);
+        // updateManagerState(msg.value, _user);
         uint baseTokenOut;
+
+        s.WETH.deposit{value: msg.value}();
+        uint wethIn = s.WETH.balanceOf(address(this));
+
+        //deposits in ERC4626
+        deposit(wethIn, _user);
 
         if (_userToken == address(s.WBTC) || _userToken == address(s.renBTC)) {
             baseTokenOut = 1;
