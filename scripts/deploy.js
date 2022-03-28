@@ -44,9 +44,10 @@ async function deployFacet(facetName, withLib, libDeployed) {
     return withLib && !libDeployed ? [contract, library] : contract;
 }
 
-function getSelectorsFromAllFacets(facets) {
+function getSelectorsFromAllFacets(facets) { 
     const selectors = [];
     for (let i = 0; i < facets.length; i++) {
+        console.log('facets******: ', facets[0]);
         selectors.push(getSelectors(facets[i]).filter((el) => typeof el === 'string'));
     }
     return selectors;
@@ -78,7 +79,7 @@ async function deploy() {
     // const [ managerFacet, library ] = await deployFacet('ManagerFacet', 'Helpers');
     const vaultFacet = await deployFacet('VaultFacet');
     // const vaultFacet = await deployFacet('VaultFacet', 'Helpers', library);
-    const PYY = await deployFacet('PayTokenFacet'); 
+    // const PYY = await deployFacet('PayTokenFacet'); 
     const gettersFacet = await deployFacet('GettersFacet');
 
     //Selectors
@@ -86,14 +87,14 @@ async function deploy() {
         selecCut,
         selecLoup,
         selecManager,
-        selecPYY,
+        // selecPYY,
         selectGetters,
         selecVault
     ] = getSelectorsFromAllFacets([
         diamondCutFacet,
         diamondLoupeFacet,
         managerFacet,
-        PYY,
+        // PYY,
         gettersFacet,
         vaultFacet
     ]);
@@ -117,7 +118,7 @@ async function deploy() {
         renBtcAddr,
         usdcAddr,
         mimAddr,
-        PYY.address,
+        // PYY.address,
         wethAddr,
         fraxAddr,
     ];
@@ -142,7 +143,7 @@ async function deploy() {
             selecCut, 
             selecLoup, 
             selecManager, 
-            selecPYY,
+            // selecPYY,
             selectGetters,
             selecVault
         ],
@@ -150,7 +151,7 @@ async function deploy() {
             diamondCutFacet.address, 
             diamondLoupeFacet.address, 
             managerFacet.address,
-            PYY.address,
+            // PYY.address,
             gettersFacet.address,
             vaultFacet.address
         ]
@@ -173,7 +174,7 @@ async function deploy() {
             ['DiamondCutFacet', diamondCutFacet],
             ['DiamondLoupeFacet', diamondLoupeFacet],
             ['ManagerFacet', managerFacet],
-            ['PayTokenFacet', PYY],
+            // ['PayTokenFacet', PYY],
             ['GettersFacet', gettersFacet],
             ['VaultFacet', vaultFacet]
         ],
@@ -194,7 +195,7 @@ async function deploy() {
         crvTri,
         callerAddr, 
         caller2Addr,
-        PYY,
+        // PYY,
         managerFacet,
         yvCrvTri
     };

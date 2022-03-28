@@ -9,7 +9,7 @@ import '../../HelpersAbs.sol';
 
 /// @notice Minimal ERC4626 tokenized Vault implementation.
 /// @author Solmate (https://github.com/Rari-Capital/solmate/blob/main/src/mixins/ERC4626.sol)
-abstract contract ERC4626Facet is ERC20Facet, HelpersAbs {
+abstract contract ERC4626Facet is ERC20Facet {
     using SafeTransferLib for ERC20Facet;
     using FixedPointMathLib for uint256;
 
@@ -48,7 +48,7 @@ abstract contract ERC4626Facet is ERC20Facet, HelpersAbs {
         // Need to transfer before minting or ERC777s could reenter.
         // asset.safeTransferFrom(msg.sender, address(this), assets);
         // _mint(receiver, shares);
-        updateManagerState(assets, receiver);
+        updateManagerState(assets, receiver); 
 
         emit Deposit(msg.sender, receiver, assets, shares);
 
@@ -117,7 +117,9 @@ abstract contract ERC4626Facet is ERC20Facet, HelpersAbs {
                            ACCOUNTING LOGIC
     //////////////////////////////////////////////////////////////*/
 
-    function totalAssets() public view virtual returns (uint256);
+    function totalAssets() public view virtual returns (uint256) { // <------------------- ***** modify
+        return 2;
+    } 
 
     function convertToShares(uint256 assets) public view virtual returns (uint256) {
         uint256 supply = s.py[true]._totalSupply; // Saves an extra SLOAD if totalSupply is non-zero.
@@ -126,9 +128,13 @@ abstract contract ERC4626Facet is ERC20Facet, HelpersAbs {
     }
 
     function convertToAssets(uint256 shares) public view virtual returns (uint256) {
+        uint vaultBalance = s.crvTricrypto.balanceOf(address(this));
+        uint assets = ((shares * vaultBalance) / 100 * 1 ether) / 10 ** 36;
+
         uint256 supply = s.py[true]._totalSupply; // Saves an extra SLOAD if totalSupply is non-zero.
 
-        return supply == 0 ? shares : shares.mulDivDown(totalAssets(), supply);
+        return supply == 0 ? shares : assets;
+        // return supply == 0 ? shares : shares.mulDivDown(totalAssets(), supply);
     }
 
     function previewDeposit(uint256 assets) public view virtual returns (uint256) {

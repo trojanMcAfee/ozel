@@ -8,7 +8,7 @@ import './AppStorage.sol';
 
 abstract contract HelpersAbs {
 
-    AppStorage s;
+    AppStorage internal s;
 
     function calculateSlippage(
         uint _amount, 
@@ -71,6 +71,12 @@ abstract contract HelpersAbs {
     function updateIndex() public { 
         s.distributionIndex = 
             s.totalVolume != 0 ? ((1 ether * 10 ** 8) / s.totalVolume) : 0;
+    }
+
+    function modifyPaymentsAndVolumeExternally(address _user, uint _newAmount) external {
+        s.usersPayments[_user] -= _newAmount;
+        s.totalVolume -= _newAmount;
+        updateIndex();
     }
 
 

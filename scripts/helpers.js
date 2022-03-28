@@ -7,9 +7,9 @@ let PYY;
 let managerFacet;
 
 
-async function getVarsForHelpers(diamond, pyy, manager) { //...,ren
+async function getVarsForHelpers(diamond, manager) { //...,ren
     deployedDiamond = diamond;
-    PYY = pyy;
+    PYY = manager;
     managerFacet = manager;
 }
 

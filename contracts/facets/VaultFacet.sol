@@ -62,20 +62,20 @@ contract VaultFacet is HelpersAbs {
         total = virtualPrice * s.crvTricrypto.balanceOf(address(this)); //divide between 10 ** 36 to get USD
     }
 
-    function getAllocationToAmount(uint _userAllocation, uint _balance) public pure returns(uint) {
-        return ((_userAllocation * _balance) / 100 * 1 ether) / 10 ** 36;
+    function getAllocationToAmount(uint shares_, uint _balance) public pure returns(uint ratio) {
+        ratio = ((shares_ * _balance) / 100 * 1 ether) / 10 ** 36;
     }
     
 
-    function calculateAllocationPercentage(uint _userAllocation, uint _balance) public pure returns(uint) {
-        return (((_userAllocation * 10000) / _balance) * 1 ether) / 100;
+    function calculateAllocationPercentage(uint shares_, uint balance_) public pure returns(uint) {
+        return (((shares_ * 10000) / balance_) * 1 ether) / 100; //is shares and balance the same??
     }
 
     
-    function withdrawUserShare(address _user, uint _userAllocation, address _userToken) public {
+    function withdrawUserShare(address _user, uint shares_, address _userToken) public { //_userAllocation = shares_
         s.yTriPool.withdraw(s.yTriPool.balanceOf(address(this)));
         uint vaultBalance = s.crvTricrypto.balanceOf(address(this));
-        uint userShareTokens = getAllocationToAmount(_userAllocation, vaultBalance);
+        uint assets = getAllocationToAmount(shares_, vaultBalance); //assets = userShareTokens ---- previewRedeem()
 
         (bool success, bytes memory data) = address(s.PYY).delegatecall(
             abi.encodeWithSignature('balanceOf(address)', _user)
@@ -83,7 +83,7 @@ contract VaultFacet is HelpersAbs {
         require(success, 'VaultFacet: balanceOfPYY failed');
         (uint userBalancePYY) = abi.decode(data, (uint));
 
-        uint allocationPercentage = calculateAllocationPercentage(_userAllocation, userBalancePYY);
+        uint allocationPercentage = calculateAllocationPercentage(shares_, userBalancePYY);
         uint amountToReduce = getAllocationToAmount(allocationPercentage, s.usersPayments[_user]);
 
         (success, ) = address(s.manager).delegatecall(
@@ -95,9 +95,9 @@ contract VaultFacet is HelpersAbs {
         require(success, 'VaultFacet: modifyPaymentsAndVolumeExternally failed');
 
         //tricrypto= USDT: 0 / crv2- USDT: 1 , USDC: 0 / mim- MIM: 0 , CRV2lp: 1
-        uint tokenAmountIn = s.tricrypto.calc_withdraw_one_coin(userShareTokens, 0);
+        uint tokenAmountIn = s.tricrypto.calc_withdraw_one_coin(assets, 0);
         uint minOut = calculateSlippage(tokenAmountIn, s.slippageOnCurve);
-        s.tricrypto.remove_liquidity_one_coin(userShareTokens, 0, minOut);
+        s.tricrypto.remove_liquidity_one_coin(assets, 0, minOut);
 
         if (_userToken == address(s.USDC)) { 
             executeFinalTrade(1, 0, s.USDT);

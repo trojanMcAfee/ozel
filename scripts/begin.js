@@ -266,12 +266,12 @@ async function beginSimulatedDiamond() {
         crvTri,
         callerAddr, 
         caller2Addr,
-        PYY,
+        // PYY,
         managerFacet,
         yvCrvTri
     } = deployedVars;
     
-    getVarsForHelpers(deployedDiamond, PYY, managerFacet); 
+    getVarsForHelpers(deployedDiamond, managerFacet); //deployedDiamond, PYY, managerFacet
 
     //First user
     console.log('1st user first transfer');
@@ -283,19 +283,19 @@ async function beginSimulatedDiamond() {
      */
 
     await sendETH(callerAddr, fraxAddr, FRAX, 'FRAX', 10 ** 18); 
-    await approvePYY(callerAddr);
+    // await approvePYY(callerAddr);
     console.log('PYY balance on caller 1: ', formatEther(await balanceOfPYY(callerAddr)));
     console.log('yvCrvTricrypto token balance on diamondProxy: ', formatEther(await yvCrvTri.balanceOf(deployedDiamond.address)));
     console.log('---------------------------------------'); 
 
     
-    const num = formatEther(await balanceOfPYY(callerAddr)) / 1;
-    console.log('num: ', num.toString());  
-    const preBalance = await FRAX.balanceOf(callerAddr) / 10 ** 18;
-    await withdrawSharePYY(callerAddr, parseEther(num.toString()), fraxAddr);
-    const postBalance = await FRAX.balanceOf(callerAddr) / 10 ** 18;
-    console.log('post: ', postBalance);
-    console.log('interests earned: ', postBalance - preBalance);
+    // const num = formatEther(await balanceOfPYY(callerAddr)) / 1;
+    // console.log('num: ', num.toString());  
+    // const preBalance = await FRAX.balanceOf(callerAddr) / 10 ** 18;
+    // await withdrawSharePYY(callerAddr, parseEther(num.toString()), fraxAddr);
+    // const postBalance = await FRAX.balanceOf(callerAddr) / 10 ** 18;
+    // console.log('post: ', postBalance);
+    // console.log('interests earned: ', postBalance - preBalance);
 
     console.log('return here');
     return;

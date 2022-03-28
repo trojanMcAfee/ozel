@@ -76,9 +76,9 @@ contract DiamondInit {
         s.renBTC = IERC20(_vars.erc20s[2]);
         s.USDC = IERC20(_vars.erc20s[3]);
         s.MIM = IERC20(_vars.erc20s[4]);
-        s.PYY = IERC20Facet(_vars.erc20s[5]);
-        s.WETH = IWETH(_vars.erc20s[6]);
-        s.FRAX = IERC20(_vars.erc20s[7]);
+        s.PYY = ManagerFacet(_vars.contracts[0]); //<------- modify
+        s.WETH = IWETH(_vars.erc20s[5]);
+        s.FRAX = IERC20(_vars.erc20s[6]);
 
         //Sets app's general variables
         s.dappFee = _vars.appVars[0];

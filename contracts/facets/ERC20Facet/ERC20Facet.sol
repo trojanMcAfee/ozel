@@ -9,6 +9,7 @@ import "./MyContext.sol";
 import 'hardhat/console.sol';
 
 import '../../AppStorage.sol';
+import '../../HelpersAbs.sol';
 
 /**
  * @dev Implementation of the {IERC20} interface.
@@ -35,8 +36,8 @@ import '../../AppStorage.sol';
  * functions have been added to mitigate the well-known issues around setting
  * allowances. See {IERC20-approve}.
  */
-contract ERC20Facet is MyContext, IERC20Facet, MyIERC20Metadata {
-    AppStorage internal s;
+contract ERC20Facet is HelpersAbs, MyContext, IERC20Facet, MyIERC20Metadata {
+    // AppStorage internal s;
 
     /**
      * @dev Sets the values for {name} and {symbol}.
@@ -91,7 +92,7 @@ contract ERC20Facet is MyContext, IERC20Facet, MyIERC20Metadata {
      * @dev See {IERC20-balanceOf}.
      */
     function balanceOf(address account) public view virtual override returns (uint256) {
-        return s.py[true]._balances[account];
+        return (s.distributionIndex * s.usersPayments[account] * 100 ) / 10 ** 8;
     }
 
     /**
@@ -215,17 +216,20 @@ contract ERC20Facet is MyContext, IERC20Facet, MyIERC20Metadata {
         address recipient,
         uint256 amount
     ) internal virtual {
-        require(sender != address(0), "ERC20: transfer from the zero address");
-        require(recipient != address(0), "ERC20: transfer to the zero address");
+        require(sender != address(0), "ERC20Facet: transfer from the zero address");
+        require(recipient != address(0), "ERC20Facet: transfer to the zero address");
 
         _beforeTokenTransfer(sender, recipient, amount);
 
-        uint256 senderBalance = s.py[true]._balances[sender];
-        require(senderBalance >= amount, "ERC20: transfer amount exceeds balance");
-        unchecked {
-            s.py[true]._balances[sender] = senderBalance - amount;
-        }
-        s.py[true]._balances[recipient] += amount;
+        uint256 senderBalance = balanceOf(sender);
+        require(senderBalance >= amount, "ERC20Facet: transfer amount exceeds balance");
+        (bool success, ) = address(s.manager).delegatecall(
+            abi.encodeWithSignature(
+                'transferUserAllocation(address,address,uint256)', 
+                sender, recipient, amount
+            ) 
+        );
+        require(success, 'PayTokenFacet: transfer override failed');
 
         emit Transfer(sender, recipient, amount);
 

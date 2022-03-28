@@ -20,7 +20,7 @@ import './ERC4626Facet/ERC4626Facet.sol';
 
 
 
-abstract contract ManagerFacet is ERC4626Facet { //need to find a way to share storage between ERC20 and Helpers without inherinting Helpers on ERC20
+contract ManagerFacet is ERC4626Facet { 
     // AppStorage s; 
 
     using SafeERC20 for IERC20;
@@ -68,14 +68,14 @@ abstract contract ManagerFacet is ERC4626Facet { //need to find a way to share s
     function _getFee(uint amount_) public returns(uint, uint) {
         uint fee = amount_ - calculateSlippage(amount_, s.dappFee);
         s.feesVault += fee;
-        uint netAmount = address(this).balance - fee;
+        uint netAmount = s.WETH.balanceOf(address(this)) - fee;
         return (netAmount, fee);
     }
 
     function swapsForUserToken(uint _amountIn, uint _baseTokenOut, address _userToken) public payable {
         uint minOut = s.tricrypto.get_dy(2, _baseTokenOut, _amountIn);
         uint slippage = calculateSlippage(minOut, s.slippageTradingCurve);
-        s.tricrypto.exchange{value: _amountIn}(2, _baseTokenOut, _amountIn, slippage, true);
+        s.tricrypto.exchange(2, _baseTokenOut, _amountIn, slippage, false);
 
         if (_userToken == address(s.renBTC)) { 
             //renBTC: 1 / WBTC: 0
@@ -113,7 +113,7 @@ abstract contract ManagerFacet is ERC4626Facet { //need to find a way to share s
         }
 
         //Sends fee to Vault contract
-        (uint netAmountIn, uint fee) = _getFee(msg.value);
+        (uint netAmountIn, uint fee) = _getFee(wethIn);
         
         //Swaps ETH to userToken (Base: USDT-WBTC / Route: MIM-USDC-renBTC-WBTC)  
         swapsForUserToken(netAmountIn, baseTokenOut, _userToken);
@@ -122,7 +122,7 @@ abstract contract ManagerFacet is ERC4626Facet { //need to find a way to share s
         uint toUser = IERC20(_userToken).balanceOf(address(this));
         IERC20(_userToken).safeTransfer(_user, toUser);
         
-        s.WETH.deposit{value: fee}();
+        // s.WETH.deposit{value: fee}();
 
         //Deposits fees in Curve's renPool
         (bool success, ) = address(s.vault).delegatecall(
