@@ -87,7 +87,6 @@ abstract contract ERC4626Facet is ERC20Facet {
 
         emit Withdraw(msg.sender, receiver, owner, assets, shares);
 
-        // asset.safeTransfer(receiver, assets);
     }
 
     function redeem(
@@ -105,10 +104,6 @@ abstract contract ERC4626Facet is ERC20Facet {
         require((assets = previewRedeem(shares)) != 0, "ZERO_ASSETS");
 
         beforeWithdraw(assets, shares);
-
-        // uint userBalancePYY = balanceOf(owner);
-        // uint allocationPercentage = (((shares * 10000) / userBalancePYY) * 1 ether) / 100;
-        // uint amountToReduce = ((allocationPercentage * s.usersPayments[_user]) / 100 * 1 ether) / 10 ** 36;
 
         _burn(owner, shares);
 
@@ -141,7 +136,6 @@ abstract contract ERC4626Facet is ERC20Facet {
         uint256 supply = s.py[true]._totalSupply; // Saves an extra SLOAD if totalSupply is non-zero.
 
         return supply == 0 ? shares : assets;
-        // return supply == 0 ? shares : shares.mulDivDown(totalAssets(), supply);
     }
 
     function previewDeposit(uint256 assets) public view virtual returns (uint256) {

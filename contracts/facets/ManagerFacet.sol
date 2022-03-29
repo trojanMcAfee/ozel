@@ -21,33 +21,11 @@ import './ERC4626Facet/ERC4626Facet.sol';
 
 
 contract ManagerFacet is ERC4626Facet { 
-    // AppStorage s; 
 
     using SafeERC20 for IERC20;
-    // using Helpers for uint256;
-    // using Helpers for address;
 
 
-    // function updateIndex() private { 
-    //     s.distributionIndex = 
-    //         s.totalVolume != 0 ? ((1 ether * 10 ** 8) / s.totalVolume) : 0;
-    // }
-
-    // function modifyPaymentsAndVolumeExternally(address _user, uint _newAmount) external {
-    //     s.usersPayments[_user] -= _newAmount;
-    //     s.totalVolume -= _newAmount;
-    //     updateIndex();
-    // }
-
-    // function updateManagerState(
-    //     uint _amount, 
-    //     address _user
-    // ) public {
-    //     s.usersPayments[_user] += _amount;
-    //     s.totalVolume += _amount;
-    //     updateIndex();
-    // }
-
+   
     function transferUserAllocation(address _sender, address _receiver, uint _amount) public {
         uint amountToTransfer = _getAllocationToTransfer(_amount, _sender);
         s.usersPayments[_sender] -= amountToTransfer;
@@ -75,9 +53,8 @@ contract ManagerFacet is ERC4626Facet {
     function swapsForUserToken(uint _amountIn, uint _baseTokenOut, address _userToken) public payable {
         uint minOut = s.tricrypto.get_dy(2, _baseTokenOut, _amountIn);
         uint slippage = calculateSlippage(minOut, s.slippageTradingCurve);
-        console.log(3);
+        s.WETH.approve(address(s.tricrypto), _amountIn);
         s.tricrypto.exchange(2, _baseTokenOut, _amountIn, slippage, false);
-        console.log(4);
 
         if (_userToken == address(s.renBTC)) { 
             //renBTC: 1 / WBTC: 0
@@ -93,7 +70,6 @@ contract ManagerFacet is ERC4626Facet {
             executeFinalTrade(2, 0, s.USDT, _userToken);
         } 
 
-        console.log(5);
     }
 
     /**
@@ -101,7 +77,6 @@ contract ManagerFacet is ERC4626Facet {
      */
 
     function exchangeToUserToken(address _user, address _userToken) external payable {
-        // updateManagerState(msg.value, _user);
         uint baseTokenOut;
 
         s.WETH.deposit{value: msg.value}();
@@ -126,16 +101,8 @@ contract ManagerFacet is ERC4626Facet {
         uint toUser = IERC20(_userToken).balanceOf(address(this));
         IERC20(_userToken).safeTransfer(_user, toUser);
         
-        // s.WETH.deposit{value: fee}();
-
-        console.log(4);
         //Deposits fees in Curve's renPool
-        (bool success, ) = address(s.vault).delegatecall(
-            abi.encodeWithSignature('depositCurveYearn(uint256)', fee)
-        );
-        require(success);
-
-        console.log(5);
+        depositCurveYearn(fee);
     }
 
     
@@ -144,26 +111,6 @@ contract ManagerFacet is ERC4626Facet {
 
     function withdrawUserShare(address user_, uint shares_, address userToken_) public { //_userAllocation = shares_
         s.yTriPool.withdraw(s.yTriPool.balanceOf(address(this)));
-
-        // uint vaultBalance = s.crvTricrypto.balanceOf(address(this));
-        // uint assets = getAllocationToAmount(shares_, vaultBalance); //assets = userShareTokens ---- previewRedeem()
-
-        // (bool success, bytes memory data) = address(s.PYY).delegatecall(
-        //     abi.encodeWithSignature('balanceOf(address)', _user)
-        // );
-        // require(success, 'VaultFacet: balanceOfPYY failed');
-        // (uint userBalancePYY) = abi.decode(data, (uint));
-
-        // uint allocationPercentage = calculateAllocationPercentage(shares_, userBalancePYY);
-        // uint amountToReduce = getAllocationToAmount(allocationPercentage, s.usersPayments[_user]);
-
-        // (success, ) = address(s.manager).delegatecall(
-        //     abi.encodeWithSignature(
-        //         'modifyPaymentsAndVolumeExternally(address,uint256)', 
-        //         _user, amountToReduce
-        //     )
-        // );
-        // require(success, 'VaultFacet: modifyPaymentsAndVolumeExternally failed');
 
         uint assets = redeem(shares_, user_, user_);
 
