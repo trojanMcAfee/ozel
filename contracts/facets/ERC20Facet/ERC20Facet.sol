@@ -273,7 +273,7 @@ contract ERC20Facet is HelpersAbs, MyContext, IERC20Facet, MyIERC20Metadata {
 
         _beforeTokenTransfer(account, address(0), amount);
 
-        uint256 accountBalance = s.py[true]._balances[account];
+        uint256 accountBalance = balanceOf(account);    //s.py[true]._balances[account]; <------last that was reverted here but was fixed
         require(accountBalance >= amount, "ERC20: burn amount exceeds balance");
         // unchecked {
         //     s.py[true]._balances[account] = accountBalance - amount;
