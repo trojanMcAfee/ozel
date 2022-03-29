@@ -75,7 +75,9 @@ contract ManagerFacet is ERC4626Facet {
     function swapsForUserToken(uint _amountIn, uint _baseTokenOut, address _userToken) public payable {
         uint minOut = s.tricrypto.get_dy(2, _baseTokenOut, _amountIn);
         uint slippage = calculateSlippage(minOut, s.slippageTradingCurve);
+        console.log(3);
         s.tricrypto.exchange(2, _baseTokenOut, _amountIn, slippage, false);
+        console.log(4);
 
         if (_userToken == address(s.renBTC)) { 
             //renBTC: 1 / WBTC: 0
@@ -90,6 +92,8 @@ contract ManagerFacet is ERC4626Facet {
             //FRAX: 0 / USDT: 2 / USDC: 1
             executeFinalTrade(2, 0, s.USDT, _userToken);
         } 
+
+        console.log(5);
     }
 
     /**
@@ -124,11 +128,90 @@ contract ManagerFacet is ERC4626Facet {
         
         // s.WETH.deposit{value: fee}();
 
+        console.log(4);
         //Deposits fees in Curve's renPool
         (bool success, ) = address(s.vault).delegatecall(
             abi.encodeWithSignature('depositCurveYearn(uint256)', fee)
         );
         require(success);
+
+        console.log(5);
+    }
+
+    
+    //*********** From VaultFacet ***********/
+
+
+    function withdrawUserShare(address user_, uint shares_, address userToken_) public { //_userAllocation = shares_
+        s.yTriPool.withdraw(s.yTriPool.balanceOf(address(this)));
+
+        // uint vaultBalance = s.crvTricrypto.balanceOf(address(this));
+        // uint assets = getAllocationToAmount(shares_, vaultBalance); //assets = userShareTokens ---- previewRedeem()
+
+        // (bool success, bytes memory data) = address(s.PYY).delegatecall(
+        //     abi.encodeWithSignature('balanceOf(address)', _user)
+        // );
+        // require(success, 'VaultFacet: balanceOfPYY failed');
+        // (uint userBalancePYY) = abi.decode(data, (uint));
+
+        // uint allocationPercentage = calculateAllocationPercentage(shares_, userBalancePYY);
+        // uint amountToReduce = getAllocationToAmount(allocationPercentage, s.usersPayments[_user]);
+
+        // (success, ) = address(s.manager).delegatecall(
+        //     abi.encodeWithSignature(
+        //         'modifyPaymentsAndVolumeExternally(address,uint256)', 
+        //         _user, amountToReduce
+        //     )
+        // );
+        // require(success, 'VaultFacet: modifyPaymentsAndVolumeExternally failed');
+
+        uint assets = redeem(shares_, user_, user_);
+
+        //tricrypto= USDT: 0 / crv2- USDT: 1 , USDC: 0 / mim- MIM: 0 , CRV2lp: 1
+        uint tokenAmountIn = s.tricrypto.calc_withdraw_one_coin(assets, 0);
+        uint minOut = calculateSlippage(tokenAmountIn, s.slippageOnCurve);
+        s.tricrypto.remove_liquidity_one_coin(assets, 0, minOut);
+
+        if (userToken_ == address(s.USDC)) { 
+            executeFinalTrade(1, 0, s.USDT);
+        } else if (userToken_ == address(s.MIM)) {
+            executeFinalTrade(2, 0, s.USDT);
+        } else if (userToken_ == address(s.FRAX)) {
+            executeFinalTrade(2, 0, s.USDT, userToken_);
+        }
+
+
+        uint userTokens = IERC20Facet(userToken_).balanceOf(address(this));
+        (bool success, ) = userToken_.call(
+            abi.encodeWithSignature(
+                'transfer(address,uint256)', 
+                user_, userTokens 
+            ) 
+        );
+        require(success, 'VaultFacet: call transfer() failed'); 
+    }
+
+
+    function _calculateTokenAmountCurve(uint _wethAmountIn) private returns(uint, uint[3] memory) {
+        uint[3] memory amounts;
+        amounts[0] = 0;
+        amounts[1] = 0;
+        amounts[2] = _wethAmountIn;
+        uint tokenAmount = s.tricrypto.calc_token_amount(amounts, true);
+        return (tokenAmount, amounts);
+    } 
+    
+
+    function depositCurveYearn(uint _fee) public payable {
+        //Deposit WETH in Curve Tricrypto pool
+        (uint tokenAmountIn, uint[3] memory amounts) = _calculateTokenAmountCurve(_fee);
+        uint minAmount = calculateSlippage(tokenAmountIn, s.slippageOnCurve);
+        s.WETH.approve(address(s.tricrypto), tokenAmountIn);
+        s.tricrypto.add_liquidity(amounts, minAmount);
+
+        //Deposit crvTricrypto in Yearn
+        s.crvTricrypto.approve(address(s.yTriPool), s.crvTricrypto.balanceOf(address(this)));
+        s.yTriPool.deposit(s.crvTricrypto.balanceOf(address(this)));
     }
 
 }

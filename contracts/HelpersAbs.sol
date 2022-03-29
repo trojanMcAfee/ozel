@@ -73,7 +73,7 @@ abstract contract HelpersAbs {
             s.totalVolume != 0 ? ((1 ether * 10 ** 8) / s.totalVolume) : 0;
     }
 
-    function modifyPaymentsAndVolumeExternally(address _user, uint _newAmount) external {
+    function modifyPaymentsAndVolumeExternally(address _user, uint _newAmount) public {
         s.usersPayments[_user] -= _newAmount;
         s.totalVolume -= _newAmount;
         updateIndex();

@@ -275,10 +275,15 @@ contract ERC20Facet is HelpersAbs, MyContext, IERC20Facet, MyIERC20Metadata {
 
         uint256 accountBalance = s.py[true]._balances[account];
         require(accountBalance >= amount, "ERC20: burn amount exceeds balance");
-        unchecked {
-            s.py[true]._balances[account] = accountBalance - amount;
-        }
-        s.py[true]._totalSupply -= amount;
+        // unchecked {
+        //     s.py[true]._balances[account] = accountBalance - amount;
+        // }
+        // s.py[true]._totalSupply -= amount;
+
+        uint userBalancePYY = balanceOf(account);
+        uint allocationPercentage = (((amount * 10000) / userBalancePYY) * 1 ether) / 100;
+        uint amountToReduce = ((allocationPercentage * s.usersPayments[account]) / 100 * 1 ether) / 10 ** 36;
+        modifyPaymentsAndVolumeExternally(account, amountToReduce);
 
         emit Transfer(account, address(0), amount);
 

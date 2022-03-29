@@ -47,7 +47,6 @@ async function deployFacet(facetName, withLib, libDeployed) {
 function getSelectorsFromAllFacets(facets) { 
     const selectors = [];
     for (let i = 0; i < facets.length; i++) {
-        console.log('facets******: ', facets[0]);
         selectors.push(getSelectors(facets[i]).filter((el) => typeof el === 'string'));
     }
     return selectors;

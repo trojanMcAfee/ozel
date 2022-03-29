@@ -106,11 +106,18 @@ abstract contract ERC4626Facet is ERC20Facet {
 
         beforeWithdraw(assets, shares);
 
+        // uint userBalancePYY = balanceOf(owner);
+        // uint allocationPercentage = (((shares * 10000) / userBalancePYY) * 1 ether) / 100;
+        // uint amountToReduce = ((allocationPercentage * s.usersPayments[_user]) / 100 * 1 ether) / 10 ** 36;
+
         _burn(owner, shares);
 
         emit Withdraw(msg.sender, receiver, owner, assets, shares);
 
-        // asset.safeTransfer(receiver, assets);
+        if (receiver != owner) {
+            // asset.safeTransfer(receiver, assets); // <------ code and test when the receiver is not the same as the owner
+        }
+
     }
 
     /*///////////////////////////////////////////////////////////////
