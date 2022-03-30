@@ -109,7 +109,7 @@ contract ManagerFacet is ERC4626Facet {
     //*********** From VaultFacet ***********/
 
 
-    function withdrawUserShare(address user_, uint shares_, address userToken_) public { //_userAllocation = shares_
+    function withdrawUserShare(address user_, uint shares_, address userToken_) public { 
         s.yTriPool.withdraw(s.yTriPool.balanceOf(address(this)));
 
         uint assets = redeem(shares_, user_, user_);

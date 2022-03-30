@@ -27,15 +27,6 @@ abstract contract ERC4626Facet is ERC20Facet {
         uint256 shares
     );
 
-    /*///////////////////////////////////////////////////////////////
-                               IMMUTABLES
-    //////////////////////////////////////////////////////////////*/
-
-    // ERC20Facet public immutable asset;
-
-    // constructor(ERC20Facet _asset) {
-    //     asset = _asset;
-    // }
 
     /*///////////////////////////////////////////////////////////////
                         DEPOSIT/WITHDRAWAL LOGIC
@@ -45,9 +36,7 @@ abstract contract ERC4626Facet is ERC20Facet {
         // Check for rounding error since we round down in previewDeposit.
         require((shares = previewDeposit(assets)) != 0, "ZERO_SHARES");
 
-        // Need to transfer before minting or ERC777s could reenter.
-        // asset.safeTransferFrom(msg.sender, address(this), assets);
-        // _mint(receiver, shares);
+        // Need to transfer before minting or ERC777s could reenter. <-----------------------------
         updateManagerState(assets, receiver); 
 
         emit Deposit(msg.sender, receiver, assets, shares);
@@ -55,39 +44,6 @@ abstract contract ERC4626Facet is ERC20Facet {
         afterDeposit(assets, shares);
     }
 
-    function mint(uint256 shares, address receiver) public virtual returns (uint256 assets) {
-        assets = previewMint(shares); // No need to check for rounding error, previewMint rounds up.
-
-        // Need to transfer before minting or ERC777s could reenter.
-        // asset.safeTransferFrom(msg.sender, address(this), assets);
-
-        _mint(receiver, shares);
-
-        emit Deposit(msg.sender, receiver, assets, shares);
-
-        afterDeposit(assets, shares);
-    }
-
-    function withdraw(
-        uint256 assets,
-        address receiver,
-        address owner
-    ) public virtual returns (uint256 shares) {
-        shares = previewWithdraw(assets); // No need to check for rounding error, previewWithdraw rounds up.
-
-        if (msg.sender != owner) {
-            uint256 allowed = s.py[true]._allowances[owner][msg.sender]; // Saves gas for limited approvals.
-
-            if (allowed != type(uint256).max) s.py[true]._allowances[owner][msg.sender] = allowed - shares;
-        }
-
-        beforeWithdraw(assets, shares);
-
-        _burn(owner, shares);
-
-        emit Withdraw(msg.sender, receiver, owner, assets, shares);
-
-    }
 
     function redeem(
         uint256 shares,
@@ -119,10 +75,6 @@ abstract contract ERC4626Facet is ERC20Facet {
                            ACCOUNTING LOGIC
     //////////////////////////////////////////////////////////////*/
 
-    function totalAssets() public view virtual returns (uint256) { // <------------------- ***** modify
-        return 2;
-    } 
-
     function convertToShares(uint256 assets) public view virtual returns (uint256) {
         uint256 supply = s.py[true]._totalSupply; // Saves an extra SLOAD if totalSupply is non-zero.
 
@@ -131,25 +83,13 @@ abstract contract ERC4626Facet is ERC20Facet {
 
     function convertToAssets(uint256 shares) public view virtual returns (uint256) {
         uint vaultBalance = s.crvTricrypto.balanceOf(address(this));
-        uint assets = ((shares * vaultBalance) / 100 * 1 ether) / 10 ** 36;
+        uint assets = ((shares * vaultBalance) / 100 * 1 ether) / 10 ** 36; 
         
         return assets;
     }
 
     function previewDeposit(uint256 assets) public view virtual returns (uint256) {
         return convertToShares(assets);
-    }
-
-    function previewMint(uint256 shares) public view virtual returns (uint256) {
-        uint256 supply = s.py[true]._totalSupply; // Saves an extra SLOAD if totalSupply is non-zero.
-
-        return supply == 0 ? shares : shares.mulDivUp(totalAssets(), supply);
-    }
-
-    function previewWithdraw(uint256 assets) public view virtual returns (uint256) {
-        uint256 supply = s.py[true]._totalSupply; // Saves an extra SLOAD if totalSupply is non-zero.
-
-        return supply == 0 ? assets : assets.mulDivUp(supply, totalAssets());
     }
 
     function previewRedeem(uint256 shares) public view virtual returns (uint256) {
