@@ -112,13 +112,14 @@ contract ManagerFacet is ERC4626Facet {
     function withdrawUserShare(address user_, uint shares_, address userToken_) public { //_userAllocation = shares_
         s.yTriPool.withdraw(s.yTriPool.balanceOf(address(this)));
 
-        uint assets = redeem(shares_, user_, user_);
+        uint assets = redeem(shares_, user_, user_); //<------------- problem ********
 
         //tricrypto= USDT: 0 / crv2- USDT: 1 , USDC: 0 / mim- MIM: 0 , CRV2lp: 1
-        uint tokenAmountIn = s.tricrypto.calc_withdraw_one_coin(assets, 0);
+        console.log('assets (userShareTokens) right before calc_withdraw ******: ', assets);
+        uint tokenAmountIn = s.tricrypto.calc_withdraw_one_coin(assets, 0); 
+        console.log('tokenAmountIn *******: ', tokenAmountIn);
         uint minOut = calculateSlippage(tokenAmountIn, s.slippageOnCurve);
         console.log(3);
-        console.log('assets: ', assets);
         console.log('minOut: ', minOut);
         s.tricrypto.remove_liquidity_one_coin(assets, 0, minOut);
         console.log(4);

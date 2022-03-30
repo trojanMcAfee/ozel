@@ -131,11 +131,14 @@ abstract contract ERC4626Facet is ERC20Facet {
 
     function convertToAssets(uint256 shares) public view virtual returns (uint256) {
         uint vaultBalance = s.crvTricrypto.balanceOf(address(this));
+        console.log('shares (userAllocation): ', shares);
+        console.log('vaultBalance: ', vaultBalance);
         uint assets = ((shares * vaultBalance) / 100 * 1 ether) / 10 ** 36;
+        console.log('assets in convertToAssets: ', assets);
 
-        uint256 supply = s.py[true]._totalSupply; // Saves an extra SLOAD if totalSupply is non-zero.
+        // uint256 supply = s.py[true]._totalSupply; // Saves an extra SLOAD if totalSupply is non-zero.
 
-        return supply == 0 ? shares : assets;
+        return assets;
     }
 
     function previewDeposit(uint256 assets) public view virtual returns (uint256) {
