@@ -5,6 +5,8 @@ pragma solidity ^0.8.0;
 import '@openzeppelin/contracts/token/ERC20/IERC20.sol';
 import './AppStorage.sol';
 
+import {IMulCurv} from './interfaces/ICurve.sol';
+
 
 abstract contract HelpersAbs {
 
@@ -17,26 +19,53 @@ abstract contract HelpersAbs {
         minAmountOut = _amount - ( (_amount * _basisPoint) / 10000 );  
     }
 
-
-    function executeFinalTrade(int128 _tokenIn, int128 _tokenOut, IERC20 _contractIn) internal {
+    function _tradeInCurve(address pool_, int128 tokenIn_, int128 tokenOut_, uint inBalance) private {
         uint minOut;
         uint slippage;
+        if (pool_ != address(s.renPool)) {
+            s.USDT.approve(pool_, inBalance);
+        }
+
+        if (pool_ == address(s.renPool) || pool_ == address(s.crv2Pool)) {
+            minOut = IMulCurv(pool_).get_dy(tokenIn_, tokenOut_, inBalance);
+            slippage = calculateSlippage(minOut, s.slippageTradingCurve);
+            IMulCurv(pool_).exchange(tokenIn_, tokenOut_, inBalance, slippage);
+        } else {
+            minOut = IMulCurv(pool_).get_dy_underlying(tokenIn_, tokenOut_, inBalance);
+            slippage = calculateSlippage(minOut, s.slippageTradingCurve);
+            IMulCurv(pool_).exchange_underlying(tokenIn_, tokenOut_, inBalance, slippage);
+        }
+
+
+
+    }
+
+
+    function executeFinalTrade(int128 tokenIn_, int128 tokenOut_, IERC20 _contractIn) internal {
+        // uint minOut;
+        // uint slippage;
         uint inBalance = _contractIn.balanceOf(address(this));
 
-        if (_tokenIn == 0) {
-            minOut = s.renPool.get_dy(_tokenIn, _tokenOut, inBalance);
-            slippage = calculateSlippage(minOut, s.slippageTradingCurve);
-            s.renPool.exchange(_tokenIn, _tokenOut, inBalance, slippage);
-        } else if (_tokenIn == 1) {
-            minOut = s.crv2Pool.get_dy(_tokenIn, _tokenOut, inBalance);
-            slippage = calculateSlippage(minOut, s.slippageTradingCurve);
-            s.USDT.approve(address(s.crv2Pool), inBalance);
-            s.crv2Pool.exchange(_tokenIn, _tokenOut, inBalance, slippage);
-        } else if (_tokenIn == 2) {
-            minOut = s.mimPool.get_dy_underlying(_tokenIn, _tokenOut, inBalance);
-            slippage = calculateSlippage(minOut, s.slippageTradingCurve);
-            s.USDT.approve(address(s.mimPool), inBalance);
-            s.mimPool.exchange_underlying(_tokenIn, _tokenOut, inBalance, slippage);
+        if (tokenIn_ == 0) {
+            _tradeInCurve(address(s.renPool), tokenIn_, tokenOut_, inBalance);
+
+            // minOut = s.renPool.get_dy(tokenIn_, tokenOut_, inBalance);
+            // slippage = calculateSlippage(minOut, s.slippageTradingCurve);
+            // s.renPool.exchange(tokenIn_, tokenOut_, inBalance, slippage);
+        } else if (tokenIn_ == 1) {
+            _tradeInCurve(address(s.crv2Pool), tokenIn_, tokenOut_, inBalance);
+
+            // minOut = s.crv2Pool.get_dy(tokenIn_, tokenOut_, inBalance);
+            // slippage = calculateSlippage(minOut, s.slippageTradingCurve);
+            // s.USDT.approve(address(s.crv2Pool), inBalance);
+            // s.crv2Pool.exchange(tokenIn_, tokenOut_, inBalance, slippage);
+        } else if (tokenIn_ == 2) {
+            _tradeInCurve(address(s.mimPool), tokenIn_, tokenOut_, inBalance);
+
+            // minOut = s.mimPool.get_dy_underlying(tokenIn_, tokenOut_, inBalance);
+            // slippage = calculateSlippage(minOut, s.slippageTradingCurve);
+            // s.USDT.approve(address(s.mimPool), inBalance);
+            // s.mimPool.exchange_underlying(tokenIn_, tokenOut_, inBalance, slippage);
         }
     }
 
@@ -51,10 +80,12 @@ abstract contract HelpersAbs {
         uint inBalance = contractIn_.balanceOf(address(this));
 
         if (userToken_ == address(s.FRAX)) {
-            minOut = s.fraxPool.get_dy_underlying(tokenIn_, tokenOut_, inBalance);
-            slippage = calculateSlippage(minOut, s.slippageTradingCurve);
-            s.USDT.approve(address(s.fraxPool), inBalance);
-            s.fraxPool.exchange_underlying(tokenIn_, tokenOut_, inBalance, slippage);
+            _tradeInCurve(address(s.fraxPool), tokenIn_, tokenOut_, inBalance);
+
+            // minOut = s.fraxPool.get_dy_underlying(tokenIn_, tokenOut_, inBalance);
+            // slippage = calculateSlippage(minOut, s.slippageTradingCurve);
+            // s.USDT.approve(address(s.fraxPool), inBalance);
+            // s.fraxPool.exchange_underlying(tokenIn_, tokenOut_, inBalance, slippage);
         } 
 
     }
