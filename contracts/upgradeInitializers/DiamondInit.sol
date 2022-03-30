@@ -22,7 +22,6 @@ import {
     IMIM, 
     IFrax
 } from '../interfaces/ICurve.sol';
-import '../facets/VaultFacet.sol';
 import '../facets/ERC20Facet/IERC20Facet.sol';
 import '../interfaces/ICrvLpToken.sol';
 import '../facets/GettersFacet.sol';
@@ -61,14 +60,13 @@ contract DiamondInit {
         //Sets addresses on contracts
         s.manager = ManagerFacet(_vars.contracts[0]);
         s.tricrypto = ITricrypto(_vars.contracts[1]);
-        s.vault = VaultFacet(_vars.contracts[2]);
-        s.crvTricrypto = ICrvLpToken(_vars.contracts[3]);
-        s.getters = GettersFacet(_vars.contracts[4]);
-        s.renPool = IRen(_vars.contracts[5]);
-        s.mimPool = IMIM(_vars.contracts[6]);
-        s.crv2Pool = I2crv(_vars.contracts[7]);
-        s.yTriPool = IYtricrypto(_vars.contracts[8]);
-        s.fraxPool = IFrax(_vars.contracts[9]);
+        s.crvTricrypto = ICrvLpToken(_vars.contracts[2]);
+        s.getters = GettersFacet(_vars.contracts[3]);
+        s.renPool = IRen(_vars.contracts[4]);
+        s.mimPool = IMIM(_vars.contracts[5]);
+        s.crv2Pool = I2crv(_vars.contracts[6]);
+        s.yTriPool = IYtricrypto(_vars.contracts[7]);
+        s.fraxPool = IFrax(_vars.contracts[8]);
 
         //Sets ERC20 instances
         s.USDT = IERC20(_vars.erc20s[0]);

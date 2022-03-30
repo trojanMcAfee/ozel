@@ -3,14 +3,10 @@ pragma solidity ^0.8.0;
 
 
 import '@openzeppelin/contracts/token/ERC20/IERC20.sol';
-// import {IRenPool, ITricrypto} from '../interfaces/ICurve.sol';
 import '@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol';
-import './VaultFacet.sol';
 import '../libraries/Helpers.sol';
-import '../AppStorage.sol';
 import '../interfaces/ICrvLpToken.sol';
 import '../interfaces/IWETH.sol';
-// import '../interfaces/IRen.sol';
 import '../HelpersAbs.sol';
 
 import 'hardhat/console.sol';
@@ -26,22 +22,6 @@ contract ManagerFacet is ERC4626Facet {
 
 
    
-    function transferUserAllocation(address _sender, address _receiver, uint _amount) public {
-        uint amountToTransfer = _getAllocationToTransfer(_amount, _sender);
-        s.usersPayments[_sender] -= amountToTransfer;
-        s.usersPayments[_receiver] += amountToTransfer;
-    }
-
-    function _getAllocationToTransfer(uint _amount, address _user) public returns(uint) {
-        (bool success, bytes memory returnData) = address(s.PYY).delegatecall(
-            abi.encodeWithSignature('balanceOf(address)', _user)
-        );
-        require(success);
-        (uint balancePYY) = abi.decode(returnData, (uint));
-        
-        uint percentageToTransfer = (_amount * 10000) / balancePYY;
-        return (percentageToTransfer * s.usersPayments[_user]) / 10000;
-    }
 
     function _getFee(uint amount_) public returns(uint, uint) {
         uint fee = amount_ - calculateSlippage(amount_, s.dappFee);
@@ -69,7 +49,6 @@ contract ManagerFacet is ERC4626Facet {
             //FRAX: 0 / USDT: 2 / USDC: 1
             executeFinalTrade(2, 0, s.USDT, _userToken);
         } 
-
     }
 
     /**

@@ -2,7 +2,6 @@
 pragma solidity ^0.8.0;
 
 
-// import './DiamondInit.sol';
 import '@openzeppelin/contracts/token/ERC20/IERC20.sol';
 
 import '../AppStorage.sol';
@@ -18,6 +17,12 @@ contract GettersFacet {
     function getDistributionIndex() external returns(uint256) {
         emit GetIndex(s.distributionIndex);
         return s.distributionIndex;
+    }
+
+
+    function getTotalInUSD() public view returns(uint total) {
+        uint virtualPrice = s.tricrypto.get_virtual_price();
+        total = virtualPrice * s.crvTricrypto.balanceOf(address(this)); //divide between 10 ** 36 to get USD
     }
 
    

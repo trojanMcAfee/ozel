@@ -10,7 +10,6 @@ import {
     I2crv,
     IFrax
 } from './interfaces/ICurve.sol';
-import './facets/VaultFacet.sol';
 import '@openzeppelin/contracts/token/ERC20/IERC20.sol';
 import './facets/GettersFacet.sol';
 import './interfaces/IWETH.sol';
@@ -20,7 +19,6 @@ import './interfaces/IYtricrypto.sol';
 struct AppStorage { 
     ManagerFacet manager; 
     ITricrypto tricrypto;
-    VaultFacet vault;
     ICrvLpToken crvTricrypto; //where does the interface here come from???
     GettersFacet getters;
     IRen renPool;

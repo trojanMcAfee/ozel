@@ -16,7 +16,6 @@ const {
     crv2PoolAddr,
     yTricryptoPoolAddr,
     fraxPoolAddr,
-    eurPoolAddr,
     ETH,
     dappFee,
     slippageOnCurve,
@@ -26,22 +25,12 @@ const {
 } = require('./state-vars.js');
 
 
-async function deployFacet(facetName, withLib, libDeployed) {
-    let Contract, library;
-    if (withLib) {
-        library = !libDeployed ? await deployFacet(withLib) : libDeployed;
-        const lb = {};
-        lb[withLib] = library.address;
-        Contract = await hre.ethers.getContractFactory(facetName, {
-            libraries: lb
-        });
-    } else {
-        Contract = await hre.ethers.getContractFactory(facetName);
-    }
+async function deployFacet(facetName) {
+    const Contract = await hre.ethers.getContractFactory(facetName);
     const contract = await Contract.deploy();
     await contract.deployed();
     console.log(`${facetName} deployed to: `, contract.address);
-    return withLib && !libDeployed ? [contract, library] : contract;
+    return contract;
 }
 
 function getSelectorsFromAllFacets(facets) { 
@@ -75,10 +64,6 @@ async function deploy() {
     const diamondCutFacet = await deployFacet('DiamondCutFacet');
     const diamondLoupeFacet = await deployFacet('DiamondLoupeFacet'); 
     const managerFacet = await deployFacet('ManagerFacet');
-    // const [ managerFacet, library ] = await deployFacet('ManagerFacet', 'Helpers');
-    const vaultFacet = await deployFacet('VaultFacet');
-    // const vaultFacet = await deployFacet('VaultFacet', 'Helpers', library);
-    // const PYY = await deployFacet('PayTokenFacet'); 
     const gettersFacet = await deployFacet('GettersFacet');
 
     //Selectors
@@ -86,22 +71,17 @@ async function deploy() {
         selecCut,
         selecLoup,
         selecManager,
-        // selecPYY,
         selectGetters,
-        selecVault
     ] = getSelectorsFromAllFacets([
         diamondCutFacet,
         diamondLoupeFacet,
         managerFacet,
-        // PYY,
         gettersFacet,
-        vaultFacet
     ]);
 
     const contractsAddr = [
         managerFacet.address,
         tricryptoAddr,
-        vaultFacet.address,
         crvTricrypto,
         gettersFacet.address,
         renPoolAddr,
@@ -117,7 +97,6 @@ async function deploy() {
         renBtcAddr,
         usdcAddr,
         mimAddr,
-        // PYY.address,
         wethAddr,
         fraxAddr,
     ];
@@ -142,17 +121,13 @@ async function deploy() {
             selecCut, 
             selecLoup, 
             selecManager, 
-            // selecPYY,
             selectGetters,
-            selecVault
         ],
         [
             diamondCutFacet.address, 
             diamondLoupeFacet.address, 
             managerFacet.address,
-            // PYY.address,
             gettersFacet.address,
-            vaultFacet.address
         ]
     ];
 
@@ -173,9 +148,7 @@ async function deploy() {
             ['DiamondCutFacet', diamondCutFacet],
             ['DiamondLoupeFacet', diamondLoupeFacet],
             ['ManagerFacet', managerFacet],
-            // ['PayTokenFacet', PYY],
             ['GettersFacet', gettersFacet],
-            ['VaultFacet', vaultFacet]
         ],
         args: '',
         overrides: {callerAddr, functionCall, diamondInit: diamondInit.address}
@@ -194,7 +167,6 @@ async function deploy() {
         crvTri,
         callerAddr, 
         caller2Addr,
-        // PYY,
         managerFacet,
         yvCrvTri
     };

@@ -59,6 +59,8 @@ abstract contract HelpersAbs {
 
     }
 
+    //****** Modifies manager's STATE *****/
+
     function updateManagerState(
         uint _amount, 
         address _user
@@ -79,5 +81,22 @@ abstract contract HelpersAbs {
         updateIndex();
     }
 
+
+    function _getAllocationToTransfer(uint _amount, address _user) public returns(uint) {
+        (bool success, bytes memory returnData) = address(s.PYY).delegatecall(
+            abi.encodeWithSignature('balanceOf(address)', _user)
+        );
+        require(success);
+        (uint balancePYY) = abi.decode(returnData, (uint));
+        
+        uint percentageToTransfer = (_amount * 10000) / balancePYY;
+        return (percentageToTransfer * s.usersPayments[_user]) / 10000;
+    }
+
+    function transferUserAllocation(address _sender, address _receiver, uint _amount) public {
+        uint amountToTransfer = _getAllocationToTransfer(_amount, _sender);
+        s.usersPayments[_sender] -= amountToTransfer;
+        s.usersPayments[_receiver] += amountToTransfer;
+    }
 
 }

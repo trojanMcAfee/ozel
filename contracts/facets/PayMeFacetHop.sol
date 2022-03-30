@@ -63,13 +63,6 @@ contract PayMeFacetHop is OpsReady {
             owner, _userToken
         );
 
-        // ---- deposits to ERC4626
-         
-        // bytes memory data = abi.encodeWithSelector(
-        //     Test2(payable(manager)).deposit.selector, 
-        //     owner, _userToken
-        // );
-
         // user ticketID later on to check the sequencer's inbox for unconfirmed txs
         uint ticketID = inbox.createRetryableTicket{value: address(this).balance}(
             manager, 
