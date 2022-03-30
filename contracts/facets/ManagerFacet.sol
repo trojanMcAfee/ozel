@@ -117,7 +117,11 @@ contract ManagerFacet is ERC4626Facet {
         //tricrypto= USDT: 0 / crv2- USDT: 1 , USDC: 0 / mim- MIM: 0 , CRV2lp: 1
         uint tokenAmountIn = s.tricrypto.calc_withdraw_one_coin(assets, 0);
         uint minOut = calculateSlippage(tokenAmountIn, s.slippageOnCurve);
+        console.log(3);
+        console.log('assets: ', assets);
+        console.log('minOut: ', minOut);
         s.tricrypto.remove_liquidity_one_coin(assets, 0, minOut);
+        console.log(4);
 
         if (userToken_ == address(s.USDC)) { 
             executeFinalTrade(1, 0, s.USDT);
@@ -126,9 +130,11 @@ contract ManagerFacet is ERC4626Facet {
         } else if (userToken_ == address(s.FRAX)) {
             executeFinalTrade(2, 0, s.USDT, userToken_);
         }
+        console.log(5);
 
 
         uint userTokens = IERC20Facet(userToken_).balanceOf(address(this));
+        console.log(6);
         (bool success, ) = userToken_.call(
             abi.encodeWithSignature(
                 'transfer(address,uint256)', 
@@ -136,6 +142,7 @@ contract ManagerFacet is ERC4626Facet {
             ) 
         );
         require(success, 'VaultFacet: call transfer() failed'); 
+        console.log(7);
     }
 
 
