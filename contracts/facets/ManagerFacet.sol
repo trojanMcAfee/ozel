@@ -112,17 +112,12 @@ contract ManagerFacet is ERC4626Facet {
     function withdrawUserShare(address user_, uint shares_, address userToken_) public { //_userAllocation = shares_
         s.yTriPool.withdraw(s.yTriPool.balanceOf(address(this)));
 
-        uint assets = redeem(shares_, user_, user_); //<------------- problem ********
+        uint assets = redeem(shares_, user_, user_);
 
         //tricrypto= USDT: 0 / crv2- USDT: 1 , USDC: 0 / mim- MIM: 0 , CRV2lp: 1
-        console.log('assets (userShareTokens) right before calc_withdraw ******: ', assets);
         uint tokenAmountIn = s.tricrypto.calc_withdraw_one_coin(assets, 0); 
-        console.log('tokenAmountIn *******: ', tokenAmountIn);
         uint minOut = calculateSlippage(tokenAmountIn, s.slippageOnCurve);
-        console.log(3);
-        console.log('minOut: ', minOut);
         s.tricrypto.remove_liquidity_one_coin(assets, 0, minOut);
-        console.log(4);
 
         if (userToken_ == address(s.USDC)) { 
             executeFinalTrade(1, 0, s.USDT);
@@ -131,11 +126,8 @@ contract ManagerFacet is ERC4626Facet {
         } else if (userToken_ == address(s.FRAX)) {
             executeFinalTrade(2, 0, s.USDT, userToken_);
         }
-        console.log(5);
-
 
         uint userTokens = IERC20Facet(userToken_).balanceOf(address(this));
-        console.log(6);
         (bool success, ) = userToken_.call(
             abi.encodeWithSignature(
                 'transfer(address,uint256)', 
@@ -143,7 +135,6 @@ contract ManagerFacet is ERC4626Facet {
             ) 
         );
         require(success, 'VaultFacet: call transfer() failed'); 
-        console.log(7);
     }
 
 

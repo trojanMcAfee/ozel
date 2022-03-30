@@ -273,12 +273,8 @@ contract ERC20Facet is HelpersAbs, MyContext, IERC20Facet, MyIERC20Metadata {
 
         _beforeTokenTransfer(account, address(0), amount);
 
-        uint256 accountBalance = balanceOf(account);    //s.py[true]._balances[account]; <------last that was reverted here but was fixed
+        uint256 accountBalance = balanceOf(account); 
         require(accountBalance >= amount, "ERC20: burn amount exceeds balance");
-        // unchecked {
-        //     s.py[true]._balances[account] = accountBalance - amount;
-        // }
-        // s.py[true]._totalSupply -= amount;
 
         uint userBalancePYY = balanceOf(account);
         uint allocationPercentage = (((amount * 10000) / userBalancePYY) * 1 ether) / 100;
