@@ -1,25 +1,16 @@
 // SPDX-License-Identifier: UNLICENSED
 pragma solidity ^0.8.0;
 
-// import './facets/ManagerFacet.sol';
 import './facets/ERC20Facet/IERC20Facet.sol';
-// import {
-//     IRen, 
-//     ITricrypto, 
-//     IMIM, 
-//     I2crv,
-//     IFrax
-// } from './interfaces/ICurve.sol';
 import '@openzeppelin/contracts/token/ERC20/IERC20.sol';
-// import './facets/GettersFacet.sol';
 import './interfaces/IWETH.sol';
-// import './interfaces/IYtricrypto.sol';
 
 
 struct AppStorage { 
+    //Contracts
     address manager; 
     address tricrypto;
-    address crvTricrypto; //where does the interface here come from???
+    address crvTricrypto; 
     address getters;
     address renPool;
     address mimPool;
@@ -27,15 +18,17 @@ struct AppStorage {
     address yTriPool;
     address fraxPool;
 
-    IERC20 USDT;
-    IERC20 WBTC;
-    IERC20 renBTC;
-    IERC20 USDC;
-    IERC20 MIM;
+    //ERC20s
+    address USDT;
+    address WBTC;
+    address renBTC;
+    address USDC;
+    address MIM;
     IERC20Facet PYY;
-    IWETH WETH;
-    IERC20 FRAX;
+    address WETH;
+    address FRAX;
 
+    //System config
     uint dappFee;
     uint slippageOnCurve;
     uint slippageTradingCurve;

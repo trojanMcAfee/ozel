@@ -25,33 +25,31 @@ contract ManagerFacet is ERC4626Facet {
     using SafeERC20 for IERC20;
 
 
-   
-
     function _getFee(uint amount_) public returns(uint, uint) {
         uint fee = amount_ - calculateSlippage(amount_, s.dappFee);
         s.feesVault += fee;
-        uint netAmount = s.WETH.balanceOf(address(this)) - fee;
+        uint netAmount = IWETH(s.WETH).balanceOf(address(this)) - fee;
         return (netAmount, fee);
     }
 
     function swapsForUserToken(uint _amountIn, uint _baseTokenOut, address _userToken) public payable {
         uint minOut = ITri(s.tricrypto).get_dy(2, _baseTokenOut, _amountIn);
         uint slippage = calculateSlippage(minOut, s.slippageTradingCurve);
-        s.WETH.approve(s.tricrypto, _amountIn);
+        IWETH(s.WETH).approve(s.tricrypto, _amountIn);
         ITri(s.tricrypto).exchange(2, _baseTokenOut, _amountIn, slippage, false);
 
-        if (_userToken == address(s.renBTC)) { 
+        if (_userToken == s.renBTC) { 
             //renBTC: 1 / WBTC: 0
-            executeFinalTrade(0, 1, s.WBTC);
-        } else if (_userToken == address(s.MIM)) {
+            executeFinalTrade(0, 1, IERC20(s.WBTC));
+        } else if (_userToken == s.MIM) {
             //MIM: 0 / USDT: 2 / USDC: 1
-            executeFinalTrade(2, 0, s.USDT);
-        } else if (_userToken == address(s.USDC)) {
+            executeFinalTrade(2, 0, IERC20(s.USDT));
+        } else if (_userToken == s.USDC) {
             //USDC: 0 / USDT: 1
-            executeFinalTrade(1, 0, s.USDT);
-        } else if (_userToken == address(s.FRAX)){
+            executeFinalTrade(1, 0, IERC20(s.USDT));
+        } else if (_userToken == s.FRAX){
             //FRAX: 0 / USDT: 2 / USDC: 1
-            executeFinalTrade(2, 0, s.USDT, _userToken);
+            executeFinalTrade(2, 0, IERC20(s.USDT), _userToken);
         } 
     }
 
@@ -62,13 +60,13 @@ contract ManagerFacet is ERC4626Facet {
     function exchangeToUserToken(address _user, address _userToken) external payable {
         uint baseTokenOut;
 
-        s.WETH.deposit{value: msg.value}();
-        uint wethIn = s.WETH.balanceOf(address(this));
+        IWETH(s.WETH).deposit{value: msg.value}();
+        uint wethIn = IWETH(s.WETH).balanceOf(address(this));
 
         //deposits in ERC4626
         deposit(wethIn, _user);
 
-        if (_userToken == address(s.WBTC) || _userToken == address(s.renBTC)) {
+        if (_userToken == s.WBTC || _userToken == s.renBTC) {
             baseTokenOut = 1;
         } else {
             baseTokenOut = 0;
@@ -102,12 +100,12 @@ contract ManagerFacet is ERC4626Facet {
         uint minOut = calculateSlippage(tokenAmountIn, s.slippageOnCurve);
         ITri(s.tricrypto).remove_liquidity_one_coin(assets, 0, minOut);
 
-        if (userToken_ == address(s.USDC)) { 
-            executeFinalTrade(1, 0, s.USDT);
-        } else if (userToken_ == address(s.MIM)) {
-            executeFinalTrade(2, 0, s.USDT);
-        } else if (userToken_ == address(s.FRAX)) {
-            executeFinalTrade(2, 0, s.USDT, userToken_);
+        if (userToken_ == s.USDC) { 
+            executeFinalTrade(1, 0, IERC20(s.USDT));
+        } else if (userToken_ == s.MIM) {
+            executeFinalTrade(2, 0, IERC20(s.USDT));
+        } else if (userToken_ == s.FRAX) {
+            executeFinalTrade(2, 0, IERC20(s.USDT), userToken_);
         }
 
         uint userTokens = IERC20Facet(userToken_).balanceOf(address(this));
@@ -135,7 +133,7 @@ contract ManagerFacet is ERC4626Facet {
         //Deposit WETH in Curve Tricrypto pool
         (uint tokenAmountIn, uint[3] memory amounts) = _calculateTokenAmountCurve(fee_);
         uint minAmount = calculateSlippage(tokenAmountIn, s.slippageOnCurve);
-        s.WETH.approve(s.tricrypto, tokenAmountIn);
+        IWETH(s.WETH).approve(s.tricrypto, tokenAmountIn);
         ITri(s.tricrypto).add_liquidity(amounts, minAmount);
 
         //Deposit crvTricrypto in Yearn

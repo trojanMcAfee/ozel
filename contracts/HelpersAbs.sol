@@ -23,7 +23,7 @@ abstract contract HelpersAbs {
         uint minOut;
         uint slippage;
         if (pool_ != s.renPool) {
-            s.USDT.approve(pool_, inBalance);
+            IERC20(s.USDT).approve(pool_, inBalance);
         }
 
         if (pool_ == s.renPool || pool_ == s.crv2Pool) {
@@ -58,7 +58,7 @@ abstract contract HelpersAbs {
     ) internal {
         uint inBalance = contractIn_.balanceOf(address(this));
 
-        if (userToken_ == address(s.FRAX)) {
+        if (userToken_ == s.FRAX) {
             _tradeInCurve(s.fraxPool, tokenIn_, tokenOut_, inBalance);
         } 
     }

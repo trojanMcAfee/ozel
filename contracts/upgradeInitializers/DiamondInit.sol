@@ -16,20 +16,9 @@ import { IERC165 } from "../interfaces/IERC165.sol";
 import '../AppStorage.sol'; 
 import '../facets/ManagerFacet.sol';
 import '@openzeppelin/contracts/token/ERC20/IERC20.sol';
-// import {
-//     IRen, 
-//     ITricrypto, 
-//     IMIM, 
-//     IFrax
-// } from '../interfaces/ICurve.sol';
-// import '../facets/ERC20Facet/IERC20Facet.sol';
-// import '../interfaces/ICrvLpToken.sol';
-// import '../facets/GettersFacet.sol';
-
 import 'hardhat/console.sol';
 
 import '../interfaces/IWETH.sol';
-// import '../interfaces/IYtricrypto.sol';
 
 
 
@@ -69,14 +58,14 @@ contract DiamondInit {
         s.fraxPool = _vars.contracts[8];
 
         //Sets ERC20 instances
-        s.USDT = IERC20(_vars.erc20s[0]);
-        s.WBTC = IERC20(_vars.erc20s[1]);
-        s.renBTC = IERC20(_vars.erc20s[2]);
-        s.USDC = IERC20(_vars.erc20s[3]);
-        s.MIM = IERC20(_vars.erc20s[4]);
+        s.USDT = _vars.erc20s[0];
+        s.WBTC = _vars.erc20s[1];
+        s.renBTC = _vars.erc20s[2];
+        s.USDC = _vars.erc20s[3];
+        s.MIM = _vars.erc20s[4];
         s.PYY = ManagerFacet(_vars.contracts[0]); //<------- modify
-        s.WETH = IWETH(_vars.erc20s[5]);
-        s.FRAX = IERC20(_vars.erc20s[6]);
+        s.WETH = _vars.erc20s[5];
+        s.FRAX = _vars.erc20s[6];
 
         //Sets app's general variables
         s.dappFee = _vars.appVars[0];
