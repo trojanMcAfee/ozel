@@ -7,8 +7,8 @@ import '@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol';
 import '../libraries/Helpers.sol';
 import '../interfaces/ICrvLpToken.sol';
 import '../interfaces/IWETH.sol';
-import '../HelpersAbs.sol';
-import './ERC4626Facet/ERC4626Facet.sol';
+import './ExecutorF.sol';
+import './pyERC4626/pyERC4626.sol';
 import '../interfaces/IYtri.sol';
 import {ITri} from '../interfaces/ICurve.sol';
 
@@ -17,39 +17,74 @@ import 'hardhat/console.sol';
 
 
 
-
-
-
-contract PYYFacet is ERC4626Facet { 
+contract PYYFacet is pyERC4626 {
 
     using SafeERC20 for IERC20;
 
 
     function _getFee(uint amount_) public returns(uint, uint) {
-        uint fee = amount_ - calculateSlippage(amount_, s.dappFee);
+        uint fee = amount_ - ExecutorF(s.executor).calculateSlippage(amount_, s.dappFee);
         s.feesVault += fee;
         uint netAmount = IWETH(s.WETH).balanceOf(address(this)) - fee;
         return (netAmount, fee);
     }
 
+    function _delegateExecutor(int128 tokenIn_, int128 tokenOut_, IERC20 contractIn_) private { 
+        (bool success, ) = s.executor.delegatecall(
+            abi.encodeWithSignature(
+                'executeFinalTrade(int128,int128,address)', 
+                tokenIn_, tokenOut_, contractIn_
+            )
+        );
+        require(success, 'PYYFacet: delegatecall to Executor failed');
+    }
+
+    function _delegateExecutor(
+        int128 tokenIn_, 
+        int128 tokenOut_, 
+        address contractIn_, 
+        address userToken_
+    ) private returns(uint, string memory) { //<----- fails delegatecall but runs call
+        console.log(14);
+        console.log('s.executor: ', s.executor);
+        (bool success, ) = s.executor.delegatecall(
+            abi.encodeWithSignature(
+                'executeFinalTrade(int128,int128,address,address)', 
+                tokenIn_, tokenOut_, contractIn_, userToken_
+            )
+        );
+        require(success, 'PYYFacet: delegatecall (overload) to Executor failed');
+        return (0, "");
+    }
+
+
     function swapsForUserToken(uint _amountIn, uint _baseTokenOut, address _userToken) public payable {
         uint minOut = ITri(s.tricrypto).get_dy(2, _baseTokenOut, _amountIn);
-        uint slippage = calculateSlippage(minOut, s.slippageTradingCurve);
+        uint slippage = ExecutorF(s.executor).calculateSlippage(minOut, s.slippageTradingCurve);
         IWETH(s.WETH).approve(s.tricrypto, _amountIn);
         ITri(s.tricrypto).exchange(2, _baseTokenOut, _amountIn, slippage, false);
 
         if (_userToken == s.renBTC) { 
             //renBTC: 1 / WBTC: 0
-            executeFinalTrade(0, 1, IERC20(s.WBTC));
+            _delegateExecutor(0, 1, IERC20(s.WBTC));
+
+            // ExecutorF(s.executor).executeFinalTrade(0, 1, IERC20(s.WBTC));
         } else if (_userToken == s.MIM) {
             //MIM: 0 / USDT: 2 / USDC: 1
-            executeFinalTrade(2, 0, IERC20(s.USDT));
+            _delegateExecutor(2, 0, IERC20(s.USDT));
+            
+            // ExecutorF(s.executor).executeFinalTrade(2, 0, IERC20(s.USDT));
         } else if (_userToken == s.USDC) {
             //USDC: 0 / USDT: 1
-            executeFinalTrade(1, 0, IERC20(s.USDT));
+            _delegateExecutor(1, 0, IERC20(s.USDT));
+
+            // ExecutorF(s.executor).executeFinalTrade(1, 0, IERC20(s.USDT));
         } else if (_userToken == s.FRAX){
             //FRAX: 0 / USDT: 2 / USDC: 1
-            executeFinalTrade(2, 0, IERC20(s.USDT), _userToken);
+            console.log(13);
+            _delegateExecutor(2, 0, s.USDT, _userToken);
+
+            // ExecutorF(s.executor).executeFinalTrade(2, 0, IERC20(s.USDT), _userToken);
         } 
     }
 
@@ -97,18 +132,19 @@ contract PYYFacet is ERC4626Facet {
 
         //tricrypto= USDT: 0 / crv2- USDT: 1 , USDC: 0 / mim- MIM: 0 , CRV2lp: 1
         uint tokenAmountIn = ITri(s.tricrypto).calc_withdraw_one_coin(assets, 0); 
-        uint minOut = calculateSlippage(tokenAmountIn, s.slippageOnCurve);
+        uint minOut = ExecutorF(s.executor).calculateSlippage(tokenAmountIn, s.slippageOnCurve);
         ITri(s.tricrypto).remove_liquidity_one_coin(assets, 0, minOut);
 
         if (userToken_ == s.USDC) { 
-            executeFinalTrade(1, 0, IERC20(s.USDT));
+            ExecutorF(s.executor).executeFinalTrade(1, 0, IERC20(s.USDT));
         } else if (userToken_ == s.MIM) {
-            executeFinalTrade(2, 0, IERC20(s.USDT));
+            ExecutorF(s.executor).executeFinalTrade(2, 0, IERC20(s.USDT));
         } else if (userToken_ == s.FRAX) {
-            executeFinalTrade(2, 0, IERC20(s.USDT), userToken_);
+            ExecutorF(s.executor).executeFinalTrade(2, 0, s.USDT, userToken_);
         }
 
-        uint userTokens = IERC20Facet(userToken_).balanceOf(address(this));
+        uint userTokens = IERC20(userToken_).balanceOf(address(this));
+
         (bool success, ) = userToken_.call(
             abi.encodeWithSignature(
                 'transfer(address,uint256)', 
@@ -132,7 +168,7 @@ contract PYYFacet is ERC4626Facet {
     function depositCurveYearn(uint fee_) public payable {
         //Deposit WETH in Curve Tricrypto pool
         (uint tokenAmountIn, uint[3] memory amounts) = _calculateTokenAmountCurve(fee_);
-        uint minAmount = calculateSlippage(tokenAmountIn, s.slippageOnCurve);
+        uint minAmount = ExecutorF(s.executor).calculateSlippage(tokenAmountIn, s.slippageOnCurve);
         IWETH(s.WETH).approve(s.tricrypto, tokenAmountIn);
         ITri(s.tricrypto).add_liquidity(amounts, minAmount);
 

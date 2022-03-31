@@ -3,19 +3,21 @@ pragma solidity ^0.8.0;
 
 
 import '@openzeppelin/contracts/token/ERC20/IERC20.sol';
-import './AppStorage.sol';
+import '../AppStorage.sol';
 
-import {IMulCurv} from './interfaces/ICurve.sol';
+import {IMulCurv} from '../interfaces/ICurve.sol';
+
+import 'hardhat/console.sol';
 
 
-abstract contract HelpersAbs {
+contract ExecutorF {
 
-    AppStorage internal s;
+    AppStorage s;
 
     function calculateSlippage(
         uint _amount, 
         uint _basisPoint
-    ) internal pure returns(uint minAmountOut) {
+    ) public pure returns(uint minAmountOut) {
         minAmountOut = _amount - ( (_amount * _basisPoint) / 10000 );  
     }
 
@@ -31,14 +33,18 @@ abstract contract HelpersAbs {
             slippage = calculateSlippage(minOut, s.slippageTradingCurve);
             IMulCurv(pool_).exchange(tokenIn_, tokenOut_, inBalance, slippage);
         } else {
+            console.log(1);
             minOut = IMulCurv(pool_).get_dy_underlying(tokenIn_, tokenOut_, inBalance);
+            console.log(2);
             slippage = calculateSlippage(minOut, s.slippageTradingCurve);
+            console.log(3);
             IMulCurv(pool_).exchange_underlying(tokenIn_, tokenOut_, inBalance, slippage);
+            console.log(4);
         }
     }
 
 
-    function executeFinalTrade(int128 tokenIn_, int128 tokenOut_, IERC20 _contractIn) internal {
+    function executeFinalTrade(int128 tokenIn_, int128 tokenOut_, IERC20 _contractIn) external {
         uint inBalance = _contractIn.balanceOf(address(this));
 
         if (tokenIn_ == 0) {
@@ -50,13 +56,15 @@ abstract contract HelpersAbs {
         }
     }
 
-    function executeFinalTrade(
+    function executeFinalTrade( *********
         int128 tokenIn_, 
         int128 tokenOut_, 
-        IERC20 contractIn_, 
+        address contractIn_, 
         address userToken_
-    ) internal {
-        uint inBalance = contractIn_.balanceOf(address(this));
+    ) public {
+        console.log(11);
+        uint inBalance = IERC20(contractIn_).balanceOf(address(this));
+        console.log(12);
 
         if (userToken_ == s.FRAX) {
             _tradeInCurve(s.fraxPool, tokenIn_, tokenOut_, inBalance);
@@ -66,23 +74,23 @@ abstract contract HelpersAbs {
     //****** Modifies manager's STATE *****/
 
     function updateManagerState(
-        uint _amount, 
-        address _user
-    ) public {
-        s.usersPayments[_user] += _amount;
-        s.totalVolume += _amount;
-        updateIndex();
+        uint amount_, 
+        address user_
+    ) external {
+        s.usersPayments[user_] += amount_;
+        s.totalVolume += amount_;
+        _updateIndex();
     }
 
-    function updateIndex() public { 
+    function _updateIndex() private { 
         s.distributionIndex = 
             s.totalVolume != 0 ? ((1 ether * 10 ** 8) / s.totalVolume) : 0;
     }
 
-    function modifyPaymentsAndVolumeExternally(address _user, uint _newAmount) public {
+    function modifyPaymentsAndVolumeExternally(address _user, uint _newAmount) external {
         s.usersPayments[_user] -= _newAmount;
         s.totalVolume -= _newAmount;
-        updateIndex();
+        _updateIndex();
     }
 
 

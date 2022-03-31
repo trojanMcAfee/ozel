@@ -2,14 +2,14 @@
 
 pragma solidity ^0.8.0;
 
-import "./IERC20Facet.sol";
-import "./MyIERC20Metadata.sol";
-import "./MyContext.sol";
+import "./pyIERC20.sol";
+import "./pyIERC20Metadata.sol";
+import "./pyContext.sol";
 
 import 'hardhat/console.sol';
 
 import '../../AppStorage.sol';
-import '../../HelpersAbs.sol';
+import '../ExecutorF.sol';
 
 /**
  * @dev Implementation of the {IERC20} interface.
@@ -36,8 +36,8 @@ import '../../HelpersAbs.sol';
  * functions have been added to mitigate the well-known issues around setting
  * allowances. See {IERC20-approve}.
  */
-contract ERC20Facet is HelpersAbs, MyContext, IERC20Facet, MyIERC20Metadata {
-
+abstract contract pyERC20 is pyContext, pyIERC20, pyIERC20Metadata {
+    AppStorage internal s;
     /**
      * @dev Sets the values for {name} and {symbol}.
      *
@@ -222,8 +222,8 @@ contract ERC20Facet is HelpersAbs, MyContext, IERC20Facet, MyIERC20Metadata {
 
         uint256 senderBalance = balanceOf(sender);
         require(senderBalance >= amount, "ERC20Facet: transfer amount exceeds balance");
-        
-        transferUserAllocation(sender,recipient, amount);
+
+        ExecutorF(s.executor).transferUserAllocation(sender,recipient, amount);
 
         emit Transfer(sender, recipient, amount);
 
@@ -273,7 +273,7 @@ contract ERC20Facet is HelpersAbs, MyContext, IERC20Facet, MyIERC20Metadata {
         uint userBalancePYY = balanceOf(account);
         uint allocationPercentage = (((amount * 10000) / userBalancePYY) * 1 ether) / 100;
         uint amountToReduce = ((allocationPercentage * s.usersPayments[account]) / 100 * 1 ether) / 10 ** 36;
-        modifyPaymentsAndVolumeExternally(account, amountToReduce);
+        ExecutorF(s.executor).modifyPaymentsAndVolumeExternally(account, amountToReduce);
 
         emit Transfer(account, address(0), amount);
 

@@ -12,7 +12,7 @@ pragma solidity ^0.8.0;
  *
  * This contract is only required for intermediate, library-like contracts.
  */
-abstract contract MyContext {
+abstract contract pyContext {
     function _msgSender() internal view virtual returns (address) {
         return msg.sender;
     }

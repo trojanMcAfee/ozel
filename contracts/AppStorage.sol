@@ -1,7 +1,6 @@
 // SPDX-License-Identifier: UNLICENSED
 pragma solidity ^0.8.0;
 
-import './facets/ERC20Facet/IERC20Facet.sol';
 import '@openzeppelin/contracts/token/ERC20/IERC20.sol';
 import './interfaces/IWETH.sol';
 
@@ -17,6 +16,7 @@ struct AppStorage {
     address crv2Pool;
     address yTriPool;
     address fraxPool;
+    address executor;
 
     //ERC20s
     address USDT;
@@ -24,7 +24,6 @@ struct AppStorage {
     address renBTC;
     address USDC;
     address MIM;
-    // address PYY;
     address WETH;
     address FRAX;
 

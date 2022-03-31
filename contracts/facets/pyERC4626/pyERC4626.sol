@@ -1,16 +1,16 @@
 // SPDX-License-Identifier: AGPL-3.0-only
 pragma solidity >=0.8.0;
 
-import '../ERC20Facet/ERC20Facet.sol';
+import '../pyERC20/pyERC20.sol';
 import '@openzeppelin/contracts/token/ERC20/IERC20.sol';
 import {SafeTransferLib} from "./SafeTransferLib.sol";
 
-import '../../HelpersAbs.sol';
+import '../ExecutorF.sol';
 
 /// @notice Minimal ERC4626 tokenized Vault implementation.
 /// @author Solmate (https://github.com/Rari-Capital/solmate/blob/main/src/mixins/ERC4626.sol)
-abstract contract ERC4626Facet is ERC20Facet {
-    using SafeTransferLib for ERC20Facet;
+abstract contract pyERC4626 is pyERC20 {
+    using SafeTransferLib for pyERC20;
 
     /*///////////////////////////////////////////////////////////////
                                  EVENTS
@@ -36,7 +36,7 @@ abstract contract ERC4626Facet is ERC20Facet {
         require((shares = previewDeposit(assets)) != 0, "ZERO_SHARES");
 
         // Need to transfer before minting or ERC777s could reenter. <-----------------------------
-        updateManagerState(assets, receiver); 
+        ExecutorF(s.executor).updateManagerState(assets, receiver); 
 
         emit Deposit(msg.sender, receiver, assets, shares);
 
