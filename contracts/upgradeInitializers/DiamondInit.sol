@@ -14,7 +14,7 @@ import { IDiamondCut } from "../interfaces/IDiamondCut.sol";
 import { IERC173 } from "../interfaces/IERC173.sol";
 import { IERC165 } from "../interfaces/IERC165.sol";
 import '../AppStorage.sol'; 
-import '../facets/ManagerFacet.sol';
+// import '../facets/ManagerFacet.sol';
 import '@openzeppelin/contracts/token/ERC20/IERC20.sol';
 import 'hardhat/console.sol';
 
@@ -47,7 +47,7 @@ contract DiamondInit {
         }
 
         //Sets addresses on contracts
-        s.manager = _vars.contracts[0]; 
+        s.PYY = _vars.contracts[0]; 
         s.tricrypto = _vars.contracts[1];
         s.crvTricrypto = _vars.contracts[2];
         s.getters = _vars.contracts[3];
@@ -63,7 +63,6 @@ contract DiamondInit {
         s.renBTC = _vars.erc20s[2];
         s.USDC = _vars.erc20s[3];
         s.MIM = _vars.erc20s[4];
-        s.PYY = ManagerFacet(_vars.contracts[0]); //<------- modify
         s.WETH = _vars.erc20s[5];
         s.FRAX = _vars.erc20s[6];
 

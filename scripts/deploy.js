@@ -63,7 +63,7 @@ async function deploy() {
     //Facets
     const diamondCutFacet = await deployFacet('DiamondCutFacet');
     const diamondLoupeFacet = await deployFacet('DiamondLoupeFacet'); 
-    const managerFacet = await deployFacet('ManagerFacet');
+    const pyyFacet = await deployFacet('PYYFacet');
     const gettersFacet = await deployFacet('GettersFacet');
 
     //Selectors
@@ -75,12 +75,12 @@ async function deploy() {
     ] = getSelectorsFromAllFacets([
         diamondCutFacet,
         diamondLoupeFacet,
-        managerFacet,
+        pyyFacet,
         gettersFacet,
     ]);
 
     const contractsAddr = [
-        managerFacet.address,
+        pyyFacet.address,
         tricryptoAddr,
         crvTricrypto,
         gettersFacet.address,
@@ -126,7 +126,7 @@ async function deploy() {
         [
             diamondCutFacet.address, 
             diamondLoupeFacet.address, 
-            managerFacet.address,
+            pyyFacet.address,
             gettersFacet.address,
         ]
     ];
@@ -147,7 +147,7 @@ async function deploy() {
         facets: [
             ['DiamondCutFacet', diamondCutFacet],
             ['DiamondLoupeFacet', diamondLoupeFacet],
-            ['ManagerFacet', managerFacet],
+            ['PYYFacet', pyyFacet],
             ['GettersFacet', gettersFacet],
         ],
         args: '',
@@ -167,7 +167,7 @@ async function deploy() {
         crvTri,
         callerAddr, 
         caller2Addr,
-        managerFacet,
+        pyyFacet,
         yvCrvTri
     };
 

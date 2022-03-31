@@ -8,7 +8,7 @@ import './interfaces/IWETH.sol';
 
 struct AppStorage { 
     //Contracts
-    address manager; 
+    address PYY; 
     address tricrypto;
     address crvTricrypto; 
     address getters;
@@ -24,7 +24,7 @@ struct AppStorage {
     address renBTC;
     address USDC;
     address MIM;
-    IERC20Facet PYY;
+    // address PYY;
     address WETH;
     address FRAX;
 

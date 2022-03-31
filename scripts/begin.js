@@ -9,7 +9,6 @@ const {
     balanceOfPYY, 
     transferPYY, 
     withdrawSharePYY, 
-    approvePYY,
     getVarsForHelpers,
     sendETH,
     getCalldata
@@ -266,12 +265,11 @@ async function beginSimulatedDiamond() {
         crvTri,
         callerAddr, 
         caller2Addr,
-        // PYY,
-        managerFacet,
+        pyyFacet,
         yvCrvTri
     } = deployedVars;
     
-    getVarsForHelpers(deployedDiamond, managerFacet); //deployedDiamond, PYY, managerFacet
+    getVarsForHelpers(deployedDiamond, pyyFacet); 
 
     //First user
     console.log('1st user first transfer');
@@ -283,7 +281,6 @@ async function beginSimulatedDiamond() {
      */
 
     await sendETH(callerAddr, fraxAddr, FRAX, 'FRAX', 10 ** 18); 
-    // await approvePYY(callerAddr);
     console.log('PYY balance on caller 1: ', formatEther(await balanceOfPYY(callerAddr)));
     console.log('yvCrvTricrypto token balance on diamondProxy: ', formatEther(await yvCrvTri.balanceOf(deployedDiamond.address)));
     console.log('---------------------------------------'); 
@@ -303,7 +300,6 @@ async function beginSimulatedDiamond() {
     //Second user
     console.log('2nd user first transfer');
     await sendETH(caller2Addr, wbtcAddr, WBTC, 'WBTC', 10 ** 8);
-    await approvePYY(caller2Addr);
     console.log('PYY balance on caller 2: ', formatEther(await balanceOfPYY(caller2Addr)));
     console.log('PYY balance on caller 1 after caller2 swap: ', formatEther(await balanceOfPYY(callerAddr)));
     console.log('crvTricrypto token balance on diamondProxy: ', formatEther(await crvTri.balanceOf(deployedDiamond.address)));

@@ -3,14 +3,14 @@ const { MaxUint256 } = ethers.constants;
 
 
 let deployedDiamond;
-let PYY;
-let managerFacet;
+// let PYY;
+let pyyFacet;
 
 
-async function getVarsForHelpers(diamond, manager) { //...,ren
+async function getVarsForHelpers(diamond, pyy) { //...,ren
     deployedDiamond = diamond;
-    PYY = manager;
-    managerFacet = manager;
+    // PYY = manager;
+    pyyFacet = pyy;
 }
 
 async function callDiamondProxy(params) { 
@@ -108,10 +108,6 @@ async function withdrawSharePYY(callerAddr, balancePYY, userToken) {
     });
 }
 
-async function approvePYY(caller) {
-    const signer = await hre.ethers.provider.getSigner(caller);
-    await PYY.connect(signer).approve(managerFacet.address, MaxUint256);
-}
 
 //Sends ETH to contracts (simulates ETH bridging) **** MAIN FUNCTION ****
 async function sendETH(userAddr, userToken, IERC20, tokenStr, decimals) {
@@ -153,7 +149,6 @@ module.exports = {
     balanceOfPYY,
     transferPYY,
     withdrawSharePYY,
-    approvePYY, 
     getVarsForHelpers,
     sendETH,
     getCalldata

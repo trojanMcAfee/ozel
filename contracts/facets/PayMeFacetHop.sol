@@ -18,7 +18,7 @@ contract PayMeFacetHop is OpsReady {
 
     address public constant nullAddr = 0x0000000000000000000000000000000000000000;
     address public owner;
-    address public manager;
+    address public PYY;
 
     uint maxSubmissionCost;
     uint maxGas;
@@ -33,7 +33,7 @@ contract PayMeFacetHop is OpsReady {
         address _owner, 
         address _opsGel,
         uint _chainId,
-        address _manager,
+        address _pyy,
         address _inbox,
         uint _maxSubmissionCost,
         uint _maxGas,
@@ -41,7 +41,7 @@ contract PayMeFacetHop is OpsReady {
     ) OpsReady(_opsGel) {
         owner = _owner;
         chainId = _chainId;
-        manager = _manager;
+        PYY = _pyy;
         inbox = DelayedInbox(_inbox);
         maxSubmissionCost = _maxSubmissionCost;
         maxGas = _maxGas;
@@ -57,19 +57,19 @@ contract PayMeFacetHop is OpsReady {
         (uint fee, ) = opsGel.getFeeDetails();
         _transfer(fee, ETH);
 
-        // --- deposits to Manager ----
+        // --- deposits to PYY (ex-Manager) ----
         bytes memory data = abi.encodeWithSelector(
-            Test2(payable(manager)).exchangeToUserToken.selector, 
+            Test2(payable(PYY)).exchangeToUserToken.selector, 
             owner, _userToken
         );
 
         // user ticketID later on to check the sequencer's inbox for unconfirmed txs
         uint ticketID = inbox.createRetryableTicket{value: address(this).balance}(
-            manager, 
+            PYY, 
             address(this).balance - _callvalue, 
             maxSubmissionCost, 
-            manager, 
-            manager, 
+            PYY, 
+            PYY, 
             maxGas, 
             gasPriceBid, 
             data

@@ -86,8 +86,8 @@ abstract contract HelpersAbs {
     }
 
 
-    function _getAllocationToTransfer(uint _amount, address _user) public returns(uint) {
-        (bool success, bytes memory returnData) = address(s.PYY).delegatecall( //<------- PYY and manager are different vars but same contract. Fix it
+    function _getAllocationToTransfer(uint _amount, address _user) public returns(uint) { 
+        (bool success, bytes memory returnData) = s.PYY.delegatecall( 
             abi.encodeWithSignature('balanceOf(address)', _user)
         );
         require(success);
