@@ -9,7 +9,10 @@ import '../ExecutorF.sol';
 
 /// @notice Minimal ERC4626 tokenized Vault implementation.
 /// @author Solmate (https://github.com/Rari-Capital/solmate/blob/main/src/mixins/ERC4626.sol)
-abstract contract pyERC4626 is pyERC20 {
+contract pyERC4626 { 
+
+    AppStorage s;
+
     using SafeTransferLib for pyERC20;
 
     /*///////////////////////////////////////////////////////////////
@@ -36,7 +39,15 @@ abstract contract pyERC4626 is pyERC20 {
         require((shares = previewDeposit(assets)) != 0, "ZERO_SHARES");
 
         // Need to transfer before minting or ERC777s could reenter. <-----------------------------
-        ExecutorF(s.executor).updateManagerState(assets, receiver); 
+        // ExecutorF(s.executor).updateManagerState(assets, receiver); 
+
+        (bool success, ) = s.executor.delegatecall(
+            abi.encodeWithSignature(
+                'updateManagerState(uint256,address)', 
+                assets, receiver
+            )
+        );
+        require(success, 'pyERC4626: deposit() failed');
 
         emit Deposit(msg.sender, receiver, assets, shares);
 
@@ -60,7 +71,7 @@ abstract contract pyERC4626 is pyERC20 {
 
         beforeWithdraw(assets, shares);
 
-        _burn(owner, shares);
+        pyERC20(s.py20)._burn(owner, shares);
 
         emit Withdraw(msg.sender, receiver, owner, assets, shares);
 
@@ -108,11 +119,11 @@ abstract contract pyERC4626 is pyERC20 {
     }
 
     function maxWithdraw(address owner) public view virtual returns (uint256) {
-        return convertToAssets(balanceOf(owner));
+        return convertToAssets(pyERC20(s.py20).balanceOf(owner));
     }
 
     function maxRedeem(address owner) public view virtual returns (uint256) {
-        return balanceOf(owner);
+        return pyERC20(s.py20).balanceOf(owner);
     }
 
     /*///////////////////////////////////////////////////////////////

@@ -4,7 +4,6 @@ pragma solidity ^0.8.0;
 
 import '@openzeppelin/contracts/token/ERC20/IERC20.sol';
 import '@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol';
-import '../libraries/Helpers.sol';
 import '../interfaces/ICrvLpToken.sol';
 import '../interfaces/IWETH.sol';
 import './ExecutorF.sol';
@@ -14,10 +13,15 @@ import {ITri} from '../interfaces/ICurve.sol';
 
 import 'hardhat/console.sol';
 
+import '../AppStorage.sol';
+import './ExecutorF.sol';
 
 
 
-contract PYYFacet is pyERC4626 {
+
+contract PYYFacet { 
+
+    AppStorage s;
 
     using SafeERC20 for IERC20;
 
@@ -44,17 +48,28 @@ contract PYYFacet is pyERC4626 {
         int128 tokenOut_, 
         address contractIn_, 
         address userToken_
-    ) private returns(uint, string memory) { //<----- fails delegatecall but runs call
+    ) private returns(uint, string memory) { //<----------- fails delegatecall but runs call
         console.log(14);
-        console.log('s.executor: ', s.executor);
+        console.log('s.executor: ', s.executor);        
+
         (bool success, ) = s.executor.delegatecall(
-            abi.encodeWithSignature(
-                'executeFinalTrade(int128,int128,address,address)', 
-                tokenIn_, tokenOut_, contractIn_, userToken_
-            )
+            abi.encodeWithSignature('getHello()')
         );
-        require(success, 'PYYFacet: delegatecall (overload) to Executor failed');
-        return (0, "");
+        require(success, "Hello world failed");
+
+       
+
+        // (bool success, ) = s.executor.delegatecall(
+        //     abi.encodeWithSignature(
+        //         'executeFinalTrade(int128,int128,address,address)', 
+        //         tokenIn_, tokenOut_, contractIn_, userToken_
+        //     )
+        // );
+        // require(success, 'PYYFacet: delegatecall (overload) to Executor failed');
+
+
+
+        // return (0, "");
     }
 
 
@@ -81,7 +96,6 @@ contract PYYFacet is pyERC4626 {
             // ExecutorF(s.executor).executeFinalTrade(1, 0, IERC20(s.USDT));
         } else if (_userToken == s.FRAX){
             //FRAX: 0 / USDT: 2 / USDC: 1
-            console.log(13);
             _delegateExecutor(2, 0, s.USDT, _userToken);
 
             // ExecutorF(s.executor).executeFinalTrade(2, 0, IERC20(s.USDT), _userToken);
@@ -99,7 +113,7 @@ contract PYYFacet is pyERC4626 {
         uint wethIn = IWETH(s.WETH).balanceOf(address(this));
 
         //deposits in ERC4626
-        deposit(wethIn, _user);
+        pyERC4626(s.py46).deposit(wethIn, _user);
 
         if (_userToken == s.WBTC || _userToken == s.renBTC) {
             baseTokenOut = 1;
@@ -128,7 +142,7 @@ contract PYYFacet is pyERC4626 {
     function withdrawUserShare(address user_, uint shares_, address userToken_) public { 
         IYtri(s.yTriPool).withdraw(IYtri(s.yTriPool).balanceOf(address(this)));
 
-        uint assets = redeem(shares_, user_, user_);
+        uint assets = pyERC4626(s.py46).redeem(shares_, user_, user_);
 
         //tricrypto= USDT: 0 / crv2- USDT: 1 , USDC: 0 / mim- MIM: 0 , CRV2lp: 1
         uint tokenAmountIn = ITri(s.tricrypto).calc_withdraw_one_coin(assets, 0); 

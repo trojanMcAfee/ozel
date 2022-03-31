@@ -36,8 +36,8 @@ import '../ExecutorF.sol';
  * functions have been added to mitigate the well-known issues around setting
  * allowances. See {IERC20-approve}.
  */
-abstract contract pyERC20 is pyContext, pyIERC20, pyIERC20Metadata {
-    AppStorage internal s;
+contract pyERC20 is pyContext, pyIERC20, pyIERC20Metadata { 
+    AppStorage s;
     /**
      * @dev Sets the values for {name} and {symbol}.
      *
@@ -262,7 +262,7 @@ abstract contract pyERC20 is pyContext, pyIERC20, pyIERC20Metadata {
      * - `account` cannot be the zero address.
      * - `account` must have at least `amount` tokens.
      */
-    function _burn(address account, uint256 amount) internal virtual {
+    function _burn(address account, uint256 amount) external virtual { //<---------- switched this to external (do proper security checks)
         require(account != address(0), "ERC20: burn from the zero address");
 
         _beforeTokenTransfer(account, address(0), amount);

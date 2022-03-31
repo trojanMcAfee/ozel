@@ -40,6 +40,8 @@ struct AppStorage {
     mapping(bool => PYYERC20) py; 
 
     address ETH;
+    address py46;
+    address py20;
 }
 
 struct PYYERC20 {

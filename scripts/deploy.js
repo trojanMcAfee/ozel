@@ -66,6 +66,8 @@ async function deploy() {
     const pyyFacet = await deployFacet('PYYFacet');
     const gettersFacet = await deployFacet('GettersFacet');
     const executorF = await deployFacet('ExecutorF');
+    const py4626 = await deployFacet('pyERC4626');
+    const py20 = await deployFacet('pyERC20');
 
     //Selectors
     const [
@@ -73,13 +75,17 @@ async function deploy() {
         selecLoup,
         selecPYY,
         selectGetters,
-        selectExecutor
+        selectExecutor,
+        select4626,
+        select20
     ] = getSelectorsFromAllFacets([
         diamondCutFacet,
         diamondLoupeFacet,
         pyyFacet,
         gettersFacet,
-        executorF
+        executorF,
+        py4626,
+        py20
     ]);
 
     const contractsAddr = [
@@ -92,7 +98,9 @@ async function deploy() {
         crv2PoolAddr,
         yTricryptoPoolAddr,
         fraxPoolAddr,
-        executorF.address
+        executorF.address,
+        py4626.address,
+        py20.address
     ];
 
     const erc20sAddr = [
@@ -126,14 +134,18 @@ async function deploy() {
             selecLoup, 
             selecPYY, 
             selectGetters,
-            selectExecutor
+            selectExecutor,
+            select4626,
+            select20
         ],
         [
             diamondCutFacet.address, 
             diamondLoupeFacet.address, 
             pyyFacet.address,
             gettersFacet.address,
-            executorF.address
+            executorF.address,
+            py4626.address,
+            py20.address
         ]
     ];
 
@@ -155,7 +167,9 @@ async function deploy() {
             ['DiamondLoupeFacet', diamondLoupeFacet],
             ['PYYFacet', pyyFacet],
             ['GettersFacet', gettersFacet],
-            ['ExecutorF', executorF]
+            ['ExecutorF', executorF],
+            ['pyERC4626', py4626],
+            ['pyERC20', py20]
         ],
         args: '',
         overrides: {callerAddr, functionCall, diamondInit: diamondInit.address}

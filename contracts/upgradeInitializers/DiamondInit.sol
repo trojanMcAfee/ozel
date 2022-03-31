@@ -57,6 +57,8 @@ contract DiamondInit {
         s.yTriPool = _vars.contracts[7];
         s.fraxPool = _vars.contracts[8];
         s.executor = _vars.contracts[9];
+        s.py46 = _vars.contracts[10]; 
+        s.py20 = _vars.contracts[11];
 
         //Sets ERC20 instances
         s.USDT = _vars.erc20s[0];

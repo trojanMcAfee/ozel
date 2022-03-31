@@ -2,6 +2,7 @@
 pragma solidity ^0.8.0;
 
 
+import '@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol';
 import '@openzeppelin/contracts/token/ERC20/IERC20.sol';
 import '../AppStorage.sol';
 
@@ -13,6 +14,8 @@ import 'hardhat/console.sol';
 contract ExecutorF {
 
     AppStorage s;
+
+    using SafeERC20 for IERC20;
 
     function calculateSlippage(
         uint _amount, 
@@ -45,6 +48,7 @@ contract ExecutorF {
 
 
     function executeFinalTrade(int128 tokenIn_, int128 tokenOut_, IERC20 _contractIn) external {
+        console.log('hi');
         uint inBalance = _contractIn.balanceOf(address(this));
 
         if (tokenIn_ == 0) {
@@ -56,7 +60,7 @@ contract ExecutorF {
         }
     }
 
-    function executeFinalTrade( *********
+    function executeFinalTrade( 
         int128 tokenIn_, 
         int128 tokenOut_, 
         address contractIn_, 
@@ -69,6 +73,12 @@ contract ExecutorF {
         if (userToken_ == s.FRAX) {
             _tradeInCurve(s.fraxPool, tokenIn_, tokenOut_, inBalance);
         } 
+    }
+
+    function getHello() public view {
+        console.log('msg.sender: ', msg.sender);
+        console.log('hello world');
+        revert('here');
     }
 
     //****** Modifies manager's STATE *****/
