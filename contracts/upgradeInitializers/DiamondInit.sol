@@ -16,20 +16,20 @@ import { IERC165 } from "../interfaces/IERC165.sol";
 import '../AppStorage.sol'; 
 import '../facets/ManagerFacet.sol';
 import '@openzeppelin/contracts/token/ERC20/IERC20.sol';
-import {
-    IRen, 
-    ITricrypto, 
-    IMIM, 
-    IFrax
-} from '../interfaces/ICurve.sol';
-import '../facets/ERC20Facet/IERC20Facet.sol';
-import '../interfaces/ICrvLpToken.sol';
-import '../facets/GettersFacet.sol';
+// import {
+//     IRen, 
+//     ITricrypto, 
+//     IMIM, 
+//     IFrax
+// } from '../interfaces/ICurve.sol';
+// import '../facets/ERC20Facet/IERC20Facet.sol';
+// import '../interfaces/ICrvLpToken.sol';
+// import '../facets/GettersFacet.sol';
 
 import 'hardhat/console.sol';
 
 import '../interfaces/IWETH.sol';
-import '../interfaces/IYtricrypto.sol';
+// import '../interfaces/IYtricrypto.sol';
 
 
 
@@ -58,15 +58,15 @@ contract DiamondInit {
         }
 
         //Sets addresses on contracts
-        s.manager = ManagerFacet(_vars.contracts[0]);
-        s.tricrypto = ITricrypto(_vars.contracts[1]);
-        s.crvTricrypto = ICrvLpToken(_vars.contracts[2]);
-        s.getters = GettersFacet(_vars.contracts[3]);
-        s.renPool = IRen(_vars.contracts[4]);
-        s.mimPool = IMIM(_vars.contracts[5]);
-        s.crv2Pool = I2crv(_vars.contracts[6]);
-        s.yTriPool = IYtricrypto(_vars.contracts[7]);
-        s.fraxPool = IFrax(_vars.contracts[8]);
+        s.manager = _vars.contracts[0]; 
+        s.tricrypto = _vars.contracts[1];
+        s.crvTricrypto = _vars.contracts[2];
+        s.getters = _vars.contracts[3];
+        s.renPool = _vars.contracts[4];
+        s.mimPool = _vars.contracts[5];
+        s.crv2Pool = _vars.contracts[6];
+        s.yTriPool = _vars.contracts[7];
+        s.fraxPool = _vars.contracts[8];
 
         //Sets ERC20 instances
         s.USDT = IERC20(_vars.erc20s[0]);

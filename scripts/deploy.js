@@ -57,7 +57,7 @@ async function deploy() {
     const USDC = await hre.ethers.getContractAt('IERC20', usdcAddr);
     const MIM = await hre.ethers.getContractAt('IERC20', mimAddr);
     const crvTri = await hre.ethers.getContractAt('IERC20', crvTricrypto);
-    const yvCrvTri = await hre.ethers.getContractAt('IYtricrypto', yTricryptoPoolAddr);
+    const yvCrvTri = await hre.ethers.getContractAt('IYtri', yTricryptoPoolAddr);
     const FRAX = await hre.ethers.getContractAt('IERC20', fraxAddr);
 
     //Facets

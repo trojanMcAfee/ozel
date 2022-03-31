@@ -8,10 +8,14 @@ import '../libraries/Helpers.sol';
 import '../interfaces/ICrvLpToken.sol';
 import '../interfaces/IWETH.sol';
 import '../HelpersAbs.sol';
+import './ERC4626Facet/ERC4626Facet.sol';
+import '../interfaces/IYtri.sol';
+import {ITri} from '../interfaces/ICurve.sol';
 
 import 'hardhat/console.sol';
 
-import './ERC4626Facet/ERC4626Facet.sol';
+
+
 
 
 
@@ -31,10 +35,10 @@ contract ManagerFacet is ERC4626Facet {
     }
 
     function swapsForUserToken(uint _amountIn, uint _baseTokenOut, address _userToken) public payable {
-        uint minOut = s.tricrypto.get_dy(2, _baseTokenOut, _amountIn);
+        uint minOut = ITri(s.tricrypto).get_dy(2, _baseTokenOut, _amountIn);
         uint slippage = calculateSlippage(minOut, s.slippageTradingCurve);
-        s.WETH.approve(address(s.tricrypto), _amountIn);
-        s.tricrypto.exchange(2, _baseTokenOut, _amountIn, slippage, false);
+        s.WETH.approve(s.tricrypto, _amountIn);
+        ITri(s.tricrypto).exchange(2, _baseTokenOut, _amountIn, slippage, false);
 
         if (_userToken == address(s.renBTC)) { 
             //renBTC: 1 / WBTC: 0
@@ -89,14 +93,14 @@ contract ManagerFacet is ERC4626Facet {
 
 
     function withdrawUserShare(address user_, uint shares_, address userToken_) public { 
-        s.yTriPool.withdraw(s.yTriPool.balanceOf(address(this)));
+        IYtri(s.yTriPool).withdraw(IYtri(s.yTriPool).balanceOf(address(this)));
 
         uint assets = redeem(shares_, user_, user_);
 
         //tricrypto= USDT: 0 / crv2- USDT: 1 , USDC: 0 / mim- MIM: 0 , CRV2lp: 1
-        uint tokenAmountIn = s.tricrypto.calc_withdraw_one_coin(assets, 0); 
+        uint tokenAmountIn = ITri(s.tricrypto).calc_withdraw_one_coin(assets, 0); 
         uint minOut = calculateSlippage(tokenAmountIn, s.slippageOnCurve);
-        s.tricrypto.remove_liquidity_one_coin(assets, 0, minOut);
+        ITri(s.tricrypto).remove_liquidity_one_coin(assets, 0, minOut);
 
         if (userToken_ == address(s.USDC)) { 
             executeFinalTrade(1, 0, s.USDT);
@@ -122,21 +126,21 @@ contract ManagerFacet is ERC4626Facet {
         amounts[0] = 0;
         amounts[1] = 0;
         amounts[2] = _wethAmountIn;
-        uint tokenAmount = s.tricrypto.calc_token_amount(amounts, true);
+        uint tokenAmount = ITri(s.tricrypto).calc_token_amount(amounts, true);
         return (tokenAmount, amounts);
     } 
     
 
-    function depositCurveYearn(uint _fee) public payable {
+    function depositCurveYearn(uint fee_) public payable {
         //Deposit WETH in Curve Tricrypto pool
-        (uint tokenAmountIn, uint[3] memory amounts) = _calculateTokenAmountCurve(_fee);
+        (uint tokenAmountIn, uint[3] memory amounts) = _calculateTokenAmountCurve(fee_);
         uint minAmount = calculateSlippage(tokenAmountIn, s.slippageOnCurve);
-        s.WETH.approve(address(s.tricrypto), tokenAmountIn);
-        s.tricrypto.add_liquidity(amounts, minAmount);
+        s.WETH.approve(s.tricrypto, tokenAmountIn);
+        ITri(s.tricrypto).add_liquidity(amounts, minAmount);
 
         //Deposit crvTricrypto in Yearn
-        s.crvTricrypto.approve(address(s.yTriPool), s.crvTricrypto.balanceOf(address(this)));
-        s.yTriPool.deposit(s.crvTricrypto.balanceOf(address(this)));
+        IERC20(s.crvTricrypto).approve(s.yTriPool, IERC20(s.crvTricrypto).balanceOf(address(this)));
+        IYtri(s.yTriPool).deposit(IERC20(s.crvTricrypto).balanceOf(address(this)));
     }
 
 }

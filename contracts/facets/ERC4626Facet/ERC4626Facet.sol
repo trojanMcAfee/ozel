@@ -2,8 +2,8 @@
 pragma solidity >=0.8.0;
 
 import '../ERC20Facet/ERC20Facet.sol';
+import '@openzeppelin/contracts/token/ERC20/IERC20.sol';
 import {SafeTransferLib} from "./SafeTransferLib.sol";
-import {FixedPointMathLib} from "./FixedPointMathLib.sol";
 
 import '../../HelpersAbs.sol';
 
@@ -11,7 +11,6 @@ import '../../HelpersAbs.sol';
 /// @author Solmate (https://github.com/Rari-Capital/solmate/blob/main/src/mixins/ERC4626.sol)
 abstract contract ERC4626Facet is ERC20Facet {
     using SafeTransferLib for ERC20Facet;
-    using FixedPointMathLib for uint256;
 
     /*///////////////////////////////////////////////////////////////
                                  EVENTS
@@ -82,7 +81,7 @@ abstract contract ERC4626Facet is ERC20Facet {
     }
 
     function convertToAssets(uint256 shares) public view virtual returns (uint256) {
-        uint vaultBalance = s.crvTricrypto.balanceOf(address(this));
+        uint vaultBalance = IERC20(s.crvTricrypto).balanceOf(address(this));
         uint assets = ((shares * vaultBalance) / 100 * 1 ether) / 10 ** 36; 
         
         return assets;

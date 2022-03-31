@@ -22,11 +22,11 @@ abstract contract HelpersAbs {
     function _tradeInCurve(address pool_, int128 tokenIn_, int128 tokenOut_, uint inBalance) private {
         uint minOut;
         uint slippage;
-        if (pool_ != address(s.renPool)) {
+        if (pool_ != s.renPool) {
             s.USDT.approve(pool_, inBalance);
         }
 
-        if (pool_ == address(s.renPool) || pool_ == address(s.crv2Pool)) {
+        if (pool_ == s.renPool || pool_ == s.crv2Pool) {
             minOut = IMulCurv(pool_).get_dy(tokenIn_, tokenOut_, inBalance);
             slippage = calculateSlippage(minOut, s.slippageTradingCurve);
             IMulCurv(pool_).exchange(tokenIn_, tokenOut_, inBalance, slippage);
@@ -35,37 +35,18 @@ abstract contract HelpersAbs {
             slippage = calculateSlippage(minOut, s.slippageTradingCurve);
             IMulCurv(pool_).exchange_underlying(tokenIn_, tokenOut_, inBalance, slippage);
         }
-
-
-
     }
 
 
     function executeFinalTrade(int128 tokenIn_, int128 tokenOut_, IERC20 _contractIn) internal {
-        // uint minOut;
-        // uint slippage;
         uint inBalance = _contractIn.balanceOf(address(this));
 
         if (tokenIn_ == 0) {
-            _tradeInCurve(address(s.renPool), tokenIn_, tokenOut_, inBalance);
-
-            // minOut = s.renPool.get_dy(tokenIn_, tokenOut_, inBalance);
-            // slippage = calculateSlippage(minOut, s.slippageTradingCurve);
-            // s.renPool.exchange(tokenIn_, tokenOut_, inBalance, slippage);
+            _tradeInCurve(s.renPool, tokenIn_, tokenOut_, inBalance);
         } else if (tokenIn_ == 1) {
-            _tradeInCurve(address(s.crv2Pool), tokenIn_, tokenOut_, inBalance);
-
-            // minOut = s.crv2Pool.get_dy(tokenIn_, tokenOut_, inBalance);
-            // slippage = calculateSlippage(minOut, s.slippageTradingCurve);
-            // s.USDT.approve(address(s.crv2Pool), inBalance);
-            // s.crv2Pool.exchange(tokenIn_, tokenOut_, inBalance, slippage);
+            _tradeInCurve(s.crv2Pool, tokenIn_, tokenOut_, inBalance);
         } else if (tokenIn_ == 2) {
-            _tradeInCurve(address(s.mimPool), tokenIn_, tokenOut_, inBalance);
-
-            // minOut = s.mimPool.get_dy_underlying(tokenIn_, tokenOut_, inBalance);
-            // slippage = calculateSlippage(minOut, s.slippageTradingCurve);
-            // s.USDT.approve(address(s.mimPool), inBalance);
-            // s.mimPool.exchange_underlying(tokenIn_, tokenOut_, inBalance, slippage);
+            _tradeInCurve(s.mimPool, tokenIn_, tokenOut_, inBalance);
         }
     }
 
@@ -75,19 +56,11 @@ abstract contract HelpersAbs {
         IERC20 contractIn_, 
         address userToken_
     ) internal {
-        uint minOut;
-        uint slippage;
         uint inBalance = contractIn_.balanceOf(address(this));
 
         if (userToken_ == address(s.FRAX)) {
-            _tradeInCurve(address(s.fraxPool), tokenIn_, tokenOut_, inBalance);
-
-            // minOut = s.fraxPool.get_dy_underlying(tokenIn_, tokenOut_, inBalance);
-            // slippage = calculateSlippage(minOut, s.slippageTradingCurve);
-            // s.USDT.approve(address(s.fraxPool), inBalance);
-            // s.fraxPool.exchange_underlying(tokenIn_, tokenOut_, inBalance, slippage);
+            _tradeInCurve(s.fraxPool, tokenIn_, tokenOut_, inBalance);
         } 
-
     }
 
     //****** Modifies manager's STATE *****/
@@ -114,7 +87,7 @@ abstract contract HelpersAbs {
 
 
     function _getAllocationToTransfer(uint _amount, address _user) public returns(uint) {
-        (bool success, bytes memory returnData) = address(s.PYY).delegatecall(
+        (bool success, bytes memory returnData) = address(s.PYY).delegatecall( //<------- PYY and manager are different vars but same contract. Fix it
             abi.encodeWithSignature('balanceOf(address)', _user)
         );
         require(success);
