@@ -3,13 +3,11 @@ const { MaxUint256 } = ethers.constants;
 
 
 let deployedDiamond;
-// let PYY;
 let pyyFacet;
 
 
 async function getVarsForHelpers(diamond, pyy) { //...,ren
     deployedDiamond = diamond;
-    // PYY = manager;
     pyyFacet = pyy;
 }
 

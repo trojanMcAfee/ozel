@@ -22,7 +22,12 @@ contract Diamond {
     AppStorage s;
 
 
-    constructor(IDiamondCut.FacetCut[] memory _diamondCut, address _contractOwner, bytes memory _functionCall, address _init) payable {        
+    constructor(
+        IDiamondCut.FacetCut[] memory _diamondCut, 
+        address _contractOwner, 
+        bytes memory _functionCall, 
+        address _init
+    ) payable {        
         LibDiamond.diamondCut(_diamondCut, _init, _functionCall);
         LibDiamond.setContractOwner(_contractOwner);
     }
