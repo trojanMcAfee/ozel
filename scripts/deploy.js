@@ -25,7 +25,7 @@ const {
 } = require('./state-vars.js');
 
 
-async function deployFacet(facetName) {
+async function deployFacet(facetName) { 
     const Contract = await hre.ethers.getContractFactory(facetName);
     const contract = await Contract.deploy();
     await contract.deployed();
@@ -43,7 +43,7 @@ function getSelectorsFromAllFacets(facets) {
 
 
 //Deploys contracts in Arbitrum
-async function deploy() {
+async function deploy() { 
     const [callerAddr, caller2Addr] = await hre.ethers.provider.listAccounts();
     console.log('--');
     console.log('Caller 1: ', callerAddr);
