@@ -94,9 +94,6 @@ contract PYYFacet {
     function withdrawUserShare(address user_, uint shares_, address userToken_) public { 
         IYtri(s.yTriPool).withdraw(IYtri(s.yTriPool).balanceOf(address(this)));
 
-        // uint assets = pyERC4626(s.py46).redeem(shares_, user_, user_);
-
-        console.log(1);
         (bool success, bytes memory data) = s.py46.delegatecall(
             abi.encodeWithSelector(
                 pyERC4626(s.py46).redeem.selector, 
@@ -105,7 +102,6 @@ contract PYYFacet {
         );
         require(success, 'PYYFacet: withdrawUserShare() failed');
         uint assets = abi.decode(data, (uint));
-        console.log('assets: ', assets);
 
         //tricrypto= USDT: 0 / crv2- USDT: 1 , USDC: 0 / mim- MIM: 0 , CRV2lp: 1
         uint tokenAmountIn = ITri(s.tricrypto).calc_withdraw_one_coin(assets, 0); 
@@ -114,30 +110,22 @@ contract PYYFacet {
 
         if (userToken_ == s.USDC) { 
             _delegateExecutor(1, 0, s.USDT);
-
-            // ExecutorF(s.executor).executeFinalTrade(1, 0, IERC20(s.USDT));
         } else if (userToken_ == s.MIM) {
             _delegateExecutor(2, 0, s.USDT);
-
-            // ExecutorF(s.executor).executeFinalTrade(2, 0, IERC20(s.USDT));
         } else if (userToken_ == s.FRAX) {
             _delegateExecutor(2, 0, s.USDT, userToken_);
-
-            // ExecutorF(s.executor).executeFinalTrade(2, 0, s.USDT, userToken_);
         }
 
-        console.log(3);
         uint userTokens = IERC20(userToken_).balanceOf(address(this));
-        console.log(4);
 
-        (success, ) = userToken_.call(
-            abi.encodeWithSignature(
-                'transfer(address,uint256)', 
-                user_, userTokens 
-            ) 
-        );
-        require(success, 'VaultFacet: call transfer() failed'); 
-        console.log(5);
+        IERC20(userToken_).safeTransfer(user_, userTokens);
+        // (success, ) = userToken_.call(
+        //     abi.encodeWithSignature(
+        //         'transfer(address,uint256)', 
+        //         user_, userTokens 
+        //     ) 
+        // );
+        // require(success, 'VaultFacet: call transfer() failed'); 
     }
 
 
