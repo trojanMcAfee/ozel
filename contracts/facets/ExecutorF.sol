@@ -85,16 +85,21 @@ contract ExecutorF {
 
     function _updateIndex() private { 
         s.distributionIndex = 
-            s.totalVolume != 0 ? ((1 ether * 10 ** 8) / s.totalVolume) : 0;
+            s.totalVolume != 0 ? ((1 ether * 10 ** 8) / s.totalVolume) * 10 ** 14 : 0; 
     }
 
-    function modifyPaymentsAndVolumeExternally(address _user, uint _newAmount) external {
-        s.usersPayments[_user] -= _newAmount;
-        s.totalVolume -= _newAmount;
+    function modifyPaymentsAndVolumeExternally(address user_, uint newAmount_) external {
+        s.usersPayments[user_] -= newAmount_;
+        s.totalVolume -= newAmount_;
         _updateIndex();
     }
 
-    function transferUserAllocation(address sender_, address receiver_, uint _amount, uint senderBalance_) public { 
+    function transferUserAllocation(
+        address sender_, 
+        address receiver_, 
+        uint _amount, 
+        uint senderBalance_
+    ) public { 
         uint percentageToTransfer = (_amount * 10000) / senderBalance_;
         uint amountToTransfer = (percentageToTransfer * s.usersPayments[sender_]) / 10000;
 

@@ -90,8 +90,8 @@ contract pyERC20 is pyContext, pyIERC20, pyIERC20Metadata {
     /**
      * @dev See {IERC20-balanceOf}.
      */
-    function balanceOf(address account) public view virtual override returns (uint256) {
-        return (s.distributionIndex * s.usersPayments[account] * 100 ) / 10 ** 8;
+    function balanceOf(address account) public view virtual override returns (uint256) { 
+        return (s.distributionIndex * s.usersPayments[account] * 100 ) / 10 ** 22;
     }
 
     /**
