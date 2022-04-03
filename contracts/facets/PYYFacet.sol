@@ -116,12 +116,7 @@ contract PYYFacet {
         }
 
         uint userTokens = IERC20(userToken_).balanceOf(address(this));
-        // console.log(1);
-        // console.log('userTokens: ', userTokens);
-        // console.log('userToken_: ', userToken_);
-        // console.log('user_: ', user_);
         IERC20(userToken_).safeTransfer(user_, userTokens);
-        // console.log(2);
     }
 
 

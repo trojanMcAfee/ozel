@@ -94,26 +94,12 @@ contract ExecutorF {
         _updateIndex();
     }
 
-
-    function _getAllocationToTransfer(uint _amount, address _user, uint senderBalance_) private view returns(uint) { 
-        // (bool success, bytes memory data) = s.py20.delegatecall( 
-        //     abi.encodeWithSignature('balanceOf(address)', _user)
-        // );
-        // require(success);
-        // console.log('data ');
-        // console.logBytes(data);
-        // uint balancePYY = pyERC20(s.py20).balanceOf(_user);
-        // uint balancePYY = abi.decode(data, (uint));
-        // console.log('balancePYY: ', balancePYY);
-        
+    function transferUserAllocation(address sender_, address receiver_, uint _amount, uint senderBalance_) public { 
         uint percentageToTransfer = (_amount * 10000) / senderBalance_;
-        return (percentageToTransfer * s.usersPayments[_user]) / 10000;
-    }
+        uint amountToTransfer = (percentageToTransfer * s.usersPayments[sender_]) / 10000;
 
-    function transferUserAllocation(address _sender, address _receiver, uint _amount, uint senderBalance_) public { 
-        uint amountToTransfer = _getAllocationToTransfer(_amount, _sender, senderBalance_);
-        s.usersPayments[_sender] -= amountToTransfer;
-        s.usersPayments[_receiver] += amountToTransfer;
+        s.usersPayments[sender_] -= amountToTransfer;
+        s.usersPayments[receiver_] += amountToTransfer;
     }
 
 }

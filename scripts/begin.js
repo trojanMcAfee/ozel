@@ -345,9 +345,6 @@ async function beginSimulatedDiamond() {
     console.log('PYY balance on caller 2: ', formatEther(await balanceOfPYY(caller2Addr)));
     console.log('.');
 
-    // console.log('return here');
-    // return;
-
     console.log('Withdrawing 1/3');
     await withdrawSharePYY(caller2Addr, parseEther(toTransfer.toString()), usdtAddrArb, 1);
     usdtBalance = await USDT.balanceOf(caller2Addr);
@@ -359,13 +356,6 @@ async function beginSimulatedDiamond() {
     /**+++++++++ END OF SIMULATION CURVE SWAPS ++++++++**/
 }
 
-// const num = formatEther(await balanceOfPYY(callerAddr)) / 1;
-//     console.log('num: ', num.toString());  
-//     const preBalance = await FRAX.balanceOf(callerAddr) / 10 ** 18;
-//     await withdrawSharePYY(callerAddr, parseEther(num.toString()), fraxAddr);
-//     const postBalance = await FRAX.balanceOf(callerAddr) / 10 ** 18;
-//     console.log('post: ', postBalance);
-//     console.log('interests earned: ', postBalance - preBalance);
 
 
 
