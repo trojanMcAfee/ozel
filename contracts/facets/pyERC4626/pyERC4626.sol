@@ -60,18 +60,29 @@ contract pyERC4626 {
         address receiver,
         address owner
     ) public virtual returns (uint256 assets) {
+        console.log(2);
         if (msg.sender != owner) {
             uint256 allowed = s.py[true]._allowances[owner][msg.sender]; // Saves gas for limited approvals.
 
             if (allowed != type(uint256).max) s.py[true]._allowances[owner][msg.sender] = allowed - shares;
         }
+        console.log(3);
 
         // Check for rounding error since we round down in previewRedeem.
         require((assets = previewRedeem(shares)) != 0, "ZERO_ASSETS");
+        console.log(4);
 
         beforeWithdraw(assets, shares);
 
-        pyERC20(s.py20)._burn(owner, shares);
+        // pyERC20(s.py20)._burn(owner, shares);
+        (bool success, ) = s.py20.delegatecall(
+            abi.encodeWithSelector(
+                pyERC20(s.py20)._burn.selector, 
+                owner, shares
+            )
+        );
+        require(success, 'pyERC4626: redeem() failed');
+        console.log(5);
 
         emit Withdraw(msg.sender, receiver, owner, assets, shares);
 

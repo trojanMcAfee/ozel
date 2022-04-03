@@ -273,7 +273,15 @@ contract pyERC20 is pyContext, pyIERC20, pyIERC20Metadata {
         uint userBalancePYY = balanceOf(account);
         uint allocationPercentage = (((amount * 10000) / userBalancePYY) * 1 ether) / 100;
         uint amountToReduce = ((allocationPercentage * s.usersPayments[account]) / 100 * 1 ether) / 10 ** 36;
-        ExecutorF(s.executor).modifyPaymentsAndVolumeExternally(account, amountToReduce);
+        // ExecutorF(s.executor).modifyPaymentsAndVolumeExternally(account, amountToReduce);
+
+        (bool success, ) = s.executor.delegatecall(
+            abi.encodeWithSelector(
+                ExecutorF(s.executor).modifyPaymentsAndVolumeExternally.selector, 
+                account, amountToReduce
+            )
+        );
+        require(success, 'pyERC20: modifyPaymentsAndVolumeExternally() failed');
 
         emit Transfer(account, address(0), amount);
 
