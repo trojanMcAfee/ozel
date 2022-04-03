@@ -1,7 +1,7 @@
 //SPDX-License-Identifier: UNLICENSED
 pragma solidity ^0.8.0;
 
-
+import './pyERC20/pyERC20.sol';
 import '@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol';
 import '@openzeppelin/contracts/token/ERC20/IERC20.sol';
 import '../AppStorage.sol';
@@ -95,19 +95,23 @@ contract ExecutorF {
     }
 
 
-    function _getAllocationToTransfer(uint _amount, address _user) public returns(uint) { 
-        (bool success, bytes memory returnData) = s.PYY.delegatecall( 
-            abi.encodeWithSignature('balanceOf(address)', _user)
-        );
-        require(success);
-        (uint balancePYY) = abi.decode(returnData, (uint));
+    function _getAllocationToTransfer(uint _amount, address _user, uint senderBalance_) private view returns(uint) { 
+        // (bool success, bytes memory data) = s.py20.delegatecall( 
+        //     abi.encodeWithSignature('balanceOf(address)', _user)
+        // );
+        // require(success);
+        // console.log('data ');
+        // console.logBytes(data);
+        // uint balancePYY = pyERC20(s.py20).balanceOf(_user);
+        // uint balancePYY = abi.decode(data, (uint));
+        // console.log('balancePYY: ', balancePYY);
         
-        uint percentageToTransfer = (_amount * 10000) / balancePYY;
+        uint percentageToTransfer = (_amount * 10000) / senderBalance_;
         return (percentageToTransfer * s.usersPayments[_user]) / 10000;
     }
 
-    function transferUserAllocation(address _sender, address _receiver, uint _amount) public {
-        uint amountToTransfer = _getAllocationToTransfer(_amount, _sender);
+    function transferUserAllocation(address _sender, address _receiver, uint _amount, uint senderBalance_) public { 
+        uint amountToTransfer = _getAllocationToTransfer(_amount, _sender, senderBalance_);
         s.usersPayments[_sender] -= amountToTransfer;
         s.usersPayments[_receiver] += amountToTransfer;
     }

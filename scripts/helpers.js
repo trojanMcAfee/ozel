@@ -6,7 +6,7 @@ let deployedDiamond;
 let pyyFacet;
 
 
-async function getVarsForHelpers(diamond, pyy) { //...,ren
+async function getVarsForHelpers(diamond, pyy) { 
     deployedDiamond = diamond;
     pyyFacet = pyy;
 }
@@ -99,10 +99,11 @@ async function transferPYY(recipient, amount, signerIndex) {
     }); 
 }
 
-async function withdrawSharePYY(callerAddr, balancePYY, userToken) {
+async function withdrawSharePYY(callerAddr, balancePYY, userToken, signerIndex) { 
     await callDiamondProxy({
         method: 'withdrawUserShare',
-        args: {callerAddr, balancePYY, userToken}
+        args: {callerAddr, balancePYY, userToken},
+        signerIndex
     });
 }
 

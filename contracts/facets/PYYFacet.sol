@@ -44,7 +44,6 @@ contract PYYFacet {
         } else if (_userToken == s.FRAX){
             //FRAX: 0 / USDT: 2 / USDC: 1
             _delegateExecutor(2, 0, s.USDT, _userToken);
-            // ExecutorF(s.executor).executeFinalTrade(2, 0, IERC20(s.USDT), _userToken);
         } 
     }
 
@@ -117,15 +116,12 @@ contract PYYFacet {
         }
 
         uint userTokens = IERC20(userToken_).balanceOf(address(this));
-
+        // console.log(1);
+        // console.log('userTokens: ', userTokens);
+        // console.log('userToken_: ', userToken_);
+        // console.log('user_: ', user_);
         IERC20(userToken_).safeTransfer(user_, userTokens);
-        // (success, ) = userToken_.call(
-        //     abi.encodeWithSignature(
-        //         'transfer(address,uint256)', 
-        //         user_, userTokens 
-        //     ) 
-        // );
-        // require(success, 'VaultFacet: call transfer() failed'); 
+        // console.log(2);
     }
 
 

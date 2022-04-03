@@ -286,23 +286,23 @@ async function beginSimulatedDiamond() {
     console.log('---------------------------------------'); 
 
     
-    const num = formatEther(await balanceOfPYY(callerAddr)) / 1;
-    console.log('num: ', num.toString());  
-    const preBalance = await FRAX.balanceOf(callerAddr) / 10 ** 18;
-    await withdrawSharePYY(callerAddr, parseEther(num.toString()), fraxAddr);
-    const postBalance = await FRAX.balanceOf(callerAddr) / 10 ** 18;
-    console.log('post: ', postBalance);
-    console.log('interests earned: ', postBalance - preBalance);
+    // const num = formatEther(await balanceOfPYY(callerAddr)) / 1;
+    // console.log('num: ', num.toString());  
+    // const preBalance = await FRAX.balanceOf(callerAddr) / 10 ** 18;
+    // await withdrawSharePYY(callerAddr, parseEther(num.toString()), fraxAddr);
+    // const postBalance = await FRAX.balanceOf(callerAddr) / 10 ** 18;
+    // console.log('post: ', postBalance);
+    // console.log('interests earned: ', postBalance - preBalance);
 
-    console.log('return here');
-    return;
+    // console.log('return here');
+    // return;
 
     //Second user
     console.log('2nd user first transfer');
     await sendETH(caller2Addr, wbtcAddr, WBTC, 'WBTC', 10 ** 8);
     console.log('PYY balance on caller 2: ', formatEther(await balanceOfPYY(caller2Addr)));
     console.log('PYY balance on caller 1 after caller2 swap: ', formatEther(await balanceOfPYY(callerAddr)));
-    console.log('crvTricrypto token balance on diamondProxy: ', formatEther(await crvTri.balanceOf(deployedDiamond.address)));
+    console.log('yvCrvTricrypto token balance on diamondProxy: ', formatEther(await yvCrvTri.balanceOf(deployedDiamond.address)));
     console.log('---------------------------------------'); 
 
 
@@ -311,7 +311,7 @@ async function beginSimulatedDiamond() {
     await sendETH(callerAddr, mimAddr, MIM, 'MIM', 10 ** 18); //in Arb, USDC has 6
     console.log('PYY balance on caller 1 after 2nd swap: ', formatEther(await balanceOfPYY(callerAddr)));
     console.log('PYY balance on caller 2 after caller1 2nd swap: ', formatEther(await balanceOfPYY(caller2Addr)));
-    console.log('crvTricrypto token balance on diamondProxy: ', formatEther(await crvTri.balanceOf(deployedDiamond.address)));
+    console.log('yvCrvTricrypto token balance on diamondProxy: ', formatEther(await yvCrvTri.balanceOf(deployedDiamond.address)));
     console.log('---------------------------------------'); 
     
     //Transfer half of PYY from caller1 to caller2
@@ -323,7 +323,7 @@ async function beginSimulatedDiamond() {
     console.log('---------------------------------------'); 
     
     //1st user withdraw remaining share (half)
-    console.log('Withdraw 1st user half share (remainder)');  
+    console.log('Withdraw 1st user share (remainder)');  
     await withdrawSharePYY(callerAddr, parseEther(formatEther(await balanceOfPYY(callerAddr))), usdtAddrArb);
     let usdtBalance = await USDT.balanceOf(callerAddr);
     console.log('USDT balance from fees of caller1: ', usdtBalance.toString() / 10 ** 6); 
@@ -338,23 +338,34 @@ async function beginSimulatedDiamond() {
     console.log('PYY balance on caller 2: ', formatEther(await balanceOfPYY(caller2Addr)));
     console.log('.');
     
-    console.log('After PYY transfer');
+    console.log('After PYY transfer'); //check why PYY logs are all equals 50-50
     const toTransfer = formatEther(await balanceOfPYY(caller2Addr)) / 3;
     await transferPYY(callerAddr, parseEther(toTransfer.toString()), 1);
     console.log('PYY balance on caller 1: ', formatEther(await balanceOfPYY(callerAddr)));
     console.log('PYY balance on caller 2: ', formatEther(await balanceOfPYY(caller2Addr)));
     console.log('.');
 
+    // console.log('return here');
+    // return;
+
     console.log('Withdrawing 1/3');
-    await withdrawSharePYY(caller2Addr, parseEther(toTransfer.toString()), usdtAddrArb);
+    await withdrawSharePYY(caller2Addr, parseEther(toTransfer.toString()), usdtAddrArb, 1);
     usdtBalance = await USDT.balanceOf(caller2Addr);
     console.log('USDT balance from fees of caller2: ', formatEther(usdtBalance));
     console.log('PYY balance on caller 1: ', formatEther(await balanceOfPYY(callerAddr)));
     console.log('PYY balance on caller 2: ', formatEther(await balanceOfPYY(caller2Addr)));
     console.log('.');
-    console.log('crvTricrypto token balance on diamondProxy: ', formatEther(await crvTri.balanceOf(deployedDiamond.address)));
+    console.log('yvCrvTricrypto token balance on diamondProxy: ', formatEther(await crvTri.balanceOf(deployedDiamond.address)));
     /**+++++++++ END OF SIMULATION CURVE SWAPS ++++++++**/
 }
+
+// const num = formatEther(await balanceOfPYY(callerAddr)) / 1;
+//     console.log('num: ', num.toString());  
+//     const preBalance = await FRAX.balanceOf(callerAddr) / 10 ** 18;
+//     await withdrawSharePYY(callerAddr, parseEther(num.toString()), fraxAddr);
+//     const postBalance = await FRAX.balanceOf(callerAddr) / 10 ** 18;
+//     console.log('post: ', postBalance);
+//     console.log('interests earned: ', postBalance - preBalance);
 
 
 

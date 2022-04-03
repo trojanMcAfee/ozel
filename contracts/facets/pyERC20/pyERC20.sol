@@ -223,7 +223,14 @@ contract pyERC20 is pyContext, pyIERC20, pyIERC20Metadata {
         uint256 senderBalance = balanceOf(sender);
         require(senderBalance >= amount, "ERC20Facet: transfer amount exceeds balance");
 
-        ExecutorF(s.executor).transferUserAllocation(sender,recipient, amount); //<------- modify to delegatecall to executor (examine) 
+        // ExecutorF(s.executor).transferUserAllocation(sender, recipient, amount, senderBalance); //<------- modify to delegatecall to executor (examine) 
+        (bool success, ) = s.executor.delegatecall(
+            abi.encodeWithSelector(
+                ExecutorF(s.executor).transferUserAllocation.selector, 
+                sender,recipient, amount, senderBalance
+            )
+        );
+        require(success, 'pyERC20: transferUserAllocation() failed');
 
         emit Transfer(sender, recipient, amount);
 

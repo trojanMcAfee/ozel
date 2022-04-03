@@ -65,7 +65,6 @@ contract pyERC4626 {
 
             if (allowed != type(uint256).max) s.py[true]._allowances[owner][msg.sender] = allowed - shares;
         }
-
         // Check for rounding error since we round down in previewRedeem.
         require((assets = previewRedeem(shares)) != 0, "ZERO_ASSETS");
 
