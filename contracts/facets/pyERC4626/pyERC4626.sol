@@ -4,8 +4,8 @@ pragma solidity >=0.8.0;
 import '../pyERC20/pyERC20.sol';
 import '@openzeppelin/contracts/token/ERC20/IERC20.sol';
 import {SafeTransferLib} from "./SafeTransferLib.sol";
-
 import '../ExecutorF.sol';
+import '../../libraries/FixedPointMathLib.sol';
 
 /// @notice Minimal ERC4626 tokenized Vault implementation.
 /// @author Solmate (https://github.com/Rari-Capital/solmate/blob/main/src/mixins/ERC4626.sol)
@@ -14,6 +14,7 @@ contract pyERC4626 {
     AppStorage s;
 
     using SafeTransferLib for pyERC20;
+    using FixedPointMathLib for uint;
 
     /*///////////////////////////////////////////////////////////////
                                  EVENTS
@@ -94,11 +95,14 @@ contract pyERC4626 {
         uint256 supply = s.py[true]._totalSupply; // Saves an extra SLOAD if totalSupply is non-zero.
 
         return supply == 0 ? assets : (s.distributionIndex * assets * 100 ) / 10 ** 8;
+        // return supply == 0 ? assets : s.distributionIndex.mulDivDown(assets * 100, 10 ** 8);
     }
 
     function convertToAssets(uint256 shares) public view virtual returns (uint256) {
         uint vaultBalance = IERC20(s.crvTricrypto).balanceOf(address(this));
-        uint assets = ((shares * vaultBalance) / 100 * 1 ether) / 10 ** 36; 
+        uint assets = ((shares * vaultBalance) / 100 * 1 ether) / 10 ** 36; //<----problem is here and pyerc20
+
+        // uint assets = shares.mulDivDown(vaultBalance, 100 * 1 ether) / 10 ** 36;
         
         return assets;
     }

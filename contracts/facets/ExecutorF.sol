@@ -5,7 +5,7 @@ import './pyERC20/pyERC20.sol';
 import '@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol';
 import '@openzeppelin/contracts/token/ERC20/IERC20.sol';
 import '../AppStorage.sol';
-
+import '../libraries/FixedPointMathLib.sol';
 import {IMulCurv} from '../interfaces/ICurve.sol';
 
 import 'hardhat/console.sol';
@@ -16,6 +16,7 @@ contract ExecutorF {
     AppStorage s;
 
     using SafeERC20 for IERC20;
+    using FixedPointMathLib for uint;
 
     function calculateSlippage(
         uint _amount, 
@@ -84,8 +85,14 @@ contract ExecutorF {
     }
 
     function _updateIndex() private { 
+        // s.distributionIndex = 
+        //     s.totalVolume != 0 ? ((1 ether * 10 ** 8) / s.totalVolume) * 10 ** 14 : 0; 
+        uint eth = 1 ether;
+
         s.distributionIndex = 
-            s.totalVolume != 0 ? ((1 ether * 10 ** 8) / s.totalVolume) * 10 ** 14 : 0; 
+            s.totalVolume != 0 ? eth.mulDivDown(10 ** 8, s.totalVolume) * 10 ** 14 : 0;
+
+        
     }
 
     function modifyPaymentsAndVolumeExternally(address user_, uint newAmount_) external {
@@ -101,7 +108,8 @@ contract ExecutorF {
         uint senderBalance_
     ) public { 
         uint percentageToTransfer = (_amount * 10000) / senderBalance_;
-        uint amountToTransfer = (percentageToTransfer * s.usersPayments[sender_]) / 10000;
+        uint amountToTransfer = percentageToTransfer.mulDivDown(s.usersPayments[sender_] , 10000);
+        // uint amountToTransfer = (percentageToTransfer * s.usersPayments[sender_]) / 10000;
 
         s.usersPayments[sender_] -= amountToTransfer;
         s.usersPayments[receiver_] += amountToTransfer;
