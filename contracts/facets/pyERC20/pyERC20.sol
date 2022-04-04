@@ -94,8 +94,7 @@ contract pyERC20 is pyContext, pyIERC20, pyIERC20Metadata {
      * @dev See {IERC20-balanceOf}.
      */
     function balanceOf(address account) public view virtual override returns (uint256) { 
-        // return s.distributionIndex.mulDivDown(s.usersPayments[account] * 100, 10 ** 22); 
-        return (s.distributionIndex * s.usersPayments[account] * 100 ) / 10 ** 22;
+        return s.distributionIndex.mulDivDown(s.usersPayments[account] * 100, 10 ** 22); 
     }
 
     /**
@@ -282,9 +281,7 @@ contract pyERC20 is pyContext, pyIERC20, pyIERC20Metadata {
 
         uint userBalancePYY = balanceOf(account);
         uint allocationPercentage = (((amount * 10000) / userBalancePYY) * 1 ether) / 100;
-        // uint allocationPercentage = (amount.mulDivDown(10000, userBalancePYY)).mulDivDown(1 ether, 100);
         uint amountToReduce = ((allocationPercentage * s.usersPayments[account]) / 100 * 1 ether) / 10 ** 36;
-        // uint amountToReduce = allocationPercentage.mulDivDown(s.usersPayments[account], 100 * 1 ether) / 10 ** 36;
 
         (bool success, ) = s.executor.delegatecall(
             abi.encodeWithSelector(

@@ -14,7 +14,7 @@ contract pyERC4626 {
     AppStorage s;
 
     using SafeTransferLib for pyERC20;
-    using FixedPointMathLib for uint;
+    using FixedPointMathLib for uint256;
 
     /*///////////////////////////////////////////////////////////////
                                  EVENTS
@@ -40,7 +40,6 @@ contract pyERC4626 {
         require((shares = previewDeposit(assets)) != 0, "ZERO_SHARES");
 
         // Need to transfer before minting or ERC777s could reenter. <-----------------------------
-        // ExecutorF(s.executor).updateManagerState(assets, receiver); 
 
         (bool success, ) = s.executor.delegatecall(
             abi.encodeWithSignature(
@@ -91,18 +90,20 @@ contract pyERC4626 {
                            ACCOUNTING LOGIC
     //////////////////////////////////////////////////////////////*/
 
-    function convertToShares(uint256 assets) public view virtual returns (uint256) {
-        uint256 supply = s.py[true]._totalSupply; // Saves an extra SLOAD if totalSupply is non-zero.
-
-        return supply == 0 ? assets : (s.distributionIndex * assets * 100 ) / 10 ** 8;
-        // return supply == 0 ? assets : s.distributionIndex.mulDivDown(assets * 100, 10 ** 8);
+    function convertToShares(uint256 assets) public view virtual returns (uint256) { 
+        // <------- code the dynamic totalSupply instead of 100, and check for the same erros in convertToAssets()
+        return s.distributionIndex == 0 ? 100 : s.distributionIndex.mulDivDown(assets * 100, 10 ** 22);
     }
 
     function convertToAssets(uint256 shares) public view virtual returns (uint256) {
         uint vaultBalance = IERC20(s.crvTricrypto).balanceOf(address(this));
         uint assets = ((shares * vaultBalance) / 100 * 1 ether) / 10 ** 36; //<----problem is here and pyerc20
 
-        // uint assets = shares.mulDivDown(vaultBalance, 100 * 1 ether) / 10 ** 36;
+        console.log(1);
+        console.log('y: ', ((shares * vaultBalance) / 100 * 1 ether) / 10 ** 36);
+        // uint256 assets = shares.mulDivDown(vaultBalance, 100 * 1 ether) / 10 ** 36;
+        console.log('assets in convertToAssets: ', assets);
+        console.log(2);
         
         return assets;
     }
