@@ -50,7 +50,7 @@ library FixedPointMathLib {
             // Divide z by the denominator.
             z := div(z, denominator)
         }
-        console.log('z: ', z);
+        // console.log('z: ', z);
         return z;
     }
 

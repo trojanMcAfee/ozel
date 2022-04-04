@@ -338,7 +338,7 @@ async function beginSimulatedDiamond() {
     console.log('PYY balance on caller 2: ', formatEther(await balanceOfPYY(caller2Addr)));
     console.log('.');
     
-    console.log('After PYY transfer'); //check why PYY logs are all equals 50-50
+    console.log('After PYY transfer'); 
     const toTransfer = formatEther(await balanceOfPYY(caller2Addr)) / 3;
     await transferPYY(callerAddr, parseEther(toTransfer.toString()), 1);
     console.log('PYY balance on caller 1: ', formatEther(await balanceOfPYY(callerAddr)));

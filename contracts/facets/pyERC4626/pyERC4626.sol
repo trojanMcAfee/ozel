@@ -95,15 +95,21 @@ contract pyERC4626 {
         return s.distributionIndex == 0 ? 100 : s.distributionIndex.mulDivDown(assets * 100, 10 ** 22);
     }
 
-    function convertToAssets(uint256 shares) public view virtual returns (uint256) {
-        uint vaultBalance = IERC20(s.crvTricrypto).balanceOf(address(this));
-        uint assets = ((shares * vaultBalance) / 100 * 1 ether) / 10 ** 36; //<----problem is here and pyerc20
-
+    function convertToAssets(uint256 shares) public view virtual returns (uint256) { 
         console.log(1);
-        console.log('y: ', ((shares * vaultBalance) / 100 * 1 ether) / 10 ** 36);
-        // uint256 assets = shares.mulDivDown(vaultBalance, 100 * 1 ether) / 10 ** 36;
-        console.log('assets in convertToAssets: ', assets);
-        console.log(2);
+        uint vaultBalance = IERC20(s.yTriPool).balanceOf(address(this));
+        console.log('vaultBalance: ', vaultBalance);
+        // uint assets = ((shares * vaultBalance) / 100 * 1 ether) / 10 ** 36; 
+
+        uint assets = (shares * vaultBalance) / 100; //<----- I got to get a 1/3 of vaultBalance in assets
+        console.log('assets: ', assets);
+
+        // console.log(1);
+        // console.log('y: ', ((shares * vaultBalance) / 100 * 1 ether) / 10 ** 36);
+        // console.log('t: ', shares.mulDivDown(vaultBalance, 100 * 1 ether) / 10 ** 36);
+        // uint256 assets = shares.mulDivDown(vaultBalance, 100 * 1 ether) / 10 ** 8;
+        // console.log('assets in convertToAssets: ', assets);
+        // console.log(2);
         
         return assets;
     }
