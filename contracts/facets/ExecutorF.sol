@@ -85,14 +85,9 @@ contract ExecutorF {
     }
 
     function _updateIndex() private { 
-        // s.distributionIndex = 
-        //     s.totalVolume != 0 ? ((1 ether * 10 ** 8) / s.totalVolume) * 10 ** 14 : 0; 
         uint eth = 1 ether;
-
         s.distributionIndex = 
             s.totalVolume != 0 ? eth.mulDivDown(10 ** 8, s.totalVolume) * 10 ** 14 : 0;
-
-        
     }
 
     function modifyPaymentsAndVolumeExternally(address user_, uint newAmount_) external {
@@ -109,7 +104,6 @@ contract ExecutorF {
     ) public { 
         uint percentageToTransfer = (_amount * 10000) / senderBalance_;
         uint amountToTransfer = percentageToTransfer.mulDivDown(s.usersPayments[sender_] , 10000);
-        // uint amountToTransfer = (percentageToTransfer * s.usersPayments[sender_]) / 10000;
 
         s.usersPayments[sender_] -= amountToTransfer;
         s.usersPayments[receiver_] += amountToTransfer;
