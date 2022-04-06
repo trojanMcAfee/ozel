@@ -1,7 +1,10 @@
 // SPDX-License-Identifier: AGPL-3.0-only
 pragma solidity >=0.8.0;
 
-import '../pyERC20/pyERC20.sol';
+// import '../pyERC20/pyERC20.sol';
+import '@openzeppelin/contracts/token/ERC20/IERC20.sol';
+
+import 'hardhat/console.sol';
 
 /// @notice Safe ETH and ERC20 transfer library that gracefully handles missing return values.
 /// @author Solmate (https://github.com/Rari-Capital/solmate/blob/main/src/utils/SafeTransferLib.sol)
@@ -30,7 +33,7 @@ library SafeTransferLib {
     //////////////////////////////////////////////////////////////*/
 
     function safeTransferFrom(
-        pyERC20 token,
+        IERC20 token,
         address from,
         address to,
         uint256 amount
@@ -63,12 +66,12 @@ library SafeTransferLib {
     }
 
     function safeTransfer(
-        pyERC20 token,
+        IERC20 token,
         address to,
         uint256 amount
     ) internal {
         bool success;
-
+  
         assembly {
             // Get a pointer to some free memory.
             let freeMemoryPointer := mload(0x40)
@@ -89,12 +92,11 @@ library SafeTransferLib {
                 call(gas(), token, 0, freeMemoryPointer, 68, 0, 32)
             )
         }
-
         require(success, "TRANSFER_FAILED");
     }
 
     function safeApprove(
-        pyERC20 token,
+        IERC20 token,
         address to,
         uint256 amount
     ) internal {

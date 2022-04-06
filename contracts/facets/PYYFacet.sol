@@ -3,7 +3,6 @@ pragma solidity ^0.8.0;
 
 
 import '@openzeppelin/contracts/token/ERC20/IERC20.sol';
-import '@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol';
 import '../interfaces/ICrvLpToken.sol';
 import '../interfaces/IWETH.sol';
 import './ExecutorF.sol';
@@ -16,6 +15,8 @@ import 'hardhat/console.sol';
 import '../AppStorage.sol';
 import './ExecutorF.sol';
 
+import '../libraries/SafeTransferLib.sol';
+
 
 
 
@@ -23,7 +24,14 @@ contract PYYFacet {
 
     AppStorage s;
 
-    using SafeERC20 for IERC20;
+    using SafeTransferLib for IERC20;
+
+    struct ExecArgs {
+        int128 tokenIn;
+        int128 tokenOut;
+        address erc20In;
+        address userToken;  
+    }
 
 
     function swapsForUserToken(uint _amountIn, uint _baseTokenOut, address _userToken) public payable {
@@ -106,6 +114,12 @@ contract PYYFacet {
         uint minOut = ExecutorF(s.executor).calculateSlippage(tokenAmountIn, s.slippageOnCurve);
         ITri(s.tricrypto).remove_liquidity_one_coin(assets, 0, minOut);
 
+        // console.log('tokensToWithdraw: ******', s.tokensToWithdraw[0] == s.USDT);
+        // console.log('tokensToWithdraw: ******', s.tokensToWithdraw[1] == s.USDC);
+        // console.log('tokensToWithdraw: ******', s.tokensToWithdraw[2] == s.MIM);
+        // console.log('tokensToWithdraw: ******', s.tokensToWithdraw[3] == s.FRAX);
+        ExecArgs memory tradeOps = //i know it's something with a struct in order to make deleteExecutor and executeFinalTrade one function each
+
         if (userToken_ == s.USDC) { 
             _delegateExecutor(1, 0, s.USDT);
         } else if (userToken_ == s.MIM) {
@@ -164,11 +178,8 @@ contract PYYFacet {
         require(success, 'PYYFacet: delegatecall to Executor failed');
     }
 
-    function _delegateExecutor(
-        int128 tokenIn_, 
-        int128 tokenOut_, 
-        address erc20In_, 
-        address userToken_
+    function _delegateExecutor( 
+        ExecArgs tradeOps_
     ) public payable { 
         (bool success, ) = s.executor.delegatecall(
             abi.encodeWithSignature(
@@ -180,3 +191,11 @@ contract PYYFacet {
     }
 
 }
+
+
+ int128 tokenIn_, 
+        int128 tokenOut_, 
+        address erc20In_, 
+        address userToken_
+
+

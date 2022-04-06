@@ -1,3 +1,4 @@
+let usdtAddrArb;
 let wbtcAddr;
 let renBtcAddr;
 let wethAddr;
@@ -11,6 +12,11 @@ let crv2PoolAddr;
 let yTricryptoPoolAddr;
 let fraxPoolAddr;
 let fraxAddr;
+//------
+let chainId; //arbitrum
+let pokeMeOpsAddr; //gelato
+let hopBridge;
+let inbox; //arbitrum rinkeby
 const ETH = '0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE';
 const dappFee = 10; //prev: 10 -> 0.1% / 100-1 / 1000-10 / 10000 - 100%
 const slippageOnCurve = 100; //bp: 100 -> 1%
@@ -18,11 +24,7 @@ const slippageTradingCurve = 100; //5 -> 0.05%;
 const tokenName = 'PayToken';
 const tokenSymbol = 'PYY';
 
-let chainId; //arbitrum
-let pokeMeOpsAddr; //gelato
-let hopBridge;
-let usdtAddrArb;
-let inbox; //arbitrum rinkeby
+
 
 
 const signerX = new ethers.Wallet(process.env.PK);
@@ -81,6 +83,7 @@ switch(network) {
         fraxPoolAddr = '0xf07d553B195080F84F582e88ecdD54bAa122b279';
         fraxAddr = '0x17FC002b466eEc40DaE837Fc4bE5c67993ddBd6F';
 } 
+
 
 
 

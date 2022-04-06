@@ -81,6 +81,11 @@ contract DiamondInit {
         //Sets ETH address
         s.ETH = _vars.ETH;
 
+        s.tokensToWithdraw.push(s.USDT);
+        s.tokensToWithdraw.push(s.USDC);
+        s.tokensToWithdraw.push(s.MIM);
+        s.tokensToWithdraw.push(s.FRAX);
+
         // add your own state variables 
         // EIP-2535 specifies that the `diamondCut` function takes two optional 
         // arguments: address _init and bytes calldata _calldata

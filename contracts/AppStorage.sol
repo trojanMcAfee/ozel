@@ -5,7 +5,7 @@ import '@openzeppelin/contracts/token/ERC20/IERC20.sol';
 import './interfaces/IWETH.sol';
 
 
-struct AppStorage { 
+struct AppStorage {
     //Contracts
     address PYY; 
     address tricrypto;
@@ -42,6 +42,8 @@ struct AppStorage {
     address ETH;
     address py46;
     address py20;
+
+    address[] tokensToWithdraw;
 }
 
 struct PYYERC20 {

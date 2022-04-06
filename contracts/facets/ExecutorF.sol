@@ -2,7 +2,6 @@
 pragma solidity ^0.8.0;
 
 import './pyERC20/pyERC20.sol';
-import '@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol';
 import '@openzeppelin/contracts/token/ERC20/IERC20.sol';
 import '../AppStorage.sol';
 import '../libraries/FixedPointMathLib.sol';
@@ -15,7 +14,6 @@ contract ExecutorF {
 
     AppStorage s;
 
-    using SafeERC20 for IERC20;
     using FixedPointMathLib for uint;
 
     function calculateSlippage(
@@ -59,6 +57,26 @@ contract ExecutorF {
             _tradeInCurve(s.mimPool, tokenIn_, tokenOut_, inBalance);
         }
     }
+
+    struct ExecArgs {
+        int128 tokenIn;
+        int128 tokenOut;
+        address erc20In;
+        address userToken;  
+    }
+
+    // function executeFinalTrade( 
+    //     int128 tokenIn_, 
+    //     int128 tokenOut_, 
+    //     address erc20In_, 
+    //     address userToken_
+    // ) public payable {
+    //     uint inBalance = IERC20(erc20In_).balanceOf(address(this));
+
+    //     if (userToken_ == s.FRAX) {
+    //         _tradeInCurve(s.fraxPool, tokenIn_, tokenOut_, inBalance);
+    //     } 
+    // } 
 
     function executeFinalTrade( 
         int128 tokenIn_, 
@@ -110,5 +128,8 @@ contract ExecutorF {
     }
 
      
+    // function getTokensInExecutor(address _userToken) public {
+
+    // }
 
 }
