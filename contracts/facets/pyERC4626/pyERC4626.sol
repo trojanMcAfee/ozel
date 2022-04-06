@@ -91,8 +91,9 @@ contract pyERC4626 {
     //////////////////////////////////////////////////////////////*/
 
     function convertToShares(uint256 assets) public view virtual returns (uint256) { 
-        // <------- code the dynamic totalSupply instead of 100, and check for the same erros in convertToAssets()
-        return s.distributionIndex == 0 ? 100 : s.distributionIndex.mulDivDown(assets * 100, 10 ** 22);
+        return s.distributionIndex == 0 ? 
+            pyERC20(s.py20).totalSupply() : 
+                s.distributionIndex.mulDivDown(assets * 100, 10 ** 22);
     }
 
     function convertToAssets(uint256 shares) public view virtual returns (uint256) { 
