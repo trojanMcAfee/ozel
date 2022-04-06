@@ -99,10 +99,10 @@ contract pyERC4626 {
         // console.log(1);
         uint vaultBalance = IERC20(s.yTriPool).balanceOf(address(this));
         // console.log('vaultBalance: ', vaultBalance);
-        // uint assets = ((shares * vaultBalance) / 100 * 1 ether) / 10 ** 36; 
+        uint assets = ((shares * vaultBalance) / 100 * 1 ether) / 10 ** 36; 
 
         // uint assets = (shares * vaultBalance) / 100; 
-        uint assets = shares.mulDivDown(vaultBalance, 100 * 1 ether); // did it :) (check it)
+        // uint assets = shares.mulDivDown(vaultBalance, 100 * 1 ether); // did it :) (check it)
         // console.log('assets: ', assets);
 
         // console.log(1);

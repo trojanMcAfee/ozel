@@ -91,8 +91,6 @@ contract PYYFacet {
 
 
     function withdrawUserShare(address user_, uint shares_, address userToken_) public { 
-        console.log('user_: ', user_);
-
         (bool success, bytes memory data) = s.py46.delegatecall(
             abi.encodeWithSelector(
                 pyERC4626(s.py46).redeem.selector, 

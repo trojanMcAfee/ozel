@@ -4,7 +4,6 @@ pragma solidity >=0.8.0;
 /// @notice Arithmetic library with operations for fixed-point numbers.
 /// @author Solmate (https://github.com/Rari-Capital/solmate/blob/main/src/utils/FixedPointMathLib.sol)
 /// @author Inspired by USM (https://github.com/usmfum/USM/blob/master/contracts/WadMath.sol)
-import 'hardhat/console.sol';
 library FixedPointMathLib { 
     /*//////////////////////////////////////////////////////////////
                     SIMPLIFIED FIXED POINT OPERATIONS
@@ -12,7 +11,7 @@ library FixedPointMathLib {
 
     uint256 internal constant WAD = 1e18; // The scalar of ETH and most ERC20s.
 
-    function mulWadDown(uint256 x, uint256 y) internal view returns (uint256) {
+    function mulWadDown(uint256 x, uint256 y) internal pure returns (uint256) {
         return mulDivDown(x, y, WAD); // Equivalent to (x * y) / WAD rounded down.
     }
 
@@ -20,7 +19,7 @@ library FixedPointMathLib {
         return mulDivUp(x, y, WAD); // Equivalent to (x * y) / WAD rounded up.
     }
 
-    function divWadDown(uint256 x, uint256 y) internal view returns (uint256) {
+    function divWadDown(uint256 x, uint256 y) internal pure returns (uint256) {
         return mulDivDown(x, WAD, y); // Equivalent to (x * WAD) / y rounded down.
     }
 
@@ -36,8 +35,7 @@ library FixedPointMathLib {
         uint256 x,
         uint256 y,
         uint256 denominator
-    ) internal view returns (uint256) {
-        uint z;
+    ) internal pure returns (uint256 z) {
         assembly {
             // Store x * y in z for now.
             z := mul(x, y)
@@ -50,8 +48,6 @@ library FixedPointMathLib {
             // Divide z by the denominator.
             z := div(z, denominator)
         }
-        // console.log('z: ', z);
-        return z;
     }
 
     function mulDivUp(

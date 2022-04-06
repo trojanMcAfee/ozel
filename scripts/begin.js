@@ -346,13 +346,14 @@ async function beginSimulatedDiamond() {
     console.log('.');
 
     console.log('Withdrawing 1/3');
+    // console.log('yvCrvTricrypto token balance on pre diamondProxy: ', formatEther(await crvTri.balanceOf(deployedDiamond.address)));
     await withdrawSharePYY(caller2Addr, parseEther(toTransfer.toString()), usdtAddrArb, 1);
     usdtBalance = await USDT.balanceOf(caller2Addr);
     console.log('USDT balance from fees of caller2: ', usdtBalance.toString() / 10 ** 6);
     console.log('PYY balance on caller 1: ', formatEther(await balanceOfPYY(callerAddr)));
     console.log('PYY balance on caller 2: ', formatEther(await balanceOfPYY(caller2Addr)));
     console.log('.');
-    console.log('yvCrvTricrypto token balance on diamondProxy: ', formatEther(await crvTri.balanceOf(deployedDiamond.address)));
+    console.log('yvCrvTricrypto token balance on diamondProxy: ', formatEther(await yvCrvTri.balanceOf(deployedDiamond.address)));
     /**+++++++++ END OF SIMULATION CURVE SWAPS ++++++++**/
 }
 
