@@ -96,13 +96,14 @@ contract pyERC4626 {
     }
 
     function convertToAssets(uint256 shares) public view virtual returns (uint256) { 
-        console.log(1);
+        // console.log(1);
         uint vaultBalance = IERC20(s.yTriPool).balanceOf(address(this));
-        console.log('vaultBalance: ', vaultBalance);
+        // console.log('vaultBalance: ', vaultBalance);
         // uint assets = ((shares * vaultBalance) / 100 * 1 ether) / 10 ** 36; 
 
-        uint assets = (shares * vaultBalance) / 100; //<----- I got to get a 1/3 of vaultBalance in assets
-        console.log('assets: ', assets);
+        // uint assets = (shares * vaultBalance) / 100; 
+        uint assets = shares.mulDivDown(vaultBalance, 100 * 1 ether); // did it :) (check it)
+        // console.log('assets: ', assets);
 
         // console.log(1);
         // console.log('y: ', ((shares * vaultBalance) / 100 * 1 ether) / 10 ** 36);

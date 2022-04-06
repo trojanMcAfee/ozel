@@ -91,6 +91,7 @@ contract PYYFacet {
 
 
     function withdrawUserShare(address user_, uint shares_, address userToken_) public { 
+        console.log('user_: ', user_);
 
         (bool success, bytes memory data) = s.py46.delegatecall(
             abi.encodeWithSelector(
@@ -99,11 +100,8 @@ contract PYYFacet {
             )
         );
         require(success, 'PYYFacet: withdrawUserShare() failed');
-        console.log(2);
         uint assets = abi.decode(data, (uint));
-        console.log(3);
         IYtri(s.yTriPool).withdraw(assets);
-        console.log(4);
 
         //tricrypto= USDT: 0 / crv2- USDT: 1 , USDC: 0 / mim- MIM: 0 , CRV2lp: 1
         uint tokenAmountIn = ITri(s.tricrypto).calc_withdraw_one_coin(assets, 0); 
