@@ -82,7 +82,7 @@ contract pyERC4626 {
 
         if (receiver != owner) {
             // asset.safeTransfer(receiver, assets); // <------ code and test when the receiver is not the same as the owner
-        }
+        } //when using safeTransfer, check the lib if pyERC20 or normal ERC20 is needed
 
     }
 
