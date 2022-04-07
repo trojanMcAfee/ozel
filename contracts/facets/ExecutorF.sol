@@ -42,6 +42,39 @@ contract ExecutorF {
     }
 
 
+
+    function executeFinalTrade2(TradeOps memory swapDetails_) public payable {
+        uint minOut;
+        uint slippage;
+        uint inBalance = IERC20(swapDetails_.baseToken).balanceOf(address(this));
+
+        if (swapDetails_.pool != s.renPool) {
+            IERC20(s.USDT).approve(swapDetails_.pool, inBalance);
+        }
+
+        if (swapDetails_.pool == s.renPool || swapDetails_.pool == s.crv2Pool) {
+            minOut = IMulCurv(swapDetails_.pool).get_dy(
+                swapDetails_.tokenIn, swapDetails_.tokenOut, inBalance
+            );
+            slippage = calculateSlippage(minOut, s.slippageTradingCurve);
+            IMulCurv(swapDetails_.pool).exchange(
+                swapDetails_.tokenIn, swapDetails_.tokenOut, inBalance, slippage
+            );
+        } else {
+            minOut = IMulCurv(swapDetails_.pool).get_dy_underlying(
+                swapDetails_.tokenIn, swapDetails_.tokenOut, inBalance
+            );
+            slippage = calculateSlippage(minOut, s.slippageTradingCurve);
+            IMulCurv(swapDetails_.pool).exchange_underlying(
+                swapDetails_.tokenIn, swapDetails_.tokenOut, inBalance, slippage
+            );
+        }
+
+
+    }
+
+
+
     function executeFinalTrade(
         int128 tokenIn_, 
         int128 tokenOut_, 
@@ -58,25 +91,6 @@ contract ExecutorF {
         }
     }
 
-    struct ExecArgs {
-        int128 tokenIn;
-        int128 tokenOut;
-        address erc20In;
-        address userToken;  
-    }
-
-    // function executeFinalTrade( 
-    //     int128 tokenIn_, 
-    //     int128 tokenOut_, 
-    //     address erc20In_, 
-    //     address userToken_
-    // ) public payable {
-    //     uint inBalance = IERC20(erc20In_).balanceOf(address(this));
-
-    //     if (userToken_ == s.FRAX) {
-    //         _tradeInCurve(s.fraxPool, tokenIn_, tokenOut_, inBalance);
-    //     } 
-    // } 
 
     function executeFinalTrade( 
         int128 tokenIn_, 
@@ -89,7 +103,11 @@ contract ExecutorF {
         if (userToken_ == s.FRAX) {
             _tradeInCurve(s.fraxPool, tokenIn_, tokenOut_, inBalance);
         } 
-    }
+    } 
+
+
+
+   
 
     //****** Modifies manager's STATE *****/
 

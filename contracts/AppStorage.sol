@@ -44,6 +44,13 @@ struct AppStorage {
     address py20;
 
     address[] tokensToWithdraw;
+
+    TradeOps renSwap;
+    TradeOps mimSwap;
+    TradeOps usdcSwap;
+    TradeOps fraxSwap;
+
+    TradeOps[] swaps;
 }
 
 struct PYYERC20 {
@@ -52,5 +59,14 @@ struct PYYERC20 {
     uint  _totalSupply;
     string  _name;
     string  _symbol;
+}
+
+
+struct TradeOps {
+    int128 tokenIn;
+    int128 tokenOut;
+    address baseToken;
+    address userToken;  
+    address pool;
 }
 

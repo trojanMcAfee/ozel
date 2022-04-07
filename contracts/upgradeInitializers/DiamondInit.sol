@@ -20,6 +20,13 @@ import 'hardhat/console.sol';
 
 import '../interfaces/IWETH.sol';
 
+// struct TradeOps {
+//     int128 tokenIn;
+//     int128 tokenOut;
+//     address baseToken;
+//     address userToken;  
+// }
+
 
 
 contract DiamondInit {    
@@ -81,10 +88,20 @@ contract DiamondInit {
         //Sets ETH address
         s.ETH = _vars.ETH;
 
-        s.tokensToWithdraw.push(s.USDT);
-        s.tokensToWithdraw.push(s.USDC);
-        s.tokensToWithdraw.push(s.MIM);
-        s.tokensToWithdraw.push(s.FRAX);
+        // s.tokensToWithdraw.push(s.USDT);
+        // s.tokensToWithdraw.push(s.USDC);
+        // s.tokensToWithdraw.push(s.MIM);
+        // s.tokensToWithdraw.push(s.FRAX);
+
+        s.renSwap = TradeOps(0, 1, s.WBTC, s.renBTC, s.renPool);
+        s.mimSwap = TradeOps(2, 0, s.USDT, s.MIM, s.mimPool);
+        s.usdcSwap = TradeOps(1, 0, s.USDT, s.USDC, s.crv2Pool);
+        s.fraxSwap = TradeOps(2, 0, s.USDT, s.FRAX, s.fraxPool);
+
+        s.swaps.push(s.renSwap);
+        s.swaps.push(s.mimSwap);
+        s.swaps.push(s.usdcSwap);
+        s.swaps.push(s.fraxSwap);
 
         // add your own state variables 
         // EIP-2535 specifies that the `diamondCut` function takes two optional 
@@ -94,3 +111,18 @@ contract DiamondInit {
         // More info here: https://eips.ethereum.org/EIPS/eip-2535#diamond-interface 
     }
 }
+
+
+//  if (_userToken == s.renBTC) { 
+//             //renBTC: 1 / WBTC: 0
+//             _delegateExecutor(0, 1, s.WBTC);
+//         } else if (_userToken == s.MIM) {
+//             //MIM: 0 / USDT: 2 / USDC: 1
+//             _delegateExecutor(2, 0, s.USDT);
+//         } else if (_userToken == s.USDC) {
+//             //USDC: 0 / USDT: 1
+//             _delegateExecutor(1, 0, s.USDT);
+//         } else if (_userToken == s.FRAX){
+//             //FRAX: 0 / USDT: 2 / USDC: 1
+//             _delegateExecutor(2, 0, s.USDT, _userToken);
+//         }

@@ -26,33 +26,63 @@ contract PYYFacet {
 
     using SafeTransferLib for IERC20;
 
-    struct ExecArgs {
-        int128 tokenIn;
-        int128 tokenOut;
-        address erc20In;
-        address userToken;  
+    // struct ExecArgs {
+    //     int128 tokenIn;
+    //     int128 tokenOut;
+    //     address erc20In;
+    //     address userToken;  
+    // }
+
+    function _callExecutor(address userToken_) private {
+        for (uint i=0; i < s.swaps.length; i++) {
+            if (s.swaps[i].userToken == userToken_) {
+                (bool success, ) = s.executor.delegatecall(
+                    abi.encodeWithSelector(
+                        ExecutorF(s.executor).executeFinalTrade2.selector, 
+                        s.swaps[i]
+                    )
+                );
+                require(success, 'PYYFacet: _callExecutor() failed');
+                break;
+            }
+        }
     }
 
 
-    function swapsForUserToken(uint _amountIn, uint _baseTokenOut, address _userToken) public payable {
-        uint minOut = ITri(s.tricrypto).get_dy(2, _baseTokenOut, _amountIn);
+    function swapsForUserToken(uint amountIn_, uint baseTokenOut_, address userToken_) public payable { 
+        uint minOut = ITri(s.tricrypto).get_dy(2, baseTokenOut_, amountIn_);
         uint slippage = ExecutorF(s.executor).calculateSlippage(minOut, s.slippageTradingCurve);
-        IWETH(s.WETH).approve(s.tricrypto, _amountIn);
-        ITri(s.tricrypto).exchange(2, _baseTokenOut, _amountIn, slippage, false);
+        IWETH(s.WETH).approve(s.tricrypto, amountIn_);
+        ITri(s.tricrypto).exchange(2, baseTokenOut_, amountIn_, slippage, false);
 
-        if (_userToken == s.renBTC) { 
-            //renBTC: 1 / WBTC: 0
-            _delegateExecutor(0, 1, s.WBTC);
-        } else if (_userToken == s.MIM) {
-            //MIM: 0 / USDT: 2 / USDC: 1
-            _delegateExecutor(2, 0, s.USDT);
-        } else if (_userToken == s.USDC) {
-            //USDC: 0 / USDT: 1
-            _delegateExecutor(1, 0, s.USDT);
-        } else if (_userToken == s.FRAX){
-            //FRAX: 0 / USDT: 2 / USDC: 1
-            _delegateExecutor(2, 0, s.USDT, _userToken);
-        } 
+        _callExecutor(userToken_);
+
+        // for (uint i=0; i < s.swaps.length; i++) {
+        //     if (s.swaps[i].userToken == userToken_) {
+        //         (bool success, ) = s.executor.delegatecall(
+        //             abi.encodeWithSelector(
+        //                 ExecutorF(s.executor).executeFinalTrade.selector, 
+        //                 s.swaps[i]
+        //             )
+        //         );
+        //         break;
+        //     }
+        // }
+
+
+        // if (userToken_ == s.renBTC) { 
+        //     //renBTC: 1 / WBTC: 0
+        //     _delegateExecutor(0, 1, s.WBTC);
+        // } else if (userToken_ == s.MIM) {
+        //     //MIM: 0 / USDT: 2 / USDC: 1
+        //     _delegateExecutor(2, 0, s.USDT);
+        // } else if (userToken_ == s.USDC) {
+        //     //USDC: 0 / USDT: 1
+        //     _delegateExecutor(1, 0, s.USDT);
+        // } else if (userToken_ == s.FRAX){
+        //     //FRAX: 0 / USDT: 2 / USDC: 1
+        //     _delegateExecutor(2, 0, s.USDT, userToken_);
+        // } 
     }
 
     /**
@@ -118,15 +148,17 @@ contract PYYFacet {
         // console.log('tokensToWithdraw: ******', s.tokensToWithdraw[1] == s.USDC);
         // console.log('tokensToWithdraw: ******', s.tokensToWithdraw[2] == s.MIM);
         // console.log('tokensToWithdraw: ******', s.tokensToWithdraw[3] == s.FRAX);
-        ExecArgs memory tradeOps = //i know it's something with a struct in order to make deleteExecutor and executeFinalTrade one function each
+        // ExecArgs memory tradeOps = //i know it's something with a struct in order to make deleteExecutor and executeFinalTrade one function each
 
-        if (userToken_ == s.USDC) { 
-            _delegateExecutor(1, 0, s.USDT);
-        } else if (userToken_ == s.MIM) {
-            _delegateExecutor(2, 0, s.USDT);
-        } else if (userToken_ == s.FRAX) {
-            _delegateExecutor(2, 0, s.USDT, userToken_);
-        }
+        _callExecutor(userToken_);
+
+        // if (userToken_ == s.USDC) { 
+        //     _delegateExecutor(1, 0, s.USDT);
+        // } else if (userToken_ == s.MIM) {
+        //     _delegateExecutor(2, 0, s.USDT);
+        // } else if (userToken_ == s.FRAX) {
+        //     _delegateExecutor(2, 0, s.USDT, userToken_);
+        // }
 
         uint userTokens = IERC20(userToken_).balanceOf(address(this));
         IERC20(userToken_).safeTransfer(user_, userTokens);
@@ -179,7 +211,10 @@ contract PYYFacet {
     }
 
     function _delegateExecutor( 
-        ExecArgs tradeOps_
+        int128 tokenIn_, 
+        int128 tokenOut_, 
+        address erc20In_, 
+        address userToken_
     ) public payable { 
         (bool success, ) = s.executor.delegatecall(
             abi.encodeWithSignature(
@@ -193,9 +228,9 @@ contract PYYFacet {
 }
 
 
- int128 tokenIn_, 
-        int128 tokenOut_, 
-        address erc20In_, 
-        address userToken_
+// int128 tokenIn_, 
+// int128 tokenOut_, 
+// address erc20In_, 
+// address userToken_
 
 
