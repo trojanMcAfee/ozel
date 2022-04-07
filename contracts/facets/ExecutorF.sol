@@ -17,10 +17,10 @@ contract ExecutorF {
     using FixedPointMathLib for uint;
 
     function calculateSlippage(
-        uint _amount, 
-        uint _basisPoint
+        uint amount_, 
+        uint basisPoint_
     ) public pure returns(uint minAmountOut) {
-        minAmountOut = _amount - ( (_amount * _basisPoint) / 10000 );  
+        minAmountOut = amount_ - amount_.mulDivDown(basisPoint_, 10000);
     }
 
 
