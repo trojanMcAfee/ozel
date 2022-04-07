@@ -28,21 +28,27 @@ contract PYYFacet {
 
 
 
-    function swapsForUserToken(uint amountIn_, uint baseTokenOut_, address userToken_) public payable { 
+    function swapsForUserToken(
+        uint amountIn_, 
+        uint baseTokenOut_, 
+        address userToken_
+    ) public payable { 
         uint minOut = ITri(s.tricrypto).get_dy(2, baseTokenOut_, amountIn_);
         uint slippage = ExecutorF(s.executor).calculateSlippage(minOut, s.slippageTradingCurve);
         IWETH(s.WETH).approve(s.tricrypto, amountIn_);
         ITri(s.tricrypto).exchange(2, baseTokenOut_, amountIn_, slippage, false);
 
         //Delegates trade execution
-        _callExecutor(userToken_); 
+        if (userToken_ != s.USDT || userToken_ != s.WBTC) {
+            _callExecutor(userToken_); 
+        }
     }
 
     /**
     BTC: 1 / USDT: 0 / WETH: 2
      */
 
-    function exchangeToUserToken(address _user, address _userToken) external payable {
+    function exchangeToUserToken(address user_, address userToken_) external payable {
         uint baseTokenOut;
 
         IWETH(s.WETH).deposit{value: msg.value}();
@@ -52,12 +58,12 @@ contract PYYFacet {
         (bool success, ) = s.py46.delegatecall(
             abi.encodeWithSelector(
                 pyERC4626(s.py46).deposit.selector, 
-                wethIn, _user
+                wethIn, user_
             )
         );
         require(success, 'PYYFacet: Failed to deposit');
 
-        if (_userToken == s.WBTC || _userToken == s.renBTC) {
+        if (userToken_ == s.WBTC || userToken_ == s.renBTC) {
             baseTokenOut = 1;
         } else {
             baseTokenOut = 0;
@@ -66,12 +72,12 @@ contract PYYFacet {
         //Sends fee to Vault contract
         (uint netAmountIn, uint fee) = _getFee(wethIn);
         
-        //Swaps ETH to userToken (Base: USDT-WBTC / Route: MIM-USDC-renBTC-WBTC)  
-        swapsForUserToken(netAmountIn, baseTokenOut, _userToken);
+        //Swaps WETH to userToken (Base: USDT-WBTC / Route: MIM-USDC-renBTC-WBTC)  
+        swapsForUserToken(netAmountIn, baseTokenOut, userToken_);
       
         //Sends userToken to user
-        uint toUser = IERC20(_userToken).balanceOf(address(this));
-        IERC20(_userToken).safeTransfer(_user, toUser);
+        uint toUser = IERC20(userToken_).balanceOf(address(this));
+        IERC20(userToken_).safeTransfer(user_, toUser);
         
         //Deposits fees in Curve's renPool
         depositCurveYearn(fee);
