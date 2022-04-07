@@ -14,18 +14,12 @@ import { IDiamondCut } from "../interfaces/IDiamondCut.sol";
 import { IERC173 } from "../interfaces/IERC173.sol";
 import { IERC165 } from "../interfaces/IERC165.sol";
 import '../AppStorage.sol'; 
-// import '../facets/ManagerFacet.sol';
 import '@openzeppelin/contracts/token/ERC20/IERC20.sol';
 import 'hardhat/console.sol';
 
 import '../interfaces/IWETH.sol';
 
-// struct TradeOps {
-//     int128 tokenIn;
-//     int128 tokenOut;
-//     address baseToken;
-//     address userToken;  
-// }
+
 
 
 
@@ -88,16 +82,17 @@ contract DiamondInit {
         //Sets ETH address
         s.ETH = _vars.ETH;
 
-        // s.tokensToWithdraw.push(s.USDT);
-        // s.tokensToWithdraw.push(s.USDC);
-        // s.tokensToWithdraw.push(s.MIM);
-        // s.tokensToWithdraw.push(s.FRAX);
-
+        /*** Sets the structs for userTokens
+        renPool -->  renBTC: 1 / WBTC: 0
+        mimPool --> MIM: 0 / USDT: 2 / USDC: 1
+        crv2Pool --> /USDC: 0 / USDT: 1
+        fraxPool --> FRAX: 0 / USDT: 2 / USDC: 1 ***/
         s.renSwap = TradeOps(0, 1, s.WBTC, s.renBTC, s.renPool);
         s.mimSwap = TradeOps(2, 0, s.USDT, s.MIM, s.mimPool);
         s.usdcSwap = TradeOps(1, 0, s.USDT, s.USDC, s.crv2Pool);
         s.fraxSwap = TradeOps(2, 0, s.USDT, s.FRAX, s.fraxPool);
 
+        //Array of structs
         s.swaps.push(s.renSwap);
         s.swaps.push(s.mimSwap);
         s.swaps.push(s.usdcSwap);
@@ -113,16 +108,3 @@ contract DiamondInit {
 }
 
 
-//  if (_userToken == s.renBTC) { 
-//             //renBTC: 1 / WBTC: 0
-//             _delegateExecutor(0, 1, s.WBTC);
-//         } else if (_userToken == s.MIM) {
-//             //MIM: 0 / USDT: 2 / USDC: 1
-//             _delegateExecutor(2, 0, s.USDT);
-//         } else if (_userToken == s.USDC) {
-//             //USDC: 0 / USDT: 1
-//             _delegateExecutor(1, 0, s.USDT);
-//         } else if (_userToken == s.FRAX){
-//             //FRAX: 0 / USDT: 2 / USDC: 1
-//             _delegateExecutor(2, 0, s.USDT, _userToken);
-//         }

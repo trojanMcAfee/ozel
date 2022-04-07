@@ -23,27 +23,9 @@ contract ExecutorF {
         minAmountOut = _amount - ( (_amount * _basisPoint) / 10000 );  
     }
 
-    function _tradeInCurve(address pool_, int128 tokenIn_, int128 tokenOut_, uint inBalance) public payable {
-        uint minOut;
-        uint slippage;
-        if (pool_ != s.renPool) {
-            IERC20(s.USDT).approve(pool_, inBalance);
-        }
-
-        if (pool_ == s.renPool || pool_ == s.crv2Pool) {
-            minOut = IMulCurv(pool_).get_dy(tokenIn_, tokenOut_, inBalance);
-            slippage = calculateSlippage(minOut, s.slippageTradingCurve);
-            IMulCurv(pool_).exchange(tokenIn_, tokenOut_, inBalance, slippage);
-        } else {
-            minOut = IMulCurv(pool_).get_dy_underlying(tokenIn_, tokenOut_, inBalance);
-            slippage = calculateSlippage(minOut, s.slippageTradingCurve);
-            IMulCurv(pool_).exchange_underlying(tokenIn_, tokenOut_, inBalance, slippage);
-        }
-    }
 
 
-
-    function executeFinalTrade2(TradeOps memory swapDetails_) public payable {
+    function executeFinalTrade(TradeOps memory swapDetails_) public payable {
         uint minOut;
         uint slippage;
         uint inBalance = IERC20(swapDetails_.baseToken).balanceOf(address(this));
@@ -69,44 +51,7 @@ contract ExecutorF {
                 swapDetails_.tokenIn, swapDetails_.tokenOut, inBalance, slippage
             );
         }
-
-
     }
-
-
-
-    function executeFinalTrade(
-        int128 tokenIn_, 
-        int128 tokenOut_, 
-        address erc20In_
-    ) public payable {
-        uint inBalance = IERC20(erc20In_).balanceOf(address(this));
-
-        if (tokenIn_ == 0) {
-            _tradeInCurve(s.renPool, tokenIn_, tokenOut_, inBalance);
-        } else if (tokenIn_ == 1) {
-            _tradeInCurve(s.crv2Pool, tokenIn_, tokenOut_, inBalance);
-        } else if (tokenIn_ == 2) {
-            _tradeInCurve(s.mimPool, tokenIn_, tokenOut_, inBalance);
-        }
-    }
-
-
-    function executeFinalTrade( 
-        int128 tokenIn_, 
-        int128 tokenOut_, 
-        address erc20In_, 
-        address userToken_
-    ) public payable {
-        uint inBalance = IERC20(erc20In_).balanceOf(address(this));
-
-        if (userToken_ == s.FRAX) {
-            _tradeInCurve(s.fraxPool, tokenIn_, tokenOut_, inBalance);
-        } 
-    } 
-
-
-
    
 
     //****** Modifies manager's STATE *****/
