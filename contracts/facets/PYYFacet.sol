@@ -87,11 +87,16 @@ contract PYYFacet {
     //*********** From VaultFacet ***********/
 
 
-    function withdrawUserShare(address user_, uint shares_, address userToken_) public { 
+    function withdrawUserShare(
+        address user_, 
+        address receiver_,
+        uint shares_, 
+        address userToken_
+    ) public { 
         (bool success, bytes memory data) = s.py46.delegatecall(
             abi.encodeWithSelector(
                 pyERC4626(s.py46).redeem.selector, 
-                shares_, user_, user_
+                shares_, receiver_, user_
             )
         );
         require(success, 'PYYFacet: withdrawUserShare() failed');
@@ -107,15 +112,17 @@ contract PYYFacet {
         _callExecutor(userToken_);
 
         uint userTokens = IERC20(userToken_).balanceOf(address(this));
-        IERC20(userToken_).safeTransfer(user_, userTokens);
+        user_ == receiver_ ?
+           IERC20(userToken_).safeTransfer(user_, userTokens) :
+           IERC20(userToken_).safeTransfer(receiver_, userTokens); 
     }
 
 
-    function _calculateTokenAmountCurve(uint _wethAmountIn) private returns(uint, uint[3] memory) {
+    function _calculateTokenAmountCurve(uint wethAmountIn_) private returns(uint, uint[3] memory) {
         uint[3] memory amounts;
         amounts[0] = 0;
         amounts[1] = 0;
-        amounts[2] = _wethAmountIn;
+        amounts[2] = wethAmountIn_;
         uint tokenAmount = ITri(s.tricrypto).calc_token_amount(amounts, true);
         return (tokenAmount, amounts);
     } 

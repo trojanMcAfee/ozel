@@ -311,8 +311,8 @@ async function beginSimulatedDiamond() {
     console.log('---------------------------------------'); 
     
     //1st user withdraw remaining share (half)
-    console.log('Withdraw 1st user share (remainder)');  
-    await withdrawSharePYY(callerAddr, parseEther(formatEther(await balanceOfPYY(callerAddr))), usdtAddrArb);
+    console.log('Withdraw 1st user share (remainder)');
+    await withdrawSharePYY(callerAddr, callerAddr, parseEther(formatEther(await balanceOfPYY(callerAddr))), usdtAddrArb);
     let usdtBalance = await USDT.balanceOf(callerAddr);
     console.log('USDT balance from fees of caller1: ', usdtBalance.toString() / 10 ** 6); 
     console.log('PYY balance on caller 1 after fees withdrawal: ', formatEther(await balanceOfPYY(callerAddr)));
@@ -333,15 +333,18 @@ async function beginSimulatedDiamond() {
     console.log('PYY balance on caller 2: ', formatEther(await balanceOfPYY(caller2Addr)));
     console.log('.');
 
-    console.log('Withdrawing 1/3');
-    // console.log('yvCrvTricrypto token balance on pre diamondProxy: ', formatEther(await crvTri.balanceOf(deployedDiamond.address)));
-    await withdrawSharePYY(caller2Addr, parseEther(toTransfer.toString()), usdtAddrArb, 1);
+    console.log('Withdrawing 1/3'); 
+    await withdrawSharePYY(caller2Addr, caller2Addr, parseEther(toTransfer.toString()), usdtAddrArb, 1);
     usdtBalance = await USDT.balanceOf(caller2Addr);
     console.log('USDT balance from fees of caller2: ', usdtBalance.toString() / 10 ** 6);
     console.log('PYY balance on caller 1: ', formatEther(await balanceOfPYY(callerAddr)));
     console.log('PYY balance on caller 2: ', formatEther(await balanceOfPYY(caller2Addr)));
     console.log('.');
     console.log('yvCrvTricrypto token balance on diamondProxy: ', formatEther(await yvCrvTri.balanceOf(deployedDiamond.address)));
+
+
+    // usdtBalance = await USDT.balanceOf(callerAddr);
+    // console.log('USDT balance from fees of caller: ', usdtBalance.toString() / 10 ** 6);
     /**+++++++++ END OF SIMULATION CURVE SWAPS ++++++++**/
 }
 

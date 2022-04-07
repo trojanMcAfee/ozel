@@ -26,7 +26,7 @@ async function callDiamondProxy(params) {
         balanceOf: 'function balanceOf(address account) view returns (uint256)',
         transfer: 'function transfer(address recipient, uint256 amount) returns (bool)',
         exchangeToUserToken: 'function exchangeToUserToken(address _user, address _userToken)',
-        withdrawUserShare: 'function withdrawUserShare(address _user, uint _userAllocation, address _userToken)'
+        withdrawUserShare: 'function withdrawUserShare(address user, address receiver, uint shares, address userToken)'
     };
 
     for (let sign in signatures) {
@@ -99,10 +99,10 @@ async function transferPYY(recipient, amount, signerIndex) {
     }); 
 }
 
-async function withdrawSharePYY(callerAddr, balancePYY, userToken, signerIndex) { 
+async function withdrawSharePYY(callerAddr, receiverAddr, balancePYY, userToken, signerIndex) { 
     await callDiamondProxy({
         method: 'withdrawUserShare',
-        args: {callerAddr, balancePYY, userToken},
+        args: {callerAddr, receiverAddr, balancePYY, userToken},
         signerIndex
     });
 }

@@ -90,9 +90,4 @@ contract ExecutorF {
         s.usersPayments[receiver_] += amountToTransfer;
     }
 
-     
-    // function getTokensInExecutor(address _userToken) public {
-
-    // }
-
 }

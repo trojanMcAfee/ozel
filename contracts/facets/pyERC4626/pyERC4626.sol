@@ -60,11 +60,11 @@ contract pyERC4626 {
         address receiver,
         address owner
     ) public virtual returns (uint256 assets) {
-        if (msg.sender != owner) {
-            uint256 allowed = s.py[true]._allowances[owner][msg.sender]; // Saves gas for limited approvals.
+        // if (msg.sender != owner) {
+        //     uint256 allowed = s.py[true]._allowances[owner][msg.sender]; // Saves gas for limited approvals.
 
-            if (allowed != type(uint256).max) s.py[true]._allowances[owner][msg.sender] = allowed - shares;
-        }
+        //     if (allowed != type(uint256).max) s.py[true]._allowances[owner][msg.sender] = allowed - shares;
+        // }
         // Check for rounding error since we round down in previewRedeem.
         require((assets = previewRedeem(shares)) != 0, "ZERO_ASSETS");
 
@@ -80,9 +80,9 @@ contract pyERC4626 {
 
         emit Withdraw(msg.sender, receiver, owner, assets, shares);
 
-        if (receiver != owner) {
+        // if (receiver != owner) {
             // asset.safeTransfer(receiver, assets); // <------ code and test when the receiver is not the same as the owner
-        } //when using safeTransfer, check the lib if pyERC20 or normal ERC20 is needed
+        // } //when using safeTransfer, check the lib if pyERC20 or normal ERC20 is needed
 
     }
 
