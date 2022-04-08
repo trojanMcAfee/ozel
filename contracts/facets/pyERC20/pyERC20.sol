@@ -55,7 +55,7 @@ contract pyERC20 is pyContext, pyIERC20, pyIERC20Metadata {
      * @dev Returns the name of the token.
      */
     function name() public view virtual override returns (string memory) {
-        return s.py[true]._name;
+        return s.py.name_;
     }
 
     /**
@@ -63,7 +63,7 @@ contract pyERC20 is pyContext, pyIERC20, pyIERC20Metadata {
      * name.
      */
     function symbol() public view virtual override returns (string memory) {
-        return s.py[true]._symbol; 
+        return s.py.symbol_; 
     }
 
     /**
@@ -114,7 +114,7 @@ contract pyERC20 is pyContext, pyIERC20, pyIERC20Metadata {
      * @dev See {IERC20-allowance}.
      */
     function allowance(address owner, address spender) public view virtual override returns (uint256) {
-        return s.py[true]._allowances[owner][spender];
+        return s.py.allowances_[owner][spender];
     }
 
     /**
@@ -149,7 +149,7 @@ contract pyERC20 is pyContext, pyIERC20, pyIERC20Metadata {
     ) public virtual override returns (bool) {
         _transfer(sender, recipient, amount);
 
-        uint256 currentAllowance = s.py[true]._allowances[sender][_msgSender()];
+        uint256 currentAllowance = s.py.allowances_[sender][_msgSender()];
         require(currentAllowance >= amount, "ERC20: transfer amount exceeds allowance");
         unchecked {
             _approve(sender, _msgSender(), currentAllowance - amount);
@@ -171,7 +171,7 @@ contract pyERC20 is pyContext, pyIERC20, pyIERC20Metadata {
      * - `spender` cannot be the zero address.
      */
     function increaseAllowance(address spender, uint256 addedValue) public virtual returns (bool) {
-        _approve(_msgSender(), spender, s.py[true]._allowances[_msgSender()][spender] + addedValue);
+        _approve(_msgSender(), spender, s.py.allowances_[_msgSender()][spender] + addedValue);
         return true;
     }
 
@@ -190,7 +190,7 @@ contract pyERC20 is pyContext, pyIERC20, pyIERC20Metadata {
      * `subtractedValue`.
      */
     function decreaseAllowance(address spender, uint256 subtractedValue) public virtual returns (bool) {
-        uint256 currentAllowance = s.py[true]._allowances[_msgSender()][spender];
+        uint256 currentAllowance = s.py.allowances_[_msgSender()][spender];
         require(currentAllowance >= subtractedValue, "ERC20: decreased allowance below zero");
         unchecked {
             _approve(_msgSender(), spender, currentAllowance - subtractedValue);
@@ -297,7 +297,7 @@ contract pyERC20 is pyContext, pyIERC20, pyIERC20Metadata {
         require(owner != address(0), "ERC20: approve from the zero address");
         require(spender != address(0), "ERC20: approve to the zero address");
 
-        s.py[true]._allowances[owner][spender] = amount;
+        s.py.allowances_[owner][spender] = amount;
         emit Approval(owner, spender, amount);
     }
 

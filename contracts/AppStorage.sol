@@ -35,15 +35,13 @@ struct AppStorage {
     uint distributionIndex;
     uint feesVault;
 
-    mapping(address => uint) pendingWithdrawal;
     mapping(address => uint) usersPayments;
-    mapping(bool => PYYERC20) py; 
+
+    PYYERC20 py;
 
     address ETH;
     address py46;
     address py20;
-
-    address[] tokensToWithdraw;
 
     TradeOps renSwap;
     TradeOps mimSwap;
@@ -54,11 +52,11 @@ struct AppStorage {
 }
 
 struct PYYERC20 {
-    mapping(address => uint256) _balances;
-    mapping(address => mapping(address => uint256)) _allowances;
-    uint  _totalSupply;
-    string  _name;
-    string  _symbol;
+    mapping(address => uint256) balances_;
+    mapping(address => mapping(address => uint256)) allowances_;
+    uint  totalSupply_;
+    string  name_;
+    string  symbol_;
 }
 
 

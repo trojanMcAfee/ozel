@@ -76,8 +76,8 @@ contract DiamondInit {
         s.slippageTradingCurve = _vars.appVars[2];
 
         //Sets name and symbol on PayToken (PYY)
-        s.py[true]._name = _vars.pyyVars[0];
-        s.py[true]._symbol = _vars.pyyVars[1];
+        s.py.name_ = _vars.pyyVars[0];
+        s.py.symbol_ = _vars.pyyVars[1];
 
         //Sets ETH address
         s.ETH = _vars.ETH;
