@@ -71,6 +71,32 @@ contract PYYFacet {
         depositCurveYearn(fee);
     }
 
+    function retrySwap(uint amountIn_, uint baseTokenOut_, address userToken_) public {
+        for (uint i=0; i < 4; i++) {
+            console.log(i, ' try ---------');
+            uint modSlippage = s.slippageTradingCurve * (i + 1);
+            uint minOut = ITri(s.tricrypto).get_dy(2, baseTokenOut_, amountIn_);
+            uint slippage = ExecutorF(s.executor).calculateSlippage(minOut, modSlippage);
+            IWETH(s.WETH).approve(s.tricrypto, amountIn_);
+        
+            try ITri(s.tricrypto).exchange(2, baseTokenOut_, amountIn_, amountIn_ * 2, false) {
+                break;
+            } catch (bytes memory err) { //tries out four times before reverting (test this and reversion/transfer)
+
+                if (i != 3) {
+                    continue;
+                } else {
+                    console.log('msg.sender: ', msg.sender); //transfer weth back to user (the user is who does all mov so coins never leave him)
+                    console.log('this one ****'); //who is msg.sender when the transaction is called from arbitrum? Who's msg.sender? 
+                } //if it's onlyOps, change msg.sender (with a call in the beginning instead of delegatecall) from it to the diamond (address(this))
+        
+                // i == 3 ?
+                //     console.log('this one ****') :
+                //     continue;
+            }
+        }
+    }
+
     function swapsForUserToken(
         uint amountIn_, 
         uint baseTokenOut_, 
@@ -84,10 +110,19 @@ contract PYYFacet {
         console.log('slippage: ', slippage);
         console.log(2);
         IWETH(s.WETH).approve(s.tricrypto, amountIn_);
-        ITri(s.tricrypto).exchange(2, baseTokenOut_, amountIn_, amountIn_, false); //2, baseTokenOut_, amountIn_, slippage, false - try with the functions without slippage
+        // ITri(s.tricrypto).exchange(2, baseTokenOut_, amountIn_, amountIn_, false); //2, baseTokenOut_, amountIn_, slippage, false - try with the functions without slippage
+        
+        try ITri(s.tricrypto).exchange(2, baseTokenOut_, amountIn_, amountIn_ * 2, false) {
+            console.log('succeeded %%%%%%');
+        } catch (bytes memory err) {
+            retrySwap(amountIn_, baseTokenOut_, userToken_);
+        }
+        
+        console.log(3);
 
         //Delegates trade execution
         if (userToken_ != s.USDT || userToken_ != s.WBTC) {
+            // console.log('it has here ^^^^^');
             _callExecutor(userToken_); 
         }
     }
