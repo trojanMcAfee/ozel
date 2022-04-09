@@ -29,7 +29,7 @@ contract PYYFacet {
 
 
     /**
-    BTC: 1 / USDT: 0 / WETH: 2
+    WBTC: 1 / USDT: 0 / WETH: 2
      */
 
      /*******
@@ -71,7 +71,7 @@ contract PYYFacet {
         depositCurveYearn(fee);
     }
 
-    function retrySwap(uint amountIn_, uint baseTokenOut_) public {
+    function retrySwap(uint amountIn_, uint baseTokenOut_, address tokenOut_) public {
         for (uint i=0; i < 4; i++) {
             console.log(i, ' try ---------');
             uint modSlippage = s.slippageTradingCurve * (i + 1);
@@ -87,9 +87,9 @@ contract PYYFacet {
                 if (i != 3) {
                     continue;
                 } else {
-                    console.log('WETH balance pre: ', IERC20(s.WETH).balanceOf(msg.sender));
-                    IERC20(s.WETH).transfer(msg.sender, amountIn_); 
-                    console.log('WETH balance post: ', IERC20(s.WETH).balanceOf(msg.sender));
+                    console.log('WETH balance pre: ', IERC20(tokenOut_).balanceOf(msg.sender));
+                    IERC20(tokenOut_).transfer(msg.sender, amountIn_); 
+                    console.log('WETH balance post: ', IERC20(tokenOut_).balanceOf(msg.sender));
                     console.log('this one ****'); 
                 } 
     
@@ -110,14 +110,16 @@ contract PYYFacet {
         try ITri(s.tricrypto).exchange(2, baseTokenOut_, amountIn_, amountIn_ * 2, false) {
             // console.log('succeeded %%%%%%');
         } catch (bytes memory err) {
-            retrySwap(amountIn_, baseTokenOut_);
+            retrySwap(amountIn_, baseTokenOut_, s.WETH);
             // return;
         }
         
         console.log(3);
 
+        uint baseBalance = IERC20(baseTokenOut_ == 0 ? s.USDT : s.WBTC).balanceOf(address(this));
+
         // Delegates trade execution
-        if (userToken_ != s.USDT || userToken_ != s.WBTC) {
+        if ((userToken_ != s.USDT || userToken_ != s.WBTC) && baseBalance > 0) {
             _callExecutor(userToken_); 
         }
     }
