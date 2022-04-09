@@ -24,6 +24,7 @@
     "bn.js": "^5.2.0",
     "diamond-util": "^1.1.1",
     "dotenv": "^10.0.0",
+    "evm-bn": "^1.1.1",
     "hardhat": "^2.6.3",
     "ptokens": "^0.13.0",
     "ptokens-pbtc": "^0.13.0",

@@ -28,25 +28,13 @@ contract PYYFacet {
 
 
 
-    function swapsForUserToken(
-        uint amountIn_, 
-        uint baseTokenOut_, 
-        address userToken_
-    ) public payable { 
-        uint minOut = ITri(s.tricrypto).get_dy(2, baseTokenOut_, amountIn_);
-        uint slippage = ExecutorF(s.executor).calculateSlippage(minOut, s.slippageTradingCurve);
-        IWETH(s.WETH).approve(s.tricrypto, amountIn_);
-        ITri(s.tricrypto).exchange(2, baseTokenOut_, amountIn_, slippage, false);
-
-        //Delegates trade execution
-        if (userToken_ != s.USDT || userToken_ != s.WBTC) {
-            _callExecutor(userToken_); 
-        }
-    }
-
     /**
     BTC: 1 / USDT: 0 / WETH: 2
      */
+
+     /*******
+        State changing functions
+     ******/
 
     function exchangeToUserToken(address user_, address userToken_) external payable {
         uint baseTokenOut;
@@ -83,8 +71,26 @@ contract PYYFacet {
         depositCurveYearn(fee);
     }
 
-    
-    //*********** From VaultFacet ***********/
+    function swapsForUserToken(
+        uint amountIn_, 
+        uint baseTokenOut_, 
+        address userToken_
+    ) public payable { 
+        uint minOut = ITri(s.tricrypto).get_dy(2, baseTokenOut_, amountIn_);
+        console.log(1);
+        console.log('s.slippageTradingCurve: ', s.slippageTradingCurve / 1 ether);
+        console.log('minOut: ', minOut);
+        uint slippage = ExecutorF(s.executor).calculateSlippage(minOut, s.slippageTradingCurve);
+        console.log('slippage: ', slippage);
+        console.log(2);
+        IWETH(s.WETH).approve(s.tricrypto, amountIn_);
+        ITri(s.tricrypto).exchange(2, baseTokenOut_, amountIn_, amountIn_, false); //2, baseTokenOut_, amountIn_, slippage, false - try with the functions without slippage
+
+        //Delegates trade execution
+        if (userToken_ != s.USDT || userToken_ != s.WBTC) {
+            _callExecutor(userToken_); 
+        }
+    }
 
 
     function withdrawUserShare(
@@ -115,16 +121,6 @@ contract PYYFacet {
         user_ == receiver_ ?
            IERC20(userToken_).safeTransfer(user_, userTokens) :
            IERC20(userToken_).safeTransfer(receiver_, userTokens); 
-    }
-
-
-    function _calculateTokenAmountCurve(uint wethAmountIn_) private returns(uint, uint[3] memory) {
-        uint[3] memory amounts;
-        amounts[0] = 0;
-        amounts[1] = 0;
-        amounts[2] = wethAmountIn_;
-        uint tokenAmount = ITri(s.tricrypto).calc_token_amount(amounts, true);
-        return (tokenAmount, amounts);
     } 
     
 
@@ -144,6 +140,7 @@ contract PYYFacet {
     /*******
         Helper functions
      ******/
+     
 
 
     function _getFee(uint amount_) public returns(uint, uint) {
@@ -166,6 +163,15 @@ contract PYYFacet {
                 break;
             }
         }
+    }
+
+    function _calculateTokenAmountCurve(uint wethAmountIn_) private returns(uint, uint[3] memory) {
+        uint[3] memory amounts;
+        amounts[0] = 0;
+        amounts[1] = 0;
+        amounts[2] = wethAmountIn_;
+        uint tokenAmount = ITri(s.tricrypto).calc_token_amount(amounts, true);
+        return (tokenAmount, amounts);
     }
 
    
