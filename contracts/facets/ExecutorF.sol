@@ -19,7 +19,7 @@ contract ExecutorF {
     function calculateSlippage(
         uint amount_, 
         uint basisPoint_
-    ) public pure returns(uint minAmountOut) {
+    ) public view returns(uint minAmountOut) {
         minAmountOut = amount_ - amount_.mulDivDown(basisPoint_, 10000);
     }
 

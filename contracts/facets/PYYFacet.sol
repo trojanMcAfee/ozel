@@ -71,28 +71,28 @@ contract PYYFacet {
         depositCurveYearn(fee);
     }
 
-    function retrySwap(uint amountIn_, uint baseTokenOut_, address userToken_) public {
+    function retrySwap(uint amountIn_, uint baseTokenOut_) public {
         for (uint i=0; i < 4; i++) {
             console.log(i, ' try ---------');
             uint modSlippage = s.slippageTradingCurve * (i + 1);
             uint minOut = ITri(s.tricrypto).get_dy(2, baseTokenOut_, amountIn_);
-            uint slippage = ExecutorF(s.executor).calculateSlippage(minOut, modSlippage);
-            IWETH(s.WETH).approve(s.tricrypto, amountIn_);
+            uint slippage = ExecutorF(s.executor).calculateSlippage(minOut, modSlippage / 1 ether);
+            // IWETH(s.WETH).approve(s.tricrypto, amountIn_);
         
             try ITri(s.tricrypto).exchange(2, baseTokenOut_, amountIn_, amountIn_ * 2, false) {
+                console.log('retry successful');
                 break;
-            } catch (bytes memory err) { //tries out four times before reverting (test this and reversion/transfer)
+            } catch (bytes memory err) { 
 
                 if (i != 3) {
                     continue;
                 } else {
-                    console.log('msg.sender: ', msg.sender); //transfer weth back to user (the user is who does all mov so coins never leave him)
-                    console.log('this one ****'); //who is msg.sender when the transaction is called from arbitrum? Who's msg.sender? 
-                } //if it's onlyOps, change msg.sender (with a call in the beginning instead of delegatecall) from it to the diamond (address(this))
-        
-                // i == 3 ?
-                //     console.log('this one ****') :
-                //     continue;
+                    console.log('WETH balance pre: ', IERC20(s.WETH).balanceOf(msg.sender));
+                    IERC20(s.WETH).transfer(msg.sender, amountIn_); 
+                    console.log('WETH balance post: ', IERC20(s.WETH).balanceOf(msg.sender));
+                    console.log('this one ****'); 
+                } 
+    
             }
         }
     }
@@ -103,26 +103,21 @@ contract PYYFacet {
         address userToken_
     ) public payable { 
         uint minOut = ITri(s.tricrypto).get_dy(2, baseTokenOut_, amountIn_);
-        console.log(1);
-        console.log('s.slippageTradingCurve: ', s.slippageTradingCurve / 1 ether);
-        console.log('minOut: ', minOut);
         uint slippage = ExecutorF(s.executor).calculateSlippage(minOut, s.slippageTradingCurve);
-        console.log('slippage: ', slippage);
-        console.log(2);
         IWETH(s.WETH).approve(s.tricrypto, amountIn_);
-        // ITri(s.tricrypto).exchange(2, baseTokenOut_, amountIn_, amountIn_, false); //2, baseTokenOut_, amountIn_, slippage, false - try with the functions without slippage
+        // ITri(s.tricrypto).exchange(2, baseTokenOut_, amountIn_, slippage, false); //2, baseTokenOut_, amountIn_, slippage, false - try with the functions without slippage
         
         try ITri(s.tricrypto).exchange(2, baseTokenOut_, amountIn_, amountIn_ * 2, false) {
-            console.log('succeeded %%%%%%');
+            // console.log('succeeded %%%%%%');
         } catch (bytes memory err) {
-            retrySwap(amountIn_, baseTokenOut_, userToken_);
+            retrySwap(amountIn_, baseTokenOut_);
+            // return;
         }
         
         console.log(3);
 
-        //Delegates trade execution
+        // Delegates trade execution
         if (userToken_ != s.USDT || userToken_ != s.WBTC) {
-            // console.log('it has here ^^^^^');
             _callExecutor(userToken_); 
         }
     }
@@ -185,9 +180,12 @@ contract PYYFacet {
         return (netAmount, fee);
     }
 
-    function _callExecutor(address userToken_) private {
+    function _callExecutor(address userToken_) public {
+        // console.log(11);
         for (uint i=0; i < s.swaps.length; i++) {
+            // console.log(12);
             if (s.swaps[i].userToken == userToken_) {
+                // console.log(13);
                 (bool success, ) = s.executor.delegatecall(
                     abi.encodeWithSelector(
                         ExecutorF(s.executor).executeFinalTrade.selector, 
@@ -195,6 +193,7 @@ contract PYYFacet {
                     )
                 );
                 require(success, 'PYYFacet: _callExecutor() failed');
+                // console.log(14);
                 break;
             }
         }
