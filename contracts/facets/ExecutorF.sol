@@ -5,7 +5,7 @@ import './pyERC20/pyERC20.sol';
 import '@openzeppelin/contracts/token/ERC20/IERC20.sol';
 import '../AppStorage.sol';
 import '../libraries/FixedPointMathLib.sol';
-import {IMulCurv} from '../interfaces/ICurve.sol';
+import {IMulCurv, ITri} from '../interfaces/ICurve.sol';
 
 import 'hardhat/console.sol';
 
@@ -50,6 +50,42 @@ contract ExecutorF {
             IMulCurv(swapDetails_.pool).exchange_underlying(
                 swapDetails_.tokenIn, swapDetails_.tokenOut, inBalance, slippage
             );
+        }
+    }
+
+
+   function retrySwap(
+        uint action_,
+        uint amountIn_, 
+        uint baseTokenOut_, 
+        address tokenOut_
+    ) public payable { //<----- must be payable
+        if (action_ == 0) {
+            for (uint i=0; i < 4; i++) {
+                // console.log(i, ' try ---------');
+                uint modSlippage = s.slippageTradingCurve * (i + 1);
+                uint minOut = ITri(s.tricrypto).get_dy(2, baseTokenOut_, amountIn_);
+                uint slippage = calculateSlippage(minOut, modSlippage);
+                // IWETH(s.WETH).approve(s.tricrypto, amountIn_);
+            
+                try ITri(s.tricrypto).exchange(2, baseTokenOut_, amountIn_, amountIn_ * 2, false) {
+                    console.log('retry successful');
+                    break;
+                } catch (bytes memory err) { 
+
+                    if (i != 3) {
+                        continue;
+                    } else {
+                        console.log('WETH balance pre: ', IERC20(tokenOut_).balanceOf(msg.sender));
+                        IERC20(tokenOut_).transfer(msg.sender, amountIn_); 
+                        console.log('WETH balance post: ', IERC20(tokenOut_).balanceOf(msg.sender));
+                        console.log('this one ****'); 
+                    } 
+        
+                }
+            }
+        } else if (action_ == 1) {
+            console.log('hi world');
         }
     }
    

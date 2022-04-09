@@ -71,31 +71,23 @@ contract PYYFacet {
         depositCurveYearn(fee);
     }
 
-    function retrySwap(uint amountIn_, uint baseTokenOut_, address tokenOut_) public {
-        for (uint i=0; i < 4; i++) {
-            console.log(i, ' try ---------');
-            uint modSlippage = s.slippageTradingCurve * (i + 1);
-            uint minOut = ITri(s.tricrypto).get_dy(2, baseTokenOut_, amountIn_);
-            uint slippage = ExecutorF(s.executor).calculateSlippage(minOut, modSlippage / 1 ether);
-            // IWETH(s.WETH).approve(s.tricrypto, amountIn_);
-        
-            try ITri(s.tricrypto).exchange(2, baseTokenOut_, amountIn_, amountIn_ * 2, false) {
-                console.log('retry successful');
-                break;
-            } catch (bytes memory err) { 
 
-                if (i != 3) {
-                    continue;
-                } else {
-                    console.log('WETH balance pre: ', IERC20(tokenOut_).balanceOf(msg.sender));
-                    IERC20(tokenOut_).transfer(msg.sender, amountIn_); 
-                    console.log('WETH balance post: ', IERC20(tokenOut_).balanceOf(msg.sender));
-                    console.log('this one ****'); 
-                } 
-    
-            }
-        }
+
+    function _retryWithExecutor(
+        uint action_,
+        uint amountIn_,
+        uint baseTokenOut_,
+        address tokenOut_
+    ) public {
+        (bool success, ) = s.executor.delegatecall(
+            abi.encodeWithSelector(
+                ExecutorF(s.executor).retrySwap.selector, 
+                0, amountIn_, baseTokenOut_, tokenOut_
+            )
+        );
+        require(success, 'PYYFacet: _retryWithExecutor() failed');
     }
+
 
     function swapsForUserToken(
         uint amountIn_, 
@@ -105,13 +97,12 @@ contract PYYFacet {
         uint minOut = ITri(s.tricrypto).get_dy(2, baseTokenOut_, amountIn_);
         uint slippage = ExecutorF(s.executor).calculateSlippage(minOut, s.slippageTradingCurve);
         IWETH(s.WETH).approve(s.tricrypto, amountIn_);
-        // ITri(s.tricrypto).exchange(2, baseTokenOut_, amountIn_, slippage, false); //2, baseTokenOut_, amountIn_, slippage, false - try with the functions without slippage
+        // ITri(s.tricrypto).exchange(2, baseTokenOut_, amountIn_, slippage, false); //2, baseTokenOut_, amountIn_, slippage, false
         
         try ITri(s.tricrypto).exchange(2, baseTokenOut_, amountIn_, amountIn_ * 2, false) {
             // console.log('succeeded %%%%%%');
         } catch (bytes memory err) {
-            retrySwap(amountIn_, baseTokenOut_, s.WETH);
-            // return;
+            _retryWithExecutor(0, amountIn_, baseTokenOut_, s.WETH);
         }
         
         console.log(3);
@@ -120,7 +111,7 @@ contract PYYFacet {
 
         // Delegates trade execution
         if ((userToken_ != s.USDT || userToken_ != s.WBTC) && baseBalance > 0) {
-            _callExecutor(userToken_); 
+            _tradeWithExecutor(userToken_); 
         }
     }
 
@@ -182,20 +173,16 @@ contract PYYFacet {
         return (netAmount, fee);
     }
 
-    function _callExecutor(address userToken_) public {
-        // console.log(11);
+    function _tradeWithExecutor(address userToken_) public {
         for (uint i=0; i < s.swaps.length; i++) {
-            // console.log(12);
             if (s.swaps[i].userToken == userToken_) {
-                // console.log(13);
                 (bool success, ) = s.executor.delegatecall(
                     abi.encodeWithSelector(
                         ExecutorF(s.executor).executeFinalTrade.selector, 
                         s.swaps[i]
                     )
                 );
-                require(success, 'PYYFacet: _callExecutor() failed');
-                // console.log(14);
+                require(success, 'PYYFacet: _tradeWithExecutor() failed');
                 break;
             }
         }
