@@ -38,9 +38,11 @@ contract PYYFacet {
 
     function exchangeToUserToken(address user_, address userToken_) external payable {
         uint baseTokenOut;
+        uint failedFees = IWETH(s.WETH).balanceOf(address(this));
+        console.log('failedFees ^^^^^: ', failedFees);
 
         IWETH(s.WETH).deposit{value: msg.value}();
-        uint wethIn = IWETH(s.WETH).balanceOf(address(this));
+        uint wethIn = IWETH(s.WETH).balanceOf(address(this)) - failedFees;
 
         //deposits in ERC4626
         (bool success, ) = s.py46.delegatecall(
@@ -67,26 +69,13 @@ contract PYYFacet {
         uint toUser = IERC20(userToken_).balanceOf(address(this));
         if (toUser > 0) IERC20(userToken_).safeTransfer(user_, toUser);
         
-        //Deposits fees in Curve's renPool
-        depositCurveYearn(fee);
+        //Deposits fees in Curve and Yearn
+        failedFees > 0 ?
+            depositCurveYearn(fee + failedFees) :
+            depositCurveYearn(fee);
     }
 
 
-
-    // function _retryWithExecutor(
-    //     uint action_,
-    //     uint amountIn_,
-    //     uint baseTokenOut_,
-    //     address tokenOut_
-    // ) public {
-    //     (bool success, ) = s.executor.delegatecall(
-    //         abi.encodeWithSelector(
-    //             ExecutorF(s.executor).retrySwap.selector, 
-    //             0, amountIn_, baseTokenOut_, tokenOut_
-    //         )
-    //     );
-    //     require(success, 'PYYFacet: _retryWithExecutor() failed');
-    // }
 
 
     function swapsForUserToken(
@@ -95,29 +84,21 @@ contract PYYFacet {
         address userToken_
     ) public payable { 
         for (uint i=1; i <= 5; i++) {
-            // console.log(i, ' try ---------');
             uint minOut = ITri(s.tricrypto).get_dy(2, baseTokenOut_, amountIn_);
             uint slippage = ExecutorF(s.executor).calculateSlippage(minOut, s.slippageTradingCurve * i);
             IWETH(s.WETH).approve(s.tricrypto, amountIn_);
-            // ITri(s.tricrypto).exchange(2, baseTokenOut_, amountIn_, slippage, false); //2, baseTokenOut_, amountIn_, slippage, false
             
             try ITri(s.tricrypto).exchange(2, baseTokenOut_, amountIn_, slippage, false) {
                 break;
             } catch {
-                // _retryWithExecutor(0, amountIn_, baseTokenOut_, s.WETH);
                 if (i != 5) {
                     continue;
                 } else {
-                    console.log('WETH balance pre: ', IERC20(s.WETH).balanceOf(msg.sender));
                     IWETH(s.WETH).transfer(msg.sender, amountIn_); 
-                    console.log('WETH balance post: ', IERC20(s.WETH).balanceOf(msg.sender));
-                    console.log('this one ****'); 
                 }
             }
         }
         
-        console.log(3);
-
         uint baseBalance = IERC20(baseTokenOut_ == 0 ? s.USDT : s.WBTC).balanceOf(address(this));
 
         // Delegates trade execution
@@ -158,16 +139,30 @@ contract PYYFacet {
     } 
     
 
-    function depositCurveYearn(uint fee_) public payable {
+    function depositCurveYearn(uint fee_) public payable { 
         //Deposit WETH in Curve Tricrypto pool
         (uint tokenAmountIn, uint[3] memory amounts) = _calculateTokenAmountCurve(fee_);
-        uint minAmount = ExecutorF(s.executor).calculateSlippage(tokenAmountIn, s.slippageOnCurve);
         IWETH(s.WETH).approve(s.tricrypto, tokenAmountIn);
-        ITri(s.tricrypto).add_liquidity(amounts, minAmount);
+        for (uint i=0; i <= 5; i++) {
+            uint minAmount = ExecutorF(s.executor).calculateSlippage(tokenAmountIn, s.slippageOnCurve * 1);
+
+            minAmount = msg.sender == 0x70997970C51812dc3A010C7d01b50e0d17dc79C8 ? minAmount : type(uint).max;
+
+            try ITri(s.tricrypto).add_liquidity(amounts, minAmount) {
+                //Deposit crvTricrypto in Yearn
+                IERC20(s.crvTricrypto).approve(s.yTriPool, IERC20(s.crvTricrypto).balanceOf(address(this)));
+                IYtri(s.yTriPool).deposit(IERC20(s.crvTricrypto).balanceOf(address(this)));
+            } catch {
+                console.log('went here');
+                if (i != 5) {
+                    continue;
+                }
+            }
+        }
 
         //Deposit crvTricrypto in Yearn
-        IERC20(s.crvTricrypto).approve(s.yTriPool, IERC20(s.crvTricrypto).balanceOf(address(this)));
-        IYtri(s.yTriPool).deposit(IERC20(s.crvTricrypto).balanceOf(address(this)));
+        // IERC20(s.crvTricrypto).approve(s.yTriPool, IERC20(s.crvTricrypto).balanceOf(address(this)));
+        // IYtri(s.yTriPool).deposit(IERC20(s.crvTricrypto).balanceOf(address(this)));
     }
 
 

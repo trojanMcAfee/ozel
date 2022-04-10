@@ -24,18 +24,6 @@ contract ExecutorF {
     }
 
 
-    function _emergencyCall(uint i_, address baseToken_, uint inBalance_) private {
-        if (i_ != 5) {
-            continue;
-        } else {
-            console.log('USDT balance pre: ', IERC20(baseToken_).balanceOf(msg.sender));
-            IERC20(baseToken_).transfer(msg.sender, inBalance_); 
-            console.log('USDT balance post: ', IERC20(baseToken_).balanceOf(msg.sender));
-            console.log('this one ****'); 
-        }
-    }
-
-
 
     function executeFinalTrade(TradeOps memory swapDetails_) public payable {
         uint minOut;
@@ -46,8 +34,8 @@ contract ExecutorF {
             IERC20(s.USDT).approve(swapDetails_.pool, inBalance);
         }
 
+        //Retries swap 5 times while increasing slippage in case it fails
         for (uint i=1; i <= 5; i++) {
-            console.log(i, ' try ------');
             if (swapDetails_.pool == s.renPool || swapDetails_.pool == s.crv2Pool) {
                 console.log(2);
                 minOut = IMulCurv(swapDetails_.pool).get_dy(
@@ -55,107 +43,36 @@ contract ExecutorF {
                 );
                 slippage = calculateSlippage(minOut, s.slippageTradingCurve * i);
                 try IMulCurv(swapDetails_.pool).exchange(
-                    swapDetails_.tokenIn, swapDetails_.tokenOut, inBalance, inBalance * 2
+                    swapDetails_.tokenIn, swapDetails_.tokenOut, inBalance, slippage
                 ) {
-                    console.log(3);
                     break;
                 } catch {
-                    _emergencyCall(i, swapDetails_.baseToken, inBalance);
-
-                    // if (i != 5) {
-                    //     continue;
-                    // } else {
-                    //     console.log('USDT balance pre: ', IERC20(swapDetails_.baseToken).balanceOf(msg.sender));
-                    //     IERC20(swapDetails_.baseToken).transfer(msg.sender, inBalance); 
-                    //     console.log('USDT balance post: ', IERC20(swapDetails_.baseToken).balanceOf(msg.sender));
-                    //     console.log('this one ****'); 
-                    // }
+                    if (i != 5) {
+                        continue;
+                    } else {
+                        IERC20(swapDetails_.baseToken).transfer(msg.sender, inBalance); 
+                    }
                 }
             } else {
-                console.log(1);
                 minOut = IMulCurv(swapDetails_.pool).get_dy_underlying(
                     swapDetails_.tokenIn, swapDetails_.tokenOut, inBalance
                 );
                 slippage = calculateSlippage(minOut, s.slippageTradingCurve * i);
                 try IMulCurv(swapDetails_.pool).exchange_underlying(
-                    swapDetails_.tokenIn, swapDetails_.tokenOut, inBalance, type(uint).max
+                    swapDetails_.tokenIn, swapDetails_.tokenOut, inBalance, slippage
                 ) {
-                    console.log(4);
                     break;
                 } catch {
-                    console.log('here');
                     if (i != 5) {
                         continue;
                     } else {
-                        console.log('USDT balance pre: ', IERC20(swapDetails_.baseToken).balanceOf(msg.sender));
                         IERC20(swapDetails_.baseToken).transfer(msg.sender, inBalance); 
-                        console.log('USDT balance post: ', IERC20(swapDetails_.baseToken).balanceOf(msg.sender));
-                        console.log('this one ^^^^^^^'); 
                     }
                 }
             }
         }
     }
 
-
-   function retrySwap(
-        uint action_,
-        uint amountIn_, 
-        uint baseTokenOut_, 
-        address tokenOut_
-    ) public payable { //<----- must be payable
-        // function _retry(uint j_) private {
-        //     if (j_ == 0) {
-        //         uint minOut = ITri(s.tricrypto).get_dy(2, baseTokenOut_, amountIn_);
-        //         ITri(s.tricrypto).exchange(2, baseTokenOut_, amountIn_, amountIn_ * 2, false);
-        //     } else if (j_ == 1) {
-        //             minOut = IMulCurv(swapDetails_.pool).get_dy(
-        //             swapDetails_.tokenIn, swapDetails_.tokenOut, inBalance
-        //         );
-        //         slippage = calculateSlippage(minOut, s.slippageTradingCurve);
-        //         IMulCurv(swapDetails_.pool).exchange(
-        //             swapDetails_.tokenIn, swapDetails_.tokenOut, inBalance, slippage
-        //         );
-        //     } else if (j_ == 2) {
-        //         minOut = IMulCurv(swapDetails_.pool).get_dy_underlying(
-        //             swapDetails_.tokenIn, swapDetails_.tokenOut, inBalance
-        //         );
-        //         slippage = calculateSlippage(minOut, s.slippageTradingCurve);
-        //         IMulCurv(swapDetails_.pool).exchange_underlying(
-        //             swapDetails_.tokenIn, swapDetails_.tokenOut, inBalance, slippage
-        //         ); //instead of putting the body of executeFinalTrade() here, try modifying the slippage on s.slipp..., and put executeFi() instead
-        //     }
-        // }
-
-
-        if (action_ == 0) {
-            for (uint i=0; i < 4; i++) {
-                // console.log(i, ' try ---------');
-                uint minOut = ITri(s.tricrypto).get_dy(2, baseTokenOut_, amountIn_);
-                uint modSlippage = s.slippageTradingCurve * (i + 1);
-                uint slippage = calculateSlippage(minOut, modSlippage);
-
-            
-                try ITri(s.tricrypto).exchange(2, baseTokenOut_, amountIn_, amountIn_ * 2, false) { //<------ put retry() here
-                    console.log('retry successful');
-                    break;
-                } catch (bytes memory err) { 
-
-                    if (i != 3) {
-                        continue;
-                    } else {
-                        console.log('WETH balance pre: ', IERC20(tokenOut_).balanceOf(msg.sender));
-                        IERC20(tokenOut_).transfer(msg.sender, amountIn_); 
-                        console.log('WETH balance post: ', IERC20(tokenOut_).balanceOf(msg.sender));
-                        console.log('this one ****'); 
-                    } 
-        
-                }
-            }
-        } else if (action_ == 1) {
-            console.log('hi world');
-        }
-    }
    
 
     //****** Modifies manager's STATE *****/
