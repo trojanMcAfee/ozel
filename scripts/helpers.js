@@ -105,16 +105,17 @@ async function withdrawSharePYY(callerAddr, receiverAddr, balancePYY, userToken,
         args: {callerAddr, receiverAddr, balancePYY, userToken},
         signerIndex
     });
-}
+} 
 
 
 //Sends ETH to contracts (simulates ETH bridging) **** MAIN FUNCTION ****
-async function sendETH(userAddr, userToken, IERC20, tokenStr, decimals) {
+async function sendETH(userAddr, userToken, IERC20, tokenStr, decimals, signerIndex) {
     const value = ethers.utils.parseEther('100');
     await callDiamondProxy({
         method: 'exchangeToUserToken',
         args: {userAddr, userToken},
-        value
+        value,
+        signerIndex
     });
 
     const distributionIndex = await callDiamondProxy({

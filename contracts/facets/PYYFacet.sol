@@ -44,7 +44,7 @@ contract PYYFacet {
         IWETH(s.WETH).deposit{value: msg.value}();
         uint wethIn = IWETH(s.WETH).balanceOf(address(this)) - failedFees;
 
-        //deposits in ERC4626
+        //Deposits in ERC4626
         (bool success, ) = s.py46.delegatecall(
             abi.encodeWithSelector(
                 pyERC4626(s.py46).deposit.selector, 
@@ -70,9 +70,17 @@ contract PYYFacet {
         if (toUser > 0) IERC20(userToken_).safeTransfer(user_, toUser);
         
         //Deposits fees in Curve and Yearn
-        failedFees > 0 ?
-            depositCurveYearn(fee + failedFees) :
+        // failedFees > 0 ?
+        //     depositCurveYearn(fee + failedFees) :
+        //     depositCurveYearn(fee);
+
+        if (failedFees > 0) {
+            console.log('fee + failedFees: ', fee + failedFees);
+            depositCurveYearn(fee + failedFees);
+        } else {
+            console.log('fee in exechangeUserToken: ', fee);
             depositCurveYearn(fee);
+        }
     }
 
 
@@ -140,15 +148,23 @@ contract PYYFacet {
     
 
     function depositCurveYearn(uint fee_) public payable { 
+        console.log('fee_: ', fee_);
         //Deposit WETH in Curve Tricrypto pool
         (uint tokenAmountIn, uint[3] memory amounts) = _calculateTokenAmountCurve(fee_);
         IWETH(s.WETH).approve(s.tricrypto, tokenAmountIn);
-        for (uint i=0; i <= 5; i++) {
+        for (uint i=1; i <= 5; i++) {
+            console.log('tokenAmountIn: ', tokenAmountIn);
             uint minAmount = ExecutorF(s.executor).calculateSlippage(tokenAmountIn, s.slippageOnCurve * 1);
 
-            minAmount = msg.sender == 0x70997970C51812dc3A010C7d01b50e0d17dc79C8 ? minAmount : type(uint).max;
+            // minAmount = msg.sender == 0x70997970C51812dc3A010C7d01b50e0d17dc79C8 ? minAmount : type(uint).max;
+            console.log('msg.sender: ', msg.sender);
+            console.log('minAmount: ', minAmount);
+            console.log('WETH balance before adding to Curve %%%%%%: ', IWETH(s.WETH).balanceOf(address(this)));
+            console.log('WETH allowance: ', IWETH(s.WETH).allowance(msg.sender, s.tricrypto));
+            console.log('WETH allowance (address(this)): ', IWETH(s.WETH).allowance(address(this)));
 
             try ITri(s.tricrypto).add_liquidity(amounts, minAmount) {
+                console.log('WETH balance after adding to Curve %%%%%%: ', IWETH(s.WETH).balanceOf(address(this)));
                 //Deposit crvTricrypto in Yearn
                 IERC20(s.crvTricrypto).approve(s.yTriPool, IERC20(s.crvTricrypto).balanceOf(address(this)));
                 IYtri(s.yTriPool).deposit(IERC20(s.crvTricrypto).balanceOf(address(this)));
@@ -163,7 +179,10 @@ contract PYYFacet {
         //Deposit crvTricrypto in Yearn
         // IERC20(s.crvTricrypto).approve(s.yTriPool, IERC20(s.crvTricrypto).balanceOf(address(this)));
         // IYtri(s.yTriPool).deposit(IERC20(s.crvTricrypto).balanceOf(address(this)));
+
+        //there's one fee batch missing: WETH balance after before to Curve %%%:  100000000000000000 / fee + failedFees:  200000000000000000
     }
+
 
 
     /*******

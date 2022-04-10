@@ -287,7 +287,7 @@ async function beginSimulatedDiamond() {
 
     //Second user
     console.log('2nd user first transfer');
-    await sendETH(caller2Addr, wbtcAddr, WBTC, 'WBTC', 10 ** 8);
+    await sendETH(caller2Addr, wbtcAddr, WBTC, 'WBTC', 10 ** 8, 1); 
     console.log('PYY balance on caller 2: ', formatEther(await balanceOfPYY(caller2Addr)));
     console.log('PYY balance on caller 1 after caller2 swap: ', formatEther(await balanceOfPYY(callerAddr)));
     console.log('yvCrvTricrypto token balance on diamondProxy: ', formatEther(await yvCrvTri.balanceOf(deployedDiamond.address)));
