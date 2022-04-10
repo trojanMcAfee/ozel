@@ -24,6 +24,18 @@ contract ExecutorF {
     }
 
 
+    function _emergencyCall(uint i_, address baseToken_, uint inBalance_) private {
+        if (i_ != 5) {
+            continue;
+        } else {
+            console.log('USDT balance pre: ', IERC20(baseToken_).balanceOf(msg.sender));
+            IERC20(baseToken_).transfer(msg.sender, inBalance_); 
+            console.log('USDT balance post: ', IERC20(baseToken_).balanceOf(msg.sender));
+            console.log('this one ****'); 
+        }
+    }
+
+
 
     function executeFinalTrade(TradeOps memory swapDetails_) public payable {
         uint minOut;
@@ -34,22 +46,54 @@ contract ExecutorF {
             IERC20(s.USDT).approve(swapDetails_.pool, inBalance);
         }
 
-        if (swapDetails_.pool == s.renPool || swapDetails_.pool == s.crv2Pool) {
-            minOut = IMulCurv(swapDetails_.pool).get_dy(
-                swapDetails_.tokenIn, swapDetails_.tokenOut, inBalance
-            );
-            slippage = calculateSlippage(minOut, s.slippageTradingCurve);
-            IMulCurv(swapDetails_.pool).exchange(
-                swapDetails_.tokenIn, swapDetails_.tokenOut, inBalance, slippage
-            );
-        } else {
-            minOut = IMulCurv(swapDetails_.pool).get_dy_underlying(
-                swapDetails_.tokenIn, swapDetails_.tokenOut, inBalance
-            );
-            slippage = calculateSlippage(minOut, s.slippageTradingCurve);
-            IMulCurv(swapDetails_.pool).exchange_underlying(
-                swapDetails_.tokenIn, swapDetails_.tokenOut, inBalance, slippage
-            );
+        for (uint i=1; i <= 5; i++) {
+            console.log(i, ' try ------');
+            if (swapDetails_.pool == s.renPool || swapDetails_.pool == s.crv2Pool) {
+                console.log(2);
+                minOut = IMulCurv(swapDetails_.pool).get_dy(
+                    swapDetails_.tokenIn, swapDetails_.tokenOut, inBalance
+                );
+                slippage = calculateSlippage(minOut, s.slippageTradingCurve * i);
+                try IMulCurv(swapDetails_.pool).exchange(
+                    swapDetails_.tokenIn, swapDetails_.tokenOut, inBalance, inBalance * 2
+                ) {
+                    console.log(3);
+                    break;
+                } catch {
+                    _emergencyCall(i, swapDetails_.baseToken, inBalance);
+
+                    // if (i != 5) {
+                    //     continue;
+                    // } else {
+                    //     console.log('USDT balance pre: ', IERC20(swapDetails_.baseToken).balanceOf(msg.sender));
+                    //     IERC20(swapDetails_.baseToken).transfer(msg.sender, inBalance); 
+                    //     console.log('USDT balance post: ', IERC20(swapDetails_.baseToken).balanceOf(msg.sender));
+                    //     console.log('this one ****'); 
+                    // }
+                }
+            } else {
+                console.log(1);
+                minOut = IMulCurv(swapDetails_.pool).get_dy_underlying(
+                    swapDetails_.tokenIn, swapDetails_.tokenOut, inBalance
+                );
+                slippage = calculateSlippage(minOut, s.slippageTradingCurve * i);
+                try IMulCurv(swapDetails_.pool).exchange_underlying(
+                    swapDetails_.tokenIn, swapDetails_.tokenOut, inBalance, type(uint).max
+                ) {
+                    console.log(4);
+                    break;
+                } catch {
+                    console.log('here');
+                    if (i != 5) {
+                        continue;
+                    } else {
+                        console.log('USDT balance pre: ', IERC20(swapDetails_.baseToken).balanceOf(msg.sender));
+                        IERC20(swapDetails_.baseToken).transfer(msg.sender, inBalance); 
+                        console.log('USDT balance post: ', IERC20(swapDetails_.baseToken).balanceOf(msg.sender));
+                        console.log('this one ^^^^^^^'); 
+                    }
+                }
+            }
         }
     }
 
@@ -60,15 +104,39 @@ contract ExecutorF {
         uint baseTokenOut_, 
         address tokenOut_
     ) public payable { //<----- must be payable
+        // function _retry(uint j_) private {
+        //     if (j_ == 0) {
+        //         uint minOut = ITri(s.tricrypto).get_dy(2, baseTokenOut_, amountIn_);
+        //         ITri(s.tricrypto).exchange(2, baseTokenOut_, amountIn_, amountIn_ * 2, false);
+        //     } else if (j_ == 1) {
+        //             minOut = IMulCurv(swapDetails_.pool).get_dy(
+        //             swapDetails_.tokenIn, swapDetails_.tokenOut, inBalance
+        //         );
+        //         slippage = calculateSlippage(minOut, s.slippageTradingCurve);
+        //         IMulCurv(swapDetails_.pool).exchange(
+        //             swapDetails_.tokenIn, swapDetails_.tokenOut, inBalance, slippage
+        //         );
+        //     } else if (j_ == 2) {
+        //         minOut = IMulCurv(swapDetails_.pool).get_dy_underlying(
+        //             swapDetails_.tokenIn, swapDetails_.tokenOut, inBalance
+        //         );
+        //         slippage = calculateSlippage(minOut, s.slippageTradingCurve);
+        //         IMulCurv(swapDetails_.pool).exchange_underlying(
+        //             swapDetails_.tokenIn, swapDetails_.tokenOut, inBalance, slippage
+        //         ); //instead of putting the body of executeFinalTrade() here, try modifying the slippage on s.slipp..., and put executeFi() instead
+        //     }
+        // }
+
+
         if (action_ == 0) {
             for (uint i=0; i < 4; i++) {
                 // console.log(i, ' try ---------');
-                uint modSlippage = s.slippageTradingCurve * (i + 1);
                 uint minOut = ITri(s.tricrypto).get_dy(2, baseTokenOut_, amountIn_);
+                uint modSlippage = s.slippageTradingCurve * (i + 1);
                 uint slippage = calculateSlippage(minOut, modSlippage);
-                // IWETH(s.WETH).approve(s.tricrypto, amountIn_);
+
             
-                try ITri(s.tricrypto).exchange(2, baseTokenOut_, amountIn_, amountIn_ * 2, false) {
+                try ITri(s.tricrypto).exchange(2, baseTokenOut_, amountIn_, amountIn_ * 2, false) { //<------ put retry() here
                     console.log('retry successful');
                     break;
                 } catch (bytes memory err) { 
