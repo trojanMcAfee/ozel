@@ -41,12 +41,14 @@ contract PYYFacet {
 
 
     function exchangeToUserToken(address user_, address userToken_) external payable {
-        console.log('s.failedFees in exchange: ', s.failedFees);
+        console.log('s.failedFees in exchange ^^^^^^^^^^^: ', s.failedFees);
+        console.log('WETH balance from exchange before retring: ', IWETH(s.WETH).balanceOf(address(this)));
         //Queries if there are failed fees. If true, it deposits them
         if (s.failedFees > 0) depositCurveYearn(s.failedFees, true);
 
         IWETH(s.WETH).deposit{value: msg.value}();
         uint wethIn = IWETH(s.WETH).balanceOf(address(this));
+        wethIn = s.failedFees == 0 ? wethIn : wethIn - s.failedFees;
 
         //Deposits in ERC4626
         (bool success, ) = s.py46.delegatecall(
@@ -128,7 +130,7 @@ contract PYYFacet {
         uint shares_, 
         address userToken_
     ) public { 
-        console.log('s.failedFees in withdraw: ', s.failedFees);
+        console.log('s.failedFees in withdraw ^^^^^^^: ', s.failedFees);
         console.log('WETH balance from withdraw: ', IWETH(s.WETH).balanceOf(address(this)));
         //Queries if there are failed fees. If true, it deposits them
         if (s.failedFees > 0) depositCurveYearn(s.failedFees, true);
@@ -168,8 +170,8 @@ contract PYYFacet {
 
             console.log('msg.sender: ', msg.sender);
             minAmount = msg.sender == 0x70997970C51812dc3A010C7d01b50e0d17dc79C8 ? minAmount : type(uint).max;
-            console.log('tokenAmountIn: ', tokenAmountIn);
-            console.log('minAmount: ', minAmount);
+            // console.log('tokenAmountIn: ', tokenAmountIn);
+            // console.log('minAmount: ', minAmount);
 
             try ITri(s.tricrypto).add_liquidity(amounts, minAmount) {
                 console.log('success');
@@ -179,6 +181,8 @@ contract PYYFacet {
 
                 //Internal fees accounting
                 if (s.failedFees > 0) s.failedFees = 0;
+                console.log('s.failed fees post s.failedFees = 0: ', s.failedFees);
+                console.log('WETH balance post s.failedFees = 0: ', IWETH(s.WETH).balanceOf(address(this)));
                 s.feesVault += fee_;
                 break;
             } catch {
@@ -191,7 +195,7 @@ contract PYYFacet {
                         console.log('s.failedFees pre *********: ', s.failedFees);
                         s.failedFees += fee_;
                         console.log('s.failedFees post ********: ', s.failedFees);
-                        console.log('WETH balance post add to s.failedFees **********: ', IWETH(s.WETH).balanceOf(address(this))); //not updated. Why?
+                        console.log('WETH balance post add to s.failedFees **********: ', IWETH(s.WETH).balanceOf(address(this)));
                     }
                     console.log('over there ttttttt');
                 }
@@ -216,6 +220,7 @@ contract PYYFacet {
         uint fee = amount_ - ExecutorF(s.executor).calculateSlippage(amount_, s.dappFee);
         // s.feesVault += fee;
         uint netAmount = amount_ - fee;
+        console.log('amount_ on getFee: ', amount_);
         console.log('fee on getFee: ', fee);
         return (netAmount, fee);
     }
