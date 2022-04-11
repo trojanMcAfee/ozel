@@ -2,6 +2,7 @@
 pragma solidity ^0.8.0;
 
 
+import '@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol';
 import '@openzeppelin/contracts/token/ERC20/IERC20.sol';
 import '../interfaces/ICrvLpToken.sol';
 import '../interfaces/IWETH.sol';
@@ -15,8 +16,6 @@ import 'hardhat/console.sol';
 import '../AppStorage.sol';
 import './ExecutorF.sol';
 
-import '../libraries/SafeTransferLib.sol';
-
 
 
 
@@ -24,7 +23,7 @@ contract PYYFacet {
 
     AppStorage s;
 
-    using SafeTransferLib for IERC20;
+    using SafeERC20 for IERC20;
 
 
 
@@ -130,8 +129,8 @@ contract PYYFacet {
         _tradeWithExecutor(userToken_);
 
         uint userTokens = IERC20(userToken_).balanceOf(address(this));
-        user_ == receiver_ ?
-           IERC20(userToken_).safeTransfer(user_, userTokens) :
+        // user_ == receiver_ ?
+        //    IERC20(userToken_).safeTransfer(user_, userTokens) :
            IERC20(userToken_).safeTransfer(receiver_, userTokens); 
     } 
     
@@ -160,7 +159,6 @@ contract PYYFacet {
                 }
             }
         }
-
     }
 
 

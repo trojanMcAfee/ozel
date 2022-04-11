@@ -3,7 +3,6 @@ pragma solidity >=0.8.0;
 
 import '../pyERC20/pyERC20.sol';
 import '@openzeppelin/contracts/token/ERC20/IERC20.sol';
-import {SafeTransferLib} from "../../libraries/SafeTransferLib.sol";
 import '../ExecutorF.sol';
 import '../../libraries/FixedPointMathLib.sol';
 
@@ -13,7 +12,6 @@ contract pyERC4626 {
 
     AppStorage s;
 
-    using SafeTransferLib for pyERC20;
     using FixedPointMathLib for uint256;
 
     /*///////////////////////////////////////////////////////////////
