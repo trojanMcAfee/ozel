@@ -34,15 +34,9 @@ contract PYYFacet {
 
      /*******
         State changing functions
-     ******/
-
-    // function retryDepositFee()
-    
-
+     ******/    
 
     function exchangeToUserToken(address user_, address userToken_) external payable {
-        console.log('s.failedFees in exchange ^^^^^^^^^^^: ', s.failedFees);
-        console.log('WETH balance from exchange before retring: ', IWETH(s.WETH).balanceOf(address(this)));
         //Queries if there are failed fees. If true, it deposits them
         if (s.failedFees > 0) depositCurveYearn(s.failedFees, true);
 
@@ -64,11 +58,6 @@ contract PYYFacet {
 
         uint baseTokenOut = 
             userToken_ == s.WBTC || userToken_ == s.renBTC ? 1 : 0;
-        // if (userToken_ == s.WBTC || userToken_ == s.renBTC) {
-        //     baseTokenOut = 1;
-        // } else {
-        //     baseTokenOut = 0;
-        // }
 
         //Swaps WETH to userToken (Base: USDT-WBTC / Route: MIM-USDC-renBTC-WBTC)  
         swapsForUserToken(netAmountIn, baseTokenOut, userToken_);
@@ -76,19 +65,8 @@ contract PYYFacet {
         //Sends userToken to user
         uint toUser = IERC20(userToken_).balanceOf(address(this));
         if (toUser > 0) IERC20(userToken_).safeTransfer(user_, toUser);
-        
-        //Deposits fees in Curve and Yearn
-        // failedFees > 0 ?
-        //     depositCurveYearn(fee + failedFees) :
-        depositCurveYearn(fee, false);
 
-        // if (failedFees > 0) {
-        //     console.log('fee + failedFees: ', fee + failedFees);
-        //     depositCurveYearn(fee + failedFees);
-        // } else {
-        //     console.log('fee in exechangeUserToken: ', fee);
-        //     depositCurveYearn(fee);
-        // }
+        depositCurveYearn(fee, false);
     }
 
 
@@ -130,8 +108,6 @@ contract PYYFacet {
         uint shares_, 
         address userToken_
     ) public { 
-        console.log('s.failedFees in withdraw ^^^^^^^: ', s.failedFees);
-        console.log('WETH balance from withdraw: ', IWETH(s.WETH).balanceOf(address(this)));
         //Queries if there are failed fees. If true, it deposits them
         if (s.failedFees > 0) depositCurveYearn(s.failedFees, true);
 
@@ -161,50 +137,29 @@ contract PYYFacet {
     
 
     function depositCurveYearn(uint fee_, bool isRetry_) public payable { 
-        console.log('fee_ in deposit: ', fee_);
         //Deposit WETH in Curve Tricrypto pool
         (uint tokenAmountIn, uint[3] memory amounts) = _calculateTokenAmountCurve(fee_);
         IWETH(s.WETH).approve(s.tricrypto, tokenAmountIn);
         for (uint i=1; i <= 5; i++) {
             uint minAmount = ExecutorF(s.executor).calculateSlippage(tokenAmountIn, s.slippageOnCurve * i);
 
-            console.log('msg.sender: ', msg.sender);
-            minAmount = msg.sender == 0x70997970C51812dc3A010C7d01b50e0d17dc79C8 ? minAmount : type(uint).max;
-            // console.log('tokenAmountIn: ', tokenAmountIn);
-            // console.log('minAmount: ', minAmount);
-
             try ITri(s.tricrypto).add_liquidity(amounts, minAmount) {
-                console.log('success');
                 //Deposit crvTricrypto in Yearn
                 IERC20(s.crvTricrypto).approve(s.yTriPool, IERC20(s.crvTricrypto).balanceOf(address(this)));
                 IYtri(s.yTriPool).deposit(IERC20(s.crvTricrypto).balanceOf(address(this)));
 
                 //Internal fees accounting
                 if (s.failedFees > 0) s.failedFees = 0;
-                console.log('s.failed fees post s.failedFees = 0: ', s.failedFees);
-                console.log('WETH balance post s.failedFees = 0: ', IWETH(s.WETH).balanceOf(address(this)));
                 s.feesVault += fee_;
                 break;
             } catch {
-                console.log('went here');
                 if (i != 5) {
                     continue;
                 } else {
-                    // s.feesVault -= fee_;
-                    if (!isRetry_) {
-                        console.log('s.failedFees pre *********: ', s.failedFees);
-                        s.failedFees += fee_;
-                        console.log('s.failedFees post ********: ', s.failedFees);
-                        console.log('WETH balance post add to s.failedFees **********: ', IWETH(s.WETH).balanceOf(address(this)));
-                    }
-                    console.log('over there ttttttt');
+                    if (!isRetry_) s.failedFees += fee_; 
                 }
             }
         }
-
-        //Deposit crvTricrypto in Yearn
-        // IERC20(s.crvTricrypto).approve(s.yTriPool, IERC20(s.crvTricrypto).balanceOf(address(this)));
-        // IYtri(s.yTriPool).deposit(IERC20(s.crvTricrypto).balanceOf(address(this)));
 
     }
 
@@ -218,10 +173,7 @@ contract PYYFacet {
 
     function _getFee(uint amount_) public view returns(uint, uint) {
         uint fee = amount_ - ExecutorF(s.executor).calculateSlippage(amount_, s.dappFee);
-        // s.feesVault += fee;
         uint netAmount = amount_ - fee;
-        console.log('amount_ on getFee: ', amount_);
-        console.log('fee on getFee: ', fee);
         return (netAmount, fee);
     }
 
