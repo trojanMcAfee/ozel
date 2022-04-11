@@ -92,6 +92,7 @@ library SafeTransferLib {
                 call(gas(), token, 0, freeMemoryPointer, 68, 0, 32)
             )
         }
+        console.log('.');
         require(success, "TRANSFER_FAILED");
     }
 

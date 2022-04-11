@@ -49,6 +49,8 @@ struct AppStorage {
     TradeOps fraxSwap;
 
     TradeOps[] swaps;
+
+    uint failedFees;
 }
 
 struct PYYERC20 {

@@ -333,7 +333,7 @@ async function beginSimulatedDiamond() {
     console.log('PYY balance on caller 2: ', formatEther(await balanceOfPYY(caller2Addr)));
     console.log('.');
 
-    console.log('Withdrawing 1/3'); 
+    console.log('Withdrawing 1/3 (caller 2)'); 
     await withdrawSharePYY(caller2Addr, caller2Addr, parseEther(toTransfer.toString()), usdtAddrArb, 1);
     usdtBalance = await USDT.balanceOf(caller2Addr);
     console.log('USDT balance from fees of caller2: ', usdtBalance.toString() / 10 ** 6);
