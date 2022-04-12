@@ -43,7 +43,7 @@ contract ExecutorF {
                     swapDetails_.tokenIn, swapDetails_.tokenOut, inBalance
                 );
 
-                slippage = calculateSlippage(minOut, s.slippageTradingCurve * i);
+                slippage = calculateSlippage(minOut, s.defaultSlipCurveTrad * i);
                 // slippage *= i; 
 
                 
@@ -63,7 +63,7 @@ contract ExecutorF {
                 minOut = IMulCurv(swapDetails_.pool).get_dy_underlying(
                     swapDetails_.tokenIn, swapDetails_.tokenOut, inBalance
                 );
-                slippage = calculateSlippage(minOut, s.slippageTradingCurve * i);
+                slippage = calculateSlippage(minOut, s.defaultSlipCurveTrad * i);
                 try IMulCurv(swapDetails_.pool).exchange_underlying(
                     swapDetails_.tokenIn, swapDetails_.tokenOut, inBalance, slippage
                 ) {

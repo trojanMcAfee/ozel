@@ -124,7 +124,7 @@ async function sendETH(userConfig, IERC20, tokenStr, decimals, signerIndex) {
         type: 'uint256'
     });
     console.log('index: ', distributionIndex.toString() / 10 ** 18);
-    let tokenBalance = await IERC20.balanceOf(userAddr);
+    let tokenBalance = await IERC20.balanceOf(userConfig[0]);
     console.log(tokenStr + ' balance of callerAddr: ', tokenBalance.toString() / decimals);
     console.log('.'); 
 }

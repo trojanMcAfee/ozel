@@ -280,10 +280,13 @@ async function beginSimulatedDiamond() {
      * sendToArb() in L1 in PayMeFacetHop would send the ETH to managerFacet in L2
      */
 
-    await sendETH([callerAddr, fraxAddr, 1], FRAX, 'FRAX', 10 ** 18); //callerAddr, fraxAddr, FRAX, 'FRAX', 10 ** 18
+    await sendETH([callerAddr, fraxAddr, 100], FRAX, 'FRAX', 10 ** 18); //callerAddr, fraxAddr, FRAX, 'FRAX', 10 ** 18
     console.log('PYY balance on caller 1: ', formatEther(await balanceOfPYY(callerAddr)));
     console.log('yvCrvTricrypto token balance on diamondProxy: ', formatEther(await yvCrvTri.balanceOf(deployedDiamond.address)));
     console.log('---------------------------------------'); 
+
+    console.log('return here');
+    return;
 
     //Second user
     console.log('2nd user first transfer');

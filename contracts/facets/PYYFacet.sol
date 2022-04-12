@@ -44,8 +44,7 @@ contract PYYFacet {
     function exchangeToUserToken(userConfig memory userDetails_) external payable { //address user_, address userToken_
         address user = userDetails_.user;
         address userToken = userDetails_.userToken;
-        uint slippagePre
-        revert('here');
+        uint slipPref = userDetails_.slipPref;
 
         //Queries if there are failed fees. If true, it deposits them
         if (s.failedFees > 0) depositCurveYearn(s.failedFees, true);
@@ -70,7 +69,9 @@ contract PYYFacet {
             userToken == s.WBTC || userToken == s.renBTC ? 1 : 0;
 
         //Swaps WETH to userToken (Base: USDT-WBTC / Route: MIM-USDC-renBTC-WBTC)  
-        swapsForUserToken(netAmountIn, baseTokenOut, userToken);
+        swapsForUserToken(
+            netAmountIn, baseTokenOut, userToken, slipPref > 0 ? slipPref : 0
+        );
       
         //Sends userToken to user
         uint toUser = IERC20(userToken).balanceOf(address(this));
@@ -85,17 +86,31 @@ contract PYYFacet {
     function swapsForUserToken(
         uint amountIn_, 
         uint baseTokenOut_, 
-        address userToken_
+        address userToken_,
+        uint userSlip_
     ) public payable { 
-        for (uint i=1; i <= 5; i++) {
-            uint minOut = ITri(s.tricrypto).get_dy(2, baseTokenOut_, amountIn_);
-            uint slippage = ExecutorF(s.executor).calculateSlippage(minOut, s.slippageTradingCurve * i);
-            IWETH(s.WETH).approve(s.tricrypto, amountIn_);
+        uint userSlip = userSlip_ == 0 ? s.defaultSlipCurveTrad : userSlip_;
+        IWETH(s.WETH).approve(s.tricrypto, amountIn_);
+
+        /** Exchanges the amount between the user's slippage. 
+        If it fails, it doubles the slippage, divides the amount between two and tries again.
+        If none works, sends the WETH back to the user.
+        *****/ 
+        for (uint i=1; i <= 2; i++) {
+            uint minOut = ITri(s.tricrypto).get_dy(2, baseTokenOut_, amountIn_ / i);
+            uint slippage = ExecutorF(s.executor).calculateSlippage(minOut, userSlip * i);
             
-            try ITri(s.tricrypto).exchange(2, baseTokenOut_, amountIn_, slippage, false) {
+            try ITri(s.tricrypto).exchange(2, baseTokenOut_, amountIn_ / i, slippage, false) {
+                if (i == 2) {
+                    try ITri(s.tricrypto).exchange(2, baseTokenOut_, amountIn_ / i, slippage, false) {
+                        break;
+                    } catch {
+                        IWETH(s.WETH).transfer(msg.sender, amountIn_ / 2); 
+                    }
+                }
                 break;
             } catch {
-                if (i != 5) {
+                if (i == 1) {
                     continue;
                 } else {
                     IWETH(s.WETH).transfer(msg.sender, amountIn_); 

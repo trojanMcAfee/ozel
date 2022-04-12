@@ -30,7 +30,7 @@ struct AppStorage {
     //System config
     uint dappFee;
     uint slippageOnCurve;
-    uint slippageTradingCurve;
+    uint defaultSlipCurveTrad;
     uint totalVolume;
     uint distributionIndex;
     uint feesVault;
