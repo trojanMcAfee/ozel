@@ -35,7 +35,18 @@ contract PYYFacet {
         State changing functions
      ******/    
 
-    function exchangeToUserToken(address user_, address userToken_) external payable {
+    struct userConfig {
+        address user;
+        address userToken;
+        uint slipPref; 
+    }
+
+    function exchangeToUserToken(userConfig memory userDetails_) external payable { //address user_, address userToken_
+        address user = userDetails_.user;
+        address userToken = userDetails_.userToken;
+        uint slippagePre
+        revert('here');
+
         //Queries if there are failed fees. If true, it deposits them
         if (s.failedFees > 0) depositCurveYearn(s.failedFees, true);
 
@@ -47,7 +58,7 @@ contract PYYFacet {
         (bool success, ) = s.py46.delegatecall(
             abi.encodeWithSelector(
                 pyERC4626(s.py46).deposit.selector, 
-                wethIn, user_
+                wethIn, user
             )
         );
         require(success, 'PYYFacet: Failed to deposit');
@@ -56,14 +67,14 @@ contract PYYFacet {
         (uint netAmountIn, uint fee) = _getFee(wethIn);
 
         uint baseTokenOut = 
-            userToken_ == s.WBTC || userToken_ == s.renBTC ? 1 : 0;
+            userToken == s.WBTC || userToken == s.renBTC ? 1 : 0;
 
         //Swaps WETH to userToken (Base: USDT-WBTC / Route: MIM-USDC-renBTC-WBTC)  
-        swapsForUserToken(netAmountIn, baseTokenOut, userToken_);
+        swapsForUserToken(netAmountIn, baseTokenOut, userToken);
       
         //Sends userToken to user
-        uint toUser = IERC20(userToken_).balanceOf(address(this));
-        if (toUser > 0) IERC20(userToken_).safeTransfer(user_, toUser);
+        uint toUser = IERC20(userToken).balanceOf(address(this));
+        if (toUser > 0) IERC20(userToken).safeTransfer(user, toUser);
 
         depositCurveYearn(fee, false);
     }

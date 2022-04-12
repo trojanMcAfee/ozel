@@ -51,7 +51,7 @@ contract PayMeFacetHop is OpsReady {
 
     receive() external payable {}
 
-
+    
 
     function sendToArb(address _userToken, uint _callvalue) external onlyOps { 
         (uint fee, ) = opsGel.getFeeDetails();

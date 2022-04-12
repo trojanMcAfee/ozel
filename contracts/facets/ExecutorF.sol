@@ -34,14 +34,20 @@ contract ExecutorF {
             IERC20(s.USDT).approve(swapDetails_.pool, inBalance);
         }
 
-        //Retries swap 5 times while increasing slippage in case it fails -----> modify this to be 8% slippage max
+        //Retries swap 5 times while increasing slippage in case it fails -----> modify this to be 4% slippage max
         for (uint i=1; i <= 5; i++) {
             if (swapDetails_.pool == s.renPool || swapDetails_.pool == s.crv2Pool) {
-                console.log(2);
+                // inBalance /= i;
+
                 minOut = IMulCurv(swapDetails_.pool).get_dy(
                     swapDetails_.tokenIn, swapDetails_.tokenOut, inBalance
                 );
+
                 slippage = calculateSlippage(minOut, s.slippageTradingCurve * i);
+                // slippage *= i; 
+
+                
+
                 try IMulCurv(swapDetails_.pool).exchange(
                     swapDetails_.tokenIn, swapDetails_.tokenOut, inBalance, slippage
                 ) {
