@@ -34,7 +34,7 @@ contract ExecutorF {
             IERC20(s.USDT).approve(swapDetails_.pool, inBalance);
         }
 
-        //Retries swap 5 times while increasing slippage in case it fails
+        //Retries swap 5 times while increasing slippage in case it fails -----> modify this to be 8% slippage max
         for (uint i=1; i <= 5; i++) {
             if (swapDetails_.pool == s.renPool || swapDetails_.pool == s.crv2Pool) {
                 console.log(2);
