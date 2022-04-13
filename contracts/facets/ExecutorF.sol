@@ -24,63 +24,10 @@ contract ExecutorF {
     }
 
 
-    function _callCurve(
-        string memory signature,
-        int128 tokenIn_,
-        int128 tokenOut_,
-        uint inBalance_,
-        uint slippage_
-    ) public returns(uint) {
-        (bool success, bytes memory data) = pool_.delegatecall(
-            abi.encodeWithSignature(
-                signature, 
-                tokenIn_, tokenOut_, inBalance_, slippage_
-            );
-        );
-        return abi.decode(data, (uint)); 
-    }
+    
 
 
-    function _cautiousExec(
-        uint dir_, 
-        int128 tokenIn_, 
-        int128 tokenOut_, 
-        uint inBalance_,
-        uint slippage_
-        address pool_,
-        uint userSlippage_,
-        uint baseToken_,
-        uint i_
-    ) public {
-        string memory signature = dir == 0 ?
-            'get_dy(int128,int128,uint256)' :
-            'get_dy_underlying(int128,int126,uint256)';
-
-        uint minOut = _callCurve(signature, tokenIn_, tokenOut_, inBalance_);
-
-        uint slippage = calculateSlippage(minOut, userSlippage_);
-        signature = dir == 0 ?
-            'exchange(int128,int128,uint256,uint256)' :
-            'exchange_underlying(int128,int128,uint256,uint256)'
-
-        try _callCurve(signature, tokenIn_, tokenOut_, inBalance_, slippage) {
-            if (i_ == 2) {
-                try _callCurve(signature, tokenIn_, tokenOut_, inBalance_, slippage) {
-                    break;
-                } catch {
-                    IERC20(baseToken_).transfer(msg.sender, inBalance_ / 2);
-                }
-            }
-            break;
-        } catch {
-            if (i_ == 1) {
-                continue;
-            } else {
-                IERC20(baseToken_).transfer(msg.sender, inBalance_); 
-            }
-        }
-
-    }
+   
 
 
 
