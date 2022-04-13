@@ -51,17 +51,25 @@ async function callDiamondProxy(params) {
 
     switch(!params.dir ? 0 : params.dir) {
         case 0: 
+            console.log('params.args: ', params.args);
             encodedData = iface.encodeFunctionData(params.method, [params.args]);
+            console.log(1);
             const unsignedTx = {
                 to: deployedDiamond.address,
                 data: encodedData,
                 value: params.value
             };
-            if (params.args.length === 1) {
+            console.log(2);
+            console.log('type: ', typeof params.args);
+            if (typeof params.args === 'string') { //params.args.length === 1
+                console.log(3);
                 tx = await signer.call(unsignedTx);
+                console.log(4);
                 [ decodedData ] = abiCoder.decode([params.type], tx);
+                console.log(5);
                 return decodedData;
             } else {
+                console.log(6);
                 if (iface.fragments[0].name === 'exchangeToUserToken') {
                     const estGas = await signer.estimateGas(unsignedTx);
                     unsignedTx.gasLimit = Math.floor(estGas.toString() * 1.10);
@@ -85,7 +93,7 @@ async function callDiamondProxy(params) {
 async function balanceOfPYY(user) {
     return await callDiamondProxy({
         method: 'balanceOf',
-        args: {user},
+        args: user,
         dir: 0,
         type: 'uint256'
     }); 
