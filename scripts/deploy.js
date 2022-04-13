@@ -18,7 +18,6 @@ const {
     fraxPoolAddr,
     ETH,
     dappFee,
-    slippageOnCurve,
     tokenName,
     tokenSymbol,
     defaultSlippage
@@ -115,7 +114,6 @@ async function deploy() {
 
     const appVars = [
         dappFee,
-        slippageOnCurve,
         defaultSlippage
     ];
 

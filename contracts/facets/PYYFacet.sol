@@ -25,8 +25,6 @@ contract PYYFacet {
 
     using SafeERC20 for IERC20;
 
-
-
     /**
     WBTC: 1 / USDT: 0 / WETH: 2
      */
@@ -35,13 +33,7 @@ contract PYYFacet {
         State changing functions
      ******/    
 
-    struct userConfig {
-        address user;
-        address userToken;
-        uint userSlippage; 
-    }
-
-    function exchangeToUserToken(userConfig memory userDetails_) external payable { //address user_, address userToken_
+    function exchangeToUserToken(userConfig memory userDetails_) external payable {
         address user = userDetails_.user;
         address userToken = userDetails_.userToken;
         uint userSlippage = 
@@ -126,11 +118,6 @@ contract PYYFacet {
     }
 
 
-    // address user_, 
-    // address receiver_,
-    // uint shares_, 
-    // address userToken_
-
 
     function withdrawUserShare(
         userConfig memory userDetails_,
@@ -157,7 +144,8 @@ contract PYYFacet {
 
         //tricrypto= USDT: 0 / crv2- USDT: 1 , USDC: 0 / mim- MIM: 0 , CRV2lp: 1
         uint tokenAmountIn = ITri(s.tricrypto).calc_withdraw_one_coin(assets, 0); 
-        uint minOut = ExecutorF(s.executor).calculateSlippage(tokenAmountIn, userSlippage); //<---------- here also
+        //If tx reverts due to slippage, user can re-submit a new one
+        uint minOut = ExecutorF(s.executor).calculateSlippage(tokenAmountIn, userSlippage); 
         ITri(s.tricrypto).remove_liquidity_one_coin(assets, 0, minOut);
 
         //Delegates trade execution
@@ -168,12 +156,13 @@ contract PYYFacet {
     } 
     
 
-    function depositCurveYearn(uint fee_, bool isRetry_) public payable { 
+    function depositCurveYearn(uint fee_, bool isRetry_) public payable {
         //Deposit WETH in Curve Tricrypto pool
         (uint tokenAmountIn, uint[3] memory amounts) = _calculateTokenAmountCurve(fee_);
         IWETH(s.WETH).approve(s.tricrypto, tokenAmountIn);
-        for (uint i=1; i <= 5; i++) {
-            uint minAmount = ExecutorF(s.executor).calculateSlippage(tokenAmountIn, s.slippageOnCurve * i);
+
+        for (uint i=1; i <= 2; i++) {
+            uint minAmount = ExecutorF(s.executor).calculateSlippage(tokenAmountIn, s.defaultSlippage * i);
 
             try ITri(s.tricrypto).add_liquidity(amounts, minAmount) {
                 //Deposit crvTricrypto in Yearn
@@ -185,7 +174,7 @@ contract PYYFacet {
                 s.feesVault += fee_;
                 break;
             } catch {
-                if (i != 5) {
+                if (i == 1) {
                     continue;
                 } else {
                     if (!isRetry_) s.failedFees += fee_; 

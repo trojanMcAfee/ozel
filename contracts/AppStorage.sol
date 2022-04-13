@@ -61,12 +61,17 @@ struct PYYERC20 {
     string  symbol_;
 }
 
-
 struct TradeOps {
     int128 tokenIn;
     int128 tokenOut;
     address baseToken;
     address userToken;  
     address pool;
+}
+
+struct userConfig {
+    address user;
+    address userToken;
+    uint userSlippage; 
 }
 

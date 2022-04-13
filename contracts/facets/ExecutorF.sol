@@ -24,13 +24,6 @@ contract ExecutorF {
     }
 
 
-    
-
-
-   
-
-
-
     function executeFinalTrade( 
         TradeOps memory swapDetails_, 
         uint userSlippage_
@@ -48,7 +41,11 @@ contract ExecutorF {
             IERC20(s.USDT).approve(pool, inBalance);
         }
 
-        //Retries swap 5 times while increasing slippage in case it fails -----> modify this to be 4% slippage max
+        /**** 
+            Exchanges the amount between the user's slippage (final swap)
+            If it fails, it doubles the slippage, divides the amount between two and tries again.
+            If none works, sends the baseToken instead to the user.
+        ****/ 
         for (uint i=1; i <= 2; i++) {
             if (pool == s.renPool || pool == s.crv2Pool) {
 

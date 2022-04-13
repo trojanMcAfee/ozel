@@ -22,7 +22,6 @@ let hopBridge;
 let inbox; //arbitrum rinkeby
 const ETH = '0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE';
 const dappFee = 10; //prev: 10 -> 0.1% / 100-1 / 1000-10 / 10000 - 100%
-const slippageOnCurve = 100; //bp: 100 -> 1%
 
 // const foo = toBn('0.01');
 const defaultSlippage = 100; //5 -> 0.05%; / 100 -> 1%
@@ -111,7 +110,6 @@ module.exports = {
     fraxAddr,
     ETH,
     dappFee,
-    slippageOnCurve,
     tokenName,
     tokenSymbol,
     defaultSlippage,
