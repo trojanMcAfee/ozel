@@ -38,13 +38,14 @@ contract PYYFacet {
     struct userConfig {
         address user;
         address userToken;
-        uint slipPref; 
+        uint userSlippage; 
     }
 
     function exchangeToUserToken(userConfig memory userDetails_) external payable { //address user_, address userToken_
         address user = userDetails_.user;
         address userToken = userDetails_.userToken;
-        uint slipPref = userDetails_.slipPref;
+        uint userSlippage = 
+            userDetails_.userSlippage > 0 ? userDetails_.userSlippage : s.defaultSlippage;
 
         //Queries if there are failed fees. If true, it deposits them
         if (s.failedFees > 0) depositCurveYearn(s.failedFees, true);
@@ -68,10 +69,8 @@ contract PYYFacet {
         uint baseTokenOut = 
             userToken == s.WBTC || userToken == s.renBTC ? 1 : 0;
 
-        //Swaps WETH to userToken (Base: USDT-WBTC / Route: MIM-USDC-renBTC-WBTC)  
-        swapsForUserToken(
-            netAmountIn, baseTokenOut, userToken, slipPref > 0 ? slipPref : 0
-        );
+        //Swaps WETH to userToken (Base: USDT-WBTC / Route: MIM-USDC-renBTC-WBTC) 
+        swapsForUserToken(netAmountIn, baseTokenOut, userToken, userSlippage);
       
         //Sends userToken to user
         uint toUser = IERC20(userToken).balanceOf(address(this));
@@ -89,7 +88,6 @@ contract PYYFacet {
         address userToken_,
         uint userSlippage_
     ) public payable { 
-        uint userSlippage = userSlippage_ == 0 ? s.defaultSlipCurveTrad : userSlippage_;
         IWETH(s.WETH).approve(s.tricrypto, amountIn_);
 
         /**** 
@@ -99,7 +97,7 @@ contract PYYFacet {
         ****/ 
         for (uint i=1; i <= 2; i++) {
             uint minOut = ITri(s.tricrypto).get_dy(2, baseTokenOut_, amountIn_ / i);
-            uint slippage = ExecutorF(s.executor).calculateSlippage(minOut, userSlippage * i);
+            uint slippage = ExecutorF(s.executor).calculateSlippage(minOut, userSlippage_ * i);
             
             try ITri(s.tricrypto).exchange(2, baseTokenOut_, amountIn_ / i, slippage, false) {
                 if (i == 2) {
@@ -128,19 +126,29 @@ contract PYYFacet {
     }
 
 
+    // address user_, 
+    // address receiver_,
+    // uint shares_, 
+    // address userToken_
+
+
     function withdrawUserShare(
-        address user_, 
+        userConfig memory userDetails_,
         address receiver_,
-        uint shares_, 
-        address userToken_
+        uint shares_
     ) public { 
+        address user = userDetails_.user;
+        address userToken = userDetails_.userToken;
+        uint userSlippage = 
+            userDetails_.userSlippage > 0 ? userDetails_.userSlippage : s.defaultSlippage;
+
         //Queries if there are failed fees. If true, it deposits them
         if (s.failedFees > 0) depositCurveYearn(s.failedFees, true);
 
         (bool success, bytes memory data) = s.py46.delegatecall(
             abi.encodeWithSelector(
                 pyERC4626(s.py46).redeem.selector, 
-                shares_, receiver_, user_
+                shares_, receiver_, user
             )
         );
         require(success, 'PYYFacet: withdrawUserShare() failed');
@@ -149,14 +157,14 @@ contract PYYFacet {
 
         //tricrypto= USDT: 0 / crv2- USDT: 1 , USDC: 0 / mim- MIM: 0 , CRV2lp: 1
         uint tokenAmountIn = ITri(s.tricrypto).calc_withdraw_one_coin(assets, 0); 
-        uint minOut = ExecutorF(s.executor).calculateSlippage(tokenAmountIn, s.slippageOnCurve); //<---------- here also
+        uint minOut = ExecutorF(s.executor).calculateSlippage(tokenAmountIn, userSlippage); //<---------- here also
         ITri(s.tricrypto).remove_liquidity_one_coin(assets, 0, minOut);
 
         //Delegates trade execution
-        _tradeWithExecutor(userToken_, 1);
+        _tradeWithExecutor(userToken, userSlippage);
 
-        uint userTokens = IERC20(userToken_).balanceOf(address(this));
-        IERC20(userToken_).safeTransfer(receiver_, userTokens); 
+        uint userTokens = IERC20(userToken).balanceOf(address(this));
+        IERC20(userToken).safeTransfer(receiver_, userTokens); 
     } 
     
 

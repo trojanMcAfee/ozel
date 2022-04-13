@@ -21,7 +21,7 @@ const {
     slippageOnCurve,
     tokenName,
     tokenSymbol,
-    defaultSlipCurveTrad
+    defaultSlippage
 } = require('./state-vars.js');
 
 
@@ -116,7 +116,7 @@ async function deploy() {
     const appVars = [
         dappFee,
         slippageOnCurve,
-        defaultSlipCurveTrad
+        defaultSlippage
     ];
 
     //Data structs for init()

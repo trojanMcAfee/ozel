@@ -73,7 +73,7 @@ contract DiamondInit {
         //Sets app's general variables
         s.dappFee = _vars.appVars[0];
         s.slippageOnCurve = _vars.appVars[1];
-        s.defaultSlipCurveTrad = _vars.appVars[2];
+        s.defaultSlippage = _vars.appVars[2];
 
         //Sets name and symbol on PayToken (PYY)
         s.py.name_ = _vars.pyyVars[0];

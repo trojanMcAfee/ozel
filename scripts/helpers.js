@@ -15,9 +15,9 @@ async function callDiamondProxy(params) {
     const signers = await hre.ethers.getSigners();
     const signer = signers[!params.signerIndex ? 0 : params.signerIndex];
     const abi = [];
+    let callArgs = [];
     let iface;
     let encodedData;
-    // const callArgs = [];
     let tx;
     let decodedData;
     let signature;
@@ -25,8 +25,8 @@ async function callDiamondProxy(params) {
         getDistributionIndex: 'function getDistributionIndex() returns (uint256)',
         balanceOf: 'function balanceOf(address account) view returns (uint256)',
         transfer: 'function transfer(address recipient, uint256 amount) returns (bool)',
-        exchangeToUserToken: 'function exchangeToUserToken(tuple(address user, address userToken, uint slipPref) userDetails_)', //'function exchangeToUserToken(address _user, address _userToken)'
-        withdrawUserShare: 'function withdrawUserShare(address user, address receiver, uint shares, address userToken)'
+        exchangeToUserToken: 'function exchangeToUserToken(tuple(address user, address userToken, uint userSlippage) userDetails_)', //'function exchangeToUserToken(address _user, address _userToken)'
+        withdrawUserShare: 'function withdrawUserShare(tuple(address user, address userToken, uint userSlippage) userDetails_, address receiver, uint shares_)'   //'function withdrawUserShare(address user, address receiver, uint shares, address userToken)'
     }; 
 
     for (let sign in signatures) {
@@ -40,7 +40,19 @@ async function callDiamondProxy(params) {
 
     switch(!params.dir ? 0 : params.dir) {
         case 0: 
-            encodedData = iface.encodeFunctionData(params.method, [params.args]);
+           const args = params.args;
+            switch(true) {
+                case args.length === 2:
+                    callArgs = [...args];
+                    break;
+                case typeof args[0] === 'object':
+                    for (let i=0; i < args.length; i++) callArgs.push(args[i]);
+                    break;
+                default:
+                    callArgs.push(args);
+            }
+
+            encodedData = iface.encodeFunctionData(params.method, callArgs);
             const unsignedTx = {
                 to: deployedDiamond.address,
                 data: encodedData,
@@ -83,15 +95,15 @@ async function balanceOfPYY(user) {
 async function transferPYY(recipient, amount, signerIndex) { 
     await callDiamondProxy({
         method: 'transfer',
-        args: {recipient, amount},
+        args: [recipient, amount],
         signerIndex
     }); 
 }
 
-async function withdrawSharePYY(callerAddr, receiverAddr, balancePYY, userToken, signerIndex) { 
+async function withdrawSharePYY(userConfig, receiverAddr, balancePYY, signerIndex) {  //callerAddr, receiverAddr, balancePYY, userToken, signerIndex
     await callDiamondProxy({
         method: 'withdrawUserShare',
-        args: {callerAddr, receiverAddr, balancePYY, userToken},
+        args: [userConfig, receiverAddr, balancePYY],
         signerIndex
     });
 } 

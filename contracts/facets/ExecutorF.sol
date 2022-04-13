@@ -35,7 +35,7 @@ contract ExecutorF {
         TradeOps memory swapDetails_, 
         uint userSlippage_
     ) public payable {
-        uint userSlippage = userSlippage_ == 0 ? s.defaultSlipCurveTrad : userSlippage_;
+        uint userSlippage = userSlippage_ == 0 ? s.defaultSlippage : userSlippage_;
         int128 tokenIn = swapDetails_.tokenIn;
         int128 tokenOut = swapDetails_.tokenOut;
         address baseToken = swapDetails_.baseToken;

@@ -29,7 +29,8 @@ const {
     l2Provider,
     l2Signer,
     l1Signer,
-    wethAddr
+    wethAddr,
+    defaultSlippage
  } = require('./state-vars.js');
 
 
@@ -280,17 +281,14 @@ async function beginSimulatedDiamond() {
      * sendToArb() in L1 in PayMeFacetHop would send the ETH to managerFacet in L2
      */
 
-    await sendETH([callerAddr, fraxAddr, 100], FRAX, 'FRAX', 10 ** 18); //callerAddr, fraxAddr, FRAX, 'FRAX', 10 ** 18
+    await sendETH([callerAddr, fraxAddr, defaultSlippage], FRAX, 'FRAX', 10 ** 18); //callerAddr, fraxAddr, FRAX, 'FRAX', 10 ** 18
     console.log('PYY balance on caller 1: ', formatEther(await balanceOfPYY(callerAddr)));
     console.log('yvCrvTricrypto token balance on diamondProxy: ', formatEther(await yvCrvTri.balanceOf(deployedDiamond.address)));
     console.log('---------------------------------------'); 
 
-    console.log('return here');
-    return;
-
     //Second user
     console.log('2nd user first transfer');
-    await sendETH(caller2Addr, wbtcAddr, WBTC, 'WBTC', 10 ** 8, 1); 
+    await sendETH([caller2Addr, wbtcAddr, defaultSlippage], WBTC, 'WBTC', 10 ** 8, 1); 
     console.log('PYY balance on caller 2: ', formatEther(await balanceOfPYY(caller2Addr)));
     console.log('PYY balance on caller 1 after caller2 swap: ', formatEther(await balanceOfPYY(callerAddr)));
     console.log('yvCrvTricrypto token balance on diamondProxy: ', formatEther(await yvCrvTri.balanceOf(deployedDiamond.address)));
@@ -299,7 +297,7 @@ async function beginSimulatedDiamond() {
 
     // //First user - 2nd transfer
     console.log('1st user second transfer'); 
-    await sendETH(callerAddr, mimAddr, MIM, 'MIM', 10 ** 18); //in Arb, USDC has 6
+    await sendETH([callerAddr, mimAddr, defaultSlippage], MIM, 'MIM', 10 ** 18); //in Arb, USDC has 6
     console.log('PYY balance on caller 1 after 2nd swap: ', formatEther(await balanceOfPYY(callerAddr)));
     console.log('PYY balance on caller 2 after caller1 2nd swap: ', formatEther(await balanceOfPYY(caller2Addr)));
     console.log('yvCrvTricrypto token balance on diamondProxy: ', formatEther(await yvCrvTri.balanceOf(deployedDiamond.address)));
@@ -315,7 +313,7 @@ async function beginSimulatedDiamond() {
     
     //1st user withdraw remaining share (half)
     console.log('Withdraw 1st user share (remainder)');
-    await withdrawSharePYY(callerAddr, callerAddr, parseEther(formatEther(await balanceOfPYY(callerAddr))), usdtAddrArb);
+    await withdrawSharePYY([callerAddr, usdtAddrArb, defaultSlippage], callerAddr, parseEther(formatEther(await balanceOfPYY(callerAddr))));
     let usdtBalance = await USDT.balanceOf(callerAddr);
     console.log('USDT balance from fees of caller1: ', usdtBalance.toString() / 10 ** 6); 
     console.log('PYY balance on caller 1 after fees withdrawal: ', formatEther(await balanceOfPYY(callerAddr)));
@@ -324,7 +322,7 @@ async function beginSimulatedDiamond() {
 
     //1st user third transfer
     console.log('1st user third transfer');
-    await sendETH(callerAddr, usdtAddrArb, USDT, 'USDT', 10 ** 6);
+    await sendETH([callerAddr, usdtAddrArb, defaultSlippage], USDT, 'USDT', 10 ** 6);
     console.log('PYY balance on caller 1: ', formatEther(await balanceOfPYY(callerAddr)));
     console.log('PYY balance on caller 2: ', formatEther(await balanceOfPYY(caller2Addr)));
     console.log('.');
@@ -337,7 +335,7 @@ async function beginSimulatedDiamond() {
     console.log('.');
 
     console.log('Withdrawing 1/3 (caller 2)'); 
-    await withdrawSharePYY(caller2Addr, caller2Addr, parseEther(toTransfer.toString()), usdtAddrArb, 1);
+    await withdrawSharePYY([caller2Addr, usdtAddrArb, defaultSlippage], caller2Addr, parseEther(toTransfer.toString()), 1);
     usdtBalance = await USDT.balanceOf(caller2Addr);
     console.log('USDT balance from fees of caller2: ', usdtBalance.toString() / 10 ** 6);
     console.log('PYY balance on caller 1: ', formatEther(await balanceOfPYY(callerAddr)));
