@@ -36,40 +36,21 @@ async function callDiamondProxy(params) {
     }
     abi.push(signature);
     iface = new ethers.utils.Interface(abi);
-    
-    // if (params.args) {
-    //     if (Object.keys(params.args).length < 2) {
-    //         callArgs[0] = params.args[Object.keys(params.args)[0]];
-    //     } else {
-    //         let i = 0;
-    //         for (let key in params.args) {
-    //             callArgs[i] = params.args[key];
-    //             i++;
-    //         }
-    //     }
-    // }
+
 
     switch(!params.dir ? 0 : params.dir) {
         case 0: 
-            console.log('params.args: ', params.args);
             encodedData = iface.encodeFunctionData(params.method, [params.args]);
-            console.log(1);
             const unsignedTx = {
                 to: deployedDiamond.address,
                 data: encodedData,
                 value: params.value
             };
-            console.log(2);
-            console.log('type: ', typeof params.args);
-            if (typeof params.args === 'string') { //params.args.length === 1
-                console.log(3);
+            if (typeof params.args === 'string') { 
                 tx = await signer.call(unsignedTx);
-                console.log(4);
                 [ decodedData ] = abiCoder.decode([params.type], tx);
-                console.log(5);
                 return decodedData;
             } else {
-                console.log(6);
                 if (iface.fragments[0].name === 'exchangeToUserToken') {
                     const estGas = await signer.estimateGas(unsignedTx);
                     unsignedTx.gasLimit = Math.floor(estGas.toString() * 1.10);
@@ -121,7 +102,7 @@ async function sendETH(userConfig, IERC20, tokenStr, decimals, signerIndex) {
     const value = ethers.utils.parseEther('100');
     await callDiamondProxy({
         method: 'exchangeToUserToken',
-        args: userConfig, //an array now - before: {userAddr, userToken}, + userSlip
+        args: userConfig, //an array now - before: {userAddr, userToken}, + userSlippage
         value,
         signerIndex
     });

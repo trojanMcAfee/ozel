@@ -24,55 +24,124 @@ contract ExecutorF {
     }
 
 
+    function _callCurve(
+        string memory signature,
+        int128 tokenIn_,
+        int128 tokenOut_,
+        uint inBalance_,
+        uint slippage_
+    ) public returns(uint) {
+        (bool success, bytes memory data) = pool_.delegatecall(
+            abi.encodeWithSignature(
+                signature, 
+                tokenIn_, tokenOut_, inBalance_, slippage_
+            );
+        );
+        return abi.decode(data, (uint)); 
+    }
 
-    function executeFinalTrade(TradeOps memory swapDetails_) public payable {
+
+    function _cautiousExec(
+        uint dir_, 
+        int128 tokenIn_, 
+        int128 tokenOut_, 
+        uint inBalance_,
+        uint slippage_
+        address pool_,
+        uint userSlippage_,
+        uint baseToken_,
+        uint i_
+    ) public {
+        string memory signature = dir == 0 ?
+            'get_dy(int128,int128,uint256)' :
+            'get_dy_underlying(int128,int126,uint256)';
+
+        uint minOut = _callCurve(signature, tokenIn_, tokenOut_, inBalance_);
+
+        uint slippage = calculateSlippage(minOut, userSlippage_);
+        signature = dir == 0 ?
+            'exchange(int128,int128,uint256,uint256)' :
+            'exchange_underlying(int128,int128,uint256,uint256)'
+
+        try _callCurve(signature, tokenIn_, tokenOut_, inBalance_, slippage) {
+            if (i_ == 2) {
+                try _callCurve(signature, tokenIn_, tokenOut_, inBalance_, slippage) {
+                    break;
+                } catch {
+                    IERC20(baseToken_).transfer(msg.sender, inBalance_ / 2);
+                }
+            }
+            break;
+        } catch {
+            if (i_ == 1) {
+                continue;
+            } else {
+                IERC20(baseToken_).transfer(msg.sender, inBalance_); 
+            }
+        }
+
+    }
+
+
+
+    function executeFinalTrade( 
+        TradeOps memory swapDetails_, 
+        uint userSlippage_
+    ) public payable {
+        uint userSlippage = userSlippage_ == 0 ? s.defaultSlipCurveTrad : userSlippage_;
+        int128 tokenIn = swapDetails_.tokenIn;
+        int128 tokenOut = swapDetails_.tokenOut;
+        address baseToken = swapDetails_.baseToken;
+        address pool = swapDetails_.pool;
+        uint inBalance = IERC20(baseToken).balanceOf(address(this));
         uint minOut;
         uint slippage;
-        uint inBalance = IERC20(swapDetails_.baseToken).balanceOf(address(this));
 
-        if (swapDetails_.pool != s.renPool) {
-            IERC20(s.USDT).approve(swapDetails_.pool, inBalance);
+        if (pool != s.renPool) {
+            IERC20(s.USDT).approve(pool, inBalance);
         }
 
         //Retries swap 5 times while increasing slippage in case it fails -----> modify this to be 4% slippage max
-        for (uint i=1; i <= 5; i++) {
-            if (swapDetails_.pool == s.renPool || swapDetails_.pool == s.crv2Pool) {
-                // inBalance /= i;
+        for (uint i=1; i <= 2; i++) {
+            if (pool == s.renPool || pool == s.crv2Pool) {
 
-                minOut = IMulCurv(swapDetails_.pool).get_dy(
-                    swapDetails_.tokenIn, swapDetails_.tokenOut, inBalance
-                );
+                minOut = IMulCurv(pool).get_dy(tokenIn, tokenOut, inBalance / i);
+                slippage = calculateSlippage(minOut, userSlippage * i);
 
-                slippage = calculateSlippage(minOut, s.defaultSlipCurveTrad * i);
-                // slippage *= i; 
-
-                
-
-                try IMulCurv(swapDetails_.pool).exchange(
-                    swapDetails_.tokenIn, swapDetails_.tokenOut, inBalance, slippage
-                ) {
+                try IMulCurv(pool).exchange(tokenIn, tokenOut, inBalance / i, slippage) {
+                    if (i == 2) {
+                        try IMulCurv(pool).exchange(tokenIn, tokenOut, inBalance / i, slippage) {
+                            break;
+                        } catch {
+                            IERC20(baseToken).transfer(msg.sender, inBalance / 2);
+                        }
+                    }
                     break;
                 } catch {
-                    if (i != 5) {
+                    if (i == 1) {
                         continue;
                     } else {
-                        IERC20(swapDetails_.baseToken).transfer(msg.sender, inBalance); 
+                        IERC20(baseToken).transfer(msg.sender, inBalance); 
                     }
                 }
             } else {
-                minOut = IMulCurv(swapDetails_.pool).get_dy_underlying(
-                    swapDetails_.tokenIn, swapDetails_.tokenOut, inBalance
-                );
-                slippage = calculateSlippage(minOut, s.defaultSlipCurveTrad * i);
-                try IMulCurv(swapDetails_.pool).exchange_underlying(
-                    swapDetails_.tokenIn, swapDetails_.tokenOut, inBalance, slippage
-                ) {
+                minOut = IMulCurv(pool).get_dy_underlying(tokenIn, tokenOut, inBalance / i);
+                slippage = calculateSlippage(minOut, userSlippage * i);
+                
+                try IMulCurv(pool).exchange_underlying(tokenIn, tokenOut, inBalance / i, slippage) {
+                    if (i == 2) {
+                        try IMulCurv(pool).exchange_underlying(tokenIn, tokenOut, inBalance / i, slippage) {
+                            break;
+                        } catch {
+                            IERC20(baseToken).transfer(msg.sender, inBalance / 2);
+                        }
+                    }
                     break;
                 } catch {
-                    if (i != 5) {
+                    if (i == 1) {
                         continue;
                     } else {
-                        IERC20(swapDetails_.baseToken).transfer(msg.sender, inBalance); 
+                        IERC20(baseToken).transfer(msg.sender, inBalance); 
                     }
                 }
             }

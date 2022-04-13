@@ -87,18 +87,19 @@ contract PYYFacet {
         uint amountIn_, 
         uint baseTokenOut_, 
         address userToken_,
-        uint userSlip_
+        uint userSlippage_
     ) public payable { 
-        uint userSlip = userSlip_ == 0 ? s.defaultSlipCurveTrad : userSlip_;
+        uint userSlippage = userSlippage_ == 0 ? s.defaultSlipCurveTrad : userSlippage_;
         IWETH(s.WETH).approve(s.tricrypto, amountIn_);
 
-        /** Exchanges the amount between the user's slippage. 
-        If it fails, it doubles the slippage, divides the amount between two and tries again.
-        If none works, sends the WETH back to the user.
-        *****/ 
+        /**** 
+            Exchanges the amount between the user's slippage. 
+            If it fails, it doubles the slippage, divides the amount between two and tries again.
+            If none works, sends the WETH back to the user.
+        ****/ 
         for (uint i=1; i <= 2; i++) {
             uint minOut = ITri(s.tricrypto).get_dy(2, baseTokenOut_, amountIn_ / i);
-            uint slippage = ExecutorF(s.executor).calculateSlippage(minOut, userSlip * i);
+            uint slippage = ExecutorF(s.executor).calculateSlippage(minOut, userSlippage * i);
             
             try ITri(s.tricrypto).exchange(2, baseTokenOut_, amountIn_ / i, slippage, false) {
                 if (i == 2) {
@@ -122,7 +123,7 @@ contract PYYFacet {
 
         // Delegates trade execution
         if ((userToken_ != s.USDT || userToken_ != s.WBTC) && baseBalance > 0) {
-            _tradeWithExecutor(userToken_); 
+            _tradeWithExecutor(userToken_, userSlippage_); 
         }
     }
 
@@ -148,16 +149,14 @@ contract PYYFacet {
 
         //tricrypto= USDT: 0 / crv2- USDT: 1 , USDC: 0 / mim- MIM: 0 , CRV2lp: 1
         uint tokenAmountIn = ITri(s.tricrypto).calc_withdraw_one_coin(assets, 0); 
-        uint minOut = ExecutorF(s.executor).calculateSlippage(tokenAmountIn, s.slippageOnCurve);
+        uint minOut = ExecutorF(s.executor).calculateSlippage(tokenAmountIn, s.slippageOnCurve); //<---------- here also
         ITri(s.tricrypto).remove_liquidity_one_coin(assets, 0, minOut);
 
         //Delegates trade execution
-        _tradeWithExecutor(userToken_);
+        _tradeWithExecutor(userToken_, 1);
 
         uint userTokens = IERC20(userToken_).balanceOf(address(this));
-        // user_ == receiver_ ?
-        //    IERC20(userToken_).safeTransfer(user_, userTokens) :
-           IERC20(userToken_).safeTransfer(receiver_, userTokens); 
+        IERC20(userToken_).safeTransfer(receiver_, userTokens); 
     } 
     
 
@@ -201,13 +200,13 @@ contract PYYFacet {
         return (netAmount, fee);
     }
 
-    function _tradeWithExecutor(address userToken_) public {
+    function _tradeWithExecutor(address userToken_, uint userSlippage_) public {
         for (uint i=0; i < s.swaps.length; i++) {
             if (s.swaps[i].userToken == userToken_) {
                 (bool success, ) = s.executor.delegatecall(
                     abi.encodeWithSelector(
                         ExecutorF(s.executor).executeFinalTrade.selector, 
-                        s.swaps[i]
+                        s.swaps[i], userSlippage_
                     )
                 );
                 require(success, 'PYYFacet: _tradeWithExecutor() failed');
@@ -223,6 +222,71 @@ contract PYYFacet {
         amounts[2] = wethAmountIn_;
         uint tokenAmount = ITri(s.tricrypto).calc_token_amount(amounts, true);
         return (tokenAmount, amounts);
+    }
+
+    function _callCurve(
+        string memory signature,
+        int128 tokenIn_,
+        int128 tokenOut_,
+        uint inBalance_,
+        uint slippage_
+    ) public returns(uint) {
+        (bool success, bytes memory data) = pool_.delegatecall(
+            abi.encodeWithSignature(
+                signature, 
+                tokenIn_, tokenOut_, inBalance_, slippage_
+            );
+        );
+        return abi.decode(data, (uint));
+         
+    }
+
+
+    function _cautiousExec(
+        uint dir_, 
+        int128 tokenIn_, 
+        int128 tokenOut_, 
+        uint inBalance_,
+        uint slippage_
+        address pool_,
+        uint userSlippage_,
+        uint baseToken_,
+        uint i_
+    ) public {
+        string memory signature = dir == 0 ?
+            'get_dy(int128,int128,uint256)' :
+            'get_dy_underlying(int128,int126,uint256)';
+
+        uint minOut = _callCurve(signature, tokenIn_, tokenOut_, inBalance_);
+
+        uint slippage = calculateSlippage(minOut, userSlippage_);
+
+        signature = dir == 0 ?
+            'exchange(int128,int128,uint256,uint256)' :
+            'exchange_underlying(int128,int128,uint256,uint256)'
+
+        try _callCurve(signature, tokenIn_, tokenOut_, inBalance_, slippage) {
+            if (i_ == 2) {
+                try _callCurve(signature, tokenIn_, tokenOut_, inBalance_, slippage) {
+                    break;
+                } catch {
+                    IERC20(baseToken_).transfer(msg.sender, inBalance_ / 2);
+                }
+            }
+            break;
+        } catch {
+            if (i_ == 1) {
+                continue;
+            } else {
+                IERC20(baseToken_).transfer(msg.sender, inBalance_); 
+            }
+        }
+
+
+
+
+
+
     }
 
    
