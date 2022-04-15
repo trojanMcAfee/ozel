@@ -12,6 +12,8 @@ contract Test2 {
     uint public balance1;
     uint public balance2;
 
+    bool flag;
+
 
 
     function exchangeToUserToken(address _user, address _userToken) external payable {

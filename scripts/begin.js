@@ -1,5 +1,5 @@
 const { ethers } = require("ethers");
-const { parseEther, formatEther, defaultAbiCoder: abiCoder } = ethers.utils;
+const { parseEther, formatEther, defaultAbiCoder: abiCoder, keccak256 } = ethers.utils;
 const { deploy } = require('./deploy.js');
 const { Bridge } = require('arb-ts');
 const { hexDataLength } = require('@ethersproject/bytes');
@@ -136,6 +136,7 @@ async function getGasDetailsL2(signerAddr, bridge) {
     );
 
     const maxSubmissionCost = _submissionPriceWei.mul(5); //parseEther('0.01');
+    console.log('maxSubmissionCost: ', maxSubmissionCost.toString());
     const gasPriceBid = await bridge.l2Provider.getGasPrice();
     console.log(`L2 gas price: ${gasPriceBid.toString()}`);
 
@@ -146,17 +147,60 @@ async function getGasDetailsL2(signerAddr, bridge) {
 }
 
 
+async function tryPrecompile() {
+    // const bridge = await Bridge.init(l1Signer, l2Signer);
+    // const arbRetryableAddr = '0x000000000000000000000000000000000000006E';
+    // const arbRetryable = await hre.ethers.getContractAt('ArbRetryableTx', arbRetryableAddr);
+    const req = 213359;
+
+    // const txId = keccak256(abiCoder.encode(['uint'], [req]), 0); //abiCoder.encode(['uint'], [req]), 0
+    // console.log('txId: ', txId); //req, 0
+
+    // const beneficiary = await arbRetryable.getBeneficiary(txId);
+    // console.log('beneficiary: ', beneficiary.toString());
+
+    // const timeOut = await arbRetryable.getTimeout(txId);
+    // console.log('timeOut: ', timeOut.toString());
+
+    // const lifetime = await arbRetryable.getLifetime();
+    // console.log('lifetime: ', lifetime.toString()); 
+
+
+    // const ticketId = await bridge.calculateL2TransactionHash(ethers.BigNumber.from(req), l2Provider);
+
+    // const x = await arbRetryable.getTimeout(ticketId);
+    // console.log('x: ', x.toString());
+
+    const withPacked = '0x44Df79cAfB43967664ACbDB4A53F3881204B976C';
+    const withoutPacked = '0x04122568bDb8265714d03E9436FAe47c96DCcf17';
+
+    const arbRetryable = await hre.ethers.getContractAt('Test', withPacked);
+
+
+    // const ArbRetryable = await hre.ethers.getContractFactory('Test');
+    // const arbRetryable = await ArbRetryable.deploy();
+    // await arbRetryable.deployed();
+    console.log('arbRetryable deployed to: ', arbRetryable.address);
+
+    const y = await arbRetryable.getTO(req); //trying to get the timeout on retrying
+    console.log('y: ', y.toString());    
+
+
+}
 
 
 
 
 
 
-//Deploys PayMeFacetHop in mainnet and routes ETH to Manager in Arbitrum
+
+
+//Deploys PayMeFacetHop in mainnet and routes ETH to Manager (PYY) in Arbitrum
 async function sendArb() { //mainnet
     const bridge = await Bridge.init(l1Signer, l2Signer);
     const value = parseEther('0.01');
     const signerAddr = await signerX.getAddress();
+    console.log('signer address: ', signerAddr);
     
     const manager = await fakeManager(); //manager address in arbitrum
     let tx = await manager.setName('Hello world');
@@ -175,7 +219,7 @@ async function sendArb() { //mainnet
     const paymeHop = await PayMeHop.deploy(
         signerAddr, pokeMeOpsAddr, chainId, 
         manager.address, inbox, 
-        maxSubmissionCost, maxGas, gasPriceBid
+        maxSubmissionCost, maxGas, gasPriceBid //Math.floor(maxSubmissionCost/10)
     , { gasLimit: ethers.BigNumber.from('5000000') });
 
     await paymeHop.deployed();
@@ -214,40 +258,6 @@ async function sendArb() { //mainnet
 }
 
 
-async function sendArb2() {
-    const bridge = await Bridge.init(l1Signer, l2Signer);
-    const paymehopAddr = '0x9926f4AA7a8A08653380186E2c6Bd8A59033c728';
-    console.log('paymehop set...');
-
-    const filter = {
-        address: paymehopAddr,
-        topics: [
-            ethers.utils.id("ThrowTicket(uint256)")
-        ]
-    };
-
-    await hre.ethers.provider.once(filter, async (encodedData) => {
-        const { data } = encodedData;
-        const ourMessagesSequenceNum = ethers.utils.defaultAbiCoder.decode(['uint'], data);
-
-        console.log('inboxSeqNums: ', ourMessagesSequenceNum.toString());
-        const retryableTxnHash = await bridge.calculateL2RetryableTransactionHash(
-            ourMessagesSequenceNum[0]
-        );
-        console.log('retryableTxnHash: ', retryableTxnHash);
-        console.log(
-            `waiting for L2 tx 🕐... (should take < 10 minutes, current time: ${new Date().toTimeString()}`
-        );
-        const retryRec = await l2Provider.waitForTransaction(retryableTxnHash)
-        console.log(`L2 retryable txn executed 🥳 ${retryRec.transactionHash} at ${new Date().toTimeString()}`);
-    });
-    console.log('Listener ready...');
-
-
-    //**** TRIGGER *******/
-    await sendTx(paymehopAddr);
-
-}
 
 
 
@@ -359,11 +369,11 @@ async function beginSimulatedDiamond() {
 
 // tryGelatoRopsten();
 
-beginSimulatedDiamond();
+// beginSimulatedDiamond();
 
 // sendArb();
 
-// tryPrecompile();
+tryPrecompile();
 
 // sendTx();
 

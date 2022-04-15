@@ -46,27 +46,26 @@ contract PayMeFacetHop is OpsReady {
         maxSubmissionCost = _maxSubmissionCost;
         maxGas = _maxGas;
         gasPriceBid = _gasPriceBid;
-
     }
 
     receive() external payable {}
 
-    
 
-    function sendToArb(address _userToken, uint _callvalue) external onlyOps { 
+
+    function sendToArb(address userToken_, uint callvalue_) external onlyOps { 
         (uint fee, ) = opsGel.getFeeDetails();
         _transfer(fee, ETH);
 
         // --- deposits to PYY (ex-Manager) ----
         bytes memory data = abi.encodeWithSelector(
             Test2(payable(PYY)).exchangeToUserToken.selector, 
-            owner, _userToken
+            owner, userToken_
         );
 
         // user ticketID later on to check the sequencer's inbox for unconfirmed txs
         uint ticketID = inbox.createRetryableTicket{value: address(this).balance}(
             PYY, 
-            address(this).balance - _callvalue, 
+            address(this).balance - callvalue_, 
             maxSubmissionCost, 
             PYY, 
             PYY, 
@@ -80,25 +79,25 @@ contract PayMeFacetHop is OpsReady {
 
     // *** GELATO PART ******
 
-    function startTask(address _userToken, uint _callvalue) external returns(bytes32 taskId) {
+    function startTask(address userToken_, uint callvalue_) external returns(bytes32 taskId) {
         (taskId) = opsGel.createTaskNoPrepayment(
             address(this),
             this.sendToArb.selector,
             address(this),
-            abi.encodeWithSelector(this.checker.selector, _userToken, _callvalue),
+            abi.encodeWithSelector(this.checker.selector, userToken_, callvalue_),
             ETH
         );
     }
 
     function checker(
-        address _userToken, 
-        uint _callvalue
+        address userToken_, 
+        uint callvalue_
     ) external view returns(bool canExec, bytes memory execPayload) {
         if (address(this).balance > 0) {
             canExec = true;
         }
         execPayload = abi.encodeWithSelector(
-            this.sendToArb.selector, _userToken, _callvalue
+            this.sendToArb.selector, userToken_, callvalue_
         );
     }
 
