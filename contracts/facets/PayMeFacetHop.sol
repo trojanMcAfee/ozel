@@ -52,7 +52,7 @@ contract PayMeFacetHop is OpsReady {
 
 
 
-    function sendToArb(address userToken_, uint callvalue_) external onlyOps { 
+    function sendToArb(address userToken_, uint callvalue_) external payable { //remove payable later and add onlyOps modifier
         (uint fee, ) = opsGel.getFeeDetails();
         _transfer(fee, ETH);
 
@@ -63,9 +63,9 @@ contract PayMeFacetHop is OpsReady {
         );
 
         // user ticketID later on to check the sequencer's inbox for unconfirmed txs
-        uint ticketID = inbox.createRetryableTicket{value: address(this).balance}(
+        uint ticketID = inbox.createRetryableTicket{value: msg.value}( //change msg.value to address(this).balance
             PYY, 
-            address(this).balance - callvalue_, 
+            msg.value - callvalue_, 
             maxSubmissionCost, 
             PYY, 
             PYY, 
