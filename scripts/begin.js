@@ -151,9 +151,9 @@ async function tryPrecompile() {
     // const bridge = await Bridge.init(l1Signer, l2Signer);
     // const arbRetryableAddr = '0x000000000000000000000000000000000000006E';
     // const arbRetryable = await hre.ethers.getContractAt('ArbRetryableTx', arbRetryableAddr);
-    const req = 213574; //213359
+    const req = 213576; //213359
 
-    // const txId = keccak256(req, 0); //abiCoder.encode(['uint'], [req]), 0
+    // const txId = keccak256(abiCoder.encode(['uint'], [req]), 0); //abiCoder.encode(['uint'], [req]), 0
     // console.log('txId: ', txId); //req, 0
 
     // const beneficiary = await arbRetryable.getBeneficiary(txId, {
@@ -161,7 +161,7 @@ async function tryPrecompile() {
     // });
     // console.log('beneficiary: ', beneficiary);
 
-    // const timeOut = await arbRetryable.getTimeout('txId', {
+    // const timeOut = await arbRetryable.getTimeout('0xa1b64f652a0336a8d2e52bfc667191da13d706e67a150674b394bffaa307ed46', {
     //     gasLimit: ethers.BigNumber.from('10000000')
     // });
     // console.log('timeOut: ', timeOut.toString());
@@ -177,15 +177,18 @@ async function tryPrecompile() {
 
     //---------------
 
-    // const withPacked = '0x44Df79cAfB43967664ACbDB4A53F3881204B976C';
-    // const withoutPacked = '0x04122568bDb8265714d03E9436FAe47c96DCcf17';
+    const withPacked = '0x44Df79cAfB43967664ACbDB4A53F3881204B976C';
+    const withoutPacked = '0x04122568bDb8265714d03E9436FAe47c96DCcf17';
 
-    // const arbRetryable = await hre.ethers.getContractAt('Test', withoutPacked);
+    // const arbRetryable = await hre.ethers.getContractAt('Test', withPacked);
+    const ArbRetryable = await hre.ethers.getContractFactory('Test');
+    const arbRetryable = await ArbRetryable.deploy();
+    await arbRetryable.deployed();
 
-    // console.log('arbRetryable deployed to: ', arbRetryable.address);
+    console.log('arbRetryable deployed to: ', arbRetryable.address);
 
-    // const y = await arbRetryable.getTO(req);
-    // console.log('y: ', y.toString());    
+    const y = await arbRetryable.getTO(req);
+    console.log('y: ', y.toString());    
 
 
 }
@@ -383,9 +386,9 @@ async function beginSimulatedDiamond() {
 
 // beginSimulatedDiamond();
 
-sendArb();
+// sendArb();
 
-// tryPrecompile();
+tryPrecompile();
 
 // sendTx();
 
