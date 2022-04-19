@@ -25,12 +25,12 @@ import '../interfaces/IWETH.sol';
 
 contract DiamondInit {    
 
-    AppStorage internal s;
+    AppStorage s;
     // You can add parameters to this function in order to pass in 
     // data to set your own state variables
     function init(
-        LibDiamond.Facets memory _facets,
-        LibDiamond.VarsAndAddresses memory _vars
+        LibDiamond.Facets memory facets_,
+        LibDiamond.VarsAndAddresses memory vars_
     ) external {
         // adding ERC165 data
         LibDiamond.DiamondStorage storage ds = LibDiamond.diamondStorage();
@@ -40,46 +40,46 @@ contract DiamondInit {
         ds.supportedInterfaces[type(IERC173).interfaceId] = true;
 
         //Ads selectors to Facets mapping
-        for (uint i; i < _facets.selectors.length; i++) {
-            bytes4[] memory selectors = _facets.selectors[i];
+        for (uint i; i < facets_.selectors.length; i++) {
+            bytes4[] memory selectors = facets_.selectors[i];
             for (uint j; j < selectors.length; j++) {
-                ds.facets[selectors[j]] = _facets.addresses[i];
+                ds.facets[selectors[j]] = facets_.addresses[i];
             }
         }
 
         //Sets addresses on contracts
-        s.PYY = _vars.contracts[0]; 
-        s.tricrypto = _vars.contracts[1];
-        s.crvTricrypto = _vars.contracts[2];
-        s.getters = _vars.contracts[3];
-        s.renPool = _vars.contracts[4];
-        s.mimPool = _vars.contracts[5];
-        s.crv2Pool = _vars.contracts[6];
-        s.yTriPool = _vars.contracts[7];
-        s.fraxPool = _vars.contracts[8];
-        s.executor = _vars.contracts[9];
-        s.py46 = _vars.contracts[10]; 
-        s.py20 = _vars.contracts[11];
+        s.PYY = vars_.contracts[0]; 
+        s.tricrypto = vars_.contracts[1];
+        s.crvTricrypto = vars_.contracts[2];
+        s.getters = vars_.contracts[3];
+        s.renPool = vars_.contracts[4];
+        s.mimPool = vars_.contracts[5];
+        s.crv2Pool = vars_.contracts[6];
+        s.yTriPool = vars_.contracts[7];
+        s.fraxPool = vars_.contracts[8];
+        s.executor = vars_.contracts[9];
+        s.py46 = vars_.contracts[10]; 
+        s.py20 = vars_.contracts[11];
 
         //Sets ERC20 instances
-        s.USDT = _vars.erc20s[0];
-        s.WBTC = _vars.erc20s[1];
-        s.renBTC = _vars.erc20s[2];
-        s.USDC = _vars.erc20s[3];
-        s.MIM = _vars.erc20s[4];
-        s.WETH = _vars.erc20s[5];
-        s.FRAX = _vars.erc20s[6];
+        s.USDT = vars_.erc20s[0];
+        s.WBTC = vars_.erc20s[1];
+        s.renBTC = vars_.erc20s[2];
+        s.USDC = vars_.erc20s[3];
+        s.MIM = vars_.erc20s[4];
+        s.WETH = vars_.erc20s[5];
+        s.FRAX = vars_.erc20s[6];
 
         //Sets app's general variables
-        s.dappFee = _vars.appVars[0];
-        s.defaultSlippage = _vars.appVars[1];
+        s.dappFee = vars_.appVars[0];
+        s.defaultSlippage = vars_.appVars[1];
 
         //Sets name and symbol on PayToken (PYY)
-        s.py.name_ = _vars.pyyVars[0];
-        s.py.symbol_ = _vars.pyyVars[1];
+        s.py.name_ = vars_.pyyVars[0];
+        s.py.symbol_ = vars_.pyyVars[1];
 
         //Sets ETH address
-        s.ETH = _vars.ETH;
+        s.ETH = vars_.ETH;
 
         /*** Sets the structs for userTokens
         renPool -->  renBTC: 1 / WBTC: 0

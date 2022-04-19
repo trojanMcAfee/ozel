@@ -28,7 +28,7 @@ contract Test2 {
         require(success, 'ETH sent failed');
 
 
-        // user = _user;
+        user = userDetails_.user;
         // userToken = _userToken;
         // num = msg.value; //address(this).balance
     } 

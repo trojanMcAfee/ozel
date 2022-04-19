@@ -55,9 +55,11 @@ async function main() {
                 let x = await arbRetryable.getTimeout(l2Hashes[i]);
                 console.log('timeout: ', x.toString());
                 if (x > 0) {
-                    const tx = await arbRetryable.redeem(l2Hashes[i]);
+                    console.log('eth balance pre: ', (await l2Wallet.getBalance()).toString());
+                    const tx = await arbRetryable.connect(l2Wallet).redeem(l2Hashes[i]);
                     const receipt = await tx.wait();
                     console.log('receipt: ', receipt);
+                    console.log('eth balance post: ', (await l2Wallet.getBalance()).toString());
                 }
             }
         }, 900000);

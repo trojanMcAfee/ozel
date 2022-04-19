@@ -29,7 +29,7 @@ struct AppStorage {
 
     //System config
     uint dappFee;
-    uint slippageOnCurve;
+    uint slippageOnCurve; //check and delete if...
     uint defaultSlippage;
     uint totalVolume;
     uint distributionIndex;

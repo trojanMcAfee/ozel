@@ -161,20 +161,20 @@ async function tryPrecompile() {
     // });
     // console.log('beneficiary: ', beneficiary);
     
-    const hashes = [];
-    const x = '0x17de80e4ed05eefc31e6d2827232e6f620876f11c8fa0651eb722d943459d22c';
-    hashes.push(x);
+    // const hashes = [];
+    // const x = '0x17de80e4ed05eefc31e6d2827232e6f620876f11c8fa0651eb722d943459d22c';
+    // hashes.push(x);
 
 
-    for (let i = 0; i < hashes.length; i++) {
-        const timeOut = await arbRetryable.getTimeout(hashes[i], {
-            gasLimit: ethers.BigNumber.from('10000000')
-        });
-        console.log('timeOut: ', timeOut.toString());
-    }
+    // for (let i = 0; i < hashes.length; i++) {
+    //     const timeOut = await arbRetryable.getTimeout(hashes[i], {
+    //         gasLimit: ethers.BigNumber.from('10000000')
+    //     });
+    //     console.log('timeOut: ', timeOut.toString());
+    // }
 
-    // const lifetime = await arbRetryable.getLifetime();
-    // console.log('lifetime: ', lifetime.toString()); 
+    const lifetime = await arbRetryable.getLifetime();
+    console.log('lifetime: ', lifetime.toString()); 
 
 
     // const ticketId = await bridge.calculateL2TransactionHash(ethers.BigNumber.from(req), l2Provider);
@@ -416,13 +416,13 @@ async function beginSimulatedDiamond() {
 
 // tryGelatoRopsten();
 
-// beginSimulatedDiamond();
+beginSimulatedDiamond();
 
 // sendArb();
 
 // tryPrecompile();
 
-sendTx('0x0537FE8783444244792e25F73a64a34C8E68fA2c');
+// sendTx('0x0537FE8783444244792e25F73a64a34C8E68fA2c');
 
 // impersonateTx();
 
