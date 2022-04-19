@@ -148,10 +148,10 @@ async function getGasDetailsL2(signerAddr, bridge) {
 
 
 async function tryPrecompile() {
-    // const bridge = await Bridge.init(l1Signer, l2Signer);
-    // const arbRetryableAddr = '0x000000000000000000000000000000000000006E';
-    // const arbRetryable = await hre.ethers.getContractAt('ArbRetryableTx', arbRetryableAddr);
-    const req = 213576; //213359
+    const bridge = await Bridge.init(l1Signer, l2Signer);
+    const arbRetryableAddr = '0x000000000000000000000000000000000000006E';
+    const arbRetryable = await hre.ethers.getContractAt('ArbRetryableTx', arbRetryableAddr);
+    const req = 213702;
 
     // const txId = keccak256(abiCoder.encode(['uint'], [req]), 0); //abiCoder.encode(['uint'], [req]), 0
     // console.log('txId: ', txId); //req, 0
@@ -160,11 +160,18 @@ async function tryPrecompile() {
     //     gasLimit: ethers.BigNumber.from('10000000')
     // });
     // console.log('beneficiary: ', beneficiary);
+    
+    const hashes = [];
+    const x = '0x17de80e4ed05eefc31e6d2827232e6f620876f11c8fa0651eb722d943459d22c';
+    hashes.push(x);
 
-    // const timeOut = await arbRetryable.getTimeout('0xa1b64f652a0336a8d2e52bfc667191da13d706e67a150674b394bffaa307ed46', {
-    //     gasLimit: ethers.BigNumber.from('10000000')
-    // });
-    // console.log('timeOut: ', timeOut.toString());
+
+    for (let i = 0; i < hashes.length; i++) {
+        const timeOut = await arbRetryable.getTimeout(hashes[i], {
+            gasLimit: ethers.BigNumber.from('10000000')
+        });
+        console.log('timeOut: ', timeOut.toString());
+    }
 
     // const lifetime = await arbRetryable.getLifetime();
     // console.log('lifetime: ', lifetime.toString()); 
@@ -177,18 +184,18 @@ async function tryPrecompile() {
 
     //---------------
 
-    const withPacked = '0x44Df79cAfB43967664ACbDB4A53F3881204B976C';
-    const withoutPacked = '0x04122568bDb8265714d03E9436FAe47c96DCcf17';
+    // const withPacked = '0x44Df79cAfB43967664ACbDB4A53F3881204B976C';
+    // const withoutPacked = '0x04122568bDb8265714d03E9436FAe47c96DCcf17';
 
-    // const arbRetryable = await hre.ethers.getContractAt('Test', withPacked);
-    const ArbRetryable = await hre.ethers.getContractFactory('Test');
-    const arbRetryable = await ArbRetryable.deploy();
-    await arbRetryable.deployed();
+    // // const arbRetryable = await hre.ethers.getContractAt('Test', withPacked);
+    // const ArbRetryable = await hre.ethers.getContractFactory('Test');
+    // const arbRetryable = await ArbRetryable.deploy();
+    // await arbRetryable.deployed();
 
-    console.log('arbRetryable deployed to: ', arbRetryable.address);
+    // console.log('arbRetryable deployed to: ', arbRetryable.address);
 
-    const y = await arbRetryable.getTO(req);
-    console.log('y: ', y.toString());    
+    // const y = await arbRetryable.getTO(req);
+    // console.log('y: ', y);    
 
 
 }
@@ -242,7 +249,11 @@ async function sendArb() { //mainnet
         ]
     };
 
-    await hre.ethers.provider.once(filter, async (encodedData) => {
+    // const l2Hashes = [];
+    // const arbRetryableAddr = '0x000000000000000000000000000000000000006E';
+    // const arbRetryable = await hre.ethers.getContractAt('ArbRetryableTx', arbRetryableAddr);
+
+    await hre.ethers.provider.once(filter, async (encodedData) => { 
         const { data } = encodedData;
         const ourMessagesSequenceNum = ethers.utils.defaultAbiCoder.decode(['uint'], data);
 
@@ -254,6 +265,11 @@ async function sendArb() { //mainnet
         console.log(
             `waiting for L2 tx 🕐... (should take < 10 minutes, current time: ${new Date().toTimeString()}`
         );
+
+        l2Hashes.push(retryableTxnHash);
+        console.log('l2Hashes: ', l2Hashes);
+
+
         // const retryRec = await l2Provider.waitForTransaction(retryableTxnHash)
         // console.log(`L2 retryable txn executed 🥳 ${retryRec.transactionHash} at ${new Date().toTimeString()}`);
     });
@@ -261,13 +277,23 @@ async function sendArb() { //mainnet
 
     //**** TRIGGER for Gelato *******/
     // await sendTx(paymeHop.address);
+
+    // setInterval(async function() {
+    //     for (let i = 0; i < l2Hashes.length; i++) {
+    //         console.log('hash in interval: ', l2Hashes[i]);
+    //         let x = await arbRetryable.getTimeout(l2Hashes[i]);
+    //         // if (x > 0) {
+    //         //     await arbRetryable.redeem(l2Hashes[i]);
+    //         // }
+    //     }
+    // }, 60000);
     
-    tx = await paymeHop.sendToArb(usdtAddrArb, callValue, {
-        value: ethers.utils.parseEther('0.01'),
-        gasLimit: ethers.BigNumber.from('3000000')
-    });
-    const receipt = await tx.wait();
-    console.log('L1 tx hash: ', receipt.transactionHash);
+    // tx = await paymeHop.sendToArb(usdtAddrArb, callValue, {
+    //     value: ethers.utils.parseEther('0.01'),
+    //     gasLimit: ethers.BigNumber.from('3000000')
+    // });
+    // const receipt = await tx.wait();
+    // console.log('L1 tx hash: ', receipt.transactionHash);
 
 
 }
@@ -388,9 +414,9 @@ async function beginSimulatedDiamond() {
 
 // sendArb();
 
-tryPrecompile();
+// tryPrecompile();
 
-// sendTx();
+sendTx('0x0537FE8783444244792e25F73a64a34C8E68fA2c');
 
 // impersonateTx();
 
