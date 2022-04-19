@@ -14,6 +14,12 @@ import 'hardhat/console.sol';
 
 contract PayMeFacetHop is OpsReady { 
 
+    struct userConfig {
+        address user;
+        address userToken;
+        uint userSlippage; 
+    }
+
     uint chainId; 
 
     address public constant nullAddr = 0x0000000000000000000000000000000000000000;
@@ -52,14 +58,17 @@ contract PayMeFacetHop is OpsReady {
 
 
 
-    function sendToArb(address userToken_, uint callvalue_) external onlyOps { //remove payable later and add onlyOps modifier 
+    function sendToArb(
+        userConfig memory userDetails_, 
+        uint callvalue_
+    ) external onlyOps { //remove payable later and add onlyOps modifier 
         (uint fee, ) = opsGel.getFeeDetails();
         _transfer(fee, ETH);
 
         // --- deposits to PYY (ex-Manager) ----
         bytes memory data = abi.encodeWithSelector(
             Test2(payable(PYY)).exchangeToUserToken.selector, 
-            owner, userToken_
+            userDetails_
         );
 
         // user ticketID later on to check the sequencer's inbox for unconfirmed txs
@@ -79,25 +88,28 @@ contract PayMeFacetHop is OpsReady {
 
     // *** GELATO PART ******
 
-    function startTask(address userToken_, uint callvalue_) external returns(bytes32 taskId) {
+    function startTask(
+        userConfig memory userDetails_, 
+        uint callvalue_
+    ) external returns(bytes32 taskId) {
         (taskId) = opsGel.createTaskNoPrepayment(
             address(this),
             this.sendToArb.selector,
             address(this),
-            abi.encodeWithSelector(this.checker.selector, userToken_, callvalue_),
+            abi.encodeWithSelector(this.checker.selector, userDetails_, callvalue_),
             ETH
         );
     }
 
     function checker(
-        address userToken_, 
+        userConfig memory userDetails_, 
         uint callvalue_
     ) external view returns(bool canExec, bytes memory execPayload) {
         if (address(this).balance > 0) {
             canExec = true;
         }
         execPayload = abi.encodeWithSelector(
-            this.sendToArb.selector, userToken_, callvalue_
+            this.sendToArb.selector, userDetails_, callvalue_
         );
     }
 

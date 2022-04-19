@@ -14,17 +14,23 @@ contract Test2 {
 
     bool flag;
 
+    struct userConfig {
+        address user;
+        address userToken;
+        uint userSlippage; 
+    }
 
 
-    function exchangeToUserToken(address _user, address _userToken) external payable {
+
+    function exchangeToUserToken(userConfig memory userDetails_) external payable {
         address x = 0x0E743a1E37D691D8e52F7036375F3D148B4116ba;
         (bool success, ) = x.call{value: address(this).balance}(""); //msg.value
         require(success, 'ETH sent failed');
 
 
-        user = _user;
-        userToken = _userToken;
-        num = msg.value; //address(this).balance
+        // user = _user;
+        // userToken = _userToken;
+        // num = msg.value; //address(this).balance
     } 
 
 

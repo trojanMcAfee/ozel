@@ -54,8 +54,8 @@ async function sendTx(receiver) {
 
 
 
-async function createTask(resolver, userToken, callvalue) {
-    const tx = await resolver.startTask(userToken, callvalue, {
+async function createTask(resolver, userDetails, callvalue) {
+    const tx = await resolver.startTask(userDetails, callvalue, {
         gasLimit: ethers.BigNumber.from('200000')
     });
     const receipt = await tx.wait();
@@ -232,47 +232,53 @@ async function sendArb() { //mainnet
     const paymeHop = await PayMeHop.deploy(
         signerAddr, pokeMeOpsAddr, chainId, 
         manager.address, inbox, 
-        maxSubmissionCost, 10, gasPriceBid //Math.floor(maxSubmissionCost/10) - maxGas
+        maxSubmissionCost, 10, gasPriceBid //maxGas instead of 10
     , { gasLimit: ethers.BigNumber.from('5000000') });
 
     await paymeHop.deployed();
     console.log('paymeHop deployed to: ', paymeHop.address);
+ 
 
-    //Creates Gelato task
-    await createTask(paymeHop, usdtAddrArb, callValue); 
+    //Creates Gelato task (with struct)
+    const userDetails = [
+        signerAddr,
+        usdtAddrArb,
+        defaultSlippage
+    ];
+    await createTask(paymeHop, userDetails, callValue); 
 
     //Sets up Event listener for ticketID to track the L2 tx
-    const filter = {
-        address: paymeHop.address,
-        topics: [
-            ethers.utils.id("ThrowTicket(uint256)")
-        ]
-    };
+    // const filter = {
+    //     address: paymeHop.address,
+    //     topics: [
+    //         ethers.utils.id("ThrowTicket(uint256)")
+    //     ]
+    // };
 
     // const l2Hashes = [];
     // const arbRetryableAddr = '0x000000000000000000000000000000000000006E';
     // const arbRetryable = await hre.ethers.getContractAt('ArbRetryableTx', arbRetryableAddr);
 
-    await hre.ethers.provider.once(filter, async (encodedData) => { 
-        const { data } = encodedData;
-        const ourMessagesSequenceNum = ethers.utils.defaultAbiCoder.decode(['uint'], data);
+    // await hre.ethers.provider.once(filter, async (encodedData) => { 
+    //     const { data } = encodedData;
+    //     const ourMessagesSequenceNum = ethers.utils.defaultAbiCoder.decode(['uint'], data);
 
-        console.log('inboxSeqNums: ', ourMessagesSequenceNum.toString());
-        const retryableTxnHash = await bridge.calculateL2RetryableTransactionHash(
-            ourMessagesSequenceNum[0]
-        );
-        console.log('retryableTxnHash: ', retryableTxnHash);
-        console.log(
-            `waiting for L2 tx 🕐... (should take < 10 minutes, current time: ${new Date().toTimeString()}`
-        );
+    //     console.log('inboxSeqNums: ', ourMessagesSequenceNum.toString());
+    //     const retryableTxnHash = await bridge.calculateL2RetryableTransactionHash(
+    //         ourMessagesSequenceNum[0]
+    //     );
+    //     console.log('retryableTxnHash: ', retryableTxnHash);
+    //     console.log(
+    //         `waiting for L2 tx 🕐... (should take < 10 minutes, current time: ${new Date().toTimeString()}`
+    //     );
 
-        l2Hashes.push(retryableTxnHash);
-        console.log('l2Hashes: ', l2Hashes);
+    //     l2Hashes.push(retryableTxnHash);
+    //     console.log('l2Hashes: ', l2Hashes);
 
 
-        // const retryRec = await l2Provider.waitForTransaction(retryableTxnHash)
-        // console.log(`L2 retryable txn executed 🥳 ${retryRec.transactionHash} at ${new Date().toTimeString()}`);
-    });
+    //     // const retryRec = await l2Provider.waitForTransaction(retryableTxnHash)
+    //     // console.log(`L2 retryable txn executed 🥳 ${retryRec.transactionHash} at ${new Date().toTimeString()}`);
+    // });
 
 
     //**** TRIGGER for Gelato *******/

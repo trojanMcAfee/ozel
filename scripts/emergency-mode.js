@@ -1,5 +1,4 @@
 const { providers, Wallet } = require('ethers')
-const { L1TransactionReceipt, L1ToL2MessageStatus, getRawArbTransactionReceipt } = require('@arbitrum/sdk')
 const { Bridge } = require('arb-ts');
 
 
@@ -12,7 +11,7 @@ const l2Wallet = new Wallet(walletPrivateKey, l2Provider);
 
 
 const paymeHopAddr = '0x0537FE8783444244792e25F73a64a34C8E68fA2c';
-const fakeManager = '0x8EAB53F88B8B1Ee44D00c072eB8Ffa7eAAb81C35';
+// const fakeManager = '0x8EAB53F88B8B1Ee44D00c072eB8Ffa7eAAb81C35';
 
 const filter = {
     address: paymeHopAddr,
@@ -21,15 +20,7 @@ const filter = {
     ]
 };
 
-async function getTxStatus(txnHash) {
-    const receipt = await l1Provider.getTransactionReceipt(txnHash);
-    const l1Receipt = new L1TransactionReceipt(receipt);
 
-    const message = await l1Receipt.getL1ToL2Message(l2Wallet);
-    console.log('message: ', message);
-    const status = (await message.waitForStatus()).status;
-    console.log('status: ', status);
-}
 
 async function main() {
     console.log('listening...');
@@ -64,19 +55,12 @@ async function main() {
                 let x = await arbRetryable.getTimeout(l2Hashes[i]);
                 console.log('timeout: ', x.toString());
                 if (x > 0) {
-                    const tx = await arbRetryable.connect(l2Wallet).redeem(l2Hashes[i]);
+                    const tx = await arbRetryable.redeem(l2Hashes[i]);
                     const receipt = await tx.wait();
                     console.log('receipt: ', receipt);
                 }
             }
         }, 900000);
-
-
-
-        // getTxStatus(retryableTxnHash);
-
-        // const retryRec = await l2Provider.waitForTransaction(retryableTxnHash)
-        // console.log(`L2 retryable txn executed 🥳 ${retryRec.transactionHash} at ${new Date().toTimeString()}`);
     });
 
     
