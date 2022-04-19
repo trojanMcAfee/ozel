@@ -61,16 +61,15 @@ async function main() {
 
         setInterval(async function() {
             for (let i = 0; i < l2Hashes.length; i++) {
-                // let hash = ethers.utils.hexlify(l2Hashes[i]);
-                // console.log('hash in interval: ', hash);
-                // console.log('type: ', typeof hash);
                 let x = await arbRetryable.getTimeout(l2Hashes[i]);
-                // if (x > 0) {
-                //     await arbRetryable.redeem(hash);
-                // }
                 console.log('timeout: ', x.toString());
+                if (x > 0) {
+                    const tx = await arbRetryable.connect(l2Wallet).redeem(l2Hashes[i]);
+                    const receipt = await tx.wait();
+                    console.log('receipt: ', receipt);
+                }
             }
-        }, 60000);
+        }, 900000);
 
 
 
