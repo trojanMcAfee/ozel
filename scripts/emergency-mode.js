@@ -51,6 +51,7 @@ async function main() {
 
 
         setInterval(async function() {
+            console.log('start interval...');
             for (let i = 0; i < l2Hashes.length; i++) {
                 let x = await arbRetryable.getTimeout(l2Hashes[i]);
                 console.log('timeout: ', x.toString());
