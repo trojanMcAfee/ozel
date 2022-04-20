@@ -10,7 +10,7 @@ const l1Wallet = new Wallet(walletPrivateKey, l1Provider);
 const l2Wallet = new Wallet(walletPrivateKey, l2Provider);
 
 
-const paymeHopAddr = '0x0537FE8783444244792e25F73a64a34C8E68fA2c';
+const paymeHopAddr = '0xB417bba56fa2bcE92AfAd7562d16973aE1aF98F3'; //old: 0x0537FE8783444244792e25F73a64a34C8E68fA2c
 // const fakeManager = '0x8EAB53F88B8B1Ee44D00c072eB8Ffa7eAAb81C35';
 
 const filter = {
@@ -55,11 +55,13 @@ async function main() {
                 let x = await arbRetryable.getTimeout(l2Hashes[i]);
                 console.log('timeout: ', x.toString());
                 if (x > 0) {
-                    console.log('eth balance pre: ', (await l2Wallet.getBalance()).toString());
                     const tx = await arbRetryable.connect(l2Wallet).redeem(l2Hashes[i]);
                     const receipt = await tx.wait();
-                    console.log('receipt: ', receipt);
-                    console.log('eth balance post: ', (await l2Wallet.getBalance()).toString());
+                    // console.log('receipt: ', receipt);
+
+                    console.log('redeemed: ', l2Hashes[i]);
+                    l2Hashes.shift();
+                    console.log('new l2Hashes: ', l2Hashes);
                 }
             }
         }, 900000);

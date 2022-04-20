@@ -87,9 +87,9 @@ async function fakeManager() {
 
 
 async function calculateMaxGas(
-    signerAddr, manager, value, maxSubmissionCost, gasPriceBid
+    userDetails, manager, value, maxSubmissionCost, gasPriceBid
 ) {
-    const data = getCalldata('exchangeToUserToken', [signerAddr, usdtAddrArb]);
+    const data = getCalldata('exchangeToUserToken', [userDetails]);
     const depositAmount = parseEther('0.016');
     const nodeAddr = '0x00000000000000000000000000000000000000C8';
     const nodeInterface = await (
@@ -97,7 +97,7 @@ async function calculateMaxGas(
     ).connect(l2Signer);
 
     let [maxGas]  = await nodeInterface.estimateRetryableTicket(
-        signerAddr,
+        userDetails[0],
         depositAmount,
         manager.address,
         value,
@@ -115,10 +115,10 @@ async function calculateMaxGas(
 }
 
 
-async function getGasDetailsL2(signerAddr, bridge) {
+async function getGasDetailsL2(userDetails, bridge) {
     const sendToArbBytes = ethers.utils.defaultAbiCoder.encode(
-        ['address', 'address'],
-        [signerAddr, usdtAddrArb]
+        ['tuple(address, address, uint256)'],
+        [userDetails]
     );
     const sendToArbBytesLength = hexDataLength(sendToArbBytes) + 4;
 
@@ -213,14 +213,20 @@ async function sendArb() { //mainnet
     const value = parseEther('0.01');
     const signerAddr = await signerX.getAddress();
     console.log('signer address: ', signerAddr);
+
+    const userDetails = [
+        signerAddr,
+        usdtAddrArb,
+        defaultSlippage
+    ];
     
     const manager = await fakeManager(); //manager address in arbitrum
     let tx = await manager.setName('Hello world');
     await tx.wait();
 
     //Calculate fees on L1 > L2 arbitrum tx
-    const { maxSubmissionCost, gasPriceBid } = await getGasDetailsL2(signerAddr, bridge);
-    const maxGas = await calculateMaxGas(signerAddr, manager, value, maxSubmissionCost, gasPriceBid);
+    const { maxSubmissionCost, gasPriceBid } = await getGasDetailsL2(userDetails, bridge);
+    const maxGas = await calculateMaxGas(userDetails, manager, value, maxSubmissionCost, gasPriceBid);
     const callValue = maxSubmissionCost.add(gasPriceBid.mul(maxGas)); 
     console.log('gasPriceBid: ', gasPriceBid.toString());
     console.log('callvalue: ', callValue.toString());
@@ -232,7 +238,7 @@ async function sendArb() { //mainnet
     const paymeHop = await PayMeHop.deploy(
         signerAddr, pokeMeOpsAddr, chainId, 
         manager.address, inbox, 
-        maxSubmissionCost, 10, gasPriceBid //maxGas instead of 10
+        maxSubmissionCost, maxGas, gasPriceBid //maxGas instead of 10
     , { gasLimit: ethers.BigNumber.from('5000000') });
 
     await paymeHop.deployed();
@@ -240,26 +246,10 @@ async function sendArb() { //mainnet
  
 
     //Creates Gelato task (with struct)
-    const userDetails = [
-        signerAddr,
-        usdtAddrArb,
-        defaultSlippage
-    ];
     await createTask(paymeHop, userDetails, callValue); 
 
-    //Sets up Event listener for ticketID to track the L2 tx
-    // const filter = {
-    //     address: paymeHop.address,
-    //     topics: [
-    //         ethers.utils.id("ThrowTicket(uint256)")
-    //     ]
-    // };
 
-    // const l2Hashes = [];
-    // const arbRetryableAddr = '0x000000000000000000000000000000000000006E';
-    // const arbRetryable = await hre.ethers.getContractAt('ArbRetryableTx', arbRetryableAddr);
-
-    // await hre.ethers.provider.once(filter, async (encodedData) => { 
+    // await hre.ethers.provider.once(filter, async (encodedData) => {
     //     const { data } = encodedData;
     //     const ourMessagesSequenceNum = ethers.utils.defaultAbiCoder.decode(['uint'], data);
 
@@ -271,36 +261,13 @@ async function sendArb() { //mainnet
     //     console.log(
     //         `waiting for L2 tx 🕐... (should take < 10 minutes, current time: ${new Date().toTimeString()}`
     //     );
-
-    //     l2Hashes.push(retryableTxnHash);
-    //     console.log('l2Hashes: ', l2Hashes);
-
-
-    //     // const retryRec = await l2Provider.waitForTransaction(retryableTxnHash)
-    //     // console.log(`L2 retryable txn executed 🥳 ${retryRec.transactionHash} at ${new Date().toTimeString()}`);
+    //     const retryRec = await l2Provider.waitForTransaction(retryableTxnHash)
+    //     console.log(`L2 retryable txn executed 🥳 ${retryRec.transactionHash} at ${new Date().toTimeString()}`);
     // });
 
 
-    //**** TRIGGER for Gelato *******/
+    // //**** TRIGGER for Gelato *******/
     // await sendTx(paymeHop.address);
-
-    // setInterval(async function() {
-    //     for (let i = 0; i < l2Hashes.length; i++) {
-    //         console.log('hash in interval: ', l2Hashes[i]);
-    //         let x = await arbRetryable.getTimeout(l2Hashes[i]);
-    //         // if (x > 0) {
-    //         //     await arbRetryable.redeem(l2Hashes[i]);
-    //         // }
-    //     }
-    // }, 60000);
-    
-    // tx = await paymeHop.sendToArb(usdtAddrArb, callValue, {
-    //     value: ethers.utils.parseEther('0.01'),
-    //     gasLimit: ethers.BigNumber.from('3000000')
-    // });
-    // const receipt = await tx.wait();
-    // console.log('L1 tx hash: ', receipt.transactionHash);
-
 
 }
 
@@ -416,13 +383,15 @@ async function beginSimulatedDiamond() {
 
 // tryGelatoRopsten();
 
-beginSimulatedDiamond();
+// beginSimulatedDiamond();
 
 // sendArb();
 
 // tryPrecompile();
 
-// sendTx('0x0537FE8783444244792e25F73a64a34C8E68fA2c');
+sendTx('0xB417bba56fa2bcE92AfAd7562d16973aE1aF98F3'); //old with 10 instead of maxGas: 0x0537FE8783444244792e25F73a64a34C8E68fA2c
+//new with maxGas: 0xa3Cc6A8C8ff9f292C8a14C82580dA4e34EB56078
+//new with 10 instead of maxGas: 0xB417bba56fa2bcE92AfAd7562d16973aE1aF98F3
 
 // impersonateTx();
 

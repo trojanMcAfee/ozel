@@ -25,8 +25,8 @@ async function callDiamondProxy(params) {
         getDistributionIndex: 'function getDistributionIndex() returns (uint256)',
         balanceOf: 'function balanceOf(address account) view returns (uint256)',
         transfer: 'function transfer(address recipient, uint256 amount) returns (bool)',
-        exchangeToUserToken: 'function exchangeToUserToken(tuple(address user, address userToken, uint userSlippage) userDetails_)', //'function exchangeToUserToken(address _user, address _userToken)'
-        withdrawUserShare: 'function withdrawUserShare(tuple(address user, address userToken, uint userSlippage) userDetails_, address receiver, uint shares_)'   //'function withdrawUserShare(address user, address receiver, uint shares, address userToken)'
+        exchangeToUserToken: 'function exchangeToUserToken(tuple(address user, address userToken, uint userSlippage) userDetails_)', 
+        withdrawUserShare: 'function withdrawUserShare(tuple(address user, address userToken, uint userSlippage) userDetails_, address receiver, uint shares_)'  
     }; 
 
     for (let sign in signatures) {
@@ -100,7 +100,7 @@ async function transferPYY(recipient, amount, signerIndex) {
     }); 
 }
 
-async function withdrawSharePYY(userConfig, receiverAddr, balancePYY, signerIndex) {  //callerAddr, receiverAddr, balancePYY, userToken, signerIndex
+async function withdrawSharePYY(userConfig, receiverAddr, balancePYY, signerIndex) {  
     await callDiamondProxy({
         method: 'withdrawUserShare',
         args: [userConfig, receiverAddr, balancePYY],
@@ -133,8 +133,8 @@ async function sendETH(userConfig, IERC20, tokenStr, decimals, signerIndex) {
 
 async function getCalldata(method, params) {
     const signatures = {
-        exchangeToUserToken: 'function exchangeToUserToken(address _user, address _userToken)',
-        sendToArb: 'function sendToArb(address _userToken, uint256 _callvalue) returns (uint256)'
+        exchangeToUserToken: 'function exchangeToUserToken(tuple(address user, address userToken, uint userSlippage) userDetails_)',
+        sendToArb: 'function sendToArb(tuple(address user, address userToken, uint userSlippage) userDetails_, uint256 _callvalue) returns (uint256)'
     };
     const abi = [];
     abi.push(signatures[method]);
