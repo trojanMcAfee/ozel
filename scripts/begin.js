@@ -231,6 +231,14 @@ async function sendArb() { //mainnet
     console.log('gasPriceBid: ', gasPriceBid.toString());
     console.log('callvalue: ', callValue.toString());
 
+    //Deploys Emitter
+    const Emitter = await (
+        await hre.ethers.getContractFactory('Emitter')
+    ).connect(l1Signer);
+    const emitter = await Emitter.deploy();
+    await emitter.deployed();
+    console.log('Emitter deployed to: ', emitter.address);
+
     //Deploys PayMe in mainnet
     const PayMeHop = await (
         await hre.ethers.getContractFactory('PayMeFacetHop')
@@ -239,7 +247,8 @@ async function sendArb() { //mainnet
         pokeMeOpsAddr, chainId, 
         manager.address, inbox, 
         maxSubmissionCost, maxGas, gasPriceBid,
-        signerAddr, usdtAddrArb, defaultSlippage 
+        signerAddr, usdtAddrArb, defaultSlippage,
+        emitter.address
     , { gasLimit: ethers.BigNumber.from('5000000') }); //maxGas instead of 10
 
     await paymeHop.deployed();
@@ -249,33 +258,33 @@ async function sendArb() { //mainnet
     //Creates Gelato task (with struct)
     await createTask(paymeHop, callValue); 
 
-    const filter = {
-        address: paymeHop.address,
-        topics: [
-            ethers.utils.id("ThrowTicket(uint256)")
-        ]
-    };
+    // const filter = {
+    //     address: paymeHop.address,
+    //     topics: [
+    //         ethers.utils.id("ThrowTicket(uint256)")
+    //     ]
+    // };
 
 
-    await hre.ethers.provider.once(filter, async (encodedData) => {
-        const { data } = encodedData;
-        const ourMessagesSequenceNum = ethers.utils.defaultAbiCoder.decode(['uint'], data);
+    // await hre.ethers.provider.once(filter, async (encodedData) => {
+    //     const { data } = encodedData;
+    //     const ourMessagesSequenceNum = ethers.utils.defaultAbiCoder.decode(['uint'], data);
 
-        console.log('inboxSeqNums: ', ourMessagesSequenceNum.toString());
-        const retryableTxnHash = await bridge.calculateL2RetryableTransactionHash(
-            ourMessagesSequenceNum[0]
-        );
-        console.log('retryableTxnHash: ', retryableTxnHash);
-        console.log(
-            `waiting for L2 tx 🕐... (should take < 10 minutes, current time: ${new Date().toTimeString()}`
-        );
-        const retryRec = await l2Provider.waitForTransaction(retryableTxnHash)
-        console.log(`L2 retryable txn executed 🥳 ${retryRec.transactionHash} at ${new Date().toTimeString()}`);
-    });
+    //     console.log('inboxSeqNums: ', ourMessagesSequenceNum.toString());
+    //     const retryableTxnHash = await bridge.calculateL2RetryableTransactionHash(
+    //         ourMessagesSequenceNum[0]
+    //     );
+    //     console.log('retryableTxnHash: ', retryableTxnHash);
+    //     console.log(
+    //         `waiting for L2 tx 🕐... (should take < 10 minutes, current time: ${new Date().toTimeString()}`
+    //     );
+    //     const retryRec = await l2Provider.waitForTransaction(retryableTxnHash)
+    //     console.log(`L2 retryable txn executed 🥳 ${retryRec.transactionHash} at ${new Date().toTimeString()}`);
+    // });
 
 
-    //**** TRIGGER for Gelato *******/
-    await sendTx(paymeHop.address);
+    // //**** TRIGGER for Gelato *******/
+    // await sendTx(paymeHop.address);
 
 }
 
@@ -393,13 +402,12 @@ async function beginSimulatedDiamond() {
 
 // beginSimulatedDiamond();
 
-sendArb();
+// sendArb();
 
 // tryPrecompile();
 
-// sendTx('0xB417bba56fa2bcE92AfAd7562d16973aE1aF98F3'); //old with 10 instead of maxGas: 0x0537FE8783444244792e25F73a64a34C8E68fA2c
-//new with maxGas: 0xa3Cc6A8C8ff9f292C8a14C82580dA4e34EB56078
-//new with 10 instead of maxGas: 0xB417bba56fa2bcE92AfAd7562d16973aE1aF98F3
+sendTx('0xBb8FDbD6D27b39B62A55e38974B3CFA7430A1fb9');
+//new with emitter and maxGas: 0xBb8FDbD6D27b39B62A55e38974B3CFA7430A1fb9
 
 // impersonateTx();
 
