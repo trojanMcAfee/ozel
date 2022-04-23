@@ -35,8 +35,6 @@ contract PayMeFacetHop is OpsReady {
 
     address emitter;
 
-    // event ThrowTicket(uint ticketID);
-
 
     constructor(
         address _opsGel,
@@ -94,8 +92,6 @@ contract PayMeFacetHop is OpsReady {
         ); 
 
         Emitter(emitter).forwardEvent(ticketID);
-
-        // emit ThrowTicket(ticketID);
     }
 
     // *** GELATO PART ******
