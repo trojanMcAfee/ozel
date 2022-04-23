@@ -22,11 +22,6 @@ library LibDiamond {
         uint256 facetAddressPosition; // position of facetAddress in facetAddresses array
     }
 
-    // struct SelectorToFacet {
-    //     bytes4[] functionSelectors;
-    //     address facetAddress;
-    // }
-
     struct Facets {
         bytes4[][] selectors;
         address[] addresses;
@@ -49,7 +44,6 @@ library LibDiamond {
         mapping(address => FacetFunctionSelectors) facetFunctionSelectors;
 
         mapping(bytes4 => address) facets;
-        // mapping(bytes4 => SelectorToFacet) selectorToFacet;
 
         // facet addresses
         address[] facetAddresses;

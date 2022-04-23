@@ -47,7 +47,6 @@ contract DiamondInit {
             }
         }
 
-        console.log('*******: ', ds.facetFunctionSelectors[vars_.contracts[0]].facetAddressPosition);
 
         //Sets addresses on contracts
         s.PYY = vars_.contracts[0]; 

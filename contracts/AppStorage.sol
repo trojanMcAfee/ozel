@@ -26,22 +26,28 @@ struct AppStorage {
     address MIM;
     address WETH;
     address FRAX;
+    address ETH;
+
+    //Token infrastructure
+    address py46;
+    address py20;
 
     //System config
     uint dappFee;
-    uint slippageOnCurve; //check and delete if...
+    // uint slippageOnCurve; //check and delete if...
     uint defaultSlippage;
     uint totalVolume;
     uint distributionIndex;
     uint feesVault;
+    uint failedFees;
 
     mapping(address => uint) usersPayments;
 
     PYYERC20 py;
 
-    address ETH;
-    address py46;
-    address py20;
+    // address ETH;
+    // address py46;
+    // address py20;
 
     TradeOps renSwap;
     TradeOps mimSwap;
@@ -50,7 +56,6 @@ struct AppStorage {
 
     TradeOps[] swaps;
 
-    uint failedFees;
 }
 
 struct PYYERC20 {
