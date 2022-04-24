@@ -34,28 +34,24 @@ struct AppStorage {
 
     //System config
     uint dappFee;
-    // uint slippageOnCurve; //check and delete if...
     uint defaultSlippage;
+
+    //Internal accounting vars
     uint totalVolume;
     uint distributionIndex;
     uint feesVault;
     uint failedFees;
-
     mapping(address => uint) usersPayments;
 
     PYYERC20 py;
 
-    // address ETH;
-    // address py46;
-    // address py20;
-
+    //Curve swaps config
     TradeOps renSwap;
     TradeOps mimSwap;
     TradeOps usdcSwap;
     TradeOps fraxSwap;
 
     TradeOps[] swaps;
-
 }
 
 struct PYYERC20 {
