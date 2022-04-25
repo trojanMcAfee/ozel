@@ -28,11 +28,13 @@ contract DiamondCutFacet is IDiamondCut {
         LibDiamond.diamondCut(_diamondCut, _init, _calldata);
     }
 
-    function changeDappFee(uint baseUnits_) external { //<------ add there require onlyOwner
+    function changeDappFee(uint baseUnits_) external {
+        LibDiamond.enforceIsContractOwner();
         s.dappFee = baseUnits_;
     }
 
     function changeDefaultSlippage(uint baseUnits_) external {
+        LibDiamond.enforceIsContractOwner();
         s.defaultSlippage = baseUnits_;
     }
 }

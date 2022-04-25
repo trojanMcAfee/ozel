@@ -16,14 +16,14 @@ import 'hardhat/console.sol';
 import '../AppStorage.sol';
 import './ExecutorF.sol';
 
-
+import '../libraries/SafeTransferLib.sol';
 
 
 contract PYYFacet { 
 
     AppStorage s;
 
-    using SafeERC20 for IERC20;
+    using SafeTransferLib for IERC20;
 
     /**
     WBTC: 1 / USDT: 0 / WETH: 2
