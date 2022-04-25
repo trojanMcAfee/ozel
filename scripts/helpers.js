@@ -3,25 +3,21 @@ const { MaxUint256 } = ethers.constants;
 
 
 let deployedDiamond;
-let PYY;
-let managerFacet;
-let renBTC;
+let pyyFacet;
 
 
-async function getVarsForHelpers(diamond, pyy, manager, ren) {
+async function getVarsForHelpers(diamond, pyy) { 
     deployedDiamond = diamond;
-    PYY = pyy;
-    managerFacet = manager;
-    renBTC = ren;
+    pyyFacet = pyy;
 }
 
 async function callDiamondProxy(params) { 
     const signers = await hre.ethers.getSigners();
     const signer = signers[!params.signerIndex ? 0 : params.signerIndex];
     const abi = [];
+    let callArgs = [];
     let iface;
     let encodedData;
-    const callArgs = [];
     let tx;
     let decodedData;
     let signature;
@@ -29,9 +25,9 @@ async function callDiamondProxy(params) {
         getDistributionIndex: 'function getDistributionIndex() returns (uint256)',
         balanceOf: 'function balanceOf(address account) view returns (uint256)',
         transfer: 'function transfer(address recipient, uint256 amount) returns (bool)',
-        exchangeToUserToken: 'function exchangeToUserToken(uint _amount, address _user, address _userToken)',
-        withdrawUserShare: 'function withdrawUserShare(address _user, uint _userAllocation, address _userToken)'
-    };
+        exchangeToUserToken: 'function exchangeToUserToken(tuple(address user, address userToken, uint userSlippage) userDetails_)', 
+        withdrawUserShare: 'function withdrawUserShare(tuple(address user, address userToken, uint userSlippage) userDetails_, address receiver, uint shares_)'  
+    }; 
 
     for (let sign in signatures) {
         if (sign === params.method) {
@@ -40,27 +36,29 @@ async function callDiamondProxy(params) {
     }
     abi.push(signature);
     iface = new ethers.utils.Interface(abi);
-    
-    if (params.args) {
-        if (Object.keys(params.args).length < 2) {
-            callArgs[0] = params.args[Object.keys(params.args)[0]];
-        } else {
-            let i = 0;
-            for (let key in params.args) {
-                callArgs[i] = params.args[key];
-                i++;
-            }
-        }
-    }
+
 
     switch(!params.dir ? 0 : params.dir) {
         case 0: 
+           const args = params.args;
+            switch(true) {
+                case args.length === 2:
+                    callArgs = [...args];
+                    break;
+                case typeof args[0] === 'object':
+                    for (let i=0; i < args.length; i++) callArgs.push(args[i]);
+                    break;
+                default:
+                    callArgs.push(args);
+            }
+
             encodedData = iface.encodeFunctionData(params.method, callArgs);
             const unsignedTx = {
                 to: deployedDiamond.address,
-                data: encodedData
+                data: encodedData,
+                value: params.value
             };
-            if (callArgs.length === 1) {
+            if (typeof params.args === 'string') { 
                 tx = await signer.call(unsignedTx);
                 [ decodedData ] = abiCoder.decode([params.type], tx);
                 return decodedData;
@@ -88,7 +86,7 @@ async function callDiamondProxy(params) {
 async function balanceOfPYY(user) {
     return await callDiamondProxy({
         method: 'balanceOf',
-        args: {user},
+        args: user,
         dir: 0,
         type: 'uint256'
     }); 
@@ -97,48 +95,62 @@ async function balanceOfPYY(user) {
 async function transferPYY(recipient, amount, signerIndex) { 
     await callDiamondProxy({
         method: 'transfer',
-        args: {recipient, amount},
+        args: [recipient, amount],
         signerIndex
     }); 
 }
 
-async function withdrawSharePYY(callerAddr, balancePYY, usdtAddr) {
+async function withdrawSharePYY(userConfig, receiverAddr, balancePYY, signerIndex) {  
     await callDiamondProxy({
         method: 'withdrawUserShare',
-        args: {callerAddr, balancePYY, usdtAddr}
+        args: [userConfig, receiverAddr, balancePYY],
+        signerIndex
     });
-}
+} 
 
-async function approvePYY(caller) {
-    const signer = await hre.ethers.provider.getSigner(caller);
-    await PYY.connect(signer).approve(managerFacet.address, MaxUint256);
-}
 
-//Sends renBTC to contracts (simulates BTC bridging) ** MAIN FUNCTION **
-async function sendsOneTenthRenBTC(oneTenth, userAddr, userToken, IERC20, tokenStr, decimals) {
-    await renBTC.transfer(deployedDiamond.address, oneTenth);
-    const balanceRenBTC = await renBTC.balanceOf(deployedDiamond.address);
+//Sends ETH to contracts (simulates ETH bridging) **** MAIN FUNCTION ****
+async function sendETH(userConfig, IERC20, tokenStr, decimals, signerIndex) {
+    const value = ethers.utils.parseEther('100');
     await callDiamondProxy({
         method: 'exchangeToUserToken',
-        args: {balanceRenBTC, userAddr, userToken},
+        args: userConfig, //an array now - before: {userAddr, userToken}, + userSlippage
+        value,
+        signerIndex
     });
+
     const distributionIndex = await callDiamondProxy({
         method: 'getDistributionIndex',
         dir: 1,
         type: 'uint256'
     });
     console.log('index: ', distributionIndex.toString() / 10 ** 18);
-    let tokenBalance = await IERC20.balanceOf(userAddr);
+    let tokenBalance = await IERC20.balanceOf(userConfig[0]);
     console.log(tokenStr + ' balance of callerAddr: ', tokenBalance.toString() / decimals);
     console.log('.'); 
 }
+
+
+async function getCalldata(method, params) {
+    const signatures = {
+        exchangeToUserToken: 'function exchangeToUserToken(tuple(address user, address userToken, uint userSlippage) userDetails_)',
+        sendToArb: 'function sendToArb(tuple(address user, address userToken, uint userSlippage) userDetails_, uint256 _callvalue) returns (uint256)'
+    };
+    const abi = [];
+    abi.push(signatures[method]);
+    const iface = new ethers.utils.Interface(abi);
+    const data = iface.encodeFunctionData(method, params);
+    return data;
+} 
+
+
 
 
 module.exports = {
     balanceOfPYY,
     transferPYY,
     withdrawSharePYY,
-    approvePYY, 
     getVarsForHelpers,
-    sendsOneTenthRenBTC
+    sendETH,
+    getCalldata
 };
