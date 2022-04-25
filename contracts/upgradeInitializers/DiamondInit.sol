@@ -14,23 +14,29 @@ import { IDiamondCut } from "../interfaces/IDiamondCut.sol";
 import { IERC173 } from "../interfaces/IERC173.sol";
 import { IERC165 } from "../interfaces/IERC165.sol";
 import '../AppStorage.sol'; 
+import '../interfaces/IGatewayRegistry.sol';
+import '../interfaces/IGateway.sol';
+import '../facets/ManagerFacet.sol';
 import '@openzeppelin/contracts/token/ERC20/IERC20.sol';
+import {IRenPool, ITricrypto} from '../interfaces/ICurve.sol';
+import '../facets/VaultFacet.sol';
+import '../facets/ERC20Facet/IERC20Facet.sol';
+import '../interfaces/ICrvLpToken.sol';
+import '../facets/PayMeFacet.sol';
+import '../facets/GettersFacet.sol';
+
 import 'hardhat/console.sol';
-
-import '../interfaces/IWETH.sol';
-
-
 
 
 
 contract DiamondInit {    
 
-    AppStorage s;
+    AppStorage internal s;
     // You can add parameters to this function in order to pass in 
     // data to set your own state variables
     function init(
-        LibDiamond.Facets memory facets_,
-        LibDiamond.VarsAndAddresses memory vars_
+        LibDiamond.Facets memory _facets,
+        LibDiamond.VarsAndAddresses memory _vars
     ) external {
         // adding ERC165 data
         LibDiamond.DiamondStorage storage ds = LibDiamond.diamondStorage();
@@ -40,62 +46,41 @@ contract DiamondInit {
         ds.supportedInterfaces[type(IERC173).interfaceId] = true;
 
         //Ads selectors to Facets mapping
-        for (uint i; i < facets_.selectors.length; i++) {
-            bytes4[] memory selectors = facets_.selectors[i];
+        for (uint i; i < _facets.selectors.length; i++) {
+            bytes4[] memory selectors = _facets.selectors[i];
             for (uint j; j < selectors.length; j++) {
-                ds.facets[selectors[j]] = facets_.addresses[i];
+                ds.facets[selectors[j]] = _facets.addresses[i];
             }
         }
 
         //Sets addresses on contracts
-        s.PYY = vars_.contracts[0]; 
-        s.tricrypto = vars_.contracts[1];
-        s.crvTricrypto = vars_.contracts[2];
-        s.getters = vars_.contracts[3];
-        s.renPool = vars_.contracts[4];
-        s.mimPool = vars_.contracts[5];
-        s.crv2Pool = vars_.contracts[6];
-        s.yTriPool = vars_.contracts[7];
-        s.fraxPool = vars_.contracts[8];
-        s.executor = vars_.contracts[9];
-        s.py46 = vars_.contracts[10]; 
-        s.py20 = vars_.contracts[11];
+        s.registry = IGatewayRegistry(_vars.contracts[0]);
+        s.manager = ManagerFacet(_vars.contracts[1]);
+        s.tricrypto = ITricrypto(_vars.contracts[2]);
+        s.vault = VaultFacet(_vars.contracts[3]);
+        s.renPool = IRenPool(_vars.contracts[4]);
+        s.crvTricrypto = ICrvLpToken(_vars.contracts[5]);
+        s.payme = PayMeFacet(payable(_vars.contracts[6]));
+        s.getters = GettersFacet(_vars.contracts[7]);
 
         //Sets ERC20 instances
-        s.USDT = vars_.erc20s[0];
-        s.WBTC = vars_.erc20s[1];
-        s.renBTC = vars_.erc20s[2];
-        s.USDC = vars_.erc20s[3];
-        s.MIM = vars_.erc20s[4];
-        s.WETH = vars_.erc20s[5];
-        s.FRAX = vars_.erc20s[6];
+        s.renBTC = IERC20(_vars.erc20s[0]);
+        s.USDT = IERC20(_vars.erc20s[1]);
+        s.WETH = IERC20(_vars.erc20s[2]);
+        s.WBTC = IERC20(_vars.erc20s[3]);
+        s.PYY = IERC20Facet(_vars.erc20s[4]);
 
         //Sets app's general variables
-        s.dappFee = vars_.appVars[0];
-        s.defaultSlippage = vars_.appVars[1];
+        s.dappFee = _vars.appVars[0];
+        s.slippageOnCurve = _vars.appVars[1];
+        s.slippageTradingCurve = _vars.appVars[2];
 
         //Sets name and symbol on PayToken (PYY)
-        s.py.name_ = vars_.pyyVars[0];
-        s.py.symbol_ = vars_.pyyVars[1];
+        s.py[true]._name = _vars.pyyVars[0];
+        s.py[true]._symbol = _vars.pyyVars[1];
 
         //Sets ETH address
-        s.ETH = vars_.ETH;
-
-        /*** Sets the structs for userTokens
-        renPool -->  renBTC: 1 / WBTC: 0
-        mimPool --> MIM: 0 / USDT: 2 / USDC: 1
-        crv2Pool --> /USDC: 0 / USDT: 1
-        fraxPool --> FRAX: 0 / USDT: 2 / USDC: 1 ***/
-        s.renSwap = TradeOps(0, 1, s.WBTC, s.renBTC, s.renPool);
-        s.mimSwap = TradeOps(2, 0, s.USDT, s.MIM, s.mimPool);
-        s.usdcSwap = TradeOps(1, 0, s.USDT, s.USDC, s.crv2Pool);
-        s.fraxSwap = TradeOps(2, 0, s.USDT, s.FRAX, s.fraxPool);
-
-        //Array of structs
-        s.swaps.push(s.renSwap);
-        s.swaps.push(s.mimSwap);
-        s.swaps.push(s.usdcSwap);
-        s.swaps.push(s.fraxSwap);
+        s.ETH = _vars.ETH;
 
         // add your own state variables 
         // EIP-2535 specifies that the `diamondCut` function takes two optional 
@@ -105,5 +90,3 @@ contract DiamondInit {
         // More info here: https://eips.ethereum.org/EIPS/eip-2535#diamond-interface 
     }
 }
-
-

@@ -3,36 +3,41 @@ const { getSelectors } = require('./libraries/diamond.js');
 
 const {
     wethAddr,
-    tricryptoAddr,
-    usdtAddrArb,
-    crvTricrypto,
     wbtcAddr,
     renBtcAddr,
+    registryAddr,
     renPoolAddr,
-    usdcAddr,
-    mimAddr,
-    fraxAddr,
-    mimPoolAddr,
-    crv2PoolAddr,
-    yTricryptoPoolAddr,
-    fraxPoolAddr,
+    tricryptoAddr,
+    usdtAddr,
+    crvTricrypto,
     ETH,
     dappFee,
+    slippageOnCurve,
     tokenName,
     tokenSymbol,
-    defaultSlippage
+    slippageTradingCurve
 } = require('./state-vars.js');
 
 
-async function deployFacet(facetName) { 
-    const Contract = await hre.ethers.getContractFactory(facetName);
+async function deployFacet(facetName, withLib, libDeployed) {
+    let Contract, library;
+    if (withLib) {
+        library = !libDeployed ? await deployFacet(withLib) : libDeployed;
+        const lb = {};
+        lb[withLib] = library.address;
+        Contract = await hre.ethers.getContractFactory(facetName, {
+            libraries: lb
+        });
+    } else {
+        Contract = await hre.ethers.getContractFactory(facetName);
+    }
     const contract = await Contract.deploy();
     await contract.deployed();
     console.log(`${facetName} deployed to: `, contract.address);
-    return contract;
+    return withLib && !libDeployed ? [contract, library] : contract;
 }
 
-function getSelectorsFromAllFacets(facets) { 
+function getSelectorsFromAllFacets(facets) {
     const selectors = [];
     for (let i = 0; i < facets.length; i++) {
         selectors.push(getSelectors(facets[i]).filter((el) => typeof el === 'string'));
@@ -41,8 +46,7 @@ function getSelectorsFromAllFacets(facets) {
 }
 
 
-//Deploys contracts in Arbitrum
-async function deploy() { 
+async function deploy() {
     const [callerAddr, caller2Addr] = await hre.ethers.provider.listAccounts();
     console.log('--');
     console.log('Caller 1: ', callerAddr);
@@ -50,71 +54,62 @@ async function deploy() {
     console.log('--');
 
     const WETH = await hre.ethers.getContractAt('IERC20', wethAddr);
-    const USDT = await hre.ethers.getContractAt('IERC20', usdtAddrArb);
+    const USDT = await hre.ethers.getContractAt('IERC20', usdtAddr);
     const WBTC = await hre.ethers.getContractAt('IERC20', wbtcAddr);
     const renBTC = await hre.ethers.getContractAt('IERC20', renBtcAddr);
-    const USDC = await hre.ethers.getContractAt('IERC20', usdcAddr);
-    const MIM = await hre.ethers.getContractAt('IERC20', mimAddr);
     const crvTri = await hre.ethers.getContractAt('IERC20', crvTricrypto);
-    const yvCrvTri = await hre.ethers.getContractAt('IYtri', yTricryptoPoolAddr);
-    const FRAX = await hre.ethers.getContractAt('IERC20', fraxAddr);
 
     //Facets
     const diamondCutFacet = await deployFacet('DiamondCutFacet');
     const diamondLoupeFacet = await deployFacet('DiamondLoupeFacet'); 
-    const pyyFacet = await deployFacet('PYYFacet');
+    const [managerFacet, library] = await deployFacet('ManagerFacet', 'Helpers');
+    const vaultFacet = await deployFacet('VaultFacet', 'Helpers', library);
+    const paymeFacet = await deployFacet('PayMeFacet', 'Helpers', library);
+    const PYY = await deployFacet('PayTokenFacet'); 
     const gettersFacet = await deployFacet('GettersFacet');
-    const executorF = await deployFacet('ExecutorF');
-    const py4626 = await deployFacet('pyERC4626');
-    const py20 = await deployFacet('pyERC20');
 
     //Selectors
     const [
         selecCut,
         selecLoup,
+        selecPayme,
+        selecManager,
         selecPYY,
         selectGetters,
-        selectExecutor,
-        select4626,
-        select20
+        selecVault
     ] = getSelectorsFromAllFacets([
         diamondCutFacet,
         diamondLoupeFacet,
-        pyyFacet,
+        paymeFacet,
+        managerFacet,
+        PYY,
         gettersFacet,
-        executorF,
-        py4626,
-        py20
+        vaultFacet
     ]);
 
     const contractsAddr = [
-        pyyFacet.address,
+        registryAddr,
+        managerFacet.address,
         tricryptoAddr,
-        crvTricrypto,
-        gettersFacet.address,
+        vaultFacet.address,
         renPoolAddr,
-        mimPoolAddr,
-        crv2PoolAddr,
-        yTricryptoPoolAddr,
-        fraxPoolAddr,
-        executorF.address,
-        py4626.address,
-        py20.address
+        crvTricrypto,
+        paymeFacet.address,
+        gettersFacet.address
     ];
 
     const erc20sAddr = [
-        usdtAddrArb,
-        wbtcAddr,
         renBtcAddr,
-        usdcAddr,
-        mimAddr,
+        usdtAddr,
         wethAddr,
-        fraxAddr,
+        wbtcAddr,
+        PYY.address
     ];
 
     const appVars = [
         dappFee,
-        defaultSlippage
+        slippageOnCurve,
+        slippageTradingCurve
     ];
 
     //Data structs for init()
@@ -130,20 +125,20 @@ async function deploy() {
         [
             selecCut, 
             selecLoup, 
-            selecPYY, 
+            selecPayme, 
+            selecManager, 
+            selecPYY,
             selectGetters,
-            selectExecutor,
-            select4626,
-            select20
+            selecVault
         ],
         [
             diamondCutFacet.address, 
             diamondLoupeFacet.address, 
-            pyyFacet.address,
+            paymeFacet.address,
+            managerFacet.address,
+            PYY.address,
             gettersFacet.address,
-            executorF.address,
-            py4626.address,
-            py20.address
+            vaultFacet.address
         ]
     ];
 
@@ -163,11 +158,11 @@ async function deploy() {
         facets: [
             ['DiamondCutFacet', diamondCutFacet],
             ['DiamondLoupeFacet', diamondLoupeFacet],
-            ['PYYFacet', pyyFacet],
+            ['PayMeFacet', paymeFacet],
+            ['ManagerFacet', managerFacet],
+            ['PayTokenFacet', PYY],
             ['GettersFacet', gettersFacet],
-            ['ExecutorF', executorF],
-            ['pyERC4626', py4626],
-            ['pyERC20', py20]
+            ['VaultFacet', vaultFacet]
         ],
         args: '',
         overrides: {callerAddr, functionCall, diamondInit: diamondInit.address}
@@ -180,14 +175,11 @@ async function deploy() {
         USDT,
         WBTC,
         renBTC,
-        USDC,
-        MIM,
-        FRAX,
         crvTri,
         callerAddr, 
         caller2Addr,
-        pyyFacet,
-        yvCrvTri
+        PYY,
+        managerFacet
     };
 
 }

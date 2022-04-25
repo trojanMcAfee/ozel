@@ -2,14 +2,14 @@
 
 pragma solidity ^0.8.0;
 
-import "./pyIERC20.sol";
+import "./IERC20Facet.sol";
 
 /**
  * @dev Interface for the optional metadata functions from the ERC20 standard.
  *
  * _Available since v4.1._
  */
-interface pyIERC20Metadata is pyIERC20 {
+interface MyIERC20Metadata is IERC20Facet {
     /**
      * @dev Returns the name of the token.
      */
