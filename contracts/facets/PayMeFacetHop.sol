@@ -6,6 +6,7 @@ import '../interfaces/IL1_ETH_Bridge.sol';
 import '../interfaces/DelayedInbox.sol';
 import './OpsReady.sol';
 import './Test2.sol';
+import '../Emitter.sol';
 
 import 'hardhat/console.sol'; 
 
@@ -32,7 +33,7 @@ contract PayMeFacetHop is OpsReady {
 
     DelayedInbox inbox;
 
-    event ThrowTicket(uint ticketID);
+    address emitter;
 
 
     constructor(
@@ -45,13 +46,14 @@ contract PayMeFacetHop is OpsReady {
         uint _gasPriceBid,
         address user_,
         address userToken_,
-        uint userSlippage_
+        uint userSlippage_,
+        address emitter_
     ) OpsReady(_opsGel) { 
         chainId = _chainId;
         PYY = _pyy;
         inbox = DelayedInbox(_inbox);
-        maxSubmissionCost = _maxSubmissionCost;
-        maxGas = _maxGas;
+        maxSubmissionCost = _maxSubmissionCost; //try to hardcode these values
+        maxGas = _maxGas; //perhaps don't do an immediate redeem and manually redeem afterwards so not to use gasPrice x maxGas
         gasPriceBid = _gasPriceBid;
 
         userDetails = userConfig({
@@ -59,6 +61,8 @@ contract PayMeFacetHop is OpsReady {
             userToken: userToken_,
             userSlippage: userSlippage_
         });
+
+        emitter = emitter_;
     }
 
     receive() external payable {}
@@ -85,9 +89,9 @@ contract PayMeFacetHop is OpsReady {
             maxGas, 
             gasPriceBid, 
             data
-        );
+        ); 
 
-        emit ThrowTicket(ticketID);
+        Emitter(emitter).forwardEvent(ticketID);
     }
 
     // *** GELATO PART ******

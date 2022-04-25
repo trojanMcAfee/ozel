@@ -47,6 +47,7 @@ contract DiamondInit {
             }
         }
 
+
         //Sets addresses on contracts
         s.PYY = vars_.contracts[0]; 
         s.tricrypto = vars_.contracts[1];

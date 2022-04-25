@@ -144,6 +144,7 @@ contract PYYFacet {
 
         //tricrypto= USDT: 0 / crv2- USDT: 1 , USDC: 0 / mim- MIM: 0 , CRV2lp: 1
         uint tokenAmountIn = ITri(s.tricrypto).calc_withdraw_one_coin(assets, 0); 
+        
         //If tx reverts due to slippage, user can re-submit a new one
         uint minOut = ExecutorF(s.executor).calculateSlippage(tokenAmountIn, userSlippage); 
         ITri(s.tricrypto).remove_liquidity_one_coin(assets, 0, minOut);
@@ -152,7 +153,7 @@ contract PYYFacet {
         _tradeWithExecutor(userToken, userSlippage);
 
         uint userTokens = IERC20(userToken).balanceOf(address(this));
-        IERC20(userToken).safeTransfer(receiver_, userTokens); 
+        IERC20(userToken).safeTransfer(receiver_, userTokens); //<------- if it fails again, try safeTransferFrom
     } 
     
 

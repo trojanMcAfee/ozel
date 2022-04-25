@@ -1,5 +1,6 @@
 const { providers, Wallet } = require('ethers')
 const { Bridge } = require('arb-ts');
+const { ethers } = require('hardhat');
 
 
 const walletPrivateKey = process.env.PK;
@@ -10,13 +11,13 @@ const l1Wallet = new Wallet(walletPrivateKey, l1Provider);
 const l2Wallet = new Wallet(walletPrivateKey, l2Provider);
 
 
-const paymeHopAddr = '0xB417bba56fa2bcE92AfAd7562d16973aE1aF98F3'; //old: 0x0537FE8783444244792e25F73a64a34C8E68fA2c
-// const fakeManager = '0x8EAB53F88B8B1Ee44D00c072eB8Ffa7eAAb81C35';
+// const paymeHopAddr = '0xBb8FDbD6D27b39B62A55e38974B3CFA7430A1fb9'; //old: 0xB417bba56fa2bcE92AfAd7562d16973aE1aF98F3
+const emitterAddr = '0xeD64c50c0412DC24B52aC432A3b723e16E18776B';
 
 const filter = {
-    address: paymeHopAddr,
+    address: emitterAddr,
     topics: [
-        ethers.utils.id("ThrowTicket(uint256)")
+        ethers.utils.id("showTicket(uint256)")
     ]
 };
 
@@ -51,18 +52,24 @@ async function main() {
 
 
         setInterval(async function() {
-            console.log('start interval...');
+            console.log(`start interval: ${new Date().toTimeString()}`);
+            console.log('hashes in interval: ', l2Hashes);
+
             for (let i = 0; i < l2Hashes.length; i++) {
                 let x = await arbRetryable.getTimeout(l2Hashes[i]);
                 console.log('timeout: ', x.toString());
                 if (x > 0) {
-                    const tx = await arbRetryable.connect(l2Wallet).redeem(l2Hashes[i]);
+                    const tx = await arbRetryable.connect(l2Wallet).redeem(l2Hashes[i], {
+                        gasLimit: ethers.BigNumber.from('10000000')
+                    });
                     const receipt = await tx.wait();
                     // console.log('receipt: ', receipt);
 
                     console.log('redeemed: ', l2Hashes[i]);
                     l2Hashes.shift();
+                    i = -1;
                     console.log('new l2Hashes: ', l2Hashes);
+                    console.log('.');
                 }
             }
         }, 900000);

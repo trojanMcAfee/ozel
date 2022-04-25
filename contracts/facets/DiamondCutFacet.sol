@@ -8,8 +8,11 @@ pragma solidity ^0.8.0;
 
 import { IDiamondCut } from "../interfaces/IDiamondCut.sol";
 import { LibDiamond } from "../libraries/LibDiamond.sol";
+import '../AppStorage.sol';
 
 contract DiamondCutFacet is IDiamondCut {
+    AppStorage s;
+
     /// @notice Add/replace/remove any number of functions and optionally execute
     ///         a function with delegatecall
     /// @param _diamondCut Contains the facet addresses and function selectors
@@ -24,4 +27,14 @@ contract DiamondCutFacet is IDiamondCut {
         LibDiamond.enforceIsContractOwner();
         LibDiamond.diamondCut(_diamondCut, _init, _calldata);
     }
+
+    function changeDappFee(uint baseUnits_) external { //<------ add there require onlyOwner
+        s.dappFee = baseUnits_;
+    }
+
+    function changeDefaultSlippage(uint baseUnits_) external {
+        s.defaultSlippage = baseUnits_;
+    }
 }
+
+
