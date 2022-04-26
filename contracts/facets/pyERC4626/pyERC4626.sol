@@ -59,6 +59,7 @@ contract pyERC4626 {
         address owner
     ) public virtual returns (uint256 assets) {
         require((assets = previewRedeem(shares)) != 0, "ZERO_ASSETS");
+        // console.log('msg.sender in redeem: ', msg.sender);
 
         beforeWithdraw(assets, shares);
 

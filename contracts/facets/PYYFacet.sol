@@ -23,7 +23,7 @@ contract PYYFacet {
 
     AppStorage s;
 
-    using SafeTransferLib for IERC20;
+    using SafeERC20 for IERC20;
 
     /**
     WBTC: 1 / USDT: 0 / WETH: 2
