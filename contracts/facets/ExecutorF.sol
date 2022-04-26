@@ -37,9 +37,7 @@ contract ExecutorF {
         uint minOut;
         uint slippage;
 
-        if (pool != s.renPool) {
-            IERC20(s.USDT).approve(pool, inBalance);
-        }
+        if (pool != s.renPool) IERC20(s.USDT).approve(pool, inBalance);
 
         /**** 
             Exchanges the amount between the user's slippage (final swap)
@@ -99,8 +97,7 @@ contract ExecutorF {
     function updateManagerState(
         uint amount_, 
         address user_
-    ) external payable { //<------ double check the payable
-        console.log('msg.sender on update: ', msg.sender);
+    ) external payable {
         s.usersPayments[user_] += amount_;
         s.totalVolume += amount_;
         _updateIndex();
