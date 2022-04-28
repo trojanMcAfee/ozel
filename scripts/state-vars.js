@@ -30,6 +30,9 @@ const defaultSlippage = 100; //5 -> 0.05%; / 100 -> 1%
 const tokenName = 'PayToken';
 const tokenSymbol = 'PYY';
 
+//main2: f3c4ded9365ce3e1171e5b847cb1eef31fa369d88cc0f52681ac8fcd8f8c9694
+//main1: bf9d5415265d700b2f7554fa9cf0cda2a51b2af185caa739b15e817655cacdc4
+
 
 
 
@@ -41,7 +44,7 @@ const l1Signer = signerX.connect(l1ProviderRinkeby);
 
 
 
-let network = 'arbitrum';
+let network = 'rinkeby';
 switch(network) {
     case 'rinkeby':
         chainId = 421611;

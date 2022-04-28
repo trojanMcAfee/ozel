@@ -1,5 +1,6 @@
 const { ethers } = require("ethers");
 const { parseEther, formatEther, defaultAbiCoder: abiCoder, keccak256 } = ethers.utils;
+const { MaxUint256 } = ethers.constants;
 const { deploy } = require('./deploy.js');
 const { Bridge } = require('arb-ts');
 const { hexDataLength } = require('@ethersproject/bytes');
@@ -48,6 +49,7 @@ async function sendTx(receiver) {
         to: receiver,
         gasLimit: ethers.BigNumber.from('1000000')
     });
+    console.log(1);
     const receipt = await tx.wait();
     console.log('eth sent with hash: ', receipt.transactionHash);
 }
@@ -151,7 +153,7 @@ async function tryPrecompile() {
     const bridge = await Bridge.init(l1Signer, l2Signer);
     const arbRetryableAddr = '0x000000000000000000000000000000000000006E';
     const arbRetryable = await hre.ethers.getContractAt('ArbRetryableTx', arbRetryableAddr);
-    const req = 213702;
+    // const req = 213702;
 
     // const txId = keccak256(abiCoder.encode(['uint'], [req]), 0); //abiCoder.encode(['uint'], [req]), 0
     // console.log('txId: ', txId); //req, 0
@@ -164,14 +166,30 @@ async function tryPrecompile() {
     // const hashes = [];
     // const x = '0x17de80e4ed05eefc31e6d2827232e6f620876f11c8fa0651eb722d943459d22c';
     // hashes.push(x);
+    const { providers, Wallet } = require('ethers')
+    const { ethers } = require('hardhat');
+
+    const txId = '0xdeb0600e8bbc253bc3e8b8fb4b965532a4da5e80009688f940903f03cc244d6f';
+
+    const timeOut = await arbRetryable.getTimeout(txId, {
+        gasLimit: ethers.BigNumber.from('10000000')
+    });
+    console.log('timeOut: ', timeOut.toString());
 
 
-    // for (let i = 0; i < hashes.length; i++) {
-        const timeOut = await arbRetryable.getTimeout('0xd208f7b3e47ab1f8c12e5f5aae5cd5cb7811c66a92a32974f46bd6a5afbe410a', {
-            gasLimit: ethers.BigNumber.from('10000000')
-        });
-        console.log('timeOut: ', timeOut.toString());
-    // }
+    const walletPrivateKey = process.env.PK;
+
+    const l1Provider = new providers.JsonRpcProvider(process.env.RINKEBY);
+    const l2Provider = new providers.JsonRpcProvider(process.env.ARB_TESTNET);
+    const l1Wallet = new Wallet(walletPrivateKey, l1Provider);
+    const l2Wallet = new Wallet(walletPrivateKey, l2Provider);
+
+    const tx = await arbRetryable.connect(l2Wallet).redeem(txId, {
+        gasLimit: ethers.BigNumber.from('10000000')
+    });
+
+    await tx.wait();
+    console.log('done');
 
     // const lifetime = await arbRetryable.getLifetime();
     // console.log('lifetime: ', lifetime.toString()); 
@@ -219,11 +237,11 @@ async function sendArb() { //mainnet
         defaultSlippage
     ];
     
-    // const manager = await fakeManager(); //manager address in arbitrum
-    // let tx = await manager.setName('Hello world');
-    // await tx.wait();
-    const managerAddr = '0xa6B35f966679086A95ca92313C1a5541bA319E8D';
+    const manager = await fakeManager(); //manager address in arbitrum
+    const managerAddr = manager.address; //with correct values
+    //0x6D2Cb1bA1fa48f8aa18ca57fA4082136ff0ffC49
 
+    
     //Calculate fees on L1 > L2 arbitrum tx
     const { maxSubmissionCost, gasPriceBid } = await getGasDetailsL2(userDetails, bridge);
     const maxGas = await calculateMaxGas(userDetails, managerAddr, value, maxSubmissionCost, gasPriceBid);
@@ -238,10 +256,10 @@ async function sendArb() { //mainnet
     // const emitter = await Emitter.deploy();
     // await emitter.deployed();
     // console.log('Emitter deployed to: ', emitter.address);
-    const emitterAddr = '0xeD64c50c0412DC24B52aC432A3b723e16E18776B';
+    const emitterAddr = '0x7ee460F5A18A4f1Ec1B3eA08347103dF0590f05f'; //with correct values
 
     //Deploys PayMe in mainnet
-    for (let i = 0; i < 4; i++) {
+    // for (let i = 0; i < 4; i++) { 
 
     let PayMeHop = await (
         await hre.ethers.getContractFactory('PayMeFacetHop')
@@ -249,48 +267,93 @@ async function sendArb() { //mainnet
     let paymeHop = await PayMeHop.deploy(
         pokeMeOpsAddr, chainId, 
         managerAddr, inbox, 
-        maxSubmissionCost, 10, gasPriceBid,
+        maxSubmissionCost, maxGas, gasPriceBid, //maxSubmissionCost instead MaxUint256
         signerAddr, usdtAddrArb, defaultSlippage,
         emitterAddr
     , { gasLimit: ethers.BigNumber.from('5000000') }); //maxGas instead of 10
 
     await paymeHop.deployed();
-    console.log(`paymeHop ${i+1} deployed to: `, paymeHop.address);
+    console.log(`paymeHop deployed to: `, paymeHop.address);
  
 
     //Creates Gelato task (with struct)
     await createTask(paymeHop, callValue); 
 
-    }
-
-    // const filter = {
-    //     address: paymeHop.address,
-    //     topics: [
-    //         ethers.utils.id("ThrowTicket(uint256)")
-    //     ]
-    // };
+    // }
 
 
-    // await hre.ethers.provider.once(filter, async (encodedData) => {
-    //     const { data } = encodedData;
-    //     const ourMessagesSequenceNum = ethers.utils.defaultAbiCoder.decode(['uint'], data);
+    const filter = {
+        address: emitterAddr,
+        topics: [
+            ethers.utils.id("showTicket(uint256)")
+        ]
+    };
 
-    //     console.log('inboxSeqNums: ', ourMessagesSequenceNum.toString());
-    //     const retryableTxnHash = await bridge.calculateL2RetryableTransactionHash(
-    //         ourMessagesSequenceNum[0]
-    //     );
-    //     console.log('retryableTxnHash: ', retryableTxnHash);
-    //     console.log(
-    //         `waiting for L2 tx 🕐... (should take < 10 minutes, current time: ${new Date().toTimeString()}`
-    //     );
-    //     const retryRec = await l2Provider.waitForTransaction(retryableTxnHash)
-    //     console.log(`L2 retryable txn executed 🥳 ${retryRec.transactionHash} at ${new Date().toTimeString()}`);
+
+    await hre.ethers.provider.on(filter, async (encodedData) => {
+        const { data } = encodedData;
+        const ourMessagesSequenceNum = ethers.utils.defaultAbiCoder.decode(['uint'], data);
+
+        console.log('inboxSeqNums: ', ourMessagesSequenceNum.toString());
+        const retryableTxnHash = await bridge.calculateL2RetryableTransactionHash(
+            ourMessagesSequenceNum[0]
+        );
+        console.log('retryableTxnHash: ', retryableTxnHash);
+        console.log(
+            `waiting for L2 tx 🕐... (should take < 10 minutes, current time: ${new Date().toTimeString()}`
+        );
+        const retryRec = await l2Provider.waitForTransaction(retryableTxnHash)
+        console.log(`L2 retryable txn executed 🥳 ${retryRec.transactionHash} at ${new Date().toTimeString()}`);
+        
+        const user = await manager.user();
+        console.log('user: ', user.toString());
+    });
+
+
+    //**** TRIGGER for Gelato *******/
+    await sendTx(paymeHop.address);
+
+    // const tx = await paymeHop.sendToArb(10, {
+    //     gasLimit: ethers.BigNumber.from('1000000')
     // });
+    // const receipt = await tx.wait();
+    // console.log('sendToArb tx hash: ', receipt.transactionHash);
+
+}
 
 
-    // //**** TRIGGER for Gelato *******/
-    // await sendTx(paymeHop.address);
+async function justTheEvent() {
+    const emitterAddr = '0xeD64c50c0412DC24B52aC432A3b723e16E18776B';
+    const paymeHopAddr = '0x6140cC590cb44FeA9295A3e59fc8f69430036C88';
+    const bridge = await Bridge.init(l1Signer, l2Signer);
+    
+    const filter = {
+        address: emitterAddr,
+        topics: [
+            ethers.utils.id("showTicket(uint256)")
+        ]
+    };
 
+
+    await hre.ethers.provider.once(filter, async (encodedData) => {
+        const { data } = encodedData;
+        const ourMessagesSequenceNum = ethers.utils.defaultAbiCoder.decode(['uint'], data);
+
+        console.log('inboxSeqNums: ', ourMessagesSequenceNum.toString());
+        const retryableTxnHash = await bridge.calculateL2RetryableTransactionHash(
+            ourMessagesSequenceNum[0]
+        );
+        console.log('retryableTxnHash: ', retryableTxnHash);
+        console.log(
+            `waiting for L2 tx 🕐... (should take < 10 minutes, current time: ${new Date().toTimeString()}`
+        );
+        const retryRec = await l2Provider.waitForTransaction(retryableTxnHash)
+        console.log(`L2 retryable txn executed 🥳 ${retryRec.transactionHash} at ${new Date().toTimeString()}`);
+    });
+
+
+    //**** TRIGGER for Gelato *******/
+    await sendTx(paymeHopAddr);
 }
 
 
@@ -399,15 +462,15 @@ async function beginSimulatedDiamond() {
 
 
 
-
+// justTheEvent();
 
 // createTask();
 
 // tryGelatoRopsten();
 
-beginSimulatedDiamond();
+// beginSimulatedDiamond();
 
-// sendArb();
+sendArb();
 
 // tryPrecompile();
 
