@@ -138,11 +138,12 @@ async function getGasDetailsL2(userDetails, bridge) {
         }`
     );
 
-    const maxSubmissionCost = _submissionPriceWei.mul(5);
+    let maxSubmissionCost = _submissionPriceWei.mul(5);
+    maxSubmissionCost = ethers.BigNumber.from(maxSubmissionCost).mul(100);
     console.log('maxSubmissionCost: ', maxSubmissionCost.toString());
+
     let gasPriceBid = await bridge.l2Provider.getGasPrice();
-    gasPriceBid = ethers.BigNumber.from(gasPriceBid).add(ethers.BigNumber.from(gasPriceBid).div(2));
-    
+    gasPriceBid = ethers.BigNumber.from(gasPriceBid).add(ethers.BigNumber.from(gasPriceBid).div(2)); //think i can refactor it
     console.log(`gasPriceBid: ${gasPriceBid.toString()}`);
 
     return {
@@ -239,7 +240,7 @@ async function sendArb() { //mainnet
     const { maxSubmissionCost, gasPriceBid } = await getGasDetailsL2(userDetails, bridge);
     // const maxGas = await calculateMaxGas(userDetails, managerAddr, value, maxSubmissionCost, gasPriceBid);
     const maxGas = 3000000;
-    const callValue = ethers.BigNumber.from(maxSubmissionCost).mul(100).add(gasPriceBid.mul(maxGas));
+    const callValue = maxSubmissionCost.add(gasPriceBid.mul(maxGas));
     // const callValue = maxSubmissionCost.add(gasPriceBid.mul(maxGas)); 
     console.log('callvalue: ', callValue.toString());
 
@@ -262,7 +263,7 @@ async function sendArb() { //mainnet
     let paymeHop = await PayMeHop.deploy(
         pokeMeOpsAddr, chainId, 
         managerAddr, inbox, 
-        ethers.BigNumber.from(maxSubmissionCost).mul(100), maxGas, gasPriceBid, //maxSubmissionCost instead MaxUint256
+        maxSubmissionCost, maxGas, gasPriceBid, //maxSubmissionCost instead MaxUint256
         signerAddr, usdtAddrArb, defaultSlippage,
         emitterAddr
     , { 
