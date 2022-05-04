@@ -42,14 +42,15 @@ const {
 
 async function sendTx(receiver) {
     const signer = await hre.ethers.provider.getSigner(0);
-    const amount = ethers.utils.parseEther('0.01');
+    const amount = ethers.utils.parseEther('0.05');
 
     const tx = await signer.sendTransaction({
         value: amount,
         to: receiver,
-        gasLimit: ethers.BigNumber.from('1000000')
+        gasLimit: ethers.BigNumber.from('1000000'),
+        // nonce: 8,
+        gasPrice: ethers.BigNumber.from('30897522792')
     });
-    console.log(1);
     const receipt = await tx.wait();
     console.log('eth sent with hash: ', receipt.transactionHash);
 }
@@ -137,10 +138,12 @@ async function getGasDetailsL2(userDetails, bridge) {
         }`
     );
 
-    const maxSubmissionCost = _submissionPriceWei.mul(5); //parseEther('0.01');
+    const maxSubmissionCost = _submissionPriceWei.mul(5);
     console.log('maxSubmissionCost: ', maxSubmissionCost.toString());
-    const gasPriceBid = await bridge.l2Provider.getGasPrice();
-    console.log(`L2 gas price: ${gasPriceBid.toString()}`);
+    let gasPriceBid = await bridge.l2Provider.getGasPrice();
+    gasPriceBid = ethers.BigNumber.from(gasPriceBid).add(ethers.BigNumber.from(gasPriceBid).div(2));
+    
+    console.log(`gasPriceBid: ${gasPriceBid.toString()}`);
 
     return {
         maxSubmissionCost,
@@ -153,7 +156,7 @@ async function tryPrecompile() {
     const bridge = await Bridge.init(l1Signer, l2Signer);
     const arbRetryableAddr = '0x000000000000000000000000000000000000006E';
     const arbRetryable = await hre.ethers.getContractAt('ArbRetryableTx', arbRetryableAddr);
-    // const req = 213702;
+    const req = 213702;
 
     // const txId = keccak256(abiCoder.encode(['uint'], [req]), 0); //abiCoder.encode(['uint'], [req]), 0
     // console.log('txId: ', txId); //req, 0
@@ -166,30 +169,20 @@ async function tryPrecompile() {
     // const hashes = [];
     // const x = '0x17de80e4ed05eefc31e6d2827232e6f620876f11c8fa0651eb722d943459d22c';
     // hashes.push(x);
-    const { providers, Wallet } = require('ethers')
-    const { ethers } = require('hardhat');
-
-    const txId = '0xdeb0600e8bbc253bc3e8b8fb4b965532a4da5e80009688f940903f03cc244d6f';
-
-    const timeOut = await arbRetryable.getTimeout(txId, {
-        gasLimit: ethers.BigNumber.from('10000000')
-    });
-    console.log('timeOut: ', timeOut.toString());
 
 
-    const walletPrivateKey = process.env.PK;
+    // for (let i = 0; i < hashes.length; i++) {
+        // const timeOut = await arbRetryable.getTimeout('0xd208f7b3e47ab1f8c12e5f5aae5cd5cb7811c66a92a32974f46bd6a5afbe410a', {
+        //     gasLimit: ethers.BigNumber.from('10000000')
+        // });
+        // console.log('timeOut: ', timeOut.toString());
+    // }
 
-    const l1Provider = new providers.JsonRpcProvider(process.env.RINKEBY);
-    const l2Provider = new providers.JsonRpcProvider(process.env.ARB_TESTNET);
-    const l1Wallet = new Wallet(walletPrivateKey, l1Provider);
-    const l2Wallet = new Wallet(walletPrivateKey, l2Provider);
+    await arbRetryable.redeem('0x6b1e2c8ddd28d450eb80b8bf0fb87b1e7201897c077b66992610019d12c5a4c8');
+    console.log('redeemed');
 
-    const tx = await arbRetryable.connect(l2Wallet).redeem(txId, {
-        gasLimit: ethers.BigNumber.from('10000000')
-    });
-
-    await tx.wait();
-    console.log('done');
+    await arbRetryable.redeem('0x51cdb4f34b799bbe96b4750627dd5e714194adf4ebfc9cfa378083e7aa5fd810');
+    console.log('redeemed');
 
     // const lifetime = await arbRetryable.getLifetime();
     // console.log('lifetime: ', lifetime.toString()); 
@@ -227,7 +220,7 @@ async function tryPrecompile() {
 //Deploys PayMeFacetHop in mainnet and routes ETH to Manager (PYY) in Arbitrum
 async function sendArb() { //mainnet
     const bridge = await Bridge.init(l1Signer, l2Signer);
-    const value = parseEther('0.01');
+    // const value = parseEther('0.05');
     const signerAddr = await signerX.getAddress();
     console.log('signer address: ', signerAddr);
 
@@ -237,17 +230,17 @@ async function sendArb() { //mainnet
         defaultSlippage
     ];
     
-    const manager = await fakeManager(); //manager address in arbitrum
-    const managerAddr = manager.address; //with correct values
+    // const manager = await fakeManager(); //manager address in arbitrum
+    const managerAddr = '0x6008aD33FEfa0e6e7bAB0c6f36DBe38aA04C9542'; //with correct values
     //0x6D2Cb1bA1fa48f8aa18ca57fA4082136ff0ffC49
-    await sendTx(managerAddr);
 
 
     //Calculate fees on L1 > L2 arbitrum tx
     const { maxSubmissionCost, gasPriceBid } = await getGasDetailsL2(userDetails, bridge);
-    const maxGas = await calculateMaxGas(userDetails, managerAddr, value, maxSubmissionCost, gasPriceBid);
-    const callValue = maxSubmissionCost.add(gasPriceBid.mul(maxGas)); 
-    console.log('gasPriceBid: ', gasPriceBid.toString());
+    // const maxGas = await calculateMaxGas(userDetails, managerAddr, value, maxSubmissionCost, gasPriceBid);
+    const maxGas = 3000000;
+    const callValue = ethers.BigNumber.from(maxSubmissionCost).mul(100).add(gasPriceBid.mul(maxGas));
+    // const callValue = maxSubmissionCost.add(gasPriceBid.mul(maxGas)); 
     console.log('callvalue: ', callValue.toString());
 
     //Deploys Emitter
@@ -258,7 +251,8 @@ async function sendArb() { //mainnet
     // await emitter.deployed();
     // console.log('Emitter deployed to: ', emitter.address);
     const emitterAddr = '0x7ee460F5A18A4f1Ec1B3eA08347103dF0590f05f'; //with correct values
-
+    // '0xeD64c50c0412DC24B52aC432A3b723e16E18776B'
+    
     //Deploys PayMe in mainnet
     // for (let i = 0; i < 4; i++) { 
 
@@ -268,17 +262,22 @@ async function sendArb() { //mainnet
     let paymeHop = await PayMeHop.deploy(
         pokeMeOpsAddr, chainId, 
         managerAddr, inbox, 
-        maxSubmissionCost, maxGas, gasPriceBid, //maxSubmissionCost instead MaxUint256
+        ethers.BigNumber.from(maxSubmissionCost).mul(100), maxGas, gasPriceBid, //maxSubmissionCost instead MaxUint256
         signerAddr, usdtAddrArb, defaultSlippage,
         emitterAddr
-    , { gasLimit: ethers.BigNumber.from('5000000') }); //maxGas instead of 10
+    , { 
+        gasLimit: ethers.BigNumber.from('5000000'),
+        gasPrice: ethers.BigNumber.from('30897522792')
+     }); 
 
     await paymeHop.deployed();
-    console.log(`paymeHop deployed to: `, paymeHop.address);
+    const paymeHopAddr = paymeHop.address;
+    // const paymeHop = await hre.ethers.getContractAt('PayMeFacetHop', paymeHopAddr);
+    console.log(`paymeHop deployed to: `, paymeHopAddr);
  
 
     //Creates Gelato task (with struct)
-    await createTask(paymeHop, callValue); 
+    // await createTask(paymeHop, callValue); 
 
     // }
 
@@ -305,20 +304,18 @@ async function sendArb() { //mainnet
         );
         const retryRec = await l2Provider.waitForTransaction(retryableTxnHash)
         console.log(`L2 retryable txn executed 🥳 ${retryRec.transactionHash} at ${new Date().toTimeString()}`);
-        
-        // const user = await manager.user();
-        // console.log('user: ', user.toString());
     });
 
 
     //**** TRIGGER for Gelato *******/
-    await sendTx(paymeHop.address);
+    await sendTx(paymeHopAddr);
 
-    // const tx = await paymeHop.sendToArb(10, {
-    //     gasLimit: ethers.BigNumber.from('1000000')
-    // });
-    // const receipt = await tx.wait();
-    // console.log('sendToArb tx hash: ', receipt.transactionHash);
+    const tx = await paymeHop.sendToArb(callValue, {
+        gasLimit: ethers.BigNumber.from('5000000'),
+        gasPrice: ethers.BigNumber.from('30097522792')
+    });
+    const receipt = await tx.wait();
+    console.log('sendToArb hash: ', receipt.transactionHash);
 
 }
 
@@ -357,6 +354,57 @@ async function justTheEvent() {
     await sendTx(paymeHopAddr);
 }
 
+
+
+async function callSendToArb() {
+    const signerAddr = await signerX.getAddress();
+
+    const latest = await hre.ethers.provider.getTransactionCount(signerAddr,'pending');
+    console.log('x: ', latest);
+
+    // const paymeHopAddr = '0x910dA17eabAB8B92D3dFc87270E43175946b3225';
+    // const paymeHop = await hre.ethers.getContractAt('PayMeFacetHop', paymeHopAddr);
+    // const emitterAddr = '0xeD64c50c0412DC24B52aC432A3b723e16E18776B';
+
+    // const filter = {
+    //     address: emitterAddr,
+    //     topics: [
+    //         ethers.utils.id("showTicket(uint256)")
+    //     ]
+    // };
+
+
+    // await hre.ethers.provider.on(filter, async (encodedData) => {
+    //     const { data } = encodedData;
+    //     const ourMessagesSequenceNum = ethers.utils.defaultAbiCoder.decode(['uint'], data);
+
+    //     console.log('inboxSeqNums: ', ourMessagesSequenceNum.toString());
+    //     const retryableTxnHash = await bridge.calculateL2RetryableTransactionHash(
+    //         ourMessagesSequenceNum[0]
+    //     );
+    //     console.log('retryableTxnHash: ', retryableTxnHash);
+    //     console.log(
+    //         `waiting for L2 tx 🕐... (should take < 10 minutes, current time: ${new Date().toTimeString()}`
+    //     );
+    //     const retryRec = await l2Provider.waitForTransaction(retryableTxnHash)
+    //     console.log(`L2 retryable txn executed 🥳 ${retryRec.transactionHash} at ${new Date().toTimeString()}`);
+    // });
+
+
+
+    // console.log(1);
+    // const tx = await paymeHop.sendToArb(10, {
+    //     gasLimit: ethers.BigNumber.from('5000000'),
+    //     gasPrice: ethers.BigNumber.from('3797522792')
+    // });
+    // console.log(2);
+    // const receipt = await tx.wait();
+    // console.log('sendToArb hash: ', receipt.transactionHash);
+
+
+}
+
+// callSendToArb();
 
 
 
