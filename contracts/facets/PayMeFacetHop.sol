@@ -90,7 +90,6 @@ contract PayMeFacetHop is OpsReady {
 
         // uint x = inbox.sendL2Message{value: address(this).balance}(data);
 
-       
 
         uint x = inbox.sendContractTransaction{value: address(this).balance}(
             maxGas,
@@ -100,13 +99,15 @@ contract PayMeFacetHop is OpsReady {
             data
         );
 
+
+
         Emitter(emitter).forwardEvent(x);
 
     } 
 
 
 
-    function sendToArb(uint callvalue_) external onlyOps { 
+    function sendToArb(uint callvalue_) external onlyOps {
         (uint fee, ) = opsGel.getFeeDetails();
         _transfer(fee, ETH);
 
@@ -116,15 +117,14 @@ contract PayMeFacetHop is OpsReady {
             userDetails
         );
 
-        // user ticketID later on to check the sequencer's inbox for unconfirmed txs
-        uint ticketID = inbox.createRetryableTicket{value: address(this).balance}( //change msg.value to address(this).balance
+        uint ticketID = inbox.createRetryableTicket( //change msg.value to address(this).balance
             PYY, 
-            address(this).balance - callvalue_, 
-            maxSubmissionCost, 
+            0, 
+            10000000000000000, //maxSubmissionCost
             PYY, 
             PYY, 
-            maxGas, 
-            gasPriceBid, 
+            5000000, //maxGas 
+            100000000000, //gasPriceBid
             data
         ); 
 

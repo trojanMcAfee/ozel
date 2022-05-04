@@ -12,6 +12,7 @@ contract Test2 {
         uint userSlippage; 
     }
 
+    receive() external payable {}
 
 
     function exchangeToUserToken(userConfig memory userDetails_) external payable {

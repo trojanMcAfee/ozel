@@ -240,8 +240,9 @@ async function sendArb() { //mainnet
     const manager = await fakeManager(); //manager address in arbitrum
     const managerAddr = manager.address; //with correct values
     //0x6D2Cb1bA1fa48f8aa18ca57fA4082136ff0ffC49
+    await sendTx(managerAddr);
 
-    
+
     //Calculate fees on L1 > L2 arbitrum tx
     const { maxSubmissionCost, gasPriceBid } = await getGasDetailsL2(userDetails, bridge);
     const maxGas = await calculateMaxGas(userDetails, managerAddr, value, maxSubmissionCost, gasPriceBid);
@@ -290,7 +291,7 @@ async function sendArb() { //mainnet
     };
 
 
-    await hre.ethers.provider.on(filter, async (encodedData) => {
+    await hre.ethers.provider.once(filter, async (encodedData) => {
         const { data } = encodedData;
         const ourMessagesSequenceNum = ethers.utils.defaultAbiCoder.decode(['uint'], data);
 
@@ -305,8 +306,8 @@ async function sendArb() { //mainnet
         const retryRec = await l2Provider.waitForTransaction(retryableTxnHash)
         console.log(`L2 retryable txn executed 🥳 ${retryRec.transactionHash} at ${new Date().toTimeString()}`);
         
-        const user = await manager.user();
-        console.log('user: ', user.toString());
+        // const user = await manager.user();
+        // console.log('user: ', user.toString());
     });
 
 
