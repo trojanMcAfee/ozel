@@ -2,10 +2,12 @@
 pragma solidity ^0.8.0;
 
 
+import "@openzeppelin/contracts/proxy/beacon/UpgradeableBeacon.sol";
+import "@openzeppelin/contracts/proxy/beacon/BeaconProxy.sol";
 import '../interfaces/IL1_ETH_Bridge.sol';
 import '../interfaces/DelayedInbox.sol';
 import './OpsReady.sol';
-import './Test2.sol';
+import './FakePYY.sol';
 import './Emitter.sol';
 
 import 'hardhat/console.sol'; 
@@ -24,8 +26,6 @@ contract PayMeFacetHop is OpsReady {
 
     userConfig userDetails; 
 
-    uint chainId; 
-
     address public PYY;
 
     uint maxSubmissionCost;
@@ -36,12 +36,10 @@ contract PayMeFacetHop is OpsReady {
 
     address emitter;
 
-    address public aliasL2;
+    bytes32 public taskId;
 
-
-    constructor(
+    constructor( //do the constructor as an initializing function and pass it to the beaconUpgradeProxy
         address _opsGel,
-        uint _chainId,
         address _pyy,
         address _inbox,
         uint _maxSubmissionCost,
@@ -50,9 +48,9 @@ contract PayMeFacetHop is OpsReady {
         address user_,
         address userToken_,
         uint userSlippage_,
-        address emitter_
+        address emitter_,
+        uint autoRedeem_
     ) OpsReady(_opsGel) { 
-        chainId = _chainId;
         PYY = _pyy;
         inbox = DelayedInbox(_inbox);
         maxSubmissionCost = _maxSubmissionCost; 
@@ -66,39 +64,33 @@ contract PayMeFacetHop is OpsReady {
         });
 
         emitter = emitter_;
+
+        _startTask(autoRedeem_);
     }
+
 
     receive() external payable {}
 
 
-
-    function sendToArb(uint callvalue_) external onlyOps { //remove payable later and add onlyOps modifier 
+    function sendToArb(uint autoRedeem_) external onlyOps {
         (uint fee, ) = opsGel.getFeeDetails();
         _transfer(fee, ETH);
 
-        // --- deposits to PYY (ex-Manager) ----
         bytes memory data = abi.encodeWithSelector(
-            Test2(payable(PYY)).exchangeToUserToken.selector, 
+            FakePYY(payable(PYY)).exchangeToUserToken.selector, 
             userDetails
         );
 
-        // inbox.depositETH{value: address(this).balance}(0);
-
-
-
-
         uint ticketID = inbox.createRetryableTicket{value: address(this).balance}(
             PYY, 
-            address(this).balance - callvalue_, 
-            maxSubmissionCost, //maxSubmissionCost 
+            address(this).balance - autoRedeem_, 
+            maxSubmissionCost,  
             PYY, 
             PYY, 
-            maxGas, //maxGas 
+            maxGas,  
             gasPriceBid, 
             data
         ); 
-
-
 
         Emitter(emitter).forwardEvent(ticketID); 
     }
@@ -106,24 +98,26 @@ contract PayMeFacetHop is OpsReady {
 
     // *** GELATO PART ******
 
-    function startTask(uint callvalue_) external returns(bytes32 taskId) {
-        (taskId) = opsGel.createTaskNoPrepayment(
+    function _startTask(uint autoRedeem_) private {
+        (bytes32 id) = opsGel.createTaskNoPrepayment(
             address(this),
             this.sendToArb.selector,
             address(this),
-            abi.encodeWithSelector(this.checker.selector, callvalue_),
+            abi.encodeWithSelector(this.checker.selector, autoRedeem_),
             ETH
         );
+
+        taskId = id;
     }
 
     function checker(
-        uint callvalue_
+        uint autoRedeem_
     ) external view returns(bool canExec, bytes memory execPayload) {
         if (address(this).balance > 0) {
             canExec = true;
         }
         execPayload = abi.encodeWithSelector(
-            this.sendToArb.selector, callvalue_
+            this.sendToArb.selector, autoRedeem_
         );
     }
 

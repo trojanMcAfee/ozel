@@ -77,18 +77,6 @@ async function createTask(resolver, callvalue) {
 
 
 
-//Deploys the fake manager on arbitrum testnet 
-async function fakeManager() {
-    const Test2 = await ( 
-        await hre.ethers.getContractFactory('Test2')
-    ).connect(l2Signer);
-    const test2 = await Test2.deploy();
-    await test2.deployed();
-    console.log('fake manager deployed in arbitrum testnet to: ', test2.address);
-    return test2;
-}
-
-
 
 async function calculateMaxGas(
     userDetails, managerAddr, value, maxSubmissionCost, gasPriceBid
@@ -118,34 +106,6 @@ async function calculateMaxGas(
     return maxGas; 
 }
 
-
-async function calculateMaxGas2(
-    userAddress, managerAddr, value, maxSubmissionCost, gasPriceBid, signerAddr
-) {
-    const data = getCalldata2('exchangeToUserToken', [userAddress]);
-    const depositAmount = parseEther('0.01');
-    const nodeAddr = '0x00000000000000000000000000000000000000C8';
-    const nodeInterface = await (
-        await hre.ethers.getContractAt('NodeInterface', nodeAddr)
-    ).connect(l2Signer);
-
-    let [maxGas]  = await nodeInterface.estimateRetryableTicket(
-        signerAddr,
-        0,
-        managerAddr,
-        0,
-        maxSubmissionCost,
-        managerAddr,
-        managerAddr,
-        3000000,
-        gasPriceBid,
-        data
-    );
-    maxGas = maxGas.toString();
-    console.log('maxGas: ', maxGas);
-
-    return maxGas; 
-}
 
 
 async function getGasDetailsL2(userDetails, bridge) {
@@ -182,36 +142,7 @@ async function getGasDetailsL2(userDetails, bridge) {
     }
 }
 
-async function getGasDetailsL22(userAddress, bridge) {
-    const sendToArbBytes = ethers.utils.defaultAbiCoder.encode(
-        ['address'],
-        [userAddress]
-    );
-    const sendToArbBytesLength = hexDataLength(sendToArbBytes) + 4;
 
-    const [_submissionPriceWei, nextUpdateTimestamp] =
-    await bridge.l2Bridge.getTxnSubmissionPrice(sendToArbBytesLength);
-    console.log(
-    `Current retryable base submission price: ${_submissionPriceWei.toString()}`
-    );
-
-    const timeNow = Math.floor(new Date().getTime() / 1000);
-    console.log(
-        `time in seconds till price update: ${
-        nextUpdateTimestamp.toNumber() - timeNow
-        }`
-    );
-
-    const maxSubmissionCost = _submissionPriceWei.mul(5); //parseEther('0.01');
-    console.log('maxSubmissionCost: ', maxSubmissionCost.toString());
-    const gasPriceBid = await bridge.l2Provider.getGasPrice();
-    console.log(`L2 gas price: ${gasPriceBid.toString()}`);
-
-    return {
-        maxSubmissionCost,
-        gasPriceBid
-    }
-}
 
 
 async function tryPrecompile() {
@@ -277,6 +208,35 @@ async function tryPrecompile() {
 
 
 
+async function deployContract(contractName, signer, addressForConst, bytes) {
+    // const Contract = await (
+    //     await hre.ethers.getContractFactory(contractName)
+    // ).connect(signer);
+    const Contract = await hre.ethers.getContractFactory(contractName);
+
+    const ops = {
+        gasLimit: ethers.BigNumber.from('5000000'),
+        gasPrice: ethers.BigNumber.from('30897522792')
+    };
+
+    let contract;
+    if (bytes === null) {
+        console.log(3);
+        contract = await Contract.deploy(addressForConst, bytes, ops);
+    } else if (addressForConst) {
+        console.log(4);
+        contract = await Contract.deploy(addressForConst, ops);
+    } else {
+        contract = await Contract.deploy(ops);
+    }
+
+    await contract.deployed();
+    console.log(`${contractName} deployed to: `, contract.address);
+
+    return contract.address;
+}
+
+
 
 
 //Deploys PayMeFacetHop in mainnet and routes ETH to Manager (PYY) in Arbitrum
@@ -292,60 +252,59 @@ async function sendArb() { //mainnet
         defaultSlippage
     ];
     
-    // const manager = await fakeManager(); //manager address in arbitrum
-    const managerAddr = '0x1098B077e5306E5AbB2B7f46f17E4F803d35A5E4';
-    //0x4d3d9e48dFdedC7bDc4911aDD18cb1aC84Fb6470 : with user (verified)
-    //0x5813c1E966F4B43e23D661744FaDa2F7d2EDd034 : userDetails
-
-
-
+    //Deploys the fake PYY on arbitrum testnet 
+    // const fakePYYaddr = await deployContract('FakePYY', l2Signer); //fake PYY address in arbitrum
+    const fakePYYaddr = '0x1098B077e5306E5AbB2B7f46f17E4F803d35A5E4';
+   
 
     //Calculate fees on L1 > L2 arbitrum tx
     const { maxSubmissionCost, gasPriceBid } = await getGasDetailsL2(userDetails, bridge);
-    // const maxGas = await calculateMaxGas(userDetails, managerAddr, value, maxSubmissionCost, gasPriceBid);
+    // const maxGas = await calculateMaxGas(userDetails, fakePYYaddr, value, maxSubmissionCost, gasPriceBid);
     const maxGas = 3000000;
-    const callValue = maxSubmissionCost.add(gasPriceBid.mul(maxGas));
-    // const callValue = maxSubmissionCost.add(gasPriceBid.mul(maxGas)); 
+    const autoRedeem = maxSubmissionCost.add(gasPriceBid.mul(maxGas));
+    console.log('autoRedeem: ', autoRedeem.toString()); 
 
-    console.log('callvalue: ', callValue.toString()); 
 
     //Deploys Emitter
-    // const Emitter = await (
-    //     await hre.ethers.getContractFactory('Emitter')
-    // ).connect(l1Signer);
-    // const emitter = await Emitter.deploy();
-    // await emitter.deployed();
-    // console.log('Emitter deployed to: ', emitter.address);
+    // const emitterAddr = await deployContract('Emitter', l1Signer);
     const emitterAddr = '0xeD64c50c0412DC24B52aC432A3b723e16E18776B';
 
     //Deploys PayMe in mainnet
     // for (let i = 0; i < 4; i++) {
 
 
-    let PayMeHop = await (
-        await hre.ethers.getContractFactory('PayMeFacetHop')
-    ).connect(l1Signer);
+    // let PayMeHop = await (
+    //     await hre.ethers.getContractFactory('PayMeFacetHop')
+    // ).connect(l1Signer);
+    console.log(11);
+    let PayMeHop = await hre.ethers.getContractFactory('PayMeFacetHop');
+    console.log(12);
     let paymeHop = await PayMeHop.deploy(
-        pokeMeOpsAddr, chainId, 
-        managerAddr, inbox, 
+        pokeMeOpsAddr, 
+        fakePYYaddr, inbox, 
         maxSubmissionCost, maxGas, gasPriceBid,
         signerAddr, usdtAddrArb, defaultSlippage, 
-        emitterAddr
+        emitterAddr, autoRedeem
     , { 
         gasLimit: ethers.BigNumber.from('5000000'),
         gasPrice: ethers.BigNumber.from('30897522792')
      }); 
+    console.log(13)
 
     await paymeHop.deployed();
     const paymeHopAddr = paymeHop.address;
+    //0x31ED67cd9F4520c4783DD779cb0E824e61C2B665
     // const paymeHop = await hre.ethers.getContractAt('PayMeFacetHop', paymeHopAddr);
+    // console.log('taskID: ', (await paymeHop.taskId()).toString());
     console.log(`paymeHop deployed to: `, paymeHopAddr);
+
+
+    //Deploys Beacon system
+    const beaconAddr = await deployContract('UpgradeableBeacon', l1Signer, paymeHopAddr);
+    // const beaconAddr = '0x384cC0B016C2002f49E2e7CB88c33EE942C26DCf';
+    const beaconProxyAddr = await deployContract('BeaconProxy', l1Signer, beaconAddr, null);
  
 
-    //Creates Gelato task (with struct)
-    await createTask(paymeHop, callValue); 
-
-    // }
 
     const filter = {
         address: emitterAddr,
@@ -373,9 +332,9 @@ async function sendArb() { //mainnet
 
 
     //**** TRIGGER for Gelato *******/
-    await sendTx(paymeHopAddr);
+    await sendTx(beaconProxyAddr);
 
-    // const tx = await paymeHop.sendToArb(callValue, {
+    // const tx = await paymeHop.sendToArb(autoRedeem, {
     //     gasLimit: ethers.BigNumber.from('5000000'),
     //     gasPrice: ethers.BigNumber.from('30097522792')
     // });
@@ -385,119 +344,6 @@ async function sendArb() { //mainnet
 }
 
 
-async function sendArb2() { //mainnet
-    const bridge = await Bridge.init(l1Signer, l2Signer);
-    const value = parseEther('0.01');
-    const signerAddr = await signerX.getAddress();
-    console.log('signer address: ', signerAddr);
-
-    const userAddress = '0x0E743a1E37D691D8e52F7036375F3D148B4116ba';
-    
-    // const manager = await fakeManager(); //manager address in arbitrum
-    const managerAddr = '0xAA18a645b89bf907aD899C72F096a37F33b482E5';
-
-
-    //Calculate fees on L1 > L2 arbitrum tx
-    const { maxSubmissionCost, gasPriceBid } = await getGasDetailsL22(userAddress, bridge);
-    // const maxGas = await calculateMaxGas2(userAddress, managerAddr, value, maxSubmissionCost, gasPriceBid, signerAddr);
-    const maxGas = 3000000;
-    const callValue = maxSubmissionCost.add(gasPriceBid.mul(maxGas)); 
-    console.log('gasPriceBid: ', gasPriceBid.toString());
-    console.log('callvalue: ', callValue.toString());
-
-    //Deploys Emitter
-    // const Emitter = await (
-    //     await hre.ethers.getContractFactory('Emitter')
-    // ).connect(l1Signer);
-    // const emitter = await Emitter.deploy();
-    // await emitter.deployed();
-    // console.log('Emitter deployed to: ', emitter.address);
-    const emitterAddr = '0xeD64c50c0412DC24B52aC432A3b723e16E18776B';
-
-    //Deploys PayMe in mainnet
-    // for (let i = 0; i < 4; i++) {
-
-    let PayMeHop = await (
-        await hre.ethers.getContractFactory('PayMeFacetHop')
-    ).connect(l1Signer);
-    let paymeHop = await PayMeHop.deploy(
-        pokeMeOpsAddr, chainId, 
-        managerAddr, inbox, 
-        maxSubmissionCost, maxGas, gasPriceBid,
-        signerAddr, usdtAddrArb, defaultSlippage,
-        emitterAddr
-    , { 
-        gasLimit: ethers.BigNumber.from('5000000'),
-        gasPrice: ethers.BigNumber.from('3897522792') 
-    }); //maxGas instead of 10
-
-    await paymeHop.deployed();
-    const paymeHopAddr = paymeHop.address;
-    // const paymeHop = await hre.ethers.getContractAt('PayMeFacetHop', paymeHopAddr);
-    console.log(`paymeHop deployed to: `, paymeHopAddr);
- 
-
-    //Creates Gelato task (with struct)
-    // await createTask(paymeHop, callValue); 
-
-    // }
-
-    const filter = {
-        address: emitterAddr,
-        topics: [
-            ethers.utils.id("showTicket(uint256)")
-        ]
-    };
-
-
-    await hre.ethers.provider.on(filter, async (encodedData) => {
-        const { data } = encodedData;
-        const ourMessagesSequenceNum = ethers.utils.defaultAbiCoder.decode(['uint'], data);
-
-        console.log('inboxSeqNums: ', ourMessagesSequenceNum.toString());
-        const retryableTxnHash = await bridge.calculateL2RetryableTransactionHash(
-            ourMessagesSequenceNum[0]
-        );
-        console.log('retryableTxnHash: ', retryableTxnHash);
-        console.log(
-            `waiting for L2 tx 🕐... (should take < 10 minutes, current time: ${new Date().toTimeString()}`
-        );
-        const retryRec = await l2Provider.waitForTransaction(retryableTxnHash)
-        console.log(`L2 retryable txn executed 🥳 ${retryRec.transactionHash} at ${new Date().toTimeString()}`);
-    });
-
-
-    //**** TRIGGER for Gelato *******/
-    await sendTx(paymeHopAddr);
-
-
-    const tx = await paymeHop.sendToArb(callValue, {
-        gasLimit: ethers.BigNumber.from('5000000'),
-        // nonce: 9,
-        gasPrice: ethers.BigNumber.from('3797522792')
-    });
-    const receipt = await tx.wait();
-    console.log('sendToArb hash: ', receipt.transactionHash); 
-
-    console.log('l2 alias: ', await paymeHop.aliasL2());
-
-}
-
-
-
-
-async function getAlias() {
-
-    const GetAlias = await hre.ethers.getContractFactory('Alias');
-    const getAlias = await GetAlias.deploy();
-    await getAlias.deployed();
-
-
-    await getAlias.getAlias();
-
-}
-
-// getAlias();
 
 
 
