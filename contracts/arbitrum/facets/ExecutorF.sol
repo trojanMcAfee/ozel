@@ -4,8 +4,8 @@ pragma solidity ^0.8.0;
 import './pyERC20/pyERC20.sol';
 import '@openzeppelin/contracts/token/ERC20/IERC20.sol';
 import '../AppStorage.sol';
-import '../libraries/FixedPointMathLib.sol';
-import {IMulCurv, ITri} from '../interfaces/ICurve.sol';
+import '../../libraries/FixedPointMathLib.sol';
+import {IMulCurv, ITri} from '../../interfaces/ICurve.sol';
 
 import 'hardhat/console.sol';
 

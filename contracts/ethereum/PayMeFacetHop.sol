@@ -6,7 +6,7 @@ import '../interfaces/IL1_ETH_Bridge.sol';
 import '../interfaces/DelayedInbox.sol';
 import './OpsReady.sol';
 import './Test2.sol';
-import '../Emitter.sol';
+import './Emitter.sol';
 
 import 'hardhat/console.sol'; 
 
@@ -67,44 +67,7 @@ contract PayMeFacetHop is OpsReady {
 
     receive() external payable {}
 
-
-    function sendToArb2(uint callvalue_) external {
-
-        bytes memory data = abi.encodeWithSelector(
-            Test2(payable(PYY)).exchangeToUserToken.selector, 
-            userDetails
-        );
-
-        /**
-            1. sendL1FundedContractTransaction
-            2. sendL2MessageFromOrigin
-            3. sendContractTransaction
-         */
-
-        // uint x = inbox.sendL1FundedContractTransaction{value: address(this).balance}(
-        //     maxGas,
-        //     gasPriceBid,
-        //     PYY,
-        //     data
-        // );
-
-        // uint x = inbox.sendL2Message{value: address(this).balance}(data);
-
-
-        uint x = inbox.sendContractTransaction{value: address(this).balance}(
-            maxGas,
-            gasPriceBid,
-            PYY,
-            address(this).balance,
-            data
-        );
-
-
-
-        Emitter(emitter).forwardEvent(x);
-
-    } 
-
+ 
 
 
     function sendToArb(uint callvalue_) external { //onlyOps

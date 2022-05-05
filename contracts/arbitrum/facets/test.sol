@@ -2,7 +2,7 @@
 pragma solidity ^0.8.0;
 
 
-import '../ArbRetryableTx.sol';
+import '../../interfaces/ArbRetryableTx.sol';
 
 
 contract Test {
