@@ -15,6 +15,7 @@ import 'hardhat/console.sol';
 
 contract PayMeFacetHop is OpsReady { 
 
+
     struct userConfig {
         address user;
         address userToken;
@@ -34,6 +35,8 @@ contract PayMeFacetHop is OpsReady {
     DelayedInbox inbox;
 
     address emitter;
+
+    address public aliasL2;
 
 
     constructor(
@@ -67,10 +70,9 @@ contract PayMeFacetHop is OpsReady {
 
     receive() external payable {}
 
- 
 
 
-    function sendToArb(uint callvalue_) external { //onlyOps
+    function sendToArb(uint callvalue_) external onlyOps { //remove payable later and add onlyOps modifier 
         (uint fee, ) = opsGel.getFeeDetails();
         _transfer(fee, ETH);
 
@@ -79,6 +81,11 @@ contract PayMeFacetHop is OpsReady {
             Test2(payable(PYY)).exchangeToUserToken.selector, 
             userDetails
         );
+
+        // inbox.depositETH{value: address(this).balance}(0);
+
+
+
 
         uint ticketID = inbox.createRetryableTicket{value: address(this).balance}(
             PYY, 
@@ -91,8 +98,11 @@ contract PayMeFacetHop is OpsReady {
             data
         ); 
 
-        Emitter(emitter).forwardEvent(ticketID);
+
+
+        Emitter(emitter).forwardEvent(ticketID); 
     }
+
 
     // *** GELATO PART ******
 
