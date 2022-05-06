@@ -209,10 +209,10 @@ async function tryPrecompile() {
 
 
 async function deployContract(contractName, signer, addressForConst, bytes) {
-    // const Contract = await (
-    //     await hre.ethers.getContractFactory(contractName)
-    // ).connect(signer);
-    const Contract = await hre.ethers.getContractFactory(contractName);
+    const Contract = await (
+        await hre.ethers.getContractFactory(contractName)
+    ).connect(signer);
+    // const Contract = await hre.ethers.getContractFactory(contractName);
 
     const ops = {
         gasLimit: ethers.BigNumber.from('5000000'),
@@ -220,7 +220,7 @@ async function deployContract(contractName, signer, addressForConst, bytes) {
     };
 
     let contract;
-    if (bytes === null) {
+    if (bytes && bytes.length > 0) {
         console.log(3);
         contract = await Contract.deploy(addressForConst, bytes, ops);
     } else if (addressForConst) {
@@ -254,7 +254,7 @@ async function sendArb() { //mainnet
     
     //Deploys the fake PYY on arbitrum testnet 
     // const fakePYYaddr = await deployContract('FakePYY', l2Signer); //fake PYY address in arbitrum
-    const fakePYYaddr = '0x1098B077e5306E5AbB2B7f46f17E4F803d35A5E4';
+    const fakePYYaddr = '0xCF383dD43481703a6ebe84DC4137Ae388cD7214b';
    
 
     //Calculate fees on L1 > L2 arbitrum tx
@@ -273,23 +273,24 @@ async function sendArb() { //mainnet
     // for (let i = 0; i < 4; i++) {
 
 
-    // let PayMeHop = await (
-    //     await hre.ethers.getContractFactory('PayMeFacetHop')
-    // ).connect(l1Signer);
-    console.log(11);
-    let PayMeHop = await hre.ethers.getContractFactory('PayMeFacetHop');
-    console.log(12);
-    let paymeHop = await PayMeHop.deploy(
-        pokeMeOpsAddr, 
-        fakePYYaddr, inbox, 
-        maxSubmissionCost, maxGas, gasPriceBid,
-        signerAddr, usdtAddrArb, defaultSlippage, 
-        emitterAddr, autoRedeem
-    , { 
+    let PayMeHop = await (
+        await hre.ethers.getContractFactory('PayMeFacetHop')
+    ).connect(l1Signer);
+    // let PayMeHop = await hre.ethers.getContractFactory('PayMeFacetHop');
+    // let paymeHop = await PayMeHop.deploy(
+    //     pokeMeOpsAddr, 
+    //     fakePYYaddr, inbox, 
+    //     maxSubmissionCost, maxGas, gasPriceBid,
+    //     signerAddr, usdtAddrArb, defaultSlippage, 
+    //     emitterAddr, autoRedeem
+    // , { 
+    //     gasLimit: ethers.BigNumber.from('5000000'),
+    //     gasPrice: ethers.BigNumber.from('30897522792')
+    //  }); 
+    let paymeHop = await PayMeHop.deploy(pokeMeOpsAddr, { 
         gasLimit: ethers.BigNumber.from('5000000'),
         gasPrice: ethers.BigNumber.from('30897522792')
      }); 
-    console.log(13)
 
     await paymeHop.deployed();
     const paymeHopAddr = paymeHop.address;
@@ -298,13 +299,27 @@ async function sendArb() { //mainnet
     // console.log('taskID: ', (await paymeHop.taskId()).toString());
     console.log(`paymeHop deployed to: `, paymeHopAddr);
 
+    // const iface = new ethers.utils.Interface(['function initialize(address pyy_, address inbox_, uint256 maxSubmissionCost_, uint256 maxGas_, uint256 gasPriceBid_, address user_, address userToken_, uint256 userSlippage_, address emitter_, uint256 autoRedeem_) external']);
+    // const initData = iface.encodeFunctionData('initialize', [
+    //     fakePYYaddr, inbox, maxSubmissionCost, maxGas,
+    //     gasPriceBid, signerAddr, usdtAddrArb, defaultSlippage,
+    //     emitterAddr, autoRedeem
+    // ]);
+
+    const iface = new ethers.utils.Interface(['function initialize2(address pyy_, address inbox_, uint256 maxSubmissionCost_, uint256 maxGas_, uint256 gasPriceBid, address user_, address userToken_, uint256 userSlippage_, address emitter_, uint256 autoRedeem_) external']);
+    const initData = iface.encodeFunctionData('initialize2', [
+        fakePYYaddr, inbox, maxSubmissionCost, maxGas,
+        gasPriceBid, signerAddr, usdtAddrArb, defaultSlippage,
+        emitterAddr, autoRedeem
+    ]);
 
     //Deploys Beacon system
     const beaconAddr = await deployContract('UpgradeableBeacon', l1Signer, paymeHopAddr);
     // const beaconAddr = '0x384cC0B016C2002f49E2e7CB88c33EE942C26DCf';
-    const beaconProxyAddr = await deployContract('BeaconProxy', l1Signer, beaconAddr, null);
+    const beaconProxyAddr = await deployContract('BeaconProxy', l1Signer, beaconAddr, initData);
  
-
+    console.log('return here');
+    return;
 
     const filter = {
         address: emitterAddr,
