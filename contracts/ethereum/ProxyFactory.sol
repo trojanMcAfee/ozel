@@ -8,55 +8,75 @@ import "@openzeppelin/contracts/proxy/ERC1967/ERC1967Upgrade.sol";
 
 import './OpsReady.sol';
 import './PayMeFacetHop.sol';
-import './AppStorage.sol';
 
 
-contract ProxyFactory is OpsReady, Proxy, ERC1967Upgrade {
 
-    AppStorage s;
+contract ProxyFactory is OpsReady {
+
+    uint public num;
+
 
     PayMeFacetHop payme;
 
-    mapping(address => uint) public taskIDs;
+    address beacon;
+
+    mapping(address => bytes32) public taskIDs;
+
+    mapping(address => address) usersProxies;
+
+    struct userConfig {
+        address user;
+        address userToken;
+        uint userSlippage; 
+    }
 
 
-    constructor(address payme_) OpsReady(opsGel_) {
-        payme = payme_;
+    constructor(
+        address payme_, 
+        address beacon_,
+        address opsGel_
+    ) OpsReady(opsGel_) {
+        payme = PayMeFacetHop(payable(payme_));
+        beacon = beacon_;
     }
 
 
 
-    function createNewProxy(address beacon_) external returns(BeaconProxy) {
+    function createNewProxy(userConfig memory userDetails_) external {
+        bytes memory initData = abi.encodeWithSignature( 
+            'issueUserID((address,address,uint256))', 
+            userDetails_
+        ); 
 
-        bytes initData = abi.encodeWithSelector(
-            payme.initialize.selector, 
-            s.pyy,
-            s.inbox,
-            s.maxSubmissionCost,
-            s.maxGas,
-            s.gasPriceBid,
-            s.user,
-            s.userToken,
-            s.userSlippage,
-            s.emitter,
-            s.autoRedeem
-        );
+        BeaconProxy newProxy = new BeaconProxy(beacon, initData);
 
-        BeaconProxy newProxy = new BeaconProxy(beacon_, initData);
-        _startTask(autoRedeem_, proxyContract_);
+        uint userId = payme.getInternalId() == 0 ? 0 : payme.getInternalId() - 1;
+        num = userId;
 
-        return newProxy;
-
+        _startTask(userId, address(newProxy));
+        // _startTask(0, address(newProxy));
+        usersProxies[msg.sender] = address(newProxy);
     }
+
+
+    function getUserProxy(address user_) public view returns(address) {
+        return usersProxies[user_];
+    }
+
+    function getTaskID(address user_) external view returns(bytes32) {
+        return taskIDs[getUserProxy(user_)];
+    }
+
+
 
     // *** GELATO PART ******
 
-    function _startTask(uint autoRedeem_, BeaconProxy proxyContract_) private { 
+    function _startTask(uint internalId_, address proxyContract_) public { 
         (bytes32 id) = opsGel.createTaskNoPrepayment( 
             proxyContract_,
             payme.sendToArb.selector,
             proxyContract_,
-            abi.encodeWithSignature('checker(uint256)', autoRedeem_),
+            abi.encodeWithSignature('checker(uint256)', internalId_),
             // abi.encodeWithSelector(this.checker.selector, autoRedeem_),
             ETH
         );
@@ -66,16 +86,16 @@ contract ProxyFactory is OpsReady, Proxy, ERC1967Upgrade {
         // taskId = id;
     }
 
-    function checker( //check in Gelato's docs how checker is called, who calls it, how params are passed, does it have to be in the contract per se (i think yes)
-        uint autoRedeem_
-    ) external view returns(bool canExec, bytes memory execPayload) {
-        if (address(this).balance > 0) {
-            canExec = true;
-        }
-        execPayload = abi.encodeWithSelector(
-            payme.sendToArb.selector, autoRedeem_
-        );
-    }
+    // function checker( 
+    //     uint autoRedeem_
+    // ) external view returns(bool canExec, bytes memory execPayload) {
+    //     if (address(this).balance > 0) {
+    //         canExec = true;
+    //     }
+    //     execPayload = abi.encodeWithSelector(
+    //         payme.sendToArb.selector, autoRedeem_
+    //     );
+    // }
 
 
 }

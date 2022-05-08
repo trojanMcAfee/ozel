@@ -15,10 +15,9 @@ import 'hardhat/console.sol';
 
 
 
+contract PayMeFacetHop is OpsReady {
 
-contract PayMeFacetHop is OpsReady, Initializable { 
-
-    address public num;
+    uint public num;
 
 
     struct userConfig {
@@ -27,7 +26,7 @@ contract PayMeFacetHop is OpsReady, Initializable {
         uint userSlippage; 
     }
 
-    userConfig userDetails; 
+    // userConfig userDetails; 
 
     address public PYY;
 
@@ -40,6 +39,8 @@ contract PayMeFacetHop is OpsReady, Initializable {
     address emitter;
 
     bytes32 public taskId;
+
+    uint autoRedeem;
 
 
     // constructor( 
@@ -72,73 +73,75 @@ contract PayMeFacetHop is OpsReady, Initializable {
     //     _startTask(autoRedeem_);
     // }
 
-    constructor(address opsGel_) OpsReady(opsGel_) {}
+    // constructor(address opsGel_) OpsReady(opsGel_) {}
+
+    constructor( // do storage just here and put a proxy on proxyFactory
+        address _opsGel,
+        address _pyy,
+        address _inbox,
+        uint _maxSubmissionCost,
+        uint _maxGas,
+        uint _gasPriceBid,
+        address emitter_,
+        uint autoRedeem_
+    ) OpsReady(_opsGel) { 
+        PYY = _pyy;
+        inbox = DelayedInbox(_inbox);
+        maxSubmissionCost = _maxSubmissionCost; 
+        maxGas = _maxGas; 
+        gasPriceBid = _gasPriceBid;
+        emitter = emitter_;
+        autoRedeem = autoRedeem_;
+    }
 
 
     receive() external payable {}
 
-    function initialize2(
-        address pyy_,
-        address inbox_,
-        uint maxSubmissionCost_,
-        uint maxGas_,
-        uint gasPriceBid_,
-        address user_,
-        address userToken_,
-        uint userSlippage_,
-        address emitter_,
-        uint autoRedeem_
-    ) external initializer {
-        PYY = pyy_;
-        inbox = DelayedInbox(inbox_);
-        maxSubmissionCost = maxSubmissionCost_; 
-        maxGas = maxGas_;
-        gasPriceBid = gasPriceBid_;
 
-        userDetails = userConfig({
-            user: user_,
-            userToken: userToken_,
-            userSlippage: userSlippage_
-        });
 
-        emitter = emitter_;
+    // function sendToArb(uint autoRedeem_) external onlyOps {
+    //     (uint fee, ) = opsGel.getFeeDetails();
+    //     _transfer(fee, ETH);
 
-        _startTask(autoRedeem_);
+    //     bytes memory data = abi.encodeWithSelector(
+    //         FakePYY(payable(PYY)).exchangeToUserToken.selector, 
+    //         userDetails
+    //     );
+
+    //     uint ticketID = inbox.createRetryableTicket{value: address(this).balance}(
+    //         PYY, 
+    //         address(this).balance - autoRedeem_, 
+    //         maxSubmissionCost,  
+    //         PYY, 
+    //         PYY, 
+    //         maxGas,  
+    //         gasPriceBid, 
+    //         data
+    //     ); 
+
+    //     Emitter(emitter).forwardEvent(ticketID); 
+    // }
+
+    mapping(uint => userConfig) public userIDs;
+    uint private internalId;
+
+    function issueUserID(userConfig memory userDetails_) public {
+        userIDs[internalId] = userDetails_;
+        internalId++;
     }
 
-    function initialize(
-        address pyy_,
-        address inbox_,
-        uint maxSubmissionCost_,
-        uint maxGas_,
-        uint gasPriceBid_,
-        address user_,
-        address userToken_,
-        uint userSlippage_,
-        address emitter_,
-        uint autoRedeem_
-    ) external initializer {
-        PYY = pyy_;
-        inbox = DelayedInbox(inbox_);
-        maxSubmissionCost = maxSubmissionCost_; 
-        maxGas = maxGas_; 
-        gasPriceBid = gasPriceBid_;
-
-        userDetails = userConfig({
-            user: user_,
-            userToken: userToken_,
-            userSlippage: userSlippage_
-        });
-
-        emitter = emitter_;
-
-        _startTask(autoRedeem_);
+    function getInternalId() external view returns(uint) {
+        return internalId;
     }
 
 
-    function sendToArb(uint autoRedeem_) external onlyOps {
+
+
+    function sendToArb(uint internalId_) external onlyOps { 
         (uint fee, ) = opsGel.getFeeDetails();
         _transfer(fee, ETH);
+
+        userConfig memory userDetails = userIDs[internalId_];
 
         bytes memory data = abi.encodeWithSelector(
             FakePYY(payable(PYY)).exchangeToUserToken.selector, 
@@ -147,7 +150,7 @@ contract PayMeFacetHop is OpsReady, Initializable {
 
         uint ticketID = inbox.createRetryableTicket{value: address(this).balance}(
             PYY, 
-            address(this).balance - autoRedeem_, 
+            address(this).balance - autoRedeem, 
             maxSubmissionCost,  
             PYY, 
             PYY, 
@@ -162,29 +165,29 @@ contract PayMeFacetHop is OpsReady, Initializable {
 
     // *** GELATO PART ******
 
-    function _startTask(uint autoRedeem_) public { 
-        (bytes32 id) = opsGel.createTaskNoPrepayment( 
-            address(this),
-            this.sendToArb.selector,
-            address(this),
-            abi.encodeWithSignature('checker(uint256)', autoRedeem_),
-            // abi.encodeWithSelector(this.checker.selector, autoRedeem_),
-            ETH
-        );
+    // function _startTask(uint autoRedeem_) public { 
+    //     (bytes32 id) = opsGel.createTaskNoPrepayment( 
+    //         address(this),
+    //         this.sendToArb.selector,
+    //         address(this),
+    //         abi.encodeWithSignature('checker(uint256)', autoRedeem_),
+    //         // abi.encodeWithSelector(this.checker.selector, autoRedeem_),
+    //         ETH
+    //     );
 
-        taskId = id;
-    }
+    //     taskId = id;
+    // }
 
-    function checker(
-        uint autoRedeem_
-    ) external view returns(bool canExec, bytes memory execPayload) {
-        if (address(this).balance > 0) {
-            canExec = true;
-        }
-        execPayload = abi.encodeWithSelector(
-            this.sendToArb.selector, autoRedeem_
-        );
-    }
+    // function checker(
+    //     uint autoRedeem_
+    // ) external view returns(bool canExec, bytes memory execPayload) {
+    //     if (address(this).balance > 0) {
+    //         canExec = true;
+    //     }
+    //     execPayload = abi.encodeWithSelector(
+    //         this.sendToArb.selector, autoRedeem_
+    //     );
+    // }
 
 }
 

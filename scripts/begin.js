@@ -221,10 +221,8 @@ async function deployContract(contractName, signer, addressForConst, bytes) {
 
     let contract;
     if (bytes && bytes.length > 0) {
-        console.log(3);
         contract = await Contract.deploy(addressForConst, bytes, ops);
     } else if (addressForConst) {
-        console.log(4);
         contract = await Contract.deploy(addressForConst, ops);
     } else {
         contract = await Contract.deploy(ops);
@@ -273,9 +271,11 @@ async function sendArb() { //mainnet
     // for (let i = 0; i < 4; i++) {
 
 
-    let PayMeHop = await (
+    let PayMeHop = await ( // <---- this
         await hre.ethers.getContractFactory('PayMeFacetHop')
     ).connect(l1Signer);
+
+
     // let PayMeHop = await hre.ethers.getContractFactory('PayMeFacetHop');
     // let paymeHop = await PayMeHop.deploy(
     //     pokeMeOpsAddr, 
@@ -287,13 +287,26 @@ async function sendArb() { //mainnet
     //     gasLimit: ethers.BigNumber.from('5000000'),
     //     gasPrice: ethers.BigNumber.from('30897522792')
     //  }); 
-    let paymeHop = await PayMeHop.deploy(pokeMeOpsAddr, { 
+
+
+    let paymeHop = await PayMeHop.deploy( // <---- this
+        pokeMeOpsAddr, 
+        fakePYYaddr, inbox, 
+        maxSubmissionCost, maxGas, gasPriceBid, 
+        emitterAddr, autoRedeem
+    , { 
         gasLimit: ethers.BigNumber.from('5000000'),
         gasPrice: ethers.BigNumber.from('30897522792')
      }); 
 
-    await paymeHop.deployed();
-    const paymeHopAddr = paymeHop.address;
+
+    // let paymeHop = await PayMeHop.deploy(pokeMeOpsAddr, { 
+    //     gasLimit: ethers.BigNumber.from('5000000'),
+    //     gasPrice: ethers.BigNumber.from('30897522792')
+    //  }); 
+
+    await paymeHop.deployed(); // <---- this
+    const paymeHopAddr = paymeHop.address; //impl_1 ********
     //0x31ED67cd9F4520c4783DD779cb0E824e61C2B665
     // const paymeHop = await hre.ethers.getContractAt('PayMeFacetHop', paymeHopAddr);
     // console.log('taskID: ', (await paymeHop.taskId()).toString());
@@ -306,20 +319,31 @@ async function sendArb() { //mainnet
     //     emitterAddr, autoRedeem
     // ]);
 
-    const iface = new ethers.utils.Interface(['function initialize2(address pyy_, address inbox_, uint256 maxSubmissionCost_, uint256 maxGas_, uint256 gasPriceBid, address user_, address userToken_, uint256 userSlippage_, address emitter_, uint256 autoRedeem_) external']);
-    const initData = iface.encodeFunctionData('initialize2', [
-        fakePYYaddr, inbox, maxSubmissionCost, maxGas,
-        gasPriceBid, signerAddr, usdtAddrArb, defaultSlippage,
-        emitterAddr, autoRedeem
-    ]);
-
     //Deploys Beacon system
     const beaconAddr = await deployContract('UpgradeableBeacon', l1Signer, paymeHopAddr);
-    // const beaconAddr = '0x384cC0B016C2002f49E2e7CB88c33EE942C26DCf';
-    const beaconProxyAddr = await deployContract('BeaconProxy', l1Signer, beaconAddr, initData);
+    // const beaconAddr = '0x4D20a9A613ef6c91A96Fa75b6F81AfD88fa06E34';
  
-    console.log('return here');
-    return;
+    const ProxyFactory = await hre.ethers.getContractFactory('ProxyFactory');
+    const proxyFactory = await ProxyFactory.deploy(paymeHopAddr, beaconAddr, pokeMeOpsAddr);
+    await proxyFactory.deployed();
+    const proxyFactoryAddr = proxyFactory.address;
+    console.log('ProxyFactory deployed to: ', proxyFactoryAddr);
+
+    //Creates 1st proxy
+    // const proxyFactory = await hre.ethers.getContractAt('ProxyFactory', proxyFactoryAddr);
+    const tx = await proxyFactory.createNewProxy(userDetails, {
+        gasLimit: ethers.BigNumber.from('5000000'),
+        gasPrice: ethers.BigNumber.from('30397522792')
+    });
+    await tx.wait();
+    const newProxy = await proxyFactory.getUserProxy(signerAddr); 
+    console.log('proxy 1: ', newProxy.toString());
+
+    //Gets user's task id
+    const taskId = await proxyFactory.getTaskID(signerAddr);
+    console.log('task id: ', taskId.toString());
+
+
 
     const filter = {
         address: emitterAddr,
@@ -347,7 +371,7 @@ async function sendArb() { //mainnet
 
 
     //**** TRIGGER for Gelato *******/
-    await sendTx(beaconProxyAddr);
+    await sendTx(newProxy.toString());
 
     // const tx = await paymeHop.sendToArb(autoRedeem, {
     //     gasLimit: ethers.BigNumber.from('5000000'),
@@ -359,6 +383,27 @@ async function sendArb() { //mainnet
 }
 
 
+async function testBeacon() {
+    // const beaconAddr = '0xE0ab317b5D7AD571872B025aB6eAE9E60d082467';
+    // const beacon = await hre.ethers.getContractAt('UpgradeableBeacon', beaconAddr);
+    // const impl = await beacon.implementation();
+    // console.log('impl: ', impl.toString());
+
+
+    // const factoryAddr = '0xc6be38B9bDA4D4AcA4123BB9517E47B050C1Fed2';
+    // const factory = await hre.ethers.getContractAt('ProxyFactory', factoryAddr);
+    // const num = await factory.num();
+    // console.log('num: ', num.toString());
+
+
+    const paymeAddr = '0xbbd8D3cD07A53573c29AB5aa2fd70c30CC2DAdA3';
+    const payme = await hre.ethers.getContractAt('PayMeFacetHop', paymeAddr);
+    const user = await payme.userIDs(0);
+    console.log('user: ', user.toString());
+
+}
+
+testBeacon();
 
 
 
@@ -488,7 +533,7 @@ async function beginSimulatedDiamond() {
 
 // beginSimulatedDiamond();
 
-sendArb();
+// sendArb();
 
 // tryPrecompile();
 
