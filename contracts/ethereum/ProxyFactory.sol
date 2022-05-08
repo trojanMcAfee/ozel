@@ -9,6 +9,7 @@ import "@openzeppelin/contracts/proxy/ERC1967/ERC1967Upgrade.sol";
 import './OpsReady.sol';
 import './PayMeFacetHop.sol';
 
+import 'hardhat/console.sol';
 
 
 contract ProxyFactory is OpsReady {
@@ -43,17 +44,25 @@ contract ProxyFactory is OpsReady {
 
 
     function createNewProxy(userConfig memory userDetails_) external {
-        bytes memory initData = abi.encodeWithSignature( 
-            'issueUserID((address,address,uint256))', 
-            userDetails_
-        ); 
+        // bytes memory initData = abi.encodeWithSignature( 
+        //     'issueUserID((address,address,uint256))', 
+        //     userDetails_
+        // ); 
+
+        bytes memory initData = abi.encodeWithSignature('setNum()');
 
         BeaconProxy newProxy = new BeaconProxy(beacon, initData);
 
         uint userId = payme.getInternalId() == 0 ? 0 : payme.getInternalId() - 1;
-        num = userId;
+        num = userId + 1;
 
-        _startTask(userId, address(newProxy));
+        // address userToken = payme.getUserDetails();
+        // console.log('x: ', userToken);
+
+        // revert('revert here');
+
+
+        // _startTask(userId, address(newProxy));
         // _startTask(0, address(newProxy));
         usersProxies[msg.sender] = address(newProxy);
     }

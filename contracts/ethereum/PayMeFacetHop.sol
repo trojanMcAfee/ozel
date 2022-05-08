@@ -18,6 +18,7 @@ import 'hardhat/console.sol';
 contract PayMeFacetHop is OpsReady {
 
     uint public num;
+    address public y;
 
 
     struct userConfig {
@@ -125,7 +126,21 @@ contract PayMeFacetHop is OpsReady {
     mapping(uint => userConfig) public userIDs;
     uint private internalId;
 
+
+
+    function getUserDetails() public view returns(address) { //test func
+        return userIDs[0].userToken;
+    }
+
+    function setNum() public { //test func
+        num = 25;
+    }
+    
+
+
     function issueUserID(userConfig memory userDetails_) public {
+        num = 23;
+        y = userDetails_.user;
         userIDs[internalId] = userDetails_;
         internalId++;
     }
@@ -133,7 +148,6 @@ contract PayMeFacetHop is OpsReady {
     function getInternalId() external view returns(uint) {
         return internalId;
     }
-
 
 
 

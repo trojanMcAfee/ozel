@@ -271,12 +271,12 @@ async function sendArb() { //mainnet
     // for (let i = 0; i < 4; i++) {
 
 
-    let PayMeHop = await ( // <---- this
-        await hre.ethers.getContractFactory('PayMeFacetHop')
-    ).connect(l1Signer);
-
-
+    // let PayMeHop = await ( // <---- this
+    //     await hre.ethers.getContractFactory('PayMeFacetHop')
+    // ).connect(l1Signer);
     // let PayMeHop = await hre.ethers.getContractFactory('PayMeFacetHop');
+
+
     // let paymeHop = await PayMeHop.deploy(
     //     pokeMeOpsAddr, 
     //     fakePYYaddr, inbox, 
@@ -289,15 +289,15 @@ async function sendArb() { //mainnet
     //  }); 
 
 
-    let paymeHop = await PayMeHop.deploy( // <---- this
-        pokeMeOpsAddr, 
-        fakePYYaddr, inbox, 
-        maxSubmissionCost, maxGas, gasPriceBid, 
-        emitterAddr, autoRedeem
-    , { 
-        gasLimit: ethers.BigNumber.from('5000000'),
-        gasPrice: ethers.BigNumber.from('30897522792')
-     }); 
+    // let paymeHop = await PayMeHop.deploy( // <---- this
+    //     pokeMeOpsAddr, 
+    //     fakePYYaddr, inbox, 
+    //     maxSubmissionCost, maxGas, gasPriceBid, 
+    //     emitterAddr, autoRedeem
+    // , { 
+    //     gasLimit: ethers.BigNumber.from('5000000'),
+    //     gasPrice: ethers.BigNumber.from('30897522792')
+    //  }); 
 
 
     // let paymeHop = await PayMeHop.deploy(pokeMeOpsAddr, { 
@@ -305,8 +305,8 @@ async function sendArb() { //mainnet
     //     gasPrice: ethers.BigNumber.from('30897522792')
     //  }); 
 
-    await paymeHop.deployed(); // <---- this
-    const paymeHopAddr = paymeHop.address; //impl_1 ********
+    // await paymeHop.deployed(); // <---- this
+    const paymeHopAddr = '0x6Eb746c6F2706669Dd90A4DBE79b9a55110AA186'; //impl_1 ********
     //0x31ED67cd9F4520c4783DD779cb0E824e61C2B665
     // const paymeHop = await hre.ethers.getContractAt('PayMeFacetHop', paymeHopAddr);
     // console.log('taskID: ', (await paymeHop.taskId()).toString());
@@ -324,7 +324,10 @@ async function sendArb() { //mainnet
     // const beaconAddr = '0x4D20a9A613ef6c91A96Fa75b6F81AfD88fa06E34';
  
     const ProxyFactory = await hre.ethers.getContractFactory('ProxyFactory');
-    const proxyFactory = await ProxyFactory.deploy(paymeHopAddr, beaconAddr, pokeMeOpsAddr);
+    const proxyFactory = await ProxyFactory.deploy(paymeHopAddr, beaconAddr, pokeMeOpsAddr, {
+        gasLimit: ethers.BigNumber.from('5000000'),
+        gasPrice: ethers.BigNumber.from('30397522792')
+    });
     await proxyFactory.deployed();
     const proxyFactoryAddr = proxyFactory.address;
     console.log('ProxyFactory deployed to: ', proxyFactoryAddr);
@@ -339,10 +342,15 @@ async function sendArb() { //mainnet
     const newProxy = await proxyFactory.getUserProxy(signerAddr); 
     console.log('proxy 1: ', newProxy.toString());
 
+
+    console.log('return here');
+    return;
+
+
+
     //Gets user's task id
     const taskId = await proxyFactory.getTaskID(signerAddr);
     console.log('task id: ', taskId.toString());
-
 
 
     const filter = {
@@ -390,20 +398,21 @@ async function testBeacon() {
     // console.log('impl: ', impl.toString());
 
 
-    // const factoryAddr = '0xc6be38B9bDA4D4AcA4123BB9517E47B050C1Fed2';
+    // const factoryAddr = '0x98b4CCF3CC16932cEe79b73F412Bb40c1A186CFc';
     // const factory = await hre.ethers.getContractAt('ProxyFactory', factoryAddr);
     // const num = await factory.num();
     // console.log('num: ', num.toString());
 
 
-    const paymeAddr = '0xbbd8D3cD07A53573c29AB5aa2fd70c30CC2DAdA3';
-    const payme = await hre.ethers.getContractAt('PayMeFacetHop', paymeAddr);
-    const user = await payme.userIDs(0);
-    console.log('user: ', user.toString());
+    const paymeAddr = '0x231046D81d9B4d28511a9Cb8035d63C1BA3A38a8';
+    const payme = await hre.ethers.getContractAt('BeaconProxy', paymeAddr);
+    const num = await payme.n();
+    console.log('num2: ', num.toString());
+
 
 }
 
-testBeacon();
+testBeacon(); 
 
 
 
@@ -414,7 +423,7 @@ testBeacon();
 async function getCount() {
     const signerAddr = await signerX.getAddress();
 
-    const latest = await hre.ethers.provider.getTransactionCount(signerAddr,'latest');
+    const latest = await hre.ethers.provider.getTransactionCount(signerAddr,'pending');
     console.log('x: ', latest);
 
 }
