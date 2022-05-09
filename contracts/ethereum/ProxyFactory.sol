@@ -25,6 +25,8 @@ contract ProxyFactory is OpsReady {
 
     mapping(address => address) usersProxies;
 
+    mapping(address => address) proxyByUser;
+
     struct userConfig {
         address user;
         address userToken;
@@ -44,27 +46,24 @@ contract ProxyFactory is OpsReady {
 
 
     function createNewProxy(userConfig memory userDetails_) external {
-        // bytes memory initData = abi.encodeWithSignature( 
-        //     'issueUserID((address,address,uint256))', 
-        //     userDetails_
-        // ); 
+        bytes memory initData = abi.encodeWithSignature( 
+            'issueUserID((address,address,uint256))', 
+            userDetails_
+        ); 
 
-        bytes memory initData = abi.encodeWithSignature('setNum()');
+        BeaconProxy newProxy = new BeaconProxy(beacon, new bytes(0));
 
-        BeaconProxy newProxy = new BeaconProxy(beacon, initData);
+        (bool success, ) = address(payme).call(initData);
+        require(success, 'ProxyFactory: createNewProxy() failed');
 
         uint userId = payme.getInternalId() == 0 ? 0 : payme.getInternalId() - 1;
-        num = userId + 1;
-
-        // address userToken = payme.getUserDetails();
-        // console.log('x: ', userToken);
-
-        // revert('revert here');
 
 
         // _startTask(userId, address(newProxy));
-        // _startTask(0, address(newProxy));
+
+
         usersProxies[msg.sender] = address(newProxy);
+        proxyByUser[address(newProxy)] = msg.sender;
     }
 
 
@@ -74,6 +73,10 @@ contract ProxyFactory is OpsReady {
 
     function getTaskID(address user_) external view returns(bytes32) {
         return taskIDs[getUserProxy(user_)];
+    }
+
+    function getUserByProxy(address proxy_) external view returns(address) {
+        return proxyByUser[proxy_];
     }
 
 

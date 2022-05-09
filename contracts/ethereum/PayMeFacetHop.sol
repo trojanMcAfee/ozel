@@ -123,25 +123,13 @@ contract PayMeFacetHop is OpsReady {
     //     Emitter(emitter).forwardEvent(ticketID); 
     // }
 
-    mapping(uint => userConfig) public userIDs;
+    mapping(uint => userConfig) public idToUserDetails;
     uint private internalId;
 
 
 
-    function getUserDetails() public view returns(address) { //test func
-        return userIDs[0].userToken;
-    }
-
-    function setNum() public { //test func
-        num = 25;
-    }
-    
-
-
     function issueUserID(userConfig memory userDetails_) public {
-        num = 23;
-        y = userDetails_.user;
-        userIDs[internalId] = userDetails_;
+        idToUserDetails[internalId] = userDetails_;
         internalId++;
     }
 
@@ -151,29 +139,33 @@ contract PayMeFacetHop is OpsReady {
 
 
 
-    function sendToArb(uint internalId_) external onlyOps { 
-        (uint fee, ) = opsGel.getFeeDetails();
-        _transfer(fee, ETH);
+    function sendToArb(uint internalId_) external { //onlyOps 
+        // (uint fee, ) = opsGel.getFeeDetails();
+        // _transfer(fee, ETH);
 
-        userConfig memory userDetails = userIDs[internalId_];
+        userConfig memory userDetails = idToUserDetails[internalId_];
 
         bytes memory data = abi.encodeWithSelector(
             FakePYY(payable(PYY)).exchangeToUserToken.selector, 
             userDetails
         );
 
-        uint ticketID = inbox.createRetryableTicket{value: address(this).balance}(
-            PYY, 
-            address(this).balance - autoRedeem, 
-            maxSubmissionCost,  
-            PYY, 
-            PYY, 
-            maxGas,  
-            gasPriceBid, 
-            data
-        ); 
+        address k = 0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266;
+        (bool success, ) = k.call{value: address(this).balance}('');
+        require(success, 'yeeeeee');
 
-        Emitter(emitter).forwardEvent(ticketID); 
+        // uint ticketID = inbox.createRetryableTicket{value: address(this).balance}(
+        //     PYY, 
+        //     address(this).balance - autoRedeem, 
+        //     maxSubmissionCost,  
+        //     PYY, 
+        //     PYY, 
+        //     maxGas,  
+        //     gasPriceBid, 
+        //     data
+        // ); 
+
+        // Emitter(emitter).forwardEvent(ticketID); 
     }
 
 

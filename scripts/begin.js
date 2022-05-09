@@ -209,10 +209,10 @@ async function tryPrecompile() {
 
 
 async function deployContract(contractName, signer, addressForConst, bytes) {
-    const Contract = await (
-        await hre.ethers.getContractFactory(contractName)
-    ).connect(signer);
-    // const Contract = await hre.ethers.getContractFactory(contractName);
+    // const Contract = await (
+    //     await hre.ethers.getContractFactory(contractName)
+    // ).connect(signer);
+    const Contract = await hre.ethers.getContractFactory(contractName);
 
     const ops = {
         gasLimit: ethers.BigNumber.from('5000000'),
@@ -241,7 +241,8 @@ async function deployContract(contractName, signer, addressForConst, bytes) {
 async function sendArb() { //mainnet
     const bridge = await Bridge.init(l1Signer, l2Signer);
     // const value = parseEther('0.1');
-    const signerAddr = await signerX.getAddress();
+    // const signerAddr = await signerX.getAddress();
+    const [signerAddr] = await hre.ethers.provider.listAccounts();
     console.log('signer address: ', signerAddr);
 
     const userDetails = [
@@ -274,7 +275,8 @@ async function sendArb() { //mainnet
     // let PayMeHop = await ( // <---- this
     //     await hre.ethers.getContractFactory('PayMeFacetHop')
     // ).connect(l1Signer);
-    // let PayMeHop = await hre.ethers.getContractFactory('PayMeFacetHop');
+
+    let PayMeHop = await hre.ethers.getContractFactory('PayMeFacetHop');
 
 
     // let paymeHop = await PayMeHop.deploy(
@@ -289,15 +291,15 @@ async function sendArb() { //mainnet
     //  }); 
 
 
-    // let paymeHop = await PayMeHop.deploy( // <---- this
-    //     pokeMeOpsAddr, 
-    //     fakePYYaddr, inbox, 
-    //     maxSubmissionCost, maxGas, gasPriceBid, 
-    //     emitterAddr, autoRedeem
-    // , { 
-    //     gasLimit: ethers.BigNumber.from('5000000'),
-    //     gasPrice: ethers.BigNumber.from('30897522792')
-    //  }); 
+    let paymeHop = await PayMeHop.deploy( // <---- this
+        pokeMeOpsAddr, 
+        fakePYYaddr, inbox, 
+        maxSubmissionCost, maxGas, gasPriceBid, 
+        emitterAddr, autoRedeem
+    , { 
+        gasLimit: ethers.BigNumber.from('5000000'),
+        gasPrice: ethers.BigNumber.from('30897522792')
+     }); 
 
 
     // let paymeHop = await PayMeHop.deploy(pokeMeOpsAddr, { 
@@ -305,9 +307,9 @@ async function sendArb() { //mainnet
     //     gasPrice: ethers.BigNumber.from('30897522792')
     //  }); 
 
-    // await paymeHop.deployed(); // <---- this
-    const paymeHopAddr = '0x6Eb746c6F2706669Dd90A4DBE79b9a55110AA186'; //impl_1 ********
-    //0x31ED67cd9F4520c4783DD779cb0E824e61C2B665
+    await paymeHop.deployed(); // <---- this
+    const paymeHopAddr = paymeHop.address; //impl_1 ********
+    //0x6Eb746c6F2706669Dd90A4DBE79b9a55110AA186
     // const paymeHop = await hre.ethers.getContractAt('PayMeFacetHop', paymeHopAddr);
     // console.log('taskID: ', (await paymeHop.taskId()).toString());
     console.log(`paymeHop deployed to: `, paymeHopAddr);
@@ -321,7 +323,7 @@ async function sendArb() { //mainnet
 
     //Deploys Beacon system
     const beaconAddr = await deployContract('UpgradeableBeacon', l1Signer, paymeHopAddr);
-    // const beaconAddr = '0x4D20a9A613ef6c91A96Fa75b6F81AfD88fa06E34';
+    // const beaconAddr = '0xc778772aDe2a8568d87336Dbd516c2B47273582A';
  
     const ProxyFactory = await hre.ethers.getContractFactory('ProxyFactory');
     const proxyFactory = await ProxyFactory.deploy(paymeHopAddr, beaconAddr, pokeMeOpsAddr, {
@@ -334,59 +336,79 @@ async function sendArb() { //mainnet
 
     //Creates 1st proxy
     // const proxyFactory = await hre.ethers.getContractAt('ProxyFactory', proxyFactoryAddr);
-    const tx = await proxyFactory.createNewProxy(userDetails, {
+    let tx = await proxyFactory.createNewProxy(userDetails, {
         gasLimit: ethers.BigNumber.from('5000000'),
         gasPrice: ethers.BigNumber.from('30397522792')
     });
     await tx.wait();
-    const newProxy = await proxyFactory.getUserProxy(signerAddr); 
-    console.log('proxy 1: ', newProxy.toString());
-
-
-    console.log('return here');
-    return;
-
+    const newProxyAddr = (await proxyFactory.getUserProxy(signerAddr)).toString(); 
+    console.log('proxy 1: ', newProxyAddr);
 
 
     //Gets user's task id
-    const taskId = await proxyFactory.getTaskID(signerAddr);
-    console.log('task id: ', taskId.toString());
+    // const taskId = await proxyFactory.getTaskID(signerAddr);
+    // console.log('task id: ', taskId.toString());
 
 
-    const filter = {
-        address: emitterAddr,
-        topics: [
-            ethers.utils.id("showTicket(uint256)")
-        ]
-    };
+    // const filter = {
+    //     address: emitterAddr,
+    //     topics: [
+    //         ethers.utils.id("showTicket(uint256)")
+    //     ]
+    // };
 
 
-    await hre.ethers.provider.on(filter, async (encodedData) => {
-        const { data } = encodedData;
-        const ourMessagesSequenceNum = ethers.utils.defaultAbiCoder.decode(['uint'], data);
+    // await hre.ethers.provider.on(filter, async (encodedData) => {
+    //     const { data } = encodedData;
+    //     const ourMessagesSequenceNum = ethers.utils.defaultAbiCoder.decode(['uint'], data);
 
-        console.log('inboxSeqNums: ', ourMessagesSequenceNum.toString());
-        const retryableTxnHash = await bridge.calculateL2RetryableTransactionHash(
-            ourMessagesSequenceNum[0]
-        );
-        console.log('retryableTxnHash: ', retryableTxnHash);
-        console.log(
-            `waiting for L2 tx 🕐... (should take < 10 minutes, current time: ${new Date().toTimeString()}`
-        );
-        const retryRec = await l2Provider.waitForTransaction(retryableTxnHash)
-        console.log(`L2 retryable txn executed 🥳 ${retryRec.transactionHash} at ${new Date().toTimeString()}`);
-    });
+    //     console.log('inboxSeqNums: ', ourMessagesSequenceNum.toString());
+    //     const retryableTxnHash = await bridge.calculateL2RetryableTransactionHash(
+    //         ourMessagesSequenceNum[0]
+    //     );
+    //     console.log('retryableTxnHash: ', retryableTxnHash);
+    //     console.log(
+    //         `waiting for L2 tx 🕐... (should take < 10 minutes, current time: ${new Date().toTimeString()}`
+    //     );
+    //     const retryRec = await l2Provider.waitForTransaction(retryableTxnHash)
+    //     console.log(`L2 retryable txn executed 🥳 ${retryRec.transactionHash} at ${new Date().toTimeString()}`);
+    // });
 
 
     //**** TRIGGER for Gelato *******/
-    await sendTx(newProxy.toString());
+    await sendTx(newProxyAddr);
 
-    // const tx = await paymeHop.sendToArb(autoRedeem, {
+    // const newProxy = await hre.ethers.getContractAt('BeaconProxy', newProxyAddr);
+
+    let ethBalance = await hre.ethers.provider.getBalance(newProxyAddr);
+    console.log('pre eth balance on proxy: ', ethBalance.toString());
+
+    // console.log('newProxy: ', newProxy);
+
+    // console.log('return here');
+    // return;
+
+    const signer = await hre.ethers.provider.getSigner(0);
+    const iface = new ethers.utils.Interface(['function sendToArb(uint256 internalId_)']);
+    const data = iface.encodeFunctionData('sendToArb', [0]);
+    
+    tx = await signer.sendTransaction({
+        gasLimit: ethers.BigNumber.from('5000000'),
+        gasPrice: ethers.BigNumber.from('30097522792'),
+        data,
+        to: newProxyAddr
+    });
+
+    // tx = await newProxy.sendToArb(0, {
     //     gasLimit: ethers.BigNumber.from('5000000'),
     //     gasPrice: ethers.BigNumber.from('30097522792')
     // });
-    // const receipt = await tx.wait();
-    // console.log('sendToArb hash: ', receipt.transactionHash);
+
+    const receipt = await tx.wait();
+    console.log('sendToArb hash: ', receipt.transactionHash);
+
+    ethBalance = await hre.ethers.provider.getBalance(newProxyAddr);
+    console.log('post eth balance on proxy: ', ethBalance.toString());
 
 }
 
@@ -412,7 +434,7 @@ async function testBeacon() {
 
 }
 
-testBeacon(); 
+// testBeacon(); 
 
 
 
@@ -542,7 +564,7 @@ async function beginSimulatedDiamond() {
 
 // beginSimulatedDiamond();
 
-// sendArb();
+sendArb();
 
 // tryPrecompile();
 

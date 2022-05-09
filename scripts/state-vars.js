@@ -43,7 +43,7 @@ const l1Signer = signerX.connect(l1ProviderRinkeby);
 
 
 
-let network = 'rinkeby';
+let network = 'arbitrum';
 switch(network) {
     case 'rinkeby':
         chainId = 421611;
