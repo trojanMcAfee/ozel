@@ -140,19 +140,37 @@ contract PayMeFacetHop is OpsReady {
 
 
     function sendToArb(uint internalId_) external { //onlyOps 
-        // (uint fee, ) = opsGel.getFeeDetails();
-        // _transfer(fee, ETH);
+        // console.log('1: ', address(opsGel));
+        (uint fee, ) = opsGel.getFeeDetails();
+        // console.log(2);
+        _transfer(fee, ETH);
 
         userConfig memory userDetails = idToUserDetails[internalId_];
 
-        bytes memory data = abi.encodeWithSelector(
+        bytes memory swapData = abi.encodeWithSelector(
             FakePYY(payable(PYY)).exchangeToUserToken.selector, 
             userDetails
         );
 
-        address k = 0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266;
-        (bool success, ) = k.call{value: address(this).balance}('');
-        require(success, 'yeeeeee');
+        console.log('address(this).balance: *******', address(this).balance);
+
+        bytes memory ticketData = abi.encodeWithSelector(
+            inbox.createRetryableTicket.selector, 
+            PYY, 
+            address(this).balance - autoRedeem, 
+            maxSubmissionCost,  
+            PYY, 
+            PYY, 
+            maxGas,  
+            gasPriceBid, 
+            swapData
+        );
+
+        (bool success, bytes memory returnData) = address(inbox).delegatecall(ticketData);
+        require(success, 'PayMeFacetHop: sendToArb() failed');
+
+        uint ticketID = abi.decode(returnData, (uint));
+        console.log('ticketID: ', ticketID);
 
         // uint ticketID = inbox.createRetryableTicket{value: address(this).balance}(
         //     PYY, 
@@ -165,7 +183,7 @@ contract PayMeFacetHop is OpsReady {
         //     data
         // ); 
 
-        // Emitter(emitter).forwardEvent(ticketID); 
+        Emitter(emitter).forwardEvent(ticketID); 
     }
 
 

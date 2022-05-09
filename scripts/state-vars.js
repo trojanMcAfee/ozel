@@ -72,9 +72,9 @@ switch(network) {
         yTricryptoPoolAddr = '';
         break; 
     case 'arbitrum':
-        pokeMeOpsAddr = '0xB3f5503f93d5Ef84b06993a1975B9D21B962892F'; //mainnet
+        pokeMeOpsAddr = '0xB3f5503f93d5Ef84b06993a1975B9D21B962892F'; 
         hopBridge = '0xb8901acB165ed027E32754E0FFe830802919727f'; //mainnet
-        inbox = '0x4Dbd4fc535Ac27206064B68FfCf827b0A60BAB3f'; //mainnet
+        inbox = '0x4Dbd4fc535Ac27206064B68FfCf827b0A60BAB3f';
 
         usdtAddrArb = '0xfd086bc7cd5c481dcc9c85ebe478a1c0b69fcbb9';
         tricryptoAddr = '0x960ea3e3C7FB317332d990873d354E18d7645590';
