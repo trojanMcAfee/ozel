@@ -9,7 +9,7 @@ import "@openzeppelin/contracts/proxy/ERC1967/ERC1967Upgrade.sol";
 import './OpsReady.sol';
 import './PayMeFacetHop.sol';
 
-import './StorageBridge.sol';
+import './CoBeacon.sol';
 
 import 'hardhat/console.sol';
 
@@ -22,6 +22,7 @@ contract ProxyFactory is OpsReady {
     PayMeFacetHop payme;
 
     address beacon;
+    address coBeacon;
 
     mapping(address => bytes32) public taskIDs;
 
@@ -45,7 +46,14 @@ contract ProxyFactory is OpsReady {
     //     beacon = beacon_;
     // }
 
-    constructor(address opsGel_) OpsReady(opsGel_) {}
+    constructor(
+        address opsGel_, 
+        address beacon_,
+        address coBeacon_
+    ) OpsReady(opsGel_) {
+        beacon = beacon_;
+        coBeacon = coBeacon_;
+    }
 
     /**
         1. Initialize all storage somewhere
@@ -64,17 +72,20 @@ contract ProxyFactory is OpsReady {
 
 
     function createNewProxy(userConfig memory userDetails_) external {
-        bytes memory initData = abi.encodeWithSignature( 
+        bytes memory idData = abi.encodeWithSignature( 
             'issueUserID((address,address,uint256))', 
             userDetails_
         ); 
 
-        BeaconProxy newProxy = new BeaconProxy(beacon, new bytes(0));
-
-        (bool success, ) = address(payme).call(initData);
+        (bool success, ) = coBeacon.call(idData);
         require(success, 'ProxyFactory: createNewProxy() failed');
 
-        uint userId = payme.getInternalId() == 0 ? 0 : payme.getInternalId() - 1;
+        BeaconProxy newProxy = new BeaconProxy(beacon, new bytes(0));
+        
+        uint userId = 
+            CoBeacon(coBeacon).getInternalId() == 0 ?
+            0 : 
+            CoBeacon(coBeacon).getInternalId() - 1;
 
 
         // _startTask(userId, address(newProxy));

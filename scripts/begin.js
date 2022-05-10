@@ -295,22 +295,35 @@ async function sendArb() { //mainnet
     // const paymeHop = await hre.ethers.getContractAt('PayMeFacetHop', paymeHopAddr);
     console.log(`paymeHop deployed to: `, paymeHopAddr);
 
+    //Deploys StorageBridge (storage beacon)
+     const constrArgs = {
+        payme: paymeHopAddr,
+        opsGel: pokeMeOpsAddr,
+        pyy: fakePYYaddr,
+        inbox,
+        maxSubmissionCost,
+        maxGas,
+        gasPriceBid,
+        emitter: emitterAddr,
+        autoRedeem
+     };
+
+        // address beacon_,
+       
+
+    const coBeaconAddr = await deployContract('CoBeacon', l1Signer, constrArgs);
+    //fix the args to match that of ProxyFactory constructor and deployContract() //<----------------
+
 
     //Deploys Beacon system
-    const beaconAddr = await deployContract('UpgradeableBeacon', l1Signer, paymeHopAddr);
+    const beaconAddr = await deployContract('UpgradeableBeacon', l1Signer, coBeaconAddr); //calls go to this impl (storageBridgeAddr)
     // const beaconAddr = '0xc778772aDe2a8568d87336Dbd516c2B47273582A';
- 
-    const ProxyFactory = await hre.ethers.getContractFactory('ProxyFactory');
-    const proxyFactory = await ProxyFactory.deploy(paymeHopAddr, beaconAddr, pokeMeOpsAddr, {
-        gasLimit: ethers.BigNumber.from('5000000'),
-        gasPrice: ethers.BigNumber.from('30397522792')
-    });
-    await proxyFactory.deployed();
-    const proxyFactoryAddr = proxyFactory.address;
-    console.log('ProxyFactory deployed to: ', proxyFactoryAddr);
+
+    const proxyFactoryAddr = await deployContract('ProxyFactory', l1Signer, pokeMeOpsAddr, beaconAddr, coBeaconAddr);
+    //fix the args to match that of ProxyFactory constructor and deployContract() //<----------------
+    const proxyFactory = await hre.ethers.getContractAt('ProxyFactory', proxyFactoryAddr);
 
     //Creates 1st proxy
-    // const proxyFactory = await hre.ethers.getContractAt('ProxyFactory', proxyFactoryAddr);
     let tx = await proxyFactory.createNewProxy(userDetails, {
         gasLimit: ethers.BigNumber.from('5000000'),
         gasPrice: ethers.BigNumber.from('30397522792')
@@ -361,8 +374,8 @@ async function sendArb() { //mainnet
     // return;
 
     const signer = await hre.ethers.provider.getSigner(0);
-    const iface = new ethers.utils.Interface(['function sendToArb(uint256 internalId_)']);
-    const data = iface.encodeFunctionData('sendToArb', [0]);
+    const iface = new ethers.utils.Interface(['function routerCall(uint256 internalId_)']);
+    const data = iface.encodeFunctionData('routerCall', [0]);
     
     tx = await signer.sendTransaction({
         gasLimit: ethers.BigNumber.from('5000000'),

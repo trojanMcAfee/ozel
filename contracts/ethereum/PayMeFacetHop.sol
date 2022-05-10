@@ -76,24 +76,24 @@ contract PayMeFacetHop is OpsReady {
 
     // constructor(address opsGel_) OpsReady(opsGel_) {}
 
-    constructor( // do storage just here and put a proxy on proxyFactory
-        address _opsGel,
-        address _pyy,
-        address _inbox,
-        uint _maxSubmissionCost,
-        uint _maxGas,
-        uint _gasPriceBid,
-        address emitter_,
-        uint autoRedeem_
-    ) OpsReady(_opsGel) { 
-        PYY = _pyy;
-        inbox = DelayedInbox(_inbox);
-        maxSubmissionCost = _maxSubmissionCost; 
-        maxGas = _maxGas; 
-        gasPriceBid = _gasPriceBid;
-        emitter = emitter_;
-        autoRedeem = autoRedeem_;
-    }
+    // constructor( // do storage just here and put a proxy on proxyFactory
+    //     address _opsGel,
+    //     address _pyy,
+    //     address _inbox,
+    //     uint _maxSubmissionCost,
+    //     uint _maxGas,
+    //     uint _gasPriceBid,
+    //     address emitter_,
+    //     uint autoRedeem_
+    // ) OpsReady(_opsGel) { 
+    //     PYY = _pyy;
+    //     inbox = DelayedInbox(_inbox);
+    //     maxSubmissionCost = _maxSubmissionCost; 
+    //     maxGas = _maxGas; 
+    //     gasPriceBid = _gasPriceBid;
+    //     emitter = emitter_;
+    //     autoRedeem = autoRedeem_;
+    // }
 
 
     receive() external payable {}
@@ -123,33 +123,41 @@ contract PayMeFacetHop is OpsReady {
     //     Emitter(emitter).forwardEvent(ticketID); 
     // }
 
-    mapping(uint => userConfig) public idToUserDetails;
-    uint private internalId;
+    // mapping(uint => userConfig) public idToUserDetails;
+    // uint private internalId;
 
 
 
-    function issueUserID(userConfig memory userDetails_) public {
-        idToUserDetails[internalId] = userDetails_;
-        internalId++;
-    }
+    // function issueUserID(userConfig memory userDetails_) public {
+    //     idToUserDetails[internalId] = userDetails_;
+    //     internalId++;
+    // }
 
-    function getInternalId() external view returns(uint) {
-        return internalId;
-    }
+    // function getInternalId() external view returns(uint) {
+    //     return internalId;
+    // }
 
 
 
-    function sendToArb(uint internalId_) external { //onlyOps 
+    function sendToArb( //fix this contract and check if it can be merged with coBeacon
+        userConfig memory userDetails_,
+        address inbox_,
+        address opsGel_,
+        address pyy_,
+        uint maxSubmissionCost_,
+        uint maxGas_,
+        uint gasPriceBid_
+    ) external { //onlyOps <-----------
         // console.log('1: ', address(opsGel));
         (uint fee, ) = opsGel.getFeeDetails();
         // console.log(2);
         _transfer(fee, ETH);
 
-        userConfig memory userDetails = idToUserDetails[internalId_];
+        // userConfig memory userDetails = idToUserDetails[internalId_];
 
         bytes memory swapData = abi.encodeWithSelector(
             FakePYY(payable(PYY)).exchangeToUserToken.selector, 
-            userDetails
+            userDetails_
         );
 
         console.log('address(this).balance: *******', address(this).balance);
