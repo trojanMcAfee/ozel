@@ -17,8 +17,8 @@ import 'hardhat/console.sol';
 
 contract PayMeFacetHop is OpsReady {
 
-    uint public num;
-    address public y;
+    // uint public num;
+    // address public y;
 
 
     struct userConfig {
@@ -29,19 +29,30 @@ contract PayMeFacetHop is OpsReady {
 
     // userConfig userDetails; 
 
-    address public PYY;
+    // address public PYY;
 
-    uint maxSubmissionCost;
-    uint maxGas;
-    uint gasPriceBid;
+    // uint maxSubmissionCost;
+    // uint maxGas;
+    // uint gasPriceBid;
 
-    DelayedInbox inbox;
+    // DelayedInbox inbox;
 
-    address emitter;
+    // address emitter;
 
-    bytes32 public taskId;
+    // bytes32 public taskId;
 
-    uint autoRedeem;
+    // uint autoRedeem;
+
+    struct BridgeConfig {
+        address inbox;
+        address opsGel;
+        address PYY;
+        address emitter;
+        uint maxSubmissionCost;
+        uint maxGas;
+        uint gasPriceBid;
+        uint autoRedeem;
+    }
 
 
     // constructor( 
@@ -141,16 +152,25 @@ contract PayMeFacetHop is OpsReady {
 
     function sendToArb( //fix this contract and check if it can be merged with coBeacon
         userConfig memory userDetails_,
-        address inbox_,
-        address opsGel_,
-        address pyy_,
-        uint maxSubmissionCost_,
-        uint maxGas_,
-        uint gasPriceBid_
+        BridgeConfig memory bridgeConfig_
+        // address inbox_,
+        // address opsGel_,
+        // address pyy_,
+        // uint maxSubmissionCost_,
+        // uint maxGas_,
+        // uint gasPriceBid_
     ) external { //onlyOps <-----------
-        // console.log('1: ', address(opsGel));
+        address inbox = bridgeConfig_.inbox;
+        address opsGel = bridgeConfig_.opsGel;
+        address PYY = bridgeConfig_.PYY;
+        address emitter = bridgeConfig_.emitter;
+        uint maxSubmissionCost = bridgeConfig_.maxSubmissionCost;
+        uint maxGas = bridgeConfig_.maxGas;
+        uint gasPriceBid = bridgeConfig_.gasPriceBid;
+        uint autoRedeem = bridgeConfig_.autoRedeem;
+
+
         (uint fee, ) = opsGel.getFeeDetails();
-        // console.log(2);
         _transfer(fee, ETH);
 
         // userConfig memory userDetails = idToUserDetails[internalId_];
