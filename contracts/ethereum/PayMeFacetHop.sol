@@ -13,6 +13,8 @@ import './Emitter.sol';
 
 import 'hardhat/console.sol'; 
 
+import '../interfaces/IOps.sol';
+
 
 
 contract PayMeFacetHop is OpsReady {
@@ -85,7 +87,7 @@ contract PayMeFacetHop is OpsReady {
     //     _startTask(autoRedeem_);
     // }
 
-    // constructor(address opsGel_) OpsReady(opsGel_) {}
+    constructor(address opsGel_) OpsReady(opsGel_) {}
 
     // constructor( // do storage just here and put a proxy on proxyFactory
     //     address _opsGel,
@@ -107,7 +109,7 @@ contract PayMeFacetHop is OpsReady {
     // }
 
 
-    receive() external payable {}
+    // receive() external payable {}
 
 
 
@@ -150,7 +152,7 @@ contract PayMeFacetHop is OpsReady {
 
 
 
-    function sendToArb( //fix this contract and check if it can be merged with coBeacon
+    function sendToArb( //fix this contract and check if it can be merged with storageBeacon
         userConfig memory userDetails_,
         BridgeConfig memory bridgeConfig_
         // address inbox_,
@@ -162,6 +164,7 @@ contract PayMeFacetHop is OpsReady {
     ) external { //onlyOps <-----------
         address inbox = bridgeConfig_.inbox;
         address opsGel = bridgeConfig_.opsGel;
+        
         address PYY = bridgeConfig_.PYY;
         address emitter = bridgeConfig_.emitter;
         uint maxSubmissionCost = bridgeConfig_.maxSubmissionCost;
@@ -169,8 +172,9 @@ contract PayMeFacetHop is OpsReady {
         uint gasPriceBid = bridgeConfig_.gasPriceBid;
         uint autoRedeem = bridgeConfig_.autoRedeem;
 
-
-        (uint fee, ) = opsGel.getFeeDetails();
+        console.log(1);
+        (uint fee, ) = IOps(opsGel).getFeeDetails();
+        console.log(2);
         _transfer(fee, ETH);
 
         // userConfig memory userDetails = idToUserDetails[internalId_];
@@ -183,7 +187,7 @@ contract PayMeFacetHop is OpsReady {
         console.log('address(this).balance: *******', address(this).balance);
 
         bytes memory ticketData = abi.encodeWithSelector(
-            inbox.createRetryableTicket.selector, 
+            DelayedInbox(inbox).createRetryableTicket.selector, 
             PYY, 
             address(this).balance - autoRedeem, 
             maxSubmissionCost,  

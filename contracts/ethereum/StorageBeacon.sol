@@ -7,7 +7,7 @@ import './PayMeFacetHop.sol';
 
 
 
-contract CoBeacon {
+contract StorageBeacon {
 
     address payme; //this is the non-storage impl
 
@@ -42,16 +42,16 @@ contract CoBeacon {
     BridgeConfig bridgeConfig;
 
 
-    constructor( //move this args to the struct
-        address payme_
-        // address opsGel_,
-        // address pyy_,
-        // address inbox_,
-        // uint maxSubmissionCost_,
-        // uint maxGas_,
-        // uint gasPriceBid_,
-        // address emitter_,
-        // uint autoRedeem_
+    constructor( 
+        address payme_,
+        address opsGel_,
+        address pyy_,
+        address inbox_,
+        uint maxSubmissionCost_,
+        uint maxGas_,
+        uint gasPriceBid_,
+        address emitter_,
+        uint autoRedeem_
     )  { 
         payme = payme_;
         // opsGel = _opsGel;
@@ -70,7 +70,7 @@ contract CoBeacon {
             emitter: emitter_,
             maxSubmissionCost: maxSubmissionCost_,
             maxGas: maxGas_,
-            gasPriceBid: gasPricebid_,
+            gasPriceBid: gasPriceBid_,
             autoRedeem: autoRedeem_
         });
     }

@@ -2,14 +2,16 @@
 pragma solidity ^0.8.0;
 
 
-import "@openzeppelin/contracts/proxy/beacon/BeaconProxy.sol";
+// import "@openzeppelin/contracts/proxy/beacon/BeaconProxy.sol";
+import './pyBeaconProxy.sol';
+
 import "@openzeppelin/contracts/proxy/Proxy.sol";
 import "@openzeppelin/contracts/proxy/ERC1967/ERC1967Upgrade.sol";
 
 import './OpsReady.sol';
 import './PayMeFacetHop.sol';
 
-import './CoBeacon.sol';
+import './StorageBeacon.sol';
 
 import 'hardhat/console.sol';
 
@@ -22,7 +24,7 @@ contract ProxyFactory is OpsReady {
     PayMeFacetHop payme;
 
     address beacon;
-    address coBeacon;
+    address storageBeacon;
 
     mapping(address => bytes32) public taskIDs;
 
@@ -49,25 +51,11 @@ contract ProxyFactory is OpsReady {
     constructor(
         address opsGel_, 
         address beacon_,
-        address coBeacon_
+        address storageBeacon_
     ) OpsReady(opsGel_) {
         beacon = beacon_;
-        coBeacon = coBeacon_;
+        storageBeacon = storageBeacon_;
     }
-
-    /**
-        1. Initialize all storage somewhere
-        2. encode storage vars that'll go in each beaconProxy (maxGas, gasPriceBid, etc)
-        3. Pass the encoded data to the factory (new) as 2nd arg to init each proxy with its storage
-        4. Add admin funcs to change storage
-
-        Create a new model where the many proxies call one contract (called beacon), and this beacon calls
-        the implementation. The beacon can hold the storage and in this way share the same upgradable 
-        storage with all proxies
-
-        Problem: storage in impl is empty because storage is not in the proxy but it has to be a solution
-        that allows all proxies to share the same storage and be able to be upgraded at once
-     */
 
 
 
@@ -77,15 +65,15 @@ contract ProxyFactory is OpsReady {
             userDetails_
         ); 
 
-        (bool success, ) = coBeacon.call(idData);
+        (bool success, ) = storageBeacon.call(idData);
         require(success, 'ProxyFactory: createNewProxy() failed');
 
         BeaconProxy newProxy = new BeaconProxy(beacon, new bytes(0));
         
         uint userId = 
-            CoBeacon(coBeacon).getInternalId() == 0 ?
+            StorageBeacon(storageBeacon).getInternalId() == 0 ?
             0 : 
-            CoBeacon(coBeacon).getInternalId() - 1;
+            StorageBeacon(storageBeacon).getInternalId() - 1;
 
 
         // _startTask(userId, address(newProxy));

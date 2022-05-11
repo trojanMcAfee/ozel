@@ -308,18 +308,17 @@ async function sendArb() { //mainnet
         autoRedeem
      };
 
-        // address beacon_,
        
 
-    const coBeaconAddr = await deployContract('CoBeacon', l1Signer, constrArgs);
+    const storageBeaconAddr = await deployContract('StorageBeacon', l1Signer, constrArgs);
     //fix the args to match that of ProxyFactory constructor and deployContract() //<----------------
 
 
     //Deploys Beacon system
-    const beaconAddr = await deployContract('UpgradeableBeacon', l1Signer, coBeaconAddr); //calls go to this impl (storageBridgeAddr)
+    const beaconAddr = await deployContract('UpgradeableBeacon', l1Signer, paymeHopAddr); //calls go to this impl (storageBridgeAddr)
     // const beaconAddr = '0xc778772aDe2a8568d87336Dbd516c2B47273582A';
 
-    const proxyFactoryAddr = await deployContract('ProxyFactory', l1Signer, pokeMeOpsAddr, beaconAddr, coBeaconAddr);
+    const proxyFactoryAddr = await deployContract('ProxyFactory', l1Signer, pokeMeOpsAddr, beaconAddr, storageBeaconAddr);
     //fix the args to match that of ProxyFactory constructor and deployContract() //<----------------
     const proxyFactory = await hre.ethers.getContractAt('ProxyFactory', proxyFactoryAddr);
 
