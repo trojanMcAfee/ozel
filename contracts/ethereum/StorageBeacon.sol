@@ -42,15 +42,24 @@ contract StorageBeacon {
     BridgeConfig bridgeConfig;
 
 
+     struct VariableConfig {
+        uint maxSubmissionCost;
+        uint gasPriceBid;
+        uint autoRedeem;
+    }
+
+    VariableConfig varConfig;
+
+
     constructor( 
         address payme_,
         address opsGel_,
         address pyy_,
         address inbox_,
-        uint maxSubmissionCost_,
         uint maxGas_,
-        uint gasPriceBid_,
         address emitter_,
+        uint maxSubmissionCost_,
+        uint gasPriceBid_,
         uint autoRedeem_
     )  { 
         payme = payme_;
@@ -73,6 +82,12 @@ contract StorageBeacon {
             gasPriceBid: gasPriceBid_,
             autoRedeem: autoRedeem_
         });
+
+        varConfig = VariableConfig({
+            maxSubmissionCost: maxSubmissionCost_,
+            gasPriceBid: gasPriceBid_,
+            autoRedeem: autoRedeem_
+        }); 
     }
 
 
@@ -81,20 +96,24 @@ contract StorageBeacon {
 
 
 
-    function issueUserID(userConfig memory userDetails_) public {
+    function issueUserID(userConfig memory userDetails_) public returns(uint id) {
         idToUserDetails[internalId] = userDetails_;
+        id = internalId;
         internalId++;
     }
 
-    function getInternalId() external view returns(uint) {
-        return internalId;
-    }
+    // function getInternalId() external view returns(uint) {
+    //     return internalId;
+    // }
 
     
-    function getStorage(uint internalId_) external view returns(bytes memory data) {
+    function getVariableData() external view returns(bytes memory data) {
         //is it possible to access stored log data from another contract?
-        userConfig memory userDetails_ = idToUserDetails[internalId_];
-        data = abi.encode(userDetails_, bridgeConfig);
+
+        // userConfig memory userDetails_ = idToUserDetails[internalId_];
+        // data = abi.encode(userDetails_, bridgeConfig);
+
+        data = abi.encode(varConfig); 
     }
 
 

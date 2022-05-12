@@ -7,6 +7,7 @@ import './pyBeaconProxy.sol';
 
 import "@openzeppelin/contracts/proxy/Proxy.sol";
 import "@openzeppelin/contracts/proxy/ERC1967/ERC1967Upgrade.sol";
+import '@openzeppelin/contracts/utils/Address.sol';
 
 import './OpsReady.sol';
 import './PayMeFacetHop.sol';
@@ -18,13 +19,14 @@ import 'hardhat/console.sol';
 
 
 contract ProxyFactory is OpsReady {
+    // using Address for address;
 
     uint public num;
 
     PayMeFacetHop payme;
 
-    address beacon;
-    address storageBeacon;
+    // address beacon;
+    // address storageBeacon;
 
     mapping(address => bytes32) public taskIDs;
 
@@ -32,56 +34,85 @@ contract ProxyFactory is OpsReady {
 
     mapping(address => address) proxyByUser;
 
-    struct userConfig {
+    struct UserConfig {
         address user;
         address userToken;
         uint userSlippage; 
     }
 
 
-    // constructor(
-    //     address payme_, 
-    //     address beacon_,
-    //     address opsGel_
-    // ) OpsReady(opsGel_) {
-    //     payme = PayMeFacetHop(payable(payme_));
-    //     beacon = beacon_;
-    // }
-
-    constructor(
-        address opsGel_, 
-        address beacon_,
-        address storageBeacon_
-    ) OpsReady(opsGel_) {
-        beacon = beacon_;
-        storageBeacon = storageBeacon_;
+    struct FixedConfig { //fix OpsReady
+        address beacon;
+        address inbox; 
+        // address opsGel; 
+        // address gelato;
+        address PYY;
+        address emitter;
+        address storageBeacon;
+        uint maxGas;
     }
 
+    FixedConfig fxConfig;
+
+    // constructor(
+    //     address opsGel_, 
+    //     address beacon_,
+    //     address storageBeacon_
+    // ) OpsReady(opsGel_) {
+    //     beacon = beacon_;
+    //     storageBeacon = storageBeacon_;
+    // }
+
+    constructor(FixedConfig memory fxConfig_) OpsReady(fxConfig_.opsGel) {
+        fxConfig = fxConfig_;
+    }
+
+    // constructor(
+    //     address beacon, 
+    //     address inbox_,
+    //     address opsGel_,
+    //     address pyy_,
+    //     address emitter_,
+    //     address storageBeacon_,
+    //     uint maxGas_, 
+    //     UserConfig memory userDetails_,
+    //     bytes memory data
+    // ) {
 
 
-    function createNewProxy(userConfig memory userDetails_) external {
+
+    function createNewProxy(UserConfig memory userDetails_) external {
+        address storageBeacon = fxConfig.storageBeacon;
+        address beacon = fxConfig.beacon;
+
         bytes memory idData = abi.encodeWithSignature( 
             'issueUserID((address,address,uint256))', 
             userDetails_
         ); 
 
-        (bool success, ) = storageBeacon.call(idData);
+        (bool success, bytes memory returnData) = storageBeacon.call(idData);
         require(success, 'ProxyFactory: createNewProxy() failed');
+        (uint userId) = abi.decode(returnData, (uint));
 
-        BeaconProxy newProxy = new BeaconProxy(beacon, new bytes(0));
+        pyBeaconProxy newProxy = new pyBeaconProxy(
+            userDetails_, 
+            fxConfig,
+            new bytes(0)
+        );
         
-        uint userId = 
-            StorageBeacon(storageBeacon).getInternalId() == 0 ?
-            0 : 
-            StorageBeacon(storageBeacon).getInternalId() - 1;
-
+        // uint userId = 
+        //     StorageBeacon(storageBeacon).getInternalId() == 0 ?
+        //     0 : 
+        //     StorageBeacon(storageBeacon).getInternalId() - 1;
 
         // _startTask(userId, address(newProxy));
-
 
         usersProxies[msg.sender] = address(newProxy);
         proxyByUser[address(newProxy)] = msg.sender;
     }
+
+
+
 
 
     function getUserProxy(address user_) public view returns(address) {

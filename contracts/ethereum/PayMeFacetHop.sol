@@ -23,12 +23,6 @@ contract PayMeFacetHop is OpsReady {
     // address public y;
 
 
-    struct userConfig {
-        address user;
-        address userToken;
-        uint userSlippage; 
-    }
-
     // userConfig userDetails; 
 
     // address public PYY;
@@ -45,16 +39,18 @@ contract PayMeFacetHop is OpsReady {
 
     // uint autoRedeem;
 
-    struct BridgeConfig {
-        address inbox;
-        address opsGel;
-        address PYY;
-        address emitter;
-        uint maxSubmissionCost;
-        uint maxGas;
-        uint gasPriceBid;
-        uint autoRedeem;
-    }
+    // struct BridgeConfig {
+    //     address inbox;
+    //     address opsGel;
+    //     address PYY;
+    //     address emitter;
+    //     uint maxSubmissionCost;
+    //     uint maxGas;
+    //     uint gasPriceBid;
+    //     uint autoRedeem;
+    // }
+
+
 
 
     // constructor( 
@@ -150,11 +146,40 @@ contract PayMeFacetHop is OpsReady {
     //     return internalId;
     // }
 
+    struct UserConfig {
+        address user;
+        address userToken;
+        uint userSlippage; 
+    }
+
+
+    struct FixedConfig {
+        address beacon;
+        address inbox; 
+        address opsGel; 
+        address gelato;
+        address PYY;
+        address emitter;
+        address storageBeacon;
+        uint maxGas;
+    }
+
+    struct VariableConfig {
+        uint maxSubmissionCost;
+        uint gasPriceBid;
+        uint autoRedeem;
+    }
+
+
+    FixedConfig fxConfig;
+    UserConfig userDetails;
+
 
 
     function sendToArb( //fix this contract and check if it can be merged with storageBeacon
-        userConfig memory userDetails_,
-        BridgeConfig memory bridgeConfig_
+        VariableConfig memory varConfig_
+        // UserConfig memory userDetails_,
+        // BridgeConfig memory bridgeConfig_
         // address inbox_,
         // address opsGel_,
         // address pyy_,
@@ -162,26 +187,24 @@ contract PayMeFacetHop is OpsReady {
         // uint maxGas_,
         // uint gasPriceBid_
     ) external { //onlyOps <-----------
-        address inbox = bridgeConfig_.inbox;
-        address opsGel = bridgeConfig_.opsGel;
-        
-        address PYY = bridgeConfig_.PYY;
-        address emitter = bridgeConfig_.emitter;
-        uint maxSubmissionCost = bridgeConfig_.maxSubmissionCost;
-        uint maxGas = bridgeConfig_.maxGas;
-        uint gasPriceBid = bridgeConfig_.gasPriceBid;
-        uint autoRedeem = bridgeConfig_.autoRedeem;
+        address inbox = fxConfig.inbox;
+        address opsGel = fxConfig.opsGel;
+        address PYY = fxConfig.PYY;
+        address emitter = fxConfig.emitter;
+        uint maxGas = fxConfig.maxGas;
 
-        console.log(1);
+        uint maxSubmissionCost = varConfig_.maxSubmissionCost;
+        uint gasPriceBid = varConfig_.gasPriceBid;
+        uint autoRedeem = varConfig_.autoRedeem;
+
         (uint fee, ) = IOps(opsGel).getFeeDetails();
-        console.log(2);
         _transfer(fee, ETH);
 
         // userConfig memory userDetails = idToUserDetails[internalId_];
 
         bytes memory swapData = abi.encodeWithSelector(
             FakePYY(payable(PYY)).exchangeToUserToken.selector, 
-            userDetails_
+            userDetails
         );
 
         console.log('address(this).balance: *******', address(this).balance);
