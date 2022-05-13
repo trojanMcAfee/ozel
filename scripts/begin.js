@@ -40,39 +40,38 @@ const {
 //-----------------------------------------
 
 
-async function sendTx(receiver) {
+async function sendTx(receiver, isAmount, description, data) {
     const signer = await hre.ethers.provider.getSigner(0);
-    const amount = ethers.utils.parseEther('0.01');
+    // const amount = ethers.utils.parseEther('0.01');
 
-    const tx = await signer.sendTransaction({
-        value: amount,
-        to: receiver,
-        gasLimit: ethers.BigNumber.from('1000000'),
-        // nonce: 8,
-        gasPrice: ethers.BigNumber.from('30897522792')
-    });
+    const txDetails = {to: receiver};
+
+    if (isAmount) txDetails.value = ethers.utils.parseEther('0.01');
+    if (data) txDetails.data = data;
+
+    // const tx = await signer.sendTransaction({
+    //     value: amount,
+    //     to: receiver,
+    //     gasLimit: ethers.BigNumber.from('1000000'),
+    //     // nonce: 8,
+    //     gasPrice: ethers.BigNumber.from('30897522792')
+    // });
+
+    const tx = await signer.sendTransaction(txDetails);
     const receipt = await tx.wait();
-    console.log('eth sent with hash: ', receipt.transactionHash);
+    console.log(`${description} with hash: `, receipt.transactionHash);
 }
 
 
+tx = await signer.sendTransaction({
+    gasLimit: ethers.BigNumber.from('5000000'),
+    gasPrice: ethers.BigNumber.from('30097522792'),
+    data,
+    to: newProxyAddr
+});
 
-async function createTask(resolver, callvalue) {
-    const tx = await resolver.startTask(callvalue, {
-        gasLimit: ethers.BigNumber.from('200000'),
-        gasPrice: ethers.BigNumber.from('30697522792')
-    });
-    const receipt = await tx.wait();
-    const { data } = receipt.events[0];
+//delete this ^ and put here the other sendTransaction
 
-    const abiCoder = ethers.utils.defaultAbiCoder;
-    const args = [
-        "address", "address", "bytes4", "address", "bytes32",
-        "bytes", "bool", "address", "bytes32"
-    ];
-    const decodedData = abiCoder.decode(args, data);
-    console.log('task id: ', decodedData[4]);
-}
 
 
 
@@ -208,7 +207,7 @@ async function tryPrecompile() {
 
 
 
-async function deployContract(contractName, signer, addressForConst, bytes) {
+async function deployContract(contractName, signer, constrArgs) {
     // const Contract = await (
     //     await hre.ethers.getContractFactory(contractName)
     // ).connect(signer);
@@ -220,12 +219,27 @@ async function deployContract(contractName, signer, addressForConst, bytes) {
     };
 
     let contract;
-    if (bytes && bytes.length > 0) {
-        contract = await Contract.deploy(addressForConst, bytes, ops);
-    } else if (addressForConst) {
-        contract = await Contract.deploy(addressForConst, ops);
-    } else {
-        contract = await Contract.deploy(ops);
+
+    // if (bytes && bytes.length > 0) {
+    //     contract = await Contract.deploy(addressForConst, bytes, ops);
+    // } else if (addressForConst) {
+    //     contract = await Contract.deploy(addressForConst, ops);
+    // } else {
+    //     contract = await Contract.deploy(ops);
+    // }
+
+    switch(contractName) {
+        case 'PayMeFacetHop' || 'UpgradeableBeacon':
+            contract = await Contract.deploy(constrArgs, ops);
+            break;
+        case 'StorageBeacon':
+            const { fxConfig, varConfig } = constrArgs;
+            contract = await Contract.deploy(fxConfig, varConfig, ops);
+            break;
+        case 'ProxyFactory':
+            const { beaconAddr, storageBeaconAddr, pokeMeOpsAddr } = constrArgs;
+            contract = await Contract.deploy(beaconAddr, storageBeaconAddr, pokeMeOpsAddr, ops);
+            break;
     }
 
     await contract.deployed();
@@ -271,15 +285,13 @@ async function sendArb() { //mainnet
     const emitterAddr = '0xeD64c50c0412DC24B52aC432A3b723e16E18776B';
 
     //Deploys PayMe in mainnet
-    // for (let i = 0; i < 4; i++) {
-
     // let PayMeHop = await ( // <---- this
     //     await hre.ethers.getContractFactory('PayMeFacetHop')
     // ).connect(l1Signer);
 
-    constrArgs = {pokeMeOpsAddr};
+    // constrArgs = {pokeMeOpsAddr};
 
-    const paymeHopAddr = await deployContract('PayMeFacetHop', l1Signer, constrArgs);
+    const paymeHopAddr = await deployContract('PayMeFacetHop', l1Signer, pokeMeOpsAddr);
 
     // let PayMeHop = await hre.ethers.getContractFactory('PayMeFacetHop');
     // let paymeHop = await PayMeHop.deploy( // <---- this
@@ -291,7 +303,6 @@ async function sendArb() { //mainnet
     //     gasLimit: ethers.BigNumber.from('5000000'),
     //     gasPrice: ethers.BigNumber.from('30897522792')
     //  }); 
-
 
     // await paymeHop.deployed(); // <---- this
     // const paymeHopAddr = paymeHop.address;
@@ -333,7 +344,6 @@ async function sendArb() { //mainnet
     };
 
     const proxyFactoryAddr = await deployContract('ProxyFactory', l1Signer, constrArgs);
-    //fix the args to match that of ProxyFactory constructor and deployContract() //<----------------
     const proxyFactory = await hre.ethers.getContractAt('ProxyFactory', proxyFactoryAddr);
 
     //Creates 1st proxy
@@ -377,7 +387,7 @@ async function sendArb() { //mainnet
 
 
     //**** TRIGGER for Gelato *******/
-    await sendTx(newProxyAddr);
+    await sendTx(newProxyAddr, true, 'Sending ETH');
 
     let ethBalance = await hre.ethers.provider.getBalance(newProxyAddr);
     console.log('pre eth balance on proxy: ', ethBalance.toString());
