@@ -48,12 +48,12 @@ contract pyBeaconProxy is Proxy, ERC1967Upgrade {
 
 
     struct FixedConfig { 
-        address beacon;
+        // address beacon;
         address inbox;
         address ops;
         address PYY;
         address emitter;
-        address storageBeacon;
+        // address storageBeacon;
         uint maxGas;
     }
 
@@ -67,6 +67,8 @@ contract pyBeaconProxy is Proxy, ERC1967Upgrade {
     StorageBeacon.FixedConfig fxConfig;
     StorageBeacon.UserConfig userDetails;
 
+    address storageBeacon;
+
     // address public constant ETH = 0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE;
 
     
@@ -74,15 +76,17 @@ contract pyBeaconProxy is Proxy, ERC1967Upgrade {
         // UserConfig memory userDetails_, 
         // FixedConfig memory fxConfig_,
         uint userId_,
+        address beacon_,
         address storageBeacon_,
         bytes memory data
     ) {
         assert(_BEACON_SLOT == bytes32(uint256(keccak256("eip1967.proxy.beacon")) - 1)); 
-        _upgradeBeaconToAndCall(fxConfig_.beacon, data, false); 
+        _upgradeBeaconToAndCall(beacon_, data, false); 
 
-      
         userDetails = StorageBeacon(storageBeacon_).getUserById(userId_);               
         fxConfig = StorageBeacon(storageBeacon_).getFixedConfig();
+
+        storageBeacon = storageBeacon_;
     }                                    
 
     /**
@@ -136,7 +140,7 @@ contract pyBeaconProxy is Proxy, ERC1967Upgrade {
 
         // (VariableConfig memory varConfig) = abi.decode(data, (VariableConfig));
 
-        data = abi.encodeWithSignature(
+        bytes memory data = abi.encodeWithSignature(
             'sendToArb((uint256,uint256,uint256),(address,address,uint))', 
             varConfig,
             userDetails

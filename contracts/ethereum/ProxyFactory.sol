@@ -21,9 +21,9 @@ import 'hardhat/console.sol';
 contract ProxyFactory is OpsReady {
     // using Address for address;
 
-    uint public num;
+    // uint public num;
 
-    PayMeFacetHop payme;
+    // PayMeFacetHop payme;
 
     // address beacon;
     // address storageBeacon;
@@ -40,18 +40,21 @@ contract ProxyFactory is OpsReady {
         uint userSlippage; 
     }
 
+    address beacon;
+    address storageBeacon;
 
-    struct FixedConfig { 
-        address beacon;
-        address inbox;
-        address ops;
-        address PYY;
-        address emitter;
-        address storageBeacon;
-        uint maxGas;
-    }
 
-    FixedConfig fxConfig;
+    // struct FixedConfig { 
+    //     // address beacon;
+    //     address inbox;
+    //     address ops;
+    //     address PYY;
+    //     address emitter;
+    //     // address storageBeacon;
+    //     uint maxGas;
+    // }
+
+    // FixedConfig fxConfig;
 
     // constructor(
     //     address opsGel_, 
@@ -62,8 +65,15 @@ contract ProxyFactory is OpsReady {
     //     storageBeacon = storageBeacon_;
     // }
 
-    constructor(FixedConfig memory fxConfig_) OpsReady(fxConfig_.ops) {
-        fxConfig = fxConfig_;
+    constructor(
+        address beacon_,
+        address storageBeacon_,
+        address ops_
+        // FixedConfig memory fxConfig_
+    ) OpsReady(ops_) {
+        beacon = beacon_;
+        storageBeacon = storageBeacon_;
+        // fxConfig = fxConfig_;
     }
 
     // constructor(
@@ -81,8 +91,8 @@ contract ProxyFactory is OpsReady {
 
 
     function createNewProxy(UserConfig memory userDetails_) external {
-        address storageBeacon = fxConfig.storageBeacon;
-        address beacon = fxConfig.beacon;
+        // address storageBeacon = fxConfig.storageBeacon;
+        // address beacon = fxConfig.beacon;
 
         bytes memory idData = abi.encodeWithSignature( 
             'issueUserID((address,address,uint256))', 
@@ -95,6 +105,8 @@ contract ProxyFactory is OpsReady {
 
         pyBeaconProxy newProxy = new pyBeaconProxy(
             userId, 
+            beacon,
+            storageBeacon,
             new bytes(0)
         );
 
@@ -139,14 +151,15 @@ contract ProxyFactory is OpsReady {
     function _startTask(address beaconProxy_) public { 
         (bytes32 id) = opsGel.createTaskNoPrepayment( 
             beaconProxy_,
-            payme.sendToArb.selector,
+            // payme.sendToArb.selector,
+            bytes4(abi.encodeWithSignature('sendToArb()')),
             beaconProxy_,
             abi.encodeWithSignature('checker()'),
             // abi.encodeWithSelector(this.checker.selector, autoRedeem_),
             ETH
         );
 
-        taskIDs[address(proxy_)] = id;
+        taskIDs[address(beaconProxy_)] = id;
 
         // taskId = id;
     }

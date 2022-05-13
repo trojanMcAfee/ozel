@@ -157,12 +157,12 @@ contract PayMeFacetHop is OpsReady {
 
 
     struct FixedConfig { 
-        address beacon;
+        // address beacon;
         address inbox;
         address ops;
         address PYY;
         address emitter;
-        address storageBeacon;
+        // address storageBeacon;
         uint maxGas;
     }
 
@@ -176,6 +176,7 @@ contract PayMeFacetHop is OpsReady {
     StorageBeacon.FixedConfig fxConfig;
     StorageBeacon.UserConfig userDetails;
 
+    address storageBeacon;
 
 
     function sendToArb( 

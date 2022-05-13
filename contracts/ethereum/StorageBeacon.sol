@@ -9,7 +9,7 @@ import './PayMeFacetHop.sol';
 
 contract StorageBeacon { //fix this contract
 
-    address payme; 
+    // address payme; 
 
     // address opsGel;
     // address PYY;
@@ -29,12 +29,12 @@ contract StorageBeacon { //fix this contract
     }
 
     struct FixedConfig { 
-        address beacon;
+        // address beacon;
         address inbox;
         address ops;
         address PYY;
         address emitter;
-        address storageBeacon;
+        // address storageBeacon;
         uint maxGas;
     }
 
@@ -50,43 +50,51 @@ contract StorageBeacon { //fix this contract
     VariableConfig varConfig;
 
 
-    constructor( 
-        address payme_,
-        address opsGel_,
-        address pyy_,
-        address inbox_,
-        uint maxGas_,
-        address emitter_,
-        uint maxSubmissionCost_,
-        uint gasPriceBid_,
-        uint autoRedeem_
-    )  { 
-        payme = payme_;
-        // opsGel = _opsGel;
-        // PYY = _pyy;
-        // inbox = _inbox;
-        // maxSubmissionCost = _maxSubmissionCost; 
-        // maxGas = _maxGas; 
-        // gasPriceBid = _gasPriceBid;
-        // emitter = emitter_;
-        // autoRedeem = autoRedeem_;
+    // constructor( 
+    //     address payme_,
+    //     address opsGel_,
+    //     address pyy_,
+    //     address inbox_,
+    //     uint maxGas_,
+    //     address emitter_,
+    //     uint maxSubmissionCost_,
+    //     uint gasPriceBid_,
+    //     uint autoRedeem_
+    // )  { 
+    //     payme = payme_;
+    //     // opsGel = _opsGel;
+    //     // PYY = _pyy;
+    //     // inbox = _inbox;
+    //     // maxSubmissionCost = _maxSubmissionCost; 
+    //     // maxGas = _maxGas; 
+    //     // gasPriceBid = _gasPriceBid;
+    //     // emitter = emitter_;
+    //     // autoRedeem = autoRedeem_;
 
-        bridgeConfig = BridgeConfig({
-            inbox: inbox_,
-            opsGel: opsGel_,
-            PYY: pyy_,
-            emitter: emitter_,
-            maxSubmissionCost: maxSubmissionCost_,
-            maxGas: maxGas_,
-            gasPriceBid: gasPriceBid_,
-            autoRedeem: autoRedeem_
-        });
+    //     bridgeConfig = BridgeConfig({
+    //         inbox: inbox_,
+    //         opsGel: opsGel_,
+    //         PYY: pyy_,
+    //         emitter: emitter_,
+    //         maxSubmissionCost: maxSubmissionCost_,
+    //         maxGas: maxGas_,
+    //         gasPriceBid: gasPriceBid_,
+    //         autoRedeem: autoRedeem_
+    //     });
 
-        varConfig = VariableConfig({
-            maxSubmissionCost: maxSubmissionCost_,
-            gasPriceBid: gasPriceBid_,
-            autoRedeem: autoRedeem_
-        }); 
+    //     varConfig = VariableConfig({
+    //         maxSubmissionCost: maxSubmissionCost_,
+    //         gasPriceBid: gasPriceBid_,
+    //         autoRedeem: autoRedeem_
+    //     }); 
+    // }
+
+    constructor(
+        FixedConfig memory fxConfig_,
+        VariableConfig memory varConfig_
+    ) {
+        fxConfig = fxConfig_;
+        varConfig = varConfig_;
     }
 
 
