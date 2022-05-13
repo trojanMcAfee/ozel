@@ -12,7 +12,7 @@ import 'hardhat/console.sol';
 
 
 contract OpsReady {
-    address opsGel;
+    IOps opsGel;
     address payable public immutable gelato;
     address public constant ETH = 0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE;
 
@@ -22,8 +22,8 @@ contract OpsReady {
     }
 
     constructor(address _ops) {
-        // opsGel = IOps(_ops);
-        gelato = IOps(_ops).gelato();
+        opsGel = IOps(_ops);
+        gelato = opsGel.gelato();
     }
 
     function _transfer(uint256 _amount, address _paymentToken) internal {

@@ -41,11 +41,10 @@ contract ProxyFactory is OpsReady {
     }
 
 
-    struct FixedConfig { //fix OpsReady
+    struct FixedConfig { 
         address beacon;
-        address inbox; 
-        // address opsGel; 
-        // address gelato;
+        address inbox;
+        address ops;
         address PYY;
         address emitter;
         address storageBeacon;
@@ -63,7 +62,7 @@ contract ProxyFactory is OpsReady {
     //     storageBeacon = storageBeacon_;
     // }
 
-    constructor(FixedConfig memory fxConfig_) OpsReady(fxConfig_.opsGel) {
+    constructor(FixedConfig memory fxConfig_) OpsReady(fxConfig_.ops) {
         fxConfig = fxConfig_;
     }
 
@@ -92,13 +91,18 @@ contract ProxyFactory is OpsReady {
 
         (bool success, bytes memory returnData) = storageBeacon.call(idData);
         require(success, 'ProxyFactory: createNewProxy() failed');
-        (uint userId) = abi.decode(returnData, (uint));
+        uint userId = abi.decode(returnData, (uint));
 
         pyBeaconProxy newProxy = new pyBeaconProxy(
-            userDetails_, 
-            fxConfig,
+            userId, 
             new bytes(0)
         );
+
+        // pyBeaconProxy newProxy = new pyBeaconProxy(
+        //     userDetails_, 
+        //     fxConfig,
+        //     new bytes(0)
+        // );
         
         // uint userId = 
         //     StorageBeacon(storageBeacon).getInternalId() == 0 ?
@@ -106,6 +110,7 @@ contract ProxyFactory is OpsReady {
         //     StorageBeacon(storageBeacon).getInternalId() - 1;
 
         // _startTask(userId, address(newProxy));
+        // _startTask(address(newProxy));
 
         usersProxies[msg.sender] = address(newProxy);
         proxyByUser[address(newProxy)] = msg.sender;
@@ -131,17 +136,17 @@ contract ProxyFactory is OpsReady {
 
     // *** GELATO PART ******
 
-    function _startTask(uint internalId_, address proxyContract_) public { 
+    function _startTask(address beaconProxy_) public { 
         (bytes32 id) = opsGel.createTaskNoPrepayment( 
-            proxyContract_,
+            beaconProxy_,
             payme.sendToArb.selector,
-            proxyContract_,
-            abi.encodeWithSignature('checker(uint256)', internalId_),
+            beaconProxy_,
+            abi.encodeWithSignature('checker()'),
             // abi.encodeWithSelector(this.checker.selector, autoRedeem_),
             ETH
         );
 
-        taskIDs[address(proxyContract_)] = id;
+        taskIDs[address(proxy_)] = id;
 
         // taskId = id;
     }

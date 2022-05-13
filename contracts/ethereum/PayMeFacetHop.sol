@@ -15,6 +15,8 @@ import 'hardhat/console.sol';
 
 import '../interfaces/IOps.sol';
 
+import './StorageBeacon.sol';
+
 
 
 contract PayMeFacetHop is OpsReady {
@@ -83,7 +85,6 @@ contract PayMeFacetHop is OpsReady {
     //     _startTask(autoRedeem_);
     // }
 
-    constructor(address opsGel_) OpsReady(opsGel_) {}
 
     // constructor( // do storage just here and put a proxy on proxyFactory
     //     address _opsGel,
@@ -146,6 +147,8 @@ contract PayMeFacetHop is OpsReady {
     //     return internalId;
     // }
 
+    constructor(address ops_) OpsReady(ops_) {}
+
     struct UserConfig {
         address user;
         address userToken;
@@ -153,11 +156,10 @@ contract PayMeFacetHop is OpsReady {
     }
 
 
-    struct FixedConfig {
+    struct FixedConfig { 
         address beacon;
-        address inbox; 
-        address opsGel; 
-        address gelato;
+        address inbox;
+        address ops;
         address PYY;
         address emitter;
         address storageBeacon;
@@ -171,14 +173,14 @@ contract PayMeFacetHop is OpsReady {
     }
 
 
-    FixedConfig fxConfig;
-    UserConfig userDetails;
+    StorageBeacon.FixedConfig fxConfig;
+    StorageBeacon.UserConfig userDetails;
 
 
 
-    function sendToArb( //fix this contract and check if it can be merged with storageBeacon
-        VariableConfig memory varConfig_
-        // UserConfig memory userDetails_,
+    function sendToArb( 
+        VariableConfig memory varConfig_,
+        UserConfig memory userDetails_
         // BridgeConfig memory bridgeConfig_
         // address inbox_,
         // address opsGel_,
@@ -188,7 +190,6 @@ contract PayMeFacetHop is OpsReady {
         // uint gasPriceBid_
     ) external { //onlyOps <-----------
         address inbox = fxConfig.inbox;
-        address opsGel = fxConfig.opsGel;
         address PYY = fxConfig.PYY;
         address emitter = fxConfig.emitter;
         uint maxGas = fxConfig.maxGas;
@@ -197,14 +198,14 @@ contract PayMeFacetHop is OpsReady {
         uint gasPriceBid = varConfig_.gasPriceBid;
         uint autoRedeem = varConfig_.autoRedeem;
 
-        (uint fee, ) = IOps(opsGel).getFeeDetails();
+        (uint fee, ) = opsGel.getFeeDetails();
         _transfer(fee, ETH);
 
         // userConfig memory userDetails = idToUserDetails[internalId_];
 
         bytes memory swapData = abi.encodeWithSelector(
             FakePYY(payable(PYY)).exchangeToUserToken.selector, 
-            userDetails
+            userDetails_
         );
 
         console.log('address(this).balance: *******', address(this).balance);

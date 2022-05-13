@@ -7,9 +7,9 @@ import './PayMeFacetHop.sol';
 
 
 
-contract StorageBeacon {
+contract StorageBeacon { //fix this contract
 
-    address payme; //this is the non-storage impl
+    address payme; 
 
     // address opsGel;
     // address PYY;
@@ -22,24 +22,23 @@ contract StorageBeacon {
 
     // address inbox;
 
-    struct userConfig {
+    struct UserConfig {
         address user;
         address userToken;
         uint userSlippage; 
     }
 
-    struct BridgeConfig {
+    struct FixedConfig { 
+        address beacon;
         address inbox;
-        address opsGel;
+        address ops;
         address PYY;
         address emitter;
-        uint maxSubmissionCost;
+        address storageBeacon;
         uint maxGas;
-        uint gasPriceBid;
-        uint autoRedeem;
     }
 
-    BridgeConfig bridgeConfig;
+    FixedConfig fxConfig;
 
 
      struct VariableConfig {
@@ -91,30 +90,42 @@ contract StorageBeacon {
     }
 
 
-    mapping(uint => userConfig) public idToUserDetails;
+    mapping(uint => UserConfig) public idToUserDetails;
     uint private internalId;
 
 
 
-    function issueUserID(userConfig memory userDetails_) public returns(uint id) {
+    function issueUserID(UserConfig memory userDetails_) public returns(uint id) {
         idToUserDetails[internalId] = userDetails_;
         id = internalId;
         internalId++;
+    }
+
+    function getUserById(uint userId_) external view returns(UserConfig memory) {
+        return idToUserDetails[userId_];
     }
 
     // function getInternalId() external view returns(uint) {
     //     return internalId;
     // }
 
-    
-    function getVariableData() external view returns(bytes memory data) {
-        //is it possible to access stored log data from another contract?
-
-        // userConfig memory userDetails_ = idToUserDetails[internalId_];
-        // data = abi.encode(userDetails_, bridgeConfig);
-
-        data = abi.encode(varConfig); 
+    function getFixedConfig() external view returns(FixedConfig memory) {
+        return fxConfig;
     }
+
+    function getVariableConfig() external view returns(VariableConfig memory) {
+        return varConfig; 
+    }
+
+    
+    // function getVariableConfig() external view returns(bytes memory data) {
+    //     //is it possible to access stored log data from another contract?
+
+    //     // userConfig memory userDetails_ = idToUserDetails[internalId_];
+    //     // data = abi.encode(userDetails_, bridgeConfig);
+
+    //     data = abi.encode(varConfig); 
+    // }
 
 
 
