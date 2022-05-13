@@ -7,7 +7,7 @@ import './PayMeFacetHop.sol';
 
 
 
-contract StorageBeacon { //fix this contract
+contract StorageBeacon { 
 
     // address payme; 
 

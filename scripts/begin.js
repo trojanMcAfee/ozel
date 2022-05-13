@@ -251,6 +251,8 @@ async function sendArb() { //mainnet
         defaultSlippage
     ];
     
+    let constrArgs = {};
+    
     //Deploys the fake PYY on arbitrum testnet 
     // const fakePYYaddr = await deployContract('FakePYY', l2Signer); //fake PYY address in arbitrum
     const fakePYYaddr = '0xCF383dD43481703a6ebe84DC4137Ae388cD7214b';
@@ -275,50 +277,62 @@ async function sendArb() { //mainnet
     //     await hre.ethers.getContractFactory('PayMeFacetHop')
     // ).connect(l1Signer);
 
-    let PayMeHop = await hre.ethers.getContractFactory('PayMeFacetHop');
+    constrArgs = {pokeMeOpsAddr};
+
+    const paymeHopAddr = await deployContract('PayMeFacetHop', l1Signer, constrArgs);
+
+    // let PayMeHop = await hre.ethers.getContractFactory('PayMeFacetHop');
+    // let paymeHop = await PayMeHop.deploy( // <---- this
+    //     pokeMeOpsAddr, 
+    //     fakePYYaddr, inbox, 
+    //     maxSubmissionCost, maxGas, gasPriceBid, 
+    //     emitterAddr, autoRedeem
+    // , { 
+    //     gasLimit: ethers.BigNumber.from('5000000'),
+    //     gasPrice: ethers.BigNumber.from('30897522792')
+    //  }); 
 
 
-    let paymeHop = await PayMeHop.deploy( // <---- this
-        pokeMeOpsAddr, 
-        fakePYYaddr, inbox, 
-        maxSubmissionCost, maxGas, gasPriceBid, 
-        emitterAddr, autoRedeem
-    , { 
-        gasLimit: ethers.BigNumber.from('5000000'),
-        gasPrice: ethers.BigNumber.from('30897522792')
-     }); 
-
-
-    await paymeHop.deployed(); // <---- this
-    const paymeHopAddr = paymeHop.address; //impl_1 ********
+    // await paymeHop.deployed(); // <---- this
+    // const paymeHopAddr = paymeHop.address;
     //0x6Eb746c6F2706669Dd90A4DBE79b9a55110AA186
     // const paymeHop = await hre.ethers.getContractAt('PayMeFacetHop', paymeHopAddr);
     console.log(`paymeHop deployed to: `, paymeHopAddr);
 
-    //Deploys StorageBridge (storage beacon)
-     const constrArgs = {
-        payme: paymeHopAddr,
-        opsGel: pokeMeOpsAddr,
-        pyy: fakePYYaddr,
+    //Deploys StorageBeacon
+    const fxConfig = {
         inbox,
-        maxSubmissionCost,
-        maxGas,
-        gasPriceBid,
-        emitter: emitterAddr,
-        autoRedeem
-     };
+        pokeMeOpsAddr,
+        fakePYYaddr,
+        emitterAddr,
+        maxGas
+    };
 
-       
+    const varConfig = {
+        maxSubmissionCost,
+        gasPriceBid,
+        autoRedeem
+    };
+
+    constrArgs = {
+        fxConfig,
+        varConfig
+    };
 
     const storageBeaconAddr = await deployContract('StorageBeacon', l1Signer, constrArgs);
-    //fix the args to match that of ProxyFactory constructor and deployContract() //<----------------
 
-
-    //Deploys Beacon system
-    const beaconAddr = await deployContract('UpgradeableBeacon', l1Signer, paymeHopAddr); //calls go to this impl (storageBridgeAddr)
+    //Deploys UpgradeableBeacon
+    const beaconAddr = await deployContract('UpgradeableBeacon', l1Signer, paymeHopAddr); 
     // const beaconAddr = '0xc778772aDe2a8568d87336Dbd516c2B47273582A';
 
-    const proxyFactoryAddr = await deployContract('ProxyFactory', l1Signer, pokeMeOpsAddr, beaconAddr, storageBeaconAddr);
+    //Deploys ProxyFactory
+    constrArgs = {
+        beaconAddr,
+        storageBeaconAddr,
+        pokeMeOpsAddr
+    };
+
+    const proxyFactoryAddr = await deployContract('ProxyFactory', l1Signer, constrArgs);
     //fix the args to match that of ProxyFactory constructor and deployContract() //<----------------
     const proxyFactory = await hre.ethers.getContractAt('ProxyFactory', proxyFactoryAddr);
 
