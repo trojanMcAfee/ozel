@@ -189,18 +189,26 @@ contract PayMeFacetHop is OpsReady {
         // uint maxSubmissionCost_,
         // uint maxGas_,
         // uint gasPriceBid_
-    ) external { //onlyOps <-----------
+    ) external { //onlyOps and external <-----------
         address inbox = fxConfig.inbox;
         address PYY = fxConfig.PYY;
         address emitter = fxConfig.emitter;
         uint maxGas = fxConfig.maxGas;
 
+        console.log('inbox in sendToArb: ', inbox);
+        console.log('PYY in sendToArb: ', PYY);
+
         uint maxSubmissionCost = varConfig_.maxSubmissionCost;
         uint gasPriceBid = varConfig_.gasPriceBid;
         uint autoRedeem = varConfig_.autoRedeem;
 
-        (uint fee, ) = opsGel.getFeeDetails();
-        _transfer(fee, ETH);
+        console.log(1);
+        console.log('opsGel: ', address(opsGel));
+        // (uint fee, ) = opsGel.getFeeDetails();
+        // _transfer(fee, ETH);
+        console.log(2);
+
+        revert('here');
 
         // userConfig memory userDetails = idToUserDetails[internalId_];
 
@@ -208,8 +216,6 @@ contract PayMeFacetHop is OpsReady {
             FakePYY(payable(PYY)).exchangeToUserToken.selector, 
             userDetails_
         );
-
-        console.log('address(this).balance: *******', address(this).balance);
 
         bytes memory ticketData = abi.encodeWithSelector(
             DelayedInbox(inbox).createRetryableTicket.selector, 
@@ -223,8 +229,10 @@ contract PayMeFacetHop is OpsReady {
             swapData
         );
 
+        console.log(3);
         (bool success, bytes memory returnData) = address(inbox).delegatecall(ticketData);
         require(success, 'PayMeFacetHop: sendToArb() failed');
+        console.log(4);
 
         uint ticketID = abi.decode(returnData, (uint));
         console.log('ticketID: ', ticketID);

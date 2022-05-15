@@ -42,39 +42,19 @@ const {
 
 async function sendTx(receiver, isAmount, description, data) {
     const signer = await hre.ethers.provider.getSigner(0);
-    // const amount = ethers.utils.parseEther('0.01');
-
-    const txDetails = {to: receiver};
+    const txDetails = {
+        to: receiver,
+        gasLimit: ethers.BigNumber.from('5000000'),
+        gasPrice: ethers.BigNumber.from('30897522792')
+    };
 
     if (isAmount) txDetails.value = ethers.utils.parseEther('0.01');
     if (data) txDetails.data = data;
-
-    // const tx = await signer.sendTransaction({
-    //     value: amount,
-    //     to: receiver,
-    //     gasLimit: ethers.BigNumber.from('1000000'),
-    //     // nonce: 8,
-    //     gasPrice: ethers.BigNumber.from('30897522792')
-    // });
 
     const tx = await signer.sendTransaction(txDetails);
     const receipt = await tx.wait();
     console.log(`${description} with hash: `, receipt.transactionHash);
 }
-
-
-tx = await signer.sendTransaction({
-    gasLimit: ethers.BigNumber.from('5000000'),
-    gasPrice: ethers.BigNumber.from('30097522792'),
-    data,
-    to: newProxyAddr
-});
-
-//delete this ^ and put here the other sendTransaction
-
-
-
-
 
 
 async function calculateMaxGas(
@@ -220,13 +200,37 @@ async function deployContract(contractName, signer, constrArgs) {
 
     let contract;
 
-    // if (bytes && bytes.length > 0) {
-    //     contract = await Contract.deploy(addressForConst, bytes, ops);
-    // } else if (addressForConst) {
-    //     contract = await Contract.deploy(addressForConst, ops);
-    // } else {
-    //     contract = await Contract.deploy(ops);
-    // }
+    switch(contractName) {
+        case 'PayMeFacetHop':
+        case 'UpgradeableBeacon':
+            contract = await Contract.deploy(constrArgs, ops);
+            break;
+        case 'StorageBeacon':
+            const { fxConfig, varConfig } = constrArgs;
+            contract = await Contract.deploy(fxConfig, varConfig, ops);
+            break;
+        case 'ProxyFactory':
+            const { beaconAddr, storageBeaconAddr, pokeMeOpsAddr } = constrArgs;
+            contract = await Contract.deploy(beaconAddr, storageBeaconAddr, pokeMeOpsAddr, ops);
+            break;
+    }
+
+    await contract.deployed();
+    console.log(`${contractName} deployed to: `, contract.address);
+
+    return contract.address;
+}
+
+
+async function deployContract2(contractName, signer, constrArgs) {
+    const Contract = await hre.ethers.getContractFactory(contractName);
+
+    const ops = {
+        gasLimit: ethers.BigNumber.from('5000000'),
+        gasPrice: ethers.BigNumber.from('30897522792')
+    };
+
+    let contract;
 
     switch(contractName) {
         case 'PayMeFacetHop' || 'UpgradeableBeacon':
@@ -234,7 +238,10 @@ async function deployContract(contractName, signer, constrArgs) {
             break;
         case 'StorageBeacon':
             const { fxConfig, varConfig } = constrArgs;
+            console.log('fxConfig: ', fxConfig);
+            console.log('varConfig: ', varConfig);
             contract = await Contract.deploy(fxConfig, varConfig, ops);
+            console.log(2);
             break;
         case 'ProxyFactory':
             const { beaconAddr, storageBeaconAddr, pokeMeOpsAddr } = constrArgs;
@@ -308,22 +315,22 @@ async function sendArb() { //mainnet
     // const paymeHopAddr = paymeHop.address;
     //0x6Eb746c6F2706669Dd90A4DBE79b9a55110AA186
     // const paymeHop = await hre.ethers.getContractAt('PayMeFacetHop', paymeHopAddr);
-    console.log(`paymeHop deployed to: `, paymeHopAddr);
+    // console.log(`paymeHop deployed to: `, paymeHopAddr);
 
     //Deploys StorageBeacon
-    const fxConfig = {
+    const fxConfig = [
         inbox,
         pokeMeOpsAddr,
         fakePYYaddr,
         emitterAddr,
         maxGas
-    };
+    ];
 
-    const varConfig = {
+    const varConfig = [
         maxSubmissionCost,
         gasPriceBid,
         autoRedeem
-    };
+    ];
 
     constrArgs = {
         fxConfig,
@@ -347,7 +354,7 @@ async function sendArb() { //mainnet
     const proxyFactory = await hre.ethers.getContractAt('ProxyFactory', proxyFactoryAddr);
 
     //Creates 1st proxy
-    let tx = await proxyFactory.createNewProxy(userDetails, {
+    const tx = await proxyFactory.createNewProxy(userDetails, {
         gasLimit: ethers.BigNumber.from('5000000'),
         gasPrice: ethers.BigNumber.from('30397522792')
     });
@@ -389,26 +396,26 @@ async function sendArb() { //mainnet
     //**** TRIGGER for Gelato *******/
     await sendTx(newProxyAddr, true, 'Sending ETH');
 
+    //Comment our this part when trying it out with Gelato
     let ethBalance = await hre.ethers.provider.getBalance(newProxyAddr);
     console.log('pre eth balance on proxy: ', ethBalance.toString());
 
-
-    // console.log('return here');
-    // return;
-
     const signer = await hre.ethers.provider.getSigner(0);
-    const iface = new ethers.utils.Interface(['function routerCall(uint256 internalId_)']);
-    const data = iface.encodeFunctionData('routerCall', [0]);
-    
-    tx = await signer.sendTransaction({
-        gasLimit: ethers.BigNumber.from('5000000'),
-        gasPrice: ethers.BigNumber.from('30097522792'),
-        data,
-        to: newProxyAddr
-    });
+    const iface = new ethers.utils.Interface(['function sendToArb()']);
+    const data = iface.encodeFunctionData('sendToArb');
 
-    const receipt = await tx.wait();
-    console.log('sendToArb hash: ', receipt.transactionHash);
+    console.log('data: ', data);
+
+    await sendTx(newProxyAddr, false, 'Call diamond (PYY)', data);
+    
+    // tx = await signer.sendTransaction({
+    //     gasLimit: ethers.BigNumber.from('5000000'),
+    //     gasPrice: ethers.BigNumber.from('30097522792'),
+    //     data,
+    //     to: newProxyAddr
+    // });
+    // const receipt = await tx.wait();
+    // console.log('sendToArb hash: ', receipt.transactionHash);
 
     ethBalance = await hre.ethers.provider.getBalance(newProxyAddr);
     console.log('post eth balance on proxy: ', ethBalance.toString());

@@ -87,6 +87,8 @@ contract pyBeaconProxy is Proxy, ERC1967Upgrade {
         fxConfig = StorageBeacon(storageBeacon_).getFixedConfig();
 
         storageBeacon = storageBeacon_;
+
+        console.log('inbox in constr in beaconProxy: ', fxConfig.inbox);
     }                                    
 
     /**
@@ -137,11 +139,13 @@ contract pyBeaconProxy is Proxy, ERC1967Upgrade {
         StorageBeacon.VariableConfig memory varConfig =
              StorageBeacon(storageBeacon).getVariableConfig();
 
+        console.log('inbox in delegate: ', fxConfig.inbox);
+        console.log('impl in delegate: ', implementation);
 
         // (VariableConfig memory varConfig) = abi.decode(data, (VariableConfig));
 
         bytes memory data = abi.encodeWithSignature(
-            'sendToArb((uint256,uint256,uint256),(address,address,uint))', 
+            'sendToArb((uint256,uint256,uint256),(address,address,uint256))', 
             varConfig,
             userDetails
         );

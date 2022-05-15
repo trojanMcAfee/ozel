@@ -5,22 +5,10 @@ pragma solidity ^0.8.0;
 import '../interfaces/DelayedInbox.sol';
 import './PayMeFacetHop.sol';
 
+import 'hardhat/console.sol';
 
 
 contract StorageBeacon { 
-
-    // address payme; 
-
-    // address opsGel;
-    // address PYY;
-    // address emitter;
-    
-    // uint maxSubmissionCost;
-    // uint maxGas;
-    // uint gasPriceBid;
-    // uint autoRedeem;
-
-    // address inbox;
 
     struct UserConfig {
         address user;
@@ -41,7 +29,7 @@ contract StorageBeacon {
     FixedConfig fxConfig;
 
 
-     struct VariableConfig {
+    struct VariableConfig {
         uint maxSubmissionCost;
         uint gasPriceBid;
         uint autoRedeem;
@@ -50,52 +38,26 @@ contract StorageBeacon {
     VariableConfig varConfig;
 
 
-    // constructor( 
-    //     address payme_,
-    //     address opsGel_,
-    //     address pyy_,
-    //     address inbox_,
-    //     uint maxGas_,
-    //     address emitter_,
-    //     uint maxSubmissionCost_,
-    //     uint gasPriceBid_,
-    //     uint autoRedeem_
-    // )  { 
-    //     payme = payme_;
-    //     // opsGel = _opsGel;
-    //     // PYY = _pyy;
-    //     // inbox = _inbox;
-    //     // maxSubmissionCost = _maxSubmissionCost; 
-    //     // maxGas = _maxGas; 
-    //     // gasPriceBid = _gasPriceBid;
-    //     // emitter = emitter_;
-    //     // autoRedeem = autoRedeem_;
-
-    //     bridgeConfig = BridgeConfig({
-    //         inbox: inbox_,
-    //         opsGel: opsGel_,
-    //         PYY: pyy_,
-    //         emitter: emitter_,
-    //         maxSubmissionCost: maxSubmissionCost_,
-    //         maxGas: maxGas_,
-    //         gasPriceBid: gasPriceBid_,
-    //         autoRedeem: autoRedeem_
-    //     });
-
-    //     varConfig = VariableConfig({
-    //         maxSubmissionCost: maxSubmissionCost_,
-    //         gasPriceBid: gasPriceBid_,
-    //         autoRedeem: autoRedeem_
-    //     }); 
-    // }
 
     constructor(
         FixedConfig memory fxConfig_,
         VariableConfig memory varConfig_
     ) {
-        fxConfig = fxConfig_;
-        varConfig = varConfig_;
+        fxConfig = FixedConfig({
+            inbox: fxConfig_.inbox,
+            ops: fxConfig_.ops,
+            PYY: fxConfig_.PYY,
+            emitter: fxConfig_.emitter,
+            maxGas: fxConfig_.maxGas
+        });
+
+        varConfig = VariableConfig({
+            maxSubmissionCost: varConfig_.maxSubmissionCost,
+            gasPriceBid: varConfig_.gasPriceBid,
+            autoRedeem: varConfig_.autoRedeem
+        });
     }
+
 
 
     mapping(uint => UserConfig) public idToUserDetails;
