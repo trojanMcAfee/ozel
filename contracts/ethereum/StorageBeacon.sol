@@ -2,6 +2,7 @@
 pragma solidity ^0.8.0;
 
 
+import '../interfaces/IOps.sol';
 import '../interfaces/DelayedInbox.sol';
 import './PayMeFacetHop.sol';
 
@@ -16,13 +17,12 @@ contract StorageBeacon {
         uint userSlippage; 
     }
 
-    struct FixedConfig { 
-        // address beacon;
+    struct FixedConfig {  
         address inbox;
         address ops;
         address PYY;
         address emitter;
-        // address storageBeacon;
+        address payable gelato; //new
         uint maxGas;
     }
 
@@ -48,6 +48,7 @@ contract StorageBeacon {
             ops: fxConfig_.ops,
             PYY: fxConfig_.PYY,
             emitter: fxConfig_.emitter,
+            gelato: payable(fxConfig_.gelato),
             maxGas: fxConfig_.maxGas
         });
 
@@ -62,6 +63,11 @@ contract StorageBeacon {
 
     mapping(uint => UserConfig) public idToUserDetails;
     uint private internalId;
+
+
+    function getOpsGel() external view returns(address) {
+        return fxConfig.ops;
+    }
 
 
 

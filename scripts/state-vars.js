@@ -90,6 +90,7 @@ switch(network) {
         yTricryptoPoolAddr = '0x239e14A19DFF93a17339DCC444f74406C17f8E67';
         fraxPoolAddr = '0xf07d553B195080F84F582e88ecdD54bAa122b279';
         fraxAddr = '0x17FC002b466eEc40DaE837Fc4bE5c67993ddBd6F';
+        gelatoAddr = '0x4775af8fef4809fe10bf05867d2b038a4b5b2146';
 } 
 
 
@@ -123,6 +124,7 @@ module.exports = {
     signerX,
     l2Provider,
     l2Signer,
-    l1Signer
+    l1Signer,
+    gelatoAddr
 };
 

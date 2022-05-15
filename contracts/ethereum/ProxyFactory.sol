@@ -4,6 +4,7 @@ pragma solidity ^0.8.0;
 
 // import "@openzeppelin/contracts/proxy/beacon/BeaconProxy.sol";
 import './pyBeaconProxy.sol';
+import '../interfaces/IOps.sol';
 
 import "@openzeppelin/contracts/proxy/Proxy.sol";
 import "@openzeppelin/contracts/proxy/ERC1967/ERC1967Upgrade.sol";
@@ -18,7 +19,7 @@ import 'hardhat/console.sol';
 
 
 
-contract ProxyFactory is OpsReady {
+contract ProxyFactory {
     // using Address for address;
 
     // uint public num;
@@ -27,6 +28,8 @@ contract ProxyFactory is OpsReady {
 
     // address beacon;
     // address storageBeacon;
+
+    address public constant ETH = 0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE;
 
     mapping(address => bytes32) public taskIDs;
 
@@ -70,7 +73,7 @@ contract ProxyFactory is OpsReady {
         address storageBeacon_,
         address ops_
         // FixedConfig memory fxConfig_
-    ) OpsReady(ops_) {
+    ) {
         beacon = beacon_;
         storageBeacon = storageBeacon_;
         // fxConfig = fxConfig_;
@@ -149,7 +152,9 @@ contract ProxyFactory is OpsReady {
     // *** GELATO PART ******
 
     function _startTask(address beaconProxy_) public { 
-        (bytes32 id) = opsGel.createTaskNoPrepayment( 
+        address opsGel = StorageBeacon(storageBeacon).getOpsGel();
+
+        (bytes32 id) = IOps(opsGel).createTaskNoPrepayment( 
             beaconProxy_,
             // payme.sendToArb.selector,
             bytes4(abi.encodeWithSignature('sendToArb()')),

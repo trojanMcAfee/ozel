@@ -47,13 +47,12 @@ contract pyBeaconProxy is Proxy, ERC1967Upgrade {
     }
 
 
-    struct FixedConfig { 
-        // address beacon;
+    struct FixedConfig {  
         address inbox;
         address ops;
         address PYY;
         address emitter;
-        // address storageBeacon;
+        address payable gelato; //new
         uint maxGas;
     }
 
@@ -69,7 +68,7 @@ contract pyBeaconProxy is Proxy, ERC1967Upgrade {
 
     address storageBeacon;
 
-    // address public constant ETH = 0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE;
+    address constant ETH = 0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE;
 
     
     constructor(

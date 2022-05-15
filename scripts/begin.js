@@ -31,7 +31,8 @@ const {
     l2Signer,
     l1Signer,
     wethAddr,
-    defaultSlippage
+    defaultSlippage,
+    gelatoAddr
  } = require('./state-vars.js');
 
 
@@ -323,6 +324,7 @@ async function sendArb() { //mainnet
         pokeMeOpsAddr,
         fakePYYaddr,
         emitterAddr,
+        gelatoAddr,
         maxGas
     ];
 
