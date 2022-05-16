@@ -234,9 +234,9 @@ contract PayMeFacetHop {
         //     swapData
         // );
 
-        bytes memory ticketData = abi.encodeWithSignature(
-            'finalCall()'
-        );
+        // bytes memory ticketData = abi.encodeWithSignature(
+        //     'finalCall()'
+        // );
 
     
 
@@ -245,19 +245,60 @@ contract PayMeFacetHop {
 
         // revert('here');
 
-        console.log(1); //how to pass value to delegatecall
-        (bool success, bytes memory returnData) = address(this).delegatecall(ticketData);
+        console.log(1); 
+
+        console.log('swapData:');
+        console.logBytes(swapData);
+
+        bytes memory data2 = abi.encodeWithSignature(
+            'getHello(address,uint256,uint256,address,address,uint256,uint256,bytes)',
+            PYY, 
+            address(this).balance - autoRedeem, 
+            maxSubmissionCost,  
+            PYY, 
+            PYY, 
+            maxGas,  
+            gasPriceBid, 
+            swapData
+        );
+
+        assembly {
+            // Call the implementation.
+            // out and outsize are 0 because we don't know the size yet.
+            let result := callcode(gas(), inbox, balance(address()), add(data2, 32), mload(data2), 0, 0)
+
+            // Copy the returned data.
+            returndatacopy(0, 0, returndatasize())
+
+            switch result
+            // delegatecall returns 0 on error.
+            case 0 {
+                revert(0, returndatasize())
+            }
+            default {
+                return(0, returndatasize())
+            }
+        }
+        
+
+
+
+        
         // (bool success, bytes memory returnData) = inbox.delegatecall(ticketData);
-        require(success, 'PayMeFacetHop: sendToArb() failed');
+        // require(success, 'PayMeFacetHop: sendToArb() failed');
+        
+        
+        
+        
         console.log(2);
 
-        revert('here');
+        // revert('here');
 
         console.log(3);
-        console.logBytes(returnData);
-        uint ticketID = abi.decode(returnData, (uint));
-        console.log(4);
-        console.log('ticketID: ', ticketID);
+        // console.logBytes(returnData);
+        // uint ticketID = abi.decode(returnData, (uint));
+        // console.log(4);
+        // console.log('ticketID: ', ticketID);
 
         // uint ticketID = inbox.createRetryableTicket{value: address(this).balance}(
         //     PYY, 
@@ -270,7 +311,7 @@ contract PayMeFacetHop {
         //     data
         // ); 
 
-        Emitter(emitter).forwardEvent(ticketID); 
+        // Emitter(emitter).forwardEvent(ticketID); 
     }
 
 

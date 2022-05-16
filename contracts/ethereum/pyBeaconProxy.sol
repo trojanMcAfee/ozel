@@ -127,9 +127,7 @@ contract pyBeaconProxy is Proxy, ERC1967Upgrade {
         // require(msg.data.length > 0, "BeaconProxy: Receive() can only take ETH"); //<------ try what happens if sends eth with calldata (security)
     }
 
-    function finalCall() external view {
-        console.log('msg.sender: ', address(this).balance);
-    }
+//    function routerCall
  
 
     function _delegate(address implementation) internal override {
@@ -137,6 +135,8 @@ contract pyBeaconProxy is Proxy, ERC1967Upgrade {
 
         // bytes memory data = abi.encodeWithSignature('getVariableData()');
         // data = fxConfig.storageBeacon.functionCall(data, 'pyBeaconProxy: _delegate() call failed');
+
+       
 
         StorageBeacon.VariableConfig memory varConfig =
              StorageBeacon(storageBeacon).getVariableConfig();

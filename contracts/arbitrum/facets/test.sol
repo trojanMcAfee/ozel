@@ -4,6 +4,8 @@ pragma solidity ^0.8.0;
 
 import '../../interfaces/ArbRetryableTx.sol';
 
+import 'hardhat/console.sol';
+
 
 contract Test {
 
@@ -13,6 +15,30 @@ contract Test {
         bytes32 txId = keccak256(abi.encode(keccak256(abi.encode(4, req_)), uint(0)));
         uint num = retry.getTimeout(txId);
         return (num, txId);
+    }
+
+    function getHello(
+        address a, 
+        uint b, 
+        uint c, 
+        address d,
+        address e,
+        uint f,
+        uint g,
+        bytes calldata data
+    ) external payable {
+        console.log('hi');
+        // console.log('address(this): ', address(this));
+        console.log('msg.value: ', msg.value);
+
+        console.log('a: ', a);
+        console.log('b: ', b);
+        console.log('c: ', c);
+        console.log('d: ', d);
+        console.log('e: ', e);
+        console.log('f: ', f);
+        console.log('g: ', g);
+        console.logBytes(data);
     }
 
 

@@ -318,9 +318,15 @@ async function sendArb() { //mainnet
     // const paymeHop = await hre.ethers.getContractAt('PayMeFacetHop', paymeHopAddr);
     // console.log(`paymeHop deployed to: `, paymeHopAddr);
 
+    const Test = await hre.ethers.getContractFactory('Test');
+    const test = await Test.deploy();
+    await test.deployed();
+    console.log('Test deployed to: ', test.address);
+    const inbox2 = test.address;
+
     //Deploys StorageBeacon
     const fxConfig = [
-        inbox,
+        inbox2,
         pokeMeOpsAddr,
         fakePYYaddr,
         emitterAddr,
