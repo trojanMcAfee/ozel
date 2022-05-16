@@ -86,9 +86,8 @@ contract pyBeaconProxy is Proxy, ERC1967Upgrade {
         fxConfig = StorageBeacon(storageBeacon_).getFixedConfig();
 
         storageBeacon = storageBeacon_;
-
-        console.log('inbox in constr in beaconProxy: ', fxConfig.inbox);
     }                                    
+
 
     /**
      * @dev Returns the current beacon address.
@@ -127,6 +126,10 @@ contract pyBeaconProxy is Proxy, ERC1967Upgrade {
     receive() external payable override {
         // require(msg.data.length > 0, "BeaconProxy: Receive() can only take ETH"); //<------ try what happens if sends eth with calldata (security)
     }
+
+    function finalCall() external view {
+        console.log('msg.sender: ', address(this).balance);
+    }
  
 
     function _delegate(address implementation) internal override {
@@ -137,9 +140,6 @@ contract pyBeaconProxy is Proxy, ERC1967Upgrade {
 
         StorageBeacon.VariableConfig memory varConfig =
              StorageBeacon(storageBeacon).getVariableConfig();
-
-        console.log('inbox in delegate: ', fxConfig.inbox);
-        console.log('impl in delegate: ', implementation);
 
         // (VariableConfig memory varConfig) = abi.decode(data, (VariableConfig));
 

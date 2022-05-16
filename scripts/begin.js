@@ -406,8 +406,6 @@ async function sendArb() { //mainnet
     const iface = new ethers.utils.Interface(['function sendToArb()']);
     const data = iface.encodeFunctionData('sendToArb');
 
-    console.log('data: ', data);
-
     await sendTx(newProxyAddr, false, 'Call diamond (PYY)', data);
     
     // tx = await signer.sendTransaction({

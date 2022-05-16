@@ -201,26 +201,19 @@ contract PayMeFacetHop {
         // uint maxSubmissionCost_,
         // uint maxGas_,
         // uint gasPriceBid_
-    ) external { //onlyOps and external <-----------
+    ) external payable { //onlyOps and external <-----------
         address inbox = fxConfig.inbox;
         address PYY = fxConfig.PYY;
         address emitter = fxConfig.emitter;
+        address opsGel = fxConfig.ops;
         uint maxGas = fxConfig.maxGas;
-
-        console.log('inbox in sendToArb: ', inbox);
-        console.log('PYY in sendToArb: ', PYY);
-
         uint maxSubmissionCost = varConfig_.maxSubmissionCost;
         uint gasPriceBid = varConfig_.gasPriceBid;
         uint autoRedeem = varConfig_.autoRedeem;
 
-        console.log(1);
-        console.log('opsGel: ', fxConfig.ops);
-        // (uint fee, ) = opsGel.getFeeDetails();
-        // _transfer(fee, ETH);
-        console.log(2);
+        (uint fee, ) = IOps(opsGel).getFeeDetails();
+        _transfer(fee, ETH);
 
-        revert('here');
 
         // userConfig memory userDetails = idToUserDetails[internalId_];
 
@@ -229,24 +222,41 @@ contract PayMeFacetHop {
             userDetails_
         );
 
-        bytes memory ticketData = abi.encodeWithSelector(
-            DelayedInbox(inbox).createRetryableTicket.selector, 
-            PYY, 
-            address(this).balance - autoRedeem, 
-            maxSubmissionCost,  
-            PYY, 
-            PYY, 
-            maxGas,  
-            gasPriceBid, 
-            swapData
+        // bytes memory ticketData = abi.encodeWithSelector(
+        //     DelayedInbox(inbox).createRetryableTicket.selector, 
+        //     PYY, 
+        //     address(this).balance - autoRedeem, 
+        //     maxSubmissionCost,  
+        //     PYY, 
+        //     PYY, 
+        //     maxGas,  
+        //     gasPriceBid, 
+        //     swapData
+        // );
+
+        bytes memory ticketData = abi.encodeWithSignature(
+            'finalCall()'
         );
 
-        console.log(3);
-        (bool success, bytes memory returnData) = address(inbox).delegatecall(ticketData);
-        require(success, 'PayMeFacetHop: sendToArb() failed');
-        console.log(4);
+    
 
+        console.log('msg.value: ', msg.value);
+        console.log('address(this).balance: ', address(this).balance);
+
+        // revert('here');
+
+        console.log(1); //how to pass value to delegatecall
+        (bool success, bytes memory returnData) = address(this).delegatecall(ticketData);
+        // (bool success, bytes memory returnData) = inbox.delegatecall(ticketData);
+        require(success, 'PayMeFacetHop: sendToArb() failed');
+        console.log(2);
+
+        revert('here');
+
+        console.log(3);
+        console.logBytes(returnData);
         uint ticketID = abi.decode(returnData, (uint));
+        console.log(4);
         console.log('ticketID: ', ticketID);
 
         // uint ticketID = inbox.createRetryableTicket{value: address(this).balance}(
