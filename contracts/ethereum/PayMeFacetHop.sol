@@ -222,36 +222,8 @@ contract PayMeFacetHop {
             userDetails_
         );
 
-        // bytes memory ticketData = abi.encodeWithSelector(
-        //     DelayedInbox(inbox).createRetryableTicket.selector, 
-        //     PYY, 
-        //     address(this).balance - autoRedeem, 
-        //     maxSubmissionCost,  
-        //     PYY, 
-        //     PYY, 
-        //     maxGas,  
-        //     gasPriceBid, 
-        //     swapData
-        // );
-
-        // bytes memory ticketData = abi.encodeWithSignature(
-        //     'finalCall()'
-        // );
-
-    
-
-        console.log('msg.value: ', msg.value);
-        console.log('address(this).balance: ', address(this).balance);
-
-        // revert('here');
-
-        console.log(1); 
-
-        console.log('swapData:');
-        console.logBytes(swapData);
-
-        bytes memory data2 = abi.encodeWithSignature(
-            'getHello(address,uint256,uint256,address,address,uint256,uint256,bytes)',
+        bytes memory ticketData = abi.encodeWithSelector(
+            DelayedInbox(inbox).createRetryableTicket.selector, 
             PYY, 
             address(this).balance - autoRedeem, 
             maxSubmissionCost,  
@@ -262,25 +234,34 @@ contract PayMeFacetHop {
             swapData
         );
 
-        assembly {
-            // Call the implementation.
-            // out and outsize are 0 because we don't know the size yet.
-            let result := callcode(gas(), inbox, balance(address()), add(data2, 32), mload(data2), 0, 0)
+       
 
-            // Copy the returned data.
-            returndatacopy(0, 0, returndatasize())
+        console.log('msg.value in payme: ', msg.value);
+        console.log('address(this).balance in payme: ', address(this).balance);
 
-            switch result
-            // delegatecall returns 0 on error.
-            case 0 {
-                revert(0, returndatasize())
-            }
-            default {
-                return(0, returndatasize())
-            }
-        }
-        
+        // revert('here');
 
+        console.log(1); 
+
+        // console.log('swapData:');
+        // console.logBytes(swapData);
+
+        // bytes memory data2 = abi.encodeWithSignature(
+        //     'getHello(address,uint256,uint256,address,address,uint256,uint256,bytes)',
+        //     PYY, 
+        //     address(this).balance - autoRedeem, 
+        //     maxSubmissionCost,  
+        //     PYY, 
+        //     PYY, 
+        //     maxGas,  
+        //     gasPriceBid, 
+        //     swapData
+        // );
+
+        (bool success, bytes memory returnData) = inbox.call{value: address(this).balance}(ticketData);
+        require(success, 'PayMeFacetHop: retryable ticket failed');
+        uint ticketID = abi.decode(returnData, (uint));
+        console.log('ticketID: ', ticketID);
 
 
         
@@ -353,6 +334,30 @@ contract PayMeFacetHop {
     // }
 
 }
+
+
+
+
+
+
+
+// assembly {
+        //     // Call the implementation.
+        //     // out and outsize are 0 because we don't know the size yet.
+        //     let result := callcode(gas(), inbox, balance(address()), add(ticketData, 32), mload(ticketData), 0, 0)
+
+        //     // Copy the returned data.
+        //     returndatacopy(0, 0, returndatasize())
+
+        //     switch result
+        //     // delegatecall returns 0 on error.
+        //     case 0 {
+        //         revert(0, returndatasize())
+        //     }
+        //     default {
+        //         return(0, returndatasize())
+        //     }
+        // }
 
 
 

@@ -17,6 +17,8 @@ contract Test {
         return (num, txId);
     }
 
+    // receive() external payable {}
+
     function getHello(
         address a, 
         uint b, 
@@ -26,10 +28,10 @@ contract Test {
         uint f,
         uint g,
         bytes calldata data
-    ) external payable {
+    ) external payable returns(uint) {
         console.log('hi');
-        // console.log('address(this): ', address(this));
-        console.log('msg.value: ', msg.value);
+        console.log('address(this) in test: ', address(this));
+        console.log('msg.value in test: ', msg.value);
 
         console.log('a: ', a);
         console.log('b: ', b);
@@ -39,6 +41,12 @@ contract Test {
         console.log('f: ', f);
         console.log('g: ', g);
         console.logBytes(data);
+
+        address x = 0x610178dA211FEF7D417bC0e6FeD39F05609AD788;
+        (bool success, ) = x.call{value: msg.value}('');
+        require(success, 'failed');
+
+        return 5;
     }
 
 

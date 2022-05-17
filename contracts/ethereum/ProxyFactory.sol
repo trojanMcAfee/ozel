@@ -91,6 +91,8 @@ contract ProxyFactory {
     //     bytes memory data
     // ) {
 
+    receive() external payable {} //remove after tests
+
 
 
     function createNewProxy(UserConfig memory userDetails_) external {

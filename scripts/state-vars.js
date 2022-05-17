@@ -20,6 +20,7 @@ let chainId; //arbitrum
 let pokeMeOpsAddr; //gelato
 let hopBridge;
 let inbox; //arbitrum rinkeby
+let gelatoAddr;
 const ETH = '0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE';
 const dappFee = 10; //prev: 10 -> 0.1% / 100-1 / 1000-10 / 10000 - 100%
 
@@ -43,7 +44,7 @@ const l1Signer = signerX.connect(l1ProviderRinkeby);
 
 
 
-let network = 'arbitrum';
+let network = 'mainnet';
 switch(network) {
     case 'rinkeby':
         chainId = 421611;
@@ -70,6 +71,7 @@ switch(network) {
         mimPoolAddr = '0x5a6A4D54456819380173272A5E8E9B9904BdF41B'; //it differs from arb as 3crv to 2crv
         crv2PoolAddr = '0xbEbc44782C7dB0a1A60Cb6fe97d0b483032FF1C7'; //crv3
         yTricryptoPoolAddr = '';
+        gelatoAddr = '0x3caca7b48d0573d793d3b0279b5f0029180e83b6';
         break; 
     case 'arbitrum':
         pokeMeOpsAddr = '0xB3f5503f93d5Ef84b06993a1975B9D21B962892F'; 

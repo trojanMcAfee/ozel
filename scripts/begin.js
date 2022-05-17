@@ -45,8 +45,8 @@ async function sendTx(receiver, isAmount, description, data) {
     const signer = await hre.ethers.provider.getSigner(0);
     const txDetails = {
         to: receiver,
-        gasLimit: ethers.BigNumber.from('5000000'),
-        gasPrice: ethers.BigNumber.from('30897522792')
+        gasLimit: ethers.BigNumber.from('5000000')
+        // gasPrice: ethers.BigNumber.from('30897522792')
     };
 
     if (isAmount) txDetails.value = ethers.utils.parseEther('0.01');
@@ -195,8 +195,8 @@ async function deployContract(contractName, signer, constrArgs) {
     const Contract = await hre.ethers.getContractFactory(contractName);
 
     const ops = {
-        gasLimit: ethers.BigNumber.from('5000000'),
-        gasPrice: ethers.BigNumber.from('30897522792')
+        gasLimit: ethers.BigNumber.from('5000000')
+        // gasPrice: ethers.BigNumber.from('30897522792')
     };
 
     let contract;
@@ -293,30 +293,7 @@ async function sendArb() { //mainnet
     const emitterAddr = '0xeD64c50c0412DC24B52aC432A3b723e16E18776B';
 
     //Deploys PayMe in mainnet
-    // let PayMeHop = await ( // <---- this
-    //     await hre.ethers.getContractFactory('PayMeFacetHop')
-    // ).connect(l1Signer);
-
-    // constrArgs = {pokeMeOpsAddr};
-
     const paymeHopAddr = await deployContract('PayMeFacetHop', l1Signer, pokeMeOpsAddr);
-
-    // let PayMeHop = await hre.ethers.getContractFactory('PayMeFacetHop');
-    // let paymeHop = await PayMeHop.deploy( // <---- this
-    //     pokeMeOpsAddr, 
-    //     fakePYYaddr, inbox, 
-    //     maxSubmissionCost, maxGas, gasPriceBid, 
-    //     emitterAddr, autoRedeem
-    // , { 
-    //     gasLimit: ethers.BigNumber.from('5000000'),
-    //     gasPrice: ethers.BigNumber.from('30897522792')
-    //  }); 
-
-    // await paymeHop.deployed(); // <---- this
-    // const paymeHopAddr = paymeHop.address;
-    //0x6Eb746c6F2706669Dd90A4DBE79b9a55110AA186
-    // const paymeHop = await hre.ethers.getContractAt('PayMeFacetHop', paymeHopAddr);
-    // console.log(`paymeHop deployed to: `, paymeHopAddr);
 
     const Test = await hre.ethers.getContractFactory('Test');
     const test = await Test.deploy();
@@ -326,7 +303,7 @@ async function sendArb() { //mainnet
 
     //Deploys StorageBeacon
     const fxConfig = [
-        inbox2,
+        inbox, //inbox
         pokeMeOpsAddr,
         fakePYYaddr,
         emitterAddr,
@@ -362,9 +339,9 @@ async function sendArb() { //mainnet
     const proxyFactory = await hre.ethers.getContractAt('ProxyFactory', proxyFactoryAddr);
 
     //Creates 1st proxy
-    const tx = await proxyFactory.createNewProxy(userDetails, {
-        gasLimit: ethers.BigNumber.from('5000000'),
-        gasPrice: ethers.BigNumber.from('30397522792')
+    let tx = await proxyFactory.createNewProxy(userDetails, {
+        gasLimit: ethers.BigNumber.from('5000000')
+        // gasPrice: ethers.BigNumber.from('30397522792')
     });
     await tx.wait();
     const newProxyAddr = (await proxyFactory.getUserProxy(signerAddr)).toString(); 
@@ -408,7 +385,7 @@ async function sendArb() { //mainnet
     let ethBalance = await hre.ethers.provider.getBalance(newProxyAddr);
     console.log('pre eth balance on proxy: ', ethBalance.toString());
 
-    const signer = await hre.ethers.provider.getSigner(0);
+    // const signer = await hre.ethers.provider.getSigner(0);
     const iface = new ethers.utils.Interface(['function sendToArb()']);
     const data = iface.encodeFunctionData('sendToArb');
 
@@ -418,13 +395,17 @@ async function sendArb() { //mainnet
     //     gasLimit: ethers.BigNumber.from('5000000'),
     //     gasPrice: ethers.BigNumber.from('30097522792'),
     //     data,
-    //     to: newProxyAddr
+    //     to: newProxyAddr,
+    //     value: ethers.utils.parseEther('1')
     // });
     // const receipt = await tx.wait();
     // console.log('sendToArb hash: ', receipt.transactionHash);
 
     ethBalance = await hre.ethers.provider.getBalance(newProxyAddr);
     console.log('post eth balance on proxy: ', ethBalance.toString());
+
+    // ethBalance = await hre.ethers.provider.getBalance(proxyFactoryAddr);
+    // console.log('factory eth balance: ', ethBalance.toString());
 
 }
 
