@@ -25,133 +25,8 @@ import './StorageBeacon.sol';
 
 contract PayMeFacetHop {
 
-    // uint public num;
-    // address public y;
+    
 
-
-    // userConfig userDetails; 
-
-    // address public PYY;
-
-    // uint maxSubmissionCost;
-    // uint maxGas;
-    // uint gasPriceBid;
-
-    // DelayedInbox inbox;
-
-    // address emitter;
-
-    // bytes32 public taskId;
-
-    // uint autoRedeem;
-
-    // struct BridgeConfig {
-    //     address inbox;
-    //     address opsGel;
-    //     address PYY;
-    //     address emitter;
-    //     uint maxSubmissionCost;
-    //     uint maxGas;
-    //     uint gasPriceBid;
-    //     uint autoRedeem;
-    // }
-
-
-
-
-    // constructor( 
-    //     address _opsGel,
-    //     address _pyy,
-    //     address _inbox,
-    //     uint _maxSubmissionCost,
-    //     uint _maxGas,
-    //     uint _gasPriceBid,
-    //     address user_,
-    //     address userToken_,
-    //     uint userSlippage_,
-    //     address emitter_,
-    //     uint autoRedeem_
-    // ) OpsReady(_opsGel) { 
-    //     PYY = _pyy;
-    //     inbox = DelayedInbox(_inbox);
-    //     maxSubmissionCost = _maxSubmissionCost; 
-    //     maxGas = _maxGas; 
-    //     gasPriceBid = _gasPriceBid;
-
-    //     userDetails = userConfig({
-    //         user: user_,
-    //         userToken: userToken_,
-    //         userSlippage: userSlippage_
-    //     });
-
-    //     emitter = emitter_;
-
-    //     _startTask(autoRedeem_);
-    // }
-
-
-    // constructor( // do storage just here and put a proxy on proxyFactory
-    //     address _opsGel,
-    //     address _pyy,
-    //     address _inbox,
-    //     uint _maxSubmissionCost,
-    //     uint _maxGas,
-    //     uint _gasPriceBid,
-    //     address emitter_,
-    //     uint autoRedeem_
-    // ) OpsReady(_opsGel) { 
-    //     PYY = _pyy;
-    //     inbox = DelayedInbox(_inbox);
-    //     maxSubmissionCost = _maxSubmissionCost; 
-    //     maxGas = _maxGas; 
-    //     gasPriceBid = _gasPriceBid;
-    //     emitter = emitter_;
-    //     autoRedeem = autoRedeem_;
-    // }
-
-
-    // receive() external payable {}
-
-
-
-    // function sendToArb(uint autoRedeem_) external onlyOps {
-    //     (uint fee, ) = opsGel.getFeeDetails();
-    //     _transfer(fee, ETH);
-
-    //     bytes memory data = abi.encodeWithSelector(
-    //         FakePYY(payable(PYY)).exchangeToUserToken.selector, 
-    //         userDetails
-    //     );
-
-    //     uint ticketID = inbox.createRetryableTicket{value: address(this).balance}(
-    //         PYY, 
-    //         address(this).balance - autoRedeem_, 
-    //         maxSubmissionCost,  
-    //         PYY, 
-    //         PYY, 
-    //         maxGas,  
-    //         gasPriceBid, 
-    //         data
-    //     ); 
-
-    //     Emitter(emitter).forwardEvent(ticketID); 
-    // }
-
-    // mapping(uint => userConfig) public idToUserDetails;
-    // uint private internalId;
-
-
-
-    // function issueUserID(userConfig memory userDetails_) public {
-    //     idToUserDetails[internalId] = userDetails_;
-    //     internalId++;
-    // }
-
-    // function getInternalId() external view returns(uint) {
-    //     return internalId;
-    // }
-
-    // constructor(address ops_) OpsReady(ops_) {}
     constructor(address ops_) {}
 
     struct UserConfig {
@@ -292,7 +167,7 @@ contract PayMeFacetHop {
         //     data
         // ); 
 
-        // Emitter(emitter).forwardEvent(ticketID); 
+        Emitter(emitter).forwardEvent(ticketID); 
     }
 
 
