@@ -349,8 +349,8 @@ async function sendArb() { //mainnet
 
 
     //Gets user's task id
-    // const taskId = await proxyFactory.getTaskID(signerAddr);
-    // console.log('task id: ', taskId.toString());
+    const taskId = await proxyFactory.getTaskID(signerAddr);
+    console.log('task id: ', taskId.toString());
 
 
     const filter = {

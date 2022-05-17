@@ -127,7 +127,8 @@ contract ProxyFactory {
         //     StorageBeacon(storageBeacon).getInternalId() - 1;
 
         // _startTask(userId, address(newProxy));
-        // _startTask(address(newProxy));
+
+        _startTask(address(newProxy));
 
         usersProxies[msg.sender] = address(newProxy);
         proxyByUser[address(newProxy)] = msg.sender;

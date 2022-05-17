@@ -41,7 +41,7 @@ contract PayMeFacetHop {
         address ops;
         address PYY;
         address emitter;
-        address payable gelato; //new
+        address payable gelato; 
         uint maxGas;
     }
 
