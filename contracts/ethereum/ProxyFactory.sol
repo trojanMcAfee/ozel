@@ -20,15 +20,7 @@ import 'hardhat/console.sol';
 
 
 contract ProxyFactory {
-    // using Address for address;
-
-    // uint public num;
-
-    // PayMeFacetHop payme;
-
-    // address beacon;
-    // address storageBeacon;
-
+ 
     address public constant ETH = 0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE;
 
     mapping(address => bytes32) public taskIDs;
@@ -47,58 +39,16 @@ contract ProxyFactory {
     address storageBeacon;
 
 
-    // struct FixedConfig { 
-    //     // address beacon;
-    //     address inbox;
-    //     address ops;
-    //     address PYY;
-    //     address emitter;
-    //     // address storageBeacon;
-    //     uint maxGas;
-    // }
-
-    // FixedConfig fxConfig;
-
-    // constructor(
-    //     address opsGel_, 
-    //     address beacon_,
-    //     address storageBeacon_
-    // ) OpsReady(opsGel_) {
-    //     beacon = beacon_;
-    //     storageBeacon = storageBeacon_;
-    // }
-
     constructor(
         address beacon_,
-        address storageBeacon_,
-        address ops_
-        // FixedConfig memory fxConfig_
+        address storageBeacon_
     ) {
         beacon = beacon_;
         storageBeacon = storageBeacon_;
-        // fxConfig = fxConfig_;
     }
-
-    // constructor(
-    //     address beacon, 
-    //     address inbox_,
-    //     address opsGel_,
-    //     address pyy_,
-    //     address emitter_,
-    //     address storageBeacon_,
-    //     uint maxGas_, 
-    //     UserConfig memory userDetails_,
-    //     bytes memory data
-    // ) {
-
-    receive() external payable {} //remove after tests
-
 
 
     function createNewProxy(UserConfig memory userDetails_) external {
-        // address storageBeacon = fxConfig.storageBeacon;
-        // address beacon = fxConfig.beacon;
-
         bytes memory idData = abi.encodeWithSignature( 
             'issueUserID((address,address,uint256))', 
             userDetails_
@@ -114,19 +64,6 @@ contract ProxyFactory {
             storageBeacon,
             new bytes(0)
         );
-
-        // pyBeaconProxy newProxy = new pyBeaconProxy(
-        //     userDetails_, 
-        //     fxConfig,
-        //     new bytes(0)
-        // );
-        
-        // uint userId = 
-        //     StorageBeacon(storageBeacon).getInternalId() == 0 ?
-        //     0 : 
-        //     StorageBeacon(storageBeacon).getInternalId() - 1;
-
-        // _startTask(userId, address(newProxy));
 
         _startTask(address(newProxy));
 
@@ -151,7 +88,6 @@ contract ProxyFactory {
     }
 
 
-
     // *** GELATO PART ******
 
     function _startTask(address beaconProxy_) public { 
@@ -159,29 +95,12 @@ contract ProxyFactory {
 
         (bytes32 id) = IOps(opsGel).createTaskNoPrepayment( 
             beaconProxy_,
-            // payme.sendToArb.selector,
             bytes4(abi.encodeWithSignature('sendToArb()')),
             beaconProxy_,
             abi.encodeWithSignature('checker()'),
-            // abi.encodeWithSelector(this.checker.selector, autoRedeem_),
             ETH
         );
 
         taskIDs[address(beaconProxy_)] = id;
-
-        // taskId = id;
     }
-
-    // function checker( 
-    //     uint autoRedeem_
-    // ) external view returns(bool canExec, bytes memory execPayload) {
-    //     if (address(this).balance > 0) {
-    //         canExec = true;
-    //     }
-    //     execPayload = abi.encodeWithSelector(
-    //         payme.sendToArb.selector, autoRedeem_
-    //     );
-    // }
-
-
 }

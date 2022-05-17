@@ -202,7 +202,6 @@ async function deployContract(contractName, signer, constrArgs) {
     let contract;
 
     switch(contractName) {
-        case 'PayMeFacetHop':
         case 'UpgradeableBeacon':
             contract = await Contract.deploy(constrArgs, ops);
             break;
@@ -211,9 +210,11 @@ async function deployContract(contractName, signer, constrArgs) {
             contract = await Contract.deploy(fxConfig, varConfig, ops);
             break;
         case 'ProxyFactory':
-            const { beaconAddr, storageBeaconAddr, pokeMeOpsAddr } = constrArgs;
-            contract = await Contract.deploy(beaconAddr, storageBeaconAddr, pokeMeOpsAddr, ops);
+            const { beaconAddr, storageBeaconAddr } = constrArgs;
+            contract = await Contract.deploy(beaconAddr, storageBeaconAddr, ops);
             break;
+        default:
+            contract = await Contract.deploy(ops);
     }
 
     await contract.deployed();
@@ -293,13 +294,7 @@ async function sendArb() { //mainnet
     const emitterAddr = '0xeD64c50c0412DC24B52aC432A3b723e16E18776B';
 
     //Deploys PayMe in mainnet
-    const paymeHopAddr = await deployContract('PayMeFacetHop', l1Signer, pokeMeOpsAddr);
-
-    // const Test = await hre.ethers.getContractFactory('Test');
-    // const test = await Test.deploy();
-    // await test.deployed();
-    // console.log('Test deployed to: ', test.address);
-    // const inbox2 = test.address;
+    const paymeHopAddr = await deployContract('PayMeFacetHop', l1Signer);
 
     //Deploys StorageBeacon
     const fxConfig = [
@@ -331,8 +326,7 @@ async function sendArb() { //mainnet
     //Deploys ProxyFactory
     constrArgs = {
         beaconAddr,
-        storageBeaconAddr,
-        pokeMeOpsAddr
+        storageBeaconAddr
     };
 
     const proxyFactoryAddr = await deployContract('ProxyFactory', l1Signer, constrArgs);
@@ -382,14 +376,14 @@ async function sendArb() { //mainnet
     await sendTx(newProxyAddr, true, 'Sending ETH');
 
     //Comment our this part when trying it out with Gelato
-    let ethBalance = await hre.ethers.provider.getBalance(newProxyAddr);
-    console.log('pre eth balance on proxy: ', ethBalance.toString());
+    // let ethBalance = await hre.ethers.provider.getBalance(newProxyAddr);
+    // console.log('pre eth balance on proxy: ', ethBalance.toString());
 
     // const signer = await hre.ethers.provider.getSigner(0);
-    const iface = new ethers.utils.Interface(['function sendToArb()']);
-    const data = iface.encodeFunctionData('sendToArb');
+    // const iface = new ethers.utils.Interface(['function sendToArb()']);
+    // const data = iface.encodeFunctionData('sendToArb');
 
-    await sendTx(newProxyAddr, false, 'Call diamond (PYY)', data);
+    // await sendTx(newProxyAddr, false, 'Call diamond (PYY)', data);
     
     // tx = await signer.sendTransaction({
     //     gasLimit: ethers.BigNumber.from('5000000'),
@@ -401,8 +395,8 @@ async function sendArb() { //mainnet
     // const receipt = await tx.wait();
     // console.log('sendToArb hash: ', receipt.transactionHash);
 
-    ethBalance = await hre.ethers.provider.getBalance(newProxyAddr);
-    console.log('post eth balance on proxy: ', ethBalance.toString());
+    // ethBalance = await hre.ethers.provider.getBalance(newProxyAddr);
+    // console.log('post eth balance on proxy: ', ethBalance.toString());
 
     // ethBalance = await hre.ethers.provider.getBalance(proxyFactoryAddr);
     // console.log('factory eth balance: ', ethBalance.toString());

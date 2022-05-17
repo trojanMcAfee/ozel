@@ -115,10 +115,6 @@ contract pyBeaconProxy is Proxy, ERC1967Upgrade {
         if (address(this).balance > 0) {
             canExec = true;
         }
-        // execPayload = abi.encodeWithSelector(
-        //     this.sendToArb.selector, s.autoRedeem
-        // );
-
         execPayload = abi.encodeWithSignature('sendToArb()');
     }
 
@@ -127,21 +123,11 @@ contract pyBeaconProxy is Proxy, ERC1967Upgrade {
         // require(msg.data.length > 0, "BeaconProxy: Receive() can only take ETH"); //<------ try what happens if sends eth with calldata (security)
     }
 
-//    function routerCall
  
 
     function _delegate(address implementation) internal override {
-        // uint internalId = abi.decode(msg.data[4:], (uint));
-
-        // bytes memory data = abi.encodeWithSignature('getVariableData()');
-        // data = fxConfig.storageBeacon.functionCall(data, 'pyBeaconProxy: _delegate() call failed');
-
-       
-
         StorageBeacon.VariableConfig memory varConfig =
              StorageBeacon(storageBeacon).getVariableConfig();
-
-        // (VariableConfig memory varConfig) = abi.decode(data, (VariableConfig));
 
         bytes memory data = abi.encodeWithSignature(
             'sendToArb((uint256,uint256,uint256),(address,address,uint256))', 
@@ -150,15 +136,9 @@ contract pyBeaconProxy is Proxy, ERC1967Upgrade {
         );
 
         assembly {
-            // Call the implementation.
-            // out and outsize are 0 because we don't know the size yet.
             let result := delegatecall(gas(), implementation, add(data, 32), mload(data), 0, 0)
-
-            // Copy the returned data.
             returndatacopy(0, 0, returndatasize())
-
             switch result
-            // delegatecall returns 0 on error.
             case 0 {
                 revert(0, returndatasize())
             }

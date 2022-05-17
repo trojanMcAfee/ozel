@@ -22,7 +22,7 @@ contract StorageBeacon {
         address ops;
         address PYY;
         address emitter;
-        address payable gelato; //new
+        address payable gelato;
         uint maxGas;
     }
 
@@ -81,10 +81,6 @@ contract StorageBeacon {
         return idToUserDetails[userId_];
     }
 
-    // function getInternalId() external view returns(uint) {
-    //     return internalId;
-    // }
-
     function getFixedConfig() external view returns(FixedConfig memory) {
         return fxConfig;
     }
@@ -92,47 +88,6 @@ contract StorageBeacon {
     function getVariableConfig() external view returns(VariableConfig memory) {
         return varConfig; 
     }
-
-    
-    // function getVariableConfig() external view returns(bytes memory data) {
-    //     //is it possible to access stored log data from another contract?
-
-    //     // userConfig memory userDetails_ = idToUserDetails[internalId_];
-    //     // data = abi.encode(userDetails_, bridgeConfig);
-
-    //     data = abi.encode(varConfig); 
-    // }
-
-
-
-    // function routerCall(uint internalId_) external {
-
-    //     userConfig memory userDetails = idToUserDetails[internalId_];
-
-    //     bytes memory data = abi.encodeWithSelector(
-    //         PayMeFacetHop(payable(payme)).sendToArb.selector, 
-    //         userDetails,
-    //         inbox,
-    //         opsGel,
-    //         PYY,
-    //         maxSubmissionCost,
-    //         maxGas,
-    //         gasPriceBid
-    //     );
-
-    //     (bool success, ) = payme.delegatecall(data);
-    //     require(success, 'CoBeacon: routerCall() failed');
-
-    // }
-
-    //put here the admin funcs to change storage vars
-
-
-    // function setImplBeacon(address implBeacon_) external {
-    //     implBeacon = implBeacon_;
-    // }
-  
-
 }
 
 
