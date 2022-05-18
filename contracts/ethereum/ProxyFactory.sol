@@ -2,7 +2,7 @@
 pragma solidity ^0.8.0;
 
 
-import './pyBeaconProxy.sol';
+import './ozBeaconProxy.sol';
 import '../interfaces/IOps.sol';
 
 import "@openzeppelin/contracts/proxy/Proxy.sol";
@@ -41,7 +41,7 @@ contract ProxyFactory {
         require(success, 'ProxyFactory: createNewProxy() failed');
         uint userId = abi.decode(returnData, (uint));
 
-        pyBeaconProxy newProxy = new pyBeaconProxy(
+        ozBeaconProxy newProxy = new ozBeaconProxy(
             userId, 
             beacon,
             storageBeacon,

@@ -26,23 +26,21 @@ contract StorageBeacon {
         uint maxGas;
     }
 
-    FixedConfig fxConfig;
-
-
     struct VariableConfig {
         uint maxSubmissionCost;
         uint gasPriceBid;
         uint autoRedeem;
     }
 
+    FixedConfig fxConfig;
     VariableConfig varConfig;
 
     mapping(address => bytes32) public taskIDs;
-
     mapping(address => address) usersProxies;
-
     mapping(address => address) proxyByUser;
+    mapping(uint => UserConfig) public idToUserDetails;
 
+    uint private internalId;
 
 
     constructor(
@@ -64,11 +62,6 @@ contract StorageBeacon {
             autoRedeem: varConfig_.autoRedeem
         });
     }
-
-
-
-    mapping(uint => UserConfig) public idToUserDetails;
-    uint private internalId;
 
 
     function getOpsGel() external view returns(address) {

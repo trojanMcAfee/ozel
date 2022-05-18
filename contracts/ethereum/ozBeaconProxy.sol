@@ -7,9 +7,11 @@ import 'hardhat/console.sol';
 
 import '@openzeppelin/contracts/utils/Address.sol';
 
-import '@openzeppelin/contracts/proxy/beacon/IBeacon.sol';
-import '@openzeppelin/contracts/proxy/Proxy.sol';
-import '@openzeppelin/contracts/proxy/ERC1967/ERC1967Upgrade.sol';
+// import '@openzeppelin/contracts/proxy/beacon/IBeacon.sol';
+// import '@openzeppelin/contracts/proxy/Proxy.sol';
+// import '@openzeppelin/contracts/proxy/ERC1967/ERC1967Upgrade.sol';
+
+import '@openzeppelin/contracts/proxy/beacon/BeaconProxy.sol';
 
 import '../interfaces/IOps.sol';
 
@@ -17,10 +19,9 @@ import './StorageBeacon.sol';
 
 
 
-contract pyBeaconProxy is Proxy, ERC1967Upgrade {
+contract ozBeaconProxy is BeaconProxy {
     using Address for address;
     
-
     struct UserConfig {
         address user;
         address userToken;
@@ -56,37 +57,13 @@ contract pyBeaconProxy is Proxy, ERC1967Upgrade {
         uint userId_,
         address beacon_,
         address storageBeacon_,
-        bytes memory data
-    ) {
-        assert(_BEACON_SLOT == bytes32(uint256(keccak256("eip1967.proxy.beacon")) - 1)); 
-        _upgradeBeaconToAndCall(beacon_, data, false); 
-
+        bytes memory data_
+    ) BeaconProxy(beacon_, data_) {
         userDetails = StorageBeacon(storageBeacon_).getUserById(userId_);               
         fxConfig = StorageBeacon(storageBeacon_).getFixedConfig();
-
         storageBeacon = storageBeacon_;
     }                                    
 
-
-    /**
-     * @dev Returns the current beacon address.
-     */
-    function _beacon() internal view virtual returns (address) {
-        return _getBeacon();
-    }
-
-    /**
-     * @dev Returns the current implementation address of the associated beacon.
-     */
-    function _implementation() internal view virtual override returns (address) {
-        return IBeacon(_getBeacon()).implementation();
-    }
-
- 
-
-    /**
-     * MY FUNCTIONS
-     */
 
 
     //Gelato checker
@@ -125,10 +102,7 @@ contract pyBeaconProxy is Proxy, ERC1967Upgrade {
                 return(0, returndatasize())
             }
         }
-
     }
-
-
 }
 
 
