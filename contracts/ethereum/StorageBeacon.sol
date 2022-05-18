@@ -37,6 +37,12 @@ contract StorageBeacon {
 
     VariableConfig varConfig;
 
+    mapping(address => bytes32) public taskIDs;
+
+    mapping(address => address) usersProxies;
+
+    mapping(address => address) proxyByUser;
+
 
 
     constructor(
@@ -69,14 +75,20 @@ contract StorageBeacon {
         return fxConfig.ops;
     }
 
-
-
+    //State changing functions
     function issueUserID(UserConfig memory userDetails_) public returns(uint id) {
         idToUserDetails[internalId] = userDetails_;
         id = internalId;
         internalId++;
     }
+    
+    function saveUserProxy(address sender_, address proxy_) external {
+        usersProxies[sender_] = proxy_;
+        proxyByUser[proxy_] = sender_;
+    }
 
+
+    //View functions
     function getUserById(uint userId_) external view returns(UserConfig memory) {
         return idToUserDetails[userId_];
     }

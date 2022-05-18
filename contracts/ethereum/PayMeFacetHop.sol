@@ -65,12 +65,13 @@ contract PayMeFacetHop {
     function sendToArb( 
         VariableConfig memory varConfig_,
         UserConfig memory userDetails_
-    ) external payable onlyOps { //onlyOps
+    ) external payable onlyOps { 
         address inbox = fxConfig.inbox;
         address PYY = fxConfig.PYY;
         address emitter = fxConfig.emitter;
         address opsGel = fxConfig.ops;
         uint maxGas = fxConfig.maxGas;
+        
         uint maxSubmissionCost = varConfig_.maxSubmissionCost;
         uint gasPriceBid = varConfig_.gasPriceBid;
         uint autoRedeem = varConfig_.autoRedeem;

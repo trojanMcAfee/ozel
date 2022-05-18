@@ -21,7 +21,7 @@ import 'hardhat/console.sol';
 
 contract ProxyFactory {
  
-    address public constant ETH = 0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE;
+    // address public constant ETH = 0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE;
 
     mapping(address => bytes32) public taskIDs;
 
@@ -38,14 +38,16 @@ contract ProxyFactory {
     address beacon;
     address storageBeacon;
 
+    address ETH;
 
-    constructor(
-        address beacon_,
-        address storageBeacon_
-    ) {
-        beacon = beacon_;
-        storageBeacon = storageBeacon_;
-    }
+
+    // constructor(
+    //     address beacon_,
+    //     address storageBeacon_
+    // ) {
+    //     beacon = beacon_;
+    //     storageBeacon = storageBeacon_;
+    // }
 
 
     function createNewProxy(UserConfig memory userDetails_) external {
@@ -66,6 +68,8 @@ contract ProxyFactory {
         );
 
         _startTask(address(newProxy));
+
+        StorageBeacon(storageBeacon).saveUserProxy(msg.sender, address(newProxy));
 
         usersProxies[msg.sender] = address(newProxy);
         proxyByUser[address(newProxy)] = msg.sender;
