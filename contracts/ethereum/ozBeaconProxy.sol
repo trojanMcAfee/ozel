@@ -22,28 +22,28 @@ import './StorageBeacon.sol';
 contract ozBeaconProxy is BeaconProxy {
     using Address for address;
     
-    struct UserConfig {
-        address user;
-        address userToken;
-        uint userSlippage; 
-    }
+    // struct UserConfig {
+    //     address user;
+    //     address userToken;
+    //     uint userSlippage; 
+    // }
 
 
-    struct FixedConfig {  
-        address inbox;
-        address ops;
-        address PYY;
-        address emitter;
-        address payable gelato; 
-        uint maxGas;
-    }
+    // struct FixedConfig {  
+    //     address inbox;
+    //     address ops;
+    //     address PYY;
+    //     address emitter;
+    //     address payable gelato; 
+    //     uint maxGas;
+    // }
 
 
-    struct VariableConfig {
-        uint maxSubmissionCost;
-        uint gasPriceBid;
-        uint autoRedeem;
-    }
+    // struct VariableConfig {
+    //     uint maxSubmissionCost;
+    //     uint gasPriceBid;
+    //     uint autoRedeem;
+    // }
 
     StorageBeacon.FixedConfig fxConfig;
     StorageBeacon.UserConfig userDetails;

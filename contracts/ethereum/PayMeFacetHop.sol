@@ -31,14 +31,14 @@ contract PayMeFacetHop {
     }
 
 
-    struct FixedConfig {  
-        address inbox;
-        address ops;
-        address PYY;
-        address emitter;
-        address payable gelato; 
-        uint maxGas;
-    }
+    // struct FixedConfig {  
+    //     address inbox;
+    //     address ops;
+    //     address PYY;
+    //     address emitter;
+    //     address payable gelato; 
+    //     uint maxGas;
+    // }
 
     struct VariableConfig {
         uint maxSubmissionCost;
