@@ -6,49 +6,21 @@ pragma solidity ^0.8.0;
 import 'hardhat/console.sol';
 
 import '@openzeppelin/contracts/utils/Address.sol';
-
-// import '@openzeppelin/contracts/proxy/beacon/IBeacon.sol';
-// import '@openzeppelin/contracts/proxy/Proxy.sol';
-// import '@openzeppelin/contracts/proxy/ERC1967/ERC1967Upgrade.sol';
-
 import '@openzeppelin/contracts/proxy/beacon/BeaconProxy.sol';
-
 import '../interfaces/IOps.sol';
-
 import './StorageBeacon.sol';
 
+import './ozUpgradeableBeacon.sol';
 
 
-contract ozBeaconProxy is BeaconProxy {
+
+contract ozBeaconProxy is BeaconProxy { 
     using Address for address;
-    
-    // struct UserConfig {
-    //     address user;
-    //     address userToken;
-    //     uint userSlippage; 
-    // }
-
-
-    // struct FixedConfig {  
-    //     address inbox;
-    //     address ops;
-    //     address PYY;
-    //     address emitter;
-    //     address payable gelato; 
-    //     uint maxGas;
-    // }
-
-
-    // struct VariableConfig {
-    //     uint maxSubmissionCost;
-    //     uint gasPriceBid;
-    //     uint autoRedeem;
-    // }
 
     StorageBeacon.FixedConfig fxConfig;
     StorageBeacon.UserConfig userDetails;
 
-    address storageBeacon;
+    // address storageBeacon;
 
     address constant ETH = 0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE;
 
@@ -56,12 +28,12 @@ contract ozBeaconProxy is BeaconProxy {
     constructor(
         uint userId_,
         address beacon_,
-        address storageBeacon_,
+        // address storageBeacon_,
         bytes memory data_
     ) BeaconProxy(beacon_, data_) {
-        userDetails = StorageBeacon(storageBeacon_).getUserById(userId_);               
-        fxConfig = StorageBeacon(storageBeacon_).getFixedConfig();
-        storageBeacon = storageBeacon_;
+        userDetails = _getStorageBeacon().getUserById(userId_);               
+        fxConfig = _getStorageBeacon().getFixedConfig();
+        // storageBeacon = storageBeacon_;
     }                                    
 
 
@@ -79,11 +51,15 @@ contract ozBeaconProxy is BeaconProxy {
         // require(msg.data.length > 0, "BeaconProxy: Receive() can only take ETH"); //<------ try what happens if sends eth with calldata (security)
     }
 
- 
 
+    function _getStorageBeacon() private view returns(StorageBeacon) {
+        return StorageBeacon(ozUpgradeableBeacon(_beacon()).storageBeacon());
+    }
+
+ 
     function _delegate(address implementation) internal override {
         StorageBeacon.VariableConfig memory varConfig =
-             StorageBeacon(storageBeacon).getVariableConfig();
+             _getStorageBeacon().getVariableConfig();
 
         bytes memory data = abi.encodeWithSignature(
             'sendToArb((uint256,uint256,uint256),(address,address,uint256))', 

@@ -30,16 +30,6 @@ contract PayMeFacetHop {
         uint userSlippage; 
     }
 
-
-    // struct FixedConfig {  
-    //     address inbox;
-    //     address ops;
-    //     address PYY;
-    //     address emitter;
-    //     address payable gelato; 
-    //     uint maxGas;
-    // }
-
     struct VariableConfig {
         uint maxSubmissionCost;
         uint gasPriceBid;
@@ -50,7 +40,7 @@ contract PayMeFacetHop {
     StorageBeacon.FixedConfig fxConfig;
     StorageBeacon.UserConfig userDetails;
 
-    address storageBeacon;
+    // address storageBeacon;
 
     address ETH;
 

@@ -324,7 +324,7 @@ async function sendArb() { //mainnet
     //Deploys pyERC1967Proxy
     constrArgs = [
         beaconAddr,
-        storageBeaconAddr,
+        // storageBeaconAddr, //<---- fix this in deployContract()
         proxyFactoryAddr,
         '0x'
     ];
