@@ -11,7 +11,6 @@ import "@openzeppelin/contracts/proxy/beacon/UpgradeableBeacon.sol";
 import "@openzeppelin/contracts/proxy/beacon/BeaconProxy.sol";
 import '../interfaces/IL1_ETH_Bridge.sol';
 import '../interfaces/DelayedInbox.sol';
-import './OpsReady.sol';
 import './FakePYY.sol';
 import './Emitter.sol';
 
@@ -65,13 +64,13 @@ contract PayMeFacetHop {
     function sendToArb( 
         VariableConfig memory varConfig_,
         UserConfig memory userDetails_
-    ) external payable onlyOps { 
+    ) external payable { //onlyOps
         address inbox = fxConfig.inbox;
         address PYY = fxConfig.PYY;
         address emitter = fxConfig.emitter;
         address opsGel = fxConfig.ops;
         uint maxGas = fxConfig.maxGas;
-        
+
         uint maxSubmissionCost = varConfig_.maxSubmissionCost;
         uint gasPriceBid = varConfig_.gasPriceBid;
         uint autoRedeem = varConfig_.autoRedeem;
@@ -99,9 +98,8 @@ contract PayMeFacetHop {
         (bool success, bytes memory returnData) = inbox.call{value: address(this).balance}(ticketData);
         require(success, 'PayMeFacetHop: retryable ticket failed');
         uint ticketID = abi.decode(returnData, (uint));
-        console.log('ticketID: ', ticketID);
 
-        Emitter(emitter).forwardEvent(ticketID); 
+        // Emitter(emitter).forwardEvent(ticketID); 
     }
 
 

@@ -87,6 +87,10 @@ contract StorageBeacon {
         proxyByUser[proxy_] = sender_;
     }
 
+    function saveTaskId(address proxy_, bytes32 id_) external {
+        taskIDs[proxy_] = id_;
+    }
+
 
     //View functions
     function getUserById(uint userId_) external view returns(UserConfig memory) {
@@ -99,6 +103,18 @@ contract StorageBeacon {
 
     function getVariableConfig() external view returns(VariableConfig memory) {
         return varConfig; 
+    }
+
+    function getUserProxy(address user_) public view returns(address) {
+        return usersProxies[user_];
+    }
+
+    function getTaskID(address user_) external view returns(bytes32) {
+        return taskIDs[getUserProxy(user_)];
+    }
+
+    function getUserByProxy(address proxy_) external view returns(address) {
+        return proxyByUser[proxy_];
     }
 }
 

@@ -10,11 +10,11 @@ contract ozERC1967Proxy is ERC1967Proxy {
 
     address public constant ETH = 0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE;
 
-    mapping(address => bytes32) public taskIDs;
+    // mapping(address => bytes32) public taskIDs;
 
-    mapping(address => address) usersProxies;
+    // mapping(address => address) usersProxies;
 
-    mapping(address => address) proxyByUser;
+    // mapping(address => address) proxyByUser;
 
     struct UserConfig {
         address user;

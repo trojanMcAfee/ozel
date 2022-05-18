@@ -10,7 +10,6 @@ import "@openzeppelin/contracts/proxy/Proxy.sol";
 import "@openzeppelin/contracts/proxy/ERC1967/ERC1967Upgrade.sol";
 import '@openzeppelin/contracts/utils/Address.sol';
 
-import './OpsReady.sol';
 import './PayMeFacetHop.sol';
 
 import './StorageBeacon.sol';
@@ -23,11 +22,11 @@ contract ProxyFactory {
  
     // address public constant ETH = 0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE;
 
-    mapping(address => bytes32) public taskIDs;
+    // mapping(address => bytes32) public taskIDs;
 
-    mapping(address => address) usersProxies;
+    // mapping(address => address) usersProxies;
 
-    mapping(address => address) proxyByUser;
+    // mapping(address => address) proxyByUser;
 
     struct UserConfig {
         address user;
@@ -71,25 +70,23 @@ contract ProxyFactory {
 
         StorageBeacon(storageBeacon).saveUserProxy(msg.sender, address(newProxy));
 
-        usersProxies[msg.sender] = address(newProxy);
-        proxyByUser[address(newProxy)] = msg.sender;
+        // usersProxies[msg.sender] = address(newProxy);
+        // proxyByUser[address(newProxy)] = msg.sender;
     }
 
 
 
+    // function getUserProxy(address user_) public view returns(address) {
+    //     return usersProxies[user_];
+    // }
 
+    // function getTaskID(address user_) external view returns(bytes32) {
+    //     return taskIDs[getUserProxy(user_)];
+    // }
 
-    function getUserProxy(address user_) public view returns(address) {
-        return usersProxies[user_];
-    }
-
-    function getTaskID(address user_) external view returns(bytes32) {
-        return taskIDs[getUserProxy(user_)];
-    }
-
-    function getUserByProxy(address proxy_) external view returns(address) {
-        return proxyByUser[proxy_];
-    }
+    // function getUserByProxy(address proxy_) external view returns(address) {
+    //     return proxyByUser[proxy_];
+    // }
 
 
     // *** GELATO PART ******
@@ -105,6 +102,8 @@ contract ProxyFactory {
             ETH
         );
 
-        taskIDs[address(beaconProxy_)] = id;
+        StorageBeacon(storageBeacon).saveTaskId(beaconProxy_, id);
+
+        // taskIDs[address(beaconProxy_)] = id;
     }
 }
