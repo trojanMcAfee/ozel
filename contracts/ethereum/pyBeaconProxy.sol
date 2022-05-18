@@ -20,25 +20,6 @@ import './StorageBeacon.sol';
 contract pyBeaconProxy is Proxy, ERC1967Upgrade {
     using Address for address;
     
-    // address storageBeacon;
-
-    // address inbox;
-    // address opsGel;
-    // address payable public immutable gelato;
-    // address public constant ETH = 0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE;
-    // address PYY;
-    // address emitter;
-
-    // struct BridgeConfig {
-    //     address inbox; //finish modifying OpsReady
-    //     address opsGel;
-    //     address PYY;
-    //     address emitter;
-    //     uint maxSubmissionCost;
-    //     uint maxGas;
-    //     uint gasPriceBid;
-    //     uint autoRedeem;
-    // }
 
     struct UserConfig {
         address user;
@@ -52,7 +33,7 @@ contract pyBeaconProxy is Proxy, ERC1967Upgrade {
         address ops;
         address PYY;
         address emitter;
-        address payable gelato; //new
+        address payable gelato; 
         uint maxGas;
     }
 
@@ -72,8 +53,6 @@ contract pyBeaconProxy is Proxy, ERC1967Upgrade {
 
     
     constructor(
-        // UserConfig memory userDetails_, 
-        // FixedConfig memory fxConfig_,
         uint userId_,
         address beacon_,
         address storageBeacon_,

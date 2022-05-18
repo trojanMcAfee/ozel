@@ -2,7 +2,6 @@
 pragma solidity ^0.8.0;
 
 
-// import "@openzeppelin/contracts/proxy/beacon/BeaconProxy.sol";
 import './pyBeaconProxy.sol';
 import '../interfaces/IOps.sol';
 
@@ -20,14 +19,6 @@ import 'hardhat/console.sol';
 
 contract ProxyFactory {
  
-    // address public constant ETH = 0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE;
-
-    // mapping(address => bytes32) public taskIDs;
-
-    // mapping(address => address) usersProxies;
-
-    // mapping(address => address) proxyByUser;
-
     struct UserConfig {
         address user;
         address userToken;
@@ -38,15 +29,6 @@ contract ProxyFactory {
     address storageBeacon;
 
     address ETH;
-
-
-    // constructor(
-    //     address beacon_,
-    //     address storageBeacon_
-    // ) {
-    //     beacon = beacon_;
-    //     storageBeacon = storageBeacon_;
-    // }
 
 
     function createNewProxy(UserConfig memory userDetails_) external {
@@ -69,24 +51,8 @@ contract ProxyFactory {
         _startTask(address(newProxy));
 
         StorageBeacon(storageBeacon).saveUserProxy(msg.sender, address(newProxy));
-
-        // usersProxies[msg.sender] = address(newProxy);
-        // proxyByUser[address(newProxy)] = msg.sender;
     }
 
-
-
-    // function getUserProxy(address user_) public view returns(address) {
-    //     return usersProxies[user_];
-    // }
-
-    // function getTaskID(address user_) external view returns(bytes32) {
-    //     return taskIDs[getUserProxy(user_)];
-    // }
-
-    // function getUserByProxy(address proxy_) external view returns(address) {
-    //     return proxyByUser[proxy_];
-    // }
 
 
     // *** GELATO PART ******
@@ -103,7 +69,5 @@ contract ProxyFactory {
         );
 
         StorageBeacon(storageBeacon).saveTaskId(beaconProxy_, id);
-
-        // taskIDs[address(beaconProxy_)] = id;
     }
 }

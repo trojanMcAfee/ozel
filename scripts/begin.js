@@ -319,11 +319,6 @@ async function sendArb() { //mainnet
     // const beaconAddr = '0xc778772aDe2a8568d87336Dbd516c2B47273582A';
 
     //Deploys ProxyFactory
-    // constrArgs = {
-    //     beaconAddr,
-    //     storageBeaconAddr
-    // };
-
     const proxyFactoryAddr = await deployContract('ProxyFactory', l1Signer);
 
     //Deploys pyERC1967Proxy
@@ -338,19 +333,11 @@ async function sendArb() { //mainnet
 
     //Creates 1st proxy
     await sendTx(ozERC1967proxyAddr, false, 'createNewProxy', userDetails);
-
-    // let tx = await proxyFactory.createNewProxy(userDetails, {
-    //     gasLimit: ethers.BigNumber.from('5000000'),
-    //     gasPrice: ethers.BigNumber.from('30397522792')
-    // });
-    // await tx.wait();
     const newProxyAddr = (await storageBeacon.getUserProxy(signerAddr)).toString(); 
     console.log('proxy 1: ', newProxyAddr);
 
 
     //Gets user's task id
-    // await sendTx(storageBeaconAddr, false, 'getTaskID', signerAddr);
-
     const taskId = await storageBeacon.getTaskID(signerAddr);
     console.log('task id: ', taskId.toString());
 
@@ -387,27 +374,12 @@ async function sendArb() { //mainnet
     let ethBalance = await hre.ethers.provider.getBalance(newProxyAddr);
     console.log('pre eth balance on proxy: ', ethBalance.toString());
 
-    // const signer = await hre.ethers.provider.getSigner(0);
-    // const iface = new ethers.utils.Interface(['function sendToArb()']);
-    // const data = iface.encodeFunctionData('sendToArb');
-
     await sendTx(newProxyAddr, false, 'sendToArb', 1);
-    
-    // tx = await signer.sendTransaction({
-    //     gasLimit: ethers.BigNumber.from('5000000'),
-    //     gasPrice: ethers.BigNumber.from('30097522792'),
-    //     data,
-    //     to: newProxyAddr,
-    //     value: ethers.utils.parseEther('1')
-    // });
-    // const receipt = await tx.wait();
-    // console.log('sendToArb hash: ', receipt.transactionHash);
 
     ethBalance = await hre.ethers.provider.getBalance(newProxyAddr);
     console.log('post eth balance on proxy: ', ethBalance.toString());
 
-    // ethBalance = await hre.ethers.provider.getBalance(proxyFactoryAddr);
-    // console.log('factory eth balance: ', ethBalance.toString());
+
 
 }
 
