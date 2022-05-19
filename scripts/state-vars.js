@@ -20,6 +20,7 @@ let chainId; //arbitrum
 let pokeMeOpsAddr; //gelato
 let hopBridge;
 let inbox; //arbitrum rinkeby
+let gelatoAddr;
 const ETH = '0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE';
 const dappFee = 10; //prev: 10 -> 0.1% / 100-1 / 1000-10 / 10000 - 100%
 
@@ -33,6 +34,8 @@ const tokenSymbol = 'PYY';
 
 
 
+
+
 const signerX = new ethers.Wallet(process.env.PK);
 const l2Provider = new ethers.providers.JsonRpcProvider(process.env.ARB_TESTNET);
 const l1ProviderRinkeby = new ethers.providers.JsonRpcProvider(process.env.RINKEBY);
@@ -41,7 +44,7 @@ const l1Signer = signerX.connect(l1ProviderRinkeby);
 
 
 
-let network = 'arbitrum';
+let network = 'mainnet';
 switch(network) {
     case 'rinkeby':
         chainId = 421611;
@@ -49,6 +52,7 @@ switch(network) {
         hopBridge = '0xb8901acB165ed027E32754E0FFe830802919727f'; //no testnet
         usdtAddrArb = '0x3B00Ef435fA4FcFF5C209a37d1f3dcff37c705aD';
         inbox = '0x578BAde599406A8fE3d24Fd7f7211c0911F5B29e';
+        gelatoAddr = '0x0630d1b8c2df3f0a68df578d02075027a6397173';
         break;
     case 'mainnet': 
         chainId = 42161;
@@ -68,11 +72,12 @@ switch(network) {
         mimPoolAddr = '0x5a6A4D54456819380173272A5E8E9B9904BdF41B'; //it differs from arb as 3crv to 2crv
         crv2PoolAddr = '0xbEbc44782C7dB0a1A60Cb6fe97d0b483032FF1C7'; //crv3
         yTricryptoPoolAddr = '';
+        gelatoAddr = '0x3caca7b48d0573d793d3b0279b5f0029180e83b6';
         break; 
     case 'arbitrum':
-        pokeMeOpsAddr = '0xB3f5503f93d5Ef84b06993a1975B9D21B962892F'; //mainnet
+        pokeMeOpsAddr = '0xB3f5503f93d5Ef84b06993a1975B9D21B962892F'; 
         hopBridge = '0xb8901acB165ed027E32754E0FFe830802919727f'; //mainnet
-        inbox = '0x4Dbd4fc535Ac27206064B68FfCf827b0A60BAB3f'; //mainnet
+        inbox = '0x4Dbd4fc535Ac27206064B68FfCf827b0A60BAB3f';
 
         usdtAddrArb = '0xfd086bc7cd5c481dcc9c85ebe478a1c0b69fcbb9';
         tricryptoAddr = '0x960ea3e3C7FB317332d990873d354E18d7645590';
@@ -88,6 +93,7 @@ switch(network) {
         yTricryptoPoolAddr = '0x239e14A19DFF93a17339DCC444f74406C17f8E67';
         fraxPoolAddr = '0xf07d553B195080F84F582e88ecdD54bAa122b279';
         fraxAddr = '0x17FC002b466eEc40DaE837Fc4bE5c67993ddBd6F';
+        gelatoAddr = '0x4775af8fef4809fe10bf05867d2b038a4b5b2146';
 } 
 
 
@@ -121,6 +127,7 @@ module.exports = {
     signerX,
     l2Provider,
     l2Signer,
-    l1Signer
+    l1Signer,
+    gelatoAddr
 };
 

@@ -12,6 +12,6 @@ interface IOps {
         address _feeToken
     ) external returns(bytes32 task);
 
-    function gelato() external view returns (address payable);
     function getFeeDetails() external view returns (uint256, address);
+    function gelato() external view returns (address payable);
 }
