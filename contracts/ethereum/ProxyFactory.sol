@@ -25,8 +25,8 @@ contract ProxyFactory {
         uint userSlippage; 
     }
 
-    address beacon;
     address ETH;
+    address beacon;
 
 
     function createNewProxy(UserConfig memory userDetails_) external {
@@ -47,7 +47,7 @@ contract ProxyFactory {
 
         _startTask(address(newProxy));
 
-         _getStorageBeacon().saveUserProxy(msg.sender, address(newProxy));
+        _getStorageBeacon().saveUserProxy(msg.sender, address(newProxy));
     }
 
 
@@ -60,6 +60,8 @@ contract ProxyFactory {
 
     function _startTask(address beaconProxy_) public { 
         address opsGel = _getStorageBeacon().getOpsGel();
+        console.log('opsGel in factory: ', opsGel);
+        console.log('eth in factory: ', ETH);
 
         (bytes32 id) = IOps(opsGel).createTaskNoPrepayment( 
             beaconProxy_,

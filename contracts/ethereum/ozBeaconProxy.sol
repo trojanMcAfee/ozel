@@ -20,7 +20,7 @@ contract ozBeaconProxy is BeaconProxy {
     StorageBeacon.FixedConfig fxConfig;
     StorageBeacon.UserConfig userDetails;
 
-    address constant ETH = 0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE;
+    address ETH = 0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE;
 
     
     constructor(

@@ -8,7 +8,7 @@ import '@openzeppelin/contracts/proxy/ERC1967/ERC1967Proxy.sol';
 //ProxyFactory proxy
 contract ozERC1967Proxy is ERC1967Proxy {
 
-    address public constant ETH = 0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE;
+    address ETH = 0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE;
     address beacon;
 
     constructor(
