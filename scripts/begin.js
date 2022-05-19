@@ -225,19 +225,20 @@ async function deployContract(contractName, signer, constrArgs) {
     };
 
     let contract;
-    let var1, var2, var3, var4;
+    let var1, var2, var3;
 
     switch(contractName) {
         case 'UpgradeableBeacon':
             contract = await Contract.deploy(constrArgs, ops);
             break;
         case 'StorageBeacon':
+        case 'ozUpgradeableBeacon':
             ([ var1, var2 ] = constrArgs);
             contract = await Contract.deploy(var1, var2, ops);
             break;
         case 'ozERC1967Proxy':
-            ([ var1, var2, var3, var4 ] = constrArgs);
-            contract = await Contract.deploy(var1, var2, var3, var4, ops);
+            ([ var1, var2, var3 ] = constrArgs);
+            contract = await Contract.deploy(var1, var2, var3, ops);
             break;
         default:
             contract = await Contract.deploy(ops);
@@ -315,7 +316,12 @@ async function sendArb() { //mainnet
     const storageBeacon = await hre.ethers.getContractAt('StorageBeacon', storageBeaconAddr);
     
     //Deploys UpgradeableBeacon
-    const beaconAddr = await deployContract('UpgradeableBeacon', l1Signer, paymeHopAddr); 
+    constrArgs = [
+        paymeHopAddr,
+        storageBeaconAddr
+    ];
+
+    const beaconAddr = await deployContract('ozUpgradeableBeacon', l1Signer, constrArgs); 
     // const beaconAddr = '0xc778772aDe2a8568d87336Dbd516c2B47273582A';
 
     //Deploys ProxyFactory

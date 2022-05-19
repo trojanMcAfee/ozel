@@ -34,3 +34,4 @@ contract ozERC1967Proxy is ERC1967Proxy {
 
 //fix the deployContract to match the new params on the contracts 
 //ozERC1967 / ozBeaconProxy
+//change deployContract of UpgradableProxy to ozUpgradableProxy
