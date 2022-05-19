@@ -26,8 +26,6 @@ contract ProxyFactory {
     }
 
     address beacon;
-    // address storageBeacon;
-
     address ETH;
 
 
@@ -44,15 +42,12 @@ contract ProxyFactory {
         ozBeaconProxy newProxy = new ozBeaconProxy(
             userId, 
             beacon,
-            // address(_getStorageBeacon()),
             new bytes(0)
         );
 
         _startTask(address(newProxy));
 
          _getStorageBeacon().saveUserProxy(msg.sender, address(newProxy));
-
-        // StorageBeacon(storageBeacon).saveUserProxy(msg.sender, address(newProxy));
     }
 
 
@@ -60,8 +55,6 @@ contract ProxyFactory {
         return StorageBeacon(ozUpgradeableBeacon(beacon).storageBeacon());
     }
 
-
-    // StorageBeacon(ozUpgradeableBeacon(beacon).storageBeacon()).getOpsGel();
 
     // *** GELATO PART ******
 

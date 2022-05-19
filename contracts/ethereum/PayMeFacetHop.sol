@@ -6,7 +6,6 @@ import {
     SafeERC20,
     IERC20
 } from "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
-import "@openzeppelin/contracts/proxy/utils/Initializable.sol";
 import "@openzeppelin/contracts/proxy/beacon/UpgradeableBeacon.sol";
 import "@openzeppelin/contracts/proxy/beacon/BeaconProxy.sol";
 import '../interfaces/IL1_ETH_Bridge.sol';
@@ -39,8 +38,6 @@ contract PayMeFacetHop {
 
     StorageBeacon.FixedConfig fxConfig;
     StorageBeacon.UserConfig userDetails;
-
-    // address storageBeacon;
 
     address ETH;
 
@@ -91,6 +88,7 @@ contract PayMeFacetHop {
 
         // Emitter(emitter).forwardEvent(ticketID); 
     }
+
 
 
     function _transfer(uint256 _amount, address _paymentToken) internal {

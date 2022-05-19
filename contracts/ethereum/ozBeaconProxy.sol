@@ -20,20 +20,16 @@ contract ozBeaconProxy is BeaconProxy {
     StorageBeacon.FixedConfig fxConfig;
     StorageBeacon.UserConfig userDetails;
 
-    // address storageBeacon;
-
     address constant ETH = 0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE;
 
     
     constructor(
         uint userId_,
         address beacon_,
-        // address storageBeacon_,
         bytes memory data_
     ) BeaconProxy(beacon_, data_) {
         userDetails = _getStorageBeacon().getUserById(userId_);               
         fxConfig = _getStorageBeacon().getFixedConfig();
-        // storageBeacon = storageBeacon_;
     }                                    
 
 

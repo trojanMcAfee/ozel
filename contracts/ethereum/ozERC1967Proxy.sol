@@ -9,29 +9,15 @@ import '@openzeppelin/contracts/proxy/ERC1967/ERC1967Proxy.sol';
 contract ozERC1967Proxy is ERC1967Proxy {
 
     address public constant ETH = 0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE;
-
-    struct UserConfig { //comment this out
-        address user;
-        address userToken;
-        uint userSlippage; 
-    }
-
     address beacon;
-    // address storageBeacon;
 
     constructor(
         address beacon_,
-        // address storageBeacon_,
         address logic_,
         bytes memory data_
     ) ERC1967Proxy(logic_, data_) {
         beacon = beacon_;
-        // storageBeacon = storageBeacon_;
     }
-
 }
 
 
-//fix the deployContract to match the new params on the contracts 
-//ozERC1967 / ozBeaconProxy
-//change deployContract of UpgradableProxy to ozUpgradableProxy

@@ -6,8 +6,7 @@ import '@openzeppelin/contracts/proxy/beacon/UpgradeableBeacon.sol';
 
 
 contract ozUpgradeableBeacon is UpgradeableBeacon {
-    address _implementation;
-
+    // address _implementation;
     address private _storageBeacon;
 
     event UpgradedStorageBeacon(address indexed newStorageBeacon);
@@ -26,6 +25,4 @@ contract ozUpgradeableBeacon is UpgradeableBeacon {
         _storageBeacon = newStorageBeacon_;
         emit UpgradedStorageBeacon(newStorageBeacon_);
     }
-
-
 }
