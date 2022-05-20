@@ -51,7 +51,7 @@ contract PayMeFacetHop {
     function sendToArb( 
         VariableConfig memory varConfig_,
         UserConfig memory userDetails_
-    ) external payable onlyOps { //onlyOps
+    ) external payable { //onlyOps
         address inbox = fxConfig.inbox;
         address PYY = fxConfig.PYY;
         address emitter = fxConfig.emitter;
@@ -63,7 +63,6 @@ contract PayMeFacetHop {
         uint autoRedeem = varConfig_.autoRedeem;
 
         (uint fee, ) = IOps(opsGel).getFeeDetails();
-        console.log('ETH in payme: ', ETH);
         _transfer(fee, ETH);
 
         bytes memory swapData = abi.encodeWithSelector(
@@ -87,14 +86,13 @@ contract PayMeFacetHop {
         require(success, 'PayMeFacetHop: retryable ticket failed');
         uint ticketID = abi.decode(returnData, (uint));
 
-        Emitter(emitter).forwardEvent(ticketID); 
+        // Emitter(emitter).forwardEvent(ticketID); 
     }
 
 
 
     function _transfer(uint256 _amount, address _paymentToken) internal {
         address gelato = fxConfig.gelato;
-        console.log('gelato in _transfer(): ', gelato);
         if (_paymentToken == ETH) {
             (bool success, ) = gelato.call{value: _amount}("");
             require(success, "_transfer: ETH transfer failed");

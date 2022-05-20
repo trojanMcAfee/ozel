@@ -3,7 +3,7 @@ require('dotenv').config();
 
 
 module.exports = {
-  solidity: "0.8.9",
+  solidity: "0.8.14", //"0.8.9"
   networks: {
     hardhat: {
       forking: {

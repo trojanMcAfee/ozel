@@ -5,19 +5,23 @@ pragma solidity ^0.8.0;
 import './ozBeaconProxy.sol';
 import '../interfaces/IOps.sol';
 
-import "@openzeppelin/contracts/proxy/Proxy.sol";
-import "@openzeppelin/contracts/proxy/ERC1967/ERC1967Upgrade.sol";
+// import "@openzeppelin/contracts/proxy/Proxy.sol";
+// import "@openzeppelin/contracts/proxy/ERC1967/ERC1967Upgrade.sol";
 import '@openzeppelin/contracts/utils/Address.sol';
-import './PayMeFacetHop.sol';
+// import './PayMeFacetHop.sol';
 import './StorageBeacon.sol';
 
 import './ozUpgradeableBeacon.sol';
+
+import '@openzeppelin/contracts/proxy/ERC1967/ERC1967Proxy.sol';
+import "@openzeppelin/contracts/proxy/utils/Initializable.sol";
+
 
 import 'hardhat/console.sol';
 
 
 
-contract ProxyFactory {
+contract ProxyFactory is Initializable { 
  
     struct UserConfig {
         address user;
@@ -27,6 +31,13 @@ contract ProxyFactory {
 
     address ETH;
     address beacon;
+
+
+
+    function initialize(address eth_, address beacon_) external initializer {
+        ETH = eth_;
+        beacon = beacon_;
+    }
 
 
     function createNewProxy(UserConfig memory userDetails_) external {
@@ -60,8 +71,6 @@ contract ProxyFactory {
 
     function _startTask(address beaconProxy_) public { 
         address opsGel = _getStorageBeacon().getOpsGel();
-        console.log('opsGel in factory: ', opsGel);
-        console.log('eth in factory: ', ETH);
 
         (bytes32 id) = IOps(opsGel).createTaskNoPrepayment( 
             beaconProxy_,
