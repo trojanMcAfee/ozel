@@ -18,7 +18,7 @@ contract ozBeaconProxy is BeaconProxy {
     using Address for address;
 
     StorageBeacon.UserConfig userDetails;
-
+    StorageBeacon.FixedConfig fxConfig;
     
     constructor(
         address beacon_,
@@ -53,7 +53,7 @@ contract ozBeaconProxy is BeaconProxy {
              _getStorageBeacon().getVariableConfig();
 
         //first 4 bytes of initialize() on PayMeFacetHop
-        if (bytes4(msg.data) == 0xb4988fd0) {
+        if (bytes4(msg.data) == 0xda35a26f) {
             data = msg.data;
         } else {
             data = abi.encodeWithSignature(

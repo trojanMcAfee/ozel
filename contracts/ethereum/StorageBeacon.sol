@@ -23,10 +23,11 @@ contract StorageBeacon {
         address PYY;
         address emitter;
         address payable gelato;
+        address ETH; //new
         uint maxGas;
     }
 
-    struct VariableConfig {
+    struct VariableConfig { 
         uint maxSubmissionCost;
         uint gasPriceBid;
         uint autoRedeem;
@@ -42,6 +43,8 @@ contract StorageBeacon {
 
     uint private internalId;
 
+    address public beacon;
+
 
     constructor(
         FixedConfig memory fxConfig_,
@@ -53,6 +56,7 @@ contract StorageBeacon {
             PYY: fxConfig_.PYY,
             emitter: fxConfig_.emitter,
             gelato: payable(fxConfig_.gelato),
+            ETH: fxConfig_.ETH, //new
             maxGas: fxConfig_.maxGas
         });
 
@@ -64,9 +68,6 @@ contract StorageBeacon {
     }
 
 
-    function getOpsGel() external view returns(address) {
-        return fxConfig.ops;
-    }
 
     //State changing functions
     function issueUserID(UserConfig memory userDetails_) public returns(uint id) {
@@ -84,8 +85,16 @@ contract StorageBeacon {
         taskIDs[proxy_] = id_;
     }
 
+    function storeBeacon(address beacon_) external {
+        beacon = beacon_;
+    }
+
 
     //View functions
+    // function getOpsGel() external view returns(address) {
+    //     return fxConfig.ops;
+    // }
+
     function getUserById(uint userId_) external view returns(UserConfig memory) {
         return idToUserDetails[userId_];
     }

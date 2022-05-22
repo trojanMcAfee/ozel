@@ -23,24 +23,24 @@ import 'hardhat/console.sol';
 
 contract ProxyFactory is Initializable { 
  
-    struct UserConfig {
-        address user;
-        address userToken;
-        uint userSlippage; 
-    }
+    // struct UserConfig {
+    //     address user;
+    //     address userToken;
+    //     uint userSlippage; 
+    // }
 
-    address ETH;
+    // address ETH;
     address beacon;
 
 
 
-    function initialize(address eth_, address beacon_) external initializer {
-        ETH = eth_;
+    function initialize(address beacon_) external initializer {
+        // ETH = eth_;
         beacon = beacon_;
     }
 
 
-    function createNewProxy(UserConfig memory userDetails_) external {
+    function createNewProxy(StorageBeacon.UserConfig memory userDetails_) external {
         bytes memory idData = abi.encodeWithSignature( 
             'issueUserID((address,address,uint256))', 
             userDetails_
@@ -56,8 +56,8 @@ contract ProxyFactory is Initializable {
         );
 
         bytes memory createData = abi.encodeWithSignature(
-            'initialize(uint256,address,address)',
-            userId, beacon, ETH
+            'initialize(uint256,address)',
+            userId, beacon
         );
         (success, ) = address(newProxy).call(createData);
         require(success, 'ProxyFactory: failed');
@@ -76,7 +76,9 @@ contract ProxyFactory is Initializable {
     // *** GELATO PART ******
 
     function _startTask(address beaconProxy_) public { 
-        address opsGel = _getStorageBeacon().getOpsGel();
+        StorageBeacon.FixedConfig memory f = _getStorageBeacon().getFixedConfig(); 
+        address opsGel = f.ops;
+        address ETH = f.ETH;
 
         (bytes32 id) = IOps(opsGel).createTaskNoPrepayment( 
             beaconProxy_,

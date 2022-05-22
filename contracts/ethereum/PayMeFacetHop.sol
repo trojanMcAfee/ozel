@@ -25,24 +25,24 @@ import './ozUpgradeableBeacon.sol';
 
 contract PayMeFacetHop is Initializable {
 
-    struct UserConfig {
-        address user;
-        address userToken;
-        uint userSlippage; 
-    }
+    // struct UserConfig {
+    //     address user;
+    //     address userToken;
+    //     uint userSlippage; 
+    // }
 
-    struct VariableConfig {
-        uint maxSubmissionCost;
-        uint gasPriceBid;
-        uint autoRedeem;
-    }
+    // struct VariableConfig {
+    //     uint maxSubmissionCost;
+    //     uint gasPriceBid;
+    //     uint autoRedeem;
+    // }
 
 
     StorageBeacon.UserConfig userDetails;
     StorageBeacon.FixedConfig fxConfig;
 
-    address ETH;
-    address beacon;
+    // address ETH;
+    // address beacon; 
 
 
     modifier onlyOps() {
@@ -53,13 +53,13 @@ contract PayMeFacetHop is Initializable {
 
     function initialize(
         uint userId_, 
-        address beacon_,
-        address eth_
+        address beacon_
+        // address eth_
     ) external initializer {
         userDetails = _getStorageBeacon(beacon_).getUserById(userId_);         
         fxConfig = _getStorageBeacon(beacon_).getFixedConfig();
-        beacon = beacon_;
-        ETH = eth_;
+        // beacon = beacon_;
+        // ETH = eth_;
     }
 
 
@@ -69,13 +69,14 @@ contract PayMeFacetHop is Initializable {
 
 
     function sendToArb( 
-        VariableConfig memory varConfig_,
-        UserConfig memory userDetails_
-    ) external payable { //onlyOps
+        StorageBeacon.VariableConfig memory varConfig_,
+        StorageBeacon.UserConfig memory userDetails_
+    ) external payable onlyOps { //onlyOps
         address inbox = fxConfig.inbox;
         address PYY = fxConfig.PYY;
         address emitter = fxConfig.emitter;
         address opsGel = fxConfig.ops;
+        address ETH = fxConfig.ETH;
         uint maxGas = fxConfig.maxGas;
 
         uint maxSubmissionCost = varConfig_.maxSubmissionCost;
@@ -106,13 +107,15 @@ contract PayMeFacetHop is Initializable {
         require(success, 'PayMeFacetHop: retryable ticket failed');
         uint ticketID = abi.decode(returnData, (uint));
 
-        // Emitter(emitter).forwardEvent(ticketID); 
+        Emitter(emitter).forwardEvent(ticketID); 
     }
 
 
 
     function _transfer(uint256 _amount, address _paymentToken) internal {
         address gelato = fxConfig.gelato;
+        address ETH = fxConfig.ETH;
+
         if (_paymentToken == ETH) {
             (bool success, ) = gelato.call{value: _amount}("");
             require(success, "_transfer: ETH transfer failed");
