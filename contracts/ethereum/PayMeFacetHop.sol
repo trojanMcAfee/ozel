@@ -25,24 +25,8 @@ import './ozUpgradeableBeacon.sol';
 
 contract PayMeFacetHop is Initializable {
 
-    // struct UserConfig {
-    //     address user;
-    //     address userToken;
-    //     uint userSlippage; 
-    // }
-
-    // struct VariableConfig {
-    //     uint maxSubmissionCost;
-    //     uint gasPriceBid;
-    //     uint autoRedeem;
-    // }
-
-
     StorageBeacon.UserConfig userDetails;
     StorageBeacon.FixedConfig fxConfig;
-
-    // address ETH;
-    // address beacon; 
 
 
     modifier onlyOps() {
@@ -54,12 +38,9 @@ contract PayMeFacetHop is Initializable {
     function initialize(
         uint userId_, 
         address beacon_
-        // address eth_
     ) external initializer {
         userDetails = _getStorageBeacon(beacon_).getUserById(userId_);         
         fxConfig = _getStorageBeacon(beacon_).getFixedConfig();
-        // beacon = beacon_;
-        // ETH = eth_;
     }
 
 
@@ -71,7 +52,7 @@ contract PayMeFacetHop is Initializable {
     function sendToArb( 
         StorageBeacon.VariableConfig memory varConfig_,
         StorageBeacon.UserConfig memory userDetails_
-    ) external payable onlyOps { //onlyOps
+    ) external payable { //onlyOps
         address inbox = fxConfig.inbox;
         address PYY = fxConfig.PYY;
         address emitter = fxConfig.emitter;
@@ -107,7 +88,7 @@ contract PayMeFacetHop is Initializable {
         require(success, 'PayMeFacetHop: retryable ticket failed');
         uint ticketID = abi.decode(returnData, (uint));
 
-        Emitter(emitter).forwardEvent(ticketID); 
+        // Emitter(emitter).forwardEvent(ticketID); 
     }
 
 

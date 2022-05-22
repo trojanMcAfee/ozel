@@ -22,20 +22,11 @@ import 'hardhat/console.sol';
 
 
 contract ProxyFactory is Initializable { 
- 
-    // struct UserConfig {
-    //     address user;
-    //     address userToken;
-    //     uint userSlippage; 
-    // }
 
-    // address ETH;
     address beacon;
 
 
-
     function initialize(address beacon_) external initializer {
-        // ETH = eth_;
         beacon = beacon_;
     }
 

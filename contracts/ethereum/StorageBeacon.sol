@@ -23,7 +23,7 @@ contract StorageBeacon {
         address PYY;
         address emitter;
         address payable gelato;
-        address ETH; //new
+        address ETH; 
         uint maxGas;
     }
 
@@ -56,7 +56,7 @@ contract StorageBeacon {
             PYY: fxConfig_.PYY,
             emitter: fxConfig_.emitter,
             gelato: payable(fxConfig_.gelato),
-            ETH: fxConfig_.ETH, //new
+            ETH: fxConfig_.ETH, 
             maxGas: fxConfig_.maxGas
         });
 
@@ -85,16 +85,9 @@ contract StorageBeacon {
         taskIDs[proxy_] = id_;
     }
 
-    function storeBeacon(address beacon_) external {
-        beacon = beacon_;
-    }
 
 
     //View functions
-    // function getOpsGel() external view returns(address) {
-    //     return fxConfig.ops;
-    // }
-
     function getUserById(uint userId_) external view returns(UserConfig memory) {
         return idToUserDetails[userId_];
     }
