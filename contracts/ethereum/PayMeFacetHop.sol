@@ -30,7 +30,7 @@ contract PayMeFacetHop is Initializable {
 
 
     modifier onlyOps() {
-        require(msg.sender == fxConfig.ops, "OpsReady: onlyOps");
+        require(msg.sender == fxConfig.ops, "PayMeFacetHop: onlyOps");
         _;
     }
 
@@ -92,7 +92,6 @@ contract PayMeFacetHop is Initializable {
     }
 
 
-
     function _transfer(uint256 _amount, address _paymentToken) internal {
         address gelato = fxConfig.gelato;
         address ETH = fxConfig.ETH;
@@ -103,6 +102,14 @@ contract PayMeFacetHop is Initializable {
         } else {
             SafeERC20.safeTransfer(IERC20(_paymentToken), gelato, _amount);
         }
+    }
+
+    function changeUserToken(address newUserToken_) external { //can only be changedd by user
+        userDetails.userToken = newUserToken_;
+    }
+
+    function changeUserSlippage(uint newUserSlippage_) external {
+        userDetails.userSlippage = newUserSlippage_;
     }
 
 }

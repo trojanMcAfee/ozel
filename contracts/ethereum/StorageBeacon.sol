@@ -2,6 +2,7 @@
 pragma solidity ^0.8.0;
 
 
+import '@openzeppelin/contracts/access/Ownable.sol';
 import '../interfaces/IOps.sol';
 import '../interfaces/DelayedInbox.sol';
 import './PayMeFacetHop.sol';
@@ -9,7 +10,7 @@ import './PayMeFacetHop.sol';
 import 'hardhat/console.sol';
 
 
-contract StorageBeacon { 
+contract StorageBeacon is Ownable { 
 
     struct UserConfig {
         address user;
@@ -42,8 +43,6 @@ contract StorageBeacon {
     mapping(uint => UserConfig) public idToUserDetails;
 
     uint private internalId;
-
-    address public beacon;
 
 
     constructor(
@@ -83,6 +82,10 @@ contract StorageBeacon {
 
     function saveTaskId(address proxy_, bytes32 id_) external {
         taskIDs[proxy_] = id_;
+    }
+
+    function changeVariableConfig(VariableConfig memory newVarConfig_) external onlyOwner {
+        varConfig = newVarConfig_;
     }
 
 
