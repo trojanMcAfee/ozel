@@ -17,10 +17,7 @@ import './ozUpgradeableBeacon.sol';
 contract ozBeaconProxy is BeaconProxy { 
     using Address for address;
 
-    // StorageBeacon.FixedConfig fxConfig;
     StorageBeacon.UserConfig userDetails;
-
-    // address ETH = 0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE;
 
     
     constructor(

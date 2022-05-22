@@ -71,7 +71,7 @@ contract PayMeFacetHop is Initializable {
     function sendToArb( 
         VariableConfig memory varConfig_,
         UserConfig memory userDetails_
-    ) external payable onlyOps { //onlyOps
+    ) external payable { //onlyOps
         address inbox = fxConfig.inbox;
         address PYY = fxConfig.PYY;
         address emitter = fxConfig.emitter;
@@ -106,7 +106,7 @@ contract PayMeFacetHop is Initializable {
         require(success, 'PayMeFacetHop: retryable ticket failed');
         uint ticketID = abi.decode(returnData, (uint));
 
-        Emitter(emitter).forwardEvent(ticketID); 
+        // Emitter(emitter).forwardEvent(ticketID); 
     }
 
 
