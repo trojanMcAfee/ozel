@@ -51,10 +51,16 @@ contract ProxyFactory is Initializable {
         uint userId = abi.decode(returnData, (uint));
 
         ozBeaconProxy newProxy = new ozBeaconProxy(
-            userId, 
             beacon,
             new bytes(0)
         );
+
+        bytes memory createData = abi.encodeWithSignature(
+            'initialize(uint256,address,address)',
+            userId, beacon, ETH
+        );
+        (success, ) = address(newProxy).call(createData);
+        require(success, 'ProxyFactory: failed');
 
         _startTask(address(newProxy));
 

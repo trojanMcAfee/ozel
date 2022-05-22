@@ -6,7 +6,7 @@ import '@openzeppelin/contracts/proxy/ERC1967/ERC1967Proxy.sol';
 
 
 //ProxyFactory proxy
-contract ozERC1967Proxy is ERC1967Proxy { 
+contract ozERC1967Proxy is ERC1967Proxy { //delete this file
 
     // address ETH = 0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE;
     // address beacon;

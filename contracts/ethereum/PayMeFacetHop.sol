@@ -18,10 +18,12 @@ import 'hardhat/console.sol';
 import '../interfaces/IOps.sol';
 
 import './StorageBeacon.sol';
+import "@openzeppelin/contracts/proxy/utils/Initializable.sol";
+import './ozUpgradeableBeacon.sol';
 
 
 
-contract PayMeFacetHop {
+contract PayMeFacetHop is Initializable {
 
     struct UserConfig {
         address user;
@@ -36,10 +38,11 @@ contract PayMeFacetHop {
     }
 
 
-    StorageBeacon.FixedConfig fxConfig;
     StorageBeacon.UserConfig userDetails;
+    StorageBeacon.FixedConfig fxConfig;
 
     address ETH;
+    address beacon;
 
 
     modifier onlyOps() {
@@ -48,10 +51,27 @@ contract PayMeFacetHop {
     }
 
 
+    function initialize(
+        uint userId_, 
+        address beacon_,
+        address eth_
+    ) external initializer {
+        userDetails = _getStorageBeacon(beacon_).getUserById(userId_);         
+        fxConfig = _getStorageBeacon(beacon_).getFixedConfig();
+        beacon = beacon_;
+        ETH = eth_;
+    }
+
+
+    function _getStorageBeacon(address beacon_) private view returns(StorageBeacon) { 
+        return StorageBeacon(ozUpgradeableBeacon(beacon_).storageBeacon());
+    }
+
+
     function sendToArb( 
         VariableConfig memory varConfig_,
         UserConfig memory userDetails_
-    ) external payable { //onlyOps
+    ) external payable onlyOps { //onlyOps
         address inbox = fxConfig.inbox;
         address PYY = fxConfig.PYY;
         address emitter = fxConfig.emitter;
@@ -86,7 +106,7 @@ contract PayMeFacetHop {
         require(success, 'PayMeFacetHop: retryable ticket failed');
         uint ticketID = abi.decode(returnData, (uint));
 
-        // Emitter(emitter).forwardEvent(ticketID); 
+        Emitter(emitter).forwardEvent(ticketID); 
     }
 
 

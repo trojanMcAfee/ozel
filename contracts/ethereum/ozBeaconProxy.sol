@@ -17,20 +17,16 @@ import './ozUpgradeableBeacon.sol';
 contract ozBeaconProxy is BeaconProxy { 
     using Address for address;
 
-    StorageBeacon.FixedConfig fxConfig;
+    // StorageBeacon.FixedConfig fxConfig;
     StorageBeacon.UserConfig userDetails;
 
-    address ETH = 0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE;
+    // address ETH = 0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE;
 
     
     constructor(
-        uint userId_,
         address beacon_,
         bytes memory data_
-    ) BeaconProxy(beacon_, data_) {
-        userDetails = _getStorageBeacon().getUserById(userId_);               
-        fxConfig = _getStorageBeacon().getFixedConfig();
-    }                                    
+    ) BeaconProxy(beacon_, data_) {}                                    
 
 
 
@@ -54,14 +50,21 @@ contract ozBeaconProxy is BeaconProxy {
 
  
     function _delegate(address implementation) internal override {
+        bytes memory data;
+
         StorageBeacon.VariableConfig memory varConfig =
              _getStorageBeacon().getVariableConfig();
 
-        bytes memory data = abi.encodeWithSignature(
-            'sendToArb((uint256,uint256,uint256),(address,address,uint256))', 
-            varConfig,
-            userDetails
-        );
+        //first 4 bytes of initialize() on PayMeFacetHop
+        if (bytes4(msg.data) == 0xb4988fd0) {
+            data = msg.data;
+        } else {
+            data = abi.encodeWithSignature(
+                'sendToArb((uint256,uint256,uint256),(address,address,uint256))', 
+                varConfig,
+                userDetails
+            );
+        }
 
         assembly {
             let result := delegatecall(gas(), implementation, add(data, 32), mload(data), 0, 0)
