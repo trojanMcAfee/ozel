@@ -5,10 +5,7 @@ pragma solidity ^0.8.0;
 import './ozBeaconProxy.sol';
 import '../interfaces/IOps.sol';
 
-// import "@openzeppelin/contracts/proxy/Proxy.sol";
-// import "@openzeppelin/contracts/proxy/ERC1967/ERC1967Upgrade.sol";
 import '@openzeppelin/contracts/utils/Address.sol';
-// import './PayMeFacetHop.sol';
 import './StorageBeacon.sol';
 
 import './ozUpgradeableBeacon.sol';

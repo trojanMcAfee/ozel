@@ -5,17 +5,18 @@ pragma solidity ^0.8.0;
 
 import 'hardhat/console.sol';
 
-import '@openzeppelin/contracts/utils/Address.sol';
+// import '@openzeppelin/contracts/utils/Address.sol';
 import '@openzeppelin/contracts/proxy/beacon/BeaconProxy.sol';
 import '../interfaces/IOps.sol';
 import './StorageBeacon.sol';
 
 import './ozUpgradeableBeacon.sol';
+import "@openzeppelin/contracts/proxy/utils/Initializable.sol";
 
 
 
 contract ozBeaconProxy is BeaconProxy { 
-    using Address for address;
+    // using Address for address;
 
     StorageBeacon.UserConfig userDetails;
     StorageBeacon.FixedConfig fxConfig;
@@ -36,24 +37,23 @@ contract ozBeaconProxy is BeaconProxy {
     }
 
 
-    receive() external payable override {
-        // require(msg.data.length > 0, "BeaconProxy: Receive() can only take ETH"); //<------ try what happens if sends eth with calldata (security)
-    }
+    receive() external payable override {}
 
 
     function _getStorageBeacon() private view returns(StorageBeacon) {
         return StorageBeacon(ozUpgradeableBeacon(_beacon()).storageBeacon());
     }
 
+   
  
     function _delegate(address implementation) internal override {
-        bytes memory data;
+        bytes memory data; //only Ops can call this
 
         StorageBeacon.VariableConfig memory varConfig =
              _getStorageBeacon().getVariableConfig();
 
         //first 4 bytes of initialize() on PayMeFacetHop
-        if (bytes4(msg.data) == 0xda35a26f) {
+        if (bytes4(msg.data) == 0xda35a26f) { 
             data = msg.data;
         } else {
             data = abi.encodeWithSignature(
@@ -62,6 +62,7 @@ contract ozBeaconProxy is BeaconProxy {
                 userDetails
             );
         }
+
 
         assembly {
             let result := delegatecall(gas(), implementation, add(data, 32), mload(data), 0, 0)
@@ -77,6 +78,9 @@ contract ozBeaconProxy is BeaconProxy {
     }
 }
 
+//Do Solmate or OZ's auth roles to determine which contract can call what
+//Apply Address
+//Think about doing mutex (for reentrancy)
 
 
 

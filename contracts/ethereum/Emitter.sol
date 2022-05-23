@@ -6,7 +6,7 @@ contract Emitter {
 
     event showTicket(uint ticketID);
 
-    function forwardEvent(uint ticketID_) external {
+    function forwardEvent(uint ticketID_) external { //put a role
         emit showTicket(ticketID_);
     }
 }

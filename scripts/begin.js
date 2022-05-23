@@ -236,6 +236,7 @@ async function deployContract(contractName, signer, constrArgs) {
         case 'StorageBeacon':
         case 'ozUpgradeableBeacon':
         case 'ERC1967Proxy':
+        case 'RolesAuthority':
             ([ var1, var2 ] = constrArgs);
             contract = await Contract.deploy(var1, var2, ops);
             break;
@@ -250,7 +251,10 @@ async function deployContract(contractName, signer, constrArgs) {
     await contract.deployed();
     console.log(`${contractName} deployed to: `, contract.address);
 
-    return contract.address;
+    return [
+        contract.address,
+        contract
+    ];
 }
 
 
@@ -292,7 +296,7 @@ async function sendArb() { //mainnet
     const emitterAddr = '0xeD64c50c0412DC24B52aC432A3b723e16E18776B';
 
     //Deploys PayMe in mainnet
-    const paymeHopAddr = await deployContract('PayMeFacetHop', l1Signer);
+    const [paymeHopAddr] = await deployContract('PayMeFacetHop', l1Signer);
 
     //Deploys StorageBeacon
     const fxConfig = [
@@ -316,8 +320,7 @@ async function sendArb() { //mainnet
         varConfig
     ];
 
-    const storageBeaconAddr = await deployContract('StorageBeacon', l1Signer, constrArgs);
-    const storageBeacon = await hre.ethers.getContractAt('StorageBeacon', storageBeaconAddr);
+    const [storageBeaconAddr, storageBeacon] = await deployContract('StorageBeacon', l1Signer, constrArgs);
     
     //Deploys UpgradeableBeacon
     constrArgs = [
@@ -325,11 +328,10 @@ async function sendArb() { //mainnet
         storageBeaconAddr
     ];
 
-    const beaconAddr = await deployContract('ozUpgradeableBeacon', l1Signer, constrArgs); 
-    // const beaconAddr = '0xc778772aDe2a8568d87336Dbd516c2B47273582A';
+    const [beaconAddr, beacon] = await deployContract('ozUpgradeableBeacon', l1Signer, constrArgs); 
 
     //Deploys ProxyFactory
-    const proxyFactoryAddr = await deployContract('ProxyFactory', l1Signer);
+    const [proxyFactoryAddr] = await deployContract('ProxyFactory', l1Signer);
 
     //Deploys pyERC1967Proxy
     constrArgs = [
@@ -337,18 +339,26 @@ async function sendArb() { //mainnet
         '0x'
     ];
 
-    const ERC1967proxyAddr = await deployContract('ERC1967Proxy', l1Signer, constrArgs);
+    const [ERC1967proxyAddr] = await deployContract('ERC1967Proxy', l1Signer, constrArgs);
+    await sendTx(ERC1967proxyAddr, false, 'initialize', [beaconAddr]);
 
+    //Deploys Auth
     constrArgs = [
+        signerAddr,
         beaconAddr
-    ]; 
+    ];
 
-    await sendTx(ERC1967proxyAddr, false, 'initialize', constrArgs);
+    const [rolesAuthorityAddr] = await deployContract('RolesAuthority', l1Signer, constrArgs);
+    await beacon.setAuth(rolesAuthorityAddr);
+
+    //Set ERC1967Proxy to role 1
+    // await rolesAuthority.setUserRole(ERC1967proxyAddr, 1, true);
+    // await rolesAuthority.setRoleCapability(1, ERC1967proxyAddr, )
 
 
     //Creates 1st proxy
-    constrArgs = [userDetails];
-    await sendTx(ERC1967proxyAddr, false, 'createNewProxy', constrArgs);
+    // constrArgs = [userDetails];
+    await sendTx(ERC1967proxyAddr, false, 'createNewProxy', [userDetails]);
     const newProxyAddr = (await storageBeacon.getUserProxy(signerAddr)).toString(); 
     console.log('proxy 1: ', newProxyAddr);
 

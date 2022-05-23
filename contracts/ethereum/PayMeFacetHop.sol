@@ -12,18 +12,17 @@ import '../interfaces/IL1_ETH_Bridge.sol';
 import '../interfaces/DelayedInbox.sol';
 import './FakePYY.sol';
 import './Emitter.sol';
-
-import 'hardhat/console.sol'; 
-
 import '../interfaces/IOps.sol';
-
 import './StorageBeacon.sol';
 import "@openzeppelin/contracts/proxy/utils/Initializable.sol";
 import './ozUpgradeableBeacon.sol';
 
+import '@rari-capital/solmate/src/auth/authorities/RolesAuthority.sol';
+
+import 'hardhat/console.sol'; 
 
 
-contract PayMeFacetHop is Initializable {
+contract PayMeFacetHop is Initializable { 
 
     StorageBeacon.UserConfig userDetails;
     StorageBeacon.FixedConfig fxConfig;
@@ -31,6 +30,11 @@ contract PayMeFacetHop is Initializable {
 
     modifier onlyOps() {
         require(msg.sender == fxConfig.ops, "PayMeFacetHop: onlyOps");
+        _;
+    }
+
+    modifier onlyUser() {
+        require(msg.sender == userDetails.user, 'PayMeFacetHop: Not authorized');
         _;
     }
 
@@ -92,7 +96,7 @@ contract PayMeFacetHop is Initializable {
     }
 
 
-    function _transfer(uint256 _amount, address _paymentToken) internal {
+    function _transfer(uint256 _amount, address _paymentToken) private {
         address gelato = fxConfig.gelato;
         address ETH = fxConfig.ETH;
 
@@ -104,11 +108,11 @@ contract PayMeFacetHop is Initializable {
         }
     }
 
-    function changeUserToken(address newUserToken_) external { //can only be changedd by user
+    function changeUserToken(address newUserToken_) external onlyUser {
         userDetails.userToken = newUserToken_;
     }
 
-    function changeUserSlippage(uint newUserSlippage_) external {
+    function changeUserSlippage(uint newUserSlippage_) external onlyUser {
         userDetails.userSlippage = newUserSlippage_;
     }
 
