@@ -52,7 +52,7 @@ contract ozBeaconProxy is BeaconProxy {
 
 
  
-    function _delegate(address implementation) internal override { //onlyOps
+    function _delegate(address implementation) internal override { //test if needs onlyOps modifier
         bytes memory data; 
 
         StorageBeacon.VariableConfig memory varConfig =

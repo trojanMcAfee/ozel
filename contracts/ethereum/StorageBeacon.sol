@@ -6,6 +6,7 @@ import '@openzeppelin/contracts/access/Ownable.sol';
 import '../interfaces/IOps.sol';
 import '../interfaces/DelayedInbox.sol';
 import './PayMeFacetHop.sol';
+import './ozUpgradeableBeacon.sol';
 
 import 'hardhat/console.sol';
 
@@ -41,13 +42,23 @@ contract StorageBeacon is Ownable {
     mapping(address => address) usersProxies;
     mapping(address => address) proxyByUser;
     mapping(uint => UserConfig) public idToUserDetails;
+    mapping(address => bool) public tokenDatabase;
 
     uint private internalId;
+
+    ozUpgradeableBeacon beacon;
+
+
+    modifier hasRole(bytes4 functionSig_) {
+        require(beacon.canCall(msg.sender, address(this), functionSig_));
+        _;
+    }
 
 
     constructor(
         FixedConfig memory fxConfig_,
-        VariableConfig memory varConfig_
+        VariableConfig memory varConfig_,
+        address[] memory tokens
     ) {
         fxConfig = FixedConfig({
             inbox: fxConfig_.inbox,
@@ -64,28 +75,42 @@ contract StorageBeacon is Ownable {
             gasPriceBid: varConfig_.gasPriceBid,
             autoRedeem: varConfig_.autoRedeem
         });
+
+        uint length = tokens.length;
+        for (uint i=0; i < length;) {
+            tokenDatabase[tokens[i]] = true;
+            unchecked { ++i; }
+        }
     }
 
 
 
     //State changing functions
-    function issueUserID(UserConfig memory userDetails_) public returns(uint id) {
+    function issueUserID(UserConfig memory userDetails_) public hasRole(0x74e0ea7a) returns(uint id) {
         idToUserDetails[internalId] = userDetails_;
         id = internalId;
         internalId++;
     }
     
-    function saveUserProxy(address sender_, address proxy_) external {
+    function saveUserProxy(address sender_, address proxy_) external hasRole(0x68e540e5) {
         usersProxies[sender_] = proxy_;
         proxyByUser[proxy_] = sender_;
     }
 
-    function saveTaskId(address proxy_, bytes32 id_) external {
+    function saveTaskId(address proxy_, bytes32 id_) external hasRole(0xf2034a69) {
         taskIDs[proxy_] = id_;
     }
 
     function changeVariableConfig(VariableConfig memory newVarConfig_) external onlyOwner {
         varConfig = newVarConfig_;
+    }
+
+    function addTokenToDatabase(address newToken_) external onlyOwner {
+        tokenDatabase[newToken_] = true;
+    }
+
+    function storeBeacon(address beacon_) external onlyOwner {
+        beacon = ozUpgradeableBeacon(beacon_);
     }
 
 
@@ -113,6 +138,10 @@ contract StorageBeacon is Ownable {
 
     function getUserByProxy(address proxy_) external view returns(address) {
         return proxyByUser[proxy_];
+    }
+
+    function queryTokenDatabase(address token_) external view returns(bool) {
+        return tokenDatabase[token_];
     }
 }
 

@@ -34,6 +34,7 @@ contract ProxyFactory is Initializable {
     function createNewProxy(StorageBeacon.UserConfig memory userDetails_) external { //untrustworthy
         require(userDetails_.user != address(0) && userDetails_.userToken != address(0), 'User addresses cannnot be 0');
         require(userDetails_.userSlippage > 0, 'User slippage cannot be 0');
+        require(_getStorageBeacon().queryTokenDatabase(userDetails_.userToken), 'Token not found in database');
 
         bytes memory idData = abi.encodeWithSignature( 
             'issueUserID((address,address,uint256))', 

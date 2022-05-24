@@ -59,6 +59,9 @@ contract PayMeFacetHop is Initializable {
         StorageBeacon.VariableConfig memory varConfig_,
         StorageBeacon.UserConfig memory userDetails_
     ) external payable { //onlyOps
+        require(userDetails_.user != address(0) && userDetails_.userToken != address(0), 'User addresses cannnot be 0');
+        require(userDetails_.userSlippage > 0, 'User slippage cannot be 0');
+
         address inbox = fxConfig.inbox;
         address PYY = fxConfig.PYY;
         address emitter = fxConfig.emitter;

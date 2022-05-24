@@ -233,7 +233,6 @@ async function deployContract(contractName, signer, constrArgs) {
         case 'UpgradeableBeacon':
             contract = await Contract.deploy(constrArgs, ops);
             break;
-        case 'StorageBeacon':
         case 'ozUpgradeableBeacon':
         case 'ERC1967Proxy':
         case 'RolesAuthority':
@@ -241,6 +240,7 @@ async function deployContract(contractName, signer, constrArgs) {
             contract = await Contract.deploy(var1, var2, ops);
             break;
         case 'ozERC1967Proxy':
+        case 'StorageBeacon':
             ([ var1, var2, var3 ] = constrArgs);
             contract = await Contract.deploy(var1, var2, var3, ops);
             break;
@@ -315,9 +315,14 @@ async function sendArb() { //mainnet
         autoRedeem
     ];
 
+    const tokensDatabase = [
+        usdtAddrArb
+    ];
+
     constrArgs = [
         fxConfig,
-        varConfig
+        varConfig,
+        tokensDatabase
     ];
 
     const [storageBeaconAddr, storageBeacon] = await deployContract('StorageBeacon', l1Signer, constrArgs);
@@ -329,6 +334,7 @@ async function sendArb() { //mainnet
     ];
 
     const [beaconAddr, beacon] = await deployContract('ozUpgradeableBeacon', l1Signer, constrArgs); 
+    await storageBeacon.storeBeacon(beaconAddr);
 
     //Deploys ProxyFactory
     const [proxyFactoryAddr] = await deployContract('ProxyFactory', l1Signer);
@@ -348,13 +354,15 @@ async function sendArb() { //mainnet
         beaconAddr
     ];
 
-    const [rolesAuthorityAddr] = await deployContract('RolesAuthority', l1Signer, constrArgs);
+    const [rolesAuthorityAddr, rolesAuthority] = await deployContract('RolesAuthority', l1Signer, constrArgs);
     await beacon.setAuth(rolesAuthorityAddr);
 
-    //Set ERC1967Proxy to role 1
-    // await rolesAuthority.setUserRole(ERC1967proxyAddr, 1, true);
-    // await rolesAuthority.setRoleCapability(1, ERC1967proxyAddr, )
+    //Set ERC1967Proxy to role 1 and gives it authority to call the functions in StorageBeacon
+    await rolesAuthority.setUserRole(ERC1967proxyAddr, 1, true);
 
+    await rolesAuthority.setRoleCapability(1, storageBeaconAddr, '0x74e0ea7a', true); //issueUserID(UserConfig memory userDetails_)
+    await rolesAuthority.setRoleCapability(1, storageBeaconAddr, '0x68e540e5', true); //saveUserProxy(address sender_, address proxy_)
+    await rolesAuthority.setRoleCapability(1, storageBeaconAddr, '0xf2034a69', true); //saveTaskId(address proxy_, bytes32 id_)
 
     //Creates 1st proxy
     // constrArgs = [userDetails];
