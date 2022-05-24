@@ -42,7 +42,7 @@ contract StorageBeacon is Ownable {
     mapping(address => bool) public tokenDatabase;
     mapping(uint => UserConfig) public idToUserDetails;
     mapping(address => address) proxyToUser; 
-    mapping(address => address) userToProxy; 
+    mapping(address => address) userToProxy;
 
     uint private internalId;
 
@@ -86,7 +86,7 @@ contract StorageBeacon is Ownable {
 
 
     //State changing functions
-    function issueUserID(UserConfig memory userDetails_) public hasRole(0x74e0ea7a) returns(uint id) {
+    function issueUserID(UserConfig memory userDetails_) external hasRole(0x74e0ea7a) returns(uint id) {
         idToUserDetails[internalId] = userDetails_;
         id = internalId;
         internalId++;

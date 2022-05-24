@@ -5,7 +5,6 @@ pragma solidity ^0.8.0;
 
 import 'hardhat/console.sol';
 
-// import '@openzeppelin/contracts/utils/Address.sol';
 import '@openzeppelin/contracts/proxy/beacon/BeaconProxy.sol';
 import '../interfaces/IOps.sol';
 import './StorageBeacon.sol';
@@ -84,9 +83,7 @@ contract ozBeaconProxy is BeaconProxy {
     }
 }
 
-//Do Solmate or OZ's auth roles to determine which contract can call what
-//Apply Address
-//Think about doing mutex (for reentrancy)
+
 
 
 

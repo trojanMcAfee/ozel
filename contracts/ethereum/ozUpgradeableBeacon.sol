@@ -12,6 +12,7 @@ contract ozUpgradeableBeacon is UpgradeableBeacon {
     RolesAuthority auth;
 
     event UpgradedStorageBeacon(address indexed newStorageBeacon);
+    event NewAuthority(address indexed newAuthority);
 
 
     constructor(address impl_, address storageBeacon_) UpgradeableBeacon(impl_) {
@@ -19,7 +20,7 @@ contract ozUpgradeableBeacon is UpgradeableBeacon {
     }
 
 
-    function storageBeacon() public view returns(address) {
+    function storageBeacon() external view returns(address) {
         return _storageBeacon;
     }
 
@@ -31,8 +32,9 @@ contract ozUpgradeableBeacon is UpgradeableBeacon {
 
     //AUTH part
 
-    function setAuth(address auth_) external {
+    function setAuth(address auth_) external onlyOwner {
         auth = RolesAuthority(auth_);
+        emit NewAuthority(auth_);
     }
 
     function canCall( 
@@ -46,4 +48,3 @@ contract ozUpgradeableBeacon is UpgradeableBeacon {
 
 }
 
-//check if auth is needed here

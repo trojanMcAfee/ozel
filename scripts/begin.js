@@ -53,7 +53,8 @@ async function sendTx(receiver, isAmount, method, args) {
         createNewProxy: 'function createNewProxy(tuple(address user, address userToken, uint256 userSlippage) userDetails_)',
         getTaskID: 'function getTaskID(address user_) returns (bytes32)',
         sendToArb: 'function sendToArb()',
-        initialize: 'function initialize(address beacon_)' 
+        initialize: 'function initialize(address beacon_)',
+        _setBeacon: 'function _setBeacon(address beacon, bytes memory data)' 
     };
 
     if (isAmount) txDetails.value = ethers.utils.parseEther('0.01');
@@ -234,7 +235,7 @@ async function deployContract(contractName, signer, constrArgs) {
             contract = await Contract.deploy(constrArgs, ops);
             break;
         case 'ozUpgradeableBeacon':
-        case 'ERC1967Proxy':
+        case 'ozERC1967Proxy':
         case 'RolesAuthority':
             ([ var1, var2 ] = constrArgs);
             contract = await Contract.deploy(var1, var2, ops);
@@ -292,7 +293,6 @@ async function sendArb() { //mainnet
 
 
     //Deploys Emitter
-    // const emitterAddr = await deployContract('Emitter', l1Signer);
     const emitterAddr = '0xeD64c50c0412DC24B52aC432A3b723e16E18776B';
 
     //Deploys PayMe in mainnet
@@ -345,8 +345,8 @@ async function sendArb() { //mainnet
         '0x'
     ];
 
-    const [ERC1967proxyAddr] = await deployContract('ERC1967Proxy', l1Signer, constrArgs);
-    await sendTx(ERC1967proxyAddr, false, 'initialize', [beaconAddr]);
+    const [ozERC1967proxyAddr] = await deployContract('ozERC1967Proxy', l1Signer, constrArgs);
+    await sendTx(ozERC1967proxyAddr, false, 'initialize', [beaconAddr]);
 
     //Deploys Auth
     constrArgs = [
@@ -358,18 +358,16 @@ async function sendArb() { //mainnet
     await beacon.setAuth(rolesAuthorityAddr);
 
     //Set ERC1967Proxy to role 1 and gives it authority to call the functions in StorageBeacon
-    await rolesAuthority.setUserRole(ERC1967proxyAddr, 1, true);
+    await rolesAuthority.setUserRole(ozERC1967proxyAddr, 1, true);
 
     await rolesAuthority.setRoleCapability(1, storageBeaconAddr, '0x74e0ea7a', true); //issueUserID(UserConfig memory userDetails_)
     await rolesAuthority.setRoleCapability(1, storageBeaconAddr, '0x68e540e5', true); //saveUserProxy(address sender_, address proxy_)
     await rolesAuthority.setRoleCapability(1, storageBeaconAddr, '0xf2034a69', true); //saveTaskId(address proxy_, bytes32 id_)
 
     //Creates 1st proxy
-    // constrArgs = [userDetails];
-    await sendTx(ERC1967proxyAddr, false, 'createNewProxy', [userDetails]);
+    await sendTx(ozERC1967proxyAddr, false, 'createNewProxy', [userDetails]);
     const newProxyAddr = (await storageBeacon.getUserProxy(signerAddr)).toString(); 
     console.log('proxy 1: ', newProxyAddr);
-
 
     //Gets user's task id
     const taskId = await storageBeacon.getTaskID(signerAddr);

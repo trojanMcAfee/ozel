@@ -4,23 +4,20 @@ pragma solidity ^0.8.0;
 
 import './ozBeaconProxy.sol';
 import '../interfaces/IOps.sol';
-
 import '@openzeppelin/contracts/utils/Address.sol';
 import './StorageBeacon.sol';
-
 import './ozUpgradeableBeacon.sol';
-
 import '@openzeppelin/contracts/proxy/ERC1967/ERC1967Proxy.sol';
 import "@openzeppelin/contracts/proxy/utils/Initializable.sol";
 
+import '@rari-capital/solmate/src/utils/ReentrancyGuard.sol';
 
 import 'hardhat/console.sol';
 
 
-error Unauthorized();
 
 
-contract ProxyFactory is Initializable { 
+contract ProxyFactory is ReentrancyGuard, Initializable { 
     using Address for address;
 
     address beacon;
@@ -31,7 +28,7 @@ contract ProxyFactory is Initializable {
     }
 
 
-    function createNewProxy(StorageBeacon.UserConfig memory userDetails_) external { //untrustworthy
+    function createNewProxy(StorageBeacon.UserConfig memory userDetails_) external nonReentrant { //untrustworthy
         require(userDetails_.user != address(0) && userDetails_.userToken != address(0), 'User addresses cannnot be 0');
         require(userDetails_.userSlippage > 0, 'User slippage cannot be 0');
         require(_getStorageBeacon().queryTokenDatabase(userDetails_.userToken), 'Token not found in database');
@@ -40,7 +37,6 @@ contract ProxyFactory is Initializable {
             'issueUserID((address,address,uint256))', 
             userDetails_
         ); 
-
         bytes memory returnData = 
             address(_getStorageBeacon()).functionCall(idData, 'ProxyFactory: createNewProxy failed'); 
         uint userId = abi.decode(returnData, (uint));
@@ -54,7 +50,6 @@ contract ProxyFactory is Initializable {
             'initialize(uint256,address)',
             userId, beacon
         );
-
         address(newProxy).functionCall(createData, 'ProxyFactory: init failed');
 
         _startTask(address(newProxy));
