@@ -46,4 +46,4 @@ contract ozUpgradeableBeacon is UpgradeableBeacon {
 
 }
 
-//add authority to erc1967Proxy
+//check if auth is needed here
