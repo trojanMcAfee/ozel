@@ -16,11 +16,17 @@ import "@openzeppelin/contracts/proxy/utils/Initializable.sol";
 
 
 contract ozBeaconProxy is BeaconProxy { 
-    // using Address for address;
 
     StorageBeacon.UserConfig userDetails;
     StorageBeacon.FixedConfig fxConfig;
+
+
+    modifier onlyOps() {
+        require(msg.sender == fxConfig.ops, "ozBeaconProxy: onlyOps");
+        _;
+    }
     
+
     constructor(
         address beacon_,
         bytes memory data_
@@ -44,10 +50,10 @@ contract ozBeaconProxy is BeaconProxy {
         return StorageBeacon(ozUpgradeableBeacon(_beacon()).storageBeacon());
     }
 
-   
+
  
-    function _delegate(address implementation) internal override {
-        bytes memory data; //only Ops can call this
+    function _delegate(address implementation) internal override { //onlyOps
+        bytes memory data; 
 
         StorageBeacon.VariableConfig memory varConfig =
              _getStorageBeacon().getVariableConfig();

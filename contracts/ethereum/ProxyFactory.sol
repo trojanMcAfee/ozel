@@ -17,8 +17,11 @@ import "@openzeppelin/contracts/proxy/utils/Initializable.sol";
 import 'hardhat/console.sol';
 
 
+error Unauthorized();
+
 
 contract ProxyFactory is Initializable { 
+    using Address for address;
 
     address beacon;
 
@@ -28,14 +31,17 @@ contract ProxyFactory is Initializable {
     }
 
 
-    function createNewProxy(StorageBeacon.UserConfig memory userDetails_) external {
+    function createNewProxy(StorageBeacon.UserConfig memory userDetails_) external { //untrustworthy
+        require(userDetails_.user != address(0) && userDetails_.userToken != address(0), 'User addresses cannnot be 0');
+        require(userDetails_.userSlippage > 0, 'User slippage cannot be 0');
+
         bytes memory idData = abi.encodeWithSignature( 
             'issueUserID((address,address,uint256))', 
             userDetails_
         ); 
 
-        (bool success, bytes memory returnData) = address(_getStorageBeacon()).call(idData);
-        require(success, 'ProxyFactory: createNewProxy() failed');
+        bytes memory returnData = 
+            address(_getStorageBeacon()).functionCall(idData, 'ProxyFactory: createNewProxy failed'); 
         uint userId = abi.decode(returnData, (uint));
 
         ozBeaconProxy newProxy = new ozBeaconProxy(
@@ -47,8 +53,8 @@ contract ProxyFactory is Initializable {
             'initialize(uint256,address)',
             userId, beacon
         );
-        (success, ) = address(newProxy).call(createData);
-        require(success, 'ProxyFactory: failed');
+
+        address(newProxy).functionCall(createData, 'ProxyFactory: init failed');
 
         _startTask(address(newProxy));
 
@@ -63,7 +69,7 @@ contract ProxyFactory is Initializable {
 
     // *** GELATO PART ******
 
-    function _startTask(address beaconProxy_) public { 
+    function _startTask(address beaconProxy_) private { 
         StorageBeacon.FixedConfig memory f = _getStorageBeacon().getFixedConfig(); 
         address opsGel = f.ops;
         address ETH = f.ETH;

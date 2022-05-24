@@ -8,13 +8,14 @@ import {
 } from "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
 import "@openzeppelin/contracts/proxy/beacon/UpgradeableBeacon.sol";
 import "@openzeppelin/contracts/proxy/beacon/BeaconProxy.sol";
+import "@openzeppelin/contracts/proxy/utils/Initializable.sol";
+import '@openzeppelin/contracts/utils/Address.sol';
 import '../interfaces/IL1_ETH_Bridge.sol';
 import '../interfaces/DelayedInbox.sol';
 import './FakePYY.sol';
 import './Emitter.sol';
 import '../interfaces/IOps.sol';
 import './StorageBeacon.sol';
-import "@openzeppelin/contracts/proxy/utils/Initializable.sol";
 import './ozUpgradeableBeacon.sol';
 
 import '@rari-capital/solmate/src/auth/authorities/RolesAuthority.sol';
@@ -23,6 +24,7 @@ import 'hardhat/console.sol';
 
 
 contract PayMeFacetHop is Initializable { 
+    using Address for address;
 
     StorageBeacon.UserConfig userDetails;
     StorageBeacon.FixedConfig fxConfig;
@@ -68,8 +70,6 @@ contract PayMeFacetHop is Initializable {
         uint gasPriceBid = varConfig_.gasPriceBid;
         uint autoRedeem = varConfig_.autoRedeem;
 
-        (uint fee, ) = IOps(opsGel).getFeeDetails();
-        _transfer(fee, ETH);
 
         bytes memory swapData = abi.encodeWithSelector(
             FakePYY(payable(PYY)).exchangeToUserToken.selector, 
@@ -88,11 +88,15 @@ contract PayMeFacetHop is Initializable {
             swapData
         );
 
-        (bool success, bytes memory returnData) = inbox.call{value: address(this).balance}(ticketData);
-        require(success, 'PayMeFacetHop: retryable ticket failed');
-        uint ticketID = abi.decode(returnData, (uint));
+        bytes memory returnData = 
+            inbox.functionCallWithValue(ticketData, address(this).balance);
 
+        uint ticketID = abi.decode(returnData, (uint));
+        console.log('ticketID: ', ticketID);
         // Emitter(emitter).forwardEvent(ticketID); 
+
+        (uint fee, ) = IOps(opsGel).getFeeDetails();
+        _transfer(fee, ETH);
     }
 
 
