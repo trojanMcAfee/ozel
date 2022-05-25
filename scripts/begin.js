@@ -33,7 +33,10 @@ const {
     wethAddr,
     defaultSlippage,
     gelatoAddr,
-    ETH
+    ETH,
+    swapRouterUniAddr,
+    poolFeeUni,
+    nullAddr
  } = require('./state-vars.js');
 
 
@@ -228,7 +231,7 @@ async function deployContract(contractName, signer, constrArgs) {
     };
 
     let contract;
-    let var1, var2, var3;
+    let var1, var2, var3, var4;
 
     switch(contractName) {
         case 'UpgradeableBeacon':
@@ -241,9 +244,12 @@ async function deployContract(contractName, signer, constrArgs) {
             contract = await Contract.deploy(var1, var2, ops);
             break;
         case 'ozERC1967Proxy':
-        case 'StorageBeacon':
             ([ var1, var2, var3 ] = constrArgs);
             contract = await Contract.deploy(var1, var2, var3, ops);
+            break;
+        case 'StorageBeacon':
+            ([ var1, var2, var3, var4 ] = constrArgs);
+            contract = await Contract.deploy(var1, var2, var3, var4, ops);
             break;
         default:
             contract = await Contract.deploy(ops);
@@ -315,6 +321,14 @@ async function sendArb() { //mainnet
         autoRedeem
     ];
 
+    const eMode = [
+        swapRouterUniAddr,
+        poolFeeUni,
+        wethAddr,
+        usdcAddr
+    ];
+
+
     const tokensDatabase = [
         usdtAddrArb
     ];
@@ -322,8 +336,9 @@ async function sendArb() { //mainnet
     constrArgs = [
         fxConfig,
         varConfig,
+        eMode,
         tokensDatabase
-    ];
+    ]; 
 
     const [storageBeaconAddr, storageBeacon] = await deployContract('StorageBeacon', l1Signer, constrArgs);
     
@@ -412,6 +427,10 @@ async function sendArb() { //mainnet
     console.log('post eth balance on proxy: ', ethBalance.toString());
 
 
+    //for eMode
+    const USDT = await hre.ethers.getContractAt('IERC20', usdcAddr);
+    const bal = await USDT.balanceOf(signerAddr);
+    console.log('USDC user balance: ', bal.toString());
 
 }
 

@@ -17,17 +17,24 @@ import './Emitter.sol';
 import '../interfaces/IOps.sol';
 import './StorageBeacon.sol';
 import './ozUpgradeableBeacon.sol';
+import '../libraries/FixedPointMathLib.sol';
 
 import '@rari-capital/solmate/src/auth/authorities/RolesAuthority.sol';
+
+import '@uniswap/v3-periphery/contracts/interfaces/ISwapRouter.sol';
+import '@uniswap/v3-periphery/contracts/libraries/TransferHelper.sol';
 
 import 'hardhat/console.sol'; 
 
 
 contract PayMeFacetHop is Initializable { 
     using Address for address;
+    using FixedPointMathLib for uint;
 
     StorageBeacon.UserConfig userDetails;
     StorageBeacon.FixedConfig fxConfig;
+
+    address beacon;
 
 
     modifier onlyOps() {
@@ -40,27 +47,36 @@ contract PayMeFacetHop is Initializable {
         _;
     }
 
-
     function initialize(
         uint userId_, 
         address beacon_
     ) external initializer {
         userDetails = _getStorageBeacon(beacon_).getUserById(userId_);         
         fxConfig = _getStorageBeacon(beacon_).getFixedConfig();
+        beacon = beacon_;
     }
+
+
 
 
     function _getStorageBeacon(address beacon_) private view returns(StorageBeacon) { 
         return StorageBeacon(ozUpgradeableBeacon(beacon_).storageBeacon());
     }
 
+    function calculateSlippage(
+        uint amount_, 
+        uint basisPoint_
+    ) public pure returns(uint minAmountOut) {
+        minAmountOut = amount_ - amount_.mulDivDown(basisPoint_, 10000);
+    }
+
 
     function sendToArb( 
         StorageBeacon.VariableConfig memory varConfig_,
         StorageBeacon.UserConfig memory userDetails_
-    ) external payable { //onlyOps
-        require(userDetails_.user != address(0) && userDetails_.userToken != address(0), 'User addresses cannnot be 0');
-        require(userDetails_.userSlippage > 0, 'User slippage cannot be 0');
+    ) external payable { //onlyOps ---- add reentracyGuard here later (?)
+        require(userDetails_.user != address(0) && userDetails_.userToken != address(0), 'PayMeFacet: User addresses cannnot be 0');
+        require(userDetails_.userSlippage > 0, 'PayMeFacet: User slippage cannot be 0');
 
         address inbox = fxConfig.inbox;
         address PYY = fxConfig.PYY;
@@ -72,6 +88,8 @@ contract PayMeFacetHop is Initializable {
         uint maxSubmissionCost = varConfig_.maxSubmissionCost;
         uint gasPriceBid = varConfig_.gasPriceBid;
         uint autoRedeem = varConfig_.autoRedeem;
+
+        bool isEmergency;
 
 
         bytes memory swapData = abi.encodeWithSelector(
@@ -91,16 +109,95 @@ contract PayMeFacetHop is Initializable {
             swapData
         );
 
-        bytes memory returnData = 
-            inbox.functionCallWithValue(ticketData, address(this).balance);
 
-        uint ticketID = abi.decode(returnData, (uint));
-        console.log('ticketID: ', ticketID);
-        // Emitter(emitter).forwardEvent(ticketID); 
+        //  try bytes memory returnData = inbox.functionCallWithValue(ticketData, address(this).balance) {
+             
+        //  }
+
+        (bool success, bytes memory returnData) = inbox.call{value: address(this).balance}(''); //ticketData
+        if (!success) {
+            console.log('on second attempt');
+            (success, returnData) = inbox.call{value: address(this).balance}(''); //ticketData
+            if (!success) {
+                console.log('on third attempt');
+
+                isEmergency =_runEmergencyMode();
+
+                // StorageBeacon.EmergencyMode memory eMode = _getStorageBeacon(beacon).getEmergencyMode();
+                // address WETH = eMode.tokenIn;
+                // address USDC = eMode.tokenOut;
+                // uint24 poolFee = eMode.poolFee;
+                // console.log('WETH: ', WETH);
+
+                // uint amountOutMinimum = calculateSlippage(address(this).balance, userDetails.userSlippage);
+
+                // console.log(1);
+                // ISwapRouter.ExactInputSingleParams memory params =
+                //     ISwapRouter.ExactInputSingleParams({
+                //         tokenIn: WETH,
+                //         tokenOut: USDC,
+                //         fee: eMode.poolFee,
+                //         recipient: userDetails.user,
+                //         deadline: block.timestamp,
+                //         amountIn: address(this).balance,
+                //         amountOutMinimum: 0,
+                //         sqrtPriceLimitX96: 0
+                //     });
+
+
+                // uint amountOut = eMode.swapRouter.exactInputSingle{value: address(this).balance}(params);
+                // console.log('amountOut: ****', amountOut);
+                // _transfer(fee, ETH);
+
+                // return;
+
+            }
+        }
+
+        if (!isEmergency) {
+            uint ticketID = abi.decode(returnData, (uint));
+            console.log('ticketID: ', ticketID);
+            // Emitter(emitter).forwardEvent(ticketID); 
+        }
 
         (uint fee, ) = IOps(opsGel).getFeeDetails();
         _transfer(fee, ETH);
     }
+
+
+
+    function _runEmergencyMode() private returns(bool) {
+        StorageBeacon.EmergencyMode memory eMode = _getStorageBeacon(beacon).getEmergencyMode();
+        address WETH = eMode.tokenIn;
+        address USDC = eMode.tokenOut;
+        uint24 poolFee = eMode.poolFee;
+        console.log('WETH: ', WETH);
+
+        uint amountOutMinimum = calculateSlippage(address(this).balance, userDetails.userSlippage);
+
+        console.log(1);
+        ISwapRouter.ExactInputSingleParams memory params =
+            ISwapRouter.ExactInputSingleParams({
+                tokenIn: WETH,
+                tokenOut: USDC,
+                fee: poolFee,
+                recipient: userDetails.user,
+                deadline: block.timestamp,
+                amountIn: address(this).balance,
+                amountOutMinimum: 0,
+                sqrtPriceLimitX96: 0
+            });
+
+
+        uint amountOut = eMode.swapRouter.exactInputSingle{value: address(this).balance}(params);
+        console.log('amountOut: ****', amountOut);
+
+        return amountOut > 0;
+        // _transfer(fee_, eth_);
+
+    }
+
+
 
 
     function _transfer(uint256 _amount, address _paymentToken) private {

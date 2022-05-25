@@ -8,6 +8,8 @@ import '../interfaces/DelayedInbox.sol';
 import './PayMeFacetHop.sol';
 import './ozUpgradeableBeacon.sol';
 
+import '@uniswap/v3-periphery/contracts/interfaces/ISwapRouter.sol';
+
 import 'hardhat/console.sol';
 
 
@@ -35,8 +37,16 @@ contract StorageBeacon is Ownable {
         uint autoRedeem;
     }
 
+    struct EmergencyMode {
+        ISwapRouter swapRouter;
+        uint24 poolFee;
+        address tokenIn;
+        address tokenOut; 
+    }
+
     FixedConfig fxConfig;
     VariableConfig varConfig;
+    EmergencyMode eMode;
 
     mapping(address => bytes32) public taskIDs;
     mapping(address => bool) public tokenDatabase;
@@ -58,6 +68,7 @@ contract StorageBeacon is Ownable {
     constructor(
         FixedConfig memory fxConfig_,
         VariableConfig memory varConfig_,
+        EmergencyMode memory eMode_,
         address[] memory tokens
     ) {
         fxConfig = FixedConfig({
@@ -76,6 +87,13 @@ contract StorageBeacon is Ownable {
             autoRedeem: varConfig_.autoRedeem
         });
 
+        eMode = EmergencyMode({
+            swapRouter: ISwapRouter(eMode_.swapRouter),
+            poolFee: eMode_.poolFee,
+            tokenIn: eMode_.tokenIn,
+            tokenOut: eMode_.tokenOut
+        });
+
         uint length = tokens.length;
         for (uint i=0; i < length;) {
             tokenDatabase[tokens[i]] = true;
@@ -83,7 +101,7 @@ contract StorageBeacon is Ownable {
         }
     }
 
-
+ 
 
     //State changing functions
     function issueUserID(UserConfig memory userDetails_) external hasRole(0x74e0ea7a) returns(uint id) {
@@ -113,6 +131,10 @@ contract StorageBeacon is Ownable {
         beacon = ozUpgradeableBeacon(beacon_);
     }
 
+    function changeEmergencyMode(EmergencyMode memory newEmode_) external onlyOwner {
+        eMode = newEmode_;
+    }
+
 
 
     //View functions
@@ -126,6 +148,10 @@ contract StorageBeacon is Ownable {
 
     function getVariableConfig() external view returns(VariableConfig memory) {
         return varConfig; 
+    }
+
+    function getEmergencyMode() external view returns(EmergencyMode memory) {
+        return eMode;
     }
 
     function getUserProxy(address user_) public view returns(address) {
@@ -143,6 +169,7 @@ contract StorageBeacon is Ownable {
     function queryTokenDatabase(address token_) external view returns(bool) {
         return tokenDatabase[token_];
     }
+
 }
 
 

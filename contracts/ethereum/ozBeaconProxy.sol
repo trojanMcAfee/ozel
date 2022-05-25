@@ -19,6 +19,8 @@ contract ozBeaconProxy is BeaconProxy {
     StorageBeacon.UserConfig userDetails;
     StorageBeacon.FixedConfig fxConfig;
 
+    address beacon;
+
 
     modifier onlyOps() {
         require(msg.sender == fxConfig.ops, "ozBeaconProxy: onlyOps");

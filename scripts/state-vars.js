@@ -15,6 +15,7 @@ let crv2PoolAddr;
 let yTricryptoPoolAddr;
 let fraxPoolAddr;
 let fraxAddr;
+let swapRouterUniAddr; 
 //------
 let chainId; //arbitrum
 let pokeMeOpsAddr; //gelato
@@ -22,7 +23,9 @@ let hopBridge;
 let inbox; //arbitrum rinkeby
 let gelatoAddr;
 const ETH = '0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE';
+const nullAddr = '0x0000000000000000000000000000000000000000';
 const dappFee = 10; //prev: 10 -> 0.1% / 100-1 / 1000-10 / 10000 - 100%
+const poolFeeUni = 500; //0.05%
 
 // const foo = toBn('0.01');
 const defaultSlippage = 100; //5 -> 0.05%; / 100 -> 1%
@@ -73,6 +76,7 @@ switch(network) {
         crv2PoolAddr = '0xbEbc44782C7dB0a1A60Cb6fe97d0b483032FF1C7'; //crv3
         yTricryptoPoolAddr = '';
         gelatoAddr = '0x3caca7b48d0573d793d3b0279b5f0029180e83b6';
+        swapRouterUniAddr = '0xE592427A0AEce92De3Edee1F18E0157C05861564';
         break; 
     case 'arbitrum':
         pokeMeOpsAddr = '0xB3f5503f93d5Ef84b06993a1975B9D21B962892F'; 
@@ -128,6 +132,9 @@ module.exports = {
     l2Provider,
     l2Signer,
     l1Signer,
-    gelatoAddr
+    gelatoAddr,
+    swapRouterUniAddr,
+    poolFeeUni,
+    nullAddr
 };
 

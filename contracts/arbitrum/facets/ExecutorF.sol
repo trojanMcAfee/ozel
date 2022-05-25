@@ -11,10 +11,10 @@ import 'hardhat/console.sol';
 
 
 contract ExecutorF { 
+    using FixedPointMathLib for uint;
 
     AppStorage s;
 
-    using FixedPointMathLib for uint;
 
     function calculateSlippage(
         uint amount_, 
