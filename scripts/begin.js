@@ -275,8 +275,12 @@ async function deployContract(contractName, signer, constrArgs) {
 async function sendArb() { //mainnet
     const bridge = await Bridge.init(l1Signer, l2Signer);
     // const signerAddr = await signerX.getAddress();
-    const [signerAddr] = await hre.ethers.provider.listAccounts();
+    const [signerAddr, addr2] = await hre.ethers.provider.listAccounts(); 
     console.log('signer address: ', signerAddr);
+
+    console.log('addr2: ', addr2);
+    let bal2 = await hre.ethers.provider.getBalance(addr2);
+    console.log('bal2 pre *******: ', bal2.toString());
 
     const userDetails = [
         signerAddr,
@@ -433,6 +437,9 @@ async function sendArb() { //mainnet
     const USDT = await hre.ethers.getContractAt('IERC20', usdcAddr);
     const bal = await USDT.balanceOf(signerAddr);
     console.log('USDC user balance: ', bal.toString() / 10 ** 6);
+
+    bal2 = await hre.ethers.provider.getBalance(addr2);
+    console.log('bal2 post *******: ', bal2.toString());
 
 }
 

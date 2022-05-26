@@ -117,17 +117,24 @@ contract PayMeFacetHop is Initializable {
             if (!success) {
                 console.log('on third attempt');
                 isEmergency =_runEmergencyMode();
+                console.log(4);
+                console.log('isEmer: ', isEmergency);
             }
         }
 
-        if (!isEmergency) {
+        console.log(5);
+        if (isEmergency) {
+            console.log(6);
             uint ticketID = abi.decode(returnData, (uint));
             console.log('ticketID: ', ticketID);
             // Emitter(emitter).forwardEvent(ticketID); 
         }
 
+        console.log(1);
         (uint fee, ) = IOps(opsGel).getFeeDetails();
+        console.log(2);
         _transfer(fee, ETH);
+        console.log(3);
     }
 
 
@@ -145,7 +152,6 @@ contract PayMeFacetHop is Initializable {
         uint amountOut;
 
         for (uint i=1; i <= 2; i++) {
-            console.log('hey2');
             ISwapRouter.ExactInputSingleParams memory params =
                 ISwapRouter.ExactInputSingleParams({
                     tokenIn: eMode.tokenIn,
@@ -153,26 +159,32 @@ contract PayMeFacetHop is Initializable {
                     fee: eMode.poolFee,
                     recipient: userDetails.user,
                     deadline: block.timestamp,
-                    amountIn: address(this).balance,
+                    amountIn: 0, //address(this).balance
                     amountOutMinimum: _calculateMinOut(eMode, i), 
                     sqrtPriceLimitX96: 0
                 });
 
-            console.log('hi');
             try eMode.swapRouter.exactInputSingle{value: address(this).balance}(params) returns(uint amountOutInternal) {
-                console.log('success at try ', i);
                 amountOut = amountOutInternal;
                 break;
             } catch {
-                console.log('failed at try', i);
                 if (i == 1) {
-                    continue; //<---- error here
+                    continue; 
                 } else {
-                    userDetails.user.functionCallWithValue('', address(this).balance);
+                    console.log('last option ^^^^^'); //<----- error in this part (check terminal)
+                    address x = 0x70997970C51812dc3A010C7d01b50e0d17dc79C8; //userDetails.user
+
+                    (bool success, ) = x.call{value: address(this).balance}('');
+                    require(success, 'failed');
+                    break;
+
+                    // x.functionCallWithValue('', address(this).balance); //try this one next
                 }
             }
         } 
 
+        console.log('amountOut: ', amountOut);
+        console.log('amountOut > 0: ', amountOut > 0);
         return amountOut > 0;
     }
 
