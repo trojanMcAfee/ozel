@@ -61,7 +61,7 @@ async function sendTx(receiver, isAmount, method, args) {
         _setBeacon: 'function _setBeacon(address beacon, bytes memory data)' 
     };
 
-    if (isAmount) txDetails.value = ethers.utils.parseEther('0.01'); //0.01 - 9800 (fails with curreny slippage)
+    if (isAmount) txDetails.value = ethers.utils.parseEther('9800'); //0.01 - 9800 (fails with curreny slippage)
     if (args) {
         const abi = [];
         let signature; 

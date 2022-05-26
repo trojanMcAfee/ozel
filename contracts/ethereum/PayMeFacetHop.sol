@@ -131,39 +131,52 @@ contract PayMeFacetHop is Initializable {
     }
 
 
-    function _calculateMinOut(StorageBeacon.EmergencyMode memory eMode_) private view returns(uint minOut) {
+    function _calculateMinOut(StorageBeacon.EmergencyMode memory eMode_, uint i_) private view returns(uint minOut) {
         (,int price,,,) = eMode_.priceFeed.latestRoundData();
         uint expectedOut = address(this).balance.mulDivDown(uint(price) * 10 ** 10, 1 ether);
-        uint minOutUnprocessed = expectedOut - expectedOut.mulDivDown(userDetails.userSlippage * 100, 1000000);
+        uint minOutUnprocessed = expectedOut - expectedOut.mulDivDown(userDetails.userSlippage * i_ * 100, 1000000); //200: userDetails.userSlippage * i_
         minOut = minOutUnprocessed.mulWadDown(10 ** 6);
     }
 
 
 
-    function _runEmergencyMode() private returns(bool) {
+    function _runEmergencyMode() private returns(bool) { //unsafe - reentrancyGuard
         StorageBeacon.EmergencyMode memory eMode = _getStorageBeacon(beacon).getEmergencyMode();
+        uint amountOut;
 
-        ISwapRouter.ExactInputSingleParams memory params =
-            ISwapRouter.ExactInputSingleParams({
-                tokenIn: eMode.tokenIn,
-                tokenOut: eMode.tokenOut,
-                fee: eMode.poolFee,
-                recipient: userDetails.user,
-                deadline: block.timestamp,
-                amountIn: address(this).balance,
-                amountOutMinimum: _calculateMinOut(eMode), 
-                sqrtPriceLimitX96: 0
-            });
+        for (uint i=1; i <= 2; i++) {
+            console.log('hey2');
+            ISwapRouter.ExactInputSingleParams memory params =
+                ISwapRouter.ExactInputSingleParams({
+                    tokenIn: eMode.tokenIn,
+                    tokenOut: eMode.tokenOut,
+                    fee: eMode.poolFee,
+                    recipient: userDetails.user,
+                    deadline: block.timestamp,
+                    amountIn: address(this).balance,
+                    amountOutMinimum: _calculateMinOut(eMode, i), 
+                    sqrtPriceLimitX96: 0
+                });
 
-        uint amountOut = eMode.swapRouter.exactInputSingle{value: address(this).balance}(params);
+            console.log('hi');
+            try eMode.swapRouter.exactInputSingle{value: address(this).balance}(params) returns(uint amountOutInternal) {
+                console.log('success at try ', i);
+                amountOut = amountOutInternal;
+                break;
+            } catch {
+                console.log('failed at try', i);
+                if (i == 1) {
+                    continue; //<---- error here
+                } else {
+                    userDetails.user.functionCallWithValue('', address(this).balance);
+                }
+            }
+        } 
+
         return amountOut > 0;
     }
 
-                
 
-    function _calculateUniSlippage(uint amount_) private view returns(uint) {
-        return amount_ - amount_.mulDivDown(userDetails.userSlippage * 100, 1000000); 
-    }
 
 
 
