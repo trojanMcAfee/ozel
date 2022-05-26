@@ -24,6 +24,8 @@ import '@rari-capital/solmate/src/auth/authorities/RolesAuthority.sol';
 import '@uniswap/v3-periphery/contracts/interfaces/ISwapRouter.sol';
 import '@uniswap/v3-periphery/contracts/libraries/TransferHelper.sol';
 
+// import "@chainlink/contracts/src/v0.8/interfaces/AggregatorV3Interface.sol";
+
 import 'hardhat/console.sol'; 
 
 
@@ -63,12 +65,6 @@ contract PayMeFacetHop is Initializable {
         return StorageBeacon(ozUpgradeableBeacon(beacon_).storageBeacon());
     }
 
-    function calculateSlippage(
-        uint amount_, 
-        uint basisPoint_
-    ) public pure returns(uint minAmountOut) {
-        minAmountOut = amount_ - amount_.mulDivDown(basisPoint_, 10000);
-    }
 
 
     function sendToArb( 
@@ -120,37 +116,7 @@ contract PayMeFacetHop is Initializable {
             (success, returnData) = inbox.call{value: address(this).balance}(''); //ticketData
             if (!success) {
                 console.log('on third attempt');
-
                 isEmergency =_runEmergencyMode();
-
-                // StorageBeacon.EmergencyMode memory eMode = _getStorageBeacon(beacon).getEmergencyMode();
-                // address WETH = eMode.tokenIn;
-                // address USDC = eMode.tokenOut;
-                // uint24 poolFee = eMode.poolFee;
-                // console.log('WETH: ', WETH);
-
-                // uint amountOutMinimum = calculateSlippage(address(this).balance, userDetails.userSlippage);
-
-                // console.log(1);
-                // ISwapRouter.ExactInputSingleParams memory params =
-                //     ISwapRouter.ExactInputSingleParams({
-                //         tokenIn: WETH,
-                //         tokenOut: USDC,
-                //         fee: eMode.poolFee,
-                //         recipient: userDetails.user,
-                //         deadline: block.timestamp,
-                //         amountIn: address(this).balance,
-                //         amountOutMinimum: 0,
-                //         sqrtPriceLimitX96: 0
-                //     });
-
-
-                // uint amountOut = eMode.swapRouter.exactInputSingle{value: address(this).balance}(params);
-                // console.log('amountOut: ****', amountOut);
-                // _transfer(fee, ETH);
-
-                // return;
-
             }
         }
 
@@ -165,17 +131,36 @@ contract PayMeFacetHop is Initializable {
     }
 
 
+    // function _calculateMinOut(StorageBeacon.EmergencyMode memory eMode_) private returns(uint) {
+    //     (,int price,,,) = eMode_.priceFeed.latestRoundData();
+    // }
+
+
 
     function _runEmergencyMode() private returns(bool) {
         StorageBeacon.EmergencyMode memory eMode = _getStorageBeacon(beacon).getEmergencyMode();
         address WETH = eMode.tokenIn;
         address USDC = eMode.tokenOut;
         uint24 poolFee = eMode.poolFee;
-        console.log('WETH: ', WETH);
+        
+        (,int price,,,) = eMode.priceFeed.latestRoundData();
+        console.log('price (^8): ', uint(price));
+        uint expectedOut = address(this).balance.mulDivDown(uint(price) * 10 ** 10, 1 ether);
+        console.log('expectedOut: *****', expectedOut);
+        uint minOut = _calculateUniSlippage(expectedOut);
+        console.log('minOut: ', minOut);
+        uint minOut2 = minOut.mulWadDown(10 ** 6);
+        console.log('minOut2: ', minOut2);
 
-        uint amountOutMinimum = calculateSlippage(address(this).balance, userDetails.userSlippage);
 
-        console.log(1);
+        // function mulDivDown(
+        // uint256 x,
+        // uint256 y,
+        // uint256 denominator
+
+        // 1 ether               ----- price
+        // address(this).balance ----   x (expectedOut)
+
         ISwapRouter.ExactInputSingleParams memory params =
             ISwapRouter.ExactInputSingleParams({
                 tokenIn: WETH,
@@ -184,19 +169,19 @@ contract PayMeFacetHop is Initializable {
                 recipient: userDetails.user,
                 deadline: block.timestamp,
                 amountIn: address(this).balance,
-                amountOutMinimum: 0,
+                amountOutMinimum: minOut2, 
                 sqrtPriceLimitX96: 0
             });
 
-
         uint amountOut = eMode.swapRouter.exactInputSingle{value: address(this).balance}(params);
-        console.log('amountOut: ****', amountOut);
-
         return amountOut > 0;
-        // _transfer(fee_, eth_);
-
     }
 
+                
+
+    function _calculateUniSlippage(uint amount_) private view returns(uint) {
+        return amount_ - amount_.mulDivDown(userDetails.userSlippage * 100, 1000000); 
+    }
 
 
 
@@ -212,6 +197,7 @@ contract PayMeFacetHop is Initializable {
         }
     }
 
+
     function changeUserToken(address newUserToken_) external onlyUser {
         userDetails.userToken = newUserToken_;
     }
@@ -223,6 +209,40 @@ contract PayMeFacetHop is Initializable {
 }
 
 
+
+
+
+
+
+// import "@chainlink/contracts/src/v0.8/interfaces/AggregatorV3Interface.sol";
+
+// contract PriceConsumerV3 {
+
+//     AggregatorV3Interface internal priceFeed;
+
+//     /**
+//      * Network: Kovan
+//      * Aggregator: ETH/USD
+//      * Address: 0x9326BFA02ADD2366b30bacB125260Af641031331
+//      */
+//     constructor() {
+//         priceFeed = AggregatorV3Interface(0x5f4eC3Df9cbd43714FE2740f5E3616155c5b8419);
+//     }
+
+//     /**
+//      * Returns the latest price
+//      */
+//     function getLatestPrice() public view returns (int) {
+//         (
+//             /*uint80 roundID*/,
+//             int price,
+//             /*uint startedAt*/,
+//             /*uint timeStamp*/,
+//             /*uint80 answeredInRound*/
+//         ) = priceFeed.latestRoundData();
+//         return price;
+//     }
+// }
 
 
 

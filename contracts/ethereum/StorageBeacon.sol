@@ -9,6 +9,7 @@ import './PayMeFacetHop.sol';
 import './ozUpgradeableBeacon.sol';
 
 import '@uniswap/v3-periphery/contracts/interfaces/ISwapRouter.sol';
+import "@chainlink/contracts/src/v0.8/interfaces/AggregatorV3Interface.sol";
 
 import 'hardhat/console.sol';
 
@@ -39,6 +40,7 @@ contract StorageBeacon is Ownable {
 
     struct EmergencyMode {
         ISwapRouter swapRouter;
+        AggregatorV3Interface priceFeed; 
         uint24 poolFee;
         address tokenIn;
         address tokenOut; 
@@ -89,6 +91,7 @@ contract StorageBeacon is Ownable {
 
         eMode = EmergencyMode({
             swapRouter: ISwapRouter(eMode_.swapRouter),
+            priceFeed: AggregatorV3Interface(eMode_.priceFeed),
             poolFee: eMode_.poolFee,
             tokenIn: eMode_.tokenIn,
             tokenOut: eMode_.tokenOut

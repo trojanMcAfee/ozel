@@ -36,7 +36,8 @@ const {
     ETH,
     swapRouterUniAddr,
     poolFeeUni,
-    nullAddr
+    nullAddr,
+    chainlinkAggregatorAddr
  } = require('./state-vars.js');
 
 
@@ -60,7 +61,7 @@ async function sendTx(receiver, isAmount, method, args) {
         _setBeacon: 'function _setBeacon(address beacon, bytes memory data)' 
     };
 
-    if (isAmount) txDetails.value = ethers.utils.parseEther('0.01');
+    if (isAmount) txDetails.value = ethers.utils.parseEther('0.01'); //0.01 - 9800 (fails with curreny slippage)
     if (args) {
         const abi = [];
         let signature; 
@@ -323,6 +324,7 @@ async function sendArb() { //mainnet
 
     const eMode = [
         swapRouterUniAddr,
+        chainlinkAggregatorAddr,
         poolFeeUni,
         wethAddr,
         usdcAddr
@@ -430,7 +432,7 @@ async function sendArb() { //mainnet
     //for eMode
     const USDT = await hre.ethers.getContractAt('IERC20', usdcAddr);
     const bal = await USDT.balanceOf(signerAddr);
-    console.log('USDC user balance: ', bal.toString());
+    console.log('USDC user balance: ', bal.toString() / 10 ** 6);
 
 }
 
