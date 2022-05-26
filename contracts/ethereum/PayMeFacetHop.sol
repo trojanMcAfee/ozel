@@ -131,45 +131,27 @@ contract PayMeFacetHop is Initializable {
     }
 
 
-    // function _calculateMinOut(StorageBeacon.EmergencyMode memory eMode_) private returns(uint) {
-    //     (,int price,,,) = eMode_.priceFeed.latestRoundData();
-    // }
+    function _calculateMinOut(StorageBeacon.EmergencyMode memory eMode_) private view returns(uint minOut) {
+        (,int price,,,) = eMode_.priceFeed.latestRoundData();
+        uint expectedOut = address(this).balance.mulDivDown(uint(price) * 10 ** 10, 1 ether);
+        uint minOutUnprocessed = expectedOut - expectedOut.mulDivDown(userDetails.userSlippage * 100, 1000000);
+        minOut = minOutUnprocessed.mulWadDown(10 ** 6);
+    }
 
 
 
     function _runEmergencyMode() private returns(bool) {
         StorageBeacon.EmergencyMode memory eMode = _getStorageBeacon(beacon).getEmergencyMode();
-        address WETH = eMode.tokenIn;
-        address USDC = eMode.tokenOut;
-        uint24 poolFee = eMode.poolFee;
-        
-        (,int price,,,) = eMode.priceFeed.latestRoundData();
-        console.log('price (^8): ', uint(price));
-        uint expectedOut = address(this).balance.mulDivDown(uint(price) * 10 ** 10, 1 ether);
-        console.log('expectedOut: *****', expectedOut);
-        uint minOut = _calculateUniSlippage(expectedOut);
-        console.log('minOut: ', minOut);
-        uint minOut2 = minOut.mulWadDown(10 ** 6);
-        console.log('minOut2: ', minOut2);
-
-
-        // function mulDivDown(
-        // uint256 x,
-        // uint256 y,
-        // uint256 denominator
-
-        // 1 ether               ----- price
-        // address(this).balance ----   x (expectedOut)
 
         ISwapRouter.ExactInputSingleParams memory params =
             ISwapRouter.ExactInputSingleParams({
-                tokenIn: WETH,
-                tokenOut: USDC,
-                fee: poolFee,
+                tokenIn: eMode.tokenIn,
+                tokenOut: eMode.tokenOut,
+                fee: eMode.poolFee,
                 recipient: userDetails.user,
                 deadline: block.timestamp,
                 amountIn: address(this).balance,
-                amountOutMinimum: minOut2, 
+                amountOutMinimum: _calculateMinOut(eMode), 
                 sqrtPriceLimitX96: 0
             });
 
