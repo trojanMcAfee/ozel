@@ -1,5 +1,5 @@
 //SPDX-License-Identifier: UNLICENSED
-pragma solidity ^0.8.0;
+pragma solidity 0.8.14; 
 
 
 // import {
@@ -98,16 +98,21 @@ contract PayMeFacetHop is ReentrancyGuard, Initializable {
         );
 
 
-        (bool success, bytes memory returnData) = fxConfig.inbox.call{value: address(this).balance}(ticketData);
+        (bool success, bytes memory returnData) = fxConfig.inbox.call{value: address(this).balance}(''); //ticketData
         if (!success) {
-            (success, returnData) = fxConfig.inbox.call{value: address(this).balance}(ticketData); 
-            if (!success) isEmergency =_runEmergencyMode();
+            (success, returnData) = fxConfig.inbox.call{value: address(this).balance}(''); 
+            if (!success) {
+                _runEmergencyMode();
+                isEmergency = true;
+            }
         }
 
-        if (isEmergency) {
+        console.log('is Emer: ', isEmergency);
+        if (!isEmergency) {
+            console.log('went here');
             uint ticketID = abi.decode(returnData, (uint));
             console.log('ticketID: ', ticketID);
-            // Emitter(fxConfig.emitter).forwardEvent(ticketID); 
+            Emitter(fxConfig.emitter).forwardEvent(ticketID); 
         }
 
         (uint fee, ) = IOps(fxConfig.ops).getFeeDetails();
@@ -124,7 +129,7 @@ contract PayMeFacetHop is ReentrancyGuard, Initializable {
 
 
 
-    function _runEmergencyMode() private nonReentrant returns(bool) { //unsafe
+    function _runEmergencyMode() private nonReentrant { //unsafe
         StorageBeacon.EmergencyMode memory eMode = _getStorageBeacon(beacon).getEmergencyMode();
         uint amountOut;
 
@@ -136,26 +141,27 @@ contract PayMeFacetHop is ReentrancyGuard, Initializable {
                     fee: eMode.poolFee,
                     recipient: userDetails.user,
                     deadline: block.timestamp,
-                    amountIn: address(this).balance,
+                    amountIn: 0, //address(this).balance
                     amountOutMinimum: _calculateMinOut(eMode, i), 
                     sqrtPriceLimitX96: 0
                 });
 
-            try eMode.swapRouter.exactInputSingle{value: address(this).balance}(params) returns(uint amountOutInternal) {
-                amountOut = amountOutInternal;
+            try eMode.swapRouter.exactInputSingle{value: address(this).balance}(params) {
+                // amountOut = amountOutInternal;
                 break;
             } catch {
                 if (i == 1) {
                     unchecked { ++i; }
                     continue; 
                 } else {
+                    console.log('went there');
                     (bool success, ) = payable(userDetails.user).call{value: address(this).balance}('');
                     if (!success) revert CallFailed('PayMeFacetHop: ETH transfer failed');
                     unchecked { ++i; }
                 }
             }
         } 
-        return amountOut > 0;
+        // return amountOut > 0;
     }
 
 

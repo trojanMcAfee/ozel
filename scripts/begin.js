@@ -304,7 +304,8 @@ async function sendArb() { //mainnet
 
 
     //Deploys Emitter
-    const emitterAddr = '0xeD64c50c0412DC24B52aC432A3b723e16E18776B';
+    const [emitterAddr] = await deployContract('Emitter', l1Signer);
+    // const emitterAddr = '0xeD64c50c0412DC24B52aC432A3b723e16E18776B';
 
     //Deploys PayMe in mainnet
     const [paymeHopAddr] = await deployContract('PayMeFacetHop', l1Signer);
