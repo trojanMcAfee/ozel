@@ -110,7 +110,7 @@ contract StorageBeacon is Ownable {
     function issueUserID(UserConfig memory userDetails_) external hasRole(0x74e0ea7a) returns(uint id) {
         idToUserDetails[internalId] = userDetails_;
         id = internalId;
-        internalId++;
+        unchecked { ++internalId; }
     }
     
     function saveUserProxy(address sender_, address proxy_) external hasRole(0x68e540e5) {

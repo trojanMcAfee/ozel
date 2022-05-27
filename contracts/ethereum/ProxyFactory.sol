@@ -7,7 +7,7 @@ import '../interfaces/IOps.sol';
 // import '@openzeppelin/contracts/utils/Address.sol';
 import './StorageBeacon.sol';
 import './ozUpgradeableBeacon.sol';
-import '@openzeppelin/contracts/proxy/ERC1967/ERC1967Proxy.sol';
+// import '@openzeppelin/contracts/proxy/ERC1967/ERC1967Proxy.sol';
 import "@openzeppelin/contracts/proxy/utils/Initializable.sol";
 
 import '@rari-capital/solmate/src/utils/ReentrancyGuard.sol';
@@ -20,7 +20,7 @@ import 'hardhat/console.sol';
 
 
 contract ProxyFactory is ReentrancyGuard, Initializable { 
-    address beacon;
+    address private beacon;
 
 
     function initialize(address beacon_) external initializer {
@@ -68,14 +68,14 @@ contract ProxyFactory is ReentrancyGuard, Initializable {
     // *** GELATO PART ******
 
     function _startTask(address beaconProxy_) private { 
-        StorageBeacon.FixedConfig memory f = _getStorageBeacon().getFixedConfig(); 
+        StorageBeacon.FixedConfig memory fxConfig = _getStorageBeacon().getFixedConfig(); 
 
-        (bytes32 id) = IOps(f.ops).createTaskNoPrepayment( 
+        (bytes32 id) = IOps(fxConfig.ops).createTaskNoPrepayment( 
             beaconProxy_,
             bytes4(abi.encodeWithSignature('sendToArb()')),
             beaconProxy_,
             abi.encodeWithSignature('checker()'),
-            f.ETH
+            fxConfig.ETH
         );
 
         _getStorageBeacon().saveTaskId(beaconProxy_, id);

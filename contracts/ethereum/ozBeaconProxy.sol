@@ -21,7 +21,7 @@ contract ozBeaconProxy is ReentrancyGuard, BeaconProxy {
     StorageBeacon.UserConfig userDetails;
     StorageBeacon.FixedConfig fxConfig;
 
-    address beacon;
+    address private beacon;
 
 
     modifier onlyOps() {
