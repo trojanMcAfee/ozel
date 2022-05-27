@@ -51,9 +51,9 @@ contract StorageBeacon is Ownable {
     EmergencyMode eMode;
 
     mapping(address => bytes32) public taskIDs;
-    mapping(uint => UserConfig) public idToUserDetails;
     mapping(address => bool) public tokenDatabase;
     mapping(address => bool) public proxyDatabase;
+    mapping(uint => UserConfig) public idToUserDetails;
     mapping(address => address) proxyToUser; 
     mapping(address => address) userToProxy;
 

@@ -69,7 +69,7 @@ contract PayMeFacetHop is ReentrancyGuard, Initializable {
 
 
     function _getStorageBeacon(address beacon_) private view returns(StorageBeacon) { 
-        return StorageBeacon(ozUpgradeableBeacon(beacon_).storageBeacon());
+        return ozUpgradeableBeacon(beacon_).storageBeacon();
     }
 
 
