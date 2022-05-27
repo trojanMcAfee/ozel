@@ -51,8 +51,9 @@ contract StorageBeacon is Ownable {
     EmergencyMode eMode;
 
     mapping(address => bytes32) public taskIDs;
-    mapping(address => bool) public tokenDatabase;
     mapping(uint => UserConfig) public idToUserDetails;
+    mapping(address => bool) public tokenDatabase;
+    mapping(address => bool) public proxyDatabase;
     mapping(address => address) proxyToUser; 
     mapping(address => address) userToProxy;
 
@@ -116,6 +117,7 @@ contract StorageBeacon is Ownable {
     function saveUserProxy(address sender_, address proxy_) external hasRole(0x68e540e5) {
         userToProxy[sender_] = proxy_;
         proxyToUser[proxy_] = sender_;
+        proxyDatabase[proxy_] = true;
     }
 
     function saveTaskId(address proxy_, bytes32 id_) external hasRole(0xf2034a69) {

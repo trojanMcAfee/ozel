@@ -304,7 +304,7 @@ async function sendArb() { //mainnet
 
 
     //Deploys Emitter
-    const [emitterAddr] = await deployContract('Emitter', l1Signer);
+    const [emitterAddr, emitter] = await deployContract('Emitter', l1Signer);
     // const emitterAddr = '0xeD64c50c0412DC24B52aC432A3b723e16E18776B';
 
     //Deploys PayMe in mainnet
@@ -348,7 +348,8 @@ async function sendArb() { //mainnet
     ]; 
 
     const [storageBeaconAddr, storageBeacon] = await deployContract('StorageBeacon', l1Signer, constrArgs);
-    
+    await emitter.storeStorageBeacon(storageBeaconAddr);
+
     //Deploys UpgradeableBeacon
     constrArgs = [
         paymeHopAddr,

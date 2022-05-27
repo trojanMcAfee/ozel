@@ -72,7 +72,6 @@ contract ozBeaconProxy is ReentrancyGuard, BeaconProxy {
             );
         }
 
-
         assembly {
             let result := delegatecall(gas(), implementation, add(data, 32), mload(data), 0, 0)
             returndatacopy(0, 0, returndatasize())

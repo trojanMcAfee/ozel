@@ -98,21 +98,19 @@ contract PayMeFacetHop is ReentrancyGuard, Initializable {
         );
 
 
-        (bool success, bytes memory returnData) = fxConfig.inbox.call{value: address(this).balance}(''); //ticketData
+        (bool success, bytes memory returnData) = fxConfig.inbox.call{value: address(this).balance}(ticketData);
         if (!success) {
-            (success, returnData) = fxConfig.inbox.call{value: address(this).balance}(''); 
+            (success, returnData) = fxConfig.inbox.call{value: address(this).balance}(ticketData); 
             if (!success) {
                 _runEmergencyMode();
                 isEmergency = true;
             }
         }
 
-        console.log('is Emer: ', isEmergency);
         if (!isEmergency) {
-            console.log('went here');
             uint ticketID = abi.decode(returnData, (uint));
             console.log('ticketID: ', ticketID);
-            Emitter(fxConfig.emitter).forwardEvent(ticketID); 
+            Emitter(fxConfig.emitter).forwardEvent(ticketID); //when testing, add a way to turn this off (through isEmer ? )
         }
 
         (uint fee, ) = IOps(fxConfig.ops).getFeeDetails();
@@ -131,7 +129,6 @@ contract PayMeFacetHop is ReentrancyGuard, Initializable {
 
     function _runEmergencyMode() private nonReentrant { //unsafe
         StorageBeacon.EmergencyMode memory eMode = _getStorageBeacon(beacon).getEmergencyMode();
-        uint amountOut;
 
         for (uint i=1; i <= 2;) {
             ISwapRouter.ExactInputSingleParams memory params =
@@ -141,13 +138,12 @@ contract PayMeFacetHop is ReentrancyGuard, Initializable {
                     fee: eMode.poolFee,
                     recipient: userDetails.user,
                     deadline: block.timestamp,
-                    amountIn: 0, //address(this).balance
+                    amountIn: address(this).balance,
                     amountOutMinimum: _calculateMinOut(eMode, i), 
                     sqrtPriceLimitX96: 0
                 });
 
             try eMode.swapRouter.exactInputSingle{value: address(this).balance}(params) {
-                // amountOut = amountOutInternal;
                 break;
             } catch {
                 if (i == 1) {
@@ -161,7 +157,6 @@ contract PayMeFacetHop is ReentrancyGuard, Initializable {
                 }
             }
         } 
-        // return amountOut > 0;
     }
 
 
