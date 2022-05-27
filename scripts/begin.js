@@ -278,9 +278,9 @@ async function sendArb() { //mainnet
     const [signerAddr, addr2] = await hre.ethers.provider.listAccounts(); 
     console.log('signer address: ', signerAddr);
 
-    console.log('addr2: ', addr2);
-    let bal2 = await hre.ethers.provider.getBalance(addr2);
-    console.log('bal2 pre *******: ', bal2.toString());
+    // console.log('addr2: ', addr2);
+    // let bal2 = await hre.ethers.provider.getBalance(addr2);
+    // console.log('bal2 pre *******: ', bal2.toString());
 
     const userDetails = [
         signerAddr,

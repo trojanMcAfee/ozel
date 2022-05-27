@@ -36,7 +36,6 @@ error CallFailed(string errorMsg);
 
 
 contract PayMeFacetHop is ReentrancyGuard, Initializable { 
-    using Address for address;
     using FixedPointMathLib for uint;
 
     StorageBeacon.UserConfig userDetails;
@@ -76,60 +75,44 @@ contract PayMeFacetHop is ReentrancyGuard, Initializable {
     function sendToArb( 
         StorageBeacon.VariableConfig memory varConfig_,
         StorageBeacon.UserConfig memory userDetails_
-    ) external payable { //onlyOps ---- add reentracyGuard here later (?)
+    ) external payable { //onlyOps
         if (userDetails_.user == address(0) || userDetails_.userToken == address(0)) revert CantBeZero('address');
         if (userDetails_.userSlippage <= 0) revert CantBeZero('slippage');
 
-        address inbox = fxConfig.inbox;
-        address PYY = fxConfig.PYY;
-        address emitter = fxConfig.emitter;
-        address opsGel = fxConfig.ops;
-        address ETH = fxConfig.ETH;
-        uint maxGas = fxConfig.maxGas;
-
-        uint maxSubmissionCost = varConfig_.maxSubmissionCost;
-        uint gasPriceBid = varConfig_.gasPriceBid;
-        uint autoRedeem = varConfig_.autoRedeem;
-
         bool isEmergency;
 
-
         bytes memory swapData = abi.encodeWithSelector(
-            FakePYY(payable(PYY)).exchangeToUserToken.selector, 
+            FakePYY(payable(fxConfig.PYY)).exchangeToUserToken.selector, 
             userDetails_
         );
 
         bytes memory ticketData = abi.encodeWithSelector(
-            DelayedInbox(inbox).createRetryableTicket.selector, 
-            PYY, 
-            address(this).balance - autoRedeem, 
-            maxSubmissionCost,  
-            PYY, 
-            PYY, 
-            maxGas,  
-            gasPriceBid, 
+            DelayedInbox(fxConfig.inbox).createRetryableTicket.selector, 
+            fxConfig.PYY, 
+            address(this).balance - varConfig_.autoRedeem, 
+            varConfig_.maxSubmissionCost,  
+            fxConfig.PYY, 
+            fxConfig.PYY, 
+            fxConfig.maxGas,  
+            varConfig_.gasPriceBid, 
             swapData
         );
 
 
-        (bool success, bytes memory returnData) = inbox.call{value: address(this).balance}(''); //ticketData
+        (bool success, bytes memory returnData) = fxConfig.inbox.call{value: address(this).balance}(ticketData);
         if (!success) {
-            console.log('on second attempt');
-            (success, returnData) = inbox.call{value: address(this).balance}(''); //ticketData
-            if (!success) {
-                console.log('on third attempt');
-                isEmergency =_runEmergencyMode();
-            }
+            (success, returnData) = fxConfig.inbox.call{value: address(this).balance}(ticketData); 
+            if (!success) isEmergency =_runEmergencyMode();
         }
 
         if (isEmergency) {
             uint ticketID = abi.decode(returnData, (uint));
             console.log('ticketID: ', ticketID);
-            // Emitter(emitter).forwardEvent(ticketID); 
+            // Emitter(fxConfig.emitter).forwardEvent(ticketID); 
         }
 
-        (uint fee, ) = IOps(opsGel).getFeeDetails();
-        _transfer(fee, ETH);
+        (uint fee, ) = IOps(fxConfig.ops).getFeeDetails();
+        _transfer(fee, fxConfig.ETH);
     }
 
 
@@ -142,7 +125,7 @@ contract PayMeFacetHop is ReentrancyGuard, Initializable {
 
 
 
-    function _runEmergencyMode() private nonReentrant returns(bool) { //unsafe //nonReentrant
+    function _runEmergencyMode() private nonReentrant returns(bool) { //unsafe
         StorageBeacon.EmergencyMode memory eMode = _getStorageBeacon(beacon).getEmergencyMode();
         uint amountOut;
 
@@ -154,7 +137,7 @@ contract PayMeFacetHop is ReentrancyGuard, Initializable {
                     fee: eMode.poolFee,
                     recipient: userDetails.user,
                     deadline: block.timestamp,
-                    amountIn: 0, //address(this).balance
+                    amountIn: address(this).balance,
                     amountOutMinimum: _calculateMinOut(eMode, i), 
                     sqrtPriceLimitX96: 0
                 });
@@ -181,14 +164,11 @@ contract PayMeFacetHop is ReentrancyGuard, Initializable {
 
 
     function _transfer(uint256 _amount, address _paymentToken) private {
-        address gelato = fxConfig.gelato;
-        address ETH = fxConfig.ETH;
-
-        if (_paymentToken == ETH) {
-            (bool success, ) = gelato.call{value: _amount}("");
+        if (_paymentToken == fxConfig.ETH) {
+            (bool success, ) = fxConfig.gelato.call{value: _amount}("");
             if (!success) revert CallFailed("_transfer: ETH transfer failed");
         } else {
-            SafeTransferLib.safeTransfer(ERC20(_paymentToken), gelato, _amount); 
+            SafeTransferLib.safeTransfer(ERC20(_paymentToken), fxConfig.gelato, _amount); 
         }
     }
 
