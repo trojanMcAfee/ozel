@@ -434,12 +434,12 @@ async function sendArb() { //mainnet
 
 
     //for eMode
-    const USDT = await hre.ethers.getContractAt('IERC20', usdcAddr);
-    const bal = await USDT.balanceOf(signerAddr);
-    console.log('USDC user balance: ', bal.toString() / 10 ** 6);
+    // const USDT = await hre.ethers.getContractAt('IERC20', usdcAddr);
+    // const bal = await USDT.balanceOf(signerAddr);
+    // console.log('USDC user balance: ', bal.toString() / 10 ** 6);
 
-    bal2 = await hre.ethers.provider.getBalance(addr2);
-    console.log('bal2 post *******: ', bal2.toString());
+    // bal2 = await hre.ethers.provider.getBalance(addr2);
+    // console.log('bal2 post *******: ', bal2.toString());
 
 }
 

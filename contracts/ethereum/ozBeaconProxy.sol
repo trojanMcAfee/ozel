@@ -12,9 +12,11 @@ import './StorageBeacon.sol';
 import './ozUpgradeableBeacon.sol';
 import "@openzeppelin/contracts/proxy/utils/Initializable.sol";
 
+import '@rari-capital/solmate/src/utils/ReentrancyGuard.sol';
 
 
-contract ozBeaconProxy is BeaconProxy { 
+
+contract ozBeaconProxy is ReentrancyGuard, BeaconProxy { 
 
     StorageBeacon.UserConfig userDetails;
     StorageBeacon.FixedConfig fxConfig;

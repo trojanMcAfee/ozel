@@ -2,10 +2,10 @@
 pragma solidity ^0.8.0;
 
 
-import {
-    SafeERC20,
-    IERC20
-} from "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
+// import {
+//     SafeERC20,
+//     IERC20
+// } from "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
 import "@openzeppelin/contracts/proxy/beacon/UpgradeableBeacon.sol";
 import "@openzeppelin/contracts/proxy/beacon/BeaconProxy.sol";
 import "@openzeppelin/contracts/proxy/utils/Initializable.sol";
@@ -20,16 +20,22 @@ import './ozUpgradeableBeacon.sol';
 import '../libraries/FixedPointMathLib.sol';
 
 import '@rari-capital/solmate/src/auth/authorities/RolesAuthority.sol';
+import '@rari-capital/solmate/src/utils/ReentrancyGuard.sol';
+import '@rari-capital/solmate/src/utils/SafeTransferLib.sol';
+import '@rari-capital/solmate/src/tokens/ERC20.sol';
 
 import '@uniswap/v3-periphery/contracts/interfaces/ISwapRouter.sol';
 import '@uniswap/v3-periphery/contracts/libraries/TransferHelper.sol';
 
-// import "@chainlink/contracts/src/v0.8/interfaces/AggregatorV3Interface.sol";
 
 import 'hardhat/console.sol'; 
 
 
-contract PayMeFacetHop is Initializable { 
+error CantBeZero(string nonZeroValue);
+error CallFailed(string errorMsg);
+
+
+contract PayMeFacetHop is ReentrancyGuard, Initializable { 
     using Address for address;
     using FixedPointMathLib for uint;
 
@@ -71,8 +77,8 @@ contract PayMeFacetHop is Initializable {
         StorageBeacon.VariableConfig memory varConfig_,
         StorageBeacon.UserConfig memory userDetails_
     ) external payable { //onlyOps ---- add reentracyGuard here later (?)
-        require(userDetails_.user != address(0) && userDetails_.userToken != address(0), 'PayMeFacet: User addresses cannnot be 0');
-        require(userDetails_.userSlippage > 0, 'PayMeFacet: User slippage cannot be 0');
+        if (userDetails_.user == address(0) || userDetails_.userToken == address(0)) revert CantBeZero('address');
+        if (userDetails_.userSlippage <= 0) revert CantBeZero('slippage');
 
         address inbox = fxConfig.inbox;
         address PYY = fxConfig.PYY;
@@ -106,10 +112,6 @@ contract PayMeFacetHop is Initializable {
         );
 
 
-        //  try bytes memory returnData = inbox.functionCallWithValue(ticketData, address(this).balance) {
-             
-        //  }
-
         (bool success, bytes memory returnData) = inbox.call{value: address(this).balance}(''); //ticketData
         if (!success) {
             console.log('on second attempt');
@@ -117,41 +119,34 @@ contract PayMeFacetHop is Initializable {
             if (!success) {
                 console.log('on third attempt');
                 isEmergency =_runEmergencyMode();
-                console.log(4);
-                console.log('isEmer: ', isEmergency);
             }
         }
 
-        console.log(5);
         if (isEmergency) {
-            console.log(6);
             uint ticketID = abi.decode(returnData, (uint));
             console.log('ticketID: ', ticketID);
             // Emitter(emitter).forwardEvent(ticketID); 
         }
 
-        console.log(1);
         (uint fee, ) = IOps(opsGel).getFeeDetails();
-        console.log(2);
         _transfer(fee, ETH);
-        console.log(3);
     }
 
 
     function _calculateMinOut(StorageBeacon.EmergencyMode memory eMode_, uint i_) private view returns(uint minOut) {
         (,int price,,,) = eMode_.priceFeed.latestRoundData();
         uint expectedOut = address(this).balance.mulDivDown(uint(price) * 10 ** 10, 1 ether);
-        uint minOutUnprocessed = expectedOut - expectedOut.mulDivDown(userDetails.userSlippage * i_ * 100, 1000000); //200: userDetails.userSlippage * i_
+        uint minOutUnprocessed = expectedOut - expectedOut.mulDivDown(userDetails.userSlippage * i_ * 100, 1000000); 
         minOut = minOutUnprocessed.mulWadDown(10 ** 6);
     }
 
 
 
-    function _runEmergencyMode() private returns(bool) { //unsafe - reentrancyGuard
+    function _runEmergencyMode() private nonReentrant returns(bool) { //unsafe //nonReentrant
         StorageBeacon.EmergencyMode memory eMode = _getStorageBeacon(beacon).getEmergencyMode();
         uint amountOut;
 
-        for (uint i=1; i <= 2; i++) {
+        for (uint i=1; i <= 2;) {
             ISwapRouter.ExactInputSingleParams memory params =
                 ISwapRouter.ExactInputSingleParams({
                     tokenIn: eMode.tokenIn,
@@ -169,22 +164,15 @@ contract PayMeFacetHop is Initializable {
                 break;
             } catch {
                 if (i == 1) {
+                    unchecked { ++i; }
                     continue; 
                 } else {
-                    console.log('last option ^^^^^'); //<----- error in this part (check terminal)
-                    address x = 0x70997970C51812dc3A010C7d01b50e0d17dc79C8; //userDetails.user
-
-                    (bool success, ) = x.call{value: address(this).balance}('');
-                    require(success, 'failed');
-                    break;
-
-                    // x.functionCallWithValue('', address(this).balance); //try this one next
+                    (bool success, ) = payable(userDetails.user).call{value: address(this).balance}('');
+                    if (!success) revert CallFailed('PayMeFacetHop: ETH transfer failed');
+                    unchecked { ++i; }
                 }
             }
         } 
-
-        console.log('amountOut: ', amountOut);
-        console.log('amountOut > 0: ', amountOut > 0);
         return amountOut > 0;
     }
 
@@ -198,9 +186,9 @@ contract PayMeFacetHop is Initializable {
 
         if (_paymentToken == ETH) {
             (bool success, ) = gelato.call{value: _amount}("");
-            require(success, "_transfer: ETH transfer failed");
+            if (!success) revert CallFailed("_transfer: ETH transfer failed");
         } else {
-            SafeERC20.safeTransfer(IERC20(_paymentToken), gelato, _amount);
+            SafeTransferLib.safeTransfer(ERC20(_paymentToken), gelato, _amount); 
         }
     }
 
