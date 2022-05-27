@@ -42,6 +42,9 @@ contract PayMeFacetHop is ReentrancyGuard, Initializable {
 
     address beacon;
 
+    event NewUserToken(address indexed user, address newToken);
+    event NewUserSlippage(address indexed user, uint newSlippage);
+
 
     modifier onlyOps() {
         require(msg.sender == fxConfig.ops, "PayMeFacetHop: onlyOps");
@@ -150,7 +153,6 @@ contract PayMeFacetHop is ReentrancyGuard, Initializable {
                     unchecked { ++i; }
                     continue; 
                 } else {
-                    console.log('went there');
                     (bool success, ) = payable(userDetails.user).call{value: address(this).balance}('');
                     if (!success) revert CallFailed('PayMeFacetHop: ETH transfer failed');
                     unchecked { ++i; }
@@ -158,9 +160,6 @@ contract PayMeFacetHop is ReentrancyGuard, Initializable {
             }
         } 
     }
-
-
-
 
 
     function _transfer(uint256 _amount, address _paymentToken) private {
@@ -175,16 +174,15 @@ contract PayMeFacetHop is ReentrancyGuard, Initializable {
 
     function changeUserToken(address newUserToken_) external onlyUser {
         userDetails.userToken = newUserToken_;
+        emit NewUserToken(msg.sender, newUserToken_);
     }
 
     function changeUserSlippage(uint newUserSlippage_) external onlyUser {
         userDetails.userSlippage = newUserSlippage_;
+        emit NewUserSlippage(msg.sender, newUserSlippage_);
     }
 
 }
-
-
-
 
 
 
