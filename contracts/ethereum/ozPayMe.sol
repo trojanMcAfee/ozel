@@ -34,7 +34,7 @@ import 'hardhat/console.sol';
 
 
 
-contract PayMeFacetHop is ReentrancyGuard, Initializable { 
+contract ozPayMe is ReentrancyGuard, Initializable { //PayMeFacetHop
     using FixedPointMathLib for uint;
 
     StorageBeacon.UserConfig userDetails;
@@ -47,12 +47,12 @@ contract PayMeFacetHop is ReentrancyGuard, Initializable {
 
 
     modifier onlyOps() {
-        require(msg.sender == fxConfig.ops, "PayMeFacetHop: onlyOps");
+        require(msg.sender == fxConfig.ops, "ozPayMe: onlyOps");
         _;
     }
 
     modifier onlyUser() {
-        require(msg.sender == userDetails.user, 'PayMeFacetHop: Not authorized');
+        require(msg.sender == userDetails.user, 'ozPayMe: Not authorized');
         _;
     }
 
@@ -154,7 +154,7 @@ contract PayMeFacetHop is ReentrancyGuard, Initializable {
                     continue; 
                 } else {
                     (bool success, ) = payable(userDetails.user).call{value: address(this).balance}('');
-                    if (!success) revert CallFailed('PayMeFacetHop: ETH transfer failed');
+                    if (!success) revert CallFailed('ozPayMe: ETH transfer failed');
                     unchecked { ++i; }
                 }
             }

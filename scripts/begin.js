@@ -271,7 +271,7 @@ async function deployContract(contractName, signer, constrArgs) {
 
 
 
-//Deploys PayMeFacetHop in mainnet and routes ETH to Manager (PYY) in Arbitrum
+//Deploys ozPayMe in mainnet and routes ETH to Manager (PYY) in Arbitrum
 async function sendArb() { //mainnet
     const bridge = await Bridge.init(l1Signer, l2Signer);
     // const signerAddr = await signerX.getAddress();
@@ -307,8 +307,8 @@ async function sendArb() { //mainnet
     const [emitterAddr, emitter] = await deployContract('Emitter', l1Signer);
     // const emitterAddr = '0xeD64c50c0412DC24B52aC432A3b723e16E18776B';
 
-    //Deploys PayMe in mainnet
-    const [paymeHopAddr] = await deployContract('PayMeFacetHop', l1Signer);
+    //Deploys ozPayMe in mainnet
+    const [ozPaymeAddr] = await deployContract('ozPayMe', l1Signer);
 
     //Deploys StorageBeacon
     const fxConfig = [
@@ -352,7 +352,7 @@ async function sendArb() { //mainnet
 
     //Deploys UpgradeableBeacon
     constrArgs = [
-        paymeHopAddr,
+        ozPaymeAddr,
         storageBeaconAddr
     ];
 
@@ -519,7 +519,7 @@ async function beginSimulatedDiamond() {
     /**
      * Since Curve doesn't have testnets, sendETH() sends ETH directly to
      * exchangeToUserToken() which would simulate an Arbitrum L1 > L2 tx where
-     * sendToArb() in L1 in PayMeFacetHop would send the ETH to managerFacet in L2
+     * sendToArb() in L1 in ozPayMe would send the ETH to managerFacet in L2
      */
 
     await sendETH([callerAddr, fraxAddr, defaultSlippage], FRAX, 'FRAX', 10 ** 18); //callerAddr, fraxAddr, FRAX, 'FRAX', 10 ** 18

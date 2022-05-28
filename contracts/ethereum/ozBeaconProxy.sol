@@ -61,7 +61,7 @@ contract ozBeaconProxy is ReentrancyGuard, BeaconProxy {
         StorageBeacon.VariableConfig memory varConfig =
              _getStorageBeacon().getVariableConfig();
 
-        //first 4 bytes of initialize() on PayMeFacetHop
+        //first 4 bytes of initialize() on ozPayMe
         if (bytes4(msg.data) == 0xda35a26f) { 
             data = msg.data;
         } else {
