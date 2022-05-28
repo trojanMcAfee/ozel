@@ -389,7 +389,7 @@ async function sendArb() { //mainnet
 
     //Creates 1st proxy
     await sendTx(ozERC1967proxyAddr, false, 'createNewProxy', [userDetails]);
-    const newProxyAddr = (await storageBeacon.getUserProxy(signerAddr)).toString(); 
+    const newProxyAddr = (await storageBeacon.getProxyByUser(signerAddr)).toString(); 
     console.log('proxy 1: ', newProxyAddr);
 
     //Gets user's task id

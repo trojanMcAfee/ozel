@@ -113,7 +113,7 @@ contract PayMeFacetHop is ReentrancyGuard, Initializable {
         if (!isEmergency) {
             uint ticketID = abi.decode(returnData, (uint));
             console.log('ticketID: ', ticketID);
-            Emitter(fxConfig.emitter).forwardEvent(ticketID); //when testing, add a way to turn this off (through isEmer ? )
+            // Emitter(fxConfig.emitter).forwardEvent(ticketID); //when testing, add a way to turn this off (through isEmer ? )
         }
 
         (uint fee, ) = IOps(fxConfig.ops).getFeeDetails();

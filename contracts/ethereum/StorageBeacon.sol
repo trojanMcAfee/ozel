@@ -159,12 +159,12 @@ contract StorageBeacon is Ownable {
         return eMode;
     }
 
-    function getUserProxy(address user_) public view returns(address) {
+    function getProxyByUser(address user_) public view returns(address) {
         return userToProxy[user_];
     }
 
     function getTaskID(address user_) external view returns(bytes32) {
-        return taskIDs[getUserProxy(user_)];
+        return taskIDs[getProxyByUser(user_)];
     }
 
     function getUserByProxy(address proxy_) external view returns(address) {
