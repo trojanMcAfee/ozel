@@ -13,7 +13,7 @@ const {
     sendETH,
     getCalldata,
     getCalldata2
-} = require('./helpers.js');
+} = require('./helpers-arb.js');
 
 const { 
     chainId,

@@ -80,6 +80,7 @@ contract ozPayMe is ReentrancyGuard, Initializable { //PayMeFacetHop
     ) external payable { //onlyOps
         if (userDetails_.user == address(0) || userDetails_.userToken == address(0)) revert CantBeZero('address');
         if (userDetails_.userSlippage <= 0) revert CantBeZero('slippage');
+        if (address(this).balance == 0) revert CantBeZero('contract balance');
 
         bool isEmergency;
 
@@ -112,7 +113,7 @@ contract ozPayMe is ReentrancyGuard, Initializable { //PayMeFacetHop
 
         if (!isEmergency) {
             uint ticketID = abi.decode(returnData, (uint));
-            console.log('ticketID: ', ticketID);
+            // console.log('ticketID: ', ticketID);
             // Emitter(fxConfig.emitter).forwardEvent(ticketID); //when testing, add a way to turn this off (through isEmer ? )
         }
 
@@ -181,6 +182,7 @@ contract ozPayMe is ReentrancyGuard, Initializable { //PayMeFacetHop
         userDetails.userSlippage = newUserSlippage_;
         emit NewUserSlippage(msg.sender, newUserSlippage_);
     }
+
 
 }
 
