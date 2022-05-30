@@ -90,21 +90,30 @@ const {
 
     describe('ozBeaconProxy', async () => {
         it('should create a proxy successfully', async () => {
-            await sendTx(ozERC1967proxyAddr, false, 'createNewProxy', [userDetails]);
+            await sendTx({
+                receiver: ozERC1967proxyAddr,
+                method: 'createNewProxy',
+                args: [userDetails]
+            });
             newProxyAddr = (await storageBeacon.getProxyByUser(signerAddr)).toString(); 
             assert.equal(newProxyAddr.length, 42);
         });
 
 
         it('should have an initial balance of 0.01 ETH', async () => {
-            await sendTx(newProxyAddr, true, 'Sending ETH', '', 0.01);
+            await sendTx({
+                receiver: newProxyAddr,
+                isAmount: true,
+                method: 'Sending ETH',
+                value: 0.01,
+                args: false
+            });
             balance = await hre.ethers.provider.getBalance(newProxyAddr);
-            await activateOzBeaconProxy(newProxyAddr);
+            // await activateOzBeaconProxy(newProxyAddr);
             assert.equal(formatEther(balance), '0.01');
         });
 
         it('should have a final balance of 0 ETH', async () => {
-            await sendTx(newProxyAddr, true, 'Sending ETH', '', 0.01);
             await activateOzBeaconProxy(newProxyAddr);
             balance = await hre.ethers.provider.getBalance(newProxyAddr);
             assert.equal(formatEther(balance), 0);
@@ -113,7 +122,11 @@ const {
         describe('fallback() / ozPayMe', async () => {
             it('should fail when re-calling / initialize()', async () => {
                 await assert.rejects(async () => {
-                    await sendTx(newProxyAddr, false, 'initialize', [0, nullAddr]);
+                    await sendTx({
+                        receiver: newProxyAddr,
+                        method: 'initialize',
+                        args: [0, nullAddr]
+                    });
                 }, {
                     name: 'Error',
                     message: "VM Exception while processing transaction: reverted with reason string 'Initializable: contract is already initialized'"
@@ -121,19 +134,27 @@ const {
             });
 
             it('should allow the user to change userToken / changeUserToken()', async () => {
-                receipt = await sendTx(newProxyAddr, false, 'changeUserToken', [usdcAddr]);
+                receipt = await sendTx({
+                    receiver: newProxyAddr,
+                    method: 'changeUserToken',
+                    args: [usdcAddr]
+                });
                 newUserToken = getEventParam(receipt);
                 assert.equal(newUserToken, usdcAddr.toLowerCase());
             });
 
-            it('should not allow an external user to change userToken / changeUserToken()', async () => {
+            xit('should not allow an external user to change userToken / changeUserToken()', async () => {
             
             });
 
 
 
             it('should allow the user to change userSlippage / changeUserSlippage()', async () => {
-                receipt = await sendTx(newProxyAddr, false, 'changeUserSlippage', ['200']);
+                receipt = await sendTx({
+                    receiver: newProxyAddr,
+                    method: 'changeUserSlippage',
+                    args: ['200']
+                });
                 newUserSlippage = getEventParam(receipt);
                 assert.equal(arrayify(newUserSlippage), '200');
             });

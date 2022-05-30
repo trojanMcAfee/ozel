@@ -26,7 +26,7 @@ const {
     chainlinkAggregatorAddr
  } = require('../scripts/state-vars.js');
 
- const { hexStripZeros } = ethers.utils;
+ const { hexStripZeros, parseEther } = ethers.utils;
 
 
 
@@ -100,39 +100,41 @@ async function deployContract(contractName, signer, constrArgs) {
 }
 
 
-async function sendTx(receiver, isAmount, method, args, value) {
+
+async function sendTx(params) {
     const signer = await hre.ethers.provider.getSigner(0);
-    const txDetails = {to: receiver};
+    const txDetails = {to: params.receiver};
+    const abi = [];
     const signatures = {
         createNewProxy: 'function createNewProxy(tuple(address user, address userToken, uint256 userSlippage) userDetails_)',
         getTaskID: 'function getTaskID(address user_) returns (bytes32)',
         sendToArb: 'function sendToArb()',
-        initialize: `function initialize(${args.length < 2 ? 'address beacon_' : 'uint256 userId_, address beacon_'})`,
+        initialize: `function initialize(${params.args && params.args.length < 2 ? 'address beacon_' : 'uint256 userId_, address beacon_'})`,
         _setBeacon: 'function _setBeacon(address beacon, bytes memory data)',
         changeUserToken: 'function changeUserToken(address newUserToken_)',
         changeUserSlippage: 'function changeUserSlippage(uint256 newUserSlippage_)'        
     };
 
 
-    if (isAmount) txDetails.value = ethers.utils.parseEther(value.toString()); 
-    if (args && args !== '') {
-        const abi = [];
-       
+    if (params.isAmount) txDetails.value = parseEther(params.value.toString()); 
+
+    if (params.method !== 'Sending ETH') {
         for (let sign in signatures) {
-            if (sign === method) {
+            if (sign === params.method) {
                 signature = signatures[sign];
             }
         }
         abi.push(signature);
-        const iface = new ethers.utils.Interface(abi);
-        if (args === 1) {
-            data = iface.encodeFunctionData(method);     
+        iface = new ethers.utils.Interface(abi);
+
+        if (params.args) {
+            data = iface.encodeFunctionData(params.method, params.args); 
         } else {
-            data = iface.encodeFunctionData(method, args); 
+            data = iface.encodeFunctionData(params.method);
         }
         txDetails.data = data;
-    }
-
+    } 
+    
     const tx = await signer.sendTransaction(txDetails);
     const receipt = await tx.wait();
     // console.log(`${method} with hash: `, receipt.transactionHash);
@@ -156,7 +158,12 @@ async function getArbitrumParams(userDetails) {
 
 
 async function activateOzBeaconProxy(proxy) {
-    await sendTx(proxy, false, 'sendToArb', 1);
+    await sendTx({
+        receiver: proxy, 
+        method: 'sendToArb',
+        isAmount: false,
+        args: false
+    });
 }
 
 
@@ -239,7 +246,12 @@ async function deploySystemOptimistically(userDetails, signerAddr) {
     ];
 
     const [ozERC1967proxyAddr] = await deployContract('ozERC1967Proxy', l1Signer, constrArgs);
-    await sendTx(ozERC1967proxyAddr, false, 'initialize', [beaconAddr]);
+    await sendTx({
+        receiver: ozERC1967proxyAddr,
+        method: 'initialize',
+        args: [beaconAddr],
+        isAmount: false
+    });
 
     //Deploys Auth
     constrArgs = [
