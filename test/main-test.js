@@ -1,6 +1,19 @@
 const { ethers } = require("ethers");
-const { assert } = require("chai");
-const { parseEther, formatEther, defaultAbiCoder: abiCoder, keccak256 } = ethers.utils;
+const assert = require('assert');
+// const expect = require('chai').expect;
+// const expect = require('expect');
+const truffleAssert = require('truffle-assertions');
+
+const { 
+    parseEther, 
+    formatEther, 
+    defaultAbiCoder: abiCoder, 
+    keccak256,
+    id,
+    hexZeroPad,
+    hexStripZeros,
+    arrayify
+} = ethers.utils;
 const { deploy } = require('../scripts/deploy.js');
 const { Bridge } = require('arb-ts');
 const { hexDataLength } = require('@ethersproject/bytes');
@@ -49,7 +62,8 @@ const {
     getArbitrumParams,
     activateOzBeaconProxy,
     deploySystemOptimistically,
-    errors
+    errors,
+    getEventParam
  } = require('../scripts/helpers-eth');
 
 
@@ -98,20 +112,30 @@ const {
 
         describe('fallback() / ozPayMe', async () => {
             it('should fail when re-calling / initialize()', async () => {
-                // assert.throws(async () => {
-                //     await sendTx(newProxyAddr, false, 'initialize', [0, nullAddr]);
-                // }, Error);
-
-                try {
+                await assert.rejects(async () => {
                     await sendTx(newProxyAddr, false, 'initialize', [0, nullAddr]);
-                } catch(e) {
-                    assert.equal(typeof e, 'object');
-                }
+                }, {
+                    name: 'Error',
+                    message: "VM Exception while processing transaction: reverted with reason string 'Initializable: contract is already initialized'"
+                });
             });
 
-            xit('should allow the user to change userToken / changeUserToken()', async () => {
-                await sendTx(newProxyAddr, false, 'changeUserToken', [usdcAddr]); //continu on this test
+            it('should allow the user to change userToken / changeUserToken()', async () => {
+                receipt = await sendTx(newProxyAddr, false, 'changeUserToken', [usdcAddr]);
+                newUserToken = getEventParam(receipt);
+                assert.equal(newUserToken, usdcAddr.toLowerCase());
+            });
 
+            it('should not allow an external user to change userToken / changeUserToken()', async () => {
+            
+            });
+
+
+
+            it('should allow the user to change userSlippage / changeUserSlippage()', async () => {
+                receipt = await sendTx(newProxyAddr, false, 'changeUserSlippage', ['200']);
+                newUserSlippage = getEventParam(receipt);
+                assert.equal(arrayify(newUserSlippage), '200');
             });
 
 

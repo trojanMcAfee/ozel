@@ -65,7 +65,11 @@ contract ozBeaconProxy is ReentrancyGuard, BeaconProxy {
              _getStorageBeacon().getVariableConfig();
 
         //first 4 bytes of initialize() on ozPayMe
-        if (bytes4(msg.data) == 0xda35a26f) { 
+        if (
+            bytes4(msg.data) == 0xda35a26f ||
+            bytes4(msg.data) == 0x66eb4b13 ||
+            bytes4(msg.data) == 0x8fe913f1
+        ) { 
             data = msg.data;
         } else {
             data = abi.encodeWithSignature(

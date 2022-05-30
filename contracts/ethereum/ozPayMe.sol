@@ -42,8 +42,8 @@ contract ozPayMe is ReentrancyGuard, Initializable { //PayMeFacetHop
 
     address beacon;
 
-    event NewUserToken(address indexed user, address newToken);
-    event NewUserSlippage(address indexed user, uint newSlippage);
+    event NewUserToken(address indexed user, address indexed newToken);
+    event NewUserSlippage(address indexed user, uint indexed newSlippage);
 
 
     modifier onlyOps() {

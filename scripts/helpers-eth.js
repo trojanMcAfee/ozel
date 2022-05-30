@@ -26,6 +26,8 @@ const {
     chainlinkAggregatorAddr
  } = require('../scripts/state-vars.js');
 
+ const { hexStripZeros } = ethers.utils;
+
 
 
 async function getGasDetailsL2(userDetails, bridge) {
@@ -107,7 +109,8 @@ async function sendTx(receiver, isAmount, method, args, value) {
         sendToArb: 'function sendToArb()',
         initialize: `function initialize(${args.length < 2 ? 'address beacon_' : 'uint256 userId_, address beacon_'})`,
         _setBeacon: 'function _setBeacon(address beacon, bytes memory data)',
-        initialize2: 'function initialize(uint256 userId_, address beacon_)'
+        changeUserToken: 'function changeUserToken(address newUserToken_)',
+        changeUserSlippage: 'function changeUserSlippage(uint256 newUserSlippage_)'        
     };
 
 
@@ -133,6 +136,7 @@ async function sendTx(receiver, isAmount, method, args, value) {
     const tx = await signer.sendTransaction(txDetails);
     const receipt = await tx.wait();
     // console.log(`${method} with hash: `, receipt.transactionHash);
+    return receipt;
 }
 
 
@@ -153,6 +157,11 @@ async function getArbitrumParams(userDetails) {
 
 async function activateOzBeaconProxy(proxy) {
     await sendTx(proxy, false, 'sendToArb', 1);
+}
+
+
+function getEventParam(receipt) {
+    return hexStripZeros(receipt.logs[0].topics[2]);
 }
 
 
@@ -271,5 +280,6 @@ module.exports = {
     sendTx,
     getArbitrumParams,
     activateOzBeaconProxy,
-    deploySystemOptimistically
+    deploySystemOptimistically,
+    getEventParam
 };
