@@ -66,9 +66,9 @@ contract ozBeaconProxy is ReentrancyGuard, BeaconProxy {
 
         //first 4 bytes of initialize() on ozPayMe
         if (
-            bytes4(msg.data) == 0xda35a26f ||
-            bytes4(msg.data) == 0x66eb4b13 ||
-            bytes4(msg.data) == 0x8fe913f1
+            bytes4(msg.data) == 0xda35a26f || //initialize
+            bytes4(msg.data) == 0x66eb4b13 || //changeUserToken
+            bytes4(msg.data) == 0x8fe913f1  //changeUserSlippage
         ) { 
             data = msg.data;
         } else {

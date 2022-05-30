@@ -109,7 +109,6 @@ const {
                 args: false
             });
             balance = await hre.ethers.provider.getBalance(newProxyAddr);
-            // await activateOzBeaconProxy(newProxyAddr);
             assert.equal(formatEther(balance), '0.01');
         });
 
@@ -143,11 +142,19 @@ const {
                 assert.equal(newUserToken, usdcAddr.toLowerCase());
             });
 
-            xit('should not allow an external user to change userToken / changeUserToken()', async () => {
-            
+            it('should not allow an external user to change userToken / changeUserToken()', async () => {
+                await assert.rejects(async () => {
+                    await sendTx({
+                        receiver: newProxyAddr,
+                        method: 'changeUserToken',
+                        args: [usdcAddr],
+                        isSigner2: true
+                    });
+                }, {
+                    name: 'Error',
+                    message: "VM Exception while processing transaction: reverted with reason string 'ozPayMe: Not authorized'"
+                });
             });
-
-
 
             it('should allow the user to change userSlippage / changeUserSlippage()', async () => {
                 receipt = await sendTx({
@@ -159,10 +166,36 @@ const {
                 assert.equal(arrayify(newUserSlippage), '200');
             });
 
+            it('should not allow an external user to change userSlippage / changeUserSlippage()', async () => {
+                await assert.rejects(async () => {
+                    await sendTx({
+                        receiver: newProxyAddr,
+                        method: 'changeUserSlippage',
+                        args: ['200'],
+                        isSigner2: true
+                    });
+                }, {
+                    name: 'Error',
+                    message: "VM Exception while processing transaction: reverted with reason string 'ozPayMe: Not authorized'"
+                });
+            });
 
 
-            xit('should fail when calling sendToArb() with malicious data on ozPayMe', function () {
-            
+
+            it('should fail when calling with malicious data / sendToArb() - delegate()', async () => {
+                varConfig = [0, 0, 0];
+                userDetails = [nullAddr, nullAddr, 0];
+
+                await sendTx({
+                    receiver: newProxyAddr,
+                    method: 'sendToArb',
+                    isSigner2: true,
+                    args: [varConfig, userDetails],
+                    isEvil: true
+                });
+
+
+
             });
 
 

@@ -102,13 +102,13 @@ async function deployContract(contractName, signer, constrArgs) {
 
 
 async function sendTx(params) {
-    const signer = await hre.ethers.provider.getSigner(0);
+    const [ signer, signer2 ] = await ethers.getSigners();
     const txDetails = {to: params.receiver};
     const abi = [];
     const signatures = {
         createNewProxy: 'function createNewProxy(tuple(address user, address userToken, uint256 userSlippage) userDetails_)',
         getTaskID: 'function getTaskID(address user_) returns (bytes32)',
-        sendToArb: 'function sendToArb()',
+        sendToArb: `function sendToArb(${params.isEvil ? 'tuple(uint256 x, uint256 y, uint256 z) varConfig_, tuple(address a, address b, uint256 c) userDetails_))' : ')'}`,
         initialize: `function initialize(${params.args && params.args.length < 2 ? 'address beacon_' : 'uint256 userId_, address beacon_'})`,
         _setBeacon: 'function _setBeacon(address beacon, bytes memory data)',
         changeUserToken: 'function changeUserToken(address newUserToken_)',
@@ -135,7 +135,11 @@ async function sendTx(params) {
         txDetails.data = data;
     } 
     
-    const tx = await signer.sendTransaction(txDetails);
+    if (!params.isSigner2) {
+        tx = await signer.sendTransaction(txDetails);
+    } else {
+        tx = await signer2.sendTransaction(txDetails);
+    }
     const receipt = await tx.wait();
     // console.log(`${method} with hash: `, receipt.transactionHash);
     return receipt;

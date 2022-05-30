@@ -79,8 +79,9 @@ contract ozPayMe is ReentrancyGuard, Initializable { //PayMeFacetHop
         StorageBeacon.UserConfig memory userDetails_
     ) external payable { //onlyOps
         if (userDetails_.user == address(0) || userDetails_.userToken == address(0)) revert CantBeZero('address');
+        if (!_getStorageBeacon(beacon).isUser(userDetails_.user)) revert NotFoundInDatabase('user');
         if (userDetails_.userSlippage <= 0) revert CantBeZero('slippage');
-        if (address(this).balance == 0) revert CantBeZero('contract balance');
+        if (!(address(this).balance > 0)) revert CantBeZero('contract balance');
 
         bool isEmergency;
 

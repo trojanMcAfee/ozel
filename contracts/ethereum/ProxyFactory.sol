@@ -31,7 +31,7 @@ contract ProxyFactory is ReentrancyGuard, Initializable {
     function createNewProxy(StorageBeacon.UserConfig memory userDetails_) external nonReentrant { //unsafe
         if (userDetails_.user == address(0) || userDetails_.userToken == address(0)) revert CantBeZero('address');
         if (userDetails_.userSlippage <= 0) revert CantBeZero('slippage');
-        if (!_getStorageBeacon().queryTokenDatabase(userDetails_.userToken)) revert TokenNotFound();
+        if (!_getStorageBeacon().queryTokenDatabase(userDetails_.userToken)) revert NotFoundInDatabase('token');
 
         bytes memory idData = abi.encodeWithSignature( 
             'issueUserID((address,address,uint256))', 

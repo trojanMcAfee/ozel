@@ -53,6 +53,7 @@ contract StorageBeacon is Ownable {
     mapping(address => bytes32) public taskIDs;
     mapping(address => bool) public tokenDatabase;
     mapping(address => bool) public proxyDatabase;
+    mapping(address => bool) private userDatabase;
     mapping(uint => UserConfig) public idToUserDetails;
     mapping(address => address) proxyToUser; 
     mapping(address => address) userToProxy;
@@ -114,10 +115,11 @@ contract StorageBeacon is Ownable {
         unchecked { ++internalId; }
     }
     
-    function saveUserProxy(address sender_, address proxy_) external hasRole(0x68e540e5) {
-        userToProxy[sender_] = proxy_;
-        proxyToUser[proxy_] = sender_;
+    function saveUserProxy(address user_, address proxy_) external hasRole(0x68e540e5) {
+        userToProxy[user_] = proxy_;
+        proxyToUser[proxy_] = user_;
         proxyDatabase[proxy_] = true;
+        userDatabase[user_] = true;
     }
 
     function saveTaskId(address proxy_, bytes32 id_) external hasRole(0xf2034a69) {
@@ -173,6 +175,10 @@ contract StorageBeacon is Ownable {
 
     function queryTokenDatabase(address token_) external view returns(bool) {
         return tokenDatabase[token_];
+    }
+
+    function isUser(address user_) external view returns(bool) {
+        return userDatabase[user_];
     }
 
 }
