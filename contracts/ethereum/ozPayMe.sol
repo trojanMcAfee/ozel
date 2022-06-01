@@ -99,24 +99,9 @@ contract ozPayMe is ReentrancyGuard, Initializable { //PayMeFacetHop
         if (!(address(this).balance > 0)) revert CantBeZero('contract balance');
 
         (uint fee, ) = IOps(fxConfig.ops).getFeeDetails();
-        console.log('eth in ozPayme: ', fxConfig.ETH);
-        console.log('fee: ', fee);
         _transfer(fee, fxConfig.ETH);
 
         bool isEmergency;
-
-        console.log('user: ', userDetails_.user);
-        console.log('token: ', userDetails_.userToken);
-        console.log('slip: ', userDetails_.userSlippage);
-
-        console.log('PYY: ', fxConfig.PYY);
-        console.log('auto: ', varConfig_.autoRedeem);
-        console.log('maxSub: ', varConfig_.maxSubmissionCost);
-        console.log('maxGas: ', fxConfig.maxGas);
-        console.log('gasBid: ', varConfig_.gasPriceBid);
-
-        console.log('inbox: ', fxConfig.inbox);
-        console.log('bal: ', address(this).balance);
 
         bytes memory swapData = abi.encodeWithSelector(
             FakePYY(payable(fxConfig.PYY)).exchangeToUserToken.selector, 

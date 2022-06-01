@@ -402,7 +402,7 @@ async function sendArb() { //mainnet
     const filter = {
         address: emitterAddr,
         topics: [
-            ethers.utils.id("showTicket(uint256)")
+            ethers.utils.id("ShowTicket(uint256)")
         ]
     };
 
