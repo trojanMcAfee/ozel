@@ -77,6 +77,7 @@ let userDetails;
 let newProxyAddr, newProxy;
 let balance;
 let newUserToken, newUserSlippage;
+let user;
 
 
 
@@ -133,6 +134,16 @@ let newUserToken, newUserSlippage;
                 });
             });
 
+            it('should fail when not Ops calls / sendToArb()', async () => {
+                await assert.rejects(async () => {
+                    await activateOzBeaconProxy(newProxyAddr);
+                }, {
+                    name: 'Error',
+                    message: "VM Exception while processing transaction: reverted with reason string 'ozPayMe: onlyOps'"
+                });
+            });
+
+
             it('should allow the user to change userToken / changeUserToken()', async () => {
                 receipt = await sendTx({
                     receiver: newProxyAddr,
@@ -181,26 +192,28 @@ let newUserToken, newUserSlippage;
                 });
             });
 
-
-
-            xit('should still send funds with userDetails even if malicious data was passed / sendToArb() - delegate()', async () => {
-                // newProxy = await hre.ethers.getContractAt('ozBeaconProxy', newProxyAddr);
-                varConfig = [0, 0, 0];
-                userDetails = [deadAddr, deadAddr, 0];
+            it('should still send funds with correct userDetails even if malicious data was passed / sendToArb() - delegate()', async () => {
+                newProxy = await hre.ethers.getContractAt('ozBeaconProxy', newProxyAddr);
+                evilVarConfig = [0, 0, 0];
+                evilUserDetails = [deadAddr, deadAddr, 0];
                 await sendETHv2(newProxyAddr);
 
                 await sendTx({
                     receiver: newProxyAddr,
                     method: 'sendToArb',
                     isSigner2: true,
-                    args: [varConfig, userDetails],
+                    args: [evilVarConfig, evilUserDetails],
                     isEvil: true
                 });
 
                 balance = await hre.ethers.provider.getBalance(newProxyAddr);
                 assert.equal(balance.toString(), 0);
 
-                await storageBeacon.getUserByProxy(newProxyAddr);
+                const x = await newProxy.getUserDetails();
+                console.log('x: ', x);
+
+                // user = await storageBeacon.getUserByProxy(newProxyAddr);
+                // assert.equal(user.toString(), signerAddr);
 
             });
 
@@ -219,10 +232,7 @@ let newUserToken, newUserSlippage;
 
   
 
-    xit('', async () => {
-            
-    });
-
+    
 
 
   });

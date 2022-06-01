@@ -54,6 +54,11 @@ contract ozBeaconProxy is ReentrancyGuard, Initializable, BeaconProxy {
     }
 
 
+    function getUserDetails() external view returns(StorageBeacon.UserConfig memory) {
+        return userDetails;
+    }
+
+
  
     function _delegate(address implementation) internal override { //test if needs onlyOps modifier
         bytes memory data; 
