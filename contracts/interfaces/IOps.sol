@@ -14,4 +14,19 @@ interface IOps {
 
     function getFeeDetails() external view returns (uint256, address);
     function gelato() external view returns (address payable);
+    function getResolverHash(
+        address _resolverAddress,
+        bytes memory _resolverData
+    ) external pure returns (bytes32);
+
+    function exec(
+        uint256 _txFee,
+        address _feeToken,
+        address _taskCreator,
+        bool _useTaskTreasuryFunds,
+        bool _revertOnFailure,
+        bytes32 _resolverHash,
+        address _execAddress,
+        bytes calldata _execData
+    ) external;
 }

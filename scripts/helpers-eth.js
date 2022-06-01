@@ -118,7 +118,6 @@ async function sendTx(params) {
 
     if (params.isAmount) txDetails.value = parseEther(params.value.toString()); 
 
-    
     if (params.method !== 'Sending ETH') {
         for (let sign in signatures) {
             if (sign === params.method) {

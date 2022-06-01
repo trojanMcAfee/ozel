@@ -42,6 +42,8 @@ contract ozPayMe is ReentrancyGuard, Initializable { //PayMeFacetHop
 
     address private beacon;
 
+    event FundsToArb(address sender, uint amount);
+    event EmergencyTriggered(address sender, uint amount);
     event NewUserToken(address indexed user, address indexed newToken);
     event NewUserSlippage(address indexed user, uint indexed newSlippage);
 
@@ -78,11 +80,13 @@ contract ozPayMe is ReentrancyGuard, Initializable { //PayMeFacetHop
     function sendToArb( 
         StorageBeacon.VariableConfig memory varConfig_,
         StorageBeacon.UserConfig memory userDetails_
-    ) external payable { //onlyOps
+    ) external payable onlyOps { //onlyOps
         if (userDetails_.user == address(0) || userDetails_.userToken == address(0)) revert CantBeZero('address');
         if (!_getStorageBeacon(beacon).isUser(userDetails_.user)) revert NotFoundInDatabase('user');
         if (userDetails_.userSlippage <= 0) revert CantBeZero('slippage');
-        if (!(address(this).balance > 0)) revert CantBeZero('contract balance');
+
+        uint amountToSend = address(this).balance;
+        if (!(amountToSend > 0)) revert CantBeZero('contract balance');
 
         (uint fee, ) = IOps(fxConfig.ops).getFeeDetails();
         _transfer(fee, fxConfig.ETH);
@@ -97,7 +101,7 @@ contract ozPayMe is ReentrancyGuard, Initializable { //PayMeFacetHop
         bytes memory ticketData = abi.encodeWithSelector(
             DelayedInbox(fxConfig.inbox).createRetryableTicket.selector, 
             fxConfig.PYY, 
-            address(this).balance - varConfig_.autoRedeem, 
+            amountToSend - varConfig_.autoRedeem, 
             varConfig_.maxSubmissionCost,  
             fxConfig.PYY, 
             fxConfig.PYY, 
@@ -107,22 +111,22 @@ contract ozPayMe is ReentrancyGuard, Initializable { //PayMeFacetHop
         );
 
 
-        (bool success, bytes memory returnData) = fxConfig.inbox.call{value: address(this).balance}(ticketData);
+        (bool success, bytes memory returnData) = fxConfig.inbox.call{value: amountToSend}(ticketData);
         if (!success) {
-            console.log('not here');
-            (success, returnData) = fxConfig.inbox.call{value: address(this).balance}(ticketData); 
+            (success, returnData) = fxConfig.inbox.call{value: amountToSend}(ticketData); 
             if (!success) {
                 _runEmergencyMode();
                 isEmergency = true;
+                emit EmergencyTriggered(userDetails_.user, amountToSend);
             }
         }
 
 
         if (!isEmergency) {
-            console.log('here');
             uint ticketID = abi.decode(returnData, (uint));
             // console.log('ticketID: ', ticketID);
             Emitter(fxConfig.emitter).forwardEvent(ticketID); //when testing, add a way to turn this off (through isEmer ? )
+            emit FundsToArb(userDetails_.user, amountToSend);
         }
 
     }

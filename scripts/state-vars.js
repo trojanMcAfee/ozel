@@ -1,4 +1,5 @@
 // const { BigNumber } = require("@ethersproject/bignumber");
+const { ethers } = require("ethers");
 const { toBn } = require('evm-bn');
 
 let usdtAddrArb;

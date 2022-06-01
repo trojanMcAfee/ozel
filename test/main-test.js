@@ -70,7 +70,12 @@ const {
 
 
 
-
+let signerAddr, signerAddr2;
+let ozERC1967proxyAddr, storageBeacon;
+let userDetails;
+let newProxyAddr, newProxy;
+let balance;
+let newUserToken, newUserSlippage;
 
 
 
@@ -108,12 +113,47 @@ const {
         });
 
         it('should have a final balance of 0 ETH', async () => {
+            const ops = await hre.ethers.getContractAt('IOps', pokeMeOpsAddr);
+            
+            await hre.network.provider.request({
+                method: "hardhat_impersonateAccount",
+                params: [pokeMeOpsAddr],
+            });
+
+            const opsSigner = await hre.ethers.provider.getSigner(pokeMeOpsAddr);
+            let iface = new ethers.utils.Interface(['function checker()']);
+            const resolverData = iface.encodeFunctionData('checker');
+            const resolverHash = await ops.connect(opsSigner).getResolverHash(newProxyAddr, resolverData);
+
+            await hre.network.provider.request({
+                method: "hardhat_stopImpersonatingAccount",
+                params: [pokeMeOpsAddr],
+            });
+
+
+            await hre.network.provider.request({
+                method: "hardhat_impersonateAccount",
+                params: [gelatoAddr],
+            });
+
+            const gelatoSigner = await hre.ethers.provider.getSigner(gelatoAddr);
+            // const opsAbi = ['function uint256 _txFee, address _feeToken, address _taskCreator, bool __useTaskTreasuryFunds, bool _revertOnFailure, bytes32 __resolverHash, address _execAddress, bytes calldata _execData'];
+            iface = new ethers.utils.Interface(['function checker()']);
+            const execData = iface.encodeFunctionData('checker');
+            await ops.connect(gelatoSigner).exec(0, ETH, newProxyAddr, false, true, resolverHash, newProxyAddr, execData);
+
+            await hre.network.provider.request({
+                method: "hardhat_stopImpersonatingAccount",
+                params: [gelatoAddr],
+            });
+            
+
             await activateOzBeaconProxy(newProxyAddr);
             balance = await hre.ethers.provider.getBalance(newProxyAddr);
             assert.equal(formatEther(balance), 0);
         });
 
-        describe('fallback() / ozPayMe', async () => {
+        xdescribe('fallback() / ozPayMe', async () => {
             it('should fail when re-calling / initialize()', async () => {
                 await assert.rejects(async () => {
                     await sendTx({
@@ -177,10 +217,11 @@ const {
 
 
 
-            it('should fail when calling with malicious data / sendToArb() - delegate()', async () => {
+            it('should still send funds with userDetails even if malicious data was passed / sendToArb() - delegate()', async () => {
+                // newProxy = await hre.ethers.getContractAt('ozBeaconProxy', newProxyAddr);
                 varConfig = [0, 0, 0];
                 userDetails = [deadAddr, deadAddr, 0];
-                await sendETH(newProxyAddr);
+                await sendETHv2(newProxyAddr);
 
                 await sendTx({
                     receiver: newProxyAddr,
@@ -190,7 +231,10 @@ const {
                     isEvil: true
                 });
 
+                balance = await hre.ethers.provider.getBalance(newProxyAddr);
+                assert.equal(balance.toString(), 0);
 
+                await storageBeacon.getUserByProxy(newProxyAddr);
 
             });
 
