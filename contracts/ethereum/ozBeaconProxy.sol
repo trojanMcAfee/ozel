@@ -16,7 +16,7 @@ import '@rari-capital/solmate/src/utils/ReentrancyGuard.sol';
 
 
 
-contract ozBeaconProxy is ReentrancyGuard, BeaconProxy { 
+contract ozBeaconProxy is ReentrancyGuard, Initializable, BeaconProxy { 
 
     StorageBeacon.UserConfig userDetails;
     StorageBeacon.FixedConfig fxConfig;
@@ -56,6 +56,21 @@ contract ozBeaconProxy is ReentrancyGuard, BeaconProxy {
     function getUserDetails() external view returns(StorageBeacon.UserConfig memory) {
         return userDetails;
     }
+
+
+    // function _delegate(address implementation) internal override {
+    //     bytes memory data; 
+
+    //     StorageBeacon.VariableConfig memory varConfig =
+    //          _getStorageBeacon().getVariableConfig();
+
+    //     data = abi.encodeWithSignature(
+    //             'sendToArb((uint256,uint256,uint256),(address,address,uint256))', 
+    //             varConfig,
+    //             userDetails
+    //         );
+    //     }
+    // } 
 
  
     function _delegate(address implementation) internal override { //test if needs onlyOps modifier

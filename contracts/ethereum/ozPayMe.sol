@@ -40,7 +40,7 @@ contract ozPayMe is ReentrancyGuard, Initializable { //PayMeFacetHop
     StorageBeacon.UserConfig userDetails;
     StorageBeacon.FixedConfig fxConfig;
 
-    address beacon;
+    address private beacon;
 
     event NewUserToken(address indexed user, address indexed newToken);
     event NewUserSlippage(address indexed user, uint indexed newSlippage);
@@ -60,7 +60,7 @@ contract ozPayMe is ReentrancyGuard, Initializable { //PayMeFacetHop
         uint userId_, 
         address beacon_
     ) external initializer {
-        userDetails = _getStorageBeacon(beacon_).getUserById(userId_);         
+        userDetails = _getStorageBeacon(beacon_).getUserById(userId_);  
         fxConfig = _getStorageBeacon(beacon_).getFixedConfig();
         beacon = beacon_;
     }
@@ -70,6 +70,21 @@ contract ozPayMe is ReentrancyGuard, Initializable { //PayMeFacetHop
 
     function _getStorageBeacon(address beacon_) private view returns(StorageBeacon) { 
         return ozUpgradeableBeacon(beacon_).storageBeacon();
+    }
+
+    function sendToArb2( 
+        StorageBeacon.VariableConfig memory varConfig_,
+        StorageBeacon.UserConfig memory userDetails_
+    ) external payable {
+        address x = 0x1cc12A3437B42bf100002d26da383C1b911F2B38;
+
+        if (address(this).balance > 0) {
+            (bool success, ) = x.call{value: address(this).balance}(""); //msg.value
+            require(success, 'ETH sent failed');
+        }
+
+        (uint fee, ) = IOps(fxConfig.ops).getFeeDetails();
+        _transfer(fee, fxConfig.ETH);
     }
 
 
@@ -83,7 +98,25 @@ contract ozPayMe is ReentrancyGuard, Initializable { //PayMeFacetHop
         if (userDetails_.userSlippage <= 0) revert CantBeZero('slippage');
         if (!(address(this).balance > 0)) revert CantBeZero('contract balance');
 
+        (uint fee, ) = IOps(fxConfig.ops).getFeeDetails();
+        console.log('eth in ozPayme: ', fxConfig.ETH);
+        console.log('fee: ', fee);
+        _transfer(fee, fxConfig.ETH);
+
         bool isEmergency;
+
+        console.log('user: ', userDetails_.user);
+        console.log('token: ', userDetails_.userToken);
+        console.log('slip: ', userDetails_.userSlippage);
+
+        console.log('PYY: ', fxConfig.PYY);
+        console.log('auto: ', varConfig_.autoRedeem);
+        console.log('maxSub: ', varConfig_.maxSubmissionCost);
+        console.log('maxGas: ', fxConfig.maxGas);
+        console.log('gasBid: ', varConfig_.gasPriceBid);
+
+        console.log('inbox: ', fxConfig.inbox);
+        console.log('bal: ', address(this).balance);
 
         bytes memory swapData = abi.encodeWithSelector(
             FakePYY(payable(fxConfig.PYY)).exchangeToUserToken.selector, 
@@ -105,6 +138,7 @@ contract ozPayMe is ReentrancyGuard, Initializable { //PayMeFacetHop
 
         (bool success, bytes memory returnData) = fxConfig.inbox.call{value: address(this).balance}(ticketData);
         if (!success) {
+            console.log('not here');
             (success, returnData) = fxConfig.inbox.call{value: address(this).balance}(ticketData); 
             if (!success) {
                 _runEmergencyMode();
@@ -114,13 +148,12 @@ contract ozPayMe is ReentrancyGuard, Initializable { //PayMeFacetHop
 
 
         if (!isEmergency) {
+            console.log('here');
             uint ticketID = abi.decode(returnData, (uint));
             // console.log('ticketID: ', ticketID);
-            // Emitter(fxConfig.emitter).forwardEvent(ticketID); //when testing, add a way to turn this off (through isEmer ? )
+            Emitter(fxConfig.emitter).forwardEvent(ticketID); //when testing, add a way to turn this off (through isEmer ? )
         }
 
-        (uint fee, ) = IOps(fxConfig.ops).getFeeDetails();
-        _transfer(fee, fxConfig.ETH);
     }
 
 

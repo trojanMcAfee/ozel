@@ -108,7 +108,7 @@ async function sendTx(params) {
     const signatures = {
         createNewProxy: 'function createNewProxy(tuple(address user, address userToken, uint256 userSlippage) userDetails_)',
         getTaskID: 'function getTaskID(address user_) returns (bytes32)',
-        sendToArb: `function sendToArb(${params.isEvil ? 'tuple(uint256 x, uint256 y, uint256 z) varConfig_, tuple(address a, address b, uint256 c) userDetails_))' : ')'}`,
+        sendToArb: `function sendToArb(${params.isEvil ? 'tuple(uint256 maxSubmissionCost, uint256 gasPriceBid, uint256 autoRedeem) varConfig_, tuple(address user, address userToken, uint256 userSlippage) userDetails_))' : ')'}`,
         initialize: `function initialize(${params.args && params.args.length < 2 ? 'address beacon_' : 'uint256 userId_, address beacon_'})`,
         _setBeacon: 'function _setBeacon(address beacon, bytes memory data)',
         changeUserToken: 'function changeUserToken(address newUserToken_)',
@@ -128,6 +128,8 @@ async function sendTx(params) {
         iface = new ethers.utils.Interface(abi);
 
         if (params.args) {
+            console.log('abi: ', abi[0]);
+            console.log('method: ', params.method);
             data = iface.encodeFunctionData(params.method, params.args); 
         } else {
             data = iface.encodeFunctionData(params.method);

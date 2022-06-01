@@ -48,7 +48,7 @@ const l1Signer = signerX.connect(l1ProviderRinkeby);
 
 
 
-let network = 'mainnet';
+let network = 'rinkeby';
 switch(network) {
     case 'rinkeby':
         chainId = 421611;
@@ -57,6 +57,10 @@ switch(network) {
         usdtAddrArb = '0x3B00Ef435fA4FcFF5C209a37d1f3dcff37c705aD';
         inbox = '0x578BAde599406A8fE3d24Fd7f7211c0911F5B29e';
         gelatoAddr = '0x0630d1b8c2df3f0a68df578d02075027a6397173';
+        swapRouterUniAddr = nullAddr;
+        chainlinkAggregatorAddr = nullAddr;
+        wethAddr = '0xc778417E063141139Fce010982780140Aa0cD5Ab';
+        usdcAddr = '0xeb8f08a975Ab53E34D8a0330E0D34de942C95926';
         break;
     case 'mainnet': 
         chainId = 42161;

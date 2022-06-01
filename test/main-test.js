@@ -119,7 +119,7 @@ const {
         });
 
         describe('fallback() / ozPayMe', async () => {
-            it('should fail when re-calling / initialize()', async () => {
+            xit('should fail when re-calling / initialize()', async () => {
                 await assert.rejects(async () => {
                     await sendTx({
                         receiver: newProxyAddr,
@@ -132,7 +132,7 @@ const {
                 });
             });
 
-            it('should allow the user to change userToken / changeUserToken()', async () => {
+            xit('should allow the user to change userToken / changeUserToken()', async () => {
                 receipt = await sendTx({
                     receiver: newProxyAddr,
                     method: 'changeUserToken',
@@ -142,7 +142,7 @@ const {
                 assert.equal(newUserToken, usdcAddr.toLowerCase());
             });
 
-            it('should not allow an external user to change userToken / changeUserToken()', async () => {
+            xit('should not allow an external user to change userToken / changeUserToken()', async () => {
                 await assert.rejects(async () => {
                     await sendTx({
                         receiver: newProxyAddr,
@@ -156,7 +156,7 @@ const {
                 });
             });
 
-            it('should allow the user to change userSlippage / changeUserSlippage()', async () => {
+            xit('should allow the user to change userSlippage / changeUserSlippage()', async () => {
                 receipt = await sendTx({
                     receiver: newProxyAddr,
                     method: 'changeUserSlippage',
@@ -166,7 +166,7 @@ const {
                 assert.equal(arrayify(newUserSlippage), '200');
             });
 
-            it('should not allow an external user to change userSlippage / changeUserSlippage()', async () => {
+            xit('should not allow an external user to change userSlippage / changeUserSlippage()', async () => {
                 await assert.rejects(async () => {
                     await sendTx({
                         receiver: newProxyAddr,
@@ -182,7 +182,7 @@ const {
 
 
 
-            it('should fail when calling with malicious data / sendToArb() - delegate()', async () => {
+            xit('should fail when calling with malicious data / sendToArb() - delegate()', async () => {
                 varConfig = [0, 0, 0];
                 userDetails = [nullAddr, nullAddr, 0];
 

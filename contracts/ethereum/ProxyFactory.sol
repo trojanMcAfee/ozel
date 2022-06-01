@@ -69,6 +69,7 @@ contract ProxyFactory is ReentrancyGuard, Initializable {
 
     function _startTask(address beaconProxy_) private { 
         StorageBeacon.FixedConfig memory fxConfig = _getStorageBeacon().getFixedConfig(); 
+        console.log('ETH in _startTask: ', fxConfig.ETH);
 
         (bytes32 id) = IOps(fxConfig.ops).createTaskNoPrepayment( 
             beaconProxy_,
