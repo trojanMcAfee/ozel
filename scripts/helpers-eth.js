@@ -187,6 +187,40 @@ async function sendETHv2(receiver) {
 }
 
 
+async function activateProxyLikeOps(proxy, taskCreator) {
+    await hre.network.provider.request({
+        method: "hardhat_impersonateAccount",
+        params: [pokeMeOpsAddr],
+    });
+
+    const opsSigner = await hre.ethers.provider.getSigner(pokeMeOpsAddr);
+    let iface = new ethers.utils.Interface(['function checker()']);
+    const resolverData = iface.encodeFunctionData('checker');
+    const ops = await hre.ethers.getContractAt('IOps', pokeMeOpsAddr);
+    const resolverHash = await ops.connect(opsSigner).getResolverHash(proxy, resolverData);
+
+    await hre.network.provider.request({
+        method: "hardhat_stopImpersonatingAccount",
+        params: [pokeMeOpsAddr],
+    });
+
+    await hre.network.provider.request({
+        method: "hardhat_impersonateAccount",
+        params: [gelatoAddr],
+    });
+
+    const gelatoSigner = await hre.ethers.provider.getSigner(gelatoAddr);
+    iface = new ethers.utils.Interface(['function sendToArb()']);
+    const execData = iface.encodeFunctionData('sendToArb');
+    await ops.connect(gelatoSigner).exec(0, ETH, taskCreator, false, false, resolverHash, proxy, execData);
+
+    await hre.network.provider.request({
+        method: "hardhat_stopImpersonatingAccount",
+        params: [gelatoAddr],
+    });
+}
+
+
 async function deploySystemOptimistically(userDetails, signerAddr) {
     let constrArgs = [];
 
@@ -284,11 +318,6 @@ async function deploySystemOptimistically(userDetails, signerAddr) {
     await rolesAuthority.setRoleCapability(1, storageBeaconAddr, '0x68e540e5', true); //saveUserProxy(address sender_, address proxy_)
     await rolesAuthority.setRoleCapability(1, storageBeaconAddr, '0xf2034a69', true); //saveTaskId(address proxy_, bytes32 id_)
 
-    // //Creates 1st proxy
-    // await sendTx(ozERC1967proxyAddr, false, 'createNewProxy', [userDetails]);
-    // newProxyAddr = (await storageBeacon.getProxyByUser(signerAddr)).toString(); 
-    // console.log('proxy 1: ', newProxyAddr);
-
     return [
         ozERC1967proxyAddr, 
         storageBeacon
@@ -309,5 +338,6 @@ module.exports = {
     activateOzBeaconProxy,
     deploySystemOptimistically,
     getEventParam,
-    sendETHv2
+    sendETHv2,
+    activateProxyLikeOps
 };

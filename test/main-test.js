@@ -65,7 +65,8 @@ const {
     deploySystemOptimistically,
     errors,
     getEventParam,
-    sendETHv2
+    sendETHv2,
+    activateProxyLikeOps
  } = require('../scripts/helpers-eth');
 
 
@@ -113,59 +114,12 @@ let newUserToken, newUserSlippage;
         });
 
         it('should have a final balance of 0 ETH', async () => {
-            const ops = await hre.ethers.getContractAt('IOps', pokeMeOpsAddr);
-            const taskId = await storageBeacon.getTaskID(signerAddr);
-            console.log('task id: ', taskId);
-
-            // const creator = await ops.taskCreator(taskId);
-            // console.log('creaton: ', creator);
-            
-            await hre.network.provider.request({
-                method: "hardhat_impersonateAccount",
-                params: [pokeMeOpsAddr],
-            });
-
-            const opsSigner = await hre.ethers.provider.getSigner(pokeMeOpsAddr);
-            let iface = new ethers.utils.Interface(['function checker()']);
-            const resolverData = iface.encodeFunctionData('checker');
-            const resolverHash = await ops.connect(opsSigner).getResolverHash(newProxyAddr, resolverData);
-
-            // console.log(1);
-            // await opsSigner.sendTransaction({
-            //     to: newProxyAddr,
-            //     data
-            // });
-            // console.log(2);
-
-            await hre.network.provider.request({
-                method: "hardhat_stopImpersonatingAccount",
-                params: [pokeMeOpsAddr],
-            });
-
-
-            await hre.network.provider.request({
-                method: "hardhat_impersonateAccount",
-                params: [gelatoAddr],
-            });
-
-            const gelatoSigner = await hre.ethers.provider.getSigner(gelatoAddr);
-            // const opsAbi = ['function uint256 _txFee, address _feeToken, address _taskCreator, bool __useTaskTreasuryFunds, bool _revertOnFailure, bytes32 __resolverHash, address _execAddress, bytes calldata _execData'];
-            iface = new ethers.utils.Interface(['function sendToArb()']);
-            const execData = iface.encodeFunctionData('sendToArb');
-            await ops.connect(gelatoSigner).exec(0, ETH, ozERC1967proxyAddr, false, false, resolverHash, newProxyAddr, execData);
-
-            await hre.network.provider.request({
-                method: "hardhat_stopImpersonatingAccount",
-                params: [gelatoAddr],
-            });
-            
-
-            // await activateOzBeaconProxy(newProxyAddr);
+            await activateProxyLikeOps(newProxyAddr, ozERC1967proxyAddr);
             balance = await hre.ethers.provider.getBalance(newProxyAddr);
             assert.equal(formatEther(balance), 0);
         });
 
-        xdescribe('fallback() / ozPayMe', async () => {
+        describe('fallback() / ozPayMe', async () => {
             it('should fail when re-calling / initialize()', async () => {
                 await assert.rejects(async () => {
                     await sendTx({
@@ -229,7 +183,7 @@ let newUserToken, newUserSlippage;
 
 
 
-            it('should still send funds with userDetails even if malicious data was passed / sendToArb() - delegate()', async () => {
+            xit('should still send funds with userDetails even if malicious data was passed / sendToArb() - delegate()', async () => {
                 // newProxy = await hre.ethers.getContractAt('ozBeaconProxy', newProxyAddr);
                 varConfig = [0, 0, 0];
                 userDetails = [deadAddr, deadAddr, 0];
