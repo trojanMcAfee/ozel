@@ -8,12 +8,6 @@ contract FakePYY {
 
     address public user;
 
-    // struct userConfig {
-    //     address user;
-    //     address userToken;
-    //     uint userSlippage; 
-    // }
-
     receive() external payable {}
 
 

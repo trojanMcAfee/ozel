@@ -53,7 +53,8 @@ const {
     swapRouterUniAddr,
     poolFeeUni,
     nullAddr,
-    chainlinkAggregatorAddr
+    chainlinkAggregatorAddr,
+    deadAddr
  } = require('../scripts/state-vars.js');
 
  const {
@@ -63,10 +64,9 @@ const {
     activateOzBeaconProxy,
     deploySystemOptimistically,
     errors,
-    getEventParam
+    getEventParam,
+    sendETHv2
  } = require('../scripts/helpers-eth');
-
-
 
 
 
@@ -96,18 +96,13 @@ const {
                 args: [userDetails]
             });
             newProxyAddr = (await storageBeacon.getProxyByUser(signerAddr)).toString(); 
+            console.log('Proxy #1: ', newProxyAddr);
             assert.equal(newProxyAddr.length, 42);
         });
 
 
         it('should have an initial balance of 0.01 ETH', async () => {
-            await sendTx({
-                receiver: newProxyAddr,
-                isAmount: true,
-                method: 'Sending ETH',
-                value: 0.01,
-                args: false
-            });
+            await sendETHv2(newProxyAddr);
             balance = await hre.ethers.provider.getBalance(newProxyAddr);
             assert.equal(formatEther(balance), '0.01');
         });
@@ -119,7 +114,7 @@ const {
         });
 
         describe('fallback() / ozPayMe', async () => {
-            xit('should fail when re-calling / initialize()', async () => {
+            it('should fail when re-calling / initialize()', async () => {
                 await assert.rejects(async () => {
                     await sendTx({
                         receiver: newProxyAddr,
@@ -132,7 +127,7 @@ const {
                 });
             });
 
-            xit('should allow the user to change userToken / changeUserToken()', async () => {
+            it('should allow the user to change userToken / changeUserToken()', async () => {
                 receipt = await sendTx({
                     receiver: newProxyAddr,
                     method: 'changeUserToken',
@@ -142,7 +137,7 @@ const {
                 assert.equal(newUserToken, usdcAddr.toLowerCase());
             });
 
-            xit('should not allow an external user to change userToken / changeUserToken()', async () => {
+            it('should not allow an external user to change userToken / changeUserToken()', async () => {
                 await assert.rejects(async () => {
                     await sendTx({
                         receiver: newProxyAddr,
@@ -156,7 +151,7 @@ const {
                 });
             });
 
-            xit('should allow the user to change userSlippage / changeUserSlippage()', async () => {
+            it('should allow the user to change userSlippage / changeUserSlippage()', async () => {
                 receipt = await sendTx({
                     receiver: newProxyAddr,
                     method: 'changeUserSlippage',
@@ -166,7 +161,7 @@ const {
                 assert.equal(arrayify(newUserSlippage), '200');
             });
 
-            xit('should not allow an external user to change userSlippage / changeUserSlippage()', async () => {
+            it('should not allow an external user to change userSlippage / changeUserSlippage()', async () => {
                 await assert.rejects(async () => {
                     await sendTx({
                         receiver: newProxyAddr,
@@ -182,9 +177,10 @@ const {
 
 
 
-            xit('should fail when calling with malicious data / sendToArb() - delegate()', async () => {
+            it('should fail when calling with malicious data / sendToArb() - delegate()', async () => {
                 varConfig = [0, 0, 0];
-                userDetails = [nullAddr, nullAddr, 0];
+                userDetails = [deadAddr, deadAddr, 0];
+                await sendETH(newProxyAddr);
 
                 await sendTx({
                     receiver: newProxyAddr,

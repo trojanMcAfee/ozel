@@ -24,14 +24,6 @@ contract Emitter is Ownable {
         if (!storageBeacon.proxyDatabase(msg.sender)) revert NotProxy();
         emit ShowTicket(ticketID_);
     }
-
-    // function getStorageBeaconEmitter() external view returns(address) {
-    //     return address(storageBeacon);
-    // }
-
-    // function doesProxyExist() external view returns(bool) {
-    //     return !storageBeacon.proxyDatabase(msg.sender);
-    // }
 }
 
 

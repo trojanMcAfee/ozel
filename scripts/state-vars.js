@@ -17,6 +17,7 @@ let fraxPoolAddr;
 let fraxAddr;
 let swapRouterUniAddr; 
 let chainlinkAggregatorAddr;
+let deadAddr;
 //------
 let chainId; //arbitrum
 let pokeMeOpsAddr; //gelato
@@ -48,7 +49,7 @@ const l1Signer = signerX.connect(l1ProviderRinkeby);
 
 
 
-let network = 'rinkeby';
+let network = 'mainnet';
 switch(network) {
     case 'rinkeby':
         chainId = 421611;
@@ -83,6 +84,7 @@ switch(network) {
         gelatoAddr = '0x3caca7b48d0573d793d3b0279b5f0029180e83b6';
         swapRouterUniAddr = '0xE592427A0AEce92De3Edee1F18E0157C05861564';
         chainlinkAggregatorAddr = '0x5f4eC3Df9cbd43714FE2740f5E3616155c5b8419';
+        deadAddr = '0x000000000000000000000000000000000000dEaD';
         break; 
     case 'arbitrum':
         pokeMeOpsAddr = '0xB3f5503f93d5Ef84b06993a1975B9D21B962892F'; 
@@ -142,6 +144,7 @@ module.exports = {
     swapRouterUniAddr,
     poolFeeUni,
     nullAddr,
-    chainlinkAggregatorAddr
+    chainlinkAggregatorAddr,
+    deadAddr
 };
 
