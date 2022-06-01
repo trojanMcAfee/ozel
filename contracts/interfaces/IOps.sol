@@ -29,4 +29,6 @@ interface IOps {
         address _execAddress,
         bytes calldata _execData
     ) external;
+
+    function taskCreator(bytes32 taskId) external view returns(address);
 }

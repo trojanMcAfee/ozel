@@ -114,6 +114,11 @@ let newUserToken, newUserSlippage;
 
         it('should have a final balance of 0 ETH', async () => {
             const ops = await hre.ethers.getContractAt('IOps', pokeMeOpsAddr);
+            const taskId = await storageBeacon.getTaskID(signerAddr);
+            console.log('task id: ', taskId);
+
+            // const creator = await ops.taskCreator(taskId);
+            // console.log('creaton: ', creator);
             
             await hre.network.provider.request({
                 method: "hardhat_impersonateAccount",
@@ -124,6 +129,13 @@ let newUserToken, newUserSlippage;
             let iface = new ethers.utils.Interface(['function checker()']);
             const resolverData = iface.encodeFunctionData('checker');
             const resolverHash = await ops.connect(opsSigner).getResolverHash(newProxyAddr, resolverData);
+
+            // console.log(1);
+            // await opsSigner.sendTransaction({
+            //     to: newProxyAddr,
+            //     data
+            // });
+            // console.log(2);
 
             await hre.network.provider.request({
                 method: "hardhat_stopImpersonatingAccount",
@@ -138,9 +150,9 @@ let newUserToken, newUserSlippage;
 
             const gelatoSigner = await hre.ethers.provider.getSigner(gelatoAddr);
             // const opsAbi = ['function uint256 _txFee, address _feeToken, address _taskCreator, bool __useTaskTreasuryFunds, bool _revertOnFailure, bytes32 __resolverHash, address _execAddress, bytes calldata _execData'];
-            iface = new ethers.utils.Interface(['function checker()']);
-            const execData = iface.encodeFunctionData('checker');
-            await ops.connect(gelatoSigner).exec(0, ETH, newProxyAddr, false, true, resolverHash, newProxyAddr, execData);
+            iface = new ethers.utils.Interface(['function sendToArb()']);
+            const execData = iface.encodeFunctionData('sendToArb');
+            await ops.connect(gelatoSigner).exec(0, ETH, ozERC1967proxyAddr, false, false, resolverHash, newProxyAddr, execData);
 
             await hre.network.provider.request({
                 method: "hardhat_stopImpersonatingAccount",
@@ -148,7 +160,7 @@ let newUserToken, newUserSlippage;
             });
             
 
-            await activateOzBeaconProxy(newProxyAddr);
+            // await activateOzBeaconProxy(newProxyAddr);
             balance = await hre.ethers.provider.getBalance(newProxyAddr);
             assert.equal(formatEther(balance), 0);
         });
