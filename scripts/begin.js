@@ -389,6 +389,8 @@ async function sendArb() { //mainnet
     await rolesAuthority.setRoleCapability(1, storageBeaconAddr, '0x68e540e5', true, ops); //saveUserProxy(address sender_, address proxy_)
     await rolesAuthority.setRoleCapability(1, storageBeaconAddr, '0xf2034a69', true, ops); //saveTaskId(address proxy_, bytes32 id_)
 
+    //
+
     //Creates 1st proxy
     await sendTx(ozERC1967proxyAddr, false, 'createNewProxy', [userDetails]);
     const newProxyAddr = (await storageBeacon.getProxyByUser(signerAddr)).toString(); 

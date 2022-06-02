@@ -11,6 +11,7 @@ import './StorageBeacon.sol';
 
 import './ozUpgradeableBeacon.sol';
 import "@openzeppelin/contracts/proxy/utils/Initializable.sol";
+import '@openzeppelin/contracts/access/Ownable.sol';
 
 import '@rari-capital/solmate/src/utils/ReentrancyGuard.sol';
 
@@ -31,15 +32,6 @@ contract ozBeaconProxy is ReentrancyGuard, Initializable, BeaconProxy {
 
 
 
-    // //Gelato checker
-    // function checker() external view returns(bool canExec, bytes memory execPayload) {
-    //     if (address(this).balance > 0) {
-    //         canExec = true;
-    //     }
-    //     execPayload = abi.encodeWithSignature('sendToArb()');
-    // }
-
-
     receive() external payable override {}
 
 
@@ -47,6 +39,13 @@ contract ozBeaconProxy is ReentrancyGuard, Initializable, BeaconProxy {
         return StorageBeacon(ozUpgradeableBeacon(_beacon()).storageBeacon());
     }
 
+
+    function checker() external view returns(bool canExec, bytes memory execPayload) {
+        if (address(this).balance > 0) {
+            canExec = true;
+        }
+        execPayload = abi.encodeWithSignature('sendToArb()');
+    }
 
  
     function _delegate(address implementation) internal override { 

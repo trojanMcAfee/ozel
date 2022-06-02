@@ -9,6 +9,7 @@ pragma solidity 0.8.14;
 import "@openzeppelin/contracts/proxy/beacon/UpgradeableBeacon.sol";
 import "@openzeppelin/contracts/proxy/beacon/BeaconProxy.sol";
 import "@openzeppelin/contracts/proxy/utils/Initializable.sol";
+import '@openzeppelin/contracts/access/Ownable.sol';
 // import '@openzeppelin/contracts/utils/Address.sol';
 import '../interfaces/IL1_ETH_Bridge.sol';
 import '../interfaces/DelayedInbox.sol';
@@ -34,13 +35,15 @@ import 'hardhat/console.sol';
 
 
 
-contract ozPayMe is ReentrancyGuard, Initializable { //PayMeFacetHop
+contract ozPayMe is ReentrancyGuard, Initializable { 
     using FixedPointMathLib for uint;
 
     StorageBeacon.UserConfig userDetails;
     StorageBeacon.FixedConfig fxConfig;
 
     address private beacon;
+
+    // bool isEmitter;
 
     event FundsToArb(address indexed sender, uint amount);
     event EmergencyTriggered(address indexed sender, uint amount);
@@ -80,9 +83,7 @@ contract ozPayMe is ReentrancyGuard, Initializable { //PayMeFacetHop
         if (userDetails_.user == address(0) || userDetails_.userToken == address(0)) revert CantBeZero('address');
         if (!_getStorageBeacon(beacon).isUser(userDetails_.user)) revert NotFoundInDatabase('user');
         if (userDetails_.userSlippage <= 0) revert CantBeZero('slippage');
-
-        uint amountToSend = address(this).balance;
-        if (!(amountToSend > 0)) revert CantBeZero('contract balance');
+        if (!(address(this).balance > 0)) revert CantBeZero('contract balance');
 
         (uint fee, ) = IOps(fxConfig.ops).getFeeDetails();
         _transfer(fee, fxConfig.ETH);
@@ -97,7 +98,7 @@ contract ozPayMe is ReentrancyGuard, Initializable { //PayMeFacetHop
         bytes memory ticketData = abi.encodeWithSelector(
             DelayedInbox(fxConfig.inbox).createRetryableTicket.selector, 
             fxConfig.PYY, 
-            amountToSend - varConfig_.autoRedeem, 
+            address(this).balance - varConfig_.autoRedeem, 
             varConfig_.maxSubmissionCost,  
             fxConfig.PYY, 
             fxConfig.PYY, 
@@ -106,10 +107,11 @@ contract ozPayMe is ReentrancyGuard, Initializable { //PayMeFacetHop
             swapData
         );
 
-
-        (bool success, bytes memory returnData) = fxConfig.inbox.call{value: amountToSend}(ticketData);
+        uint amountToSend = address(this).balance;
+        (bool success, bytes memory returnData) = fxConfig.inbox.call{value: address(this).balance}(ticketData);
         if (!success) {
-            (success, returnData) = fxConfig.inbox.call{value: amountToSend}(ticketData); 
+            console.log(1);
+            (success, returnData) = fxConfig.inbox.call{value: address(this).balance}(ticketData); 
             if (!success) {
                 _runEmergencyMode();
                 isEmergency = true;
@@ -119,8 +121,10 @@ contract ozPayMe is ReentrancyGuard, Initializable { //PayMeFacetHop
 
 
         if (!isEmergency) {
-            uint ticketID = abi.decode(returnData, (uint));
-            Emitter(fxConfig.emitter).forwardEvent(ticketID); //when testing, add a way to turn this off (through isEmer ? )
+            if (!isEmitter) { 
+                uint ticketID = abi.decode(returnData, (uint));
+                Emitter(fxConfig.emitter).forwardEvent(ticketID); //when testing, add a way to turn this off (through isEmer ? )
+            }
             emit FundsToArb(userDetails_.user, amountToSend);
         }
 
@@ -188,14 +192,12 @@ contract ozPayMe is ReentrancyGuard, Initializable { //PayMeFacetHop
         emit NewUserSlippage(msg.sender, newUserSlippage_);
     }
 
-
-    //Gelato checker
-    function checker() external view returns(bool canExec, bytes memory execPayload) {
-        if (address(this).balance > 0) {
-            canExec = true;
-        }
-        execPayload = abi.encodeWithSignature('sendToArb()');
+    function disableEmitter() external onlyOwner {
+        isEmitter = true;
     }
+
+
+   
 
 
 }
