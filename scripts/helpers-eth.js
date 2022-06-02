@@ -329,7 +329,8 @@ async function deploySystemOptimistically(userDetails, signerAddr) {
 
     return [
         ozERC1967proxyAddr, 
-        storageBeacon
+        storageBeacon,
+        emitter
     ];
 
 }

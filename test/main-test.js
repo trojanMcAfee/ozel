@@ -72,7 +72,7 @@ const {
 
 
 let signerAddr, signerAddr2;
-let ozERC1967proxyAddr, storageBeacon;
+let ozERC1967proxyAddr, storageBeacon, emitter;
 let userDetails;
 let newProxyAddr, newProxy;
 let balance;
@@ -95,7 +95,7 @@ let signer2;
             usdtAddrArb,
             defaultSlippage
         ];
-        ([ozERC1967proxyAddr, storageBeacon] = await deploySystemOptimistically(userDetails, signerAddr));
+        ([ozERC1967proxyAddr, storageBeacon, emitter] = await deploySystemOptimistically(userDetails, signerAddr));
     });
 
     describe('ozBeaconProxy', async () => {
@@ -112,7 +112,6 @@ let signer2;
                 assert.equal(newProxyAddr.length, 42);
             });
 
-
             it('should have an initial balance of 0.01 ETH', async () => {
                 await sendETHv2(newProxyAddr);
                 balance = await hre.ethers.provider.getBalance(newProxyAddr);
@@ -125,7 +124,7 @@ let signer2;
                 assert.equal(formatEther(balance), 0);
             });
 
-            describe('fallback() / ozPayMe', async () => {
+            xdescribe('fallback() / ozPayMe', async () => {
                 it('should not allow re-calling / initialize()', async () => {
                     await assert.rejects(async () => {
                         await sendTx({
@@ -228,10 +227,9 @@ let signer2;
                     }
                 });
 
-                it('should  / changeUserSlippage()', async () => {
+                xit('should emit the ticket ID  / changeUserSlippage()', async () => {
                     
                 });
-
 
 
             });
@@ -239,6 +237,38 @@ let signer2;
         });
 
     });
+
+    describe('Emitter', async () => {
+
+        it('should emit ticket ID / forwardEvent()', async () => {
+            await sendETHv2(newProxyAddr);
+            const receipt = await activateProxyLikeOps(newProxyAddr, ozERC1967proxyAddr);
+            const showTicketSignature = '0xbca70dc8f665e75505547ec15f8c9d9372ac2b33c1746a7e01b805dae21f6696';
+
+            for (let i=0; i < receipt.events.length; i++) {
+                for (let j=0; j < receipt.events[i].topics.length; j++) {
+                    let topic = hexStripZeros(receipt.events[i].topics[j]);
+                    if (topic === showTicketSignature) {
+                        const ticketID = receipt.events[i].topics[1];
+                        assert(typeof parseInt(ticketID) === 'number');
+                        return;
+                    }
+                }
+            }
+
+        });
+
+        xit('should allow the owner to disable the Emitter', async () => {
+
+            //Set signerAddr to role 0 for calling disableEmitter() on ozPayMe
+            await rolesAuthority.setUserRole(signerAddr, 0, true);
+            await rolesAuthority.setRoleCapability(0, newProxyAddr, '0xa2d4d48b', true); //disableEmitter()
+
+
+        });
+
+
+    })
 
     
 

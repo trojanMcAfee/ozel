@@ -12,8 +12,8 @@ import 'hardhat/console.sol';
 contract Emitter is Ownable {
     StorageBeacon storageBeacon;
 
-    event ShowTicket(uint ticketID);
-    event NewStorageBeacon(address storageBeacon);
+    event ShowTicket(uint indexed ticketID);
+    event NewStorageBeacon(address indexed storageBeacon);
 
     function storeStorageBeacon(address storageBeacon_) external onlyOwner {
         storageBeacon = StorageBeacon(storageBeacon_);
@@ -25,5 +25,11 @@ contract Emitter is Ownable {
         emit ShowTicket(ticketID_);
     }
 }
+
+
+
+        
+
+
 
 
