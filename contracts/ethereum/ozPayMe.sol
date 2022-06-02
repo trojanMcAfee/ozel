@@ -6,7 +6,7 @@ pragma solidity 0.8.14;
 //     SafeERC20,
 //     IERC20
 // } from "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
-import "@openzeppelin/contracts/proxy/beacon/UpgradeableBeacon.sol";
+// import "@openzeppelin/contracts/proxy/beacon/UpgradeableBeacon.sol";
 import "@openzeppelin/contracts/proxy/beacon/BeaconProxy.sol";
 import "@openzeppelin/contracts/proxy/utils/Initializable.sol";
 import '@openzeppelin/contracts/access/Ownable.sol';
@@ -43,7 +43,7 @@ contract ozPayMe is ReentrancyGuard, Initializable {
 
     address private beacon;
 
-    // bool isEmitter;
+    bool isEmitter;
 
     event FundsToArb(address indexed sender, uint amount);
     event EmergencyTriggered(address indexed sender, uint amount);
@@ -58,6 +58,11 @@ contract ozPayMe is ReentrancyGuard, Initializable {
 
     modifier onlyUser() {
         require(msg.sender == userDetails.user, 'ozPayMe: Not authorized');
+        _;
+    }
+
+    modifier hasRole(bytes4 functionSig_) {
+        require(ozUpgradeableBeacon(beacon).canCall(msg.sender, address(this), functionSig_));
         _;
     }
 
@@ -192,12 +197,9 @@ contract ozPayMe is ReentrancyGuard, Initializable {
         emit NewUserSlippage(msg.sender, newUserSlippage_);
     }
 
-    function disableEmitter() external onlyOwner {
+    function disableEmitter() external hasRole(0xa2d4d48b) {
         isEmitter = true;
     }
-
-
-   
 
 
 }

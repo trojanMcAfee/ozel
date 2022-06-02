@@ -389,12 +389,14 @@ async function sendArb() { //mainnet
     await rolesAuthority.setRoleCapability(1, storageBeaconAddr, '0x68e540e5', true, ops); //saveUserProxy(address sender_, address proxy_)
     await rolesAuthority.setRoleCapability(1, storageBeaconAddr, '0xf2034a69', true, ops); //saveTaskId(address proxy_, bytes32 id_)
 
-    //
-
     //Creates 1st proxy
     await sendTx(ozERC1967proxyAddr, false, 'createNewProxy', [userDetails]);
     const newProxyAddr = (await storageBeacon.getProxyByUser(signerAddr)).toString(); 
     console.log('proxy 1: ', newProxyAddr);
+
+    //Set signerAddr to role 0 for calling disableEmitter() on ozPayMe
+    await rolesAuthority.setUserRole(signerAddr, 0, true, ops);
+    await rolesAuthority.setRoleCapability(0, newProxyAddr, '0xa2d4d48b', true, ops); //disableEmitter()
 
     //Gets user's task id
     const taskId = await storageBeacon.getTaskID(signerAddr);
