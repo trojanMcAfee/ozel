@@ -54,9 +54,9 @@ contract ozBeaconProxy is ReentrancyGuard, Initializable, BeaconProxy {
     }
 
 
-    function getUserDetails() external view returns(StorageBeacon.UserConfig memory) {
-        return userDetails;
-    }
+    // function getUserDetails() external view returns(StorageBeacon.UserConfig memory) {
+    //     return userDetails;
+    // }
 
 
  

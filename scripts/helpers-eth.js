@@ -187,7 +187,7 @@ async function sendETHv2(receiver) {
 }
 
 
-async function activateProxyLikeOps(proxy, taskCreator, isEvil) {
+async function activateProxyLikeOps(proxy, taskCreator, isEvil, evilParams) {
     await hre.network.provider.request({
         method: "hardhat_impersonateAccount",
         params: [pokeMeOpsAddr],
@@ -209,15 +209,23 @@ async function activateProxyLikeOps(proxy, taskCreator, isEvil) {
         params: [gelatoAddr],
     });
 
-    const gelatoSigner = await hre.ethers.provider.getSigner(gelatoAddr);
-    iface = new ethers.utils.Interface(['function sendToArb()']); //modify this with isEvil = true and use it on the last test
-    const execData = iface.encodeFunctionData('sendToArb');
-    await ops.connect(gelatoSigner).exec(0, ETH, taskCreator, false, false, resolverHash, proxy, execData);
+    const gelatoSigner = await hre.ethers.provider.getSigner(gelatoAddr); 
+    iface = new ethers.utils.Interface([`function sendToArb(${isEvil ? 'tuple(uint256 maxSubmissionCost, uint256 gasPriceBid, uint256 autoRedeem) varConfig_, tuple(address user, address userToken, uint256 userSlippage) userDetails_)' : ')'}`]); 
+    let execData;
+    if (isEvil) {
+        execData = iface.encodeFunctionData('sendToArb', evilParams);
+    } else {
+        execData = iface.encodeFunctionData('sendToArb');
+    }
+    const tx = await ops.connect(gelatoSigner).exec(0, ETH, taskCreator, false, false, resolverHash, proxy, execData);
+    const receipt = await tx.wait();
 
     await hre.network.provider.request({
         method: "hardhat_stopImpersonatingAccount",
         params: [gelatoAddr],
     });
+
+    return receipt;
 }
 
 

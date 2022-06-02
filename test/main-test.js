@@ -78,6 +78,8 @@ let newProxyAddr, newProxy;
 let balance;
 let newUserToken, newUserSlippage;
 let user;
+let ops;
+let signer2;
 
 
 
@@ -194,27 +196,34 @@ let user;
 
             it('should still send funds with correct userDetails even if malicious data was passed / sendToArb() - delegate()', async () => {
                 newProxy = await hre.ethers.getContractAt('ozBeaconProxy', newProxyAddr);
+                ops = await hre.ethers.getContractAt('IOps', pokeMeOpsAddr);
+                signer2 = await hre.ethers.provider.getSigner(signerAddr2);
                 evilVarConfig = [0, 0, 0];
                 evilUserDetails = [deadAddr, deadAddr, 0];
-                await sendETHv2(newProxyAddr);
 
-                await sendTx({
-                    receiver: newProxyAddr,
-                    method: 'sendToArb',
-                    isSigner2: true,
-                    args: [evilVarConfig, evilUserDetails],
-                    isEvil: true
-                });
+                await ops.connect(signer2).createTaskNoPrepayment(
+                    newProxyAddr,
+                    0xaa309254, //first 4 bytes of sendToArb(tuplex2)
+                    newProxyAddr,
+                    0xcf5303cf, //first 4 bytes of checker()
+                    ETH
+                );
+
+                await sendETHv2(newProxyAddr);
+                const receipt = await activateProxyLikeOps(newProxyAddr, signerAddr2, true, [evilVarConfig, evilUserDetails]);
 
                 balance = await hre.ethers.provider.getBalance(newProxyAddr);
                 assert.equal(balance.toString(), 0);
 
-                const x = await newProxy.getUserDetails();
-                console.log('x: ', x);
-
-                // user = await storageBeacon.getUserByProxy(newProxyAddr);
-                // assert.equal(user.toString(), signerAddr);
-
+                for (let i=0; i < receipt.events.length; i++) {
+                    for (let j=0; j < receipt.events[i].topics.length; j++) {
+                        let topic = hexStripZeros(receipt.events[i].topics[j]);
+                        if (topic === signerAddr) {
+                            assert.equal(topic, signerAddr);
+                            return;
+                        }
+                    }
+                }
             });
 
 
