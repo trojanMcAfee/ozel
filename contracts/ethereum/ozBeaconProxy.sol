@@ -23,13 +23,7 @@ contract ozBeaconProxy is ReentrancyGuard, Initializable, BeaconProxy {
 
     address private beacon; 
 
-
-    modifier onlyOps() {
-        require(msg.sender == fxConfig.ops, "ozBeaconProxy: onlyOps");
-        _;
-    }
     
-
     constructor(
         address beacon_,
         bytes memory data_
@@ -37,13 +31,13 @@ contract ozBeaconProxy is ReentrancyGuard, Initializable, BeaconProxy {
 
 
 
-    //Gelato checker
-    function checker() external view returns(bool canExec, bytes memory execPayload) {
-        if (address(this).balance > 0) {
-            canExec = true;
-        }
-        execPayload = abi.encodeWithSignature('sendToArb()');
-    }
+    // //Gelato checker
+    // function checker() external view returns(bool canExec, bytes memory execPayload) {
+    //     if (address(this).balance > 0) {
+    //         canExec = true;
+    //     }
+    //     execPayload = abi.encodeWithSignature('sendToArb()');
+    // }
 
 
     receive() external payable override {}
@@ -54,19 +48,14 @@ contract ozBeaconProxy is ReentrancyGuard, Initializable, BeaconProxy {
     }
 
 
-    // function getUserDetails() external view returns(StorageBeacon.UserConfig memory) {
-    //     return userDetails;
-    // }
-
-
  
-    function _delegate(address implementation) internal override { //test if needs onlyOps modifier
+    function _delegate(address implementation) internal override { 
         bytes memory data; 
 
         StorageBeacon.VariableConfig memory varConfig =
              _getStorageBeacon().getVariableConfig();
 
-        //first 4 bytes of initialize() on ozPayMe
+        //first 4 bytes on ozPayMe
         if (
             bytes4(msg.data) == 0xda35a26f || //initialize
             bytes4(msg.data) == 0x66eb4b13 || //changeUserToken

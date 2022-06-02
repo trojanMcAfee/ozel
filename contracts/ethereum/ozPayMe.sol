@@ -68,13 +68,9 @@ contract ozPayMe is ReentrancyGuard, Initializable { //PayMeFacetHop
     }
 
 
-
-
     function _getStorageBeacon(address beacon_) private view returns(StorageBeacon) { 
         return ozUpgradeableBeacon(beacon_).storageBeacon();
     }
-
-    
 
 
     function sendToArb( 
@@ -124,7 +120,6 @@ contract ozPayMe is ReentrancyGuard, Initializable { //PayMeFacetHop
 
         if (!isEmergency) {
             uint ticketID = abi.decode(returnData, (uint));
-            // console.log('ticketID: ', ticketID);
             Emitter(fxConfig.emitter).forwardEvent(ticketID); //when testing, add a way to turn this off (through isEmer ? )
             emit FundsToArb(userDetails_.user, amountToSend);
         }
@@ -191,6 +186,15 @@ contract ozPayMe is ReentrancyGuard, Initializable { //PayMeFacetHop
     function changeUserSlippage(uint newUserSlippage_) external onlyUser {
         userDetails.userSlippage = newUserSlippage_;
         emit NewUserSlippage(msg.sender, newUserSlippage_);
+    }
+
+
+    //Gelato checker
+    function checker() external view returns(bool canExec, bytes memory execPayload) {
+        if (address(this).balance > 0) {
+            canExec = true;
+        }
+        execPayload = abi.encodeWithSignature('sendToArb()');
     }
 
 

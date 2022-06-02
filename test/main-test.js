@@ -226,6 +226,10 @@ let signer2;
                 }
             });
 
+            it('should not allow an external user to change userSlippage / changeUserSlippage()', async () => {
+                
+            });
+
 
 
         });
