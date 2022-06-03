@@ -349,6 +349,8 @@ async function deploySystemOptimistically(userDetails, signerAddr) {
 
     //Set signerAddr to role 0 for calling disableEmitter() on ozPayMe
     // await rolesAuthority.setUserRole(signerAddr, 0, true); //<---- try to replace onlyOwner by this later
+    
+    // await rolesAuthority.setRoleCapability(0, storageBeaconAddr, '0xf9f4db8a', true); //changeVariableConfig(VariableConfig memory newVarConfig_)
     // await rolesAuthority.setRoleCapability(0, newProxyAddr, '0xa2d4d48b', true); //disableEmitter()
 
     console.log('.');

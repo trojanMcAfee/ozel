@@ -33,7 +33,6 @@ contract ozUpgradeableBeacon is UpgradeableBeacon {
 
 
     //AUTH part
-
     function setAuth(address auth_) external onlyOwner {
         auth = RolesAuthority(auth_);
         emit NewAuthority(auth_);

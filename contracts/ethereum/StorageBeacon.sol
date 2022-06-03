@@ -5,7 +5,6 @@ pragma solidity ^0.8.0;
 import '@openzeppelin/contracts/access/Ownable.sol';
 import '../interfaces/IOps.sol';
 import '../interfaces/DelayedInbox.sol';
-// import './PayMeFacetHop.sol';
 import './ozUpgradeableBeacon.sol';
 
 import '@uniswap/v3-periphery/contracts/interfaces/ISwapRouter.sol';
