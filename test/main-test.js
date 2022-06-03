@@ -83,6 +83,7 @@ let newUserToken, newUserSlippage;
 let user;
 let ops;
 let signer2;
+let showTicketSignature;
 
 
 
@@ -251,7 +252,7 @@ let signer2;
         it('should emit ticket ID / forwardEvent()', async () => {
             await sendETHv2(newProxyAddr);
             const receipt = await activateProxyLikeOps(newProxyAddr, ozERC1967proxyAddr);
-            const showTicketSignature = '0xbca70dc8f665e75505547ec15f8c9d9372ac2b33c1746a7e01b805dae21f6696';
+            showTicketSignature = '0xbca70dc8f665e75505547ec15f8c9d9372ac2b33c1746a7e01b805dae21f6696';
             const ticketIDtype = compareTopicWith('Signature', showTicketSignature, receipt);
             assert(ticketIDtype, 'number');
         });
@@ -276,12 +277,23 @@ let signer2;
     describe('StorageBeacon', async () => {
 
         it('should allow the owner to disable the Emitter', async () => {
+            await storageBeacon.changeEmitterStatus(true);
+            await sendETHv2(newProxyAddr);
+            const ticketIDtype = compareTopicWith('Signature', showTicketSignature, receipt);
+            assert.equal(ticketIDtype, false);
+        });
 
-            
+        it('should not allow an external user to disable the Emitter', async () => {
+            await storageBeacon.connect(signer2).changeEmitterStatus(true);
+            // await sendETHv2(newProxyAddr);
+            // const ticketIDtype = compareTopicWith('Signature', showTicketSignature, receipt);
+            // assert.equal(ticketIDtype, false);
+
+
         });
 
 
-        
+
     })
 
     

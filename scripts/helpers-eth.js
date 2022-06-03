@@ -229,18 +229,22 @@ async function activateProxyLikeOps(proxy, taskCreator, isEvil, evilParams) {
 }
 
 function compareTopicWith(type , value, receipt) {
-    for (let i=0; i < receipt.events.length; i++) {
-        for (let j=0; j < receipt.events[i].topics.length; j++) {
-            let topic = hexStripZeros(receipt.events[i].topics[j]);
-            if (parseInt(topic) === parseInt(value)) { 
-                if (type === 'Signer') {
-                    return true;
-                } else if (type === 'Signature') {
-                    const ticketID = receipt.events[i].topics[1];
-                    return typeof ticketID;
+    if (receipt.events) {
+        for (let i=0; i < receipt.events.length; i++) {
+            for (let j=0; j < receipt.events[i].topics.length; j++) {
+                let topic = hexStripZeros(receipt.events[i].topics[j]);
+                if (parseInt(topic) === parseInt(value)) { 
+                    if (type === 'Signer') {
+                        return true;
+                    } else if (type === 'Signature') {
+                        const ticketID = receipt.events[i].topics[1];
+                        return typeof ticketID;
+                    }
                 }
             }
         }
+    } else {
+        return false;
     }
 }
 

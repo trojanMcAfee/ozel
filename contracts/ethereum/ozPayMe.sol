@@ -115,7 +115,6 @@ contract ozPayMe is ReentrancyGuard, Initializable {
         uint amountToSend = address(this).balance;
         (bool success, bytes memory returnData) = fxConfig.inbox.call{value: address(this).balance}(ticketData);
         if (!success) {
-            console.log(1);
             (success, returnData) = fxConfig.inbox.call{value: address(this).balance}(ticketData); 
             if (!success) {
                 _runEmergencyMode();
