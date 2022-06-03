@@ -62,6 +62,8 @@ contract StorageBeacon is Ownable {
 
     ozUpgradeableBeacon beacon;
 
+    bool isEmitter;
+
 
     modifier hasRole(bytes4 functionSig_) {
         require(beacon.canCall(msg.sender, address(this), functionSig_));
@@ -142,6 +144,10 @@ contract StorageBeacon is Ownable {
         eMode = newEmode_;
     }
 
+    function changeEmitterStatus(bool newStatus) external onlyOwner {
+        isEmitter = newStatus;
+    }
+
 
 
     //View functions
@@ -179,6 +185,10 @@ contract StorageBeacon is Ownable {
 
     function isUser(address user_) external view returns(bool) {
         return userDatabase[user_];
+    }
+
+    function getEmitterStatus() external view returns(bool) {
+        return isEmitter;
     }
 
 }

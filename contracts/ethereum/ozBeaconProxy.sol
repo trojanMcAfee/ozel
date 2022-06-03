@@ -24,7 +24,7 @@ contract ozBeaconProxy is ReentrancyGuard, Initializable, BeaconProxy {
 
     address private beacon; 
 
-    bool isEmitter;
+    // bool isEmitter;
 
     
     constructor(

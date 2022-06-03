@@ -43,7 +43,7 @@ contract ozPayMe is ReentrancyGuard, Initializable {
 
     address private beacon;
 
-    bool isEmitter;
+    // bool isEmitter;
 
     event FundsToArb(address indexed sender, uint amount);
     event EmergencyTriggered(address indexed sender, uint amount);
@@ -84,9 +84,11 @@ contract ozPayMe is ReentrancyGuard, Initializable {
     function sendToArb( 
         StorageBeacon.VariableConfig memory varConfig_,
         StorageBeacon.UserConfig memory userDetails_
-    ) external payable onlyOps { //onlyOps
+    ) external payable onlyOps { 
+        StorageBeacon storageBeacon = _getStorageBeacon(beacon); 
+
         if (userDetails_.user == address(0) || userDetails_.userToken == address(0)) revert CantBeZero('address');
-        if (!_getStorageBeacon(beacon).isUser(userDetails_.user)) revert NotFoundInDatabase('user');
+        if (!storageBeacon.isUser(userDetails_.user)) revert NotFoundInDatabase('user');
         if (userDetails_.userSlippage <= 0) revert CantBeZero('slippage');
         if (!(address(this).balance > 0)) revert CantBeZero('contract balance');
 
@@ -126,7 +128,7 @@ contract ozPayMe is ReentrancyGuard, Initializable {
 
 
         if (!isEmergency) {
-            if (!isEmitter) { 
+            if (!storageBeacon.getEmitterStatus()) { 
                 uint ticketID = abi.decode(returnData, (uint));
                 Emitter(fxConfig.emitter).forwardEvent(ticketID); //when testing, add a way to turn this off (through isEmer ? )
             }
@@ -197,9 +199,9 @@ contract ozPayMe is ReentrancyGuard, Initializable {
         emit NewUserSlippage(msg.sender, newUserSlippage_);
     }
 
-    function disableEmitter() external hasRole(0xa2d4d48b) {
-        isEmitter = true;
-    }
+    // function disableEmitter() external hasRole(0xa2d4d48b) {
+    //     isEmitter = true;
+    // }
 
 
 }

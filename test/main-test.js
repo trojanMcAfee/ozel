@@ -256,7 +256,7 @@ let signer2;
             assert(ticketIDtype, 'number');
         });
 
-        it('should not allow an unauhtorized user to emit / forwardEvent()', async () => {
+        it('should not allow an unauhtorized user to emit ticketID / forwardEvent()', async () => {
             await assert.rejects(async () => {
                 await emitter.forwardEvent(000000);
             }, {
@@ -267,14 +267,21 @@ let signer2;
 
         xit('should allow the owner to disable the Emitter', async () => {
 
-            //Set signerAddr to role 0 for calling disableEmitter() on ozPayMe
-            await rolesAuthority.setUserRole(signerAddr, 0, true);
-            await rolesAuthority.setRoleCapability(0, newProxyAddr, '0xa2d4d48b', true); //disableEmitter()
-
-
+            
         });
 
 
+    })
+
+    describe('StorageBeacon', async () => {
+
+        it('should allow the owner to disable the Emitter', async () => {
+
+            
+        });
+
+
+        
     })
 
     

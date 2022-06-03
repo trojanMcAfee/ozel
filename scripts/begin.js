@@ -412,8 +412,8 @@ async function sendArb() { //mainnet
 
 
     await hre.ethers.provider.on(filter, async (encodedData) => {
-        const { data } = encodedData;
-        const ourMessagesSequenceNum = ethers.utils.defaultAbiCoder.decode(['uint'], data);
+        const topic = encodedData.topics[1];
+        const ourMessagesSequenceNum = ethers.utils.defaultAbiCoder.decode(['uint'], topic);
 
         console.log('inboxSeqNums: ', ourMessagesSequenceNum.toString());
         const retryableTxnHash = await bridge.calculateL2RetryableTransactionHash(
@@ -477,6 +477,40 @@ async function testBeacon() {
 
 // testBeacon(); 
 
+
+
+async function justEvent() {
+    const bridge = await Bridge.init(l1Signer, l2Signer);
+    const newProxyAddr = '0x658a1496aa79B8e9f9B717aaa4c0958EF418A5eb';
+
+    const filter = {
+        address: '0xfF88d96CE1079F27ef2A18A176A2E6482553F7F8', //emitterAddr
+        topics: [
+            ethers.utils.id("ShowTicket(uint256)")
+        ]
+    };
+
+    await hre.ethers.provider.on(filter, async (encodedData) => {
+        const topic = encodedData.topics[1];
+        const ourMessagesSequenceNum = ethers.utils.defaultAbiCoder.decode(['uint'], topic); //data
+
+        console.log('inboxSeqNums: ', ourMessagesSequenceNum.toString());
+        const retryableTxnHash = await bridge.calculateL2RetryableTransactionHash(
+            ourMessagesSequenceNum[0]
+        );
+        console.log('retryableTxnHash: ', retryableTxnHash);
+        console.log(
+            `waiting for L2 tx 🕐... (should take < 10 minutes, current time: ${new Date().toTimeString()}`
+        );
+        const retryRec = await l2Provider.waitForTransaction(retryableTxnHash)
+        console.log(`L2 retryable txn executed 🥳 ${retryRec.transactionHash} at ${new Date().toTimeString()}`);
+    });
+
+    await sendTx(newProxyAddr, true, 'Sending ETH');
+}
+
+
+// justEvent();
 
 
 
