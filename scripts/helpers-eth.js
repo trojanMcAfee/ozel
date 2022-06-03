@@ -234,10 +234,8 @@ function compareTopicWith(type , value, receipt) {
             let topic = hexStripZeros(receipt.events[i].topics[j]);
             if (parseInt(topic) === parseInt(value)) { 
                 if (type === 'Signer') {
-                    console.log(2);
                     return true;
                 } else if (type === 'Signature') {
-                    console.log(3);
                     const ticketID = receipt.events[i].topics[1];
                     return typeof ticketID;
                 }
