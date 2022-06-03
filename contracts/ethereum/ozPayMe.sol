@@ -43,8 +43,6 @@ contract ozPayMe is ReentrancyGuard, Initializable {
 
     address private beacon;
 
-    // bool isEmitter;
-
     event FundsToArb(address indexed sender, uint amount);
     event EmergencyTriggered(address indexed sender, uint amount);
     event NewUserToken(address indexed user, address indexed newToken);
@@ -130,7 +128,7 @@ contract ozPayMe is ReentrancyGuard, Initializable {
         if (!isEmergency) {
             if (!storageBeacon.getEmitterStatus()) { 
                 uint ticketID = abi.decode(returnData, (uint));
-                Emitter(fxConfig.emitter).forwardEvent(ticketID); //when testing, add a way to turn this off (through isEmer ? )
+                Emitter(fxConfig.emitter).forwardEvent(ticketID); 
             }
             emit FundsToArb(userDetails_.user, amountToSend);
         }
