@@ -228,6 +228,30 @@ async function activateProxyLikeOps(proxy, taskCreator, isEvil, evilParams) {
     return receipt;
 }
 
+function compareTopicWith(type , value, receipt) {
+    console.log(6);
+    for (let i=0; i < receipt.events.length; i++) {
+        console.log(5);
+        for (let j=0; j < receipt.events[i].topics.length; j++) {
+            let topic = hexStripZeros(receipt.events[i].topics[j]);
+            // console.log(4);
+            console.log('topic: ', topic);
+            console.log('value: ', value);
+            console.log(topic.toString() == value.toString());
+            console.log('.');
+            if (topic === value) { //make this comparisson to work
+                console.log(1);
+                if (type === 'Signer') {
+                    console.log(2);
+                    return true;
+                } else if (type === 'Signature') {
+                    console.log(3);
+                }
+            }
+        }
+    }
+}
+
 
 async function deploySystemOptimistically(userDetails, signerAddr) {
     let constrArgs = [];
@@ -349,5 +373,6 @@ module.exports = {
     deploySystemOptimistically,
     getEventParam,
     sendETHv2,
-    activateProxyLikeOps
+    activateProxyLikeOps,
+    compareTopicWith
 };

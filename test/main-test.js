@@ -66,8 +66,11 @@ const {
     errors,
     getEventParam,
     sendETHv2,
-    activateProxyLikeOps
+    activateProxyLikeOps,
+    compareTopicWith
  } = require('../scripts/helpers-eth');
+
+ const { err } = require('./errors.js');
 
 
 
@@ -124,7 +127,7 @@ let signer2;
                 assert.equal(formatEther(balance), 0);
             });
 
-            xdescribe('fallback() / ozPayMe', async () => {
+            describe('fallback() / ozPayMe', async () => {
                 it('should not allow re-calling / initialize()', async () => {
                     await assert.rejects(async () => {
                         await sendTx({
@@ -134,7 +137,7 @@ let signer2;
                         });
                     }, {
                         name: 'Error',
-                        message: "VM Exception while processing transaction: reverted with reason string 'Initializable: contract is already initialized'"
+                        message: err().alreadyInitialized 
                     });
                 });
 
@@ -143,7 +146,7 @@ let signer2;
                         await activateOzBeaconProxy(newProxyAddr);
                     }, {
                         name: 'Error',
-                        message: "VM Exception while processing transaction: reverted with reason string 'ozPayMe: onlyOps'"
+                        message: err().onlyOps 
                     });
                 });
 
@@ -167,7 +170,7 @@ let signer2;
                         });
                     }, {
                         name: 'Error',
-                        message: "VM Exception while processing transaction: reverted with reason string 'ozPayMe: Not authorized'"
+                        message: err().notAuthorized
                     });
                 });
 
@@ -191,7 +194,7 @@ let signer2;
                         });
                     }, {
                         name: 'Error',
-                        message: "VM Exception while processing transaction: reverted with reason string 'ozPayMe: Not authorized'"
+                        message: err().notAuthorized
                     });
                 });
 
@@ -216,15 +219,20 @@ let signer2;
                     balance = await hre.ethers.provider.getBalance(newProxyAddr);
                     assert.equal(balance.toString(), 0);
 
-                    for (let i=0; i < receipt.events.length; i++) {
-                        for (let j=0; j < receipt.events[i].topics.length; j++) {
-                            let topic = hexStripZeros(receipt.events[i].topics[j]);
-                            if (topic === signerAddr) {
-                                assert.equal(topic, signerAddr);
-                                return;
-                            }
-                        }
-                    }
+                    const areEqual = compareTopicWith('Signer', signerAddr, receipt);
+                    assert.equal(areEqual, true);
+
+               
+
+                    // for (let i=0; i < receipt.events.length; i++) {
+                    //     for (let j=0; j < receipt.events[i].topics.length; j++) {
+                    //         let topic = hexStripZeros(receipt.events[i].topics[j]);
+                    //         if (topic === signerAddr) {
+                    //             assert.equal(topic, signerAddr);
+                    //             return;
+                    //         }
+                    //     }
+                    // }
                 });
 
                 xit('should emit the ticket ID  / changeUserSlippage()', async () => {
@@ -255,7 +263,15 @@ let signer2;
                     }
                 }
             }
+        });
 
+        it('should not allow an unauhtorized user to emit / forwardEvent()', async () => {
+            await assert.rejects(async () => {
+                await emitter.forwardEvent(000000);
+            }, {
+                name: 'Error',
+                message: err().notProxy 
+            });
         });
 
         xit('should allow the owner to disable the Emitter', async () => {
