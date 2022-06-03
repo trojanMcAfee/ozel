@@ -253,16 +253,19 @@ let signer2;
             const receipt = await activateProxyLikeOps(newProxyAddr, ozERC1967proxyAddr);
             const showTicketSignature = '0xbca70dc8f665e75505547ec15f8c9d9372ac2b33c1746a7e01b805dae21f6696';
 
-            for (let i=0; i < receipt.events.length; i++) {
-                for (let j=0; j < receipt.events[i].topics.length; j++) {
-                    let topic = hexStripZeros(receipt.events[i].topics[j]);
-                    if (topic === showTicketSignature) {
-                        const ticketID = receipt.events[i].topics[1];
-                        assert(typeof parseInt(ticketID) === 'number');
-                        return;
-                    }
-                }
-            }
+            const ticketIDtype = compareTopicWith('Signature', showTicketSignature, receipt);
+            assert(ticketIDtype, 'number');
+
+            // for (let i=0; i < receipt.events.length; i++) {
+            //     for (let j=0; j < receipt.events[i].topics.length; j++) {
+            //         let topic = hexStripZeros(receipt.events[i].topics[j]);
+            //         if (topic === showTicketSignature) {
+            //             const ticketID = receipt.events[i].topics[1];
+            //             assert(typeof parseInt(ticketID) === 'number');
+            //             return;
+            //         }
+            //     }
+            // }
         });
 
         it('should not allow an unauhtorized user to emit / forwardEvent()', async () => {
