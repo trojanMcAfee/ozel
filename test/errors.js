@@ -7,7 +7,10 @@ function err() {
         onlyOps: "VM Exception while processing transaction: reverted with reason string 'ozPayMe: onlyOps'",
         notAuthorized: "VM Exception while processing transaction: reverted with reason string 'ozPayMe: Not authorized'",
         notProxy: "VM Exception while processing transaction: reverted with custom error 'NotProxy()'",
-        notOwner: "VM Exception while processing transaction: reverted with reason string 'Ownable: caller is not the owner'"
+        notOwner: "VM Exception while processing transaction: reverted with reason string 'Ownable: caller is not the owner'",
+        zeroAddress: `VM Exception while processing transaction: reverted with custom error 'CantBeZero("address")'`,
+        zeroSlippage: `VM Exception while processing transaction: reverted with custom error 'CantBeZero("slippage")'`,
+        tokenNotFound: `VM Exception while processing transaction: reverted with custom error 'NotFoundInDatabase("token")'`
     };
 
 

@@ -69,7 +69,8 @@ const {
     activateProxyLikeOps,
     compareTopicWith,
     deployAnotherStorageBeacon,
-    compareTopicWith2
+    createProxy,
+    storeVarsInHelpers
  } = require('../scripts/helpers-eth');
 
  const { err } = require('./errors.js');
@@ -90,6 +91,7 @@ let isSuccess;
 let otherStorageBeaconAddr;
 let tx, receipt;
 let ticketIDtype, ticketID;
+let modUserDetails;
 
 
 
@@ -105,34 +107,108 @@ let ticketIDtype, ticketID;
             usdtAddrArb,
             defaultSlippage
         ];
+
         ([ozERC1967proxyAddr, storageBeacon, emitter, emitterAddr, fakePYYaddr] = await deploySystemOptimistically(userDetails, signerAddr));
+        storeVarsInHelpers(ozERC1967proxyAddr);
     });
 
-    describe('ozBeaconProxy', async () => {
+    describe('Optimistic deployment', async () => { 
 
-        describe('Optimistic deployment', async () => {
-            it('should create a proxy successfully', async () => {
-                await sendTx({
-                    receiver: ozERC1967proxyAddr,
-                    method: 'createNewProxy',
-                    args: [userDetails]
+        describe('ozBeaconProxy', async () => {
+
+            describe('deploys one proxy', async () => {
+                it('should create a proxy successfully / createNewProxy()', async () => {
+                    await createProxy(userDetails);
+                    newProxyAddr = (await storageBeacon.getProxyByUser(signerAddr)).toString(); 
+                    // console.log('Proxy #1: ', newProxyAddr);
+                    assert.equal(newProxyAddr.length, 42);
                 });
-                newProxyAddr = (await storageBeacon.getProxyByUser(signerAddr)).toString(); 
-                console.log('Proxy #1: ', newProxyAddr);
-                assert.equal(newProxyAddr.length, 42);
+
+                it('should not allow to create a proxy with the 0 address / createNewProxy()', async () => {
+                    userDetails[1] = nullAddr;
+                    await assert.rejects(async () => {
+                        await createProxy(userDetails);
+                    }, {
+                        name: 'Error',
+                        message: err().zeroAddress 
+                    });
+                });
+
+                it('should not allow to create a proxy with 0 slippage / createNewProxy()', async () => {
+                    userDetails[1] = usdtAddrArb;
+                    userDetails[2] = 0;
+                    await assert.rejects(async () => {
+                        await createProxy(userDetails);
+                    }, {
+                        name: 'Error',
+                        message: err().zeroSlippage
+                    });
+                });
+
+                it('should not allow to create a proxy with a userToken not found in the database / createNewProxy()', async () => {
+                    userDetails[1] = deadAddr;
+                    userDetails[2] = defaultSlippage;
+                    await assert.rejects(async () => {
+                        await createProxy(userDetails);
+                    }, {
+                        name: 'Error',
+                        message: err().tokenNotFound
+                    });
+                })
+    
+                it('should have an initial balance of 0.01 ETH', async () => {
+                    await sendETHv2(newProxyAddr);
+                    balance = await hre.ethers.provider.getBalance(newProxyAddr);
+                    assert.equal(formatEther(balance), '0.01');
+                });
+    
+                it('should have a final balance of 0 ETH', async () => {
+                    await activateProxyLikeOps(newProxyAddr, ozERC1967proxyAddr); 
+                    balance = await hre.ethers.provider.getBalance(newProxyAddr);
+                    assert.equal(formatEther(balance), 0);
+                });
             });
 
-            it('should have an initial balance of 0.01 ETH', async () => {
-                await sendETHv2(newProxyAddr);
-                balance = await hre.ethers.provider.getBalance(newProxyAddr);
-                assert.equal(formatEther(balance), '0.01');
+
+            xdescribe('deploys 10 proxies', async () => {
+                it('should create 10 proxies successfully', async () => {
+                    userDetails[1] = usdcAddr;
+
+                    for (let i=0; i < 10; i++) {
+                        await createProxy(userDetails);
+                    }
+
+
+
+
+                    await sendTx({
+                        receiver: ozERC1967proxyAddr,
+                        method: 'createNewProxy',
+                        args: [userDetails]
+                    });
+                    newProxyAddr = (await storageBeacon.getProxyByUser(signerAddr)).toString(); 
+                    // console.log('Proxy #1: ', newProxyAddr);
+                    assert.equal(newProxyAddr.length, 42);
+
+
+
+
+                });
+    
+                it('should have an initial balance of 0.01 ETH', async () => {
+                    await sendETHv2(newProxyAddr);
+                    balance = await hre.ethers.provider.getBalance(newProxyAddr);
+                    assert.equal(formatEther(balance), '0.01');
+                });
+    
+                it('should have a final balance of 0 ETH', async () => {
+                    await activateProxyLikeOps(newProxyAddr, ozERC1967proxyAddr);
+                    balance = await hre.ethers.provider.getBalance(newProxyAddr);
+                    assert.equal(formatEther(balance), 0);
+                });
             });
 
-            it('should have a final balance of 0 ETH', async () => {
-                await activateProxyLikeOps(newProxyAddr, ozERC1967proxyAddr);
-                balance = await hre.ethers.provider.getBalance(newProxyAddr);
-                assert.equal(formatEther(balance), 0);
-            });
+            
 
             describe('fallback() / ozPayMe', async () => {
                 it('should not allow re-calling / initialize()', async () => {
@@ -205,7 +281,7 @@ let ticketIDtype, ticketID;
                     });
                 });
 
-                it('should should allow funds to be sent with correct userDetails even if malicious data was passed / sendToArb() - delegate()', async () => {
+                it('should allow funds to be sent with correct userDetails even if malicious data was passed / sendToArb() - delegate()', async () => {
                     newProxy = await hre.ethers.getContractAt('ozBeaconProxy', newProxyAddr);
                     ops = await hre.ethers.getContractAt('IOps', pokeMeOpsAddr);
                     signer2 = await hre.ethers.provider.getSigner(signerAddr2);
@@ -228,88 +304,64 @@ let ticketIDtype, ticketID;
 
                     const areEqual = compareTopicWith('Signer', signerAddr, receipt);
                     assert.equal(areEqual, true);
-
-               
-
-                    // for (let i=0; i < receipt.events.length; i++) {
-                    //     for (let j=0; j < receipt.events[i].topics.length; j++) {
-                    //         let topic = hexStripZeros(receipt.events[i].topics[j]);
-                    //         if (topic === signerAddr) {
-                    //             assert.equal(topic, signerAddr);
-                    //             return;
-                    //         }
-                    //     }
-                    // }
                 });
-
-                xit('should emit the ticket ID  / changeUserSlippage()', async () => {
-                    
-                });
-
-
             });
-
         });
 
+        describe('Emitter', async () => {
+
+            it('should emit ticket ID / forwardEvent()', async () => {
+                await sendETHv2(newProxyAddr);
+                receipt = await activateProxyLikeOps(newProxyAddr, ozERC1967proxyAddr);
+                showTicketSignature = '0xbca70dc8f665e75505547ec15f8c9d9372ac2b33c1746a7e01b805dae21f6696';
+                ticketIDtype = compareTopicWith('Signature', showTicketSignature, receipt);
+                assert(ticketIDtype, 'number');
+            });
+    
+            it('should not allow an unauhtorized user to emit ticketID / forwardEvent()', async () => {
+                await assert.rejects(async () => {
+                    await emitter.forwardEvent(000000);
+                }, {
+                    name: 'Error',
+                    message: err().notProxy 
+                });
+            });
+    
+            it('should not allow to set a new Beacon / storeBeacon()', async () => {
+                await assert.rejects(async () => {
+                    await emitter.storeBeacon(nullAddr);
+                }, {
+                    name: 'Error',
+                    message: err().alreadyInitialized 
+                });
+            }); 
+    
+    
+        });
+    
+        describe('StorageBeacon', async () => {
+    
+            it('should allow the owner to disable the Emitter', async () => {
+                await storageBeacon.changeEmitterStatus(true);
+                await sendETHv2(newProxyAddr);
+                receipt = await activateProxyLikeOps(newProxyAddr, ozERC1967proxyAddr);
+                const ticketIDtype = compareTopicWith('Signature', showTicketSignature, receipt);
+                assert.equal(ticketIDtype, false);
+            });
+    
+            it('should not allow an external user to disable the Emitter', async () => {
+                await assert.rejects(async () => {
+                    await storageBeacon.connect(signer2).changeEmitterStatus(true);
+                }, {
+                    name: 'Error',
+                    message: err().notOwner 
+                });
+            });
+    
+        });
     });
 
-    describe('Emitter', async () => {
-
-        it('should emit ticket ID / forwardEvent()', async () => {
-            await sendETHv2(newProxyAddr);
-            receipt = await activateProxyLikeOps(newProxyAddr, ozERC1967proxyAddr);
-            showTicketSignature = '0xbca70dc8f665e75505547ec15f8c9d9372ac2b33c1746a7e01b805dae21f6696';
-            ticketIDtype = compareTopicWith('Signature', showTicketSignature, receipt);
-            assert(ticketIDtype, 'number');
-        });
-
-        xit('should not allow an unauhtorized user to emit ticketID / forwardEvent()', async () => {
-            await assert.rejects(async () => {
-                await emitter.forwardEvent(000000);
-            }, {
-                name: 'Error',
-                message: err().notProxy 
-            });
-        });
-
-        xit('should allow the owner to change the StorageBeacon / storeStorageBeacon()', async () => {
-            [ otherStorageBeaconAddr ] = await deployAnotherStorageBeacon(fakePYYaddr, emitterAddr, userDetails);
-            tx = await emitter.storeStorageBeacon(otherStorageBeaconAddr);
-            receipt = await tx.wait();
-            assert.equal(otherStorageBeaconAddr.toLowerCase(), hexStripZeros(receipt.events[0].data));
-
-            await sendETHv2(newProxyAddr);
-            receipt = await activateProxyLikeOps(newProxyAddr, ozERC1967proxyAddr);
-            // console.log('sig: ', showTicketSignature); //<---- event signature is diff here. Why?????
-            showTicketSignature = '0xbca70dc8f665e75505547ec15f8c9d9372ac2b33c1746a7e01b805dae21f6696';
-            ticketID = compareTopicWith2('Signature', showTicketSignature, receipt);
-            console.log('......ttt: ', ticketID);
-            assert.equal(typeof ticketID, 'string');
-        }); 
-
-
-    })
-
-    describe('StorageBeacon', async () => {
-
-        it('should allow the owner to disable the Emitter', async () => {
-            await storageBeacon.changeEmitterStatus(true);
-            await sendETHv2(newProxyAddr);
-            receipt = await activateProxyLikeOps(newProxyAddr, ozERC1967proxyAddr);
-            const ticketIDtype = compareTopicWith('Signature', showTicketSignature, receipt);
-            assert.equal(ticketIDtype, false);
-        });
-
-        it('should not allow an external user to disable the Emitter', async () => {
-            await assert.rejects(async () => {
-                await storageBeacon.connect(signer2).changeEmitterStatus(true);
-            }, {
-                name: 'Error',
-                message: err().notOwner 
-            });
-        });
-
-    })
+    
 
     
 

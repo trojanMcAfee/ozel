@@ -24,9 +24,12 @@ const {
     poolFeeUni,
     nullAddr,
     chainlinkAggregatorAddr
- } = require('../scripts/state-vars.js');
+} = require('../scripts/state-vars.js');
 
- const { hexStripZeros, parseEther } = ethers.utils;
+const { hexStripZeros, parseEther } = ethers.utils;
+
+
+let proxyFactory;
 
 
 
@@ -146,6 +149,15 @@ async function sendTx(params) {
 }
 
 
+async function createProxy(userDetails) {
+    await sendTx({
+        receiver: proxyFactory,
+        method: 'createNewProxy',
+        args: [userDetails]
+    });
+}
+
+
 async function getArbitrumParams(userDetails) {
     const bridge = await Bridge.init(l1Signer, l2Signer);
     const { maxSubmissionCost, gasPriceBid } = await getGasDetailsL2(userDetails, bridge);
@@ -249,31 +261,31 @@ function compareTopicWith(type , value, receipt) {
     }
 }
 
-function compareTopicWith2(type , value, receipt) {
-    if (receipt.events) {
-        for (let i=0; i < receipt.events.length; i++) {
-            for (let j=0; j < receipt.events[i].topics.length; j++) {
-                let topic = hexStripZeros(receipt.events[i].topics[j]);
-                console.log('topic: ', topic);
-                console.log('value: ', value);
-                console.log('.');
-                if (parseInt(topic) === parseInt(value)) { 
-                    if (type === 'Signer') {
-                        return true;
-                    } else if (type === 'Signature') {
-                        const ticketID = receipt.events[i].topics[1];
-                        console.log('ticketID ^^^^: ', ticketID);
-                        return ticketID;
-                    }
-                }
-            }
-        }
-        console.log('here');
-        return false;
-    } else {
-        return false;
-    }
-}
+// function compareTopicWith2(type , value, receipt) {
+//     if (receipt.events) {
+//         for (let i=0; i < receipt.events.length; i++) {
+//             for (let j=0; j < receipt.events[i].topics.length; j++) {
+//                 let topic = hexStripZeros(receipt.events[i].topics[j]);
+//                 console.log('topic: ', topic);
+//                 console.log('value: ', value);
+//                 console.log('.');
+//                 if (parseInt(topic) === parseInt(value)) { 
+//                     if (type === 'Signer') {
+//                         return true;
+//                     } else if (type === 'Signature') {
+//                         const ticketID = receipt.events[i].topics[1];
+//                         console.log('ticketID ^^^^: ', ticketID);
+//                         return ticketID;
+//                     }
+//                 }
+//             }
+//         }
+//         console.log('here');
+//         return false;
+//     } else {
+//         return false;
+//     }
+// }
 
 
 async function deployAnotherStorageBeacon(fakePYYaddr, emitterAddr, userDetails) { 
@@ -438,7 +450,9 @@ async function deploySystemOptimistically(userDetails, signerAddr) {
 }
 
 
-
+async function storeVarsInHelpers(factory) {
+    proxyFactory = factory;
+}
 
 
 
@@ -454,5 +468,6 @@ module.exports = {
     activateProxyLikeOps,
     compareTopicWith,
     deployAnotherStorageBeacon,
-    compareTopicWith2
+    createProxy,
+    storeVarsInHelpers
 };

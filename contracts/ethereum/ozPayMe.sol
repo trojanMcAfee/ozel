@@ -41,7 +41,7 @@ contract ozPayMe is ReentrancyGuard, Initializable {
     StorageBeacon.UserConfig userDetails;
     StorageBeacon.FixedConfig fxConfig;
 
-    address private beacon;
+    address private _beacon;
 
     event FundsToArb(address indexed sender, uint amount);
     event EmergencyTriggered(address indexed sender, uint amount);
@@ -50,17 +50,12 @@ contract ozPayMe is ReentrancyGuard, Initializable {
 
 
     modifier onlyOps() {
-        require(msg.sender == fxConfig.ops, "ozPayMe: onlyOps");
+        require(msg.sender == fxConfig.ops, 'ozPayMe: onlyOps');
         _;
     }
 
     modifier onlyUser() {
         require(msg.sender == userDetails.user, 'ozPayMe: Not authorized');
-        _;
-    }
-
-    modifier hasRole(bytes4 functionSig_) {
-        require(ozUpgradeableBeacon(beacon).canCall(msg.sender, address(this), functionSig_));
         _;
     }
 
@@ -70,7 +65,7 @@ contract ozPayMe is ReentrancyGuard, Initializable {
     ) external initializer {
         userDetails = _getStorageBeacon(beacon_).getUserById(userId_);  
         fxConfig = _getStorageBeacon(beacon_).getFixedConfig();
-        beacon = beacon_;
+        _beacon = beacon_;
     }
 
 
@@ -83,7 +78,7 @@ contract ozPayMe is ReentrancyGuard, Initializable {
         StorageBeacon.VariableConfig memory varConfig_,
         StorageBeacon.UserConfig memory userDetails_
     ) external payable onlyOps { 
-        StorageBeacon storageBeacon = _getStorageBeacon(beacon); 
+        StorageBeacon storageBeacon = _getStorageBeacon(_beacon); 
 
         if (userDetails_.user == address(0) || userDetails_.userToken == address(0)) revert CantBeZero('address');
         if (!storageBeacon.isUser(userDetails_.user)) revert NotFoundInDatabase('user');
@@ -123,7 +118,6 @@ contract ozPayMe is ReentrancyGuard, Initializable {
             }
         }
 
-
         if (!isEmergency) {
             if (!storageBeacon.getEmitterStatus()) { 
                 uint ticketID = abi.decode(returnData, (uint));
@@ -131,7 +125,6 @@ contract ozPayMe is ReentrancyGuard, Initializable {
             }
             emit FundsToArb(userDetails_.user, amountToSend);
         }
-
     }
 
 
@@ -145,7 +138,7 @@ contract ozPayMe is ReentrancyGuard, Initializable {
 
 
     function _runEmergencyMode() private nonReentrant { //unsafe
-        StorageBeacon.EmergencyMode memory eMode = _getStorageBeacon(beacon).getEmergencyMode();
+        StorageBeacon.EmergencyMode memory eMode = _getStorageBeacon(_beacon).getEmergencyMode();
 
         for (uint i=1; i <= 2;) {
             ISwapRouter.ExactInputSingleParams memory params =
@@ -196,11 +189,7 @@ contract ozPayMe is ReentrancyGuard, Initializable {
         emit NewUserSlippage(msg.sender, newUserSlippage_);
     }
 
-    // function disableEmitter() external hasRole(0xa2d4d48b) {
-    //     isEmitter = true;
-    // }
-
-
+    
 }
 
 
