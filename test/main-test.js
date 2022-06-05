@@ -12,7 +12,8 @@ const {
     id,
     hexZeroPad,
     hexStripZeros,
-    arrayify
+    arrayify,
+    formatBytes32String
 } = ethers.utils;
 const { deploy } = require('../scripts/deploy.js');
 const { Bridge } = require('arb-ts');
@@ -93,6 +94,8 @@ let tx, receipt;
 let ticketIDtype, ticketID;
 let modUserDetails;
 let usersProxies = [];
+let evilVarConfig = [0, 0, 0];
+let evilUserDetails = [deadAddr, deadAddr, 0];
 
 
 
@@ -109,13 +112,13 @@ let usersProxies = [];
             defaultSlippage
         ];
 
-        ([ozERC1967proxyAddr, storageBeacon, emitter, emitterAddr, fakePYYaddr] = await deploySystemOptimistically(userDetails, signerAddr));
+        ([ozERC1967proxyAddr, storageBeacon, emitter, emitterAddr, fakePYYaddr, varConfig, eMode] = await deploySystemOptimistically(userDetails, signerAddr));
         storeVarsInHelpers(ozERC1967proxyAddr);
     });
 
     describe('Optimistic deployment', async () => { 
 
-        describe('ozBeaconProxy', async () => {
+        describe('ProxyFactory', async () => {
 
             describe('Deploys one proxy', async () => {
                 it('should create a proxy successfully / createNewProxy()', async () => {
@@ -196,8 +199,9 @@ let usersProxies = [];
                     }
                 });
             });
+        });
 
-            
+        describe('ozBeaconProxy', async () => {
 
             describe('fallback() / ozPayMe', async () => {
                 it('should not allow re-calling / initialize()', async () => {
@@ -274,8 +278,6 @@ let usersProxies = [];
                     newProxy = await hre.ethers.getContractAt('ozBeaconProxy', newProxyAddr);
                     ops = await hre.ethers.getContractAt('IOps', pokeMeOpsAddr);
                     signer2 = await hre.ethers.provider.getSigner(signerAddr2);
-                    evilVarConfig = [0, 0, 0];
-                    evilUserDetails = [deadAddr, deadAddr, 0];
 
                     await ops.connect(signer2).createTaskNoPrepayment(
                         newProxyAddr,
@@ -329,8 +331,83 @@ let usersProxies = [];
         });
     
         describe('StorageBeacon', async () => {
-    
-            it('should allow the owner to disable the Emitter', async () => {
+
+            it('shoud not allow an user to issue an userID / issueUserID()', async () => {
+                await assert.rejects(async () => {
+                    await storageBeacon.issueUserID(evilUserDetails);
+                }, {
+                    name: 'Error',
+                    message: err(1).notAuthorized 
+                });
+            });
+
+            it('should not allow an user to save a proxy / saveUserProxy()', async () => {
+                await assert.rejects(async () => {
+                    await storageBeacon.saveUserProxy(signerAddr2, deadAddr);
+                }, {
+                    name: 'Error',
+                    message: err(1).notAuthorized 
+                });
+            });
+
+            it('should not allow an user to save a taskId / saveTaskId()', async () => {
+                await assert.rejects(async () => {
+                    await storageBeacon.saveTaskId(deadAddr, formatBytes32String('evil data'));
+                }, {
+                    name: 'Error',
+                    message: err(1).notAuthorized 
+                });
+            });
+
+            it('should allow the owner to change VariableConfig / changeVariableConfig()', async () => {
+                await storageBeacon.changeVariableConfig(varConfig);
+            });
+
+            it('should not allow an external user to change VariableConfig / changeVariableConfig()', async () => {
+                await assert.rejects(async () => {
+                    await storageBeacon.connect(signer2).changeVariableConfig(varConfig);
+                }, {
+                    name: 'Error',
+                    message: err().notOwner 
+                });
+            });
+
+            it('should allow the owner to add a new userToken to the database', async () => {
+                await storageBeacon.addTokenToDatabase(fraxAddr);
+            });
+
+            it('should not allow an external user to add a new userToken to the database', async () => {
+                await assert.rejects(async () => {
+                    await storageBeacon.connect(signer2).addTokenToDatabase(deadAddr);
+                }, {
+                    name: 'Error',
+                    message: err().notOwner 
+                });
+            });
+
+            it('should not allow re-calling / storeBeacon()', async () => {
+                await assert.rejects(async () => {
+                    await storageBeacon.storeBeacon(deadAddr);
+                }, {
+                    name: 'Error',
+                    message: err().alreadyInitialized 
+                });
+            });
+
+            it('should allow the onwer to change Emergency Mode / changeEmergencyMode()', async () => {
+                await storageBeacon.changeEmergencyMode(eMode);
+            });
+
+            it('should not allow an external user to change Emergency Mode / changeEmergencyMode()', async () => {
+                await assert.rejects(async () => {
+                    await storageBeacon.connect(signer2).changeEmergencyMode(eMode);
+                }, {
+                    name: 'Error',
+                    message: err().notOwner 
+                });
+            });
+
+            it('should allow the owner to disable the Emitter / changeEmitterStatus()', async () => {
                 await storageBeacon.changeEmitterStatus(true);
                 await sendETHv2(newProxyAddr, 0.01);
                 receipt = await activateProxyLikeOps(newProxyAddr, ozERC1967proxyAddr);
@@ -338,7 +415,7 @@ let usersProxies = [];
                 assert.equal(ticketIDtype, false);
             });
     
-            it('should not allow an external user to disable the Emitter', async () => {
+            it('should not allow an external user to disable the Emitter / changeEmitterStatus()', async () => {
                 await assert.rejects(async () => {
                     await storageBeacon.connect(signer2).changeEmitterStatus(true);
                 }, {
@@ -346,6 +423,24 @@ let usersProxies = [];
                     message: err().notOwner 
                 });
             });
+
+            it('should return the userDetails / getUserDetailsById()', async () => {
+                userDetails[1] = usdtAddrArb;
+                const pulledUserDetails = await storageBeacon.getUserDetailsById(0);
+                assert.equal(pulledUserDetails[0], userDetails[0]);
+                assert.equal(pulledUserDetails[1], userDetails[1]);
+                assert.equal(pulledUserDetails[2], userDetails[2]);
+            });
+
+            it('should return the proxies an user has / getProxyByUser()', async () => {
+                userProxies = await storageBeacon.getProxyByUser(signerAddr);
+                assert(userProxies.length > 0);
+            });
+
+            it('should get the task IDs an user has', async () => {})
+
+
+
     
         });
     });

@@ -85,6 +85,7 @@ switch(network) {
         gelatoAddr = '0x3caca7b48d0573d793d3b0279b5f0029180e83b6';
         swapRouterUniAddr = '0xE592427A0AEce92De3Edee1F18E0157C05861564';
         chainlinkAggregatorAddr = '0x5f4eC3Df9cbd43714FE2740f5E3616155c5b8419';
+        fraxAddr = '0x853d955aCEf822Db058eb8505911ED77F175b99e'; 
         deadAddr = '0x000000000000000000000000000000000000dEaD';
         break; 
     case 'arbitrum':

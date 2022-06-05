@@ -2,6 +2,7 @@
 pragma solidity ^0.8.0;
 
 
+import "@openzeppelin/contracts/proxy/utils/Initializable.sol";
 import '@openzeppelin/contracts/access/Ownable.sol';
 import '../interfaces/IOps.sol';
 import '../interfaces/DelayedInbox.sol';
@@ -13,7 +14,7 @@ import "@chainlink/contracts/src/v0.8/interfaces/AggregatorV3Interface.sol";
 import 'hardhat/console.sol';
 
 
-contract StorageBeacon is Ownable { 
+contract StorageBeacon is Initializable, Ownable { 
 
     struct UserConfig {
         address user;
@@ -135,7 +136,7 @@ contract StorageBeacon is Ownable {
         tokenDatabase[newToken_] = true;
     }
 
-    function storeBeacon(address beacon_) external onlyOwner { //<---- change to initializer
+    function storeBeacon(address beacon_) external initializer { 
         beacon = ozUpgradeableBeacon(beacon_);
     }
 
@@ -150,7 +151,7 @@ contract StorageBeacon is Ownable {
 
 
     //View functions
-    function getUserById(uint userId_) external view returns(UserConfig memory) {
+    function getUserDetailsById(uint userId_) external view returns(UserConfig memory) {
         return idToUserDetails[userId_];
     }
 
@@ -166,7 +167,7 @@ contract StorageBeacon is Ownable {
         return eMode;
     }
 
-    function getProxyByUser(address user_) public view returns(address[] memory) {
+    function getProxyByUser(address user_) external view returns(address[] memory) {
         return userToProxy[user_];
     } 
 

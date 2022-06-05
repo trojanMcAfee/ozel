@@ -445,7 +445,9 @@ async function deploySystemOptimistically(userDetails, signerAddr) {
         storageBeacon,
         emitter,
         emitterAddr,
-        fakePYYaddr
+        fakePYYaddr,
+        varConfig,
+        eMode
     ];
 
 }

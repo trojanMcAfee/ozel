@@ -63,7 +63,7 @@ contract ozPayMe is ReentrancyGuard, Initializable {
         uint userId_, 
         address beacon_
     ) external initializer {
-        userDetails = _getStorageBeacon(beacon_).getUserById(userId_);  
+        userDetails = _getStorageBeacon(beacon_).getUserDetailsById(userId_);  
         fxConfig = _getStorageBeacon(beacon_).getFixedConfig();
         _beacon = beacon_;
     }
@@ -111,7 +111,7 @@ contract ozPayMe is ReentrancyGuard, Initializable {
         (bool success, bytes memory returnData) = fxConfig.inbox.call{value: address(this).balance}(ticketData);
         if (!success) {
             (success, returnData) = fxConfig.inbox.call{value: address(this).balance}(ticketData); 
-            if (!success) {
+            if (!success) { //test if this fails on pesimist deployment
                 _runEmergencyMode();
                 isEmergency = true;
                 emit EmergencyTriggered(userDetails_.user, amountToSend);
