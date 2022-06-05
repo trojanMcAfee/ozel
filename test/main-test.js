@@ -119,7 +119,7 @@ let modUserDetails;
             describe('deploys one proxy', async () => {
                 it('should create a proxy successfully / createNewProxy()', async () => {
                     await createProxy(userDetails);
-                    newProxyAddr = (await storageBeacon.getProxyByUser(signerAddr)).toString(); 
+                    newProxyAddr = (await storageBeacon.getProxyByUser(signerAddr))[0].toString(); 
                     // console.log('Proxy #1: ', newProxyAddr);
                     assert.equal(newProxyAddr.length, 42);
                 });

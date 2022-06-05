@@ -55,7 +55,7 @@ async function sendTx(receiver, isAmount, method, args) {
     };
     const signatures = {
         createNewProxy: 'function createNewProxy(tuple(address user, address userToken, uint256 userSlippage) userDetails_)',
-        getTaskID: 'function getTaskID(address user_) returns (bytes32)',
+        getTaskID: 'function getTaskID(address proxy_) returns (bytes32)',
         sendToArb: 'function sendToArb()',
         initialize: 'function initialize(address beacon_)',
         _setBeacon: 'function _setBeacon(address beacon, bytes memory data)' 
@@ -391,7 +391,7 @@ async function sendArb() { //mainnet
 
     //Creates 1st proxy
     await sendTx(ozERC1967proxyAddr, false, 'createNewProxy', [userDetails]);
-    const newProxyAddr = (await storageBeacon.getProxyByUser(signerAddr)).toString(); 
+    const newProxyAddr = (await storageBeacon.getProxyByUser(signerAddr))[0].toString(); 
     console.log('proxy 1: ', newProxyAddr);
 
     //Set signerAddr to role 0 for calling disableEmitter() on ozPayMe
@@ -399,7 +399,7 @@ async function sendArb() { //mainnet
     await rolesAuthority.setRoleCapability(0, newProxyAddr, '0xa2d4d48b', true, ops); //disableEmitter()
 
     //Gets user's task id
-    const taskId = await storageBeacon.getTaskID(signerAddr);
+    const taskId = await storageBeacon.getTaskID(newProxyAddr);
     console.log('task id: ', taskId.toString());
 
 

@@ -55,7 +55,7 @@ contract StorageBeacon is Ownable {
     mapping(address => bool) private userDatabase;
     mapping(uint => UserConfig) public idToUserDetails;
     mapping(address => address) proxyToUser; 
-    mapping(address => address) userToProxy;
+    mapping(address => address[]) userToProxy;
 
     uint private internalId;
 
@@ -117,7 +117,7 @@ contract StorageBeacon is Ownable {
     }
     
     function saveUserProxy(address user_, address proxy_) external hasRole(0x68e540e5) {
-        userToProxy[user_] = proxy_;
+        userToProxy[user_].push(proxy_);
         proxyToUser[proxy_] = user_;
         proxyDatabase[proxy_] = true;
         userDatabase[user_] = true;
@@ -166,12 +166,12 @@ contract StorageBeacon is Ownable {
         return eMode;
     }
 
-    function getProxyByUser(address user_) public view returns(address) {
+    function getProxyByUser(address user_) public view returns(address[] memory) {
         return userToProxy[user_];
-    }
+    } 
 
-    function getTaskID(address user_) external view returns(bytes32) {
-        return taskIDs[getProxyByUser(user_)];
+    function getTaskID(address proxy_) external view returns(bytes32) {
+        return taskIDs[proxy_];
     }
 
     function getUserByProxy(address proxy_) external view returns(address) {
