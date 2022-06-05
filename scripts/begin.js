@@ -346,7 +346,6 @@ async function sendArb() { //mainnet
     ]; 
 
     const [storageBeaconAddr, storageBeacon] = await deployContract('StorageBeacon', l1Signer, constrArgs);
-    await emitter.storeStorageBeacon(storageBeaconAddr);
 
     //Deploys UpgradeableBeacon
     constrArgs = [
@@ -356,6 +355,7 @@ async function sendArb() { //mainnet
 
     const [beaconAddr, beacon] = await deployContract('ozUpgradeableBeacon', l1Signer, constrArgs); 
     await storageBeacon.storeBeacon(beaconAddr);
+    await emitter.storeBeacon(beaconAddr);
 
     //Deploys ProxyFactory
     const [proxyFactoryAddr] = await deployContract('ProxyFactory', l1Signer);

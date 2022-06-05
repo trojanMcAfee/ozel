@@ -67,7 +67,9 @@ const {
     getEventParam,
     sendETHv2,
     activateProxyLikeOps,
-    compareTopicWith
+    compareTopicWith,
+    deployAnotherStorageBeacon,
+    compareTopicWith2
  } = require('../scripts/helpers-eth');
 
  const { err } = require('./errors.js');
@@ -75,7 +77,7 @@ const {
 
 
 let signerAddr, signerAddr2;
-let ozERC1967proxyAddr, storageBeacon, emitter;
+let ozERC1967proxyAddr, storageBeacon, emitter, emitterAddr, fakePYYaddr;
 let userDetails;
 let newProxyAddr, newProxy;
 let balance;
@@ -84,6 +86,10 @@ let user;
 let ops;
 let signer2;
 let showTicketSignature;
+let isSuccess;
+let otherStorageBeaconAddr;
+let tx, receipt;
+let ticketIDtype, ticketID;
 
 
 
@@ -99,7 +105,7 @@ let showTicketSignature;
             usdtAddrArb,
             defaultSlippage
         ];
-        ([ozERC1967proxyAddr, storageBeacon, emitter] = await deploySystemOptimistically(userDetails, signerAddr));
+        ([ozERC1967proxyAddr, storageBeacon, emitter, emitterAddr, fakePYYaddr] = await deploySystemOptimistically(userDetails, signerAddr));
     });
 
     describe('ozBeaconProxy', async () => {
@@ -251,13 +257,13 @@ let showTicketSignature;
 
         it('should emit ticket ID / forwardEvent()', async () => {
             await sendETHv2(newProxyAddr);
-            const receipt = await activateProxyLikeOps(newProxyAddr, ozERC1967proxyAddr);
+            receipt = await activateProxyLikeOps(newProxyAddr, ozERC1967proxyAddr);
             showTicketSignature = '0xbca70dc8f665e75505547ec15f8c9d9372ac2b33c1746a7e01b805dae21f6696';
-            const ticketIDtype = compareTopicWith('Signature', showTicketSignature, receipt);
+            ticketIDtype = compareTopicWith('Signature', showTicketSignature, receipt);
             assert(ticketIDtype, 'number');
         });
 
-        it('should not allow an unauhtorized user to emit ticketID / forwardEvent()', async () => {
+        xit('should not allow an unauhtorized user to emit ticketID / forwardEvent()', async () => {
             await assert.rejects(async () => {
                 await emitter.forwardEvent(000000);
             }, {
@@ -266,10 +272,20 @@ let showTicketSignature;
             });
         });
 
-        xit('should allow the owner to disable the Emitter', async () => {
+        xit('should allow the owner to change the StorageBeacon / storeStorageBeacon()', async () => {
+            [ otherStorageBeaconAddr ] = await deployAnotherStorageBeacon(fakePYYaddr, emitterAddr, userDetails);
+            tx = await emitter.storeStorageBeacon(otherStorageBeaconAddr);
+            receipt = await tx.wait();
+            assert.equal(otherStorageBeaconAddr.toLowerCase(), hexStripZeros(receipt.events[0].data));
 
-            
-        });
+            await sendETHv2(newProxyAddr);
+            receipt = await activateProxyLikeOps(newProxyAddr, ozERC1967proxyAddr);
+            // console.log('sig: ', showTicketSignature); //<---- event signature is diff here. Why?????
+            showTicketSignature = '0xbca70dc8f665e75505547ec15f8c9d9372ac2b33c1746a7e01b805dae21f6696';
+            ticketID = compareTopicWith2('Signature', showTicketSignature, receipt);
+            console.log('......ttt: ', ticketID);
+            assert.equal(typeof ticketID, 'string');
+        }); 
 
 
     })
@@ -279,20 +295,19 @@ let showTicketSignature;
         it('should allow the owner to disable the Emitter', async () => {
             await storageBeacon.changeEmitterStatus(true);
             await sendETHv2(newProxyAddr);
+            receipt = await activateProxyLikeOps(newProxyAddr, ozERC1967proxyAddr);
             const ticketIDtype = compareTopicWith('Signature', showTicketSignature, receipt);
             assert.equal(ticketIDtype, false);
         });
 
         it('should not allow an external user to disable the Emitter', async () => {
-            await storageBeacon.connect(signer2).changeEmitterStatus(true);
-            // await sendETHv2(newProxyAddr);
-            // const ticketIDtype = compareTopicWith('Signature', showTicketSignature, receipt);
-            // assert.equal(ticketIDtype, false);
-
-
+            await assert.rejects(async () => {
+                await storageBeacon.connect(signer2).changeEmitterStatus(true);
+            }, {
+                name: 'Error',
+                message: err().notOwner 
+            });
         });
-
-
 
     })
 

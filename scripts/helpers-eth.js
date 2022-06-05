@@ -238,22 +238,94 @@ function compareTopicWith(type , value, receipt) {
                         return true;
                     } else if (type === 'Signature') {
                         const ticketID = receipt.events[i].topics[1];
-                        return typeof ticketID;
+                        return ticketID;
                     }
                 }
             }
         }
+        return false;
+    } else {
+        return false;
+    }
+}
+
+function compareTopicWith2(type , value, receipt) {
+    if (receipt.events) {
+        for (let i=0; i < receipt.events.length; i++) {
+            for (let j=0; j < receipt.events[i].topics.length; j++) {
+                let topic = hexStripZeros(receipt.events[i].topics[j]);
+                console.log('topic: ', topic);
+                console.log('value: ', value);
+                console.log('.');
+                if (parseInt(topic) === parseInt(value)) { 
+                    if (type === 'Signer') {
+                        return true;
+                    } else if (type === 'Signature') {
+                        const ticketID = receipt.events[i].topics[1];
+                        console.log('ticketID ^^^^: ', ticketID);
+                        return ticketID;
+                    }
+                }
+            }
+        }
+        console.log('here');
+        return false;
     } else {
         return false;
     }
 }
 
 
+async function deployAnotherStorageBeacon(fakePYYaddr, emitterAddr, userDetails) { 
+    const [ maxSubmissionCost, gasPriceBid, maxGas, autoRedeem ] = await getArbitrumParams(userDetails);
+
+    const fxConfig = [
+        inbox, 
+        pokeMeOpsAddr,
+        fakePYYaddr,
+        emitterAddr,
+        gelatoAddr, 
+        ETH,
+        maxGas
+    ];
+
+    const varConfig = [
+        maxSubmissionCost,
+        gasPriceBid,
+        autoRedeem
+    ];
+
+    const eMode = [
+        swapRouterUniAddr,
+        chainlinkAggregatorAddr,
+        poolFeeUni,
+        wethAddr,
+        usdcAddr
+    ];
+
+
+    const tokensDatabase = [
+        usdtAddrArb
+    ];
+
+    constrArgs = [
+        fxConfig,
+        varConfig,
+        eMode,
+        tokensDatabase
+    ]; 
+
+    return [storageBeaconAddr, storageBeacon] = await deployContract('StorageBeacon', l1Signer, constrArgs);
+}
+
+
+
 async function deploySystemOptimistically(userDetails, signerAddr) {
     let constrArgs = [];
 
     //Deploys the fake PYY on arbitrum testnet 
-    const fakePYYaddr = '0xCF383dD43481703a6ebe84DC4137Ae388cD7214b';
+    const [ fakePYYaddr ] = await deployContract('FakePYY', l1Signer);
+    // const fakePYYaddr = '0xCF383dD43481703a6ebe84DC4137Ae388cD7214b';
 
     //Calculate fees on L1 > L2 arbitrum tx
     const [ maxSubmissionCost, gasPriceBid, maxGas, autoRedeem ] = await getArbitrumParams(userDetails);
@@ -302,7 +374,6 @@ async function deploySystemOptimistically(userDetails, signerAddr) {
     ]; 
 
     const [storageBeaconAddr, storageBeacon] = await deployContract('StorageBeacon', l1Signer, constrArgs);
-    await emitter.storeStorageBeacon(storageBeaconAddr);
 
     //Deploys UpgradeableBeacon
     constrArgs = [
@@ -312,6 +383,7 @@ async function deploySystemOptimistically(userDetails, signerAddr) {
 
     const [beaconAddr, beacon] = await deployContract('ozUpgradeableBeacon', l1Signer, constrArgs); 
     await storageBeacon.storeBeacon(beaconAddr);
+    await emitter.storeBeacon(beaconAddr);
 
     //Deploys ProxyFactory
     const [proxyFactoryAddr] = await deployContract('ProxyFactory', l1Signer);
@@ -358,7 +430,9 @@ async function deploySystemOptimistically(userDetails, signerAddr) {
     return [
         ozERC1967proxyAddr, 
         storageBeacon,
-        emitter
+        emitter,
+        emitterAddr,
+        fakePYYaddr
     ];
 
 }
@@ -378,5 +452,7 @@ module.exports = {
     getEventParam,
     sendETHv2,
     activateProxyLikeOps,
-    compareTopicWith
+    compareTopicWith,
+    deployAnotherStorageBeacon,
+    compareTopicWith2
 };

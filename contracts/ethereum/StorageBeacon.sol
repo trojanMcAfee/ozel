@@ -135,7 +135,7 @@ contract StorageBeacon is Ownable {
         tokenDatabase[newToken_] = true;
     }
 
-    function storeBeacon(address beacon_) external onlyOwner {
+    function storeBeacon(address beacon_) external onlyOwner { //<---- change to initializer
         beacon = ozUpgradeableBeacon(beacon_);
     }
 
