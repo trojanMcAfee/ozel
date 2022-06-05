@@ -188,12 +188,12 @@ function getEventParam(receipt) {
 }
 
 
-async function sendETHv2(receiver) {
+async function sendETHv2(receiver, value) {
     await sendTx({
         receiver: receiver,
         isAmount: true,
         method: 'Sending ETH',
-        value: 0.01,
+        value,
         args: false
     });
 }
@@ -375,7 +375,8 @@ async function deploySystemOptimistically(userDetails, signerAddr) {
 
 
     const tokensDatabase = [
-        usdtAddrArb
+        usdtAddrArb,
+        usdcAddr
     ];
 
     constrArgs = [

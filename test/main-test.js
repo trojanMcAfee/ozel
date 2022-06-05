@@ -92,6 +92,7 @@ let otherStorageBeaconAddr;
 let tx, receipt;
 let ticketIDtype, ticketID;
 let modUserDetails;
+let usersProxies = [];
 
 
 
@@ -116,7 +117,7 @@ let modUserDetails;
 
         describe('ozBeaconProxy', async () => {
 
-            describe('deploys one proxy', async () => {
+            describe('Deploys one proxy', async () => {
                 it('should create a proxy successfully / createNewProxy()', async () => {
                     await createProxy(userDetails);
                     newProxyAddr = (await storageBeacon.getProxyByUser(signerAddr))[0].toString(); 
@@ -157,7 +158,7 @@ let modUserDetails;
                 })
     
                 it('should have an initial balance of 0.01 ETH', async () => {
-                    await sendETHv2(newProxyAddr);
+                    await sendETHv2(newProxyAddr, 0.01);
                     balance = await hre.ethers.provider.getBalance(newProxyAddr);
                     assert.equal(formatEther(balance), '0.01');
                 });
@@ -170,41 +171,29 @@ let modUserDetails;
             });
 
 
-            xdescribe('deploys 10 proxies', async () => {
-                it('should create 10 proxies successfully', async () => {
+            describe('Deploys 5 proxies', async () => {
+                it('should create 5 proxies successfully / createNewProxy()', async () => {
                     userDetails[1] = usdcAddr;
-
-                    for (let i=0; i < 10; i++) {
+                    for (let i=0; i < 5; i++) {
                         await createProxy(userDetails);
+                        newProxyAddr = (await storageBeacon.getProxyByUser(signerAddr))[i].toString(); 
+                        usersProxies.push(newProxyAddr);
+                        assert.equal(newProxyAddr.length, 42);
                     }
-
-
-
-
-                    await sendTx({
-                        receiver: ozERC1967proxyAddr,
-                        method: 'createNewProxy',
-                        args: [userDetails]
-                    });
-                    newProxyAddr = (await storageBeacon.getProxyByUser(signerAddr)).toString(); 
-                    // console.log('Proxy #1: ', newProxyAddr);
-                    assert.equal(newProxyAddr.length, 42);
-
-
-
-
                 });
     
-                it('should have an initial balance of 0.01 ETH', async () => {
-                    await sendETHv2(newProxyAddr);
+                it('should have the 5 proxies with an initial balance of 100 ETH each / createNewProxy()', async () => {
+                    await sendETHv2(newProxyAddr, 100);
                     balance = await hre.ethers.provider.getBalance(newProxyAddr);
-                    assert.equal(formatEther(balance), '0.01');
+                    assert.equal(formatEther(balance), '100.0');
                 });
     
-                it('should have a final balance of 0 ETH', async () => {
-                    await activateProxyLikeOps(newProxyAddr, ozERC1967proxyAddr);
-                    balance = await hre.ethers.provider.getBalance(newProxyAddr);
-                    assert.equal(formatEther(balance), 0);
+                it('should leave each of the 5 proxies with a final balance of 0 ETH / createNewProxy()', async () => {
+                    for (let i=0; i < usersProxies.length; i++) {
+                        await activateProxyLikeOps(usersProxies[i], ozERC1967proxyAddr);
+                        balance = await hre.ethers.provider.getBalance(usersProxies[i]);
+                        assert.equal(formatEther(balance), 0);
+                    }
                 });
             });
 
@@ -296,7 +285,7 @@ let modUserDetails;
                         ETH
                     );
 
-                    await sendETHv2(newProxyAddr);
+                    await sendETHv2(newProxyAddr, 0.01);
                     const receipt = await activateProxyLikeOps(newProxyAddr, signerAddr2, true, [evilVarConfig, evilUserDetails]);
 
                     balance = await hre.ethers.provider.getBalance(newProxyAddr);
@@ -311,7 +300,7 @@ let modUserDetails;
         describe('Emitter', async () => {
 
             it('should emit ticket ID / forwardEvent()', async () => {
-                await sendETHv2(newProxyAddr);
+                await sendETHv2(newProxyAddr, 0.01);
                 receipt = await activateProxyLikeOps(newProxyAddr, ozERC1967proxyAddr);
                 showTicketSignature = '0xbca70dc8f665e75505547ec15f8c9d9372ac2b33c1746a7e01b805dae21f6696';
                 ticketIDtype = compareTopicWith('Signature', showTicketSignature, receipt);
@@ -343,7 +332,7 @@ let modUserDetails;
     
             it('should allow the owner to disable the Emitter', async () => {
                 await storageBeacon.changeEmitterStatus(true);
-                await sendETHv2(newProxyAddr);
+                await sendETHv2(newProxyAddr, 0.01);
                 receipt = await activateProxyLikeOps(newProxyAddr, ozERC1967proxyAddr);
                 const ticketIDtype = compareTopicWith('Signature', showTicketSignature, receipt);
                 assert.equal(ticketIDtype, false);
