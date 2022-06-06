@@ -327,6 +327,13 @@ async function deployAnotherStorageBeacon(fakePYYaddr, emitterAddr, userDetails)
         tokensDatabase
     ]; 
 
+    // const [storageBeaconAddr, storageBeacon] = await deployContract('StorageBeacon', l1Signer, constrArgs);
+
+    // return [
+    //     storageBeaconAddr, 
+    //     storageBeacon
+    // ];
+
     return [storageBeaconAddr, storageBeacon] = await deployContract('StorageBeacon', l1Signer, constrArgs);
 }
 

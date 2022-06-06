@@ -93,6 +93,8 @@ let otherStorageBeaconAddr;
 let tx, receipt;
 let ticketIDtype, ticketID;
 let modUserDetails;
+let pulledUserDetails;
+let taskID;
 let usersProxies = [];
 let evilVarConfig = [0, 0, 0];
 let evilUserDetails = [deadAddr, deadAddr, 0];
@@ -413,6 +415,7 @@ let evilUserDetails = [deadAddr, deadAddr, 0];
                 receipt = await activateProxyLikeOps(newProxyAddr, ozERC1967proxyAddr);
                 const ticketIDtype = compareTopicWith('Signature', showTicketSignature, receipt);
                 assert.equal(ticketIDtype, false);
+                await storageBeacon.changeEmitterStatus(false);
             });
     
             it('should not allow an external user to disable the Emitter / changeEmitterStatus()', async () => {
@@ -426,10 +429,17 @@ let evilUserDetails = [deadAddr, deadAddr, 0];
 
             it('should return the userDetails / getUserDetailsById()', async () => {
                 userDetails[1] = usdtAddrArb;
-                const pulledUserDetails = await storageBeacon.getUserDetailsById(0);
+                pulledUserDetails = await storageBeacon.getUserDetailsById(0);
                 assert.equal(pulledUserDetails[0], userDetails[0]);
                 assert.equal(pulledUserDetails[1], userDetails[1]);
                 assert.equal(pulledUserDetails[2], userDetails[2]);
+            });
+
+            it('should return zero values when querying with a non-user / getUserDetailsById()', async () => {
+                pulledUserDetails = await storageBeacon.getUserDetailsById(100);
+                assert.equal(pulledUserDetails[0], nullAddr);
+                assert.equal(pulledUserDetails[1], nullAddr);
+                assert.equal(pulledUserDetails[2], 0);
             });
 
             it('should return the proxies an user has / getProxyByUser()', async () => {
@@ -437,12 +447,51 @@ let evilUserDetails = [deadAddr, deadAddr, 0];
                 assert(userProxies.length > 0);
             });
 
-            it('should get the task IDs an user has', async () => {})
+            it('should return an empty array when querying with a non-user / getProxyByUser()', async () => {
+                userProxies = await storageBeacon.getProxyByUser(deadAddr);
+                assert(userProxies.length === 0);
+            });
 
+            it("should get an user's taskID / getTaskID()", async () => {
+                userProxies = await storageBeacon.getProxyByUser(signerAddr);
+                taskID = (await storageBeacon.getTaskID(userProxies[0])).toString();
+                assert(taskID.length > 0);
+            });
 
+            it("should return a zero taskID when querying with a non-user / getTaskID()", async () => {
+                taskID = (await storageBeacon.getTaskID(deadAddr)).toString();
+                assert.equal(taskID, formatBytes32String(0));
+            });
 
-    
+            it('should return true for an user / isUser()', async () => {
+                assert(await storageBeacon.isUser(signerAddr));
+            });
+
+            it('should return false for a non-user / isUser()', async () => {
+                assert(!(await storageBeacon.isUser(deadAddr)));
+            });
+
+            it('should get the Emitter status / getEmitterStatus()', async () => {
+                assert(!(await storageBeacon.getEmitterStatus()));
+            });
         });
+
+        describe('ozUpgradeableBeacon', async () => {
+
+            it('should allow the owner to upgrade the Storage Beacon / upgradeStorageBeacon()', async () => {
+                const [otherStorageBeaconAddr, otherStorageBeacon] = await deployAnotherStorageBeacon(fakePYYaddr, emitterAddr, userDetails);
+                console.log('o: ', otherStorageBeaconAddr)
+
+
+                assert(await otherStorageBeacon.isUser(signerAddr));
+            });
+
+
+
+        });
+
+
+
     });
 
     
