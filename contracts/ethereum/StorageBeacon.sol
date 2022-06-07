@@ -173,7 +173,7 @@ contract StorageBeacon is Initializable, Ownable {
 
     function getTaskID(address proxy_) external view returns(bytes32) {
         return taskIDs[proxy_];
-    }
+    } //remove all the getters from here since mappings come with one by default
 
     function getUserByProxy(address proxy_) external view returns(address) {
         return proxyToUser[proxy_];
@@ -194,10 +194,9 @@ contract StorageBeacon is Initializable, Ownable {
 
 
     //test
-    // function getHello() external pure returns(uint x) {
-    //     x = 23;
-
-    // }
+    function getHello() external pure returns(uint x) {
+        x = 23;
+    }
  
 }
 

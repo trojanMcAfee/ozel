@@ -95,6 +95,7 @@ let ticketIDtype, ticketID;
 let modUserDetails;
 let pulledUserDetails;
 let taskID;
+let storageBeaconMockAddr, storageBeaconMock; 
 let usersProxies = [];
 let evilVarConfig = [0, 0, 0];
 let evilUserDetails = [deadAddr, deadAddr, 0];
@@ -114,7 +115,7 @@ let evilUserDetails = [deadAddr, deadAddr, 0];
             defaultSlippage
         ];
 
-        ([ozERC1967proxyAddr, storageBeacon, storageBeaconAddr, emitter, emitterAddr, fakePYYaddr, varConfig, eMode] = await deploySystemOptimistically(userDetails, signerAddr));
+        ([beacon, ozERC1967proxyAddr, storageBeacon, storageBeaconAddr, emitter, emitterAddr, fakePYYaddr, varConfig, eMode] = await deploySystemOptimistically(userDetails, signerAddr));
         storeVarsInHelpers(ozERC1967proxyAddr);
     });
 
@@ -127,6 +128,10 @@ let evilUserDetails = [deadAddr, deadAddr, 0];
                     await createProxy(userDetails);
                     newProxyAddr = (await storageBeacon.getProxyByUser(signerAddr))[0].toString(); 
                     // console.log('Proxy #1: ', newProxyAddr);
+
+                    const taskId = await storageBeacon.getTaskID(newProxyAddr);
+                    console.log('task id: *****', taskId);
+
                     assert.equal(newProxyAddr.length, 42);
                 });
 
@@ -476,18 +481,48 @@ let evilUserDetails = [deadAddr, deadAddr, 0];
             });
         });
 
-        describe('ozUpgradeableBeacon', async () => {
+        xdescribe('ozUpgradeableBeacon', async () => {
+
+            it('should allow the owner to upgrade the Storage Beacon / upgradeStorageBeacon()', async () => {
+                [storageBeaconMockAddr , storageBeaconMock] = await deployContract('StorageBeaconMock', l1Signer);
+                await beacon.upgradeStorageBeacon(storageBeaconMock);
+            });
+
+            it('should not allow an external user to upgrade the Storage Beacon / upgradeStorageBeacon()', async () => {
+                await assert.rejects(async () => {
+                    await beacon.connect(signer2).upgradeStorageBeacon(mockStorageBeacon);
+                }, {
+                    name: 'Error',
+                    message: err().notOwner
+                });
+            });
 
             xit('should allow the owner to upgrade the Storage Beacon / upgradeStorageBeacon()', async () => {
-                const [otherStorageBeaconAddr, otherStorageBeacon] = await deployAnotherStorageBeacon(fakePYYaddr, emitterAddr, userDetails);
-                console.log('o: ', otherStorageBeaconAddr)
+                // const [otherStorageBeaconAddr, otherStorageBeacon] = await deployAnotherStorageBeacon(fakePYYaddr, emitterAddr, userDetails);
+                // console.log('o: ', otherStorageBeaconAddr)
+
+                // assert(await otherStorageBeacon.isUser(signerAddr));
+
+                //---------
+                const MockStorageBeacon = await hre.ethers.getContractFactory('StorageBeaconMock');
+                const mockStorageBeacon = await MockStorageBeacon.deploy();
+                await mockStorageBeacon.deployed();
+                console.log('MockStorageBeacon deployed to: ', mockStorageBeacon.address);
+
+                await sendTx({
+                    receiver: mockStorageBeacon.address,
+                    method: 'getHello'
+                });
+                console.log('sent');
+
+                //---------
+                await beacon.upgradeStorageBeacon(mockStorageBeacon);
 
 
-                assert(await otherStorageBeacon.isUser(signerAddr));
+
             });
 
             xit('should log storageBeacon code', async () => {
-                console.log(2);
                 const Migration = await hre.ethers.getContractFactory('StorageBeacon');
                 const migration = await Migration.deploy();
                 await migration.deployed();

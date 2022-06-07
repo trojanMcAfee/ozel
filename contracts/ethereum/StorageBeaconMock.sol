@@ -2,9 +2,17 @@
 pragma solidity ^0.8.0;
 
 
+import 'hardhat/console.sol';
+
+
 contract StorageBeaconMock {
 
-    fallback(bytes memory input_) external { //connect this contract to StorageBeacon through with a fallback
+    uint public x = 11;
+
+    fallback(bytes calldata) external returns(bytes memory) { 
+
+        console.log('***************');
+        console.logBytes(msg.data);
 
     }
 

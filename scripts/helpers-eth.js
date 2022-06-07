@@ -115,7 +115,8 @@ async function sendTx(params) {
         initialize: `function initialize(${params.args && params.args.length < 2 ? 'address beacon_' : 'uint256 userId_, address beacon_'})`,
         _setBeacon: 'function _setBeacon(address beacon, bytes memory data)',
         changeUserToken: 'function changeUserToken(address newUserToken_)',
-        changeUserSlippage: 'function changeUserSlippage(uint256 newUserSlippage_)'        
+        changeUserSlippage: 'function changeUserSlippage(uint256 newUserSlippage_)',
+        getHello: 'function getHello() returns (uint256)'        
     };
 
 
@@ -441,6 +442,7 @@ async function deploySystemOptimistically(userDetails, signerAddr) {
     console.log('.');
 
     return [
+        beacon,
         ozERC1967proxyAddr, 
         storageBeacon,
         storageBeaconAddr,

@@ -265,6 +265,24 @@ async function deployContract(contractName, signer, constrArgs) {
 
 
 
+async function getTheTask() {
+    const storageBeaconAddr = '0x5Eacb393D34618157989532Fd91a56d77f85FdE5';
+    const newProxyAddr = '0xe510Dc3e577D8f50930360778b887fE50012E0d2';
+    const sBeacon = await hre.ethers.getContractAt('StorageBeacon', storageBeaconAddr);
+
+    const ops = {
+        gasLimit: ethers.BigNumber.from('5000000'),
+        gasPrice: ethers.BigNumber.from('30897522792')
+    };
+
+    const taskId = await sBeacon.taskIDs(newProxyAddr, ops);
+    console.log('task id: *****', taskId.toString());
+    //check why the task id on the terminal (rinkeby) is 0x0000
+
+}
+
+getTheTask();
+
 
 
 
@@ -639,7 +657,7 @@ async function beginSimulatedDiamond() {
 
 // beginSimulatedDiamond();
 
-sendArb();
+// sendArb();
 
 // tryPrecompile();
 
