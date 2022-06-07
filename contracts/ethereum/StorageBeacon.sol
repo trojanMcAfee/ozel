@@ -55,8 +55,8 @@ contract StorageBeacon is Initializable, Ownable {
     mapping(address => bool) public proxyDatabase;
     mapping(address => bool) private userDatabase;
     mapping(uint => UserConfig) public idToUserDetails;
-    mapping(address => address) proxyToUser; 
-    mapping(address => address[]) userToProxy;
+    mapping(address => address) public proxyToUser; 
+    mapping(address => address[]) public userToProxy;
 
     uint private internalId;
 
@@ -191,6 +191,14 @@ contract StorageBeacon is Initializable, Ownable {
         return isEmitter;
     }
 
+
+
+    //test
+    // function getHello() external pure returns(uint x) {
+    //     x = 23;
+
+    // }
+ 
 }
 
 

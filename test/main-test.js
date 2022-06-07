@@ -176,7 +176,7 @@ let evilUserDetails = [deadAddr, deadAddr, 0];
             });
 
 
-            describe('Deploys 5 proxies', async () => {
+            xdescribe('Deploys 5 proxies', async () => {
                 it('should create 5 proxies successfully / createNewProxy()', async () => {
                     userDetails[1] = usdcAddr;
                     for (let i=0; i < 5; i++) {
@@ -203,7 +203,7 @@ let evilUserDetails = [deadAddr, deadAddr, 0];
             });
         });
 
-        describe('ozBeaconProxy', async () => {
+        xdescribe('ozBeaconProxy', async () => {
 
             describe('fallback() / ozPayMe', async () => {
                 it('should not allow re-calling / initialize()', async () => {
@@ -301,7 +301,7 @@ let evilUserDetails = [deadAddr, deadAddr, 0];
             });
         });
 
-        describe('Emitter', async () => {
+        xdescribe('Emitter', async () => {
 
             it('should emit ticket ID / forwardEvent()', async () => {
                 await sendETHv2(newProxyAddr, 0.01);
@@ -332,7 +332,7 @@ let evilUserDetails = [deadAddr, deadAddr, 0];
     
         });
     
-        describe('StorageBeacon', async () => {
+        xdescribe('StorageBeacon', async () => {
 
             it('shoud not allow an user to issue an userID / issueUserID()', async () => {
                 await assert.rejects(async () => {
