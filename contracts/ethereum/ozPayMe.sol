@@ -29,6 +29,7 @@ import '@uniswap/v3-periphery/contracts/interfaces/ISwapRouter.sol';
 import '@uniswap/v3-periphery/contracts/libraries/TransferHelper.sol';
 
 import './Errors.sol';
+import './StorageBeacon.sol';
 
 import 'hardhat/console.sol'; 
 
@@ -70,7 +71,7 @@ contract ozPayMe is ReentrancyGuard, Initializable {
 
 
     function _getStorageBeacon(address beacon_) private view returns(StorageBeacon) { 
-        return ozUpgradeableBeacon(beacon_).storageBeacon();
+        return StorageBeacon(ozUpgradeableBeacon(beacon_).storageBeacon(0));
     }
 
 

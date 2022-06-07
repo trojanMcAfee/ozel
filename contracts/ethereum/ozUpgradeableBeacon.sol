@@ -5,11 +5,12 @@ pragma solidity 0.8.14;
 import '@openzeppelin/contracts/proxy/beacon/UpgradeableBeacon.sol';
 import '@rari-capital/solmate/src/auth/authorities/RolesAuthority.sol';
 
-import './StorageBeacon.sol';
+// import './StorageBeacon.sol';
 
 
 contract ozUpgradeableBeacon is UpgradeableBeacon { 
-    StorageBeacon private _storageBeacon;
+    // StorageBeacon private _storageBeacon;
+    address[] private _storageBeacons;
 
     RolesAuthority auth;
 
@@ -18,16 +19,18 @@ contract ozUpgradeableBeacon is UpgradeableBeacon {
 
 
     constructor(address impl_, address storageBeacon_) UpgradeableBeacon(impl_) {
-        _storageBeacon = StorageBeacon(storageBeacon_);
+        _storageBeacons.push(storageBeacon_);
+        // _storageBeacon = (storageBeacon_);
     }
 
 
-    function storageBeacon() external view returns(StorageBeacon) {
-        return _storageBeacon;
+    function storageBeacon(uint version_) external view returns(address) {
+        return _storageBeacons[version_];
     }
 
     function upgradeStorageBeacon(address newStorageBeacon_) external onlyOwner {
-        _storageBeacon = StorageBeacon(newStorageBeacon_);
+        // _storageBeacon = StorageBeacon(newStorageBeacon_);
+        _storageBeacons.push(newStorageBeacon_);
         emit UpgradedStorageBeacon(newStorageBeacon_);
     }
 

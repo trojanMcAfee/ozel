@@ -35,7 +35,7 @@ contract ozBeaconProxy is ReentrancyGuard, Initializable, BeaconProxy {
 
 
     function _getStorageBeacon() private view returns(StorageBeacon) {
-        return StorageBeacon(ozUpgradeableBeacon(_beacon()).storageBeacon());
+        return StorageBeacon(ozUpgradeableBeacon(_beacon()).storageBeacon(0));
     }
 
 

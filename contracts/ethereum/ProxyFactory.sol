@@ -59,7 +59,7 @@ contract ProxyFactory is ReentrancyGuard, Initializable {
 
 
     function _getStorageBeacon() private view returns(StorageBeacon) {
-        return StorageBeacon(ozUpgradeableBeacon(beacon).storageBeacon());
+        return StorageBeacon(ozUpgradeableBeacon(beacon).storageBeacon(0));
     }
 
 

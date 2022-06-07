@@ -114,7 +114,7 @@ let evilUserDetails = [deadAddr, deadAddr, 0];
             defaultSlippage
         ];
 
-        ([ozERC1967proxyAddr, storageBeacon, emitter, emitterAddr, fakePYYaddr, varConfig, eMode] = await deploySystemOptimistically(userDetails, signerAddr));
+        ([ozERC1967proxyAddr, storageBeacon, storageBeaconAddr, emitter, emitterAddr, fakePYYaddr, varConfig, eMode] = await deploySystemOptimistically(userDetails, signerAddr));
         storeVarsInHelpers(ozERC1967proxyAddr);
     });
 
@@ -478,12 +478,24 @@ let evilUserDetails = [deadAddr, deadAddr, 0];
 
         describe('ozUpgradeableBeacon', async () => {
 
-            it('should allow the owner to upgrade the Storage Beacon / upgradeStorageBeacon()', async () => {
+            xit('should allow the owner to upgrade the Storage Beacon / upgradeStorageBeacon()', async () => {
                 const [otherStorageBeaconAddr, otherStorageBeacon] = await deployAnotherStorageBeacon(fakePYYaddr, emitterAddr, userDetails);
                 console.log('o: ', otherStorageBeaconAddr)
 
 
                 assert(await otherStorageBeacon.isUser(signerAddr));
+            });
+
+            xit('should log storageBeacon code', async () => {
+                console.log(2);
+                const Migration = await hre.ethers.getContractFactory('StorageBeacon');
+                const migration = await Migration.deploy();
+                await migration.deployed();
+
+                const bytecode = await migration.at(storageBeaconAddr);
+                console.log('bytecode: ', bytecode);
+
+
             });
 
 

@@ -21,7 +21,7 @@ contract Emitter is Initializable, Ownable {
     }
 
     function _getStorageBeacon() private view returns(StorageBeacon) {
-        return StorageBeacon(ozUpgradeableBeacon(_beacon).storageBeacon());
+        return StorageBeacon(ozUpgradeableBeacon(_beacon).storageBeacon(0));
     }
 
     function forwardEvent(uint ticketID_) external { 
