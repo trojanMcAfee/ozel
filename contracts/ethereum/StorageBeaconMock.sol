@@ -9,6 +9,11 @@ contract StorageBeaconMock {
 
     uint public x = 11;
 
+    function getHello2() external pure returns(uint y) {
+        y = 15;
+    }
+
+
     fallback(bytes calldata) external returns(bytes memory) { 
         address storageBeacon = 0x9BcC604D4381C5b0Ad12Ff3Bf32bEdE063416BC7;
 

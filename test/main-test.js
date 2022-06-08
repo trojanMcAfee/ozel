@@ -115,7 +115,7 @@ let evilUserDetails = [deadAddr, deadAddr, 0];
             defaultSlippage
         ];
 
-        ([beacon, ozERC1967proxyAddr, storageBeacon, storageBeaconAddr, emitter, emitterAddr, fakePYYaddr, varConfig, eMode] = await deploySystemOptimistically(userDetails, signerAddr));
+        ([beacon, beaconAddr, ozERC1967proxyAddr, storageBeacon, storageBeaconAddr, emitter, emitterAddr, fakePYYaddr, varConfig, eMode] = await deploySystemOptimistically(userDetails, signerAddr));
         storeVarsInHelpers(ozERC1967proxyAddr);
     });
 
@@ -127,11 +127,6 @@ let evilUserDetails = [deadAddr, deadAddr, 0];
                 it('should create a proxy successfully / createNewProxy()', async () => {
                     await createProxy(userDetails);
                     newProxyAddr = (await storageBeacon.getProxyByUser(signerAddr))[0].toString(); 
-                    // console.log('Proxy #1: ', newProxyAddr);
-
-                    const taskId = await storageBeacon.getTaskID(newProxyAddr);
-                    console.log('task id: *****', taskId);
-
                     assert.equal(newProxyAddr.length, 42);
                 });
 
@@ -208,7 +203,7 @@ let evilUserDetails = [deadAddr, deadAddr, 0];
             });
         });
 
-        xdescribe('ozBeaconProxy', async () => {
+        describe('ozBeaconProxy', async () => {
 
             describe('fallback() / ozPayMe', async () => {
                 it('should not allow re-calling / initialize()', async () => {
@@ -306,7 +301,7 @@ let evilUserDetails = [deadAddr, deadAddr, 0];
             });
         });
 
-        xdescribe('Emitter', async () => {
+        describe('Emitter', async () => {
 
             it('should emit ticket ID / forwardEvent()', async () => {
                 await sendETHv2(newProxyAddr, 0.01);
@@ -337,7 +332,7 @@ let evilUserDetails = [deadAddr, deadAddr, 0];
     
         });
     
-        xdescribe('StorageBeacon', async () => {
+        describe('StorageBeacon', async () => {
 
             it('shoud not allow an user to issue an userID / issueUserID()', async () => {
                 await assert.rejects(async () => {
@@ -481,7 +476,7 @@ let evilUserDetails = [deadAddr, deadAddr, 0];
             });
         });
 
-        describe('ozUpgradeableBeacon', async () => {
+        xdescribe('ozUpgradeableBeacon', async () => {
 
             it('should allow the owner to upgrade the Storage Beacon / upgradeStorageBeacon()', async () => {
                 [storageBeaconMockAddr , storageBeaconMock] = await deployContract('StorageBeaconMock', l1Signer);
@@ -498,7 +493,7 @@ let evilUserDetails = [deadAddr, deadAddr, 0];
                 });
             });
 
-            xit('should allow the owner to upgrade the implementation and use with new version of storageBeacon / upgradeStorageBeacon()', async () => {
+            it('should allow the owner to upgrade the implementation and use with new version of storageBeacon / upgradeStorageBeacon()', async () => {
                 // const [otherStorageBeaconAddr, otherStorageBeacon] = await deployAnotherStorageBeacon(fakePYYaddr, emitterAddr, userDetails);
                 // console.log('o: ', otherStorageBeaconAddr)
 
@@ -518,7 +513,7 @@ let evilUserDetails = [deadAddr, deadAddr, 0];
 
                 //---------
                 const ImplMock2 = await hre.ethers.getContractFactory('ImplementationMock2');
-                const implMock2 = await ImplMock2.deploy();
+                const implMock2 = await ImplMock2.deploy(beaconAddr);
                 await implMock2.deployed();
                 console.log('ImplementationMock2 deployed to: ', implMock2.address);
 

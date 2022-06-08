@@ -29,14 +29,14 @@ contract ProxyFactory is ReentrancyGuard, Initializable {
     function createNewProxy(StorageBeacon.UserConfig memory userDetails_) external nonReentrant { //unsafe
         if (userDetails_.user == address(0) || userDetails_.userToken == address(0)) revert CantBeZero('address');
         if (userDetails_.userSlippage <= 0) revert CantBeZero('slippage');
-        if (!_getStorageBeacon().queryTokenDatabase(userDetails_.userToken)) revert NotFoundInDatabase('token');
+        if (!StorageBeacon(_getStorageBeacon(0)).queryTokenDatabase(userDetails_.userToken)) revert NotFoundInDatabase('token');
 
         bytes memory idData = abi.encodeWithSignature( 
             'issueUserID((address,address,uint256))', 
             userDetails_
         ); 
 
-        (bool success, bytes memory returnData) = address(_getStorageBeacon()).call(idData);
+        (bool success, bytes memory returnData) = _getStorageBeacon(0).call(idData);
         if (!success) revert CallFailed('ProxyFactory: createNewProxy failed');
         uint userId = abi.decode(returnData, (uint));
 
@@ -54,19 +54,19 @@ contract ProxyFactory is ReentrancyGuard, Initializable {
 
         _startTask(address(newProxy));
 
-        _getStorageBeacon().saveUserProxy(msg.sender, address(newProxy));
+        StorageBeacon(_getStorageBeacon(0)).saveUserProxy(msg.sender, address(newProxy));
     }
 
 
-    function _getStorageBeacon() private view returns(StorageBeacon) {
-        return StorageBeacon(ozUpgradeableBeacon(beacon).storageBeacon(0));
+    function _getStorageBeacon(uint version_) private view returns(address) {
+        return ozUpgradeableBeacon(beacon).storageBeacon(version_);
     }
 
 
     // *** GELATO PART ******
 
     function _startTask(address beaconProxy_) private { 
-        StorageBeacon.FixedConfig memory fxConfig = _getStorageBeacon().getFixedConfig(); 
+        StorageBeacon.FixedConfig memory fxConfig = StorageBeacon(_getStorageBeacon(0)).getFixedConfig(); 
 
         (bytes32 id) = IOps(fxConfig.ops).createTaskNoPrepayment( 
             beaconProxy_,
@@ -76,6 +76,6 @@ contract ProxyFactory is ReentrancyGuard, Initializable {
             fxConfig.ETH
         );
 
-        _getStorageBeacon().saveTaskId(beaconProxy_, id);
+        StorageBeacon(_getStorageBeacon(0)).saveTaskId(beaconProxy_, id);
     }
 }

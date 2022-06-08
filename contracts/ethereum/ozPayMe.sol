@@ -64,14 +64,14 @@ contract ozPayMe is ReentrancyGuard, Initializable {
         uint userId_, 
         address beacon_
     ) external initializer {
-        userDetails = _getStorageBeacon(beacon_).getUserDetailsById(userId_);  
-        fxConfig = _getStorageBeacon(beacon_).getFixedConfig();
+        userDetails = StorageBeacon(_getStorageBeacon(beacon_, 0)).getUserDetailsById(userId_);  
+        fxConfig = StorageBeacon(_getStorageBeacon(beacon_, 0)).getFixedConfig();
         _beacon = beacon_;
     }
 
 
-    function _getStorageBeacon(address beacon_) private view returns(StorageBeacon) { 
-        return StorageBeacon(ozUpgradeableBeacon(beacon_).storageBeacon(0));
+    function _getStorageBeacon(address beacon_, uint version_) private view returns(address) { 
+        return ozUpgradeableBeacon(beacon_).storageBeacon(version_);
     }
 
 
@@ -79,7 +79,7 @@ contract ozPayMe is ReentrancyGuard, Initializable {
         StorageBeacon.VariableConfig memory varConfig_,
         StorageBeacon.UserConfig memory userDetails_
     ) external payable onlyOps { 
-        StorageBeacon storageBeacon = _getStorageBeacon(_beacon); 
+        StorageBeacon storageBeacon = StorageBeacon(_getStorageBeacon(_beacon, 0)); 
 
         if (userDetails_.user == address(0) || userDetails_.userToken == address(0)) revert CantBeZero('address');
         if (!storageBeacon.isUser(userDetails_.user)) revert NotFoundInDatabase('user');
@@ -139,7 +139,7 @@ contract ozPayMe is ReentrancyGuard, Initializable {
 
 
     function _runEmergencyMode() private nonReentrant { //unsafe
-        StorageBeacon.EmergencyMode memory eMode = _getStorageBeacon(_beacon).getEmergencyMode();
+        StorageBeacon.EmergencyMode memory eMode = StorageBeacon(_getStorageBeacon(_beacon, 0)).getEmergencyMode();
 
         for (uint i=1; i <= 2;) {
             ISwapRouter.ExactInputSingleParams memory params =

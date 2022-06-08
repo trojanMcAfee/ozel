@@ -443,6 +443,7 @@ async function deploySystemOptimistically(userDetails, signerAddr) {
 
     return [
         beacon,
+        beaconAddr,
         ozERC1967proxyAddr, 
         storageBeacon,
         storageBeaconAddr,
