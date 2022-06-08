@@ -7,25 +7,10 @@ import 'hardhat/console.sol';
 
 contract StorageBeaconMock {
 
-    uint public x = 11;
+    uint public extraVar = 11;
 
-    function getHello2() external pure returns(uint y) {
-        y = 15;
+    function getExtraVar() external view returns(uint) {
+        return extraVar;
     }
-
-
-    fallback(bytes calldata) external returns(bytes memory) { 
-        address storageBeacon = 0x9BcC604D4381C5b0Ad12Ff3Bf32bEdE063416BC7;
-
-        console.log('***************');
-        console.logBytes(msg.data);
-
-        (bool success, bytes memory data) = storageBeacon.call(msg.data);
-        require(success, 'failed on sBeacon mock');
-
-        return data;
-
-    }
-
 
 }
