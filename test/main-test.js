@@ -162,13 +162,13 @@ let evilUserDetails = [deadAddr, deadAddr, 0];
                     });
                 })
     
-                xit('should have an initial balance of 0.01 ETH', async () => {
+                it('should have an initial balance of 0.01 ETH', async () => {
                     await sendETHv2(newProxyAddr, 0.01);
                     balance = await hre.ethers.provider.getBalance(newProxyAddr);
                     assert.equal(formatEther(balance), '0.01');
                 });
     
-                xit('should have a final balance of 0 ETH', async () => {
+                it('should have a final balance of 0 ETH', async () => {
                     await activateProxyLikeOps(newProxyAddr, ozERC1967proxyAddr); 
                     balance = await hre.ethers.provider.getBalance(newProxyAddr);
                     assert.equal(formatEther(balance), 0);
@@ -203,7 +203,7 @@ let evilUserDetails = [deadAddr, deadAddr, 0];
             });
         });
 
-        xdescribe('ozBeaconProxy', async () => {
+        describe('ozBeaconProxy', async () => {
 
             describe('fallback() / ozPayMe', async () => {
                 it('should not allow re-calling / initialize()', async () => {
@@ -301,7 +301,7 @@ let evilUserDetails = [deadAddr, deadAddr, 0];
             });
         });
 
-        xdescribe('Emitter', async () => {
+        describe('Emitter', async () => {
 
             it('should emit ticket ID / forwardEvent()', async () => {
                 await sendETHv2(newProxyAddr, 0.01);
@@ -332,7 +332,7 @@ let evilUserDetails = [deadAddr, deadAddr, 0];
     
         });
     
-        xdescribe('StorageBeacon', async () => {
+        describe('StorageBeacon', async () => {
 
             it('shoud not allow an user to issue an userID / issueUserID()', async () => {
                 await assert.rejects(async () => {
@@ -493,16 +493,9 @@ let evilUserDetails = [deadAddr, deadAddr, 0];
                 });
             });
 
-            it('should allow the owner to upgrade the implementation and use with the new version of storageBeacon / upgradeStorageBeacon()', async () => {
+            it('should allow the owner to upgrade the implementation and use with the new version of storageBeacon / upgradeTo()', async () => {
                 const [ implMockAddr ] = await deployContract('ImplementationMock', l1Signer);
-                
-                // const ImplMock = await hre.ethers.getContractFactory('ImplementationMock');
-                // const implMock = await ImplMock.deploy();
-                // await implMock.deployed();
-                // console.log('ImplementationMock deployed to: ', implMock.address);
-
                 await beacon.upgradeTo(implMockAddr);
-                // console.log('upgraded...');
 
                 //execute a normal tx to proxy and read from the new variable placed on implMock
                 await sendETHv2(newProxyAddr, 1.5);
@@ -511,12 +504,7 @@ let evilUserDetails = [deadAddr, deadAddr, 0];
 
                 const receipt = await activateProxyLikeOps(newProxyAddr, ozERC1967proxyAddr); 
                 balance = await hre.ethers.provider.getBalance(newProxyAddr);
-                assert.equal(formatEther(balance), 0);
-                
-                // const receipt = await sendTx({
-                //     receiver: newProxyAddr,
-                //     method: 'callStorageBeaconMock'
-                // });   
+                assert.equal(formatEther(balance), 0);  
 
                 for (let i=0; i < receipt.events.length;) {
                     let { data } = receipt.events[i];
@@ -532,13 +520,6 @@ let evilUserDetails = [deadAddr, deadAddr, 0];
                     i++;
                     if (i === receipt.events.length) assert(false);
                 }
-                
-                // console.log('receipt: ', receipt.events.length);
-
-
-
-
-
             });
 
           

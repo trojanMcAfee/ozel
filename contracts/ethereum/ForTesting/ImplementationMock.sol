@@ -11,14 +11,14 @@ import "@openzeppelin/contracts/proxy/beacon/BeaconProxy.sol";
 import "@openzeppelin/contracts/proxy/utils/Initializable.sol";
 import '@openzeppelin/contracts/access/Ownable.sol';
 // import '@openzeppelin/contracts/utils/Address.sol';
-import '../interfaces/IL1_ETH_Bridge.sol';
-import '../interfaces/DelayedInbox.sol';
-import './FakePYY.sol';
-import './Emitter.sol';
-import '../interfaces/IOps.sol';
-import './StorageBeacon.sol';
-import './ozUpgradeableBeacon.sol';
-import '../libraries/FixedPointMathLib.sol';
+import '../../interfaces/IL1_ETH_Bridge.sol';
+import '../../interfaces/DelayedInbox.sol';
+import '../FakePYY.sol';
+import '../Emitter.sol';
+import '../../interfaces/IOps.sol';
+import '../StorageBeacon.sol';
+import '../ozUpgradeableBeacon.sol';
+import '../../libraries/FixedPointMathLib.sol';
 
 import '@rari-capital/solmate/src/auth/authorities/RolesAuthority.sol';
 import '@rari-capital/solmate/src/utils/ReentrancyGuard.sol';
@@ -28,8 +28,8 @@ import '@rari-capital/solmate/src/tokens/ERC20.sol';
 import '@uniswap/v3-periphery/contracts/interfaces/ISwapRouter.sol';
 import '@uniswap/v3-periphery/contracts/libraries/TransferHelper.sol';
 
-import './Errors.sol';
-import './StorageBeacon.sol';
+import '../Errors.sol';
+import '../StorageBeacon.sol';
 import './StorageBeaconMock.sol';
 
 import 'hardhat/console.sol'; 
