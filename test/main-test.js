@@ -481,57 +481,54 @@ let evilUserDetails = [deadAddr, deadAddr, 0];
             });
         });
 
-        xdescribe('ozUpgradeableBeacon', async () => {
+        describe('ozUpgradeableBeacon', async () => {
 
             it('should allow the owner to upgrade the Storage Beacon / upgradeStorageBeacon()', async () => {
                 [storageBeaconMockAddr , storageBeaconMock] = await deployContract('StorageBeaconMock', l1Signer);
-                await beacon.upgradeStorageBeacon(storageBeaconMock);
+                await beacon.upgradeStorageBeacon(storageBeaconMockAddr);
             });
 
             it('should not allow an external user to upgrade the Storage Beacon / upgradeStorageBeacon()', async () => {
+                signer2 = await hre.ethers.provider.getSigner(signerAddr2);
                 await assert.rejects(async () => {
-                    await beacon.connect(signer2).upgradeStorageBeacon(mockStorageBeacon);
+                    await beacon.connect(signer2).upgradeStorageBeacon(storageBeaconMockAddr);
                 }, {
                     name: 'Error',
                     message: err().notOwner
                 });
             });
 
-            xit('should allow the owner to upgrade the Storage Beacon / upgradeStorageBeacon()', async () => {
+            xit('should allow the owner to upgrade the implementation and use with new version of storageBeacon / upgradeStorageBeacon()', async () => {
                 // const [otherStorageBeaconAddr, otherStorageBeacon] = await deployAnotherStorageBeacon(fakePYYaddr, emitterAddr, userDetails);
                 // console.log('o: ', otherStorageBeaconAddr)
 
                 // assert(await otherStorageBeacon.isUser(signerAddr));
 
                 //---------
-                const MockStorageBeacon = await hre.ethers.getContractFactory('StorageBeaconMock');
-                const mockStorageBeacon = await MockStorageBeacon.deploy();
-                await mockStorageBeacon.deployed();
-                console.log('MockStorageBeacon deployed to: ', mockStorageBeacon.address);
+                // const MockStorageBeacon = await hre.ethers.getContractFactory('StorageBeaconMock');
+                // const mockStorageBeacon = await MockStorageBeacon.deploy();
+                // await mockStorageBeacon.deployed();
+                // console.log('MockStorageBeacon deployed to: ', mockStorageBeacon.address);
 
-                await sendTx({
-                    receiver: mockStorageBeacon.address,
-                    method: 'getHello'
-                });
-                console.log('sent');
+                // await sendTx({
+                //     receiver: mockStorageBeacon.address,
+                //     method: 'getHello'
+                // });
+                // console.log('sent');
 
                 //---------
-                await beacon.upgradeStorageBeacon(mockStorageBeacon);
+                const ImplMock2 = await hre.ethers.getContractFactory('ImplementationMock2');
+                const implMock2 = await ImplMock2.deploy();
+                await implMock2.deployed();
+                console.log('ImplementationMock2 deployed to: ', implMock2.address);
+
+                await implMock2.setVar();
 
 
 
             });
 
-            xit('should log storageBeacon code', async () => {
-                const Migration = await hre.ethers.getContractFactory('StorageBeacon');
-                const migration = await Migration.deploy();
-                await migration.deployed();
-
-                const bytecode = await migration.at(storageBeaconAddr);
-                console.log('bytecode: ', bytecode);
-
-
-            });
+          
 
 
 
