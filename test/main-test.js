@@ -176,7 +176,7 @@ let evilUserDetails = [deadAddr, deadAddr, 0];
             });
 
 
-            xdescribe('Deploys 5 proxies', async () => {
+            describe('Deploys 5 proxies', async () => {
                 it('should create 5 proxies successfully / createNewProxy()', async () => {
                     userDetails[1] = usdcAddr;
                     for (let i=0; i < 5; i++) {
@@ -493,39 +493,16 @@ let evilUserDetails = [deadAddr, deadAddr, 0];
                 });
             });
 
-            it('should allow the owner to upgrade the implementation and use with new version of storageBeacon / upgradeStorageBeacon()', async () => {
-                // const [otherStorageBeaconAddr, otherStorageBeacon] = await deployAnotherStorageBeacon(fakePYYaddr, emitterAddr, userDetails);
-                // console.log('o: ', otherStorageBeaconAddr)
+            it('should allow the owner to upgrade the implementation and use with the new version of storageBeacon / upgradeStorageBeacon()', async () => {
+                const [ implMockAddr ] = await deployContract('ImplementationMock', l1Signer);
+                
+                // const ImplMock = await hre.ethers.getContractFactory('ImplementationMock');
+                // const implMock = await ImplMock.deploy();
+                // await implMock.deployed();
+                // console.log('ImplementationMock deployed to: ', implMock.address);
 
-                // assert(await otherStorageBeacon.isUser(signerAddr));
-
-                //---------
-                // const MockStorageBeacon = await hre.ethers.getContractFactory('StorageBeaconMock');
-                // const mockStorageBeacon = await MockStorageBeacon.deploy();
-                // await mockStorageBeacon.deployed();
-                // console.log('MockStorageBeacon deployed to: ', mockStorageBeacon.address);
-
-                // await sendTx({
-                //     receiver: mockStorageBeacon.address,
-                //     method: 'getHello'
-                // });
-                // console.log('sent');
-
-                //---------
-                // const ImplMock2 = await hre.ethers.getContractFactory('ImplementationMock2');
-                // const implMock2 = await ImplMock2.deploy(beaconAddr);
-                // await implMock2.deployed();
-                // console.log('ImplementationMock2 deployed to: ', implMock2.address);
-
-                // await implMock2.setVar();
-                //----------
-                const ImplMock = await hre.ethers.getContractFactory('ImplementationMock');
-                const implMock = await ImplMock.deploy();
-                await implMock.deployed();
-                console.log('ImplementationMock deployed to: ', implMock.address);
-
-                await beacon.upgradeTo(implMock.address);
-                console.log('upgraded...');
+                await beacon.upgradeTo(implMockAddr);
+                // console.log('upgraded...');
 
                 //execute a normal tx to proxy and read from the new variable placed on implMock
                 await sendETHv2(newProxyAddr, 1.5);
@@ -553,9 +530,7 @@ let evilUserDetails = [deadAddr, deadAddr, 0];
                         } 
                     }
                     i++;
-                    if (i === receipt.events.length) {
-                        assert(false);
-                    }
+                    if (i === receipt.events.length) assert(false);
                 }
                 
                 // console.log('receipt: ', receipt.events.length);

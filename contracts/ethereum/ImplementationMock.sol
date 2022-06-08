@@ -53,7 +53,6 @@ contract ImplementationMock is ReentrancyGuard, Initializable {
 
 
     modifier onlyOps() {
-        console.log('msg.sender: ', msg.sender);
         require(msg.sender == fxConfig.ops, 'ImplementationMock: onlyOps');
         _;
     }
