@@ -557,7 +557,7 @@ let isExist;
     });
 
 
-    xdescribe('Pesimistic deployment', async () => {
+    describe('Pesimistic deployment', async () => {
         before( async () => {
             //autoRedeem set to 0
             ([beacon, beaconAddr, ozERC1967proxyAddr, storageBeacon, storageBeaconAddr, emitter, emitterAddr, fakePYYaddr, varConfig, eMode] = await deploySystem('Pessimistically', userDetails, signerAddr));
@@ -620,10 +620,6 @@ let isExist;
 
                 isExist = await compareEventWithVar(receipt, 23);
                 assert(isExist);
-
-                //refactored this (grab this loop an the other and put it on helps)
-                //add the requires on ozPayme changeUserxxxx
-
             });
         });
     });
