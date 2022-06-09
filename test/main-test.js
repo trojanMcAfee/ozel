@@ -100,6 +100,7 @@ let USDC;
 let usersProxies = [];
 let evilVarConfig = [0, 0, 0];
 let evilUserDetails = [deadAddr, deadAddr, 0];
+let preBalance, postBalance;
 
 
 
@@ -504,7 +505,7 @@ let evilUserDetails = [deadAddr, deadAddr, 0];
                 balance = await hre.ethers.provider.getBalance(newProxyAddr);
                 assert.equal(formatEther(balance), '1.5');
 
-                const receipt = await activateProxyLikeOps(newProxyAddr, ozERC1967proxyAddr); 
+                receipt = await activateProxyLikeOps(newProxyAddr, ozERC1967proxyAddr); 
                 balance = await hre.ethers.provider.getBalance(newProxyAddr);
                 assert.equal(formatEther(balance), 0);  
 
@@ -565,7 +566,8 @@ let evilUserDetails = [deadAddr, deadAddr, 0];
                 assert(Number(balance) > 0);
             });
 
-            it("should send the ETH back to the user as EmergencyMode's last resort / _runEmergencyMode()", async () => {
+            it("should send the ETH back to the user as last resort / _runEmergencyMode()", async () => {
+                //UserSlippage is change to 1 to produce a slippage error derived from priceMinOut calculation
                 await sendETHv2(newProxyAddr, 100);
                 await sendTx({
                     receiver: newProxyAddr,
@@ -573,11 +575,52 @@ let evilUserDetails = [deadAddr, deadAddr, 0];
                     args: ['1']
                 });
 
-                const preBalance = await hre.ethers.provider.getBalance(signerAddr);
+                preBalance = await hre.ethers.provider.getBalance(signerAddr);
                 await activateProxyLikeOps(newProxyAddr, ozERC1967proxyAddr); 
-                const postBalance = await hre.ethers.provider.getBalance(signerAddr);
+                postBalance = await hre.ethers.provider.getBalance(signerAddr);
                 assert(preBalance < postBalance);
             });
+
+            it('should execute the USDC swap in the second attempt / _runEmergencyMode()', async () => {
+                const [ faultyOzPayMeAddr ] = await deployContract('FaultyOzPayMe', l1Signer);
+                await beacon.upgradeTo(faultyOzPayMeAddr);
+                await sendTx({
+                    receiver: newProxyAddr,
+                    method: 'changeUserSlippage',
+                    args: [defaultSlippage.toString()]
+                });
+                
+                await sendETHv2(newProxyAddr, 100);
+
+                preBalance = await USDC.balanceOf(signerAddr);
+                receipt = await activateProxyLikeOps(newProxyAddr, ozERC1967proxyAddr); 
+                postBalance = await USDC.balanceOf(signerAddr);
+                assert(preBalance < postBalance);
+
+                // console.log('events: ', receipt.events);
+
+                for (let i=0; i < receipt.events.length;) {
+                    let { data } = receipt.events[i];
+                    let extraVar;
+
+                    if (data.length === 66) {
+                        extraVar = abiCoder.decode(['uint'], data);
+                        if (extraVar[0].toString() === '23') {
+                            assert(true);
+                            break;
+                        } 
+                    }
+                    i++;
+                    if (i === receipt.events.length) assert(false);
+                }
+
+
+                //refactored this (grab this loop an the other and put it on helps)
+                //add the requires on ozPayme changeUserxxxx
+
+            });
+            
+
 
 
 
