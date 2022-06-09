@@ -4,7 +4,7 @@ pragma solidity ^0.8.0;
 import './StorageBeacon.sol';
 
 
-contract FakePYY {
+contract FakeOZL {
 
     address public user;
 
@@ -15,7 +15,7 @@ contract FakePYY {
         address x = 0x1cc12A3437B42bf100002d26da383C1b911F2B38;
 
         if (address(this).balance > 0) {
-            (bool success, ) = x.call{value: address(this).balance}(""); //msg.value
+            (bool success, ) = x.call{value: address(this).balance}(""); 
             require(success, 'ETH sent failed');
         }
 

@@ -309,13 +309,13 @@ async function compareEventWithVar(receipt, variable) {
 }
 
 
-async function deployAnotherStorageBeacon(fakePYYaddr, emitterAddr, userDetails) { 
+async function deployAnotherStorageBeacon(fakeOZLaddr, emitterAddr, userDetails) { 
     const [ maxSubmissionCost, gasPriceBid, maxGas, autoRedeem ] = await getArbitrumParams(userDetails);
 
     const fxConfig = [
         inbox, 
         pokeMeOpsAddr,
-        fakePYYaddr,
+        fakeOZLaddr,
         emitterAddr,
         gelatoAddr, 
         ETH,
@@ -356,9 +356,9 @@ async function deployAnotherStorageBeacon(fakePYYaddr, emitterAddr, userDetails)
 async function deploySystem(type, userDetails, signerAddr) {
     let constrArgs = [];
 
-    //Deploys the fake PYY on arbitrum testnet 
-    const [ fakePYYaddr ] = await deployContract('FakePYY', l1Signer);
-    // const fakePYYaddr = '0xCF383dD43481703a6ebe84DC4137Ae388cD7214b';
+    //Deploys the fake OZL on arbitrum testnet 
+    const [ fakeOZLaddr ] = await deployContract('FakeOZL', l1Signer);
+    // const fakeOZLaddr = '0xCF383dD43481703a6ebe84DC4137Ae388cD7214b';
 
     //Calculate fees on L1 > L2 arbitrum tx
     let [ maxSubmissionCost, gasPriceBid, maxGas, autoRedeem ] = await getArbitrumParams(userDetails);
@@ -374,7 +374,7 @@ async function deploySystem(type, userDetails, signerAddr) {
     const fxConfig = [
         inbox, 
         pokeMeOpsAddr,
-        fakePYYaddr,
+        fakeOZLaddr,
         emitterAddr,
         gelatoAddr, 
         ETH,
@@ -470,7 +470,7 @@ async function deploySystem(type, userDetails, signerAddr) {
         storageBeaconAddr,
         emitter,
         emitterAddr,
-        fakePYYaddr,
+        fakeOZLaddr,
         varConfig,
         eMode
     ];

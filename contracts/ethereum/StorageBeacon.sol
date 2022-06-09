@@ -25,7 +25,7 @@ contract StorageBeacon is Initializable, Ownable {
     struct FixedConfig {  
         address inbox;
         address ops;
-        address PYY;
+        address OZL;
         address emitter;
         address payable gelato;
         address ETH; 
@@ -80,7 +80,7 @@ contract StorageBeacon is Initializable, Ownable {
         fxConfig = FixedConfig({
             inbox: fxConfig_.inbox,
             ops: fxConfig_.ops,
-            PYY: fxConfig_.PYY,
+            OZL: fxConfig_.OZL,
             emitter: fxConfig_.emitter,
             gelato: payable(fxConfig_.gelato),
             ETH: fxConfig_.ETH, 

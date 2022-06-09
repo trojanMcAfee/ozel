@@ -13,7 +13,7 @@ import '@openzeppelin/contracts/access/Ownable.sol';
 // import '@openzeppelin/contracts/utils/Address.sol';
 import '../interfaces/IL1_ETH_Bridge.sol';
 import '../interfaces/DelayedInbox.sol';
-import './FakePYY.sol';
+import './FakeOZL.sol';
 import './Emitter.sol';
 import '../interfaces/IOps.sol';
 import './StorageBeacon.sol';
@@ -93,17 +93,17 @@ contract ozPayMe is ReentrancyGuard, Initializable {
         bool isEmergency;
 
         bytes memory swapData = abi.encodeWithSelector(
-            FakePYY(payable(fxConfig.PYY)).exchangeToUserToken.selector, 
+            FakeOZL(payable(fxConfig.OZL)).exchangeToUserToken.selector, 
             userDetails_
         );
 
         bytes memory ticketData = abi.encodeWithSelector(
             DelayedInbox(fxConfig.inbox).createRetryableTicket.selector, 
-            fxConfig.PYY, 
+            fxConfig.OZL, 
             address(this).balance - varConfig_.autoRedeem,
             varConfig_.maxSubmissionCost,  
-            fxConfig.PYY, 
-            fxConfig.PYY, 
+            fxConfig.OZL, 
+            fxConfig.OZL, 
             fxConfig.maxGas,  
             varConfig_.gasPriceBid, 
             swapData

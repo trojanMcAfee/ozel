@@ -287,7 +287,7 @@ getTheTask();
 
 
 
-//Deploys ozPayMe in mainnet and routes ETH to Manager (PYY) in Arbitrum
+//Deploys ozPayMe in mainnet and routes ETH to Manager (OZL) in Arbitrum
 async function sendArb() { //mainnet
     const bridge = await Bridge.init(l1Signer, l2Signer);
     const signerAddr = await signerX.getAddress();
@@ -306,14 +306,14 @@ async function sendArb() { //mainnet
     
     let constrArgs = [];
     
-    //Deploys the fake PYY on arbitrum testnet 
-    // const [fakePYYaddr] = await deployContract('FakePYY', l2Signer); //fake PYY address in arbitrum
-    const fakePYYaddr = '0x8cE038796243813805593E16211C8Def67a81454'; //old: 0xCF383dD43481703a6ebe84DC4137Ae388cD7214b
+    //Deploys the fake OZL on arbitrum testnet 
+    // const [fakeOZLaddr] = await deployContract('FakeOZL', l2Signer); //fake OZL address in arbitrum
+    const fakeOZLaddr = '0x8cE038796243813805593E16211C8Def67a81454'; //old: 0xCF383dD43481703a6ebe84DC4137Ae388cD7214b
    
 
     //Calculate fees on L1 > L2 arbitrum tx
     const { maxSubmissionCost, gasPriceBid } = await getGasDetailsL2(userDetails, bridge);
-    // const maxGas = await calculateMaxGas(userDetails, fakePYYaddr, value, maxSubmissionCost, gasPriceBid);
+    // const maxGas = await calculateMaxGas(userDetails, fakeOZLaddr, value, maxSubmissionCost, gasPriceBid);
     const maxGas = 3000000;
     const autoRedeem = maxSubmissionCost.add(gasPriceBid.mul(maxGas));
     console.log('autoRedeem: ', autoRedeem.toString()); 
@@ -330,7 +330,7 @@ async function sendArb() { //mainnet
     const fxConfig = [
         inbox, 
         pokeMeOpsAddr,
-        fakePYYaddr,
+        fakeOZLaddr,
         emitterAddr,
         gelatoAddr, 
         ETH,

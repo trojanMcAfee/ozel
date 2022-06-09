@@ -80,7 +80,7 @@ const {
 
 
 let signerAddr, signerAddr2;
-let ozERC1967proxyAddr, storageBeacon, emitter, emitterAddr, fakePYYaddr;
+let ozERC1967proxyAddr, storageBeacon, emitter, emitterAddr, fakeOZLaddr;
 let userDetails;
 let newProxyAddr, newProxy;
 let balance;
@@ -122,7 +122,7 @@ let isExist;
 
     describe('Optimistic deployment', async () => { 
         before( async () => {
-            ([beacon, beaconAddr, ozERC1967proxyAddr, storageBeacon, storageBeaconAddr, emitter, emitterAddr, fakePYYaddr, varConfig, eMode] = await deploySystem('Optimistically', userDetails, signerAddr));
+            ([beacon, beaconAddr, ozERC1967proxyAddr, storageBeacon, storageBeaconAddr, emitter, emitterAddr, fakeOZLaddr, varConfig, eMode] = await deploySystem('Optimistically', userDetails, signerAddr));
             storeVarsInHelpers(ozERC1967proxyAddr);
         });
 
@@ -560,7 +560,7 @@ let isExist;
     describe('Pesimistic deployment', async () => {
         before( async () => {
             //autoRedeem set to 0
-            ([beacon, beaconAddr, ozERC1967proxyAddr, storageBeacon, storageBeaconAddr, emitter, emitterAddr, fakePYYaddr, varConfig, eMode] = await deploySystem('Pessimistically', userDetails, signerAddr));
+            ([beacon, beaconAddr, ozERC1967proxyAddr, storageBeacon, storageBeaconAddr, emitter, emitterAddr, fakeOZLaddr, varConfig, eMode] = await deploySystem('Pessimistically', userDetails, signerAddr));
             storeVarsInHelpers(ozERC1967proxyAddr);
         });
 
