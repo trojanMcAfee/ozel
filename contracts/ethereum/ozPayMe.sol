@@ -83,6 +83,7 @@ contract ozPayMe is ReentrancyGuard, Initializable {
 
         if (userDetails_.user == address(0) || userDetails_.userToken == address(0)) revert CantBeZero('address');
         if (!storageBeacon.isUser(userDetails_.user)) revert NotFoundInDatabase('user');
+        if (!storageBeacon.queryTokenDatabase(userDetails_.userToken)) revert NotFoundInDatabase('token');
         if (userDetails_.userSlippage <= 0) revert CantBeZero('slippage');
         if (!(address(this).balance > 0)) revert CantBeZero('contract balance');
 
@@ -181,15 +182,21 @@ contract ozPayMe is ReentrancyGuard, Initializable {
 
 
     function changeUserToken(address newUserToken_) external onlyUser {
+        StorageBeacon storageBeacon = StorageBeacon(_getStorageBeacon(_beacon, 0)); 
+
+        if (newUserToken_ == address(0)) revert CantBeZero('address');
+        if (!storageBeacon.queryTokenDatabase(newUserToken_)) revert NotFoundInDatabase('token');
+
         userDetails.userToken = newUserToken_;
         emit NewUserToken(msg.sender, newUserToken_);
     }
 
     function changeUserSlippage(uint newUserSlippage_) external onlyUser {
+        if (newUserSlippage_ <= 0) revert CantBeZero('slippage');
+
         userDetails.userSlippage = newUserSlippage_;
         emit NewUserSlippage(msg.sender, newUserSlippage_);
-    } //put here the requires against 0 address and 0 slippage
-    //test changing varConfig
+    } 
     
 }
 

@@ -116,11 +116,11 @@ let isExist;
         userDetails = [
             signerAddr,
             usdtAddrArb,
-            defaultSlippage //defaultSlippage
+            defaultSlippage 
         ];
     });
 
-    xdescribe('Optimistic deployment', async () => { 
+    describe('Optimistic deployment', async () => { 
         before( async () => {
             ([beacon, beaconAddr, ozERC1967proxyAddr, storageBeacon, storageBeaconAddr, emitter, emitterAddr, fakePYYaddr, varConfig, eMode] = await deploySystem('Optimistically', userDetails, signerAddr));
             storeVarsInHelpers(ozERC1967proxyAddr);
@@ -135,7 +135,7 @@ let isExist;
                     assert.equal(newProxyAddr.length, 42);
                 });
 
-                xit('should not allow to create a proxy with the 0 address / createNewProxy()', async () => {
+                it('should not allow to create a proxy with the 0 address / createNewProxy()', async () => {
                     userDetails[1] = nullAddr;
                     await assert.rejects(async () => {
                         await createProxy(userDetails);
@@ -145,7 +145,7 @@ let isExist;
                     });
                 });
 
-                xit('should not allow to create a proxy with 0 slippage / createNewProxy()', async () => {
+                it('should not allow to create a proxy with 0 slippage / createNewProxy()', async () => {
                     userDetails[1] = usdtAddrArb;
                     userDetails[2] = 0;
                     await assert.rejects(async () => {
@@ -156,7 +156,7 @@ let isExist;
                     });
                 });
 
-                xit('should not allow to create a proxy with a userToken not found in the database / createNewProxy()', async () => {
+                it('should not allow to create a proxy with a userToken not found in the database / createNewProxy()', async () => {
                     userDetails[1] = deadAddr;
                     userDetails[2] = defaultSlippage;
                     await assert.rejects(async () => {
@@ -181,7 +181,7 @@ let isExist;
             });
 
 
-            xdescribe('Deploys 5 proxies', async () => {
+            describe('Deploys 5 proxies', async () => {
                 it('should create 5 proxies successfully / createNewProxy()', async () => {
                     userDetails[1] = usdcAddr;
                     for (let i=0; i < 5; i++) {
@@ -257,6 +257,32 @@ let isExist;
                     });
                 });
 
+                it('shoud not allow to change userToken for the 0 address / changeUserToken()', async () => {
+                    await assert.rejects(async () => {
+                        await sendTx({
+                            receiver: newProxyAddr,
+                            method: 'changeUserToken',
+                            args: [nullAddr]
+                        });
+                    }, {
+                        name: 'Error',
+                        message: err().zeroAddress
+                    });
+                });
+
+                it('shoud not allow to change userToken for a token not found in the database / changeUserToken()', async () => {
+                    await assert.rejects(async () => {
+                        await sendTx({
+                            receiver: newProxyAddr,
+                            method: 'changeUserToken',
+                            args: [deadAddr]
+                        });
+                    }, {
+                        name: 'Error',
+                        message: err().tokenNotFound
+                    });
+                });
+
                 it('should allow the user to change userSlippage / changeUserSlippage()', async () => {
                     receipt = await sendTx({
                         receiver: newProxyAddr,
@@ -265,6 +291,19 @@ let isExist;
                     });
                     newUserSlippage = getEventParam(receipt);
                     assert.equal(arrayify(newUserSlippage), '200');
+                });
+
+                it('should not allow to change userSlippage to 0 / changeUserSlippage()', async () => {
+                    await assert.rejects(async () => {
+                        await sendTx({
+                            receiver: newProxyAddr,
+                            method: 'changeUserSlippage',
+                            args: ['0']
+                        });
+                    }, {
+                        name: 'Error',
+                        message: err().zeroSlippage
+                    });
                 });
 
                 it('should not allow an external user to change userSlippage / changeUserSlippage()', async () => {
@@ -514,19 +553,11 @@ let isExist;
                 isExist = await compareEventWithVar(receipt, 11);
                 assert(isExist);
             });
-
-          
-
-
-
         });
-
-
-
     });
 
 
-    describe('Pesimistic deployment', async () => {
+    xdescribe('Pesimistic deployment', async () => {
         before( async () => {
             //autoRedeem set to 0
             ([beacon, beaconAddr, ozERC1967proxyAddr, storageBeacon, storageBeaconAddr, emitter, emitterAddr, fakePYYaddr, varConfig, eMode] = await deploySystem('Pessimistically', userDetails, signerAddr));
@@ -594,29 +625,6 @@ let isExist;
                 //add the requires on ozPayme changeUserxxxx
 
             });
-            
-
-
-
-
         });
-
-
-
-
     });
-
-    
-
-    
-
-
-    
-
-
-  
-
-    
-
-
   });
