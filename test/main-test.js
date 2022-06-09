@@ -71,7 +71,8 @@ const {
     compareTopicWith,
     deployAnotherStorageBeacon,
     createProxy,
-    storeVarsInHelpers
+    storeVarsInHelpers,
+    compareEventWithVar
  } = require('../scripts/helpers-eth');
 
  const { err } = require('./errors.js');
@@ -101,6 +102,7 @@ let usersProxies = [];
 let evilVarConfig = [0, 0, 0];
 let evilUserDetails = [deadAddr, deadAddr, 0];
 let preBalance, postBalance;
+let isExist;
 
 
 
@@ -206,7 +208,7 @@ let preBalance, postBalance;
             });
         });
 
-        xdescribe('ozBeaconProxy / ozPayMe', async () => {
+        describe('ozBeaconProxy / ozPayMe', async () => {
 
             describe('fallback()', async () => {
                 it('should not allow re-calling / initialize()', async () => {
@@ -304,7 +306,7 @@ let preBalance, postBalance;
             });
         });
 
-        xdescribe('Emitter', async () => {
+        describe('Emitter', async () => {
 
             it('should emit ticket ID / forwardEvent()', async () => {
                 await sendETHv2(newProxyAddr, 0.01);
@@ -335,7 +337,7 @@ let preBalance, postBalance;
     
         });
     
-        xdescribe('StorageBeacon', async () => {
+        describe('StorageBeacon', async () => {
 
             it('shoud not allow an user to issue an userID / issueUserID()', async () => {
                 await assert.rejects(async () => {
@@ -479,7 +481,7 @@ let preBalance, postBalance;
             });
         });
 
-        xdescribe('ozUpgradeableBeacon', async () => {
+        describe('ozUpgradeableBeacon', async () => {
 
             it('should allow the owner to upgrade the Storage Beacon / upgradeStorageBeacon()', async () => {
                 [storageBeaconMockAddr , storageBeaconMock] = await deployContract('StorageBeaconMock', l1Signer);
@@ -509,20 +511,8 @@ let preBalance, postBalance;
                 balance = await hre.ethers.provider.getBalance(newProxyAddr);
                 assert.equal(formatEther(balance), 0);  
 
-                for (let i=0; i < receipt.events.length;) {
-                    let { data } = receipt.events[i];
-                    let extraVar;
-
-                    if (data.length === 66) {
-                        extraVar = abiCoder.decode(['uint'], data);
-                        if (extraVar[0].toString() === '11') {
-                            assert(true);
-                            break;
-                        } 
-                    }
-                    i++;
-                    if (i === receipt.events.length) assert(false);
-                }
+                isExist = await compareEventWithVar(receipt, 11);
+                assert(isExist);
             });
 
           
@@ -597,23 +587,8 @@ let preBalance, postBalance;
                 postBalance = await USDC.balanceOf(signerAddr);
                 assert(preBalance < postBalance);
 
-                // console.log('events: ', receipt.events);
-
-                for (let i=0; i < receipt.events.length;) {
-                    let { data } = receipt.events[i];
-                    let extraVar;
-
-                    if (data.length === 66) {
-                        extraVar = abiCoder.decode(['uint'], data);
-                        if (extraVar[0].toString() === '23') {
-                            assert(true);
-                            break;
-                        } 
-                    }
-                    i++;
-                    if (i === receipt.events.length) assert(false);
-                }
-
+                isExist = await compareEventWithVar(receipt, 23);
+                assert(isExist);
 
                 //refactored this (grab this loop an the other and put it on helps)
                 //add the requires on ozPayme changeUserxxxx

@@ -26,7 +26,11 @@ const {
     chainlinkAggregatorAddr
 } = require('../scripts/state-vars.js');
 
-const { hexStripZeros, parseEther } = ethers.utils;
+const { 
+    hexStripZeros, 
+    parseEther,
+    defaultAbiCoder: abiCoder
+} = ethers.utils;
 
 
 let proxyFactory;
@@ -288,6 +292,23 @@ function compareTopicWith(type , value, receipt) {
 // }
 
 
+async function compareEventWithVar(receipt, variable) {
+    for (let i=0; i < receipt.events.length;) {
+        let { data } = receipt.events[i];
+        let extraVar;
+
+        if (data.length === 66) {
+            extraVar = abiCoder.decode(['uint'], data);
+            if (Number(extraVar[0]) === variable) {
+                return true;
+            } 
+        }
+        i++;
+        if (i === receipt.events.length) return false;
+    }
+}
+
+
 async function deployAnotherStorageBeacon(fakePYYaddr, emitterAddr, userDetails) { 
     const [ maxSubmissionCost, gasPriceBid, maxGas, autoRedeem ] = await getArbitrumParams(userDetails);
 
@@ -476,5 +497,6 @@ module.exports = {
     compareTopicWith,
     deployAnotherStorageBeacon,
     createProxy,
-    storeVarsInHelpers
+    storeVarsInHelpers,
+    compareEventWithVar
 };
