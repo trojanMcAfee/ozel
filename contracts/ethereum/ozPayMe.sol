@@ -138,7 +138,7 @@ contract ozPayMe is ReentrancyGuard, Initializable {
 
 
 
-    function _runEmergencyMode() private nonReentrant { //unsafe
+    function _runEmergencyMode() private nonReentrant { 
         StorageBeacon.EmergencyMode memory eMode = StorageBeacon(_getStorageBeacon(_beacon, 0)).getEmergencyMode();
 
         for (uint i=1; i <= 2;) {
