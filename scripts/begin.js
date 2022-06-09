@@ -281,7 +281,7 @@ async function getTheTask() {
 
 }
 
-getTheTask();
+// getTheTask();
 
 
 
@@ -417,12 +417,8 @@ async function sendArb() { //mainnet
     await rolesAuthority.setRoleCapability(0, newProxyAddr, '0xa2d4d48b', true, ops); //disableEmitter()
 
     //Gets user's task id
-    let taskId = await storageBeacon.getTaskID(newProxyAddr, ops);
+    const taskId = await storageBeacon.getTaskID(newProxyAddr, ops);
     console.log('task id: ', taskId.toString());
-
-    taskId = await storageBeacon.taskIDs(newProxyAddr, ops);
-    console.log('task id2: ', taskId.toString());
-
 
     const filter = {
         address: emitterAddr,
@@ -660,7 +656,7 @@ async function beginSimulatedDiamond() {
 
 // beginSimulatedDiamond();
 
-// sendArb();
+sendArb();
 
 // tryPrecompile();
 

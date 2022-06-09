@@ -2,14 +2,12 @@
 pragma solidity 0.8.14; 
 
 
-import './ozBeaconProxy.sol';
+import "@openzeppelin/contracts/proxy/utils/Initializable.sol";
+import '@rari-capital/solmate/src/utils/ReentrancyGuard.sol';
 import '../interfaces/IOps.sol';
+import './ozBeaconProxy.sol';
 import './StorageBeacon.sol';
 import './ozUpgradeableBeacon.sol';
-import "@openzeppelin/contracts/proxy/utils/Initializable.sol";
-
-import '@rari-capital/solmate/src/utils/ReentrancyGuard.sol';
-
 import './Errors.sol';
 
 import 'hardhat/console.sol';

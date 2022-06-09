@@ -2,14 +2,11 @@
 pragma solidity ^0.8.0;
 
 
+import "@chainlink/contracts/src/v0.8/interfaces/AggregatorV3Interface.sol";
+import '@uniswap/v3-periphery/contracts/interfaces/ISwapRouter.sol';
 import "@openzeppelin/contracts/proxy/utils/Initializable.sol";
 import '@openzeppelin/contracts/access/Ownable.sol';
-import '../interfaces/IOps.sol';
-import '../interfaces/DelayedInbox.sol';
 import './ozUpgradeableBeacon.sol';
-
-import '@uniswap/v3-periphery/contracts/interfaces/ISwapRouter.sol';
-import "@chainlink/contracts/src/v0.8/interfaces/AggregatorV3Interface.sol";
 
 import 'hardhat/console.sol';
 

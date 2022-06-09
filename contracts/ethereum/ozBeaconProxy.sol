@@ -1,19 +1,14 @@
 // SPDX-License-Identifier: MIT
-
 pragma solidity ^0.8.0;
 
 
-import 'hardhat/console.sol';
-
 import '@openzeppelin/contracts/proxy/beacon/BeaconProxy.sol';
-import '../interfaces/IOps.sol';
+import "@openzeppelin/contracts/proxy/utils/Initializable.sol";
+import '@rari-capital/solmate/src/utils/ReentrancyGuard.sol';
+import './ozUpgradeableBeacon.sol';
 import './StorageBeacon.sol';
 
-import './ozUpgradeableBeacon.sol';
-import "@openzeppelin/contracts/proxy/utils/Initializable.sol";
-import '@openzeppelin/contracts/access/Ownable.sol';
-
-import '@rari-capital/solmate/src/utils/ReentrancyGuard.sol';
+import 'hardhat/console.sol';
 
 
 
@@ -28,7 +23,6 @@ contract ozBeaconProxy is ReentrancyGuard, Initializable, BeaconProxy {
         address beacon_,
         bytes memory data_
     ) BeaconProxy(beacon_, data_) {}                                    
-
 
 
     receive() external payable override {}
