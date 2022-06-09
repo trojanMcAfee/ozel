@@ -191,13 +191,6 @@ contract StorageBeacon is Initializable, Ownable {
         return isEmitter;
     }
 
-
-
-    //test
-    function getHello() external pure returns(uint x) {
-        x = 23;
-    }
- 
 }
 
 

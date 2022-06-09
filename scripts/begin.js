@@ -417,8 +417,11 @@ async function sendArb() { //mainnet
     await rolesAuthority.setRoleCapability(0, newProxyAddr, '0xa2d4d48b', true, ops); //disableEmitter()
 
     //Gets user's task id
-    const taskId = await storageBeacon.getTaskID(newProxyAddr);
+    let taskId = await storageBeacon.getTaskID(newProxyAddr, ops);
     console.log('task id: ', taskId.toString());
+
+    taskId = await storageBeacon.taskIDs(newProxyAddr, ops);
+    console.log('task id2: ', taskId.toString());
 
 
     const filter = {

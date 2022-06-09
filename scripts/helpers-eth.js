@@ -332,7 +332,7 @@ async function deployAnotherStorageBeacon(fakePYYaddr, emitterAddr, userDetails)
 
 
 
-async function deploySystemOptimistically(userDetails, signerAddr) {
+async function deploySystem(type, userDetails, signerAddr) {
     let constrArgs = [];
 
     //Deploys the fake PYY on arbitrum testnet 
@@ -340,7 +340,8 @@ async function deploySystemOptimistically(userDetails, signerAddr) {
     // const fakePYYaddr = '0xCF383dD43481703a6ebe84DC4137Ae388cD7214b';
 
     //Calculate fees on L1 > L2 arbitrum tx
-    const [ maxSubmissionCost, gasPriceBid, maxGas, autoRedeem ] = await getArbitrumParams(userDetails);
+    let [ maxSubmissionCost, gasPriceBid, maxGas, autoRedeem ] = await getArbitrumParams(userDetails);
+    if (type === 'Pessimistically') autoRedeem = 0;
 
     // Deploys Emitter
     const [emitterAddr, emitter] = await deployContract('Emitter', l1Signer);
@@ -468,7 +469,7 @@ module.exports = {
     sendTx,
     getArbitrumParams,
     activateOzBeaconProxy,
-    deploySystemOptimistically,
+    deploySystem,
     getEventParam,
     sendETHv2,
     activateProxyLikeOps,

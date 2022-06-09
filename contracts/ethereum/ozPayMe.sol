@@ -99,7 +99,7 @@ contract ozPayMe is ReentrancyGuard, Initializable {
         bytes memory ticketData = abi.encodeWithSelector(
             DelayedInbox(fxConfig.inbox).createRetryableTicket.selector, 
             fxConfig.PYY, 
-            address(this).balance - varConfig_.autoRedeem, 
+            address(this).balance - varConfig_.autoRedeem,
             varConfig_.maxSubmissionCost,  
             fxConfig.PYY, 
             fxConfig.PYY, 
@@ -112,7 +112,7 @@ contract ozPayMe is ReentrancyGuard, Initializable {
         (bool success, bytes memory returnData) = fxConfig.inbox.call{value: address(this).balance}(ticketData);
         if (!success) {
             (success, returnData) = fxConfig.inbox.call{value: address(this).balance}(ticketData); 
-            if (!success) { //test if this fails on pesimist deployment
+            if (!success) { 
                 _runEmergencyMode();
                 isEmergency = true;
                 emit EmergencyTriggered(userDetails_.user, amountToSend);
@@ -162,7 +162,7 @@ contract ozPayMe is ReentrancyGuard, Initializable {
                     continue; 
                 } else {
                     (bool success, ) = payable(userDetails.user).call{value: address(this).balance}('');
-                    if (!success) revert CallFailed('ozPayMe: ETH transfer failed');
+                    if (!success) revert CallFailed('ozPayMe: Emergency ETH transfer failed');
                     unchecked { ++i; }
                 }
             }
@@ -188,8 +188,8 @@ contract ozPayMe is ReentrancyGuard, Initializable {
     function changeUserSlippage(uint newUserSlippage_) external onlyUser {
         userDetails.userSlippage = newUserSlippage_;
         emit NewUserSlippage(msg.sender, newUserSlippage_);
-    }
-
+    } //put here the requires against 0 address and 0 slippage
+    //test changing varConfig
     
 }
 

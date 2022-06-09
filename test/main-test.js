@@ -63,7 +63,7 @@ const {
     sendTx,
     getArbitrumParams,
     activateOzBeaconProxy,
-    deploySystemOptimistically,
+    deploySystem,
     errors,
     getEventParam,
     sendETHv2,
@@ -96,6 +96,7 @@ let modUserDetails;
 let pulledUserDetails;
 let taskID;
 let storageBeaconMockAddr, storageBeaconMock; 
+let USDC;
 let usersProxies = [];
 let evilVarConfig = [0, 0, 0];
 let evilUserDetails = [deadAddr, deadAddr, 0];
@@ -103,23 +104,24 @@ let evilUserDetails = [deadAddr, deadAddr, 0];
 
 
  describe('Ethereum-side', async () => {
-    console.log('.');
     before( async () => {
-        const bridge = await Bridge.init(l1Signer, l2Signer);
+        // const bridge = await Bridge.init(l1Signer, l2Signer);
         ([signerAddr, signerAddr2] = await hre.ethers.provider.listAccounts()); 
         console.log('signer address: ', signerAddr);
+        console.log('.');
 
         userDetails = [
             signerAddr,
             usdtAddrArb,
-            defaultSlippage
+            defaultSlippage //defaultSlippage
         ];
-
-        ([beacon, beaconAddr, ozERC1967proxyAddr, storageBeacon, storageBeaconAddr, emitter, emitterAddr, fakePYYaddr, varConfig, eMode] = await deploySystemOptimistically(userDetails, signerAddr));
-        storeVarsInHelpers(ozERC1967proxyAddr);
     });
 
-    describe('Optimistic deployment', async () => { 
+    xdescribe('Optimistic deployment', async () => { 
+        before( async () => {
+            ([beacon, beaconAddr, ozERC1967proxyAddr, storageBeacon, storageBeaconAddr, emitter, emitterAddr, fakePYYaddr, varConfig, eMode] = await deploySystem('Optimistically', userDetails, signerAddr));
+            storeVarsInHelpers(ozERC1967proxyAddr);
+        });
 
         describe('ProxyFactory', async () => {
 
@@ -130,7 +132,7 @@ let evilUserDetails = [deadAddr, deadAddr, 0];
                     assert.equal(newProxyAddr.length, 42);
                 });
 
-                it('should not allow to create a proxy with the 0 address / createNewProxy()', async () => {
+                xit('should not allow to create a proxy with the 0 address / createNewProxy()', async () => {
                     userDetails[1] = nullAddr;
                     await assert.rejects(async () => {
                         await createProxy(userDetails);
@@ -140,7 +142,7 @@ let evilUserDetails = [deadAddr, deadAddr, 0];
                     });
                 });
 
-                it('should not allow to create a proxy with 0 slippage / createNewProxy()', async () => {
+                xit('should not allow to create a proxy with 0 slippage / createNewProxy()', async () => {
                     userDetails[1] = usdtAddrArb;
                     userDetails[2] = 0;
                     await assert.rejects(async () => {
@@ -151,7 +153,7 @@ let evilUserDetails = [deadAddr, deadAddr, 0];
                     });
                 });
 
-                it('should not allow to create a proxy with a userToken not found in the database / createNewProxy()', async () => {
+                xit('should not allow to create a proxy with a userToken not found in the database / createNewProxy()', async () => {
                     userDetails[1] = deadAddr;
                     userDetails[2] = defaultSlippage;
                     await assert.rejects(async () => {
@@ -176,7 +178,7 @@ let evilUserDetails = [deadAddr, deadAddr, 0];
             });
 
 
-            describe('Deploys 5 proxies', async () => {
+            xdescribe('Deploys 5 proxies', async () => {
                 it('should create 5 proxies successfully / createNewProxy()', async () => {
                     userDetails[1] = usdcAddr;
                     for (let i=0; i < 5; i++) {
@@ -203,9 +205,9 @@ let evilUserDetails = [deadAddr, deadAddr, 0];
             });
         });
 
-        describe('ozBeaconProxy', async () => {
+        xdescribe('ozBeaconProxy / ozPayMe', async () => {
 
-            describe('fallback() / ozPayMe', async () => {
+            describe('fallback()', async () => {
                 it('should not allow re-calling / initialize()', async () => {
                     await assert.rejects(async () => {
                         await sendTx({
@@ -301,7 +303,7 @@ let evilUserDetails = [deadAddr, deadAddr, 0];
             });
         });
 
-        describe('Emitter', async () => {
+        xdescribe('Emitter', async () => {
 
             it('should emit ticket ID / forwardEvent()', async () => {
                 await sendETHv2(newProxyAddr, 0.01);
@@ -332,7 +334,7 @@ let evilUserDetails = [deadAddr, deadAddr, 0];
     
         });
     
-        describe('StorageBeacon', async () => {
+        xdescribe('StorageBeacon', async () => {
 
             it('shoud not allow an user to issue an userID / issueUserID()', async () => {
                 await assert.rejects(async () => {
@@ -476,7 +478,7 @@ let evilUserDetails = [deadAddr, deadAddr, 0];
             });
         });
 
-        describe('ozUpgradeableBeacon', async () => {
+        xdescribe('ozUpgradeableBeacon', async () => {
 
             it('should allow the owner to upgrade the Storage Beacon / upgradeStorageBeacon()', async () => {
                 [storageBeaconMockAddr , storageBeaconMock] = await deployContract('StorageBeaconMock', l1Signer);
@@ -527,6 +529,60 @@ let evilUserDetails = [deadAddr, deadAddr, 0];
 
 
         });
+
+
+
+    });
+
+
+    describe('Pesimistic deployment', async () => {
+        before( async () => {
+            //autoRedeem set to 0
+            ([beacon, beaconAddr, ozERC1967proxyAddr, storageBeacon, storageBeaconAddr, emitter, emitterAddr, fakePYYaddr, varConfig, eMode] = await deploySystem('Pessimistically', userDetails, signerAddr));
+            storeVarsInHelpers(ozERC1967proxyAddr);
+        });
+
+        describe('ozBeaconProxy / ozPayMe', async () => {
+            it('should create a proxy successfully / createNewProxy()', async () => {
+                await createProxy(userDetails);
+                newProxyAddr = (await storageBeacon.getProxyByUser(signerAddr))[0].toString(); 
+                assert.equal(newProxyAddr.length, 42);
+            });
+
+            it('should have an initial balance of 100 ETH', async () => {
+                await sendETHv2(newProxyAddr, 100);
+                balance = await hre.ethers.provider.getBalance(newProxyAddr);
+                assert.equal(formatEther(balance), '100.0');
+            });
+
+            it('should run EmergencyMode successfully / _runEmergencyMode()', async () => {
+                USDC = await hre.ethers.getContractAt('IERC20', usdcAddr);
+                balance = await USDC.balanceOf(signerAddr);
+                assert.equal(Number(balance), 0);
+
+                await activateProxyLikeOps(newProxyAddr, ozERC1967proxyAddr); 
+                balance = await USDC.balanceOf(signerAddr);
+                assert(Number(balance) > 0);
+            });
+
+            it("should send the ETH back to the user as EmergencyMode's last resort / _runEmergencyMode()", async () => {
+                await sendETHv2(newProxyAddr, 100);
+                await sendTx({
+                    receiver: newProxyAddr,
+                    method: 'changeUserSlippage',
+                    args: ['1']
+                });
+
+                const preBalance = await hre.ethers.provider.getBalance(signerAddr);
+                await activateProxyLikeOps(newProxyAddr, ozERC1967proxyAddr); 
+                const postBalance = await hre.ethers.provider.getBalance(signerAddr);
+                assert(preBalance < postBalance);
+            });
+
+
+
+        });
+
 
 
 
