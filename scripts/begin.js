@@ -654,7 +654,7 @@ async function beginSimulatedDiamond() {
 
 // tryGelatoRopsten();
 
-beginSimulatedDiamond();
+// beginSimulatedDiamond();
 
 // sendArb();
 
