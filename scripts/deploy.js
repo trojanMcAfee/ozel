@@ -65,8 +65,8 @@ async function deploy() {
     const ozlFacet = await deployFacet('OZLFacet');
     const gettersFacet = await deployFacet('GettersFacet');
     const executorF = await deployFacet('ExecutorF');
-    const oz4626 = await deployFacet('ozERC4626');
-    const oz20 = await deployFacet('ozERC20');
+    const oz4626 = await deployFacet('oz4626Facet');
+    const oz20 = await deployFacet('oz20Facet');
     const ownershipFacet = await deployFacet('OwnershipFacet'); 
 
     //Selectors
@@ -170,8 +170,8 @@ async function deploy() {
             ['OZLFacet', ozlFacet],
             ['GettersFacet', gettersFacet],
             ['ExecutorF', executorF],
-            ['ozERC4626', oz4626],
-            ['ozERC20', oz20],
+            ['oz4626Facet', oz4626],
+            ['oz20Facet', oz20],
             ['OwnershipFacet', ownershipFacet]
         ],
         args: '',

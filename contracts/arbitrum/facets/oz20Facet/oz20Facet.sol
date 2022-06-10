@@ -2,9 +2,13 @@
 
 pragma solidity ^0.8.0;
 
-import "./ozIERC20.sol";
-import "./ozIERC20Metadata.sol";
-import "./ozContext.sol";
+import '@openzeppelin/contracts/token/ERC20/extensions/IERC20Metadata.sol';
+import '@openzeppelin/contracts/token/ERC20/IERC20.sol';
+import '@openzeppelin/contracts/utils/Context.sol';
+
+// import "./ozIERC20.sol";
+// import "./ozIERC20Metadata.sol";
+// import "./ozContext.sol";
 
 import 'hardhat/console.sol';
 
@@ -14,30 +18,9 @@ import '../../../libraries/FixedPointMathLib.sol';
 
 /**
  * @dev Implementation of the {IERC20} interface.
- *
- * This implementation is agnostic to the way tokens are created. This means
- * that a supply mechanism has to be added in a derived contract using {_mint}.
- * For a generic mechanism see {ERC20PresetMinterPauser}.
- *
- * TIP: For a detailed writeup see our guide
- * https://forum.zeppelin.solutions/t/how-to-implement-erc20-supply-mechanisms/226[How
- * to implement supply mechanisms].
- *
- * We have followed general OpenZeppelin Contracts guidelines: functions revert
- * instead returning `false` on failure. This behavior is nonetheless
- * conventional and does not conflict with the expectations of ERC20
- * applications.
- *
- * Additionally, an {Approval} event is emitted on calls to {transferFrom}.
- * This allows applications to reconstruct the allowance for all accounts just
- * by listening to said events. Other implementations of the EIP may not emit
- * these events, as it isn't required by the specification.
- *
- * Finally, the non-standard {decreaseAllowance} and {increaseAllowance}
- * functions have been added to mitigate the well-known issues around setting
- * allowances. See {IERC20-approve}.
+ * @author Original author: OpenZeppelin
  */
-contract oz20Facet is ozContext, ozIERC20, ozIERC20Metadata { 
+contract oz20Facet is Context, IERC20, IERC20Metadata {
     AppStorage s;
     
     using FixedPointMathLib for uint;
@@ -218,13 +201,13 @@ contract oz20Facet is ozContext, ozIERC20, ozIERC20Metadata {
         address recipient,
         uint256 amount
     ) internal virtual {
-        require(sender != address(0), "ozERC20Facet: transfer from the zero address");
-        require(recipient != address(0), "ozERC20Facet: transfer to the zero address");
+        require(sender != address(0), "oz20Facet: transfer from the zero address");
+        require(recipient != address(0), "oz20Facet: transfer to the zero address");
 
         _beforeTokenTransfer(sender, recipient, amount);
 
         uint256 senderBalance = balanceOf(sender);
-        require(senderBalance >= amount, "ozERC20Facet: transfer amount exceeds balance");
+        require(senderBalance >= amount, "oz20Facet: transfer amount exceeds balance");
 
         (bool success, ) = s.executor.delegatecall(
             abi.encodeWithSelector(
@@ -232,7 +215,7 @@ contract oz20Facet is ozContext, ozIERC20, ozIERC20Metadata {
                 sender,recipient, amount, senderBalance
             )
         );
-        require(success, 'ozERC20: transferUserAllocation() failed');
+        require(success, 'oz20Facet: transferUserAllocation() failed');
 
         emit Transfer(sender, recipient, amount);
 
@@ -252,16 +235,16 @@ contract oz20Facet is ozContext, ozIERC20, ozIERC20Metadata {
      * - `account` must have at least `amount` tokens.
      */
     function _burn(address account, uint256 amount) external virtual { //<---------- switched this to external (do proper security checks)
-        require(account != address(0), "ozERC20: burn from the zero address");
+        require(account != address(0), "oz20Facet: burn from the zero address");
         // console.log('msg.sender in burn: ', msg.sender);
 
         _beforeTokenTransfer(account, address(0), amount);
 
         uint256 accountBalance = balanceOf(account); 
-        require(accountBalance >= amount, "ozERC20: burn amount exceeds balance");
+        require(accountBalance >= amount, "oz20Facet: burn amount exceeds balance");
 
         uint userBalanceOZL = balanceOf(account);
-        require(userBalanceOZL > 0, "ozERC20: userBalanceOZL cannot be 0"); //<-------- added
+        require(userBalanceOZL > 0, "oz20Facet: userBalanceOZL cannot be 0"); //<-------- added
 
         uint allocationPercentage = (amount.mulDivDown(10000, userBalanceOZL)).mulDivDown(1 ether, 100);
         uint amountToReduce = allocationPercentage.mulDivDown(s.usersPayments[account], 100 * 1 ether);
@@ -272,7 +255,7 @@ contract oz20Facet is ozContext, ozIERC20, ozIERC20Metadata {
                 account, amountToReduce
             )
         );
-        require(success, 'ozERC20: modifyPaymentsAndVolumeExternally() failed');
+        require(success, 'oz20Facet: modifyPaymentsAndVolumeExternally() failed');
 
         emit Transfer(account, address(0), amount);
 
@@ -297,8 +280,8 @@ contract oz20Facet is ozContext, ozIERC20, ozIERC20Metadata {
         address spender,
         uint256 amount
     ) internal virtual {
-        require(owner != address(0), "ozERC20: approve from the zero address");
-        require(spender != address(0), "ozERC20: approve to the zero address");
+        require(owner != address(0), "oz20Facet: approve from the zero address");
+        require(spender != address(0), "oz20Facet: approve to the zero address");
 
         s.oz.allowances_[owner][spender] = amount;
         emit Approval(owner, spender, amount);
