@@ -7,7 +7,7 @@ import '../interfaces/IWETH.sol';
 
 struct AppStorage {
     //Contracts
-    address PYY; 
+    address OZL; 
     address tricrypto;
     address crvTricrypto; 
     address getters;
@@ -29,8 +29,8 @@ struct AppStorage {
     address ETH;
 
     //Token infrastructure
-    address py46;
-    address py20;
+    address oz46;
+    address oz20;
 
     //System config
     uint dappFee;
@@ -43,7 +43,7 @@ struct AppStorage {
     uint failedFees;
     mapping(address => uint) usersPayments;
 
-    PYYERC20 py;
+    OZLERC20 oz;
 
     //Curve swaps config
     TradeOps renSwap;
@@ -54,7 +54,7 @@ struct AppStorage {
     TradeOps[] swaps;
 }
 
-struct PYYERC20 {
+struct OZLERC20 {
     mapping(address => uint256) balances_;
     mapping(address => mapping(address => uint256)) allowances_;
     uint  totalSupply_;

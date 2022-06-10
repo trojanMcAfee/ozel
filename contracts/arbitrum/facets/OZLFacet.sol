@@ -7,7 +7,7 @@ import '@openzeppelin/contracts/token/ERC20/IERC20.sol';
 import '../../interfaces/ICrvLpToken.sol';
 import '../../interfaces/IWETH.sol';
 import './ExecutorF.sol';
-import './pyERC4626/pyERC4626.sol';
+import './ozERC4626/ozERC4626.sol';
 import '../../interfaces/IYtri.sol';
 import {ITri} from '../../interfaces/ICurve.sol';
 
@@ -19,7 +19,7 @@ import './ExecutorF.sol';
 import '../../libraries/SafeTransferLib.sol';
 
 
-contract PYYFacet { 
+contract OZLFacet { 
 
     AppStorage s;
 
@@ -47,13 +47,13 @@ contract PYYFacet {
         wethIn = s.failedFees == 0 ? wethIn : wethIn - s.failedFees;
 
         //Deposits in ERC4626
-        (bool success, ) = s.py46.delegatecall(
+        (bool success, ) = s.oz46.delegatecall(
             abi.encodeWithSelector(
-                pyERC4626(s.py46).deposit.selector, 
+                ozERC4626(s.oz46).deposit.selector, 
                 wethIn, user
             )
         );
-        require(success, 'PYYFacet: Failed to deposit');
+        require(success, 'OZLFacet: Failed to deposit');
 
         //Sends fee to Vault contract
         (uint netAmountIn, uint fee) = _getFee(wethIn);
@@ -132,13 +132,13 @@ contract PYYFacet {
         //Queries if there are failed fees. If true, it deposits them
         if (s.failedFees > 0) depositCurveYearn(s.failedFees, true);
 
-        (bool success, bytes memory data) = s.py46.delegatecall(
+        (bool success, bytes memory data) = s.oz46.delegatecall(
             abi.encodeWithSelector(
-                pyERC4626(s.py46).redeem.selector, 
+                ozERC4626(s.oz46).redeem.selector, 
                 shares_, receiver_, user
             )
         );
-        require(success, 'PYYFacet: withdrawUserShare() failed');
+        require(success, 'OZLFacet: withdrawUserShare() failed');
         uint assets = abi.decode(data, (uint));
         IYtri(s.yTriPool).withdraw(assets);
 
@@ -207,7 +207,7 @@ contract PYYFacet {
                         s.swaps[i], userSlippage_
                     )
                 );
-                require(success, 'PYYFacet: _tradeWithExecutor() failed');
+                require(success, 'OZLFacet: _tradeWithExecutor() failed');
                 break;
             }
         }

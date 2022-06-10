@@ -3,12 +3,12 @@ const { MaxUint256 } = ethers.constants;
 
 
 let deployedDiamond;
-let pyyFacet;
+let ozlFacet;
 
 
-async function getVarsForHelpers(diamond, pyy) { 
+async function getVarsForHelpers(diamond, ozl) { 
     deployedDiamond = diamond;
-    pyyFacet = pyy;
+    ozlFacet = ozl;
 }
 
 async function callDiamondProxy(params) { 
@@ -83,7 +83,7 @@ async function callDiamondProxy(params) {
     }
 }
 
-async function balanceOfPYY(user) {
+async function balanceOfOZL(user) {
     return await callDiamondProxy({
         method: 'balanceOf',
         args: user,
@@ -92,7 +92,7 @@ async function balanceOfPYY(user) {
     }); 
 }
 
-async function transferPYY(recipient, amount, signerIndex) { 
+async function transferOZL(recipient, amount, signerIndex) { 
     await callDiamondProxy({
         method: 'transfer',
         args: [recipient, amount],
@@ -100,10 +100,10 @@ async function transferPYY(recipient, amount, signerIndex) {
     }); 
 }
 
-async function withdrawSharePYY(userConfig, receiverAddr, balancePYY, signerIndex) {  
+async function withdrawShareOZL(userConfig, receiverAddr, balanceOZL, signerIndex) {  
     await callDiamondProxy({
         method: 'withdrawUserShare',
-        args: [userConfig, receiverAddr, balancePYY],
+        args: [userConfig, receiverAddr, balanceOZL],
         signerIndex
     });
 } 
@@ -147,9 +147,9 @@ async function getCalldata(method, params) {
 
 
 module.exports = {
-    balanceOfPYY,
-    transferPYY,
-    withdrawSharePYY,
+    balanceOfOZL,
+    transferOZL,
+    withdrawShareOZL,
     getVarsForHelpers,
     sendETH,
     getCalldata

@@ -23,9 +23,9 @@ require('dotenv').config();
 
 
 const {
-    balanceOfPYY, 
-    transferPYY, 
-    withdrawSharePYY, 
+    balanceOfOZL, 
+    transferOZL, 
+    withdrawShareOZL, 
     getVarsForHelpers,
     sendETH,
     getCalldata,

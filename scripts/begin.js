@@ -6,9 +6,9 @@ const { hexDataLength } = require('@ethersproject/bytes');
 require('dotenv').config();
 
 const {
-    balanceOfPYY, 
-    transferPYY, 
-    withdrawSharePYY, 
+    balanceOfOZL, 
+    transferOZL, 
+    withdrawShareOZL, 
     getVarsForHelpers,
     sendETH,
     getCalldata,
@@ -378,7 +378,7 @@ async function sendArb() { //mainnet
     //Deploys ProxyFactory
     const [proxyFactoryAddr] = await deployContract('ProxyFactory', l1Signer);
 
-    //Deploys pyERC1967Proxy
+    //Deploys ozERC1967Proxy
     constrArgs = [
         proxyFactoryAddr,
         '0x'
@@ -564,11 +564,11 @@ async function beginSimulatedDiamond() {
         crvTri,
         callerAddr, 
         caller2Addr,
-        pyyFacet,
+        ozlFacet,
         yvCrvTri
     } = deployedVars;
     
-    getVarsForHelpers(deployedDiamond, pyyFacet); 
+    getVarsForHelpers(deployedDiamond, ozlFacet); 
 
     //First user
     console.log('1st user first transfer');
@@ -580,15 +580,15 @@ async function beginSimulatedDiamond() {
      */
 
     await sendETH([callerAddr, fraxAddr, defaultSlippage], FRAX, 'FRAX', 10 ** 18); //callerAddr, fraxAddr, FRAX, 'FRAX', 10 ** 18
-    console.log('PYY balance on caller 1: ', formatEther(await balanceOfPYY(callerAddr)));
+    console.log('OZL balance on caller 1: ', formatEther(await balanceOfOZL(callerAddr)));
     console.log('yvCrvTricrypto token balance on diamondProxy: ', formatEther(await yvCrvTri.balanceOf(deployedDiamond.address)));
     console.log('---------------------------------------'); 
 
     //Second user
     console.log('2nd user first transfer');
     await sendETH([caller2Addr, wbtcAddr, defaultSlippage], WBTC, 'WBTC', 10 ** 8, 1); 
-    console.log('PYY balance on caller 2: ', formatEther(await balanceOfPYY(caller2Addr)));
-    console.log('PYY balance on caller 1 after caller2 swap: ', formatEther(await balanceOfPYY(callerAddr)));
+    console.log('OZL balance on caller 2: ', formatEther(await balanceOfOZL(caller2Addr)));
+    console.log('OZL balance on caller 1 after caller2 swap: ', formatEther(await balanceOfOZL(callerAddr)));
     console.log('yvCrvTricrypto token balance on diamondProxy: ', formatEther(await yvCrvTri.balanceOf(deployedDiamond.address)));
     console.log('---------------------------------------'); 
 
@@ -596,48 +596,48 @@ async function beginSimulatedDiamond() {
     // //First user - 2nd transfer
     console.log('1st user second transfer'); 
     await sendETH([callerAddr, mimAddr, defaultSlippage], MIM, 'MIM', 10 ** 18); //in Arb, USDC has 6
-    console.log('PYY balance on caller 1 after 2nd swap: ', formatEther(await balanceOfPYY(callerAddr)));
-    console.log('PYY balance on caller 2 after caller1 2nd swap: ', formatEther(await balanceOfPYY(caller2Addr)));
+    console.log('OZL balance on caller 1 after 2nd swap: ', formatEther(await balanceOfOZL(callerAddr)));
+    console.log('OZL balance on caller 2 after caller1 2nd swap: ', formatEther(await balanceOfOZL(caller2Addr)));
     console.log('yvCrvTricrypto token balance on diamondProxy: ', formatEther(await yvCrvTri.balanceOf(deployedDiamond.address)));
     console.log('---------------------------------------'); 
     
-    //Transfer half of PYY from caller1 to caller2
-    console.log('Transfer half of PYY');
-    const halfPYYbalance = formatEther(await balanceOfPYY(callerAddr)) / 2;  
-    await transferPYY(caller2Addr, parseEther(halfPYYbalance.toString()));
-    console.log('PYY balance on caller 1 after transferring half: ', formatEther(await balanceOfPYY(callerAddr)));
-    console.log('PYY balance on caller 2 after getting half: ', formatEther(await balanceOfPYY(caller2Addr)));
+    //Transfer half of OZL from caller1 to caller2
+    console.log('Transfer half of OZL');
+    const halfOZLbalance = formatEther(await balanceOfOZL(callerAddr)) / 2;  
+    await transferOZL(caller2Addr, parseEther(halfOZLbalance.toString()));
+    console.log('OZL balance on caller 1 after transferring half: ', formatEther(await balanceOfOZL(callerAddr)));
+    console.log('OZL balance on caller 2 after getting half: ', formatEther(await balanceOfOZL(caller2Addr)));
     console.log('---------------------------------------'); 
     
     //1st user withdraw remaining share (half)
     console.log('Withdraw 1st user share (remainder)');
-    await withdrawSharePYY([callerAddr, usdtAddrArb, defaultSlippage], callerAddr, parseEther(formatEther(await balanceOfPYY(callerAddr))));
+    await withdrawShareOZL([callerAddr, usdtAddrArb, defaultSlippage], callerAddr, parseEther(formatEther(await balanceOfOZL(callerAddr))));
     let usdtBalance = await USDT.balanceOf(callerAddr);
     console.log('USDT balance from fees of caller1: ', usdtBalance.toString() / 10 ** 6); 
-    console.log('PYY balance on caller 1 after fees withdrawal: ', formatEther(await balanceOfPYY(callerAddr)));
-    console.log('PYY balance on caller 2 after fees withdrawal ', formatEther(await balanceOfPYY(caller2Addr)));
+    console.log('OZL balance on caller 1 after fees withdrawal: ', formatEther(await balanceOfOZL(callerAddr)));
+    console.log('OZL balance on caller 2 after fees withdrawal ', formatEther(await balanceOfOZL(caller2Addr)));
     console.log('---------------------------------------'); 
 
     //1st user third transfer
     console.log('1st user third transfer');
     await sendETH([callerAddr, usdtAddrArb, defaultSlippage], USDT, 'USDT', 10 ** 6);
-    console.log('PYY balance on caller 1: ', formatEther(await balanceOfPYY(callerAddr)));
-    console.log('PYY balance on caller 2: ', formatEther(await balanceOfPYY(caller2Addr)));
+    console.log('OZL balance on caller 1: ', formatEther(await balanceOfOZL(callerAddr)));
+    console.log('OZL balance on caller 2: ', formatEther(await balanceOfOZL(caller2Addr)));
     console.log('.');
     
-    console.log('After PYY transfer'); 
-    const toTransfer = formatEther(await balanceOfPYY(caller2Addr)) / 3;
-    await transferPYY(callerAddr, parseEther(toTransfer.toString()), 1);
-    console.log('PYY balance on caller 1: ', formatEther(await balanceOfPYY(callerAddr)));
-    console.log('PYY balance on caller 2: ', formatEther(await balanceOfPYY(caller2Addr)));
+    console.log('After OZL transfer'); 
+    const toTransfer = formatEther(await balanceOfOZL(caller2Addr)) / 3;
+    await transferOZL(callerAddr, parseEther(toTransfer.toString()), 1);
+    console.log('OZL balance on caller 1: ', formatEther(await balanceOfOZL(callerAddr)));
+    console.log('OZL balance on caller 2: ', formatEther(await balanceOfOZL(caller2Addr)));
     console.log('.');
 
     console.log('Withdrawing 1/3 (caller 2)'); 
-    await withdrawSharePYY([caller2Addr, usdtAddrArb, defaultSlippage], caller2Addr, parseEther(toTransfer.toString()), 1);
+    await withdrawShareOZL([caller2Addr, usdtAddrArb, defaultSlippage], caller2Addr, parseEther(toTransfer.toString()), 1);
     usdtBalance = await USDT.balanceOf(caller2Addr);
     console.log('USDT balance from fees of caller2: ', usdtBalance.toString() / 10 ** 6);
-    console.log('PYY balance on caller 1: ', formatEther(await balanceOfPYY(callerAddr)));
-    console.log('PYY balance on caller 2: ', formatEther(await balanceOfPYY(caller2Addr)));
+    console.log('OZL balance on caller 1: ', formatEther(await balanceOfOZL(callerAddr)));
+    console.log('OZL balance on caller 2: ', formatEther(await balanceOfOZL(caller2Addr)));
     console.log('.');
     console.log('yvCrvTricrypto token balance on diamondProxy: ', formatEther(await yvCrvTri.balanceOf(deployedDiamond.address)));
 

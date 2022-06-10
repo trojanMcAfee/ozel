@@ -49,7 +49,7 @@ contract DiamondInit {
 
 
         //Sets addresses on contracts
-        s.PYY = vars_.contracts[0]; 
+        s.OZL = vars_.contracts[0]; 
         s.tricrypto = vars_.contracts[1];
         s.crvTricrypto = vars_.contracts[2];
         s.getters = vars_.contracts[3];
@@ -59,8 +59,8 @@ contract DiamondInit {
         s.yTriPool = vars_.contracts[7];
         s.fraxPool = vars_.contracts[8];
         s.executor = vars_.contracts[9];
-        s.py46 = vars_.contracts[10]; 
-        s.py20 = vars_.contracts[11];
+        s.oz46 = vars_.contracts[10]; 
+        s.oz20 = vars_.contracts[11];
 
         //Sets ERC20 instances
         s.USDT = vars_.erc20s[0];
@@ -75,9 +75,9 @@ contract DiamondInit {
         s.dappFee = vars_.appVars[0];
         s.defaultSlippage = vars_.appVars[1];
 
-        //Sets name and symbol on PayToken (PYY)
-        s.py.name_ = vars_.pyyVars[0];
-        s.py.symbol_ = vars_.pyyVars[1];
+        //Sets name and symbol on PayToken (OZL)
+        s.oz.name_ = vars_.ozlVars[0];
+        s.oz.symbol_ = vars_.ozlVars[1];
 
         //Sets ETH address
         s.ETH = vars_.ETH;

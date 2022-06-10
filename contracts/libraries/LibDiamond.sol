@@ -31,7 +31,7 @@ library LibDiamond {
         address[] contracts;
         address[] erc20s;
         uint[] appVars;
-        string[] pyyVars;
+        string[] ozlVars;
         address ETH;
     }
 

@@ -34,8 +34,8 @@ const poolFeeUni = 500; //0.05%
 const defaultSlippage = 100; //5 -> 0.05%; / 100 -> 1%
 
 
-const tokenName = 'PayToken';
-const tokenSymbol = 'PYY';
+const tokenName = 'Ozel';
+const tokenSymbol = 'OZL';
 
 
 

@@ -2,9 +2,9 @@
 
 pragma solidity ^0.8.0;
 
-import "./pyIERC20.sol";
-import "./pyIERC20Metadata.sol";
-import "./pyContext.sol";
+import "./ozIERC20.sol";
+import "./ozIERC20Metadata.sol";
+import "./ozContext.sol";
 
 import 'hardhat/console.sol';
 
@@ -37,7 +37,7 @@ import '../../../libraries/FixedPointMathLib.sol';
  * functions have been added to mitigate the well-known issues around setting
  * allowances. See {IERC20-approve}.
  */
-contract pyERC20 is pyContext, pyIERC20, pyIERC20Metadata { 
+contract ozERC20 is ozContext, ozIERC20, ozIERC20Metadata { 
     AppStorage s;
     
     using FixedPointMathLib for uint;
@@ -55,7 +55,7 @@ contract pyERC20 is pyContext, pyIERC20, pyIERC20Metadata {
      * @dev Returns the name of the token.
      */
     function name() public view virtual override returns (string memory) {
-        return s.py.name_;
+        return s.oz.name_;
     }
 
     /**
@@ -63,7 +63,7 @@ contract pyERC20 is pyContext, pyIERC20, pyIERC20Metadata {
      * name.
      */
     function symbol() public view virtual override returns (string memory) {
-        return s.py.symbol_; 
+        return s.oz.symbol_; 
     }
 
     /**
@@ -114,7 +114,7 @@ contract pyERC20 is pyContext, pyIERC20, pyIERC20Metadata {
      * @dev See {IERC20-allowance}.
      */
     function allowance(address owner, address spender) public view virtual override returns (uint256) {
-        return s.py.allowances_[owner][spender];
+        return s.oz.allowances_[owner][spender];
     }
 
     /**
@@ -149,7 +149,7 @@ contract pyERC20 is pyContext, pyIERC20, pyIERC20Metadata {
     ) public virtual override returns (bool) {
         _transfer(sender, recipient, amount);
 
-        uint256 currentAllowance = s.py.allowances_[sender][_msgSender()];
+        uint256 currentAllowance = s.oz.allowances_[sender][_msgSender()];
         require(currentAllowance >= amount, "ERC20: transfer amount exceeds allowance");
         unchecked {
             _approve(sender, _msgSender(), currentAllowance - amount);
@@ -171,7 +171,7 @@ contract pyERC20 is pyContext, pyIERC20, pyIERC20Metadata {
      * - `spender` cannot be the zero address.
      */
     function increaseAllowance(address spender, uint256 addedValue) public virtual returns (bool) {
-        _approve(_msgSender(), spender, s.py.allowances_[_msgSender()][spender] + addedValue);
+        _approve(_msgSender(), spender, s.oz.allowances_[_msgSender()][spender] + addedValue);
         return true;
     }
 
@@ -190,7 +190,7 @@ contract pyERC20 is pyContext, pyIERC20, pyIERC20Metadata {
      * `subtractedValue`.
      */
     function decreaseAllowance(address spender, uint256 subtractedValue) public virtual returns (bool) {
-        uint256 currentAllowance = s.py.allowances_[_msgSender()][spender];
+        uint256 currentAllowance = s.oz.allowances_[_msgSender()][spender];
         require(currentAllowance >= subtractedValue, "ERC20: decreased allowance below zero");
         unchecked {
             _approve(_msgSender(), spender, currentAllowance - subtractedValue);
@@ -218,13 +218,13 @@ contract pyERC20 is pyContext, pyIERC20, pyIERC20Metadata {
         address recipient,
         uint256 amount
     ) internal virtual {
-        require(sender != address(0), "pyERC20Facet: transfer from the zero address");
-        require(recipient != address(0), "pyERC20Facet: transfer to the zero address");
+        require(sender != address(0), "ozERC20Facet: transfer from the zero address");
+        require(recipient != address(0), "ozERC20Facet: transfer to the zero address");
 
         _beforeTokenTransfer(sender, recipient, amount);
 
         uint256 senderBalance = balanceOf(sender);
-        require(senderBalance >= amount, "pyERC20Facet: transfer amount exceeds balance");
+        require(senderBalance >= amount, "ozERC20Facet: transfer amount exceeds balance");
 
         (bool success, ) = s.executor.delegatecall(
             abi.encodeWithSelector(
@@ -232,7 +232,7 @@ contract pyERC20 is pyContext, pyIERC20, pyIERC20Metadata {
                 sender,recipient, amount, senderBalance
             )
         );
-        require(success, 'pyERC20: transferUserAllocation() failed');
+        require(success, 'ozERC20: transferUserAllocation() failed');
 
         emit Transfer(sender, recipient, amount);
 
@@ -252,18 +252,18 @@ contract pyERC20 is pyContext, pyIERC20, pyIERC20Metadata {
      * - `account` must have at least `amount` tokens.
      */
     function _burn(address account, uint256 amount) external virtual { //<---------- switched this to external (do proper security checks)
-        require(account != address(0), "pyERC20: burn from the zero address");
+        require(account != address(0), "ozERC20: burn from the zero address");
         // console.log('msg.sender in burn: ', msg.sender);
 
         _beforeTokenTransfer(account, address(0), amount);
 
         uint256 accountBalance = balanceOf(account); 
-        require(accountBalance >= amount, "pyERC20: burn amount exceeds balance");
+        require(accountBalance >= amount, "ozERC20: burn amount exceeds balance");
 
-        uint userBalancePYY = balanceOf(account);
-        require(userBalancePYY > 0, "pyERC20: userBalancePYY cannot be 0"); //<-------- added
+        uint userBalanceOZL = balanceOf(account);
+        require(userBalanceOZL > 0, "ozERC20: userBalanceOZL cannot be 0"); //<-------- added
 
-        uint allocationPercentage = (amount.mulDivDown(10000, userBalancePYY)).mulDivDown(1 ether, 100);
+        uint allocationPercentage = (amount.mulDivDown(10000, userBalanceOZL)).mulDivDown(1 ether, 100);
         uint amountToReduce = allocationPercentage.mulDivDown(s.usersPayments[account], 100 * 1 ether);
 
         (bool success, ) = s.executor.delegatecall(
@@ -272,7 +272,7 @@ contract pyERC20 is pyContext, pyIERC20, pyIERC20Metadata {
                 account, amountToReduce
             )
         );
-        require(success, 'pyERC20: modifyPaymentsAndVolumeExternally() failed');
+        require(success, 'ozERC20: modifyPaymentsAndVolumeExternally() failed');
 
         emit Transfer(account, address(0), amount);
 
@@ -297,10 +297,10 @@ contract pyERC20 is pyContext, pyIERC20, pyIERC20Metadata {
         address spender,
         uint256 amount
     ) internal virtual {
-        require(owner != address(0), "pyERC20: approve from the zero address");
-        require(spender != address(0), "pyERC20: approve to the zero address");
+        require(owner != address(0), "ozERC20: approve from the zero address");
+        require(spender != address(0), "ozERC20: approve to the zero address");
 
-        s.py.allowances_[owner][spender] = amount;
+        s.oz.allowances_[owner][spender] = amount;
         emit Approval(owner, spender, amount);
     }
 

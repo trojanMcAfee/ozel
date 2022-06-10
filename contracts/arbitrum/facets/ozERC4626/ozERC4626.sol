@@ -1,14 +1,14 @@
 // SPDX-License-Identifier: AGPL-3.0-only
 pragma solidity >=0.8.0;
 
-import '../pyERC20/pyERC20.sol';
+import '../ozERC20/ozERC20.sol';
 import '@openzeppelin/contracts/token/ERC20/IERC20.sol';
 import '../ExecutorF.sol';
 import '../../../libraries/FixedPointMathLib.sol';
 
 /// @notice Minimal ERC4626 tokenized Vault implementation.
 /// @author Solmate (https://github.com/Rari-Capital/solmate/blob/main/src/mixins/ERC4626.sol)
-contract pyERC4626 { 
+contract ozERC4626 { 
 
     AppStorage s;
 
@@ -45,7 +45,7 @@ contract pyERC4626 {
                 assets, receiver
             )
         );
-        require(success, 'pyERC4626: deposit() failed');
+        require(success, 'ozERC4626: deposit() failed');
 
         emit Deposit(msg.sender, receiver, assets, shares);
 
@@ -63,13 +63,13 @@ contract pyERC4626 {
 
         beforeWithdraw(assets, shares);
 
-        (bool success, ) = s.py20.delegatecall(
+        (bool success, ) = s.oz20.delegatecall(
             abi.encodeWithSelector(
-                pyERC20(s.py20)._burn.selector, 
+                ozERC20(s.oz20)._burn.selector, 
                 owner, shares
             )
         );
-        require(success, 'pyERC4626: redeem() failed');
+        require(success, 'ozERC4626: redeem() failed');
 
         emit Withdraw(msg.sender, receiver, owner, assets, shares);
     }
@@ -80,7 +80,7 @@ contract pyERC4626 {
 
     function convertToShares(uint256 assets) public view virtual returns (uint256) { 
         return s.distributionIndex == 0 ? 
-            pyERC20(s.py20).totalSupply() : 
+            ozERC20(s.oz20).totalSupply() : 
                 s.distributionIndex.mulDivDown(assets * 100, 10 ** 22);
     }
 
@@ -111,11 +111,11 @@ contract pyERC4626 {
     }
 
     function maxWithdraw(address owner) public view virtual returns (uint256) {
-        return convertToAssets(pyERC20(s.py20).balanceOf(owner));
+        return convertToAssets(ozERC20(s.oz20).balanceOf(owner));
     }
 
     function maxRedeem(address owner) public view virtual returns (uint256) {
-        return pyERC20(s.py20).balanceOf(owner);
+        return ozERC20(s.oz20).balanceOf(owner);
     }
 
     /*///////////////////////////////////////////////////////////////

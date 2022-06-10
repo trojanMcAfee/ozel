@@ -423,7 +423,7 @@ async function deploySystem(type, userDetails, signerAddr) {
     //Deploys ProxyFactory
     const [proxyFactoryAddr] = await deployContract('ProxyFactory', l1Signer);
 
-    //Deploys pyERC1967Proxy
+    //Deploys ozERC1967Proxy
     constrArgs = [
         proxyFactoryAddr,
         '0x'

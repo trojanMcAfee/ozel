@@ -1,7 +1,7 @@
 //SPDX-License-Identifier: UNLICENSED
 pragma solidity ^0.8.0;
 
-import './pyERC20/pyERC20.sol';
+import './ozERC20/ozERC20.sol';
 import '@openzeppelin/contracts/token/ERC20/IERC20.sol';
 import '../AppStorage.sol';
 import '../../libraries/FixedPointMathLib.sol';
