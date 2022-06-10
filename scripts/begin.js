@@ -12,7 +12,8 @@ const {
     getVarsForHelpers,
     sendETH,
     getCalldata,
-    getCalldata2
+    getCalldata2,
+    enableWithdrawals
 } = require('./helpers-arb.js');
 
 const { 
@@ -611,6 +612,7 @@ async function beginSimulatedDiamond() {
     
     //1st user withdraw remaining share (half)
     console.log('Withdraw 1st user share (remainder)');
+    await enableWithdrawals(true);
     await withdrawShareOZL([callerAddr, usdtAddrArb, defaultSlippage], callerAddr, parseEther(formatEther(await balanceOfOZL(callerAddr))));
     let usdtBalance = await USDT.balanceOf(callerAddr);
     console.log('USDT balance from fees of caller1: ', usdtBalance.toString() / 10 ** 6); 

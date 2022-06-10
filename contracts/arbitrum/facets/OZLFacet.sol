@@ -23,7 +23,12 @@ contract OZLFacet {
 
     AppStorage s;
 
-    using SafeERC20 for IERC20;
+    using SafeTransferLib for IERC20;
+
+    modifier onlyWhenEnabled() {
+        require(s.isEnabled, 'OZLFacet: Operation not enabled');
+        _;
+    }
 
     /**
     WBTC: 1 / USDT: 0 / WETH: 2
@@ -123,7 +128,7 @@ contract OZLFacet {
         userConfig memory userDetails_,
         address receiver_,
         uint shares_
-    ) public { 
+    ) public onlyWhenEnabled { 
         address user = userDetails_.user;
         address userToken = userDetails_.userToken;
         uint userSlippage = 

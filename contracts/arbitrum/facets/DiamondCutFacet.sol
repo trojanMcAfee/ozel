@@ -37,6 +37,11 @@ contract DiamondCutFacet is IDiamondCut {
         LibDiamond.enforceIsContractOwner();
         s.defaultSlippage = baseUnits_;
     }
+
+    function enableWithdrawals(bool state_) external {
+        LibDiamond.enforceIsContractOwner();
+        s.isEnabled = state_;
+    }
 }
 
 

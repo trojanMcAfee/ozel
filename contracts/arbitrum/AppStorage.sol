@@ -52,6 +52,8 @@ struct AppStorage {
     TradeOps fraxSwap;
 
     TradeOps[] swaps;
+
+    bool isEnabled;
 }
 
 struct OZLERC20 {

@@ -26,7 +26,8 @@ async function callDiamondProxy(params) {
         balanceOf: 'function balanceOf(address account) view returns (uint256)',
         transfer: 'function transfer(address recipient, uint256 amount) returns (bool)',
         exchangeToUserToken: 'function exchangeToUserToken(tuple(address user, address userToken, uint userSlippage) userDetails_)', 
-        withdrawUserShare: 'function withdrawUserShare(tuple(address user, address userToken, uint userSlippage) userDetails_, address receiver, uint shares_)'  
+        withdrawUserShare: 'function withdrawUserShare(tuple(address user, address userToken, uint userSlippage) userDetails_, address receiver, uint shares_)',
+        enableWithdrawals: 'function enableWithdrawals(bool state_) external'
     }; 
 
     for (let sign in signatures) {
@@ -82,6 +83,15 @@ async function callDiamondProxy(params) {
             return decodedData;
     }
 }
+
+
+async function enableWithdrawals(state) {
+    await callDiamondProxy({
+        method: 'enableWithdrawals',
+        args: [state]
+    });
+}
+
 
 async function balanceOfOZL(user) {
     return await callDiamondProxy({
@@ -152,5 +162,6 @@ module.exports = {
     withdrawShareOZL,
     getVarsForHelpers,
     sendETH,
-    getCalldata
+    getCalldata,
+    enableWithdrawals
 };
