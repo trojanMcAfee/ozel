@@ -11,7 +11,7 @@
             "skipFiles": [
                 "<node_internals>/**"
             ],
-            "program": "${workspaceFolder}/scripts/state-vars.js"
+            "program": "${workspaceFolder}/test/main-test.js"
         }
     ]
 }

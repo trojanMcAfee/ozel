@@ -1,74 +1,79 @@
 //SPDX-License-Identifier: UNLICENSED
-pragma solidity ^0.8.0;
+pragma solidity 0.8.14; 
 
 
-import './ozBeaconProxy.sol';
+import "@openzeppelin/contracts/proxy/utils/Initializable.sol";
+import '@rari-capital/solmate/src/utils/ReentrancyGuard.sol';
 import '../interfaces/IOps.sol';
-
-import "@openzeppelin/contracts/proxy/Proxy.sol";
-import "@openzeppelin/contracts/proxy/ERC1967/ERC1967Upgrade.sol";
-import '@openzeppelin/contracts/utils/Address.sol';
-import './PayMeFacetHop.sol';
+import './ozBeaconProxy.sol';
 import './StorageBeacon.sol';
-
 import './ozUpgradeableBeacon.sol';
+import './Errors.sol';
 
 import 'hardhat/console.sol';
 
 
 
-contract ProxyFactory {
- 
-    struct UserConfig {
-        address user;
-        address userToken;
-        uint userSlippage; 
+
+contract ProxyFactory is ReentrancyGuard, Initializable { 
+    address private beacon;
+
+
+    function initialize(address beacon_) external initializer {
+        beacon = beacon_;
     }
 
-    address beacon;
-    address ETH;
 
+    function createNewProxy(StorageBeacon.UserConfig memory userDetails_) external nonReentrant { //unsafe
+        if (userDetails_.user == address(0) || userDetails_.userToken == address(0)) revert CantBeZero('address');
+        if (userDetails_.userSlippage <= 0) revert CantBeZero('slippage');
+        if (!StorageBeacon(_getStorageBeacon(0)).queryTokenDatabase(userDetails_.userToken)) revert NotFoundInDatabase('token');
 
-    function createNewProxy(UserConfig memory userDetails_) external {
         bytes memory idData = abi.encodeWithSignature( 
             'issueUserID((address,address,uint256))', 
             userDetails_
         ); 
 
-        (bool success, bytes memory returnData) = address(_getStorageBeacon()).call(idData);
-        require(success, 'ProxyFactory: createNewProxy() failed');
+        (bool success, bytes memory returnData) = _getStorageBeacon(0).call(idData);
+        if (!success) revert CallFailed('ProxyFactory: createNewProxy failed');
         uint userId = abi.decode(returnData, (uint));
 
         ozBeaconProxy newProxy = new ozBeaconProxy(
-            userId, 
             beacon,
             new bytes(0)
         );
 
+        bytes memory createData = abi.encodeWithSignature(
+            'initialize(uint256,address)',
+            userId, beacon
+        );
+        (success, ) = address(newProxy).call(createData);
+        if (!success) revert CallFailed('ProxyFactory: init failed');
+
         _startTask(address(newProxy));
 
-         _getStorageBeacon().saveUserProxy(msg.sender, address(newProxy));
+        StorageBeacon(_getStorageBeacon(0)).saveUserProxy(msg.sender, address(newProxy));
     }
 
 
-    function _getStorageBeacon() private view returns(StorageBeacon) {
-        return StorageBeacon(ozUpgradeableBeacon(beacon).storageBeacon());
+    function _getStorageBeacon(uint version_) private view returns(address) {
+        return ozUpgradeableBeacon(beacon).storageBeacon(version_);
     }
 
 
     // *** GELATO PART ******
 
-    function _startTask(address beaconProxy_) public { 
-        address opsGel = _getStorageBeacon().getOpsGel();
+    function _startTask(address beaconProxy_) private { 
+        StorageBeacon.FixedConfig memory fxConfig = StorageBeacon(_getStorageBeacon(0)).getFixedConfig(); 
 
-        (bytes32 id) = IOps(opsGel).createTaskNoPrepayment( 
+        (bytes32 id) = IOps(fxConfig.ops).createTaskNoPrepayment( 
             beaconProxy_,
             bytes4(abi.encodeWithSignature('sendToArb()')),
             beaconProxy_,
             abi.encodeWithSignature('checker()'),
-            ETH
+            fxConfig.ETH
         );
 
-        _getStorageBeacon().saveTaskId(beaconProxy_, id);
+        StorageBeacon(_getStorageBeacon(0)).saveTaskId(beaconProxy_, id);
     }
 }

@@ -13,7 +13,7 @@ const {
     sendETH,
     getCalldata,
     getCalldata2
-} = require('./helpers.js');
+} = require('./helpers-arb.js');
 
 const { 
     chainId,
@@ -32,7 +32,12 @@ const {
     l1Signer,
     wethAddr,
     defaultSlippage,
-    gelatoAddr
+    gelatoAddr,
+    ETH,
+    swapRouterUniAddr,
+    poolFeeUni,
+    nullAddr,
+    chainlinkAggregatorAddr
  } = require('./state-vars.js');
 
 
@@ -45,16 +50,18 @@ async function sendTx(receiver, isAmount, method, args) {
     const signer = await hre.ethers.provider.getSigner(0);
     const txDetails = {
         to: receiver,
-        gasLimit: ethers.BigNumber.from('5000000')
-        // gasPrice: ethers.BigNumber.from('30897522792')
+        gasLimit: ethers.BigNumber.from('5000000'),
+        gasPrice: ethers.BigNumber.from('30897522792')
     };
     const signatures = {
         createNewProxy: 'function createNewProxy(tuple(address user, address userToken, uint256 userSlippage) userDetails_)',
-        getTaskID: 'function getTaskID(address user_) returns (bytes32)',
-        sendToArb: 'function sendToArb()' 
+        getTaskID: 'function getTaskID(address proxy_) returns (bytes32)',
+        sendToArb: 'function sendToArb()',
+        initialize: 'function initialize(address beacon_)',
+        _setBeacon: 'function _setBeacon(address beacon, bytes memory data)' 
     };
 
-    if (isAmount) txDetails.value = ethers.utils.parseEther('0.01');
+    if (isAmount) txDetails.value = ethers.utils.parseEther('0.01'); //0.01 - 9800 (fails with curreny slippage)
     if (args) {
         const abi = [];
         let signature; 
@@ -70,7 +77,7 @@ async function sendTx(receiver, isAmount, method, args) {
         if (args === 1) {
             data = iface.encodeFunctionData(method);     
         } else {
-            data = iface.encodeFunctionData(method, [args]); 
+            data = iface.encodeFunctionData(method, args); 
         }
         txDetails.data = data;
     }
@@ -169,18 +176,16 @@ async function tryPrecompile() {
     // hashes.push(x);
 
 
-    // for (let i = 0; i < hashes.length; i++) {
-        // const timeOut = await arbRetryable.getTimeout('0xd208f7b3e47ab1f8c12e5f5aae5cd5cb7811c66a92a32974f46bd6a5afbe410a', {
-        //     gasLimit: ethers.BigNumber.from('10000000')
-        // });
-        // console.log('timeOut: ', timeOut.toString());
-    // }
+    const timeOut = await arbRetryable.getTimeout('0xb67d0f7174d86b566c3551d26e50400471e8b01d1ada658edac28e29e960b18b', {
+        gasLimit: ethers.BigNumber.from('10000000')
+    });
+    console.log('timeOut: ', timeOut.toString());
 
-    await arbRetryable.redeem('0x6b1e2c8ddd28d450eb80b8bf0fb87b1e7201897c077b66992610019d12c5a4c8');
-    console.log('redeemed');
+    // await arbRetryable.redeem('0x6b1e2c8ddd28d450eb80b8bf0fb87b1e7201897c077b66992610019d12c5a4c8');
+    // console.log('redeemed');
 
-    await arbRetryable.redeem('0x51cdb4f34b799bbe96b4750627dd5e714194adf4ebfc9cfa378083e7aa5fd810');
-    console.log('redeemed');
+    // await arbRetryable.redeem('0x51cdb4f34b799bbe96b4750627dd5e714194adf4ebfc9cfa378083e7aa5fd810');
+    // console.log('redeemed');
 
     // const lifetime = await arbRetryable.getLifetime();
     // console.log('lifetime: ', lifetime.toString()); 
@@ -214,31 +219,36 @@ async function tryPrecompile() {
 
 
 async function deployContract(contractName, signer, constrArgs) {
-    // const Contract = await (
-    //     await hre.ethers.getContractFactory(contractName)
-    // ).connect(signer);
-    const Contract = await hre.ethers.getContractFactory(contractName);
+    const Contract = await (
+        await hre.ethers.getContractFactory(contractName)
+    ).connect(signer);
+    // const Contract = await hre.ethers.getContractFactory(contractName);
 
     const ops = {
-        gasLimit: ethers.BigNumber.from('5000000')
-        // gasPrice: ethers.BigNumber.from('30897522792')
+        gasLimit: ethers.BigNumber.from('5000000'),
+        gasPrice: ethers.BigNumber.from('30897522792')
     };
 
     let contract;
-    let var1, var2, var3;
+    let var1, var2, var3, var4;
 
     switch(contractName) {
         case 'UpgradeableBeacon':
             contract = await Contract.deploy(constrArgs, ops);
             break;
-        case 'StorageBeacon':
         case 'ozUpgradeableBeacon':
+        case 'ozERC1967Proxy':
+        case 'RolesAuthority':
             ([ var1, var2 ] = constrArgs);
             contract = await Contract.deploy(var1, var2, ops);
             break;
         case 'ozERC1967Proxy':
             ([ var1, var2, var3 ] = constrArgs);
             contract = await Contract.deploy(var1, var2, var3, ops);
+            break;
+        case 'StorageBeacon':
+            ([ var1, var2, var3, var4 ] = constrArgs);
+            contract = await Contract.deploy(var1, var2, var3, var4, ops);
             break;
         default:
             contract = await Contract.deploy(ops);
@@ -247,21 +257,46 @@ async function deployContract(contractName, signer, constrArgs) {
     await contract.deployed();
     console.log(`${contractName} deployed to: `, contract.address);
 
-    return contract.address;
+    return [
+        contract.address,
+        contract
+    ];
 }
 
 
 
+async function getTheTask() {
+    const storageBeaconAddr = '0x5Eacb393D34618157989532Fd91a56d77f85FdE5';
+    const newProxyAddr = '0xe510Dc3e577D8f50930360778b887fE50012E0d2';
+    const sBeacon = await hre.ethers.getContractAt('StorageBeacon', storageBeaconAddr);
+
+    const ops = {
+        gasLimit: ethers.BigNumber.from('5000000'),
+        gasPrice: ethers.BigNumber.from('30897522792')
+    };
+
+    const taskId = await sBeacon.taskIDs(newProxyAddr, ops);
+    console.log('task id: *****', taskId.toString());
+    //check why the task id on the terminal (rinkeby) is 0x0000
+
+}
+
+// getTheTask();
 
 
 
 
-//Deploys PayMeFacetHop in mainnet and routes ETH to Manager (PYY) in Arbitrum
+
+//Deploys ozPayMe in mainnet and routes ETH to Manager (OZL) in Arbitrum
 async function sendArb() { //mainnet
     const bridge = await Bridge.init(l1Signer, l2Signer);
-    // const signerAddr = await signerX.getAddress();
-    const [signerAddr] = await hre.ethers.provider.listAccounts();
+    const signerAddr = await signerX.getAddress();
+    // const [signerAddr, addr2] = await hre.ethers.provider.listAccounts(); 
     console.log('signer address: ', signerAddr);
+
+    // console.log('addr2: ', addr2);
+    // let bal2 = await hre.ethers.provider.getBalance(addr2);
+    // console.log('bal2 pre *******: ', bal2.toString());
 
     const userDetails = [
         signerAddr,
@@ -271,33 +306,34 @@ async function sendArb() { //mainnet
     
     let constrArgs = [];
     
-    //Deploys the fake PYY on arbitrum testnet 
-    // const fakePYYaddr = await deployContract('FakePYY', l2Signer); //fake PYY address in arbitrum
-    const fakePYYaddr = '0xCF383dD43481703a6ebe84DC4137Ae388cD7214b';
+    //Deploys the fake OZL on arbitrum testnet 
+    // const [fakeOZLaddr] = await deployContract('FakeOZL', l2Signer); //fake OZL address in arbitrum
+    const fakeOZLaddr = '0x8cE038796243813805593E16211C8Def67a81454'; //old: 0xCF383dD43481703a6ebe84DC4137Ae388cD7214b
    
 
     //Calculate fees on L1 > L2 arbitrum tx
     const { maxSubmissionCost, gasPriceBid } = await getGasDetailsL2(userDetails, bridge);
-    // const maxGas = await calculateMaxGas(userDetails, fakePYYaddr, value, maxSubmissionCost, gasPriceBid);
+    // const maxGas = await calculateMaxGas(userDetails, fakeOZLaddr, value, maxSubmissionCost, gasPriceBid);
     const maxGas = 3000000;
     const autoRedeem = maxSubmissionCost.add(gasPriceBid.mul(maxGas));
     console.log('autoRedeem: ', autoRedeem.toString()); 
 
 
     //Deploys Emitter
-    // const emitterAddr = await deployContract('Emitter', l1Signer);
-    const emitterAddr = '0xeD64c50c0412DC24B52aC432A3b723e16E18776B';
+    const [emitterAddr, emitter] = await deployContract('Emitter', l1Signer);
+    // const emitterAddr = '0xeD64c50c0412DC24B52aC432A3b723e16E18776B';
 
-    //Deploys PayMe in mainnet
-    const paymeHopAddr = await deployContract('PayMeFacetHop', l1Signer);
+    //Deploys ozPayMe in mainnet
+    const [ozPaymeAddr] = await deployContract('ozPayMe', l1Signer);
 
     //Deploys StorageBeacon
     const fxConfig = [
         inbox, 
         pokeMeOpsAddr,
-        fakePYYaddr,
+        fakeOZLaddr,
         emitterAddr,
-        gelatoAddr,
+        gelatoAddr, 
+        ETH,
         maxGas
     ];
 
@@ -307,84 +343,128 @@ async function sendArb() { //mainnet
         autoRedeem
     ];
 
-    constrArgs = [
-        fxConfig,
-        varConfig
+    const eMode = [
+        swapRouterUniAddr,
+        chainlinkAggregatorAddr,
+        poolFeeUni,
+        wethAddr,
+        usdcAddr
     ];
 
-    const storageBeaconAddr = await deployContract('StorageBeacon', l1Signer, constrArgs);
-    const storageBeacon = await hre.ethers.getContractAt('StorageBeacon', storageBeaconAddr);
-    
+
+    const tokensDatabase = [
+        usdtAddrArb
+    ];
+
+    constrArgs = [
+        fxConfig,
+        varConfig,
+        eMode,
+        tokensDatabase
+    ]; 
+
+    const [storageBeaconAddr, storageBeacon] = await deployContract('StorageBeacon', l1Signer, constrArgs);
+
     //Deploys UpgradeableBeacon
     constrArgs = [
-        paymeHopAddr,
+        ozPaymeAddr,
         storageBeaconAddr
     ];
 
-    const beaconAddr = await deployContract('ozUpgradeableBeacon', l1Signer, constrArgs); 
-    // const beaconAddr = '0xc778772aDe2a8568d87336Dbd516c2B47273582A';
+    const [beaconAddr, beacon] = await deployContract('ozUpgradeableBeacon', l1Signer, constrArgs); 
+    await storageBeacon.storeBeacon(beaconAddr);
+    await emitter.storeBeacon(beaconAddr);
 
     //Deploys ProxyFactory
-    const proxyFactoryAddr = await deployContract('ProxyFactory', l1Signer);
+    const [proxyFactoryAddr] = await deployContract('ProxyFactory', l1Signer);
 
     //Deploys pyERC1967Proxy
     constrArgs = [
-        beaconAddr,
         proxyFactoryAddr,
         '0x'
     ];
 
-    const ozERC1967proxyAddr = await deployContract('ozERC1967Proxy', l1Signer, constrArgs);
+    const [ozERC1967proxyAddr] = await deployContract('ozERC1967Proxy', l1Signer, constrArgs);
+    await sendTx(ozERC1967proxyAddr, false, 'initialize', [beaconAddr]);
+
+    //Deploys Auth
+    constrArgs = [
+        signerAddr,
+        beaconAddr
+    ];
+
+    const [rolesAuthorityAddr, rolesAuthority] = await deployContract('RolesAuthority', l1Signer, constrArgs);
+    const ops = {
+        gasLimit: ethers.BigNumber.from('5000000'),
+        gasPrice: ethers.BigNumber.from('30897522792')
+    };
+    await beacon.setAuth(rolesAuthorityAddr, ops);
+
+    //Set ERC1967Proxy to role 1 and gives it authority to call the functions in StorageBeacon
+    await rolesAuthority.setUserRole(ozERC1967proxyAddr, 1, true, ops);
+
+    await rolesAuthority.setRoleCapability(1, storageBeaconAddr, '0x74e0ea7a', true, ops); //issueUserID(UserConfig memory userDetails_)
+    await rolesAuthority.setRoleCapability(1, storageBeaconAddr, '0x68e540e5', true, ops); //saveUserProxy(address sender_, address proxy_)
+    await rolesAuthority.setRoleCapability(1, storageBeaconAddr, '0xf2034a69', true, ops); //saveTaskId(address proxy_, bytes32 id_)
 
     //Creates 1st proxy
-    await sendTx(ozERC1967proxyAddr, false, 'createNewProxy', userDetails);
-    const newProxyAddr = (await storageBeacon.getUserProxy(signerAddr)).toString(); 
+    await sendTx(ozERC1967proxyAddr, false, 'createNewProxy', [userDetails]);
+    const newProxyAddr = (await storageBeacon.getProxyByUser(signerAddr))[0].toString(); 
     console.log('proxy 1: ', newProxyAddr);
 
+    //Set signerAddr to role 0 for calling disableEmitter() on ozPayMe
+    await rolesAuthority.setUserRole(signerAddr, 0, true, ops);
+    await rolesAuthority.setRoleCapability(0, newProxyAddr, '0xa2d4d48b', true, ops); //disableEmitter()
 
     //Gets user's task id
-    const taskId = await storageBeacon.getTaskID(signerAddr);
+    const taskId = await storageBeacon.getTaskID(newProxyAddr, ops);
     console.log('task id: ', taskId.toString());
 
+    const filter = {
+        address: emitterAddr,
+        topics: [
+            ethers.utils.id("ShowTicket(uint256)")
+        ]
+    };
 
-    // const filter = {
-    //     address: emitterAddr,
-    //     topics: [
-    //         ethers.utils.id("showTicket(uint256)")
-    //     ]
-    // };
 
+    await hre.ethers.provider.on(filter, async (encodedData) => {
+        const topic = encodedData.topics[1];
+        const ourMessagesSequenceNum = ethers.utils.defaultAbiCoder.decode(['uint'], topic);
 
-    // await hre.ethers.provider.on(filter, async (encodedData) => {
-    //     const { data } = encodedData;
-    //     const ourMessagesSequenceNum = ethers.utils.defaultAbiCoder.decode(['uint'], data);
-
-    //     console.log('inboxSeqNums: ', ourMessagesSequenceNum.toString());
-    //     const retryableTxnHash = await bridge.calculateL2RetryableTransactionHash(
-    //         ourMessagesSequenceNum[0]
-    //     );
-    //     console.log('retryableTxnHash: ', retryableTxnHash);
-    //     console.log(
-    //         `waiting for L2 tx 🕐... (should take < 10 minutes, current time: ${new Date().toTimeString()}`
-    //     );
-    //     const retryRec = await l2Provider.waitForTransaction(retryableTxnHash)
-    //     console.log(`L2 retryable txn executed 🥳 ${retryRec.transactionHash} at ${new Date().toTimeString()}`);
-    // });
+        console.log('inboxSeqNums: ', ourMessagesSequenceNum.toString());
+        const retryableTxnHash = await bridge.calculateL2RetryableTransactionHash(
+            ourMessagesSequenceNum[0]
+        );
+        console.log('retryableTxnHash: ', retryableTxnHash);
+        console.log(
+            `waiting for L2 tx 🕐... (should take < 10 minutes, current time: ${new Date().toTimeString()}`
+        );
+        const retryRec = await l2Provider.waitForTransaction(retryableTxnHash)
+        console.log(`L2 retryable txn executed 🥳 ${retryRec.transactionHash} at ${new Date().toTimeString()}`);
+    });
 
 
     //**** TRIGGER for Gelato *******/
     await sendTx(newProxyAddr, true, 'Sending ETH');
 
     //Comment out this part when trying it out with Gelato
-    let ethBalance = await hre.ethers.provider.getBalance(newProxyAddr);
-    console.log('pre eth balance on proxy: ', ethBalance.toString());
+    // let ethBalance = await hre.ethers.provider.getBalance(newProxyAddr);
+    // console.log('pre eth balance on proxy: ', ethBalance.toString());
 
-    await sendTx(newProxyAddr, false, 'sendToArb', 1);
+    // await sendTx(newProxyAddr, false, 'sendToArb', 1);
 
-    ethBalance = await hre.ethers.provider.getBalance(newProxyAddr);
-    console.log('post eth balance on proxy: ', ethBalance.toString());
+    // ethBalance = await hre.ethers.provider.getBalance(newProxyAddr);
+    // console.log('post eth balance on proxy: ', ethBalance.toString());
 
 
+    //for eMode
+    // const USDT = await hre.ethers.getContractAt('IERC20', usdcAddr);
+    // const bal = await USDT.balanceOf(signerAddr);
+    // console.log('USDC user balance: ', bal.toString() / 10 ** 6);
+
+    // bal2 = await hre.ethers.provider.getBalance(addr2);
+    // console.log('bal2 post *******: ', bal2.toString());
 
 }
 
@@ -414,6 +494,40 @@ async function testBeacon() {
 
 // testBeacon(); 
 
+
+
+async function justEvent() {
+    const bridge = await Bridge.init(l1Signer, l2Signer);
+    const newProxyAddr = '0x658a1496aa79B8e9f9B717aaa4c0958EF418A5eb';
+
+    const filter = {
+        address: '0xfF88d96CE1079F27ef2A18A176A2E6482553F7F8', //emitterAddr
+        topics: [
+            ethers.utils.id("ShowTicket(uint256)")
+        ]
+    };
+
+    await hre.ethers.provider.on(filter, async (encodedData) => {
+        const topic = encodedData.topics[1];
+        const ourMessagesSequenceNum = ethers.utils.defaultAbiCoder.decode(['uint'], topic); //data
+
+        console.log('inboxSeqNums: ', ourMessagesSequenceNum.toString());
+        const retryableTxnHash = await bridge.calculateL2RetryableTransactionHash(
+            ourMessagesSequenceNum[0]
+        );
+        console.log('retryableTxnHash: ', retryableTxnHash);
+        console.log(
+            `waiting for L2 tx 🕐... (should take < 10 minutes, current time: ${new Date().toTimeString()}`
+        );
+        const retryRec = await l2Provider.waitForTransaction(retryableTxnHash)
+        console.log(`L2 retryable txn executed 🥳 ${retryRec.transactionHash} at ${new Date().toTimeString()}`);
+    });
+
+    await sendTx(newProxyAddr, true, 'Sending ETH');
+}
+
+
+// justEvent();
 
 
 
@@ -462,7 +576,7 @@ async function beginSimulatedDiamond() {
     /**
      * Since Curve doesn't have testnets, sendETH() sends ETH directly to
      * exchangeToUserToken() which would simulate an Arbitrum L1 > L2 tx where
-     * sendToArb() in L1 in PayMeFacetHop would send the ETH to managerFacet in L2
+     * sendToArb() in L1 in ozPayMe would send the ETH to managerFacet in L2
      */
 
     await sendETH([callerAddr, fraxAddr, defaultSlippage], FRAX, 'FRAX', 10 ** 18); //callerAddr, fraxAddr, FRAX, 'FRAX', 10 ** 18

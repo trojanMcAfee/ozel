@@ -1,4 +1,5 @@
 // const { BigNumber } = require("@ethersproject/bignumber");
+const { ethers } = require("ethers");
 const { toBn } = require('evm-bn');
 
 let usdtAddrArb;
@@ -15,6 +16,9 @@ let crv2PoolAddr;
 let yTricryptoPoolAddr;
 let fraxPoolAddr;
 let fraxAddr;
+let swapRouterUniAddr; 
+let chainlinkAggregatorAddr;
+let deadAddr;
 //------
 let chainId; //arbitrum
 let pokeMeOpsAddr; //gelato
@@ -22,7 +26,9 @@ let hopBridge;
 let inbox; //arbitrum rinkeby
 let gelatoAddr;
 const ETH = '0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE';
+const nullAddr = '0x0000000000000000000000000000000000000000';
 const dappFee = 10; //prev: 10 -> 0.1% / 100-1 / 1000-10 / 10000 - 100%
+const poolFeeUni = 500; //0.05%
 
 // const foo = toBn('0.01');
 const defaultSlippage = 100; //5 -> 0.05%; / 100 -> 1%
@@ -44,7 +50,7 @@ const l1Signer = signerX.connect(l1ProviderRinkeby);
 
 
 
-let network = 'mainnet';
+let network = 'rinkeby';
 switch(network) {
     case 'rinkeby':
         chainId = 421611;
@@ -53,6 +59,10 @@ switch(network) {
         usdtAddrArb = '0x3B00Ef435fA4FcFF5C209a37d1f3dcff37c705aD';
         inbox = '0x578BAde599406A8fE3d24Fd7f7211c0911F5B29e';
         gelatoAddr = '0x0630d1b8c2df3f0a68df578d02075027a6397173';
+        swapRouterUniAddr = nullAddr;
+        chainlinkAggregatorAddr = nullAddr;
+        wethAddr = '0xc778417E063141139Fce010982780140Aa0cD5Ab';
+        usdcAddr = '0xeb8f08a975Ab53E34D8a0330E0D34de942C95926';
         break;
     case 'mainnet': 
         chainId = 42161;
@@ -73,6 +83,10 @@ switch(network) {
         crv2PoolAddr = '0xbEbc44782C7dB0a1A60Cb6fe97d0b483032FF1C7'; //crv3
         yTricryptoPoolAddr = '';
         gelatoAddr = '0x3caca7b48d0573d793d3b0279b5f0029180e83b6';
+        swapRouterUniAddr = '0xE592427A0AEce92De3Edee1F18E0157C05861564';
+        chainlinkAggregatorAddr = '0x5f4eC3Df9cbd43714FE2740f5E3616155c5b8419';
+        fraxAddr = '0x853d955aCEf822Db058eb8505911ED77F175b99e'; 
+        deadAddr = '0x000000000000000000000000000000000000dEaD';
         break; 
     case 'arbitrum':
         pokeMeOpsAddr = '0xB3f5503f93d5Ef84b06993a1975B9D21B962892F'; 
@@ -128,6 +142,11 @@ module.exports = {
     l2Provider,
     l2Signer,
     l1Signer,
-    gelatoAddr
+    gelatoAddr,
+    swapRouterUniAddr,
+    poolFeeUni,
+    nullAddr,
+    chainlinkAggregatorAddr,
+    deadAddr
 };
 

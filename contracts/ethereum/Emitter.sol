@@ -1,14 +1,39 @@
 //SPDX-License-Identifier: UNLICENSED
-pragma solidity ^0.8.0;
+pragma solidity 0.8.14; 
 
 
-contract Emitter {
+import "@openzeppelin/contracts/proxy/utils/Initializable.sol";
+import '@openzeppelin/contracts/access/Ownable.sol';
+import './StorageBeacon.sol';
+import './Errors.sol';
 
-    event showTicket(uint ticketID);
+import 'hardhat/console.sol';
 
-    function forwardEvent(uint ticketID_) external {
-        emit showTicket(ticketID_);
+
+contract Emitter is Initializable, Ownable {
+    address private _beacon;
+
+    event ShowTicket(uint indexed ticketID);
+
+
+    function storeBeacon(address beacon_) external initializer {
+        _beacon = beacon_;
+    }
+
+    function _getStorageBeacon() private view returns(StorageBeacon) {
+        return StorageBeacon(ozUpgradeableBeacon(_beacon).storageBeacon(0));
+    }
+
+    function forwardEvent(uint ticketID_) external { 
+        if (!_getStorageBeacon().proxyDatabase(msg.sender)) revert NotProxy();
+        emit ShowTicket(ticketID_);
     }
 }
+
+
+
+        
+
+
 
 

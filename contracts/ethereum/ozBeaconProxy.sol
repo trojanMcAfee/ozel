@@ -1,40 +1,38 @@
 // SPDX-License-Identifier: MIT
-
 pragma solidity ^0.8.0;
 
 
-import 'hardhat/console.sol';
-
-import '@openzeppelin/contracts/utils/Address.sol';
 import '@openzeppelin/contracts/proxy/beacon/BeaconProxy.sol';
-import '../interfaces/IOps.sol';
+import "@openzeppelin/contracts/proxy/utils/Initializable.sol";
+import '@rari-capital/solmate/src/utils/ReentrancyGuard.sol';
+import './ozUpgradeableBeacon.sol';
 import './StorageBeacon.sol';
 
-import './ozUpgradeableBeacon.sol';
+import 'hardhat/console.sol';
 
 
 
-contract ozBeaconProxy is BeaconProxy { 
-    using Address for address;
+contract ozBeaconProxy is ReentrancyGuard, Initializable, BeaconProxy { 
 
-    StorageBeacon.FixedConfig fxConfig;
     StorageBeacon.UserConfig userDetails;
+    StorageBeacon.FixedConfig fxConfig;
 
-    address constant ETH = 0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE;
-
+    address private beacon; 
     
     constructor(
-        uint userId_,
         address beacon_,
         bytes memory data_
-    ) BeaconProxy(beacon_, data_) {
-        userDetails = _getStorageBeacon().getUserById(userId_);               
-        fxConfig = _getStorageBeacon().getFixedConfig();
-    }                                    
+    ) BeaconProxy(beacon_, data_) {}                                    
 
 
+    receive() external payable override {}
 
-    //Gelato checker
+
+    function _getStorageBeacon() private view returns(StorageBeacon) {
+        return StorageBeacon(ozUpgradeableBeacon(_beacon()).storageBeacon(0));
+    }
+
+
     function checker() external view returns(bool canExec, bytes memory execPayload) {
         if (address(this).balance > 0) {
             canExec = true;
@@ -42,26 +40,27 @@ contract ozBeaconProxy is BeaconProxy {
         execPayload = abi.encodeWithSignature('sendToArb()');
     }
 
-
-    receive() external payable override {
-        // require(msg.data.length > 0, "BeaconProxy: Receive() can only take ETH"); //<------ try what happens if sends eth with calldata (security)
-    }
-
-
-    function _getStorageBeacon() private view returns(StorageBeacon) {
-        return StorageBeacon(ozUpgradeableBeacon(_beacon()).storageBeacon());
-    }
-
  
-    function _delegate(address implementation) internal override {
+    function _delegate(address implementation) internal override { 
+        bytes memory data; 
+
         StorageBeacon.VariableConfig memory varConfig =
              _getStorageBeacon().getVariableConfig();
 
-        bytes memory data = abi.encodeWithSignature(
-            'sendToArb((uint256,uint256,uint256),(address,address,uint256))', 
-            varConfig,
-            userDetails
-        );
+        //first 4 bytes on ozPayMe
+        if (
+            bytes4(msg.data) == 0xda35a26f || //initialize
+            bytes4(msg.data) == 0x66eb4b13 || //changeUserToken
+            bytes4(msg.data) == 0x8fe913f1  //changeUserSlippage
+        ) { 
+            data = msg.data;
+        } else {
+            data = abi.encodeWithSignature(
+                'sendToArb((uint256,uint256,uint256),(address,address,uint256))', 
+                varConfig,
+                userDetails
+            );
+        }
 
         assembly {
             let result := delegatecall(gas(), implementation, add(data, 32), mload(data), 0, 0)
@@ -76,6 +75,7 @@ contract ozBeaconProxy is BeaconProxy {
         }
     }
 }
+
 
 
 
