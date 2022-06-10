@@ -70,7 +70,6 @@ async function deploy() {
     const ownershipFacet = await deployFacet('OwnershipFacet'); 
 
     //Selectors
-    console.log(1);
     const [
         selecCut,
         selecLoup,
@@ -90,7 +89,6 @@ async function deploy() {
         py20,
         ownershipFacet
     ]);
-    console.log(2);
 
     const contractsAddr = [
         pyyFacet.address,
@@ -154,12 +152,9 @@ async function deploy() {
         ]
     ];
 
-    console.log(3);
     //Deploy DiamondInit
     const DiamondInit = await hre.ethers.getContractFactory('DiamondInit');
-    console.log(4);
     const diamondInit = await DiamondInit.deploy();
-    console.log(5);
     await diamondInit.deployed();
     const functionCall = diamondInit.interface.encodeFunctionData('init', [
         FacetsStruct,

@@ -49,9 +49,9 @@ const {
 async function sendTx(receiver, isAmount, method, args) {
     const signer = await hre.ethers.provider.getSigner(0);
     const txDetails = {
-        to: receiver,
-        gasLimit: ethers.BigNumber.from('5000000'),
-        gasPrice: ethers.BigNumber.from('30897522792')
+        to: receiver
+        // gasLimit: ethers.BigNumber.from('5000000'),
+        // gasPrice: ethers.BigNumber.from('30897522792')
     };
     const signatures = {
         createNewProxy: 'function createNewProxy(tuple(address user, address userToken, uint256 userSlippage) userDetails_)',
@@ -219,39 +219,39 @@ async function tryPrecompile() {
 
 
 async function deployContract(contractName, signer, constrArgs) {
-    const Contract = await (
-        await hre.ethers.getContractFactory(contractName)
-    ).connect(signer);
-    // const Contract = await hre.ethers.getContractFactory(contractName);
+    // const Contract = await (
+    //     await hre.ethers.getContractFactory(contractName)
+    // ).connect(signer);
+    const Contract = await hre.ethers.getContractFactory(contractName);
 
-    const ops = {
-        gasLimit: ethers.BigNumber.from('5000000'),
-        gasPrice: ethers.BigNumber.from('30897522792')
-    };
+    // const ops = {
+    //     gasLimit: ethers.BigNumber.from('5000000'),
+    //     gasPrice: ethers.BigNumber.from('30897522792')
+    // };
 
     let contract;
     let var1, var2, var3, var4;
 
     switch(contractName) {
         case 'UpgradeableBeacon':
-            contract = await Contract.deploy(constrArgs, ops);
+            contract = await Contract.deploy(constrArgs);
             break;
         case 'ozUpgradeableBeacon':
         case 'ozERC1967Proxy':
         case 'RolesAuthority':
             ([ var1, var2 ] = constrArgs);
-            contract = await Contract.deploy(var1, var2, ops);
+            contract = await Contract.deploy(var1, var2);
             break;
         case 'ozERC1967Proxy':
             ([ var1, var2, var3 ] = constrArgs);
-            contract = await Contract.deploy(var1, var2, var3, ops);
+            contract = await Contract.deploy(var1, var2, var3);
             break;
         case 'StorageBeacon':
             ([ var1, var2, var3, var4 ] = constrArgs);
-            contract = await Contract.deploy(var1, var2, var3, var4, ops);
+            contract = await Contract.deploy(var1, var2, var3, var4);
             break;
         default:
-            contract = await Contract.deploy(ops);
+            contract = await Contract.deploy();
     }
 
     await contract.deployed();
@@ -654,7 +654,7 @@ async function beginSimulatedDiamond() {
 
 // tryGelatoRopsten();
 
-// beginSimulatedDiamond();
+beginSimulatedDiamond();
 
 // sendArb();
 
