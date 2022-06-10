@@ -37,7 +37,7 @@ import '../../../libraries/FixedPointMathLib.sol';
  * functions have been added to mitigate the well-known issues around setting
  * allowances. See {IERC20-approve}.
  */
-contract ozERC20 is ozContext, ozIERC20, ozIERC20Metadata { 
+contract oz20Facet is ozContext, ozIERC20, ozIERC20Metadata { 
     AppStorage s;
     
     using FixedPointMathLib for uint;

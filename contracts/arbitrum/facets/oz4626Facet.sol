@@ -1,14 +1,15 @@
 // SPDX-License-Identifier: AGPL-3.0-only
 pragma solidity >=0.8.0;
 
-import '../ozERC20/ozERC20.sol';
-import '@openzeppelin/contracts/token/ERC20/IERC20.sol';
-import '../ExecutorF.sol';
-import '../../../libraries/FixedPointMathLib.sol';
 
-/// @notice Minimal ERC4626 tokenized Vault implementation.
-/// @author Solmate (https://github.com/Rari-Capital/solmate/blob/main/src/mixins/ERC4626.sol)
-contract ozERC4626 { 
+import './oz20Facet/oz20Facet.sol';
+import '@openzeppelin/contracts/token/ERC20/IERC20.sol';
+import './ExecutorF.sol';
+import '../../libraries/FixedPointMathLib.sol';
+
+/// @notice Original source: Minimal ERC4626 tokenized Vault implementation.
+/// @author Original author: Solmate (https://github.com/Rari-Capital/solmate/blob/main/src/mixins/ERC4626.sol)
+contract oz4626Facet { 
 
     AppStorage s;
 
@@ -45,7 +46,7 @@ contract ozERC4626 {
                 assets, receiver
             )
         );
-        require(success, 'ozERC4626: deposit() failed');
+        require(success, 'oz4626Facet: deposit() failed');
 
         emit Deposit(msg.sender, receiver, assets, shares);
 
@@ -65,11 +66,11 @@ contract ozERC4626 {
 
         (bool success, ) = s.oz20.delegatecall(
             abi.encodeWithSelector(
-                ozERC20(s.oz20)._burn.selector, 
+                oz20Facet(s.oz20)._burn.selector, 
                 owner, shares
             )
         );
-        require(success, 'ozERC4626: redeem() failed');
+        require(success, 'oz4626Facet: redeem() failed');
 
         emit Withdraw(msg.sender, receiver, owner, assets, shares);
     }
@@ -80,7 +81,7 @@ contract ozERC4626 {
 
     function convertToShares(uint256 assets) public view virtual returns (uint256) { 
         return s.distributionIndex == 0 ? 
-            ozERC20(s.oz20).totalSupply() : 
+            oz20Facet(s.oz20).totalSupply() : 
                 s.distributionIndex.mulDivDown(assets * 100, 10 ** 22);
     }
 
@@ -111,11 +112,11 @@ contract ozERC4626 {
     }
 
     function maxWithdraw(address owner) public view virtual returns (uint256) {
-        return convertToAssets(ozERC20(s.oz20).balanceOf(owner));
+        return convertToAssets(oz20Facet(s.oz20).balanceOf(owner));
     }
 
     function maxRedeem(address owner) public view virtual returns (uint256) {
-        return ozERC20(s.oz20).balanceOf(owner);
+        return oz20Facet(s.oz20).balanceOf(owner);
     }
 
     /*///////////////////////////////////////////////////////////////

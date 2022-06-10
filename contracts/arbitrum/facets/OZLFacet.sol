@@ -7,7 +7,7 @@ import '@openzeppelin/contracts/token/ERC20/IERC20.sol';
 import '../../interfaces/ICrvLpToken.sol';
 import '../../interfaces/IWETH.sol';
 import './ExecutorF.sol';
-import './ozERC4626/ozERC4626.sol';
+import './oz4626Facet.sol';
 import '../../interfaces/IYtri.sol';
 import {ITri} from '../../interfaces/ICurve.sol';
 
@@ -46,10 +46,10 @@ contract OZLFacet {
         uint wethIn = IWETH(s.WETH).balanceOf(address(this));
         wethIn = s.failedFees == 0 ? wethIn : wethIn - s.failedFees;
 
-        //Deposits in ERC4626
+        //Deposits in oz4626Facet
         (bool success, ) = s.oz46.delegatecall(
             abi.encodeWithSelector(
-                ozERC4626(s.oz46).deposit.selector, 
+                oz4626Facet(s.oz46).deposit.selector, 
                 wethIn, user
             )
         );
@@ -134,7 +134,7 @@ contract OZLFacet {
 
         (bool success, bytes memory data) = s.oz46.delegatecall(
             abi.encodeWithSelector(
-                ozERC4626(s.oz46).redeem.selector, 
+                oz4626Facet(s.oz46).redeem.selector, 
                 shares_, receiver_, user
             )
         );
