@@ -2,7 +2,7 @@
 pragma solidity >=0.8.0;
 
 
-import './oz20Facet/oz20Facet.sol';
+import './oz20Facet.sol';
 import '@openzeppelin/contracts/token/ERC20/IERC20.sol';
 import './ExecutorF.sol';
 import '../../libraries/FixedPointMathLib.sol';

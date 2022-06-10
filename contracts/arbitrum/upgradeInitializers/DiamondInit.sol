@@ -40,11 +40,15 @@ contract DiamondInit {
         ds.supportedInterfaces[type(IERC173).interfaceId] = true;
 
         //Ads selectors to Facets mapping
-        for (uint i; i < facets_.selectors.length; i++) {
+        uint length = facets_.selectors.length;
+        for (uint i; i < length;) {
             bytes4[] memory selectors = facets_.selectors[i];
-            for (uint j; j < selectors.length; j++) {
+            uint length2 = selectors.length;
+            for (uint j; j < length2;) {
                 ds.facets[selectors[j]] = facets_.addresses[i];
+                unchecked { ++j; }
             }
+            unchecked { i++; }
         }
 
 
