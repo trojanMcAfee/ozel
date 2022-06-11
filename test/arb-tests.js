@@ -47,10 +47,11 @@ const {
 
 
 let userDetails;
-let FRAX;
+let FRAX, WBTC;
 let callerAddr;
 let distributionIndex;
 let balance;
+let deployedDiamond;
 
 
 
@@ -89,18 +90,40 @@ describe('Arbitrum-side', async () => {
          * sendToArb() in L1 in ozPayMe would send the ETH to OZLFacet in L2
         */
 
-        it('should deploy', async () => {
+        it('should convert ETH to userToken and initiate dist. index / 1st user 1st transfer / exchangeToUserToken()', async () => {
+            //Distribution index calculation
             await sendETH(userDetails); 
             distributionIndex = await getDistributionIndex();
             assert.equal(formatEther(distributionIndex), 100);
 
-            balance = await FRAX.balanceOf(callerAddr);
-            assert(formatEther(balance) > 0);
-            // console.log('OZL balance on caller 1: ', formatEther(await balanceOfOZL(callerAddr)));
-            // console.log('yvCrvTricrypto token balance on diamondProxy: ', formatEther(await yvCrvTri.balanceOf(deployedDiamond.address)));
+            //userToken balance on user
+            assert(formatEther(await FRAX.balanceOf(callerAddr)) > 0);
 
+            //OZL balance on user
+            assert.equal(formatEther(await balanceOfOZL(callerAddr)), 100.0);
 
+            //yvCrvTricrypto balance on OZLDiamond
+            assert(formatEther(await yvCrvTri.balanceOf(deployedDiamond.address)) > 0);
         }).timeout(100000);
+
+        xit('should convert ETH to new userToken and modify dist. index / 2nd user 1st transfer / exchangeToUserToken()', async () => {
+            userDetails[0] = caller2Addr;
+            userDetails[1] = wbtcAddr;
+
+            await sendETH(userDetails, 1); 
+            distributionIndex = await getDistributionIndex();
+            assert.equal(formatEther(distributionIndex), 50);
+
+            balance = await WBTC.balanceOf(callerAddr);
+            assert(Number(balance) / 10 ** 8 > 0);
+
+            console.log('OZL balance on caller 2: ', formatEther(await balanceOfOZL(caller2Addr)));
+            console.log('OZL balance on caller 1 after caller2 swap: ', formatEther(await balanceOfOZL(callerAddr)));
+            console.log('yvCrvTricrypto token balance on diamondProxy: ', formatEther(await yvCrvTri.balanceOf(deployedDiamond.address)));
+
+
+
+        });
 
 
 
