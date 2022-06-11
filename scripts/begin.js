@@ -14,7 +14,7 @@ const {
     getCalldata,
     getCalldata2,
     enableWithdrawals
-} = require('./helpers-arb.js');
+} = require('./helpers-arb2.js');
 
 const { 
     chainId,
@@ -571,7 +571,6 @@ async function beginSimulatedDiamond() {
     
     getVarsForHelpers(deployedDiamond, ozlFacet); 
 
-    return;
 
     //First user
     console.log('1st user first transfer');
@@ -579,13 +578,16 @@ async function beginSimulatedDiamond() {
     /**
      * Since Curve doesn't have testnets, sendETH() sends ETH directly to
      * exchangeToUserToken() which would simulate an Arbitrum L1 > L2 tx where
-     * sendToArb() in L1 in ozPayMe would send the ETH to managerFacet in L2
-     */
+     * sendToArb() in L1 in ozPayMe would send the ETH to OZLFacet in L2
+    */
 
     await sendETH([callerAddr, fraxAddr, defaultSlippage], FRAX, 'FRAX', 10 ** 18); //callerAddr, fraxAddr, FRAX, 'FRAX', 10 ** 18
     console.log('OZL balance on caller 1: ', formatEther(await balanceOfOZL(callerAddr)));
     console.log('yvCrvTricrypto token balance on diamondProxy: ', formatEther(await yvCrvTri.balanceOf(deployedDiamond.address)));
     console.log('---------------------------------------'); 
+
+    // console.log('return here')
+    // return;
 
     //Second user
     console.log('2nd user first transfer');

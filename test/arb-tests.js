@@ -1,4 +1,5 @@
 const { ethers } = require("ethers");
+const assert = require('assert');
 const { parseEther, formatEther, defaultAbiCoder: abiCoder, keccak256 } = ethers.utils;
 // const { deploy } = require('./deploy.js');
 const { Bridge } = require('arb-ts');
@@ -14,7 +15,8 @@ const {
     getCalldata,
     getCalldata2,
     enableWithdrawals,
-    deploy
+    deploy,
+    getDistributionIndex
 } = require('../scripts/helpers-arb.js');
 
 const { 
@@ -44,11 +46,18 @@ const {
 
 
 
+let userDetails;
+let FRAX;
+let callerAddr;
+let distributionIndex;
+let balance;
+
+
 
 describe('Arbitrum-side', async () => {
     before( async () => {
         const deployedVars = await deploy();
-        const {
+        ({
             deployedDiamond, 
             WETH,
             USDT,
@@ -62,16 +71,36 @@ describe('Arbitrum-side', async () => {
             caller2Addr,
             ozlFacet,
             yvCrvTri
-        } = deployedVars;
+        } = deployedVars);
     
         getVarsForHelpers(deployedDiamond, ozlFacet);
+
+        userDetails = [
+            callerAddr,
+            fraxAddr,
+            defaultSlippage
+        ];
     });
 
     describe('Optimistic deployment', async () => {
+        /**
+         * Since Curve doesn't have testnets, sendETH() sends ETH directly to
+         * exchangeToUserToken() which would simulate an Arbitrum L1 > L2 tx where
+         * sendToArb() in L1 in ozPayMe would send the ETH to OZLFacet in L2
+        */
 
         it('should deploy', async () => {
-            console.log('deployed');
-        });
+            await sendETH(userDetails); 
+            distributionIndex = await getDistributionIndex();
+            assert.equal(formatEther(distributionIndex), 100);
+
+            balance = await FRAX.balanceOf(callerAddr);
+            assert(formatEther(balance) > 0);
+            // console.log('OZL balance on caller 1: ', formatEther(await balanceOfOZL(callerAddr)));
+            // console.log('yvCrvTricrypto token balance on diamondProxy: ', formatEther(await yvCrvTri.balanceOf(deployedDiamond.address)));
+
+
+        }).timeout(100000);
 
 
 

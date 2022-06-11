@@ -144,24 +144,24 @@ async function withdrawShareOZL(userConfig, receiverAddr, balanceOZL, signerInde
 
 
 //Sends ETH to contracts (simulates ETH bridging) **** MAIN FUNCTION ****
-async function sendETH(userDetails, signerIndex) {
+async function sendETH(userConfig, IERC20, tokenStr, decimals, signerIndex) {
     const value = ethers.utils.parseEther('100');
     await callDiamondProxy({
         method: 'exchangeToUserToken',
-        args: userDetails, 
+        args: userConfig, 
         value,
         signerIndex
     });
 
-    // const distributionIndex = await callDiamondProxy({
-    //     method: 'getDistributionIndex',
-    //     dir: 1,
-    //     type: 'uint256'
-    // });
-    // console.log('index: ', distributionIndex.toString() / 10 ** 18);
-    // let tokenBalance = await IERC20.balanceOf(userDetails[0]);
-    // console.log(tokenStr + ' balance of callerAddr: ', tokenBalance.toString() / decimals);
-    // console.log('.'); 
+    const distributionIndex = await callDiamondProxy({
+        method: 'getDistributionIndex',
+        dir: 1,
+        type: 'uint256'
+    });
+    console.log('index: ', distributionIndex.toString() / 10 ** 18);
+    let tokenBalance = await IERC20.balanceOf(userConfig[0]);
+    console.log(tokenStr + ' balance of callerAddr: ', tokenBalance.toString() / decimals);
+    console.log('.'); 
 }
 
 
@@ -374,6 +374,5 @@ module.exports = {
     sendETH,
     getCalldata,
     enableWithdrawals,
-    deploy,
-    getDistributionIndex
+    deploy
 };
