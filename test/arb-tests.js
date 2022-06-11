@@ -49,10 +49,11 @@ const {
 let userDetails;
 let FRAX, WBTC;
 let callerAddr, caller2Addr;
-let distributionIndex;
-let balance;
+let distributionIndex, newDistributionIndex;
+let balance, OZLbalanceFirstUser, OZLbalanceSecondUser, totalOZLusers;
 let deployedDiamond;
 let preYvCrvBalance;
+let MIM;
 
 
 describe('Arbitrum-side', async () => {
@@ -135,20 +136,37 @@ describe('Arbitrum-side', async () => {
             }).timeout(1000000);
         });
 
-        xit('should convert ETH to new userToken and modify dist. index / 2nd user 1st transfer / exchangeToUserToken()', async () => {
-            userDetails[0] = caller2Addr;
-            userDetails[1] = wbtcAddr;
+        describe('1st user, 2nd transfer / exchangeToUserToken', async () => {
+            it('should convert ETH to userToken (MIM)', async () => {
+                userDetails[0] = callerAddr;
+                userDetails[1] = mimAddr;
 
-            await sendETH(userDetails, 1); 
-            distributionIndex = await getDistributionIndex();
-            assert.equal(formatEther(distributionIndex), 50);
+                await sendETH(userDetails);
+                assert(formatEther(await MIM.balanceOf(callerAddr)) > 0);
+            }).timeout(1000000);
+            
+            it('should decreate the distribution index to its lowest level', async () => {
+                newDistributionIndex = await getDistributionIndex();
+                assert(newDistributionIndex < distributionIndex);
+            }).timeout(1000000);
 
-            balance = await WBTC.balanceOf(callerAddr);
-            assert(Number(balance) / 10 ** 8 > 0);
+            it('should leave the first user with more OZL tokens than 2nd user', async () => {
 
-            console.log('OZL balance on caller 2: ', formatEther(await balanceOfOZL(caller2Addr)));
-            console.log('OZL balance on caller 1 after caller2 swap: ', formatEther(await balanceOfOZL(callerAddr)));
-            console.log('yvCrvTricrypto token balance on diamondProxy: ', formatEther(await yvCrvTri.balanceOf(deployedDiamond.address)));
+                OZLbalanceFirstUser = formatEther(await balanceOfOZL(callerAddr));
+                OZLbalanceSecondUser = formatEther(await balanceOfOZL(caller2Addr));
+                console.log('o: ', OZLbalanceFirstUser);
+                console.log('o2: ', OZLbalanceSecondUser);
+
+
+                assert(OZLbalanceFirstUser > OZLbalanceSecondUser);
+
+                totalOZLusers = OZLbalanceFirstUser + OZLbalanceSecondUser;
+
+                console.log('t: ', totalOZLusers);
+
+                assert(totalOZLusers <= 100 && totalOZLusers >= 99.9);
+
+            }).timeout(1000000);
 
 
 
