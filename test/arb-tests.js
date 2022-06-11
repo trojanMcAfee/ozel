@@ -52,7 +52,7 @@ let callerAddr, caller2Addr;
 let distributionIndex, newDistributionIndex;
 let balance, OZLbalanceFirstUser, OZLbalanceSecondUser, totalOZLusers;
 let deployedDiamond;
-let preYvCrvBalance;
+let preYvCrvBalance, currYvCrvBalance;
 let MIM;
 
 
@@ -132,7 +132,8 @@ describe('Arbitrum-side', async () => {
             }).timeout(1000000);
 
             it('should add more yvCrvTricrypto tokens to OZLDiamond', async () => {
-                assert(formatEther(await yvCrvTri.balanceOf(deployedDiamond.address)) > preYvCrvBalance);
+                currYvCrvBalance = formatEther(await yvCrvTri.balanceOf(deployedDiamond.address));
+                assert(currYvCrvBalance > preYvCrvBalance);
             }).timeout(1000000);
         });
 
@@ -145,28 +146,35 @@ describe('Arbitrum-side', async () => {
                 assert(formatEther(await MIM.balanceOf(callerAddr)) > 0);
             }).timeout(1000000);
             
-            it('should decreate the distribution index to its lowest level', async () => {
+            it('should decrease the distribution index to its lowest level', async () => {
                 newDistributionIndex = await getDistributionIndex();
                 assert(newDistributionIndex < distributionIndex);
             }).timeout(1000000);
 
             it('should leave the first user with more OZL tokens than 2nd user', async () => {
 
-                OZLbalanceFirstUser = formatEther(await balanceOfOZL(callerAddr));
-                OZLbalanceSecondUser = formatEther(await balanceOfOZL(caller2Addr));
-                console.log('o: ', OZLbalanceFirstUser);
-                console.log('o2: ', OZLbalanceSecondUser);
-
-
+                OZLbalanceFirstUser = Number(formatEther(await balanceOfOZL(callerAddr)));
+                OZLbalanceSecondUser = Number(formatEther(await balanceOfOZL(caller2Addr)));
                 assert(OZLbalanceFirstUser > OZLbalanceSecondUser);
 
                 totalOZLusers = OZLbalanceFirstUser + OZLbalanceSecondUser;
-
-                console.log('t: ', totalOZLusers);
-
                 assert(totalOZLusers <= 100 && totalOZLusers >= 99.9);
-
             }).timeout(1000000);
+
+            it("should increase yvCrvTricrypto's balance on OZLDiamond", async () => {
+                preYvCrvBalance = currYvCrvBalance;
+                currYvCrvBalance = formatEther(await yvCrvTri.balanceOf(deployedDiamond.address));
+                assert(currYvCrvBalance > preYvCrvBalance);
+            });
+        });
+
+        describe('1st user transfer half of OZL tokens', async () => {
+            
+            it('', async () => {
+
+
+                
+            });
 
 
 
