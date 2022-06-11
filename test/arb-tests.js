@@ -48,11 +48,11 @@ const {
 
 let userDetails;
 let FRAX, WBTC;
-let callerAddr;
+let callerAddr, caller2Addr;
 let distributionIndex;
 let balance;
 let deployedDiamond;
-
+let preYvCrvBalance;
 
 
 describe('Arbitrum-side', async () => {
@@ -91,23 +91,48 @@ describe('Arbitrum-side', async () => {
         */
 
         describe('1st user, 1st transfer / exchangeToUserToken()', async () => {
-            it('should convert ETH to userToken', async () => {
+            it('should convert ETH to userToken (FRAX)', async () => {
                 await sendETH(userDetails); 
                 assert(formatEther(await FRAX.balanceOf(callerAddr)) > 0);
-            }).timeout(100000);
+            }).timeout(1000000);
 
             it('should initiate the distribution index', async () => {
                 distributionIndex = await getDistributionIndex();
                 assert.equal(formatEther(distributionIndex), 100);
-            }).timeout(100000);
+            }).timeout(1000000);
 
             it('should allocate 1st user with OZL tokens', async () => {
                 assert.equal(formatEther(await balanceOfOZL(callerAddr)), 100.0);
-            }).timeout(100000);
+            }).timeout(1000000);
 
             it('should allocate OZLDiamond with yvCrvTricrypto tokens', async () => {
-                assert(formatEther(await yvCrvTri.balanceOf(deployedDiamond.address)) > 0);
-            }).timeout(100000);
+                preYvCrvBalance = formatEther(await yvCrvTri.balanceOf(deployedDiamond.address));
+                assert(preYvCrvBalance > 0);
+            }).timeout(1000000);
+        });
+
+        describe('2nd user, 1st transfer / exchangeToUserToken()', async () => {
+            it('should convert ETH to userToken (WBTC)', async () => {
+                userDetails[0] = caller2Addr;
+                userDetails[1] = wbtcAddr;
+
+                await sendETH(userDetails); 
+                assert(formatEther(await FRAX.balanceOf(callerAddr)) > 0);
+            }).timeout(1000000);
+
+            it('should re-calculate the distribution index', async () => {
+                distributionIndex = await getDistributionIndex();
+                assert.equal(formatEther(distributionIndex), 50);
+            }).timeout(1000000);
+
+            it('should distribute OZL tokens equally between users', async () => {
+                assert.equal(formatEther(await balanceOfOZL(callerAddr)), 50.0);
+                assert.equal(formatEther(await balanceOfOZL(caller2Addr)), 50.0);
+            }).timeout(1000000);
+
+            it('should add more yvCrvTricrypto tokens to OZLDiamond', async () => {
+                assert(formatEther(await yvCrvTri.balanceOf(deployedDiamond.address)) > preYvCrvBalance);
+            }).timeout(1000000);
         });
 
         xit('should convert ETH to new userToken and modify dist. index / 2nd user 1st transfer / exchangeToUserToken()', async () => {
