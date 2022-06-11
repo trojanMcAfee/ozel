@@ -571,6 +571,8 @@ async function beginSimulatedDiamond() {
     
     getVarsForHelpers(deployedDiamond, ozlFacet); 
 
+    return;
+
     //First user
     console.log('1st user first transfer');
 
