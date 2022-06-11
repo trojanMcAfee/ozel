@@ -90,21 +90,25 @@ describe('Arbitrum-side', async () => {
          * sendToArb() in L1 in ozPayMe would send the ETH to OZLFacet in L2
         */
 
-        it('should convert ETH to userToken and initiate dist. index / 1st user 1st transfer / exchangeToUserToken()', async () => {
-            //Distribution index calculation
-            await sendETH(userDetails); 
-            distributionIndex = await getDistributionIndex();
-            assert.equal(formatEther(distributionIndex), 100);
+        describe('1st user, 1st transfer / exchangeToUserToken()', async () => {
+            it('should convert ETH to userToken', async () => {
+                await sendETH(userDetails); 
+                assert(formatEther(await FRAX.balanceOf(callerAddr)) > 0);
+            }).timeout(100000);
 
-            //userToken balance on user
-            assert(formatEther(await FRAX.balanceOf(callerAddr)) > 0);
+            it('should initiate the distribution index', async () => {
+                distributionIndex = await getDistributionIndex();
+                assert.equal(formatEther(distributionIndex), 100);
+            }).timeout(100000);
 
-            //OZL balance on user
-            assert.equal(formatEther(await balanceOfOZL(callerAddr)), 100.0);
+            it('should allocate 1st user with OZL tokens', async () => {
+                assert.equal(formatEther(await balanceOfOZL(callerAddr)), 100.0);
+            }).timeout(100000);
 
-            //yvCrvTricrypto balance on OZLDiamond
-            assert(formatEther(await yvCrvTri.balanceOf(deployedDiamond.address)) > 0);
-        }).timeout(100000);
+            it('should allocate OZLDiamond with yvCrvTricrypto tokens', async () => {
+                assert(formatEther(await yvCrvTri.balanceOf(deployedDiamond.address)) > 0);
+            }).timeout(100000);
+        });
 
         xit('should convert ETH to new userToken and modify dist. index / 2nd user 1st transfer / exchangeToUserToken()', async () => {
             userDetails[0] = caller2Addr;
