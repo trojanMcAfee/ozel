@@ -2,6 +2,7 @@
 pragma solidity ^0.8.0;
 
 
+// import '@rari-capital/solmate/src/utils/ReentrancyGuard.sol';
 import '@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol';
 import '@openzeppelin/contracts/token/ERC20/IERC20.sol';
 import '../../interfaces/ICrvLpToken.sol';
@@ -17,6 +18,7 @@ import '../AppStorage.sol';
 import './ExecutorF.sol';
 
 import '../../libraries/SafeTransferLib.sol';
+import '../../Errors.sol';
 
 
 contract OZLFacet { 
@@ -30,6 +32,13 @@ contract OZLFacet {
         _;
     }
 
+    modifier noReentrancy() virtual {
+        require(!s.isLocked, "OZLFacet: No reentrance");
+        s.isLocked = true;
+        _;
+        s.isLocked = false;
+    }
+
     /**
     WBTC: 1 / USDT: 0 / WETH: 2
      */
@@ -38,9 +47,10 @@ contract OZLFacet {
         State changing functions
      ******/    
 
-    function exchangeToUserToken(userConfig memory userDetails_) external payable {
-        address user = userDetails_.user;
-        address userToken = userDetails_.userToken;
+    function exchangeToUserToken(userConfig memory userDetails_) external payable noReentrancy { 
+        if (userDetails_.user == address(0) || userDetails_.userToken == address(0)) revert CantBeZero('address');
+        if (userDetails_.userSlippage <= 0) revert CantBeZero('slippage');
+
         uint userSlippage = 
             userDetails_.userSlippage > 0 ? userDetails_.userSlippage : s.defaultSlippage;
 
@@ -55,7 +65,7 @@ contract OZLFacet {
         (bool success, ) = s.oz46.delegatecall(
             abi.encodeWithSelector(
                 oz4626Facet(s.oz46).deposit.selector, 
-                wethIn, user
+                wethIn, userDetails_.user
             )
         );
         require(success, 'OZLFacet: Failed to deposit');
@@ -64,14 +74,14 @@ contract OZLFacet {
         (uint netAmountIn, uint fee) = _getFee(wethIn);
 
         uint baseTokenOut = 
-            userToken == s.WBTC || userToken == s.renBTC ? 1 : 0;
+            userDetails_.userToken == s.WBTC || userDetails_.userToken == s.renBTC ? 1 : 0;
 
         //Swaps WETH to userToken (Base: USDT-WBTC / Route: MIM-USDC-renBTC-WBTC) 
-        swapsForUserToken(netAmountIn, baseTokenOut, userToken, userSlippage);
+        swapsForUserToken(netAmountIn, baseTokenOut, userDetails_.userToken, userSlippage);
       
         //Sends userToken to user
-        uint toUser = IERC20(userToken).balanceOf(address(this));
-        if (toUser > 0) IERC20(userToken).safeTransfer(user, toUser);
+        uint toUser = IERC20(userDetails_.userToken).balanceOf(address(this));
+        if (toUser > 0) IERC20(userDetails_.userToken).safeTransfer(userDetails_.user, toUser);
 
         depositCurveYearn(fee, false);
     }

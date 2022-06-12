@@ -247,14 +247,7 @@ describe('Arbitrum-side', async () => {
                 currYvCrvBalance = formatEther(await yvCrvTri.balanceOf(deployedDiamond.address));
                 assert(currYvCrvBalance < preYvCrvBalance);
             });
-
-
         });
-
-
-
-
-
     });
 
 

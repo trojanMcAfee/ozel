@@ -54,6 +54,7 @@ struct AppStorage {
     TradeOps[] swaps;
 
     bool isEnabled;
+    bool isLocked;
 }
 
 struct OZLERC20 {
