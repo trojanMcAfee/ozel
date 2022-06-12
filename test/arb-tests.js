@@ -53,6 +53,7 @@ let distributionIndex, newDistributionIndex;
 let balance, OZLbalanceFirstUser, OZLbalanceSecondUser, totalOZLusers, halfOZLbalance;
 let deployedDiamond;
 let preYvCrvBalance, currYvCrvBalance;
+let toTransfer;
 
 
 describe('Arbitrum-side', async () => {
@@ -210,7 +211,8 @@ describe('Arbitrum-side', async () => {
             });
 
             it('should leave the 1st user with more OZL tokens after 2nd transfer 1/3', async () => {
-                await transferOZL(callerAddr, parseEther((await balanceOfOZL(caller2Addr) / 3).toString()), 1);
+                toTransfer = await balanceOfOZL(caller2Addr) / 3;
+                await transferOZL(callerAddr, parseEther(toTransfer.toString()), 1);
                 OZLbalanceFirstUser = await balanceOfOZL(callerAddr);
                 OZLbalanceSecondUser = await balanceOfOZL(caller2Addr);
                 assert(OZLbalanceFirstUser > OZLbalanceSecondUser);
@@ -224,14 +226,10 @@ describe('Arbitrum-side', async () => {
         describe('2nd user withdrawas 1/3 OZL tokens', async () => {
 
             it("should have a balance of the dapp's fees on userToken (USDT)", async () => {
+                userDetails[0] = caller2Addr;
                 userDetails[1] = usdtAddrArb;
-                const toTransfer = await balanceOfOZL(caller2Addr) / 3;
                 await withdrawShareOZL(userDetails, caller2Addr, parseEther(toTransfer.toString()), 1);
                 balance = await USDT.balanceOf(caller2Addr);
-
-                console.log('bal: ', balance < 0);
-                console.log('bal format: ', Number(balance) / 10 ** 6);
-
                 assert(balance > 0);
             });
 
