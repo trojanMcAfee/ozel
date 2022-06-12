@@ -47,13 +47,12 @@ const {
 
 
 let userDetails;
-let FRAX, WBTC;
+let FRAX, WBTC, MIM, USDT;
 let callerAddr, caller2Addr;
 let distributionIndex, newDistributionIndex;
-let balance, OZLbalanceFirstUser, OZLbalanceSecondUser, totalOZLusers;
+let balance, OZLbalanceFirstUser, OZLbalanceSecondUser, totalOZLusers, halfOZLbalance;
 let deployedDiamond;
 let preYvCrvBalance, currYvCrvBalance;
-let MIM;
 
 
 describe('Arbitrum-side', async () => {
@@ -103,7 +102,7 @@ describe('Arbitrum-side', async () => {
             }).timeout(1000000);
 
             it('should allocate 1st user with OZL tokens', async () => {
-                assert.equal(formatEther(await balanceOfOZL(callerAddr)), 100.0);
+                assert.equal(await balanceOfOZL(callerAddr), 100.0);
             }).timeout(1000000);
 
             it('should allocate OZLDiamond with yvCrvTricrypto tokens', async () => {
@@ -127,8 +126,8 @@ describe('Arbitrum-side', async () => {
             }).timeout(1000000);
 
             it('should distribute OZL tokens equally between users', async () => {
-                assert.equal(formatEther(await balanceOfOZL(callerAddr)), 50.0);
-                assert.equal(formatEther(await balanceOfOZL(caller2Addr)), 50.0);
+                assert.equal(await balanceOfOZL(callerAddr), 50.0);
+                assert.equal(await balanceOfOZL(caller2Addr), 50.0);
             }).timeout(1000000);
 
             it('should add more yvCrvTricrypto tokens to OZLDiamond', async () => {
@@ -153,8 +152,8 @@ describe('Arbitrum-side', async () => {
 
             it('should leave the first user with more OZL tokens than 2nd user', async () => {
 
-                OZLbalanceFirstUser = Number(formatEther(await balanceOfOZL(callerAddr)));
-                OZLbalanceSecondUser = Number(formatEther(await balanceOfOZL(caller2Addr)));
+                OZLbalanceFirstUser = await balanceOfOZL(callerAddr);
+                OZLbalanceSecondUser = await balanceOfOZL(caller2Addr);
                 assert(OZLbalanceFirstUser > OZLbalanceSecondUser);
 
                 totalOZLusers = OZLbalanceFirstUser + OZLbalanceSecondUser;
@@ -168,14 +167,52 @@ describe('Arbitrum-side', async () => {
             });
         });
 
-        describe('1st user transfer half of OZL tokens', async () => {
-            
-            it('', async () => {
+        describe("1st user's transfer of OZL tokens", async () => {
+            it('should transfer half of OZL tokens to 2nd user', async () => {
+                await transferOZL(caller2Addr, parseEther((OZLbalanceFirstUser / 2).toString()));
+                OZLbalanceFirstUser = await balanceOfOZL(callerAddr);
+                OZLbalanceSecondUser = await balanceOfOZL(caller2Addr);
+                assert(OZLbalanceSecondUser > OZLbalanceFirstUser);
 
+                totalOZLusers = OZLbalanceFirstUser + OZLbalanceSecondUser;
+                assert(totalOZLusers <= 100 && totalOZLusers >= 99.9);
+            });
+        });
 
-                
+        describe("1st user's OZL withdrawal", async () => {
+            it("should have a balance of the dapp's fees on userToken", async () => {
+                await enableWithdrawals(true);
+                userDetails[1] = usdtAddrArb;
+                await withdrawShareOZL(userDetails, callerAddr, parseEther((await balanceOfOZL(callerAddr)).toString()));
+                balance = await USDT.balanceOf(callerAddr);
+                assert(balance > 0);
             });
 
+            it('should leave 2nd user with all OZL tokens', async () => {
+                OZLbalanceFirstUser = await balanceOfOZL(callerAddr);
+                OZLbalanceSecondUser = await balanceOfOZL(caller2Addr);
+                distributionIndex = await getDistributionIndex();
+
+                console.log('d: ', Number(distributionIndex));
+
+                assert.equal(OZLbalanceFirstUser, 0);
+                assert.equal(OZLbalanceSecondUser, 100.0);
+            });
+        });
+
+        describe('1st user, 3rd transfer', async () => {
+
+            it('xxxx', async() => {
+                balance = await USDT.balanceOf(callerAddr);
+                console.log('bal pre: ', balance);
+
+                await sendETH(userDetails);
+
+                balance = await USDT.balanceOf(callerAddr);
+                console.log('bal pre: ', balance);
+
+
+            });
 
 
         });

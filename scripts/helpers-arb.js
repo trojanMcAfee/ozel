@@ -1,6 +1,6 @@
 const diamond = require('diamond-util');
 const { getSelectors } = require('./libraries/diamond.js');
-const { defaultAbiCoder: abiCoder } = ethers.utils;
+const { defaultAbiCoder: abiCoder, formatEther } = ethers.utils;
 const { MaxUint256 } = ethers.constants;
 
 const {
@@ -118,12 +118,13 @@ async function enableWithdrawals(state) {
 
 
 async function balanceOfOZL(user) {
-    return await callDiamondProxy({
+    const balance =  await callDiamondProxy({
         method: 'balanceOf',
         args: user,
         dir: 0,
         type: 'uint256'
     }); 
+    return Number(formatEther(balance));
 }
 
 async function transferOZL(recipient, amount, signerIndex) { 
@@ -134,10 +135,10 @@ async function transferOZL(recipient, amount, signerIndex) {
     }); 
 }
 
-async function withdrawShareOZL(userConfig, receiverAddr, balanceOZL, signerIndex) {  
+async function withdrawShareOZL(userDetails, receiverAddr, balanceOZL, signerIndex) {  
     await callDiamondProxy({
         method: 'withdrawUserShare',
-        args: [userConfig, receiverAddr, balanceOZL],
+        args: [userDetails, receiverAddr, balanceOZL],
         signerIndex
     });
 } 
@@ -152,16 +153,6 @@ async function sendETH(userDetails, signerIndex) {
         value,
         signerIndex
     });
-
-    // const distributionIndex = await callDiamondProxy({
-    //     method: 'getDistributionIndex',
-    //     dir: 1,
-    //     type: 'uint256'
-    // });
-    // console.log('index: ', distributionIndex.toString() / 10 ** 18);
-    // let tokenBalance = await IERC20.balanceOf(userDetails[0]);
-    // console.log(tokenStr + ' balance of callerAddr: ', tokenBalance.toString() / decimals);
-    // console.log('.'); 
 }
 
 
@@ -205,6 +196,7 @@ function getSelectorsFromAllFacets(facets) {
     }
     return selectors;
 }
+
 
 
 //Deploys contracts in Arbitrum
