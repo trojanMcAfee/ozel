@@ -8,7 +8,7 @@ import '../interfaces/IOps.sol';
 import './ozBeaconProxy.sol';
 import './StorageBeacon.sol';
 import './ozUpgradeableBeacon.sol';
-import './Errors.sol';
+import '../Errors.sol';
 
 import 'hardhat/console.sol';
 

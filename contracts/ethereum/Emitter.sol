@@ -5,7 +5,7 @@ pragma solidity 0.8.14;
 import "@openzeppelin/contracts/proxy/utils/Initializable.sol";
 import '@openzeppelin/contracts/access/Ownable.sol';
 import './StorageBeacon.sol';
-import './Errors.sol';
+import '../Errors.sol';
 
 import 'hardhat/console.sol';
 

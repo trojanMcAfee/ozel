@@ -6,6 +6,8 @@ const { Bridge } = require('arb-ts');
 const { hexDataLength } = require('@ethersproject/bytes');
 require('dotenv').config();
 
+const { err } = require('./errors.js');
+
 const {
     balanceOfOZL, 
     transferOZL, 
@@ -56,7 +58,7 @@ let preYvCrvBalance, currYvCrvBalance;
 let toTransfer;
 
 
-describe('Arbitrum-side', async () => {
+xdescribe('Arbitrum-side', async () => {
     before( async () => {
         const deployedVars = await deploy();
         ({
@@ -249,9 +251,74 @@ describe('Arbitrum-side', async () => {
             });
         });
     });
+});
 
 
+describe('Unit testing', async () => {
+    before( async () => {
+        const deployedVars = await deploy();
+        ({
+            deployedDiamond, 
+            WETH,
+            USDT,
+            WBTC,
+            renBTC,
+            USDC,
+            MIM,
+            FRAX,
+            crvTri,
+            callerAddr, 
+            caller2Addr,
+            ozlFacet,
+            yvCrvTri
+        } = deployedVars);
+    
+        getVarsForHelpers(deployedDiamond, ozlFacet);
 
+        userDetails = [
+            callerAddr,
+            fraxAddr,
+            defaultSlippage
+        ];
+    });
+
+
+    describe('OZLFacet', async () => {
+
+        it('should fail with user as address(0) / exchangeToUserToken()', async () => {
+            userDetails[0] = nullAddr;
+            await assert.rejects(async () => {
+                await sendETH(userDetails);
+            }, {
+                name: 'Error',
+                message: err().zeroAddress 
+            });
+        });
+
+        it('should fail with userToken as address(0) / exchangeToUserToken()', async () => {
+            userDetails[0] = callerAddr;
+            userDetails[1] = nullAddr;
+            await assert.rejects(async () => {
+                await sendETH(userDetails);
+            }, {
+                name: 'Error',
+                message: err().zeroAddress 
+            });
+        });
+
+        it('should fail with userSlippage as 0 / exchangeToUserToken()', async () => {
+            userDetails[1] = fraxAddr;
+            userDetails[2] = 0;
+            await assert.rejects(async () => {
+                await sendETH(userDetails);
+            }, {
+                name: 'Error',
+                message: err().zeroSlippage 
+            });
+        });
+
+
+    });
 
 
 

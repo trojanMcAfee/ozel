@@ -51,8 +51,8 @@ contract OZLFacet {
         if (userDetails_.user == address(0) || userDetails_.userToken == address(0)) revert CantBeZero('address');
         if (userDetails_.userSlippage <= 0) revert CantBeZero('slippage');
 
-        uint userSlippage = 
-            userDetails_.userSlippage > 0 ? userDetails_.userSlippage : s.defaultSlippage;
+        // uint userSlippage = 
+        //     userDetails_.userSlippage > 0 ? userDetails_.userSlippage : s.defaultSlippage;
 
         //Queries if there are failed fees. If true, it deposits them
         if (s.failedFees > 0) depositCurveYearn(s.failedFees, true);
