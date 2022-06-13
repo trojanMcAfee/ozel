@@ -13,6 +13,13 @@ contract oz4626Facet {
 
     AppStorage s;
 
+    modifier noReentrancy(uint lockNum_) {
+        require(!(s.isLocked[lockNum_]), "oz4626Facet: No reentrance");
+        s.isLocked[lockNum_] = true;
+        _;
+        s.isLocked[lockNum_]= false;
+    }
+
     using FixedPointMathLib for uint256;
 
     /*///////////////////////////////////////////////////////////////
@@ -34,9 +41,11 @@ contract oz4626Facet {
                         DEPOSIT/WITHDRAWAL LOGIC
     //////////////////////////////////////////////////////////////*/
 
-    function deposit(uint256 assets, address receiver) public virtual payable returns (uint256 shares) {
+    function deposit(uint256 assets, address receiver) external payable noReentrancy(1) returns (uint256 shares) {
         // Check for rounding error since we round down in previewDeposit.
         require((shares = previewDeposit(assets)) != 0, "ZERO_SHARES");
+
+        console.log('msg.sender in deposit: ********', msg.sender);
 
         // Need to transfer before minting or ERC777s could reenter. <-----------------------------
 
@@ -50,7 +59,7 @@ contract oz4626Facet {
 
         emit Deposit(msg.sender, receiver, assets, shares);
 
-        afterDeposit(assets, shares);
+        // afterDeposit(assets, shares);
     }
 
 
@@ -60,7 +69,6 @@ contract oz4626Facet {
         address owner
     ) public virtual returns (uint256 assets) {
         require((assets = previewRedeem(shares)) != 0, "ZERO_ASSETS");
-        // console.log('msg.sender in redeem: ', msg.sender);
 
         beforeWithdraw(assets, shares);
 
@@ -125,5 +133,5 @@ contract oz4626Facet {
 
     function beforeWithdraw(uint256 assets, uint256 shares) internal virtual {}
 
-    function afterDeposit(uint256 assets, uint256 shares) internal virtual {}
+    // function afterDeposit(uint256 assets, uint256 shares) internal virtual {}
 }

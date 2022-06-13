@@ -284,6 +284,8 @@ xdescribe('Unit testing', async () => {
     });
 
 
+
+
     describe('OZLFacet', async () => {
 
         it('should fail with user as address(0) / exchangeToUserToken()', async () => {
@@ -326,6 +328,16 @@ xdescribe('Unit testing', async () => {
             }, {
                 name: 'Error',
                 message: err().tokenNotFound 
+            });
+        });
+
+        it('should fail when msg.value is equal to 0 / exchangeToUserToken()', async () => {
+            userDetails[1] = usdcAddr;
+            await assert.rejects(async () => {
+                await sendETH(userDetails, '');
+            }, {
+                name: 'Error',
+                message: err().zeroMsgValue 
             });
         });
 

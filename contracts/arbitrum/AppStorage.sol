@@ -55,7 +55,12 @@ struct AppStorage {
     TradeOps[] swaps;
 
     bool isEnabled;
-    bool isLocked;
+    // bool isLocked;
+    // bool isLocked2;
+
+    //Reentrancy locks
+    // Locks isLocked;
+    mapping(uint => bool) isLocked;
 }
 
 struct OZLERC20 {
@@ -79,4 +84,9 @@ struct userConfig {
     address userToken;
     uint userSlippage; 
 }
+
+// struct Locks {
+//     bool lock1;
+//     bool lock2;
+// }
 

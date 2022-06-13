@@ -32,11 +32,11 @@ contract OZLFacet {
         _;
     }
 
-    modifier noReentrancy() virtual {
-        require(!s.isLocked, "OZLFacet: No reentrance");
-        s.isLocked = true;
+    modifier noReentrancy(uint lockNum_) {
+        require(!(s.isLocked[lockNum_]), "OZLFacet: No reentrance");
+        s.isLocked[lockNum_] = true;
         _;
-        s.isLocked = false;
+        s.isLocked[lockNum_]= false;
     }
 
     /**
@@ -47,10 +47,11 @@ contract OZLFacet {
         State changing functions
      ******/    
 
-    function exchangeToUserToken(userConfig memory userDetails_) external payable noReentrancy { 
+    function exchangeToUserToken(userConfig memory userDetails_) external payable noReentrancy(0) { 
         if (userDetails_.user == address(0) || userDetails_.userToken == address(0)) revert CantBeZero('address');
         if (userDetails_.userSlippage <= 0) revert CantBeZero('slippage');
         if (!s.tokenDatabase[userDetails_.userToken]) revert NotFoundInDatabase('token');
+        if (msg.value <= 0) revert CantBeZero('msg.value');
 
         // uint userSlippage = 
         //     userDetails_.userSlippage > 0 ? userDetails_.userSlippage : s.defaultSlippage;
@@ -69,7 +70,8 @@ contract OZLFacet {
                 wethIn, userDetails_.user
             )
         );
-        require(success, 'OZLFacet: Failed to deposit');
+        if(!success) revert CallFailed('OZLFacet: Failed to deposit');
+        // require(success, 'OZLFacet: Failed to deposit');
 
         //Sends fee to Vault contract
         (uint netAmountIn, uint fee) = _getFee(wethIn);
@@ -244,8 +246,6 @@ contract OZLFacet {
         uint tokenAmount = ITri(s.tricrypto).calc_token_amount(amounts, true);
         return (tokenAmount, amounts);
     }
-
-
 
 }
 

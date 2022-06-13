@@ -10,7 +10,8 @@ function err(n) {
         notOwner: "VM Exception while processing transaction: reverted with reason string 'Ownable: caller is not the owner'",
         zeroAddress: `VM Exception while processing transaction: reverted with custom error 'CantBeZero("address")'`,
         zeroSlippage: `VM Exception while processing transaction: reverted with custom error 'CantBeZero("slippage")'`,
-        tokenNotFound: `VM Exception while processing transaction: reverted with custom error 'NotFoundInDatabase("token")'`
+        tokenNotFound: `VM Exception while processing transaction: reverted with custom error 'NotFoundInDatabase("token")'`,
+        zeroMsgValue: `VM Exception while processing transaction: reverted with custom error 'CantBeZero("msg.value")'`
     };
 
 

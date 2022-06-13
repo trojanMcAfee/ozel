@@ -145,8 +145,8 @@ async function withdrawShareOZL(userDetails, receiverAddr, balanceOZL, signerInd
 
 
 //Sends ETH to contracts (simulates ETH bridging) **** MAIN FUNCTION ****
-async function sendETH(userDetails, signerIndex) {
-    const value = ethers.utils.parseEther('100');
+async function sendETH(userDetails, signerIndex = 0) {
+    const value = ethers.utils.parseEther(signerIndex === '' ? '0' : '100');
     await callDiamondProxy({
         method: 'exchangeToUserToken',
         args: userDetails, 
