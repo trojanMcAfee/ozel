@@ -7,7 +7,7 @@ import '@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol';
 import '@openzeppelin/contracts/token/ERC20/IERC20.sol';
 import '../../interfaces/ICrvLpToken.sol';
 import '../../interfaces/IWETH.sol';
-import './ExecutorF.sol';
+import './ExecutorFacet.sol';
 import './oz4626Facet.sol';
 import '../../interfaces/IYtri.sol';
 import {ITri} from '../../interfaces/ICurve.sol';
@@ -15,7 +15,6 @@ import {ITri} from '../../interfaces/ICurve.sol';
 import 'hardhat/console.sol';
 
 import '../AppStorage.sol';
-import './ExecutorF.sol';
 
 import '../../libraries/SafeTransferLib.sol';
 import '../../Errors.sol';
@@ -109,7 +108,7 @@ contract OZLFacet {
         ****/ 
         for (uint i=1; i <= 2; i++) {
             uint minOut = ITri(s.tricrypto).get_dy(2, baseTokenOut_, amountIn_ / i);
-            uint slippage = ExecutorF(s.executor).calculateSlippage(minOut, userSlippage_ * i);
+            uint slippage = ExecutorFacet(s.executor).calculateSlippage(minOut, userSlippage_ * i);
             
             try ITri(s.tricrypto).exchange(2, baseTokenOut_, amountIn_ / i, slippage, false) {
                 if (i == 2) {
@@ -166,7 +165,7 @@ contract OZLFacet {
         uint tokenAmountIn = ITri(s.tricrypto).calc_withdraw_one_coin(assets, 0); 
         
         //If tx reverts due to slippage, user can re-submit a new one
-        uint minOut = ExecutorF(s.executor).calculateSlippage(tokenAmountIn, userSlippage); 
+        uint minOut = ExecutorFacet(s.executor).calculateSlippage(tokenAmountIn, userSlippage); 
         ITri(s.tricrypto).remove_liquidity_one_coin(assets, 0, minOut);
 
         //Delegates trade execution
@@ -183,7 +182,7 @@ contract OZLFacet {
         IWETH(s.WETH).approve(s.tricrypto, tokenAmountIn);
 
         for (uint i=1; i <= 2; i++) {
-            uint minAmount = ExecutorF(s.executor).calculateSlippage(tokenAmountIn, s.defaultSlippage * i);
+            uint minAmount = ExecutorFacet(s.executor).calculateSlippage(tokenAmountIn, s.defaultSlippage * i);
 
             try ITri(s.tricrypto).add_liquidity(amounts, minAmount) {
                 //Deposit crvTricrypto in Yearn
@@ -218,7 +217,7 @@ contract OZLFacet {
 
 
     function _getFee(uint amount_) public view returns(uint, uint) {
-        uint fee = amount_ - ExecutorF(s.executor).calculateSlippage(amount_, s.dappFee);
+        uint fee = amount_ - ExecutorFacet(s.executor).calculateSlippage(amount_, s.dappFee);
         uint netAmount = amount_ - fee;
         return (netAmount, fee);
     }
@@ -228,7 +227,7 @@ contract OZLFacet {
             if (s.swaps[i].userToken == userToken_) {
                 (bool success, ) = s.executor.delegatecall(
                     abi.encodeWithSelector(
-                        ExecutorF(s.executor).executeFinalTrade.selector, 
+                        ExecutorFacet(s.executor).executeFinalTrade.selector, 
                         s.swaps[i], userSlippage_
                     )
                 );

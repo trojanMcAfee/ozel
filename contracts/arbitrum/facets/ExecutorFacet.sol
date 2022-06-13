@@ -10,11 +10,11 @@ import {IMulCurv, ITri} from '../../interfaces/ICurve.sol';
 import 'hardhat/console.sol';
 
 
-contract ExecutorF { 
+contract ExecutorFacet { 
     using FixedPointMathLib for uint;
 
     modifier noReentrancy(uint lockNum_) {
-        require(!(s.isLocked[lockNum_]), "ExecutorF: No reentrance");
+        require(!(s.isLocked[lockNum_]), "ExecutorFacet: No reentrance");
         s.isLocked[lockNum_] = true;
         _;
         s.isLocked[lockNum_]= false;

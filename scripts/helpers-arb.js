@@ -222,7 +222,7 @@ async function deploy() {
     const diamondLoupeFacet = await deployFacet('DiamondLoupeFacet'); 
     const ozlFacet = await deployFacet('OZLFacet');
     const gettersFacet = await deployFacet('GettersFacet');
-    const executorF = await deployFacet('ExecutorF');
+    const executorFacet = await deployFacet('ExecutorFacet');
     const oz4626 = await deployFacet('oz4626Facet');
     const oz20 = await deployFacet('oz20Facet');
     const ownershipFacet = await deployFacet('OwnershipFacet'); 
@@ -242,7 +242,7 @@ async function deploy() {
         diamondLoupeFacet,
         ozlFacet,
         gettersFacet,
-        executorF,
+        executorFacet,
         oz4626,
         oz20,
         ownershipFacet
@@ -258,7 +258,7 @@ async function deploy() {
         crv2PoolAddr,
         yTricryptoPoolAddr,
         fraxPoolAddr,
-        executorF.address,
+        executorFacet.address,
         oz4626.address,
         oz20.address
     ];
@@ -312,7 +312,7 @@ async function deploy() {
             diamondLoupeFacet.address, 
             ozlFacet.address,
             gettersFacet.address,
-            executorF.address,
+            executorFacet.address,
             oz4626.address,
             oz20.address,
             ownershipFacet.address
@@ -336,7 +336,7 @@ async function deploy() {
             ['DiamondLoupeFacet', diamondLoupeFacet],
             ['OZLFacet', ozlFacet],
             ['GettersFacet', gettersFacet],
-            ['ExecutorF', executorF],
+            ['ExecutorFacet', executorFacet],
             ['oz4626Facet', oz4626],
             ['oz20Facet', oz20],
             ['OwnershipFacet', ownershipFacet]

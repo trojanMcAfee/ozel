@@ -9,7 +9,7 @@ import '@openzeppelin/contracts/utils/Context.sol';
 import 'hardhat/console.sol';
 
 import '../AppStorage.sol';
-import './ExecutorF.sol';
+import './ExecutorFacet.sol';
 import '../../libraries/FixedPointMathLib.sol';
 
 /**
@@ -207,7 +207,7 @@ contract oz20Facet is Context, IERC20, IERC20Metadata {
 
         (bool success, ) = s.executor.delegatecall(
             abi.encodeWithSelector(
-                ExecutorF(s.executor).transferUserAllocation.selector, 
+                ExecutorFacet(s.executor).transferUserAllocation.selector, 
                 sender,recipient, amount, senderBalance
             )
         );
@@ -247,7 +247,7 @@ contract oz20Facet is Context, IERC20, IERC20Metadata {
 
         (bool success, ) = s.executor.delegatecall(
             abi.encodeWithSelector(
-                ExecutorF(s.executor).modifyPaymentsAndVolumeExternally.selector, 
+                ExecutorFacet(s.executor).modifyPaymentsAndVolumeExternally.selector, 
                 account, amountToReduce
             )
         );
