@@ -273,6 +273,12 @@ async function deploy() {
         fraxAddr,
     ];
 
+    const tokensDatabase = [
+        usdtAddrArb,
+        usdcAddr,
+        fraxAddr
+    ];
+
     const appVars = [
         dappFee,
         defaultSlippage
@@ -282,6 +288,7 @@ async function deploy() {
     const VarsAndAddrStruct = [
         contractsAddr,
         erc20sAddr,
+        tokensDatabase,
         appVars,
         [tokenName, tokenSymbol],
         ETH

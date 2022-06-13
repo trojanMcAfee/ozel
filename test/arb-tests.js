@@ -43,7 +43,8 @@ const {
     swapRouterUniAddr,
     poolFeeUni,
     nullAddr,
-    chainlinkAggregatorAddr
+    chainlinkAggregatorAddr,
+    deadAddr
 } = require('../scripts/state-vars.js');
 
 
@@ -314,6 +315,17 @@ describe('Unit testing', async () => {
             }, {
                 name: 'Error',
                 message: err().zeroSlippage 
+            });
+        });
+
+        it('should fail when userToken is not in database / exchangeToUserToken()', async () => {
+            userDetails[1] = deadAddr;
+            userDetails[2] = defaultSlippage;
+            await assert.rejects(async () => {
+                await sendETH(userDetails);
+            }, {
+                name: 'Error',
+                message: err().tokenNotFound 
             });
         });
 

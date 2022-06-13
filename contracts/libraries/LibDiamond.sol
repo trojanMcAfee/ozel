@@ -30,6 +30,7 @@ library LibDiamond {
     struct VarsAndAddresses {
         address[] contracts;
         address[] erc20s;
+        address[] tokensDb;
         uint[] appVars;
         string[] ozlVars;
         address ETH;

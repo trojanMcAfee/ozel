@@ -50,6 +50,7 @@ contract OZLFacet {
     function exchangeToUserToken(userConfig memory userDetails_) external payable noReentrancy { 
         if (userDetails_.user == address(0) || userDetails_.userToken == address(0)) revert CantBeZero('address');
         if (userDetails_.userSlippage <= 0) revert CantBeZero('slippage');
+        if (!s.tokenDatabase[userDetails_.userToken]) revert NotFoundInDatabase('token');
 
         // uint userSlippage = 
         //     userDetails_.userSlippage > 0 ? userDetails_.userSlippage : s.defaultSlippage;
@@ -77,7 +78,9 @@ contract OZLFacet {
             userDetails_.userToken == s.WBTC || userDetails_.userToken == s.renBTC ? 1 : 0;
 
         //Swaps WETH to userToken (Base: USDT-WBTC / Route: MIM-USDC-renBTC-WBTC) 
-        swapsForUserToken(netAmountIn, baseTokenOut, userDetails_.userToken, userSlippage);
+        swapsForUserToken(
+            netAmountIn, baseTokenOut, userDetails_.userToken, userDetails_.userSlippage
+        );
       
         //Sends userToken to user
         uint toUser = IERC20(userDetails_.userToken).balanceOf(address(this));
@@ -197,6 +200,11 @@ contract OZLFacet {
                 }
             }
         }
+    }
+
+
+    function addTokenToDatabase(address newToken_) external { //onlyOwner
+        s.tokenDatabase[newToken_] = true;
     }
 
 

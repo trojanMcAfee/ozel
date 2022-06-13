@@ -35,6 +35,7 @@ struct AppStorage {
     //System config
     uint dappFee;
     uint defaultSlippage;
+    mapping(address => bool) tokenDatabase;
 
     //Internal accounting vars
     uint totalVolume;

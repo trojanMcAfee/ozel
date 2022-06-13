@@ -75,6 +75,13 @@ contract DiamondInit {
         s.WETH = vars_.erc20s[5];
         s.FRAX = vars_.erc20s[6];
 
+        //Set up the tokens database
+        length = vars_.tokensDb.length;
+        for (uint i=0; i < length;) {
+            s.tokenDatabase[vars_.tokensDb[i]] = true;
+            unchecked { ++i; }
+        }
+
         //Sets app's general variables
         s.dappFee = vars_.appVars[0];
         s.defaultSlippage = vars_.appVars[1];
