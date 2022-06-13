@@ -56,7 +56,7 @@ contract OZLFacet {
         //     userDetails_.userSlippage > 0 ? userDetails_.userSlippage : s.defaultSlippage;
 
         //Queries if there are failed fees. If true, it deposits them
-        if (s.failedFees > 0) depositCurveYearn(s.failedFees, true);
+        if (s.failedFees > 0) _depositCurveYearn(s.failedFees, true);
 
         IWETH(s.WETH).deposit{value: msg.value}();
         uint wethIn = IWETH(s.WETH).balanceOf(address(this));
@@ -78,7 +78,7 @@ contract OZLFacet {
             userDetails_.userToken == s.WBTC || userDetails_.userToken == s.renBTC ? 1 : 0;
 
         //Swaps WETH to userToken (Base: USDT-WBTC / Route: MIM-USDC-renBTC-WBTC) 
-        swapsForUserToken(
+        _swapsForUserToken(
             netAmountIn, baseTokenOut, userDetails_.userToken, userDetails_.userSlippage
         );
       
@@ -86,18 +86,18 @@ contract OZLFacet {
         uint toUser = IERC20(userDetails_.userToken).balanceOf(address(this));
         if (toUser > 0) IERC20(userDetails_.userToken).safeTransfer(userDetails_.user, toUser);
 
-        depositCurveYearn(fee, false);
+        _depositCurveYearn(fee, false);
     }
 
 
 
 
-    function swapsForUserToken(
+    function _swapsForUserToken(
         uint amountIn_, 
         uint baseTokenOut_, 
         address userToken_,
         uint userSlippage_
-    ) public payable { 
+    ) private { 
         IWETH(s.WETH).approve(s.tricrypto, amountIn_);
 
         /**** 
@@ -148,7 +148,7 @@ contract OZLFacet {
             userDetails_.userSlippage > 0 ? userDetails_.userSlippage : s.defaultSlippage;
 
         //Queries if there are failed fees. If true, it deposits them
-        if (s.failedFees > 0) depositCurveYearn(s.failedFees, true);
+        if (s.failedFees > 0) _depositCurveYearn(s.failedFees, true);
 
         (bool success, bytes memory data) = s.oz46.delegatecall(
             abi.encodeWithSelector(
@@ -175,7 +175,7 @@ contract OZLFacet {
     } 
     
 
-    function depositCurveYearn(uint fee_, bool isRetry_) public payable {
+    function _depositCurveYearn(uint fee_, bool isRetry_) public payable {
         //Deposit WETH in Curve Tricrypto pool
         (uint tokenAmountIn, uint[3] memory amounts) = _calculateTokenAmountCurve(fee_);
         IWETH(s.WETH).approve(s.tricrypto, tokenAmountIn);

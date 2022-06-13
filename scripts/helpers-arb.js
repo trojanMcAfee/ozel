@@ -276,7 +276,9 @@ async function deploy() {
     const tokensDatabase = [
         usdtAddrArb,
         usdcAddr,
-        fraxAddr
+        fraxAddr,
+        wbtcAddr,
+        mimAddr
     ];
 
     const appVars = [

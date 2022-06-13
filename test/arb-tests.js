@@ -59,7 +59,7 @@ let preYvCrvBalance, currYvCrvBalance;
 let toTransfer;
 
 
-xdescribe('Arbitrum-side', async () => {
+describe('Arbitrum-side', async () => {
     before( async () => {
         const deployedVars = await deploy();
         ({
@@ -255,7 +255,7 @@ xdescribe('Arbitrum-side', async () => {
 });
 
 
-describe('Unit testing', async () => {
+xdescribe('Unit testing', async () => {
     before( async () => {
         const deployedVars = await deploy();
         ({
