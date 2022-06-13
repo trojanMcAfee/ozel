@@ -6,6 +6,7 @@ import './oz20Facet.sol';
 import '@openzeppelin/contracts/token/ERC20/IERC20.sol';
 import './ExecutorF.sol';
 import '../../libraries/FixedPointMathLib.sol';
+import '../../Errors.sol';
 
 /// @notice Original source: Minimal ERC4626 tokenized Vault implementation.
 /// @author Original author: Solmate (https://github.com/Rari-Capital/solmate/blob/main/src/mixins/ERC4626.sol)
@@ -45,17 +46,14 @@ contract oz4626Facet {
         // Check for rounding error since we round down in previewDeposit.
         require((shares = previewDeposit(assets)) != 0, "ZERO_SHARES");
 
-        console.log('msg.sender in deposit: ********', msg.sender);
-
-        // Need to transfer before minting or ERC777s could reenter. <-----------------------------
-
         (bool success, ) = s.executor.delegatecall(
             abi.encodeWithSignature(
-                'updateManagerState(uint256,address)', 
+                'updateExecutorState(uint256,address)', 
                 assets, receiver
             )
         );
-        require(success, 'oz4626Facet: deposit() failed');
+        // require(success, 'oz4626Facet: deposit() failed');
+        if(!success) revert CallFailed('oz4626Facet: Failed to update Manager');
 
         emit Deposit(msg.sender, receiver, assets, shares);
 

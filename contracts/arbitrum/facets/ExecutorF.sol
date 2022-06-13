@@ -13,6 +13,13 @@ import 'hardhat/console.sol';
 contract ExecutorF { 
     using FixedPointMathLib for uint;
 
+    modifier noReentrancy(uint lockNum_) {
+        require(!(s.isLocked[lockNum_]), "ExecutorF: No reentrance");
+        s.isLocked[lockNum_] = true;
+        _;
+        s.isLocked[lockNum_]= false;
+    }
+
     AppStorage s;
 
 
@@ -94,10 +101,10 @@ contract ExecutorF {
 
     //****** Modifies manager's STATE *****/
 
-    function updateManagerState(
+    function updateExecutorState(
         uint amount_, 
         address user_
-    ) external payable {
+    ) external payable noReentrancy(2) {
         s.usersPayments[user_] += amount_;
         s.totalVolume += amount_;
         _updateIndex();
