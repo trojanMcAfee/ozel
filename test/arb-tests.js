@@ -255,7 +255,7 @@ describe('Arbitrum-side', async () => {
 });
 
 
-xdescribe('Unit testing', async () => {
+describe('Unit testing', async () => {
     before( async () => {
         const deployedVars = await deploy();
         ({
