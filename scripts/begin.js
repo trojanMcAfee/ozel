@@ -1,6 +1,6 @@
 const { ethers } = require("ethers");
 const { parseEther, formatEther, defaultAbiCoder: abiCoder, keccak256 } = ethers.utils;
-const { deploy } = require('./deploy.js');
+// const { deploy } = require('./deploy.js');
 const { Bridge } = require('arb-ts');
 const { hexDataLength } = require('@ethersproject/bytes');
 require('dotenv').config();
@@ -13,7 +13,8 @@ const {
     sendETH,
     getCalldata,
     getCalldata2,
-    enableWithdrawals
+    enableWithdrawals,
+    deploy
 } = require('./helpers-arb2.js');
 
 const { 
