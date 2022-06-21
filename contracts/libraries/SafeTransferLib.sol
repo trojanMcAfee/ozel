@@ -70,7 +70,7 @@ library SafeTransferLib {
         uint256 amount
     ) internal {
         bool success;
-        console.log('.');
+        console.log(' ');
         assembly {
             // Get a pointer to some free memory.
             let freeMemoryPointer := mload(0x40)

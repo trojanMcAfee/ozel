@@ -6,21 +6,22 @@ import '@openzeppelin/contracts/token/ERC20/IERC20.sol';
 import '../AppStorage.sol';
 import '../../libraries/FixedPointMathLib.sol';
 import {IMulCurv, ITri} from '../../interfaces/ICurve.sol';
+import '../Modifiers.sol';
 
 import 'hardhat/console.sol';
 
 
-contract ExecutorFacet { 
+contract ExecutorFacet is Modifiers { 
     using FixedPointMathLib for uint;
 
-    modifier noReentrancy(uint lockNum_) {
-        require(!(s.isLocked[lockNum_]), "ExecutorFacet: No reentrance");
-        s.isLocked[lockNum_] = true;
-        _;
-        s.isLocked[lockNum_]= false;
-    }
+    // modifier noReentrancy(uint lockNum_) {
+    //     require(!(s.isLocked[lockNum_]), "ExecutorFacet: No reentrance");
+    //     s.isLocked[lockNum_] = true;
+    //     _;
+    //     s.isLocked[lockNum_]= false;
+    // }
 
-    AppStorage s;
+    // AppStorage s;
 
 
     function calculateSlippage(
@@ -103,8 +104,9 @@ contract ExecutorFacet {
 
     function updateExecutorState(
         uint amount_, 
-        address user_
-    ) external payable noReentrancy(2) {
+        address user_,
+        uint lockNum_
+    ) external payable isAuthorized(lockNum_) noReentrancy(2) {
         s.usersPayments[user_] += amount_;
         s.totalVolume += amount_;
         _updateIndex();

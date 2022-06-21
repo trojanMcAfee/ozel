@@ -58,9 +58,9 @@ struct AppStorage {
     // bool isLocked;
     // bool isLocked2;
 
-    //Reentrancy locks
-    // Locks isLocked;
+    //Mutex locks
     mapping(uint => bool) isLocked;
+    mapping(uint => bool) isAuth;
 }
 
 struct OZLERC20 {

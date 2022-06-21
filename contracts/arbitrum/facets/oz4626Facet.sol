@@ -7,19 +7,20 @@ import '@openzeppelin/contracts/token/ERC20/IERC20.sol';
 import './ExecutorFacet.sol';
 import '../../libraries/FixedPointMathLib.sol';
 import '../../Errors.sol';
+import '../Modifiers.sol';
 
 /// @notice Original source: Minimal ERC4626 tokenized Vault implementation.
 /// @author Original author: Solmate (https://github.com/Rari-Capital/solmate/blob/main/src/mixins/ERC4626.sol)
-contract oz4626Facet { 
+contract oz4626Facet is Modifiers { 
 
-    AppStorage s;
+    // AppStorage s;
 
-    modifier noReentrancy(uint lockNum_) {
-        require(!(s.isLocked[lockNum_]), "oz4626Facet: No reentrance");
-        s.isLocked[lockNum_] = true;
-        _;
-        s.isLocked[lockNum_]= false;
-    }
+    // modifier noReentrancy(uint lockNum_) {
+    //     require(!(s.isLocked[lockNum_]), "oz4626Facet: No reentrance");
+    //     s.isLocked[lockNum_] = true;
+    //     _;
+    //     s.isLocked[lockNum_]= false;
+    // }
 
     using FixedPointMathLib for uint256;
 
@@ -42,14 +43,20 @@ contract oz4626Facet {
                         DEPOSIT/WITHDRAWAL LOGIC
     //////////////////////////////////////////////////////////////*/
 
-    function deposit(uint256 assets, address receiver) external payable noReentrancy(1) returns (uint256 shares) {
+    function deposit(
+        uint256 assets, 
+        address receiver,
+        uint lockNum_
+    ) external payable isAuthorized(lockNum_) noReentrancy(1) returns (uint256 shares) {
         // Check for rounding error since we round down in previewDeposit.
         require((shares = previewDeposit(assets)) != 0, "ZERO_SHARES");
 
+        s.isAuth[1] = true;
+
         (bool success, ) = s.executor.delegatecall(
             abi.encodeWithSignature(
-                'updateExecutorState(uint256,address)', 
-                assets, receiver
+                'updateExecutorState(uint256,address,uint256)', 
+                assets, receiver, 1
             )
         );
         // require(success, 'oz4626Facet: deposit() failed');

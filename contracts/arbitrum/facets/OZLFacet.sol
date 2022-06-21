@@ -18,25 +18,26 @@ import '../AppStorage.sol';
 
 import '../../libraries/SafeTransferLib.sol';
 import '../../Errors.sol';
+import '../Modifiers.sol';
 
 
-contract OZLFacet { 
+contract OZLFacet is Modifiers { 
 
-    AppStorage s;
+    // AppStorage s;
 
     using SafeTransferLib for IERC20;
 
-    modifier onlyWhenEnabled() {
-        require(s.isEnabled, 'OZLFacet: Operation not enabled');
-        _;
-    }
+    // modifier onlyWhenEnabled() {
+    //     require(s.isEnabled, 'OZLFacet: Operation not enabled');
+    //     _;
+    // }
 
-    modifier noReentrancy(uint lockNum_) {
-        require(!(s.isLocked[lockNum_]), "OZLFacet: No reentrance");
-        s.isLocked[lockNum_] = true;
-        _;
-        s.isLocked[lockNum_]= false;
-    }
+    // modifier noReentrancy(uint lockNum_) {
+    //     require(!(s.isLocked[lockNum_]), "OZLFacet: No reentrance");
+    //     s.isLocked[lockNum_] = true;
+    //     _;
+    //     s.isLocked[lockNum_]= false;
+    // }
 
     /**
     WBTC: 1 / USDT: 0 / WETH: 2
@@ -63,10 +64,12 @@ contract OZLFacet {
         wethIn = s.failedFees == 0 ? wethIn : wethIn - s.failedFees;
 
         //Deposits in oz4626Facet
+        s.isAuth[0] = true;
+
         (bool success, ) = s.oz46.delegatecall(
             abi.encodeWithSelector(
                 oz4626Facet(s.oz46).deposit.selector, 
-                wethIn, userDetails_.user
+                wethIn, userDetails_.user, 0
             )
         );
         if(!success) revert CallFailed('OZLFacet: Failed to deposit');
