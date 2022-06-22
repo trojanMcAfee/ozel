@@ -58,7 +58,7 @@ let balance, OZLbalanceFirstUser, OZLbalanceSecondUser, totalOZLusers, halfOZLba
 let deployedDiamond;
 let preYvCrvBalance, currYvCrvBalance;
 let toTransfer;
-let evilAmount;
+let evilAmount, evilSwapDetails;
 
 
 describe('Arbitrum-side', async function () {
@@ -359,6 +359,20 @@ describe('Unit testing', async function () {
                 name: 'Error',
                 message: err().notAuthorized 
             });
+        });
+
+        it('shout not allow an unauthorized user to run the function / executeFinalTrade()', async () => {
+            evilSwapDetails = [0, 0, deadAddr, deadAddr, deadAddr];
+            await assert.rejects(async () => {
+                await callDiamondProxy({
+                    method: 'executeFinalTrade',
+                    args: [evilSwapDetails, 0, 2]
+                });
+            }, {
+                name: 'Error',
+                message: err().notAuthorized 
+            });
+
         });
     });
 

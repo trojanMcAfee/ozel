@@ -208,13 +208,15 @@ contract OZLFacet is Modifiers {
     }
 
     function _tradeWithExecutor(address userToken_, uint userSlippage_) private {
+        s.isAuth[2] = true;
         uint length = s.swaps.length;
+
         for (uint i=0; i < length;) {
             if (s.swaps[i].userToken == userToken_) {
                 (bool success, ) = s.executor.delegatecall(
                     abi.encodeWithSelector(
                         ExecutorFacet(s.executor).executeFinalTrade.selector, 
-                        s.swaps[i], userSlippage_
+                        s.swaps[i], userSlippage_, 2
                     )
                 );
                 if(!success) revert CallFailed('OZLFacet: _tradeWithExecutor() failed');

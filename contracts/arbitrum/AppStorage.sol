@@ -55,8 +55,6 @@ struct AppStorage {
     TradeOps[] swaps;
 
     bool isEnabled;
-    // bool isLocked;
-    // bool isLocked2;
 
     //Mutex locks
     mapping(uint => bool) isLocked;
@@ -85,8 +83,5 @@ struct userConfig {
     uint userSlippage; 
 }
 
-// struct Locks {
-//     bool lock1;
-//     bool lock2;
-// }
+
 

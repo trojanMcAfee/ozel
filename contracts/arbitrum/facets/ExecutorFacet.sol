@@ -26,8 +26,9 @@ contract ExecutorFacet is Modifiers {
 
     function executeFinalTrade( 
         TradeOps memory swapDetails_, 
-        uint userSlippage_
-    ) external payable isAuthorized() {
+        uint userSlippage_,
+        uint lockNum_
+    ) external payable isAuthorized(lockNum_) noReentrancy(3) {
         address pool = swapDetails_.pool;
         uint inBalance = IERC20(swapDetails_.baseToken).balanceOf(address(this));
         uint minOut;
