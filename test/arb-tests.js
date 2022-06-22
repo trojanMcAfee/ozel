@@ -61,7 +61,9 @@ let toTransfer;
 let evilAmount;
 
 
-describe('Arbitrum-side', async () => {
+describe('Arbitrum-side', async function () {
+    this.timeout(1000000);
+
     before( async () => {
         const deployedVars = await deploy();
         ({
@@ -100,21 +102,21 @@ describe('Arbitrum-side', async () => {
             it('should convert ETH to userToken (FRAX)', async () => {
                 await sendETH(userDetails); 
                 assert(formatEther(await FRAX.balanceOf(callerAddr)) > 0);
-            }).timeout(1000000);
+            });
 
             it('should initiate the distribution index', async () => {
                 distributionIndex = await getDistributionIndex();
                 assert.equal(formatEther(distributionIndex), 100);
-            }).timeout(1000000);
+            });
 
             it('should allocate 1st user with OZL tokens', async () => {
                 assert.equal(await balanceOfOZL(callerAddr), 100.0);
-            }).timeout(1000000);
+            });
 
             it('should allocate OZLDiamond with yvCrvTricrypto tokens', async () => {
                 preYvCrvBalance = formatEther(await yvCrvTri.balanceOf(deployedDiamond.address));
                 assert(preYvCrvBalance > 0);
-            }).timeout(1000000);
+            });
         });
 
         describe('2nd user, 1st transfer / exchangeToUserToken()', async () => {
@@ -124,22 +126,22 @@ describe('Arbitrum-side', async () => {
 
                 await sendETH(userDetails); 
                 assert(formatEther(await FRAX.balanceOf(callerAddr)) > 0);
-            }).timeout(1000000);
+            });
 
             it('should re-calculate the distribution index', async () => {
                 distributionIndex = await getDistributionIndex();
                 assert.equal(formatEther(distributionIndex), 50);
-            }).timeout(1000000);
+            });
 
             it('should distribute OZL tokens equally between users', async () => {
                 assert.equal(await balanceOfOZL(callerAddr), 50.0);
                 assert.equal(await balanceOfOZL(caller2Addr), 50.0);
-            }).timeout(1000000);
+            });
 
             it('should add more yvCrvTricrypto tokens to OZLDiamond', async () => {
                 currYvCrvBalance = formatEther(await yvCrvTri.balanceOf(deployedDiamond.address));
                 assert(currYvCrvBalance > preYvCrvBalance);
-            }).timeout(1000000);
+            });
         });
 
         describe('1st user, 2nd transfer / exchangeToUserToken', async () => {
@@ -149,12 +151,12 @@ describe('Arbitrum-side', async () => {
 
                 await sendETH(userDetails);
                 assert(formatEther(await MIM.balanceOf(callerAddr)) > 0);
-            }).timeout(1000000);
+            });
             
             it('should decrease the distribution index to its lowest level', async () => {
                 newDistributionIndex = await getDistributionIndex();
                 assert(newDistributionIndex < distributionIndex);
-            }).timeout(1000000);
+            });
 
             it('should leave the first user with more OZL tokens than 2nd user', async () => {
 
@@ -164,13 +166,13 @@ describe('Arbitrum-side', async () => {
 
                 totalOZLusers = OZLbalanceFirstUser + OZLbalanceSecondUser;
                 assert(totalOZLusers <= 100 && totalOZLusers >= 99.9);
-            }).timeout(1000000);
+            });
 
             it("should increase yvCrvTricrypto's balance on OZLDiamond", async () => {
                 preYvCrvBalance = currYvCrvBalance;
                 currYvCrvBalance = formatEther(await yvCrvTri.balanceOf(deployedDiamond.address));
                 assert(currYvCrvBalance > preYvCrvBalance);
-            }).timeout(1000000);
+            });
         });
 
         describe("1st user's transfer of OZL tokens", async () => {
@@ -182,7 +184,7 @@ describe('Arbitrum-side', async () => {
 
                 totalOZLusers = OZLbalanceFirstUser + OZLbalanceSecondUser;
                 assert(totalOZLusers <= 100 && totalOZLusers >= 99.9);
-            }).timeout(1000000);
+            });
         });
 
         describe("1st user's OZL withdrawal", async () => {
@@ -192,7 +194,7 @@ describe('Arbitrum-side', async () => {
                 await withdrawShareOZL(userDetails, callerAddr, parseEther((await balanceOfOZL(callerAddr)).toString()));
                 balance = await USDC.balanceOf(callerAddr);
                 assert(balance > 0);
-            }).timeout(1000000);
+            });
 
             it('should leave 2nd user with all OZL tokens', async () => {
                 OZLbalanceFirstUser = await balanceOfOZL(callerAddr);
@@ -201,7 +203,7 @@ describe('Arbitrum-side', async () => {
 
                 assert.equal(OZLbalanceFirstUser, 0);
                 assert.equal(OZLbalanceSecondUser, 100.0);
-            }).timeout(1000000);
+            });
         });
 
         describe('1st user, 3rd and 4th transfers', async () => {
@@ -213,7 +215,7 @@ describe('Arbitrum-side', async () => {
 
                 totalOZLusers = OZLbalanceFirstUser + OZLbalanceSecondUser;
                 assert(totalOZLusers <= 100 && totalOZLusers >= 99.9);
-            }).timeout(1000000);
+            });
 
             it('should leave the 1st user with more OZL tokens after 2nd transfer 1/3', async () => {
                 toTransfer = await balanceOfOZL(caller2Addr) / 3;
@@ -225,7 +227,7 @@ describe('Arbitrum-side', async () => {
                 totalOZLusers = OZLbalanceFirstUser + OZLbalanceSecondUser;
                 assert(totalOZLusers <= 100 && totalOZLusers >= 99.9);
 
-            }).timeout(1000000);
+            });
         });
 
         describe('2nd user withdrawas 1/3 OZL tokens', async () => {
@@ -236,7 +238,7 @@ describe('Arbitrum-side', async () => {
                 await withdrawShareOZL(userDetails, caller2Addr, parseEther(toTransfer.toString()), 1);
                 balance = await USDT.balanceOf(caller2Addr);
                 assert(balance > 0);
-            }).timeout(1000000);
+            });
 
             it('leave 1st user with more OZL tokens', async () => {
                 OZLbalanceFirstUser = await balanceOfOZL(callerAddr);
@@ -245,13 +247,13 @@ describe('Arbitrum-side', async () => {
 
                 totalOZLusers = OZLbalanceFirstUser + OZLbalanceSecondUser;
                 assert(totalOZLusers <= 100 && totalOZLusers >= 99.9);
-            }).timeout(1000000);
+            });
 
             it('should leave OZLDiamond with a reduction on yvCrvTricrypto tokens', async () => {
                 preYvCrvBalance = currYvCrvBalance;
                 currYvCrvBalance = formatEther(await yvCrvTri.balanceOf(deployedDiamond.address));
                 assert(currYvCrvBalance < preYvCrvBalance);
-            }).timeout(1000000);
+            });
         });
     });
 });

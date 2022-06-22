@@ -157,11 +157,11 @@ contract OZLFacet is Modifiers {
         _tradeWithExecutor(userToken, userSlippage);
 
         uint userTokens = IERC20(userToken).balanceOf(address(this));
-        IERC20(userToken).safeTransfer(receiver_, userTokens); //<------- if it fails again, try safeTransferFrom
+        IERC20(userToken).safeTransfer(receiver_, userTokens); 
     } 
     
 
-    function _depositInDeFi(uint fee_, bool isRetry_) private {
+    function _depositInDeFi(uint fee_, bool isRetry_) private { //payable
         //Deposit WETH in Curve Tricrypto pool
         (uint tokenAmountIn, uint[3] memory amounts) = _calculateTokenAmountCurve(fee_);
         IWETH(s.WETH).approve(s.tricrypto, tokenAmountIn);
