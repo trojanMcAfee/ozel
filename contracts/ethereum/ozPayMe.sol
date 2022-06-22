@@ -40,7 +40,7 @@ contract ozPayMe is ReentrancyGuard, Initializable {
     }
 
     modifier onlyUser() {
-        require(msg.sender == userDetails.user, 'ozPayMe: Not authorized');
+        require(msg.sender == userDetails.user, 'Not authorized');
         _;
     }
 

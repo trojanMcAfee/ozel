@@ -20,7 +20,7 @@ abstract contract Modifiers {
 
 
     modifier isAuthorized(uint lockNum_) {
-        require(s.isAuth[lockNum_], "No authorized");
+        require(s.isAuth[lockNum_], "Not authorized");
         _;
         s.isAuth[lockNum_]= false;
     }

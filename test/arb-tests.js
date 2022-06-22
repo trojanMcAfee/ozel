@@ -18,7 +18,8 @@ const {
     getCalldata2,
     enableWithdrawals,
     deploy,
-    getDistributionIndex
+    getDistributionIndex,
+    callDiamondProxy
 } = require('../scripts/helpers-arb.js');
 
 const { 
@@ -57,6 +58,7 @@ let balance, OZLbalanceFirstUser, OZLbalanceSecondUser, totalOZLusers, halfOZLba
 let deployedDiamond;
 let preYvCrvBalance, currYvCrvBalance;
 let toTransfer;
+let evilAmount;
 
 
 describe('Arbitrum-side', async () => {
@@ -287,7 +289,6 @@ describe('Unit testing', async () => {
 
 
     describe('OZLFacet', async () => {
-
         it('should fail with user as address(0) / exchangeToUserToken()', async () => {
             userDetails[0] = nullAddr;
             await assert.rejects(async () => {
@@ -339,6 +340,31 @@ describe('Unit testing', async () => {
                 name: 'Error',
                 message: err().zeroMsgValue 
             });
+        });
+
+
+    });
+
+    describe('ExecutorFacet', async () => {
+
+        it('shout not allow an unauthorized user to run the function / updateExecutorState()', async () => {
+            evilAmount = parseEther('1000');
+            // await callDiamondProxy({
+            //     method: 'updateExecutorState',
+            //     args: [evilAmount, deadAddr, 1]
+            // });
+
+            await assert.rejects(async () => {
+                await callDiamondProxy({
+                    method: 'updateExecutorState',
+                    args: [evilAmount, deadAddr, 1]
+                });
+            }, {
+                name: 'Error',
+                message: err().notAuthorized 
+            });
+
+
         });
 
 
