@@ -61,7 +61,7 @@ let toTransfer;
 let evilAmount, evilSwapDetails;
 
 
-describe('Arbitrum-side', async function () {
+xdescribe('Arbitrum-side', async function () {
     this.timeout(1000000);
 
     before( async () => {
@@ -293,58 +293,127 @@ describe('Unit testing', async function () {
 
 
     describe('OZLFacet', async () => {
-        it('should fail with user as address(0) / exchangeToUserToken()', async () => {
-            userDetails[0] = nullAddr;
-            await assert.rejects(async () => {
-                await sendETH(userDetails);
-            }, {
-                name: 'Error',
-                message: err().zeroAddress 
+        describe('exchangeToUserToken()', async () => {
+            it('should fail with user as address(0)', async () => {
+                userDetails[0] = nullAddr;
+                await assert.rejects(async () => {
+                    await sendETH(userDetails);
+                }, {
+                    name: 'Error',
+                    message: err().zeroAddress 
+                });
+            });
+    
+            it('should fail with userToken as address(0)', async () => {
+                userDetails[0] = callerAddr;
+                userDetails[1] = nullAddr;
+                await assert.rejects(async () => {
+                    await sendETH(userDetails);
+                }, {
+                    name: 'Error',
+                    message: err().zeroAddress 
+                });
+            });
+    
+            it('should fail with userSlippage as 0', async () => {
+                userDetails[1] = fraxAddr;
+                userDetails[2] = 0;
+                await assert.rejects(async () => {
+                    await sendETH(userDetails);
+                }, {
+                    name: 'Error',
+                    message: err().zeroSlippage 
+                });
+            });
+    
+            it('should fail when userToken is not in database', async () => {
+                userDetails[1] = deadAddr;
+                userDetails[2] = defaultSlippage;
+                await assert.rejects(async () => {
+                    await sendETH(userDetails);
+                }, {
+                    name: 'Error',
+                    message: err().tokenNotFound 
+                });
+            });
+    
+            it('should fail when msg.value is equal to 0', async () => {
+                userDetails[1] = usdcAddr;
+                await assert.rejects(async () => {
+                    await sendETH(userDetails, '');
+                }, {
+                    name: 'Error',
+                    message: err().zeroMsgValue 
+                });
             });
         });
 
-        it('should fail with userToken as address(0) / exchangeToUserToken()', async () => {
-            userDetails[0] = callerAddr;
-            userDetails[1] = nullAddr;
-            await assert.rejects(async () => {
-                await sendETH(userDetails);
-            }, {
-                name: 'Error',
-                message: err().zeroAddress 
+        describe('withdrawUserShare()', async () => {
+            it('should fail with user as address(0)', async () => {
+                await enableWithdrawals(true);
+                userDetails[0] = nullAddr;
+                await assert.rejects(async () => {
+                    await withdrawShareOZL(userDetails, callerAddr, parseEther((await balanceOfOZL(callerAddr)).toString()));
+                }, {
+                    name: 'Error',
+                    message: err().zeroAddress 
+                });
+            });
+    
+            it('should fail with userToken as address(0)', async () => {
+                userDetails[0] = callerAddr;
+                userDetails[1] = nullAddr;
+                await assert.rejects(async () => {
+                    await withdrawShareOZL(userDetails, callerAddr, parseEther((await balanceOfOZL(callerAddr)).toString()));
+                }, {
+                    name: 'Error',
+                    message: err().zeroAddress 
+                });
+            });
+    
+            it('should fail with userSlippage as 0', async () => {
+                userDetails[1] = fraxAddr;
+                userDetails[2] = 0;
+                await assert.rejects(async () => {
+                    await withdrawShareOZL(userDetails, callerAddr, parseEther((await balanceOfOZL(callerAddr)).toString()));
+                }, {
+                    name: 'Error',
+                    message: err().zeroSlippage 
+                });
+            });
+    
+            it('should fail when userToken is not in database', async () => {
+                userDetails[1] = deadAddr;
+                userDetails[2] = defaultSlippage;
+                await assert.rejects(async () => {
+                    await withdrawShareOZL(userDetails, callerAddr, parseEther((await balanceOfOZL(callerAddr)).toString()));
+                }, {
+                    name: 'Error',
+                    message: err().tokenNotFound 
+                });
+            });
+
+            it('should fail with receiver as address(0)', async () => {
+                userDetails[1] = fraxAddr;
+                await assert.rejects(async () => {
+                    await withdrawShareOZL(userDetails, nullAddr, parseEther((await balanceOfOZL(callerAddr)).toString()));
+                }, {
+                    name: 'Error',
+                    message: err().zeroAddress 
+                });
+            });
+
+            it('should fail with shares set as 0', async () => {
+                await assert.rejects(async () => {
+                    await withdrawShareOZL(userDetails, callerAddr, 0);
+                }, {
+                    name: 'Error',
+                    message: err().zeroShares 
+                });
             });
         });
 
-        it('should fail with userSlippage as 0 / exchangeToUserToken()', async () => {
-            userDetails[1] = fraxAddr;
-            userDetails[2] = 0;
-            await assert.rejects(async () => {
-                await sendETH(userDetails);
-            }, {
-                name: 'Error',
-                message: err().zeroSlippage 
-            });
-        });
-
-        it('should fail when userToken is not in database / exchangeToUserToken()', async () => {
-            userDetails[1] = deadAddr;
-            userDetails[2] = defaultSlippage;
-            await assert.rejects(async () => {
-                await sendETH(userDetails);
-            }, {
-                name: 'Error',
-                message: err().tokenNotFound 
-            });
-        });
-
-        it('should fail when msg.value is equal to 0 / exchangeToUserToken()', async () => {
-            userDetails[1] = usdcAddr;
-            await assert.rejects(async () => {
-                await sendETH(userDetails, '');
-            }, {
-                name: 'Error',
-                message: err().zeroMsgValue 
-            });
-        });
+        
     });
 
     describe('ExecutorFacet', async () => {

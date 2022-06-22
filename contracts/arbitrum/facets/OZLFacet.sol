@@ -36,9 +36,6 @@ contract OZLFacet is Modifiers {
     function exchangeToUserToken(
         userConfig memory userDetails_
     ) external payable noReentrancy(0) filterDetails(userDetails_) { 
-        // if (userDetails_.user == address(0) || userDetails_.userToken == address(0)) revert CantBeZero('address');
-        // if (userDetails_.userSlippage <= 0) revert CantBeZero('slippage');
-        // if (!s.tokenDatabase[userDetails_.userToken]) revert NotFoundInDatabase('token');
         if (msg.value <= 0) revert CantBeZero('msg.value');
 
         //Queries if there are failed fees. If true, it deposits them
@@ -123,23 +120,13 @@ contract OZLFacet is Modifiers {
         }
     }
 
-    // modifier filterDetails(userConfig memory userDetails_) {
-    //     if (userDetails_.user == address(0) || userDetails_.userToken == address(0)) revert CantBeZero('address'); 
-    //     if (userDetails_.userSlippage <= 0) revert CantBeZero('slippage');
-    //     if (!s.tokenDatabase[userDetails_.userToken]) revert NotFoundInDatabase('token');
-    //     _;
-    // }
-
-
+    
 
     function withdrawUserShare(
         userConfig memory userDetails_,
         address receiver_,
         uint shares_
     ) external onlyWhenEnabled filterDetails(userDetails_) { 
-        // if (userDetails_.user == address(0) || userDetails_.userToken == address(0)) revert CantBeZero('address'); 
-        // if (userDetails_.userSlippage <= 0) revert CantBeZero('slippage');
-        // if (!s.tokenDatabase[userDetails_.userToken]) revert NotFoundInDatabase('token');
         if (receiver_ == address(0)) revert CantBeZero('address');
         if (shares_ <= 0) revert CantBeZero('shares');
 

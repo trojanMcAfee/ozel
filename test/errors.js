@@ -11,7 +11,8 @@ function err(n = 0) {
         zeroAddress: `VM Exception while processing transaction: reverted with custom error 'CantBeZero("address")'`,
         zeroSlippage: `VM Exception while processing transaction: reverted with custom error 'CantBeZero("slippage")'`,
         tokenNotFound: `VM Exception while processing transaction: reverted with custom error 'NotFoundInDatabase("token")'`,
-        zeroMsgValue: `VM Exception while processing transaction: reverted with custom error 'CantBeZero("msg.value")'`
+        zeroMsgValue: `VM Exception while processing transaction: reverted with custom error 'CantBeZero("msg.value")'`,
+        zeroShares: `VM Exception while processing transaction: reverted with custom error 'CantBeZero("shares")'`
     };
 
 
