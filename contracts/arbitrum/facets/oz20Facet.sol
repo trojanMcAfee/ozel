@@ -11,13 +11,14 @@ import 'hardhat/console.sol';
 import '../AppStorage.sol';
 import './ExecutorFacet.sol';
 import '../../libraries/FixedPointMathLib.sol';
+import '../Modifiers.sol';
+import '../../Errors.sol';
 
 /**
  * @dev Implementation of the {IERC20} interface.
  * @author Original author: OpenZeppelin
  */
-contract oz20Facet is Context, IERC20, IERC20Metadata {
-    AppStorage s;
+contract oz20Facet is Modifiers, Context, IERC20, IERC20Metadata {
     
     using FixedPointMathLib for uint;
     /**
@@ -230,32 +231,37 @@ contract oz20Facet is Context, IERC20, IERC20Metadata {
      * - `account` cannot be the zero address.
      * - `account` must have at least `amount` tokens.
      */
-    function _burn(address account, uint256 amount) external virtual { //<---------- switched this to external (do proper security checks)
-        require(account != address(0), "oz20Facet: burn from the zero address");
-        // console.log('msg.sender in burn: ', msg.sender);
+    function _burn(
+        address account, 
+        uint256 amount,
+        uint lockNum_
+    ) external isAuthorized(lockNum_) noReentrancy(4) { //<---------- switched this to external (do proper security checks)
+        if(account == address(0)) revert CantBeZero('oz4626Facet: address');
 
-        _beforeTokenTransfer(account, address(0), amount);
+        // _beforeTokenTransfer(account, address(0), amount);
 
         uint256 accountBalance = balanceOf(account); 
-        require(accountBalance >= amount, "oz20Facet: burn amount exceeds balance");
+        if(!(accountBalance >= amount)) revert ConditionNotMet("oz20Facet: burn amount exceeds balance");
 
         uint userBalanceOZL = balanceOf(account);
-        require(userBalanceOZL > 0, "oz20Facet: userBalanceOZL cannot be 0"); //<-------- added
+        if(!(userBalanceOZL > 0)) revert ConditionNotMet("oz20Facet: userBalanceOZL cannot be 0");
 
         uint allocationPercentage = (amount.mulDivDown(10000, userBalanceOZL)).mulDivDown(1 ether, 100);
         uint amountToReduce = allocationPercentage.mulDivDown(s.usersPayments[account], 100 * 1 ether);
 
+        s.isAuth[4] = true;
+
         (bool success, ) = s.executor.delegatecall(
             abi.encodeWithSelector(
                 ExecutorFacet(s.executor).modifyPaymentsAndVolumeExternally.selector, 
-                account, amountToReduce
+                account, amountToReduce, 4
             )
         );
-        require(success, 'oz20Facet: modifyPaymentsAndVolumeExternally() failed');
+        if(!success) revert CallFailed('oz20Facet: modifyPaymentsAndVolumeExternally() failed');
 
         emit Transfer(account, address(0), amount);
 
-        _afterTokenTransfer(account, address(0), amount);
+        // _afterTokenTransfer(account, address(0), amount);
     }
 
     /**

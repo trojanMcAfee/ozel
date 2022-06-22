@@ -4,6 +4,7 @@ pragma solidity ^0.8.0;
 
 import { LibDiamond } from "../libraries/LibDiamond.sol";
 import './AppStorage.sol';
+import '../Errors.sol';
 
 
 abstract contract Modifiers {
@@ -27,6 +28,13 @@ abstract contract Modifiers {
 
     modifier onlyWhenEnabled() {
         require(s.isEnabled, 'Operation not enabled');
+        _;
+    }
+
+    modifier filterDetails(userConfig memory userDetails_) {
+        if (userDetails_.user == address(0) || userDetails_.userToken == address(0)) revert CantBeZero('address'); 
+        if (userDetails_.userSlippage <= 0) revert CantBeZero('slippage');
+        if (!s.tokenDatabase[userDetails_.userToken]) revert NotFoundInDatabase('token');
         _;
     }
 

@@ -63,10 +63,12 @@ contract oz4626Facet is Modifiers {
     ) external returns (uint256 assets) {
         require((assets = previewRedeem(shares)) != 0, "ZERO_ASSETS");
 
+        s.isAuth[3] = true;
+
         (bool success, ) = s.oz20.delegatecall(
             abi.encodeWithSelector(
                 oz20Facet(s.oz20)._burn.selector, 
-                owner, shares
+                owner, shares, 3
             )
         );
         if(!success) revert CallFailed('oz4626Facet: redeem() failed');

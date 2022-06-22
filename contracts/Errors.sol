@@ -6,3 +6,4 @@ error CantBeZero(string nonZeroValue);
 error CallFailed(string errorMsg);
 error NotFoundInDatabase(string asset);
 error NotProxy();
+error ConditionNotMet(string errorMsg);

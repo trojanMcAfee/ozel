@@ -33,10 +33,12 @@ contract OZLFacet is Modifiers {
         State changing functions
      ******/    
 
-    function exchangeToUserToken(userConfig memory userDetails_) external payable noReentrancy(0) { 
-        if (userDetails_.user == address(0) || userDetails_.userToken == address(0)) revert CantBeZero('address');
-        if (userDetails_.userSlippage <= 0) revert CantBeZero('slippage');
-        if (!s.tokenDatabase[userDetails_.userToken]) revert NotFoundInDatabase('token');
+    function exchangeToUserToken(
+        userConfig memory userDetails_
+    ) external payable noReentrancy(0) filterDetails(userDetails_) { 
+        // if (userDetails_.user == address(0) || userDetails_.userToken == address(0)) revert CantBeZero('address');
+        // if (userDetails_.userSlippage <= 0) revert CantBeZero('slippage');
+        // if (!s.tokenDatabase[userDetails_.userToken]) revert NotFoundInDatabase('token');
         if (msg.value <= 0) revert CantBeZero('msg.value');
 
         //Queries if there are failed fees. If true, it deposits them
@@ -121,13 +123,26 @@ contract OZLFacet is Modifiers {
         }
     }
 
+    // modifier filterDetails(userConfig memory userDetails_) {
+    //     if (userDetails_.user == address(0) || userDetails_.userToken == address(0)) revert CantBeZero('address'); 
+    //     if (userDetails_.userSlippage <= 0) revert CantBeZero('slippage');
+    //     if (!s.tokenDatabase[userDetails_.userToken]) revert NotFoundInDatabase('token');
+    //     _;
+    // }
+
 
 
     function withdrawUserShare(
         userConfig memory userDetails_,
         address receiver_,
         uint shares_
-    ) public onlyWhenEnabled { 
+    ) external onlyWhenEnabled filterDetails(userDetails_) { 
+        // if (userDetails_.user == address(0) || userDetails_.userToken == address(0)) revert CantBeZero('address'); 
+        // if (userDetails_.userSlippage <= 0) revert CantBeZero('slippage');
+        // if (!s.tokenDatabase[userDetails_.userToken]) revert NotFoundInDatabase('token');
+        if (receiver_ == address(0)) revert CantBeZero('address');
+        if (shares_ <= 0) revert CantBeZero('shares');
+
         //Queries if there are failed fees. If true, it deposits them
         if (s.failedFees > 0) _depositInDeFi(s.failedFees, true);
 

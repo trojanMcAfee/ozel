@@ -119,7 +119,11 @@ contract ExecutorFacet is Modifiers {
             s.totalVolume != 0 ? eth.mulDivDown(10 ** 8, s.totalVolume) * 10 ** 14 : 0;
     }
 
-    function modifyPaymentsAndVolumeExternally(address user_, uint newAmount_) external {
+    function modifyPaymentsAndVolumeExternally(
+        address user_, 
+        uint newAmount_,
+        uint lockNum_
+    ) external isAuthorized(lockNum_) noReentrancy(5) {
         s.usersPayments[user_] -= newAmount_;
         s.totalVolume -= newAmount_;
         _updateIndex();
