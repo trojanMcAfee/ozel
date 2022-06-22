@@ -128,21 +128,17 @@ contract OZLFacet is Modifiers {
         address receiver_,
         uint shares_
     ) public onlyWhenEnabled { 
-        address user = userDetails_.user;
-        address userToken = userDetails_.userToken;
-        uint userSlippage = 
-            userDetails_.userSlippage > 0 ? userDetails_.userSlippage : s.defaultSlippage;
-
         //Queries if there are failed fees. If true, it deposits them
         if (s.failedFees > 0) _depositInDeFi(s.failedFees, true);
 
         (bool success, bytes memory data) = s.oz46.delegatecall(
             abi.encodeWithSelector(
                 oz4626Facet(s.oz46).redeem.selector, 
-                shares_, receiver_, user
+                shares_, receiver_, userDetails_.user
             )
         );
-        require(success, 'OZLFacet: withdrawUserShare() failed');
+        if(!success) revert CallFailed('OZLFacet: Failed to deposit');
+
         uint assets = abi.decode(data, (uint));
         IYtri(s.yTriPool).withdraw(assets);
 
@@ -150,14 +146,16 @@ contract OZLFacet is Modifiers {
         uint tokenAmountIn = ITri(s.tricrypto).calc_withdraw_one_coin(assets, 0); 
         
         //If tx reverts due to slippage, user can re-submit a new one
-        uint minOut = ExecutorFacet(s.executor).calculateSlippage(tokenAmountIn, userSlippage); 
+        uint minOut = ExecutorFacet(s.executor).calculateSlippage(
+            tokenAmountIn, userDetails_.userSlippage
+        ); 
         ITri(s.tricrypto).remove_liquidity_one_coin(assets, 0, minOut);
 
         //Delegates trade execution
-        _tradeWithExecutor(userToken, userSlippage);
+        _tradeWithExecutor(userDetails_.userToken, userDetails_.userSlippage);
 
-        uint userTokens = IERC20(userToken).balanceOf(address(this));
-        IERC20(userToken).safeTransfer(receiver_, userTokens); 
+        uint userTokens = IERC20(userDetails_.userToken).balanceOf(address(this));
+        IERC20(userDetails_.userToken).safeTransfer(receiver_, userTokens); 
     } 
     
 

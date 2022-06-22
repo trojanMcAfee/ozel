@@ -12,7 +12,7 @@ import '../Modifiers.sol';
 /// @notice Original source: Minimal ERC4626 tokenized Vault implementation.
 /// @author Original author: Solmate (https://github.com/Rari-Capital/solmate/blob/main/src/mixins/ERC4626.sol)
 contract oz4626Facet is Modifiers { 
-    
+
     using FixedPointMathLib for uint256;
 
     /*///////////////////////////////////////////////////////////////
@@ -53,8 +53,6 @@ contract oz4626Facet is Modifiers {
         if(!success) revert CallFailed('oz4626Facet: Failed to update Manager');
 
         emit Deposit(msg.sender, receiver, assets, shares);
-
-        // afterDeposit(assets, shares);
     }
 
 
@@ -62,10 +60,8 @@ contract oz4626Facet is Modifiers {
         uint256 shares,
         address receiver,
         address owner
-    ) public virtual returns (uint256 assets) {
+    ) external returns (uint256 assets) {
         require((assets = previewRedeem(shares)) != 0, "ZERO_ASSETS");
-
-        beforeWithdraw(assets, shares);
 
         (bool success, ) = s.oz20.delegatecall(
             abi.encodeWithSelector(
@@ -73,7 +69,7 @@ contract oz4626Facet is Modifiers {
                 owner, shares
             )
         );
-        require(success, 'oz4626Facet: redeem() failed');
+        if(!success) revert CallFailed('oz4626Facet: redeem() failed');
 
         emit Withdraw(msg.sender, receiver, owner, assets, shares);
     }
@@ -126,7 +122,7 @@ contract oz4626Facet is Modifiers {
                          INTERNAL HOOKS LOGIC
     //////////////////////////////////////////////////////////////*/
 
-    function beforeWithdraw(uint256 assets, uint256 shares) internal virtual {}
+    // function beforeWithdraw(uint256 assets, uint256 shares) internal virtual {}
 
     // function afterDeposit(uint256 assets, uint256 shares) internal virtual {}
 }
