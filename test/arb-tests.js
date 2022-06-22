@@ -61,7 +61,7 @@ let toTransfer;
 let evilAmount;
 
 
-describe('Arbitrum-side', async () => {
+xdescribe('Arbitrum-side', async () => {
     before( async () => {
         const deployedVars = await deploy();
         ({
@@ -288,7 +288,7 @@ describe('Unit testing', async () => {
 
 
 
-    describe('OZLFacet', async () => {
+    xdescribe('OZLFacet', async () => {
         it('should fail with user as address(0) / exchangeToUserToken()', async () => {
             userDetails[0] = nullAddr;
             await assert.rejects(async () => {
@@ -346,14 +346,8 @@ describe('Unit testing', async () => {
     });
 
     describe('ExecutorFacet', async () => {
-
         it('shout not allow an unauthorized user to run the function / updateExecutorState()', async () => {
             evilAmount = parseEther('1000');
-            // await callDiamondProxy({
-            //     method: 'updateExecutorState',
-            //     args: [evilAmount, deadAddr, 1]
-            // });
-
             await assert.rejects(async () => {
                 await callDiamondProxy({
                     method: 'updateExecutorState',
@@ -363,8 +357,6 @@ describe('Unit testing', async () => {
                 name: 'Error',
                 message: err().notAuthorized 
             });
-
-
         });
 
 

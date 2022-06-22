@@ -12,16 +12,7 @@ import '../Modifiers.sol';
 /// @notice Original source: Minimal ERC4626 tokenized Vault implementation.
 /// @author Original author: Solmate (https://github.com/Rari-Capital/solmate/blob/main/src/mixins/ERC4626.sol)
 contract oz4626Facet is Modifiers { 
-
-    // AppStorage s;
-
-    // modifier noReentrancy(uint lockNum_) {
-    //     require(!(s.isLocked[lockNum_]), "oz4626Facet: No reentrance");
-    //     s.isLocked[lockNum_] = true;
-    //     _;
-    //     s.isLocked[lockNum_]= false;
-    // }
-
+    
     using FixedPointMathLib for uint256;
 
     /*///////////////////////////////////////////////////////////////
@@ -59,7 +50,6 @@ contract oz4626Facet is Modifiers {
                 assets, receiver, 1
             )
         );
-        // require(success, 'oz4626Facet: deposit() failed');
         if(!success) revert CallFailed('oz4626Facet: Failed to update Manager');
 
         emit Deposit(msg.sender, receiver, assets, shares);

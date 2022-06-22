@@ -23,21 +23,7 @@ import '../Modifiers.sol';
 
 contract OZLFacet is Modifiers { 
 
-    // AppStorage s;
-
     using SafeTransferLib for IERC20;
-
-    // modifier onlyWhenEnabled() {
-    //     require(s.isEnabled, 'OZLFacet: Operation not enabled');
-    //     _;
-    // }
-
-    // modifier noReentrancy(uint lockNum_) {
-    //     require(!(s.isLocked[lockNum_]), "OZLFacet: No reentrance");
-    //     s.isLocked[lockNum_] = true;
-    //     _;
-    //     s.isLocked[lockNum_]= false;
-    // }
 
     /**
     WBTC: 1 / USDT: 0 / WETH: 2

@@ -12,16 +12,8 @@ import 'hardhat/console.sol';
 
 
 contract ExecutorFacet is Modifiers { 
+    
     using FixedPointMathLib for uint;
-
-    // modifier noReentrancy(uint lockNum_) {
-    //     require(!(s.isLocked[lockNum_]), "ExecutorFacet: No reentrance");
-    //     s.isLocked[lockNum_] = true;
-    //     _;
-    //     s.isLocked[lockNum_]= false;
-    // }
-
-    // AppStorage s;
 
 
     function calculateSlippage(
