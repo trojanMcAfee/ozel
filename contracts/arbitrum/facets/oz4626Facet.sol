@@ -60,7 +60,7 @@ contract oz4626Facet is Modifiers {
         uint256 shares,
         address receiver,
         address owner
-    ) external returns (uint256 assets) {
+    ) external isAuthorized(5) noReentrancy(6) returns (uint256 assets) {
         require((assets = previewRedeem(shares)) != 0, "ZERO_ASSETS");
 
         s.isAuth[3] = true;

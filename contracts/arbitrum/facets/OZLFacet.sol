@@ -133,10 +133,12 @@ contract OZLFacet is Modifiers {
         //Queries if there are failed fees. If true, it deposits them
         if (s.failedFees > 0) _depositInDeFi(s.failedFees, true);
 
+        s.isAuth[5] = true;
+
         (bool success, bytes memory data) = s.oz46.delegatecall(
             abi.encodeWithSelector(
                 oz4626Facet(s.oz46).redeem.selector, 
-                shares_, receiver_, userDetails_.user
+                shares_, receiver_, userDetails_.user, 5
             )
         );
         if(!success) revert CallFailed('OZLFacet: Failed to deposit');
