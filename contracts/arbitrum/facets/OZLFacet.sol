@@ -218,7 +218,6 @@ contract OZLFacet is Modifiers {
                     )
                 );
                 if(!success) revert CallFailed('OZLFacet: _tradeWithExecutor() failed');
-                // require(success, 'OZLFacet: _tradeWithExecutor() failed');
                 break;
             }
             unchecked { ++i; }

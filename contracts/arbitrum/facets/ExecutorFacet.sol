@@ -27,13 +27,9 @@ contract ExecutorFacet is Modifiers {
     function executeFinalTrade( 
         TradeOps memory swapDetails_, 
         uint userSlippage_
-    ) external payable {
-        uint userSlippage = userSlippage_ == 0 ? s.defaultSlippage : userSlippage_;
-        int128 tokenIn = swapDetails_.tokenIn;
-        int128 tokenOut = swapDetails_.tokenOut;
-        address baseToken = swapDetails_.baseToken;
+    ) external payable isAuthorized() {
         address pool = swapDetails_.pool;
-        uint inBalance = IERC20(baseToken).balanceOf(address(this));
+        uint inBalance = IERC20(swapDetails_.baseToken).balanceOf(address(this));
         uint minOut;
         uint slippage;
 
@@ -47,15 +43,21 @@ contract ExecutorFacet is Modifiers {
         for (uint i=1; i <= 2; i++) {
             if (pool == s.renPool || pool == s.crv2Pool) {
 
-                minOut = IMulCurv(pool).get_dy(tokenIn, tokenOut, inBalance / i);
-                slippage = calculateSlippage(minOut, userSlippage * i);
+                minOut = IMulCurv(pool).get_dy(
+                    swapDetails_.tokenIn, swapDetails_.tokenOut, inBalance / i
+                );
+                slippage = calculateSlippage(minOut, userSlippage_ * i);
 
-                try IMulCurv(pool).exchange(tokenIn, tokenOut, inBalance / i, slippage) {
+                try IMulCurv(pool).exchange(
+                    swapDetails_.tokenIn, swapDetails_.tokenOut, inBalance / i, slippage
+                ) {
                     if (i == 2) {
-                        try IMulCurv(pool).exchange(tokenIn, tokenOut, inBalance / i, slippage) {
+                        try IMulCurv(pool).exchange(
+                            swapDetails_.tokenIn, swapDetails_.tokenOut, inBalance / i, slippage
+                        ) {
                             break;
                         } catch {
-                            IERC20(baseToken).transfer(msg.sender, inBalance / 2);
+                            IERC20(swapDetails_.baseToken).transfer(msg.sender, inBalance / 2);
                         }
                     }
                     break;
@@ -63,19 +65,25 @@ contract ExecutorFacet is Modifiers {
                     if (i == 1) {
                         continue;
                     } else {
-                        IERC20(baseToken).transfer(msg.sender, inBalance); 
+                        IERC20(swapDetails_.baseToken).transfer(msg.sender, inBalance); 
                     }
                 }
             } else {
-                minOut = IMulCurv(pool).get_dy_underlying(tokenIn, tokenOut, inBalance / i);
-                slippage = calculateSlippage(minOut, userSlippage * i);
+                minOut = IMulCurv(pool).get_dy_underlying(
+                    swapDetails_.tokenIn, swapDetails_.tokenOut, inBalance / i
+                );
+                slippage = calculateSlippage(minOut, userSlippage_ * i);
                 
-                try IMulCurv(pool).exchange_underlying(tokenIn, tokenOut, inBalance / i, slippage) {
+                try IMulCurv(pool).exchange_underlying(
+                    swapDetails_.tokenIn, swapDetails_.tokenOut, inBalance / i, slippage
+                ) {
                     if (i == 2) {
-                        try IMulCurv(pool).exchange_underlying(tokenIn, tokenOut, inBalance / i, slippage) {
+                        try IMulCurv(pool).exchange_underlying(
+                            swapDetails_.tokenIn, swapDetails_.tokenOut, inBalance / i, slippage
+                        ) {
                             break;
                         } catch {
-                            IERC20(baseToken).transfer(msg.sender, inBalance / 2);
+                            IERC20(swapDetails_.baseToken).transfer(msg.sender, inBalance / 2);
                         }
                     }
                     break;
@@ -83,7 +91,7 @@ contract ExecutorFacet is Modifiers {
                     if (i == 1) {
                         continue;
                     } else {
-                        IERC20(baseToken).transfer(msg.sender, inBalance); 
+                        IERC20(swapDetails_.baseToken).transfer(msg.sender, inBalance); 
                     }
                 }
             }

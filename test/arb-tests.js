@@ -345,8 +345,6 @@ describe('Unit testing', async function () {
                 message: err().zeroMsgValue 
             });
         });
-
-
     });
 
     describe('ExecutorFacet', async () => {
