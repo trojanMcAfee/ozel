@@ -39,11 +39,8 @@ contract OZLFacet is Modifiers {
         if (!s.tokenDatabase[userDetails_.userToken]) revert NotFoundInDatabase('token');
         if (msg.value <= 0) revert CantBeZero('msg.value');
 
-        // uint userSlippage = 
-        //     userDetails_.userSlippage > 0 ? userDetails_.userSlippage : s.defaultSlippage;
-
         //Queries if there are failed fees. If true, it deposits them
-        if (s.failedFees > 0) _depositCurveYearn(s.failedFees, true);
+        if (s.failedFees > 0) _depositInDeFi(s.failedFees, true);
 
         IWETH(s.WETH).deposit{value: msg.value}();
         uint wethIn = IWETH(s.WETH).balanceOf(address(this));
@@ -59,7 +56,6 @@ contract OZLFacet is Modifiers {
             )
         );
         if(!success) revert CallFailed('OZLFacet: Failed to deposit');
-        // require(success, 'OZLFacet: Failed to deposit');
 
         //Sends fee to Vault contract
         (uint netAmountIn, uint fee) = _getFee(wethIn);
@@ -76,7 +72,7 @@ contract OZLFacet is Modifiers {
         uint toUser = IERC20(userDetails_.userToken).balanceOf(address(this));
         if (toUser > 0) IERC20(userDetails_.userToken).safeTransfer(userDetails_.user, toUser);
 
-        _depositCurveYearn(fee, false);
+        _depositInDeFi(fee, false);
     }
 
 
@@ -138,7 +134,7 @@ contract OZLFacet is Modifiers {
             userDetails_.userSlippage > 0 ? userDetails_.userSlippage : s.defaultSlippage;
 
         //Queries if there are failed fees. If true, it deposits them
-        if (s.failedFees > 0) _depositCurveYearn(s.failedFees, true);
+        if (s.failedFees > 0) _depositInDeFi(s.failedFees, true);
 
         (bool success, bytes memory data) = s.oz46.delegatecall(
             abi.encodeWithSelector(
@@ -165,7 +161,7 @@ contract OZLFacet is Modifiers {
     } 
     
 
-    function _depositCurveYearn(uint fee_, bool isRetry_) public payable {
+    function _depositInDeFi(uint fee_, bool isRetry_) private {
         //Deposit WETH in Curve Tricrypto pool
         (uint tokenAmountIn, uint[3] memory amounts) = _calculateTokenAmountCurve(fee_);
         IWETH(s.WETH).approve(s.tricrypto, tokenAmountIn);
@@ -205,14 +201,15 @@ contract OZLFacet is Modifiers {
      
 
 
-    function _getFee(uint amount_) public view returns(uint, uint) {
+    function _getFee(uint amount_) private view returns(uint, uint) {
         uint fee = amount_ - ExecutorFacet(s.executor).calculateSlippage(amount_, s.dappFee);
         uint netAmount = amount_ - fee;
         return (netAmount, fee);
     }
 
-    function _tradeWithExecutor(address userToken_, uint userSlippage_) public {
-        for (uint i=0; i < s.swaps.length; i++) {
+    function _tradeWithExecutor(address userToken_, uint userSlippage_) private {
+        uint length = s.swaps.length;
+        for (uint i=0; i < length;) {
             if (s.swaps[i].userToken == userToken_) {
                 (bool success, ) = s.executor.delegatecall(
                     abi.encodeWithSelector(
@@ -220,9 +217,11 @@ contract OZLFacet is Modifiers {
                         s.swaps[i], userSlippage_
                     )
                 );
-                require(success, 'OZLFacet: _tradeWithExecutor() failed');
+                if(!success) revert CallFailed('OZLFacet: _tradeWithExecutor() failed');
+                // require(success, 'OZLFacet: _tradeWithExecutor() failed');
                 break;
             }
+            unchecked { ++i; }
         }
     }
 

@@ -12,7 +12,7 @@ import 'hardhat/console.sol';
 
 
 contract ExecutorFacet is Modifiers { 
-    
+
     using FixedPointMathLib for uint;
 
 
@@ -27,7 +27,7 @@ contract ExecutorFacet is Modifiers {
     function executeFinalTrade( 
         TradeOps memory swapDetails_, 
         uint userSlippage_
-    ) public payable {
+    ) external payable {
         uint userSlippage = userSlippage_ == 0 ? s.defaultSlippage : userSlippage_;
         int128 tokenIn = swapDetails_.tokenIn;
         int128 tokenOut = swapDetails_.tokenOut;

@@ -61,7 +61,7 @@ let toTransfer;
 let evilAmount;
 
 
-xdescribe('Arbitrum-side', async () => {
+describe('Arbitrum-side', async () => {
     before( async () => {
         const deployedVars = await deploy();
         ({
@@ -257,7 +257,9 @@ xdescribe('Arbitrum-side', async () => {
 });
 
 
-describe('Unit testing', async () => {
+describe('Unit testing', async function () {
+    this.timeout(1000000);
+
     before( async () => {
         const deployedVars = await deploy();
         ({
@@ -288,7 +290,7 @@ describe('Unit testing', async () => {
 
 
 
-    xdescribe('OZLFacet', async () => {
+    describe('OZLFacet', async () => {
         it('should fail with user as address(0) / exchangeToUserToken()', async () => {
             userDetails[0] = nullAddr;
             await assert.rejects(async () => {
@@ -358,6 +360,21 @@ describe('Unit testing', async () => {
                 message: err().notAuthorized 
             });
         });
+    });
+
+    describe('oz4626Facet', async () => {
+        it('shout not allow an unauthorized user to run the function / deposit()', async () => {
+            await assert.rejects(async () => {
+                await callDiamondProxy({
+                    method: 'deposit',
+                    args: [evilAmount, deadAddr, 0]
+                });
+            }, {
+                name: 'Error',
+                message: err().notAuthorized 
+            });
+        });
+
 
 
     });

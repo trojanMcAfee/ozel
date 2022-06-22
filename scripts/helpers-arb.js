@@ -52,7 +52,8 @@ async function callDiamondProxy(params) {
         exchangeToUserToken: 'function exchangeToUserToken(tuple(address user, address userToken, uint userSlippage) userDetails_)', 
         withdrawUserShare: 'function withdrawUserShare(tuple(address user, address userToken, uint userSlippage) userDetails_, address receiver, uint shares_)',
         enableWithdrawals: 'function enableWithdrawals(bool state_) external',
-        updateExecutorState: 'function updateExecutorState(uint256 amount_, address user_, uint256 lockNum_) external payable'
+        updateExecutorState: 'function updateExecutorState(uint256 amount_, address user_, uint256 lockNum_) external payable',
+        deposit: 'function deposit(uint256 assets, address receiver, uint256 lockNum_) external payable returns (uint256 shares)'
     }; 
 
     for (let sign in signatures) {
