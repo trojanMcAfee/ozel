@@ -62,7 +62,7 @@ let toTransfer;
 let evilAmount, evilSwapDetails;
 
 
-xdescribe('Arbitrum-side', async function () {
+describe('Arbitrum-side', async function () {
     this.timeout(1000000);
 
     before( async () => {
@@ -413,10 +413,6 @@ describe('Unit testing', async function () {
 
         it('should allow the owner to add a new userToken to database / addTokenToDatabase()', async () => {
             await addTokenToDatabase(renBtcAddr);
-            // await callDiamondProxy({
-            //     method: 'addTokenToDatabase',
-            //     args: [renBtcAddr]
-            // });
         });
 
         it('should not allow an unauthorized user to add a new userToken to database / addTokenToDatabase()', async () => {

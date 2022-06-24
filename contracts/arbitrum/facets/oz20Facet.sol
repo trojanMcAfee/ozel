@@ -94,7 +94,7 @@ contract oz20Facet is Modifiers, Context, IERC20, IERC20Metadata {
      * @dev See {IERC20-allowance}.
      */
     function allowance(address owner, address spender) public view virtual override returns (uint256) {
-        return s.oz.allowances_[owner][spender];
+        return s.oz.allowances[owner][spender];
     }
 
     /**
@@ -129,7 +129,7 @@ contract oz20Facet is Modifiers, Context, IERC20, IERC20Metadata {
     ) public virtual override returns (bool) {
         _transfer(sender, recipient, amount);
 
-        uint256 currentAllowance = s.oz.allowances_[sender][_msgSender()];
+        uint256 currentAllowance = s.oz.allowances[sender][_msgSender()];
         require(currentAllowance >= amount, "ERC20: transfer amount exceeds allowance");
         unchecked {
             _approve(sender, _msgSender(), currentAllowance - amount);
@@ -151,7 +151,7 @@ contract oz20Facet is Modifiers, Context, IERC20, IERC20Metadata {
      * - `spender` cannot be the zero address.
      */
     function increaseAllowance(address spender, uint256 addedValue) public virtual returns (bool) {
-        _approve(_msgSender(), spender, s.oz.allowances_[_msgSender()][spender] + addedValue);
+        _approve(_msgSender(), spender, s.oz.allowances[_msgSender()][spender] + addedValue);
         return true;
     }
 
@@ -170,7 +170,7 @@ contract oz20Facet is Modifiers, Context, IERC20, IERC20Metadata {
      * `subtractedValue`.
      */
     function decreaseAllowance(address spender, uint256 subtractedValue) public virtual returns (bool) {
-        uint256 currentAllowance = s.oz.allowances_[_msgSender()][spender];
+        uint256 currentAllowance = s.oz.allowances[_msgSender()][spender];
         require(currentAllowance >= subtractedValue, "ERC20: decreased allowance below zero");
         unchecked {
             _approve(_msgSender(), spender, currentAllowance - subtractedValue);
@@ -266,7 +266,7 @@ contract oz20Facet is Modifiers, Context, IERC20, IERC20Metadata {
         require(owner != address(0), "oz20Facet: approve from the zero address");
         require(spender != address(0), "oz20Facet: approve to the zero address");
 
-        s.oz.allowances_[owner][spender] = amount;
+        s.oz.allowances[owner][spender] = amount;
         emit Approval(owner, spender, amount);
     }
 

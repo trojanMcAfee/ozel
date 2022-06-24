@@ -105,7 +105,7 @@ contract oz4626Facet is Modifiers {
                      DEPOSIT/WITHDRAWAL LIMIT LOGIC
     //////////////////////////////////////////////////////////////*/
 
-    function maxDeposit(address) public view virtual returns (uint256) {
+    function maxDeposit(address) public view virtual returns (uint256) { 
         return type(uint256).max;
     }
 
@@ -114,18 +114,10 @@ contract oz4626Facet is Modifiers {
     }
 
     function maxWithdraw(address owner) public view virtual returns (uint256) {
-        return convertToAssets(oz20Facet(s.oz20).balanceOf(owner));
+        return convertToAssets(maxRedeem(owner));
     }
 
     function maxRedeem(address owner) public view virtual returns (uint256) {
         return oz20Facet(s.oz20).balanceOf(owner);
     }
-
-    /*///////////////////////////////////////////////////////////////
-                         INTERNAL HOOKS LOGIC
-    //////////////////////////////////////////////////////////////*/
-
-    // function beforeWithdraw(uint256 assets, uint256 shares) internal virtual {}
-
-    // function afterDeposit(uint256 assets, uint256 shares) internal virtual {}
 }

@@ -2,7 +2,6 @@
 pragma solidity ^0.8.0;
 
 
-// import '@rari-capital/solmate/src/utils/ReentrancyGuard.sol';
 import '@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol';
 import '@openzeppelin/contracts/token/ERC20/IERC20.sol';
 import '../../interfaces/ICrvLpToken.sol';
@@ -192,18 +191,15 @@ contract OZLFacet is Modifiers {
     }
 
 
-    function addTokenToDatabase(address newToken_) external { //onlyOwner
+    function addTokenToDatabase(address newToken_) external { 
         LibDiamond.enforceIsContractOwner();
         s.tokenDatabase[newToken_] = true;
     }
 
 
-
     /*******
         Helper functions
      ******/
-     
-
 
     function _getFee(uint amount_) private view returns(uint, uint) {
         uint fee = amount_ - ExecutorFacet(s.executor).calculateSlippage(amount_, s.dappFee);

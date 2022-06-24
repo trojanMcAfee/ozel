@@ -5,8 +5,8 @@ function err(n = 0) {
     return {
         alreadyInitialized: "VM Exception while processing transaction: reverted with reason string 'Initializable: contract is already initialized'",
         onlyOps: "VM Exception while processing transaction: reverted with reason string 'ozPayMe: onlyOps'",
-        notAuthorized: (function (y) {
-            switch(y) {
+        notAuthorized: (function (m) {
+            switch(m) {
                 case 0:
                     return "VM Exception while processing transaction: reverted with reason string 'Not authorized'";
                 case 1:
@@ -15,16 +15,6 @@ function err(n = 0) {
                     return "VM Exception while processing transaction: reverted with reason string 'LibDiamond: Must be contract owner'";
             }
         })(n),
-        // notAuthorized: (n) => {
-        //     switch(n) {
-        //         case 0:
-        //             return "VM Exception while processing transaction: reverted with reason string 'Not authorized'";
-        //         case 1:
-        //             return 'Transaction reverted without a reason string';
-        //         case 2:
-        //             return "VM Exception while processing transaction: reverted with reason string 'LibDiamond: Must be contract owner'";
-        //     }
-        // },
         notProxy: "VM Exception while processing transaction: reverted with custom error 'NotProxy()'",
         notOwner: "VM Exception while processing transaction: reverted with reason string 'Ownable: caller is not the owner'",
         zeroAddress: `VM Exception while processing transaction: reverted with custom error 'CantBeZero("address")'`,
@@ -40,16 +30,3 @@ function err(n = 0) {
 module.exports = {
     err
 };
-
-
-
-// notAuthorized: (n) => {
-//     switch(n) {
-//         case 0:
-//             return "VM Exception while processing transaction: reverted with reason string 'Not authorized'";
-//         case 1:
-//             return 'Transaction reverted without a reason string';
-//         case 2:
-//             return "VM Exception while processing transaction: reverted with reason string 'LibDiamond: Must be contract owner'";
-//     }
-// }
