@@ -61,7 +61,7 @@ let toTransfer;
 let evilAmount, evilSwapDetails;
 
 
-describe('Arbitrum-side', async function () {
+xdescribe('Arbitrum-side', async function () {
     this.timeout(1000000);
 
     before( async () => {
@@ -289,11 +289,8 @@ describe('Unit testing', async function () {
         ];
     });
 
-
-
-
     describe('OZLFacet', async () => {
-        describe('exchangeToUserToken()', async () => {
+        xdescribe('exchangeToUserToken()', async () => {
             it('should fail with user as address(0)', async () => {
                 userDetails[0] = nullAddr;
                 await assert.rejects(async () => {
@@ -348,7 +345,7 @@ describe('Unit testing', async function () {
             });
         });
 
-        describe('withdrawUserShare()', async () => {
+        xdescribe('withdrawUserShare()', async () => {
             it('should fail with user as address(0)', async () => {
                 await enableWithdrawals(true);
                 userDetails[0] = nullAddr;
@@ -412,9 +409,16 @@ describe('Unit testing', async function () {
                 });
             });
         });
+
+        it('should allow the owner to add a new userToken to database / addTokenToDatabase()', async () => {
+            await callDiamondProxy({
+                method: 'addTokenToDatabase',
+                args: [renBtcAddr]
+            });
+        });
     });
 
-    describe('ExecutorFacet', async () => {
+    xdescribe('ExecutorFacet', async () => {
         it('shout not allow an unauthorized user to run the function / updateExecutorState()', async () => {
             evilAmount = parseEther('1000');
             await assert.rejects(async () => {
@@ -439,11 +443,22 @@ describe('Unit testing', async function () {
                 name: 'Error',
                 message: err().notAuthorized 
             });
+        });
 
+        it('shout not allow an unauthorized user to run the function / modifyPaymentsAndVolumeExternally()', async () => {
+            await assert.rejects(async () => {
+                await callDiamondProxy({
+                    method: 'modifyPaymentsAndVolumeExternally',
+                    args: [caller2Addr, evilAmount, 5]
+                });
+            }, {
+                name: 'Error',
+                message: err().notAuthorized 
+            });
         });
     });
 
-    describe('oz4626Facet', async () => {
+    xdescribe('oz4626Facet', async () => {
         it('shout not allow an unauthorized user to run the function / deposit()', async () => {
             await assert.rejects(async () => {
                 await callDiamondProxy({
@@ -472,7 +487,7 @@ describe('Unit testing', async function () {
 
     });
 
-    describe('oz20Facet', async () => {
+    xdescribe('oz20Facet', async () => {
         it('shout not allow an unauthorized user to run the function / burn()', async () => {
             await assert.rejects(async () => {
                 await callDiamondProxy({

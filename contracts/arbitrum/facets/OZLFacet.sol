@@ -11,6 +11,7 @@ import './ExecutorFacet.sol';
 import './oz4626Facet.sol';
 import '../../interfaces/IYtri.sol';
 import {ITri} from '../../interfaces/ICurve.sol';
+import { LibDiamond } from "../../libraries/LibDiamond.sol";
 
 import 'hardhat/console.sol';
 
@@ -192,6 +193,7 @@ contract OZLFacet is Modifiers {
 
 
     function addTokenToDatabase(address newToken_) external { //onlyOwner
+        LibDiamond.enforceIsContractOwner();
         s.tokenDatabase[newToken_] = true;
     }
 

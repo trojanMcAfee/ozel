@@ -201,8 +201,6 @@ contract oz20Facet is Modifiers, Context, IERC20, IERC20Metadata {
         require(sender != address(0), "oz20Facet: transfer from the zero address");
         require(recipient != address(0), "oz20Facet: transfer to the zero address");
 
-        _beforeTokenTransfer(sender, recipient, amount);
-
         uint256 senderBalance = balanceOf(sender);
         require(senderBalance >= amount, "oz20Facet: transfer amount exceeds balance");
 
@@ -215,8 +213,6 @@ contract oz20Facet is Modifiers, Context, IERC20, IERC20Metadata {
         require(success, 'oz20Facet: transferUserAllocation() failed');
 
         emit Transfer(sender, recipient, amount);
-
-        _afterTokenTransfer(sender, recipient, amount);
     }
 
 
@@ -224,10 +220,8 @@ contract oz20Facet is Modifiers, Context, IERC20, IERC20Metadata {
         address account, 
         uint256 amount,
         uint lockNum_
-    ) external isAuthorized(lockNum_) noReentrancy(4) { //<---------- switched this to external (do proper security checks)
+    ) external isAuthorized(lockNum_) noReentrancy(4) { 
         if(account == address(0)) revert CantBeZero('oz4626Facet: address');
-
-        // _beforeTokenTransfer(account, address(0), amount);
 
         uint256 accountBalance = balanceOf(account); 
         if(!(accountBalance >= amount)) revert ConditionNotMet("oz20Facet: burn amount exceeds balance");
@@ -249,8 +243,6 @@ contract oz20Facet is Modifiers, Context, IERC20, IERC20Metadata {
         if(!success) revert CallFailed('oz20Facet: modifyPaymentsAndVolumeExternally() failed');
 
         emit Transfer(account, address(0), amount);
-
-        // _afterTokenTransfer(account, address(0), amount);
     }
 
     /**
@@ -278,46 +270,5 @@ contract oz20Facet is Modifiers, Context, IERC20, IERC20Metadata {
         emit Approval(owner, spender, amount);
     }
 
-    /**
-     * @dev Hook that is called before any transfer of tokens. This includes
-     * minting and burning.
-     *
-     * Calling conditions:
-     *
-     * - when `from` and `to` are both non-zero, `amount` of ``from``'s tokens
-     * will be transferred to `to`.
-     * - when `from` is zero, `amount` tokens will be minted for `to`.
-     * - when `to` is zero, `amount` of ``from``'s tokens will be burned.
-     * - `from` and `to` are never both zero.
-     *
-     * To learn more about hooks, head to xref:ROOT:extending-contracts.adoc#using-hooks[Using Hooks].
-     */
-    function _beforeTokenTransfer(
-        address from,
-        address to,
-        uint256 amount
-    ) internal virtual {}
 
-    /**
-     * @dev Hook that is called after any transfer of tokens. This includes
-     * minting and burning.
-     *
-     * Calling conditions:
-     *
-     * - when `from` and `to` are both non-zero, `amount` of ``from``'s tokens
-     * has been transferred to `to`.
-     * - when `from` is zero, `amount` tokens have been minted for `to`.
-     * - when `to` is zero, `amount` of ``from``'s tokens have been burned.
-     * - `from` and `to` are never both zero.
-     *
-     * To learn more about hooks, head to xref:ROOT:extending-contracts.adoc#using-hooks[Using Hooks].
-     */
-    function _afterTokenTransfer(
-        address from,
-        address to,
-        uint256 amount
-    ) internal virtual {}
-
-
-    
 }

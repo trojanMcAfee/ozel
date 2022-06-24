@@ -56,7 +56,9 @@ async function callDiamondProxy(params) {
         deposit: 'function deposit(uint256 assets, address receiver, uint256 lockNum_) external payable returns (uint256 shares)',
         executeFinalTrade: 'function executeFinalTrade(tuple(int128 tokenIn, int128 tokenOut, address baseToken, address userToken, address pool) swapDetails_, uint256 userSlippage, uint256 lockNum_) external payable',
         redeem: 'function redeem(uint256 shares, address receiver, address owner, uint256 lockNum_) external returns (uint256 assets)',
-        burn: 'function burn(address account, uint256 amount, uint256 lockNum_) external'
+        burn: 'function burn(address account, uint256 amount, uint256 lockNum_) external',
+        modifyPaymentsAndVolumeExternally: 'function modifyPaymentsAndVolumeExternally(address user_, uint256 newAmount_, uint256 lockNum_) external',
+        addTokenToDatabase: 'function addTokenToDatabase(address newToken_) external'
     }; 
 
     for (let sign in signatures) {
@@ -79,13 +81,13 @@ async function callDiamondProxy(params) {
                     for (let i=0; i < args.length; i++) callArgs.push(args[i]);
                     break;
                 default:
-                    if (params.method === 'burn') {
+                    if (params.method === 'burn' || params.method === 'modifyPaymentsAndVolumeExternally') {
                         callArgs = [...args];
                     } else {
                         callArgs.push(args);
                     }
             }
-    
+            
             encodedData = iface.encodeFunctionData(params.method, callArgs);
             const unsignedTx = {
                 to: deployedDiamond.address,
@@ -101,7 +103,10 @@ async function callDiamondProxy(params) {
                     const estGas = await signer.estimateGas(unsignedTx);
                     unsignedTx.gasLimit = Math.floor(estGas.toString() * 1.10);
                 }
-                await signer.sendTransaction(unsignedTx);
+                console.log('method: ', params.method);
+                console.log('unsignedTx: ', unsignedTx);
+                tx = await signer.sendTransaction(unsignedTx);
+                await tx.wait();
                 return;
             }
         case 1:
