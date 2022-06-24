@@ -55,7 +55,8 @@ async function callDiamondProxy(params) {
         updateExecutorState: 'function updateExecutorState(uint256 amount_, address user_, uint256 lockNum_) external payable',
         deposit: 'function deposit(uint256 assets, address receiver, uint256 lockNum_) external payable returns (uint256 shares)',
         executeFinalTrade: 'function executeFinalTrade(tuple(int128 tokenIn, int128 tokenOut, address baseToken, address userToken, address pool) swapDetails_, uint256 userSlippage, uint256 lockNum_) external payable',
-        redeem: 'function redeem(uint256, address receiver, )'
+        redeem: 'function redeem(uint256 shares, address receiver, address owner, uint256 lockNum_) external returns (uint256 assets)',
+        burn: 'function burn(address account, uint256 amount, uint256 lockNum_) external'
     }; 
 
     for (let sign in signatures) {
@@ -78,9 +79,13 @@ async function callDiamondProxy(params) {
                     for (let i=0; i < args.length; i++) callArgs.push(args[i]);
                     break;
                 default:
-                    callArgs.push(args);
+                    if (params.method === 'burn') {
+                        callArgs = [...args];
+                    } else {
+                        callArgs.push(args);
+                    }
             }
-
+    
             encodedData = iface.encodeFunctionData(params.method, callArgs);
             const unsignedTx = {
                 to: deployedDiamond.address,

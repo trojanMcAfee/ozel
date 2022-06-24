@@ -220,18 +220,7 @@ contract oz20Facet is Modifiers, Context, IERC20, IERC20Metadata {
     }
 
 
-    /**
-     * @dev Destroys `amount` tokens from `account`, reducing the
-     * total supply.
-     *
-     * Emits a {Transfer} event with `to` set to the zero address.
-     *
-     * Requirements:
-     *
-     * - `account` cannot be the zero address.
-     * - `account` must have at least `amount` tokens.
-     */
-    function _burn(
+    function burn(
         address account, 
         uint256 amount,
         uint lockNum_

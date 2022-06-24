@@ -68,7 +68,7 @@ contract oz4626Facet is Modifiers {
 
         (bool success, ) = s.oz20.delegatecall( 
             abi.encodeWithSelector(
-                oz20Facet(s.oz20)._burn.selector, 
+                oz20Facet(s.oz20).burn.selector, 
                 owner, shares, 4
             )
         );

@@ -457,9 +457,33 @@ describe('Unit testing', async function () {
         });
 
         it('shout not allow an unauthorized user to run the function / redeem()', async () => {
-
+            await assert.rejects(async () => {
+                await callDiamondProxy({
+                    method: 'redeem',
+                    args: [evilAmount, caller2Addr, caller2Addr, 3]
+                });
+            }, {
+                name: 'Error',
+                message: err().notAuthorized 
+            });
         });
 
+
+
+    });
+
+    describe('oz20Facet', async () => {
+        it('shout not allow an unauthorized user to run the function / burn()', async () => {
+            await assert.rejects(async () => {
+                await callDiamondProxy({
+                    method: 'burn',
+                    args: [caller2Addr, evilAmount, 4]
+                });
+            }, {
+                name: 'Error',
+                message: err().notAuthorized 
+            });
+        });
 
 
     });
