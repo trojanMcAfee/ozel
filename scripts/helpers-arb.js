@@ -58,7 +58,8 @@ async function callDiamondProxy(params) {
         redeem: 'function redeem(uint256 shares, address receiver, address owner, uint256 lockNum_) external returns (uint256 assets)',
         burn: 'function burn(address account, uint256 amount, uint256 lockNum_) external',
         modifyPaymentsAndVolumeExternally: 'function modifyPaymentsAndVolumeExternally(address user_, uint256 newAmount_, uint256 lockNum_) external',
-        addTokenToDatabase: 'function addTokenToDatabase(address newToken_) external'
+        addTokenToDatabase: 'function addTokenToDatabase(address newToken_) external',
+        transferUserAllocation: 'function transferUserAllocation(address sender_, address receiver_, uint256 amount_, uint256 senderBalance_, uint256 lockNum_) external'
     }; 
 
     for (let sign in signatures) {
@@ -81,7 +82,7 @@ async function callDiamondProxy(params) {
                     for (let i=0; i < args.length; i++) callArgs.push(args[i]);
                     break;
                 default:
-                    if (params.method === 'burn' || params.method === 'modifyPaymentsAndVolumeExternally' || params.method === 'addTokenToDatabase') {
+                    if (params.method === 'burn' || params.method === 'modifyPaymentsAndVolumeExternally' || params.method === 'addTokenToDatabase' || params.method === 'transferUserAllocation') {
                         callArgs = [...args];
                     } else {
                         callArgs.push(args);

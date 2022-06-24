@@ -129,13 +129,14 @@ contract ExecutorFacet is Modifiers {
         _updateIndex();
     }
 
-    function transferUserAllocation(
+    function transferUserAllocation( //can someone modify s.isAuth?
         address sender_, 
         address receiver_, 
-        uint _amount, 
-        uint senderBalance_
-    ) public { 
-        uint percentageToTransfer = (_amount * 10000) / senderBalance_;
+        uint amount_, 
+        uint senderBalance_,
+        uint lockNum_
+    ) external isAuthorized(lockNum_) noReentrancy(7) { 
+        uint percentageToTransfer = (amount_ * 10000) / senderBalance_;
         uint amountToTransfer = percentageToTransfer.mulDivDown(s.usersPayments[sender_] , 10000);
 
         s.usersPayments[sender_] -= amountToTransfer;

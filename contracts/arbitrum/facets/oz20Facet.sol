@@ -35,7 +35,7 @@ contract oz20Facet is Modifiers, Context, IERC20, IERC20Metadata {
      * @dev Returns the name of the token.
      */
     function name() public view virtual override returns (string memory) {
-        return s.oz.name_;
+        return s.oz.name;
     }
 
     /**
@@ -43,7 +43,7 @@ contract oz20Facet is Modifiers, Context, IERC20, IERC20Metadata {
      * name.
      */
     function symbol() public view virtual override returns (string memory) {
-        return s.oz.symbol_; 
+        return s.oz.symbol; 
     }
 
     /**
@@ -204,10 +204,12 @@ contract oz20Facet is Modifiers, Context, IERC20, IERC20Metadata {
         uint256 senderBalance = balanceOf(sender);
         require(senderBalance >= amount, "oz20Facet: transfer amount exceeds balance");
 
+        s.isAuth[6] = true;
+
         (bool success, ) = s.executor.delegatecall(
             abi.encodeWithSelector(
                 ExecutorFacet(s.executor).transferUserAllocation.selector, 
-                sender,recipient, amount, senderBalance
+                sender, recipient, amount, senderBalance, 6
             )
         );
         require(success, 'oz20Facet: transferUserAllocation() failed');

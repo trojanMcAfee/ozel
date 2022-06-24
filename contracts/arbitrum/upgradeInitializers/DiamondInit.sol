@@ -87,8 +87,8 @@ contract DiamondInit {
         s.defaultSlippage = vars_.appVars[1];
 
         //Sets name and symbol on PayToken (OZL)
-        s.oz.name_ = vars_.ozlVars[0];
-        s.oz.symbol_ = vars_.ozlVars[1];
+        s.oz.name = vars_.ozlVars[0];
+        s.oz.symbol = vars_.ozlVars[1];
 
         //Sets ETH address
         s.ETH = vars_.ETH;

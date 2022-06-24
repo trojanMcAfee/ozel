@@ -63,11 +63,9 @@ struct AppStorage {
 }
 
 struct OZLERC20 {
-    // mapping(address => uint256) balances_;
     mapping(address => mapping(address => uint256)) allowances;
-    uint  totalSupply_;
-    string  name_;
-    string  symbol_;
+    string  name;
+    string  symbol;
 }
 
 struct TradeOps {

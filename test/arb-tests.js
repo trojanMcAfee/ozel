@@ -62,7 +62,7 @@ let toTransfer;
 let evilAmount, evilSwapDetails;
 
 
-describe('Arbitrum-side', async function () {
+xdescribe('Arbitrum-side', async function () {
     this.timeout(1000000);
 
     before( async () => {
@@ -457,6 +457,18 @@ describe('Unit testing', async function () {
                 await callDiamondProxy({
                     method: 'modifyPaymentsAndVolumeExternally',
                     args: [caller2Addr, evilAmount, 5]
+                });
+            }, {
+                name: 'Error',
+                message: err().notAuthorized 
+            });
+        });
+
+        it('shout not allow an unauthorized user to run the function / transferUserAllocation()', async () => {
+            await assert.rejects(async () => {
+                await callDiamondProxy({
+                    method: 'transferUserAllocation',
+                    args: [deadAddr, deadAddr, evilAmount, evilAmount, 6]
                 });
             }, {
                 name: 'Error',
