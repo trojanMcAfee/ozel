@@ -59,16 +59,17 @@ contract oz4626Facet is Modifiers {
     function redeem(
         uint256 shares,
         address receiver,
-        address owner
-    ) external isAuthorized(5) noReentrancy(6) returns (uint256 assets) {
+        address owner,
+        uint lockNum_
+    ) external isAuthorized(lockNum_) noReentrancy(6) returns (uint256 assets) {
         require((assets = previewRedeem(shares)) != 0, "ZERO_ASSETS");
 
-        s.isAuth[3] = true;
+        s.isAuth[4] = true;
 
-        (bool success, ) = s.oz20.delegatecall(
+        (bool success, ) = s.oz20.delegatecall( 
             abi.encodeWithSelector(
                 oz20Facet(s.oz20)._burn.selector, 
-                owner, shares, 3
+                owner, shares, 4
             )
         );
         if(!success) revert CallFailed('oz4626Facet: redeem() failed');

@@ -412,8 +412,6 @@ describe('Unit testing', async function () {
                 });
             });
         });
-
-        
     });
 
     describe('ExecutorFacet', async () => {
@@ -456,6 +454,10 @@ describe('Unit testing', async function () {
                 name: 'Error',
                 message: err().notAuthorized 
             });
+        });
+
+        it('shout not allow an unauthorized user to run the function / redeem()', async () => {
+
         });
 
 

@@ -249,12 +249,12 @@ contract oz20Facet is Modifiers, Context, IERC20, IERC20Metadata {
         uint allocationPercentage = (amount.mulDivDown(10000, userBalanceOZL)).mulDivDown(1 ether, 100);
         uint amountToReduce = allocationPercentage.mulDivDown(s.usersPayments[account], 100 * 1 ether);
 
-        s.isAuth[4] = true;
+        s.isAuth[5] = true;
 
         (bool success, ) = s.executor.delegatecall(
             abi.encodeWithSelector(
                 ExecutorFacet(s.executor).modifyPaymentsAndVolumeExternally.selector, 
-                account, amountToReduce, 4
+                account, amountToReduce, 5
             )
         );
         if(!success) revert CallFailed('oz20Facet: modifyPaymentsAndVolumeExternally() failed');

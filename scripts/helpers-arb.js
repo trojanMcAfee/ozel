@@ -54,7 +54,8 @@ async function callDiamondProxy(params) {
         enableWithdrawals: 'function enableWithdrawals(bool state_) external',
         updateExecutorState: 'function updateExecutorState(uint256 amount_, address user_, uint256 lockNum_) external payable',
         deposit: 'function deposit(uint256 assets, address receiver, uint256 lockNum_) external payable returns (uint256 shares)',
-        executeFinalTrade: 'function executeFinalTrade(tuple(int128 tokenIn, int128 tokenOut, address baseToken, address userToken, address pool) swapDetails_, uint256 userSlippage, uint256 lockNum_) external payable'
+        executeFinalTrade: 'function executeFinalTrade(tuple(int128 tokenIn, int128 tokenOut, address baseToken, address userToken, address pool) swapDetails_, uint256 userSlippage, uint256 lockNum_) external payable',
+        redeem: 'function redeem(uint256, address receiver, )'
     }; 
 
     for (let sign in signatures) {
