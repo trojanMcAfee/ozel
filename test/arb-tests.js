@@ -62,7 +62,7 @@ let toTransfer;
 let evilAmount, evilSwapDetails;
 
 
-xdescribe('Arbitrum-side', async function () {
+describe('Arbitrum-side', async function () {
     this.timeout(1000000);
 
     before( async () => {
@@ -256,6 +256,8 @@ xdescribe('Arbitrum-side', async function () {
                 assert(currYvCrvBalance < preYvCrvBalance);
             });
         });
+
+        describe();
     });
 });
 
