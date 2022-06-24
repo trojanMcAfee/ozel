@@ -1,11 +1,30 @@
 
 
 
-function err(n = 0) {
+function err(n = 0) { 
     return {
         alreadyInitialized: "VM Exception while processing transaction: reverted with reason string 'Initializable: contract is already initialized'",
         onlyOps: "VM Exception while processing transaction: reverted with reason string 'ozPayMe: onlyOps'",
-        notAuthorized: n !== 1 ? "VM Exception while processing transaction: reverted with reason string 'Not authorized'" : 'Transaction reverted without a reason string',
+        notAuthorized: (function (y) {
+            switch(y) {
+                case 0:
+                    return "VM Exception while processing transaction: reverted with reason string 'Not authorized'";
+                case 1:
+                    return 'Transaction reverted without a reason string';
+                case 2:
+                    return "VM Exception while processing transaction: reverted with reason string 'LibDiamond: Must be contract owner'";
+            }
+        })(n),
+        // notAuthorized: (n) => {
+        //     switch(n) {
+        //         case 0:
+        //             return "VM Exception while processing transaction: reverted with reason string 'Not authorized'";
+        //         case 1:
+        //             return 'Transaction reverted without a reason string';
+        //         case 2:
+        //             return "VM Exception while processing transaction: reverted with reason string 'LibDiamond: Must be contract owner'";
+        //     }
+        // },
         notProxy: "VM Exception while processing transaction: reverted with custom error 'NotProxy()'",
         notOwner: "VM Exception while processing transaction: reverted with reason string 'Ownable: caller is not the owner'",
         zeroAddress: `VM Exception while processing transaction: reverted with custom error 'CantBeZero("address")'`,
@@ -14,11 +33,23 @@ function err(n = 0) {
         zeroMsgValue: `VM Exception while processing transaction: reverted with custom error 'CantBeZero("msg.value")'`,
         zeroShares: `VM Exception while processing transaction: reverted with custom error 'CantBeZero("shares")'`
     };
-
-
+    
 } 
 
 
 module.exports = {
     err
 };
+
+
+
+// notAuthorized: (n) => {
+//     switch(n) {
+//         case 0:
+//             return "VM Exception while processing transaction: reverted with reason string 'Not authorized'";
+//         case 1:
+//             return 'Transaction reverted without a reason string';
+//         case 2:
+//             return "VM Exception while processing transaction: reverted with reason string 'LibDiamond: Must be contract owner'";
+//     }
+// }

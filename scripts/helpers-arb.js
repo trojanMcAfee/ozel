@@ -81,7 +81,7 @@ async function callDiamondProxy(params) {
                     for (let i=0; i < args.length; i++) callArgs.push(args[i]);
                     break;
                 default:
-                    if (params.method === 'burn' || params.method === 'modifyPaymentsAndVolumeExternally') {
+                    if (params.method === 'burn' || params.method === 'modifyPaymentsAndVolumeExternally' || params.method === 'addTokenToDatabase') {
                         callArgs = [...args];
                     } else {
                         callArgs.push(args);
@@ -103,8 +103,7 @@ async function callDiamondProxy(params) {
                     const estGas = await signer.estimateGas(unsignedTx);
                     unsignedTx.gasLimit = Math.floor(estGas.toString() * 1.10);
                 }
-                console.log('method: ', params.method);
-                console.log('unsignedTx: ', unsignedTx);
+
                 tx = await signer.sendTransaction(unsignedTx);
                 await tx.wait();
                 return;
@@ -175,6 +174,14 @@ async function getDistributionIndex() {
         method: 'getDistributionIndex',
         dir: 1,
         type: 'uint256'
+    });
+}
+
+async function addTokenToDatabase(token, signerIndex) {
+    await callDiamondProxy({
+        method: 'addTokenToDatabase',
+        args: [token],
+        signerIndex
     });
 }
 
@@ -391,5 +398,6 @@ module.exports = {
     enableWithdrawals,
     deploy,
     getDistributionIndex,
-    callDiamondProxy
+    callDiamondProxy,
+    addTokenToDatabase
 };
