@@ -212,7 +212,7 @@ contract oz20Facet is Modifiers, Context, IERC20, IERC20Metadata {
                 sender, recipient, amount, senderBalance, 6
             )
         );
-        require(success, 'oz20Facet: transferUserAllocation() failed');
+        require(success, 'oz20Facet: transferUserAllocation() failed'); //put an if erro here
 
         emit Transfer(sender, recipient, amount);
     }

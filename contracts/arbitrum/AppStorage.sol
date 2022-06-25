@@ -51,7 +51,6 @@ struct AppStorage {
     TradeOps mimSwap;
     TradeOps usdcSwap;
     TradeOps fraxSwap;
-
     TradeOps[] swaps;
 
     bool isEnabled;
@@ -59,6 +58,9 @@ struct AppStorage {
     //Mutex locks
     mapping(uint => bool) isLocked;
     mapping(uint => bool) isAuth;
+
+    uint variant;
+    uint variant2;
 }
 
 struct OZLERC20 {

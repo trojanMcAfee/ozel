@@ -109,6 +109,11 @@ contract DiamondInit {
         s.swaps.push(s.usdcSwap);
         s.swaps.push(s.fraxSwap);
 
+
+        s.variant = 10 ** 14;
+        s.variant2 = 10 ** 8;
+     
+
         // add your own state variables 
         // EIP-2535 specifies that the `diamondCut` function takes two optional 
         // arguments: address _init and bytes calldata _calldata
