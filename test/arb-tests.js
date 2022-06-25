@@ -60,6 +60,7 @@ let deployedDiamond;
 let preYvCrvBalance, currYvCrvBalance;
 let toTransfer;
 let evilAmount, evilSwapDetails;
+let accounts, signers, ozelBalance;
 
 
 describe('Arbitrum-side', async function () {
@@ -92,7 +93,7 @@ describe('Arbitrum-side', async function () {
         ];
     });
 
-    describe('Optimistic deployment', async () => {
+    xdescribe('Standard user interaction', async () => {
         /**
          * Since Curve doesn't have testnets, sendETH() sends ETH directly to
          * exchangeToUserToken() which would simulate an Arbitrum L1 > L2 tx where
@@ -256,13 +257,61 @@ describe('Arbitrum-side', async function () {
                 assert(currYvCrvBalance < preYvCrvBalance);
             });
         });
+    });
 
-        describe();
+    describe('100 transactions between 4 users', async () => {
+
+        it('should bla bla bla', async () => {
+            userDetails[1] = usdcAddr;
+            accounts = await hre.ethers.provider.listAccounts();
+            signers = await hre.ethers.getSigners();
+
+            // async function balanceAll() {
+            //     for (let i=0; i < 3; i++) {
+            //         x = await balanceOfOZL(accounts[i]);
+            //         console.log(`acc #${i}: `, x);
+            //     }
+            // }
+
+            for (let i=0, j=0; i < 20; i++, j++) {
+                if (j == 4) j = 0;
+                userDetails[0] = await signers[j].getAddress();
+
+                await sendETH(userDetails, j); 
+                x = await USDC.balanceOf(userDetails[0]);
+                console.log(`USDC bal of user #${j}: `, Number(x) / 10 ** 6);
+
+                distributionIndex = await getDistributionIndex();
+                console.log('index: ', formatEther(distributionIndex));
+
+                x = await balanceOfOZL(accounts[0]);
+                console.log('OZL bal #0: ', x);
+                x = await balanceOfOZL(accounts[1]);
+                console.log('OZL bal #1: ', x);
+                x = await balanceOfOZL(accounts[2]);
+                console.log('OZL bal #2: ', x);
+                x = await balanceOfOZL(accounts[3]);
+                console.log('OZL bal #3: ', x);
+
+                //index gets too low after a while. Find a way to stabilize it
+
+                // ozelBalance = await balanceOfOZL(userDetails[0]);
+                // console.log('OZL balance: ', ozelBalance);
+                
+            }
+
+            // const acc = await hre.ethers.provider.listAccounts();
+            // for (let i=0; i < acc.length; i++) {
+            //     console.log('b: ', formatEther(await hre.ethers.provider.getBalance(acc[i])));
+            // }
+
+        }).timeout(1000000);
+
     });
 });
 
 
-describe('Unit testing', async function () {
+xdescribe('Unit testing', async function () {
     this.timeout(1000000);
 
     before( async () => {
