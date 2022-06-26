@@ -273,7 +273,7 @@ describe('Arbitrum-side', async function () {
             //     }
             // }
 
-            for (let i=0, j=0; i < 20; i++, j++) {
+            for (let i=0, j=0; i < 50; i++, j++) {
                 if (j == 4) j = 0;
                 userDetails[0] = await signers[j].getAddress();
 
@@ -284,14 +284,15 @@ describe('Arbitrum-side', async function () {
                 distributionIndex = await getDistributionIndex();
                 console.log('index: ', formatEther(distributionIndex));
 
-                x = await balanceOfOZL(accounts[0]);
-                console.log('OZL bal #0: ', x);
-                x = await balanceOfOZL(accounts[1]);
-                console.log('OZL bal #1: ', x);
-                x = await balanceOfOZL(accounts[2]);
-                console.log('OZL bal #2: ', x);
-                x = await balanceOfOZL(accounts[3]);
-                console.log('OZL bal #3: ', x);
+                a = await balanceOfOZL(accounts[0]);
+                console.log('OZL bal #0: ', a);
+                b = await balanceOfOZL(accounts[1]);
+                console.log('OZL bal #1: ', b);
+                c = await balanceOfOZL(accounts[2]);
+                console.log('OZL bal #2: ', c);
+                d = await balanceOfOZL(accounts[3]);
+                console.log('OZL bal #3: ', d);
+                console.log('TOTAL: ', a + b + c + d);
 
                 //index gets too low after a while. Find a way to stabilize it
 

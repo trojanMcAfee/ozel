@@ -113,7 +113,7 @@ contract ExecutorFacet is Modifiers {
         _updateIndex();
     }
 
-    function _updateIndex() private { 
+    function _updateIndex() private { //once figured out, change index to ozelIndex
 
         uint eth = 1 ether; //doesnt increase index
         // uint variant = 10 ** 14; //with the variants, you get 4x 100 of ozl
