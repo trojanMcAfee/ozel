@@ -123,6 +123,8 @@ contract ExecutorFacet is Modifiers {
         console.log('index in executorF: ', s.distributionIndex);
         if (s.distributionIndex < 20 * 1 ether && s.distributionIndex != 0) {
             console.log(1);
+            console.log('variant: ******', s.variant);
+            console.log('variant2: ******', s.variant2);
             s.variant = s.variant * 2;
             s.variant2 = s.variant2 * 2;
             s.regulator++;

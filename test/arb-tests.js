@@ -273,7 +273,7 @@ describe('Arbitrum-side', async function () {
             //     }
             // }
 
-            for (let i=0, j=0; i < 50; i++, j++) {
+            for (let i=0, j=0; i < 150; i++, j++) {
                 if (j == 4) j = 0;
                 userDetails[0] = await signers[j].getAddress();
 
@@ -306,7 +306,7 @@ describe('Arbitrum-side', async function () {
             //     console.log('b: ', formatEther(await hre.ethers.provider.getBalance(acc[i])));
             // }
 
-        }).timeout(1000000);
+        }).timeout(100000000);
 
     });
 });
