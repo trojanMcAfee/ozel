@@ -282,7 +282,7 @@ describe('Arbitrum-side', async function () {
                 console.log(`USDC bal of user #${j}: `, Number(x) / 10 ** 6);
 
                 distributionIndex = await getDistributionIndex();
-                console.log('index: ', formatEther(distributionIndex));
+                console.log('index in test: ', formatEther(distributionIndex));
 
                 a = await balanceOfOZL(accounts[0]);
                 console.log('OZL bal #0: ', a);

@@ -112,6 +112,7 @@ contract DiamondInit {
 
         s.variant = 10 ** 14;
         s.variant2 = 10 ** 8;
+        s.regulator = 0;
      
 
         // add your own state variables 

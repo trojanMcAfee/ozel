@@ -118,22 +118,21 @@ contract ExecutorFacet is Modifiers {
         uint eth = 1 ether; //doesnt increase index
         // uint variant = 10 ** 14; //with the variants, you get 4x 100 of ozl
         // uint variant2 = 10 ** 8;
-        uint indexVolume = s.totalVolume; //doesnt increase index
+        // uint indexVolume = s.totalVolume; //doesnt increase index
 
-        console.log('index: ', s.distributionIndex);
+        console.log('index in executorF: ', s.distributionIndex);
         if (s.distributionIndex < 20 * 1 ether && s.distributionIndex != 0) {
             console.log(1);
             s.variant = s.variant * 2;
-            // indexVolume = indexVolume / 2;
-            // eth = eth * 2;
             s.variant2 = s.variant2 * 2;
-        }
+            s.regulator++;
+        } 
         console.log(2);
 
 
 
         s.distributionIndex = 
-            indexVolume != 0 ? eth.mulDivDown(s.variant2, indexVolume) * s.variant : 0; //10 ** 14
+            s.totalVolume != 0 ? eth.mulDivDown(s.variant2, s.totalVolume) * s.variant : 0; //10 ** 14
     }
 
     function modifyPaymentsAndVolumeExternally(

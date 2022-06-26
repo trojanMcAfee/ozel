@@ -61,6 +61,7 @@ struct AppStorage {
 
     uint variant;
     uint variant2;
+    uint regulator;
 }
 
 struct OZLERC20 {
