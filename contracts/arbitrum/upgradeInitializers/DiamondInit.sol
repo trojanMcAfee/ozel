@@ -110,9 +110,10 @@ contract DiamondInit {
         s.swaps.push(s.fraxSwap);
 
 
-        s.variant = 10 ** 14;
-        s.variant2 = 10 ** 8;
-        s.regulator = 0;
+        s.invariant = 10 ** 14;
+        s.invariant2 = 10 ** 8;
+        s.indexRegulator = 0;
+        s.invariantRegulator = 1;
      
 
         // add your own state variables 

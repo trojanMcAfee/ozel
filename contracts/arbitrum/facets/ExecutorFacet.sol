@@ -115,26 +115,50 @@ contract ExecutorFacet is Modifiers {
 
     function _updateIndex() private { //once figured out, change index to ozelIndex
 
-        uint eth = 1 ether; //doesnt increase index
+        uint oneETH = 1 ether; //doesnt increase index
         // uint variant = 10 ** 14; //with the variants, you get 4x 100 of ozl
         // uint variant2 = 10 ** 8;
         // uint indexVolume = s.totalVolume; //doesnt increase index
 
         console.log('index in executorF: ', s.distributionIndex);
-        if (s.distributionIndex < 20 * 1 ether && s.distributionIndex != 0) {
+        // if (s.distributionIndex < 20 * 1 ether && s.distributionIndex != 0) {
+        //     console.log(1);
+        //     // console.log('variant: ******', s.variant);
+        //     // console.log('variant2: ******', s.variant2);
+        //     s.invariant = s.invariant * 2;
+        //     s.invariant2 = s.invariant2 * 2;
+        //     s.indexRegulator++;
+        // } 
+        // console.log(2);
+
+
+       if (s.distributionIndex < 20 * oneETH && s.distributionIndex != 0) {
             console.log(1);
-            console.log('variant: ******', s.variant);
-            console.log('variant2: ******', s.variant2);
-            s.variant = s.variant * 2;
-            s.variant2 = s.variant2 * 2;
-            s.regulator++;
+
+            if (s.invariantRegulator < 3) {
+                s.invariantRegulator *= 2;
+            } else {
+                console.log('here *******');
+                // s.stabilizer++;
+                // s.invariantRegulator = 1;
+                // s.indexVolume = amount_;
+            }
+
+            s.indexRegulator++;
         } 
-        console.log(2);
+        // console.log(2);
 
-
+        // console.log('indexVolume: ', s.indexVolume);
+        // console.log('invariant math: ', s.invariant * s.invariantRegulator);
+        // console.log('invariant2 math: ', s.invariant2 * s.invariantRegulator);
 
         s.distributionIndex = 
-            s.totalVolume != 0 ? eth.mulDivDown(s.variant2, s.totalVolume) * s.variant : 0; //10 ** 14
+            s.totalVolume != 0 ? oneETH.mulDivDown((s.invariant2 * s.invariantRegulator), s.totalVolume) * (s.invariant * s.invariantRegulator) : 0; 
+
+
+
+        // s.distributionIndex = 
+        //     s.totalVolume != 0 ? eth.mulDivDown(s.variant2, s.totalVolume) * s.variant : 0; //10 ** 14
     }
 
     function modifyPaymentsAndVolumeExternally(

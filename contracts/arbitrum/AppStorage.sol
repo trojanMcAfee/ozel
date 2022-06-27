@@ -59,9 +59,10 @@ struct AppStorage {
     mapping(uint => bool) isLocked;
     mapping(uint => bool) isAuth;
 
-    uint variant;
-    uint variant2;
-    uint regulator;
+    uint invariant;
+    uint invariant2;
+    uint indexRegulator;
+    uint invariantRegulator;
 }
 
 struct OZLERC20 {
