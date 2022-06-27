@@ -121,17 +121,7 @@ contract ExecutorFacet is Modifiers {
         // uint indexVolume = s.totalVolume; //doesnt increase index
 
         console.log('index in executorF: ', s.distributionIndex);
-        // if (s.distributionIndex < 20 * 1 ether && s.distributionIndex != 0) {
-        //     console.log(1);
-        //     // console.log('variant: ******', s.variant);
-        //     // console.log('variant2: ******', s.variant2);
-        //     s.invariant = s.invariant * 2;
-        //     s.invariant2 = s.invariant2 * 2;
-        //     s.indexRegulator++;
-        // } 
-        // console.log(2);
-
-
+        
        if (s.distributionIndex < 20 * oneETH && s.distributionIndex != 0) {
             console.log(1);
 
@@ -146,7 +136,6 @@ contract ExecutorFacet is Modifiers {
 
             s.indexRegulator++;
         } 
-        // console.log(2);
 
         // console.log('indexVolume: ', s.indexVolume);
         // console.log('invariant math: ', s.invariant * s.invariantRegulator);
@@ -156,9 +145,6 @@ contract ExecutorFacet is Modifiers {
             s.totalVolume != 0 ? oneETH.mulDivDown((s.invariant2 * s.invariantRegulator), s.totalVolume) * (s.invariant * s.invariantRegulator) : 0; 
 
 
-
-        // s.distributionIndex = 
-        //     s.totalVolume != 0 ? eth.mulDivDown(s.variant2, s.totalVolume) * s.variant : 0; //10 ** 14
     }
 
     function modifyPaymentsAndVolumeExternally(
