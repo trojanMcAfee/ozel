@@ -118,31 +118,46 @@ contract ExecutorFacet is Modifiers {
         uint oneETH = 1 ether; //doesnt increase index
         // uint variant = 10 ** 14; //with the variants, you get 4x 100 of ozl
         // uint variant2 = 10 ** 8;
-        // uint indexVolume = s.totalVolume; //doesnt increase index
+        s.indexVolume = s.totalVolume; 
+        bool flag;
 
+        console.log('----- contract data -------');
         console.log('index in executorF: ', s.distributionIndex);
-        
+        console.log('invariantRegulator: ', s.invariantRegulator);
+        console.log('----- contract data -------');
+
        if (s.distributionIndex < 20 * oneETH && s.distributionIndex != 0) {
             console.log(1);
 
-            if (s.invariantRegulator < 3) {
+            if (s.invariantRegulator < 8) { 
+                console.log('there ^^^^^');
                 s.invariantRegulator *= 2;
+                s.indexRegulator++;
+
+                console.log('invariantRegulator after *= 2: ', s.invariantRegulator);
+                console.log('indexRegulator after ++: ', s.indexRegulator);
             } else {
                 console.log('here *******');
                 // s.stabilizer++;
-                // s.invariantRegulator = 1;
+                s.invariantRegulator /= 4; //--> decreases by 2 - 4 - 8
+                s.indexRegulator = s.indexRegulator - 2; //--> decreases by 1 - 2 - 4
                 // s.indexVolume = amount_;
+                console.log('invariantRegulator after /=: ', s.invariantRegulator);
+                console.log('indexRegulator after --: ', s.indexRegulator);
+
+                flag = true;
             }
 
-            s.indexRegulator++;
         } 
 
         // console.log('indexVolume: ', s.indexVolume);
         // console.log('invariant math: ', s.invariant * s.invariantRegulator);
         // console.log('invariant2 math: ', s.invariant2 * s.invariantRegulator);
 
+        // uint x = flag ? s.indexVolume / 2 : s.indexVolume;
+
         s.distributionIndex = 
-            s.totalVolume != 0 ? oneETH.mulDivDown((s.invariant2 * s.invariantRegulator), s.totalVolume) * (s.invariant * s.invariantRegulator) : 0; 
+            s.totalVolume != 0 ? oneETH.mulDivDown((s.invariant2 * s.invariantRegulator), s.indexVolume) * (s.invariant * s.invariantRegulator) : 0; 
 
 
     }

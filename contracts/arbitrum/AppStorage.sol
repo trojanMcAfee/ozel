@@ -63,6 +63,8 @@ struct AppStorage {
     uint invariant2;
     uint indexRegulator;
     uint invariantRegulator;
+    uint indexVolume;
+
 }
 
 struct OZLERC20 {
