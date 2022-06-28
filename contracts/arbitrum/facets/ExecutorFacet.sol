@@ -119,11 +119,11 @@ contract ExecutorFacet is Modifiers {
         // uint variant = 10 ** 14; //with the variants, you get 4x 100 of ozl
         // uint variant2 = 10 ** 8;
         s.indexVolume = s.totalVolume; 
-        bool flag;
 
         console.log('----- contract data -------');
         console.log('index in executorF: ', s.distributionIndex);
         console.log('invariantRegulator: ', s.invariantRegulator);
+        console.log('indexRegulator: ', s.indexRegulator);
         console.log('----- contract data -------');
 
        if (s.distributionIndex < 20 * oneETH && s.distributionIndex != 0) {
@@ -145,7 +145,7 @@ contract ExecutorFacet is Modifiers {
                 console.log('invariantRegulator after /=: ', s.invariantRegulator);
                 console.log('indexRegulator after --: ', s.indexRegulator);
 
-                flag = true;
+                s.flag = true;
             }
 
         } 
@@ -154,10 +154,10 @@ contract ExecutorFacet is Modifiers {
         // console.log('invariant math: ', s.invariant * s.invariantRegulator);
         // console.log('invariant2 math: ', s.invariant2 * s.invariantRegulator);
 
-        // uint x = flag ? s.indexVolume / 2 : s.indexVolume;
+        uint x = s.flag ? s.indexVolume / 4 : s.indexVolume; // s.indexVolume / 2
 
         s.distributionIndex = 
-            s.totalVolume != 0 ? oneETH.mulDivDown((s.invariant2 * s.invariantRegulator), s.indexVolume) * (s.invariant * s.invariantRegulator) : 0; 
+            s.totalVolume != 0 ? oneETH.mulDivDown((s.invariant2 * s.invariantRegulator), x) * (s.invariant * s.invariantRegulator) : 0; 
 
 
     }
