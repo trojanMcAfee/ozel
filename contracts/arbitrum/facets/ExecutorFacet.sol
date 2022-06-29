@@ -124,6 +124,7 @@ contract ExecutorFacet is Modifiers {
         console.log('index in executorF: ', s.distributionIndex);
         console.log('invariantRegulator: ', s.invariantRegulator);
         console.log('indexRegulator: ', s.indexRegulator);
+        console.log('indexVolume: ', s.indexVolume);
         console.log('----- contract data -------');
 
        if (s.distributionIndex < 20 * oneETH && s.distributionIndex != 0) {
@@ -145,7 +146,9 @@ contract ExecutorFacet is Modifiers {
                 console.log('invariantRegulator after /=: ', s.invariantRegulator);
                 console.log('indexRegulator after --: ', s.indexRegulator);
 
-                s.flag = true;
+                s.flag = s.flag ? false : true;
+
+                if (!s.flag) console.log('s.flag is false ############');
             }
 
         } 

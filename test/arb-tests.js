@@ -266,17 +266,42 @@ describe('Arbitrum-side', async function () {
             accounts = await hre.ethers.provider.listAccounts();
             signers = await hre.ethers.getSigners();
 
-            // async function balanceAll() {
-            //     for (let i=0; i < 3; i++) {
-            //         x = await balanceOfOZL(accounts[i]);
-            //         console.log(`acc #${i}: `, x);
-            //     }
+            for (let i=5; i < accounts.length; i++) {
+                await signers[i].sendTransaction({
+                    to: accounts[4],
+                    value: parseEther('9999')
+                });
+            }
+
+            // console.log('accs: ', accounts);
+            const bal4 = formatEther(await signers[4].getBalance());
+
+            // console.log('balances pre:');
+            // for (let i=0; i < 4; i++) {
+            //     console.log(`bal #${i}`, formatEther(await signers[i].getBalance()));
             // }
 
-            for (let i=0, j=0; i < 500; i++, j++) {
+            for (let i=0; i < 4; i++) {
+                const balQ = bal4 / 4;
+                await signers[4].sendTransaction({
+                    to: accounts[i],
+                    value: parseEther(i === 3 ? (balQ - 1).toString() : balQ.toString())
+                });
+            }
+
+            // console.log('balances post:');
+            // for (let i=0; i < 4; i++) {
+            //     console.log(`bal #${i}`, formatEther(await signers[i].getBalance()));
+            // }
+
+
+
+
+            
+            for (let i=0, j=0; i < 2000; i++, j++) {
                 console.log('.');
                 console.log(`tx #${i}`);
-                
+
                 if (j == 4) j = 0;
                 userDetails[0] = await signers[j].getAddress();
 
@@ -304,12 +329,12 @@ describe('Arbitrum-side', async function () {
                 
             }
 
-            // const acc = await hre.ethers.provider.listAccounts();
-            // for (let i=0; i < acc.length; i++) {
-            //     console.log('b: ', formatEther(await hre.ethers.provider.getBalance(acc[i])));
-            // }
+            const acc = await hre.ethers.provider.listAccounts();
+            for (let i=0; i < acc.length; i++) {
+                console.log('b: ', formatEther(await hre.ethers.provider.getBalance(acc[i])));
+            }
 
-        }).timeout(100000000000000000);
+        }).timeout(100000000000000000000);
 
     });
 });
