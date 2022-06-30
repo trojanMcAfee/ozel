@@ -1,7 +1,7 @@
 //SPDX-License-Identifier: UNLICENSED
 pragma solidity ^0.8.0;
 
-import './oz20Facet.sol';
+import '../facets/oz20Facet.sol';
 import '@openzeppelin/contracts/token/ERC20/IERC20.sol';
 import '../AppStorage.sol';
 import '../../libraries/FixedPointMathLib.sol';
@@ -11,7 +11,7 @@ import '../Modifiers.sol';
 import 'hardhat/console.sol';
 
 
-contract ExecutorFacet is Modifiers { 
+contract ModExecutorFacet is Modifiers { 
 
     using FixedPointMathLib for uint;
 
@@ -113,12 +113,30 @@ contract ExecutorFacet is Modifiers {
         _updateIndex();
     }
 
-    function _updateIndex() private { //once figured out, change index to ozelIndex
+    function _updateIndex() private { 
 
         uint oneETH = 1 ether; //doesnt increase index
-        // uint variant = 10 ** 14; 
+        // uint variant = 10 ** 14; //with the variants, you get 4x 100 of ozl
         // uint variant2 = 10 ** 8;
+        if (s.indexVolume == 0) s.flag = true;
         s.indexVolume = s.totalVolume; 
+
+
+        //indexVolume and distributionIndex (?)
+
+
+        if (s.flag) {
+            s.distributionIndex = 19984000000000000000;
+            s.invariantRegulator = 8;
+            s.indexRegulator = 3;
+            s.indexVolume = 128200000000000000000000;
+            s.totalVolume = 128200000000000000000000;
+
+            s.usersPayments[0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266] = 32100 * 1 ether;
+            s.usersPayments[0x70997970C51812dc3A010C7d01b50e0d17dc79C8] = 32000 * 1 ether;
+            s.usersPayments[0x3C44CdDdB6a900fa2b585dd299e03d12FA4293BC] = 32000 * 1 ether;
+            s.usersPayments[0x90F79bf6EB2c4f870365E785982E1f101E93b906] = 32000 * 1 ether;
+        }
 
         console.log('----- contract data -------');
         console.log('index in executorF: ', s.distributionIndex);
@@ -153,14 +171,19 @@ contract ExecutorFacet is Modifiers {
 
         } 
 
-        // console.log('indexVolume: ', s.indexVolume);
+        // console.log('indexVolume-non: ', s.indexVolume);
         // console.log('invariant math: ', s.invariant * s.invariantRegulator);
         // console.log('invariant2 math: ', s.invariant2 * s.invariantRegulator);
+        // uint z = 12;
 
-        uint modIndexVolume = s.flag ? s.indexVolume / 4 : s.indexVolume; // s.indexVolume / 2
+        uint modIndexVolume = s.flag ? s.indexVolume / 4 : s.indexVolume; // s.indexVolume / 2 
 
         s.distributionIndex = 
-            s.totalVolume != 0 ? oneETH.mulDivDown((s.invariant2 * s.invariantRegulator), modIndexVolume) * (s.invariant * s.invariantRegulator) : 0; 
+            s.totalVolume != 0 ? 
+            oneETH.mulDivDown((s.invariant2 * s.invariantRegulator), modIndexVolume) * (s.invariant * s.invariantRegulator) : 
+            0; 
+
+        s.distributionIndex = s.flag ? s.distributionIndex : s.distributionIndex * s.stabilizer;
 
 
     }

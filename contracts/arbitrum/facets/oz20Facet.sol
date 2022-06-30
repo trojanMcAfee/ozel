@@ -79,12 +79,14 @@ contract oz20Facet is Modifiers, Context, IERC20, IERC20Metadata {
 
         // uint x = s.distributionIndex.mulDivDown(s.usersPayments[account] * 100, 10 ** 22);
         // uint y = (4 ** s.indexRegulator) ; // * 1 ether
-
         // console.log('adjusted: ', x / y);
 
-        uint y = s.flag ? 4 : 1;  
+        console.log('usersPayments: ', s.usersPayments[account]);
 
-        return (s.distributionIndex.mulDivDown(s.usersPayments[account] * 100, 10 ** 22) / 4 ** s.indexRegulator) / y;
+        uint y = s.flag ? 4 : 1;  
+        uint n = s.flag ? 1 : 12;
+
+        return ((s.distributionIndex.mulDivDown(s.usersPayments[account] * 100, 10 ** 22) / 4 ** s.indexRegulator) / y) / n;
     }
 
     /**

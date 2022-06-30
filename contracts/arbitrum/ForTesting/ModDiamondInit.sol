@@ -23,7 +23,7 @@ import '../../interfaces/IWETH.sol';
 
 
 
-contract DiamondInit {    
+contract ModDiamondInit {    
 
     AppStorage s;
     // You can add parameters to this function in order to pass in 
@@ -114,7 +114,6 @@ contract DiamondInit {
         s.invariant2 = 10 ** 8;
         s.indexRegulator = 0;
         s.invariantRegulator = 1;
-        s.stabilizer = 12;
      
 
         // add your own state variables 
