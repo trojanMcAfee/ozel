@@ -147,6 +147,7 @@ contract ExecutorFacet is Modifiers {
                 console.log('indexRegulator after --: ', s.indexRegulator);
 
                 s.flag = s.flag ? false : true;
+                // s.flag2 = s.flag2 ? false : true;
 
                 if (!s.flag) console.log('s.flag is false ############');
             }
@@ -161,6 +162,8 @@ contract ExecutorFacet is Modifiers {
 
         s.distributionIndex = 
             s.totalVolume != 0 ? oneETH.mulDivDown((s.invariant2 * s.invariantRegulator), modIndexVolume) * (s.invariant * s.invariantRegulator) : 0; 
+
+        s.distributionIndex = s.flag ? s.distributionIndex : s.distributionIndex * s.stabilizer;
 
 
     }

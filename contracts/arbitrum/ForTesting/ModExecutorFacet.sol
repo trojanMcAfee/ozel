@@ -165,18 +165,16 @@ contract ModExecutorFacet is Modifiers {
                 console.log('indexRegulator after --: ', s.indexRegulator);
 
                 s.flag = s.flag ? false : true;
+                // s.flag2 = s.flag2 ? false : true;
 
                 if (!s.flag) console.log('s.flag is false ############');
             }
 
         } 
-
-        // console.log('indexVolume-non: ', s.indexVolume);
-        // console.log('invariant math: ', s.invariant * s.invariantRegulator);
-        // console.log('invariant2 math: ', s.invariant2 * s.invariantRegulator);
+        
         // uint z = 12;
 
-        uint modIndexVolume = s.flag ? s.indexVolume / 4 : s.indexVolume; // s.indexVolume / 2 
+        uint modIndexVolume = s.flag ? s.indexVolume / 4 : s.indexVolume;
 
         s.distributionIndex = 
             s.totalVolume != 0 ? 

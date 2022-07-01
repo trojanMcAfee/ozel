@@ -65,6 +65,7 @@ struct AppStorage {
     uint invariantRegulator;
     uint indexVolume;
     bool flag;
+    bool flag2;
     uint stabilizer;
 
 }

@@ -597,6 +597,7 @@ xdescribe('Unit testing', async function () {
 
 
 describe('Ozel Index', async function () {
+    this.timeout(100000000000000000000);
 
     before( async () => {
         const deployedVars = await deploy(1);
@@ -624,8 +625,6 @@ describe('Ozel Index', async function () {
             defaultSlippage
         ];
     });
-
-    
 
     it('should successfully stabilize the index', async () => {
         userDetails[1] = usdcAddr;
@@ -659,8 +658,6 @@ describe('Ozel Index', async function () {
         // for (let i=0; i < 4; i++) {
         //     console.log(`bal #${i}`, formatEther(await signers[i].getBalance()));
         // }
-
-
 
 
         
@@ -700,7 +697,7 @@ describe('Ozel Index', async function () {
             console.log('b: ', formatEther(await hre.ethers.provider.getBalance(acc[i])));
         }
 
-    }).timeout(100000000000000000000);
+    });
 
 
 
