@@ -115,7 +115,7 @@ contract DiamondInit {
         s.indexRegulator = 0;
         s.invariantRegulator = 1;
         s.stabilizer = 12;
-        s.flag2 = true;
+        // s.flag2 = true;
      
 
         // add your own state variables 

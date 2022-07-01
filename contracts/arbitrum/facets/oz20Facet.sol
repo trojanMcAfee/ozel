@@ -76,8 +76,8 @@ contract oz20Facet is Modifiers, Context, IERC20, IERC20Metadata {
     function balanceOf(address account) public view virtual override returns (uint256) { 
         console.log('usersPayments: ', s.usersPayments[account]);
 
-        uint y = s.flag ? 4 : 1; // ---> same as 25% 
-        uint n = s.flag ? 1 : 12; 
+        // uint y = s.flag ? 4 : 1; // ---> same as 25% 
+        uint n = s.flag ? 1 : s.stabilizer; 
 
         // return ((s.distributionIndex.mulDivDown(s.usersPayments[account] * 100, 10 ** 22) / 4 ** s.indexRegulator) / y) / n;
 

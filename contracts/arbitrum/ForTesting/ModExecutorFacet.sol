@@ -118,8 +118,8 @@ contract ModExecutorFacet is Modifiers {
         uint oneETH = 1 ether; //doesnt increase index
         // uint variant = 10 ** 14; //with the variants, you get 4x 100 of ozl
         // uint variant2 = 10 ** 8;
-        if (s.indexVolume == 0) s.flag = true;
-        s.indexVolume = s.totalVolume; 
+        if (s.totalVolume == 100 * oneETH) s.flag = true;
+        // s.indexVolume = s.totalVolume; 
 
 
         //indexVolume and distributionIndex (?)
@@ -172,13 +172,11 @@ contract ModExecutorFacet is Modifiers {
 
         } 
         
-        // uint z = 12;
-
         // uint modIndexVolume = s.flag ? s.indexVolume / 4 : s.indexVolume;
 
         s.distributionIndex = 
             s.totalVolume != 0 ? 
-            oneETH.mulDivDown((s.invariant2 * s.invariantRegulator), s.indexVolume) * (s.invariant * s.invariantRegulator) : 
+            oneETH.mulDivDown((s.invariant2 * s.invariantRegulator), s.totalVolume) * (s.invariant * s.invariantRegulator) : 
             0; 
 
         s.distributionIndex = s.flag ? s.distributionIndex : s.distributionIndex * s.stabilizer;
