@@ -158,10 +158,10 @@ contract ExecutorFacet is Modifiers {
         // console.log('invariant math: ', s.invariant * s.invariantRegulator);
         // console.log('invariant2 math: ', s.invariant2 * s.invariantRegulator);
 
-        uint modIndexVolume = s.flag ? s.indexVolume / 4 : s.indexVolume; // s.indexVolume / 2
+        // uint modIndexVolume = s.flag ? s.indexVolume / 4 : s.indexVolume; // s.indexVolume / 2
 
         s.distributionIndex = 
-            s.totalVolume != 0 ? oneETH.mulDivDown((s.invariant2 * s.invariantRegulator), modIndexVolume) * (s.invariant * s.invariantRegulator) : 0; 
+            s.totalVolume != 0 ? oneETH.mulDivDown((s.invariant2 * s.invariantRegulator), s.indexVolume) * (s.invariant * s.invariantRegulator) : 0; 
 
         s.distributionIndex = s.flag ? s.distributionIndex : s.distributionIndex * s.stabilizer;
 

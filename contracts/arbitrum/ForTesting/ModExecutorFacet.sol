@@ -174,11 +174,11 @@ contract ModExecutorFacet is Modifiers {
         
         // uint z = 12;
 
-        uint modIndexVolume = s.flag ? s.indexVolume / 4 : s.indexVolume;
+        // uint modIndexVolume = s.flag ? s.indexVolume / 4 : s.indexVolume;
 
         s.distributionIndex = 
             s.totalVolume != 0 ? 
-            oneETH.mulDivDown((s.invariant2 * s.invariantRegulator), modIndexVolume) * (s.invariant * s.invariantRegulator) : 
+            oneETH.mulDivDown((s.invariant2 * s.invariantRegulator), s.indexVolume) * (s.invariant * s.invariantRegulator) : 
             0; 
 
         s.distributionIndex = s.flag ? s.distributionIndex : s.distributionIndex * s.stabilizer;
