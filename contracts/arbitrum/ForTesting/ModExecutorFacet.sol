@@ -129,7 +129,7 @@ contract ModExecutorFacet is Modifiers {
             s.distributionIndex = 19984000000000000000;
             s.invariantRegulator = 8;
             s.indexRegulator = 3;
-            s.indexVolume = 128200000000000000000000;
+            // s.indexVolume = 128200000000000000000000;
             s.totalVolume = 128200000000000000000000;
 
             s.usersPayments[0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266] = 32100 * 1 ether;
@@ -142,7 +142,7 @@ contract ModExecutorFacet is Modifiers {
         console.log('index in executorF: ', s.distributionIndex);
         console.log('invariantRegulator: ', s.invariantRegulator);
         console.log('indexRegulator: ', s.indexRegulator);
-        console.log('indexVolume: ', s.indexVolume);
+        // console.log('indexVolume: ', s.indexVolume);
         console.log('----- contract data -------');
 
        if (s.distributionIndex < 20 * oneETH && s.distributionIndex != 0) {
