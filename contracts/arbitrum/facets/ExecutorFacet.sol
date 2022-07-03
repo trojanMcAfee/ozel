@@ -130,18 +130,18 @@ contract ExecutorFacet is Modifiers {
        if (s.distributionIndex < 20 * oneETH && s.distributionIndex != 0) { 
             console.log(1);
 
-            if (s.invariantRegulator < 8) { 
+            if (s.invariantRegulator < invariantRegulatorLimit) { //s.invariantRegulator < 8 / invariantRegulatorLimit
                 console.log('there ^^^^^');
-                s.invariantRegulator *= 2;
-                s.indexRegulator++;
+                s.invariantRegulator *= 2; //works by doing regLim be the double of /=
+                s.indexRegulator++; //check that the check is done first and then the mul
 
                 console.log('invariantRegulator after *= 2: ', s.invariantRegulator);
                 console.log('indexRegulator after ++: ', s.indexRegulator);
             } else {
                 console.log('here *******');
                 // s.stabilizer++;
-                s.invariantRegulator /= 4; //--> decreases by 2 - 4 - 8
-                s.indexRegulator = s.indexRegulator - 2; //--> decreases by 1 - 2 - 4
+                s.invariantRegulator /= 4; // s.invariantRegulator /= 4; 
+                s.indexRegulator = 1; // s.indexRegulator - 2;
                 // s.indexVolume = amount_;
                 console.log('invariantRegulator after /=: ', s.invariantRegulator);
                 console.log('indexRegulator after --: ', s.indexRegulator);

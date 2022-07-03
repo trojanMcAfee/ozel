@@ -125,7 +125,7 @@ contract ModExecutorFacet is Modifiers {
         //indexVolume and distributionIndex (?)
 
 
-        if (s.flag) {
+        if (s.flag) { 
             s.distributionIndex = 19984000000000000000;
             s.invariantRegulator = 8;
             s.indexRegulator = 3;
@@ -136,19 +136,20 @@ contract ModExecutorFacet is Modifiers {
             s.usersPayments[0x70997970C51812dc3A010C7d01b50e0d17dc79C8] = 32000 * 1 ether;
             s.usersPayments[0x3C44CdDdB6a900fa2b585dd299e03d12FA4293BC] = 32000 * 1 ether;
             s.usersPayments[0x90F79bf6EB2c4f870365E785982E1f101E93b906] = 32000 * 1 ether;
+            s.flag = false;
         }
 
         console.log('----- contract data -------');
         console.log('index in executorF: ', s.distributionIndex);
         console.log('invariantRegulator: ', s.invariantRegulator);
         console.log('indexRegulator: ', s.indexRegulator);
-        // console.log('indexVolume: ', s.indexVolume);
+        console.log('totalVolume: ', s.totalVolume);
         console.log('----- contract data -------');
 
-       if (s.distributionIndex < 20 * oneETH && s.distributionIndex != 0) {
+       if (s.distributionIndex < 38 * oneETH && s.distributionIndex != 0) { // < 20 / 38
             console.log(1);
 
-            if (s.invariantRegulator < 8) { 
+            if (s.invariantRegulator < 16) { //8 / 16
                 console.log('there ^^^^^');
                 s.invariantRegulator *= 2;
                 s.indexRegulator++;
@@ -157,8 +158,8 @@ contract ModExecutorFacet is Modifiers {
                 console.log('indexRegulator after ++: ', s.indexRegulator);
             } else {
                 console.log('here *******');
-                s.invariantRegulator /= 4; //--> decreases by 2 - 4 - 8
-                s.indexRegulator = s.indexRegulator - 2; //--> decreases by 1 - 2 - 4
+                s.invariantRegulator /= 8; // 4 / 8
+                s.indexRegulator = 1; // 2 / 4 / s.indexRegulator - 2
                 
                 console.log('invariantRegulator after /=: ', s.invariantRegulator);
                 console.log('indexRegulator after --: ', s.indexRegulator);
