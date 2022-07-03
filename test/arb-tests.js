@@ -641,11 +641,6 @@ describe('Ozel Index', async function () {
         // console.log('accs: ', accounts);
         const bal4 = formatEther(await signers[4].getBalance());
 
-        // console.log('balances pre:');
-        // for (let i=0; i < 4; i++) {
-        //     console.log(`bal #${i}`, formatEther(await signers[i].getBalance()));
-        // }
-
         for (let i=0; i < 4; i++) {
             const balQ = bal4 / 4;
             await signers[4].sendTransaction({
@@ -653,11 +648,6 @@ describe('Ozel Index', async function () {
                 value: parseEther(i === 3 ? (balQ - 1).toString() : balQ.toString())
             });
         }
-
-        // console.log('balances post:');
-        // for (let i=0; i < 4; i++) {
-        //     console.log(`bal #${i}`, formatEther(await signers[i].getBalance()));
-        // }
 
 
         

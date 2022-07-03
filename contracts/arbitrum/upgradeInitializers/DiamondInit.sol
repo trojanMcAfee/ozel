@@ -114,7 +114,7 @@ contract DiamondInit {
         s.invariant2 = 10 ** 8;
         s.indexRegulator = 0;
         s.invariantRegulator = 1;
-        s.stabilizer = 1200;
+        s.stabilizer = 12;
         // s.flag2 = true;
      
 

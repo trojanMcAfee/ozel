@@ -157,15 +157,13 @@ contract ModExecutorFacet is Modifiers {
                 console.log('indexRegulator after ++: ', s.indexRegulator);
             } else {
                 console.log('here *******');
-                // s.stabilizer++;
                 s.invariantRegulator /= 4; //--> decreases by 2 - 4 - 8
                 s.indexRegulator = s.indexRegulator - 2; //--> decreases by 1 - 2 - 4
-                // s.indexVolume = amount_;
+                
                 console.log('invariantRegulator after /=: ', s.invariantRegulator);
                 console.log('indexRegulator after --: ', s.indexRegulator);
 
                 s.flag = s.flag ? false : true;
-                // s.flag2 = s.flag2 ? false : true;
 
                 if (!s.flag) console.log('s.flag is false ############');
             }
