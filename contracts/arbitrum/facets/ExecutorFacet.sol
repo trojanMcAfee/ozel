@@ -129,11 +129,12 @@ contract ExecutorFacet is Modifiers {
 
        if (s.distributionIndex < 20 * oneETH && s.distributionIndex != 0) { 
             console.log(1);
+            uint nextInQueueRegulator = s.invariantRegulator *= 2; 
 
-            if (s.invariantRegulator < invariantRegulatorLimit) { //s.invariantRegulator < 8 / invariantRegulatorLimit
+            if (s.invariantRegulator < invariantRegulatorLimit) { //s.invariantRegulator < 8 / s.invariantRegulator < invariantRegulatorLimit
                 console.log('there ^^^^^');
-                s.invariantRegulator *= 2; //works by doing regLim be the double of /=
-                s.indexRegulator++; //check that the check is done first and then the mul
+                s.invariantRegulator *= 2; 
+                s.indexRegulator++; 
 
                 console.log('invariantRegulator after *= 2: ', s.invariantRegulator);
                 console.log('indexRegulator after ++: ', s.indexRegulator);
