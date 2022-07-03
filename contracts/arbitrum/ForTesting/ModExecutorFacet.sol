@@ -118,14 +118,14 @@ contract ModExecutorFacet is Modifiers {
         uint oneETH = 1 ether; //doesnt increase index
         // uint variant = 10 ** 14; //with the variants, you get 4x 100 of ozl
         // uint variant2 = 10 ** 8;
-        if (s.totalVolume == 100 * oneETH) s.flag = true;
+        if (s.totalVolume == 100 * oneETH) s.indexFlag = true;
         // s.indexVolume = s.totalVolume; 
 
 
         //indexVolume and distributionIndex (?)
 
 
-        if (s.flag) { 
+        if (s.indexFlag) { 
             s.distributionIndex = 19984000000000000000;
             s.invariantRegulator = 8;
             s.indexRegulator = 3;
@@ -136,7 +136,7 @@ contract ModExecutorFacet is Modifiers {
             s.usersPayments[0x70997970C51812dc3A010C7d01b50e0d17dc79C8] = 32000 * 1 ether;
             s.usersPayments[0x3C44CdDdB6a900fa2b585dd299e03d12FA4293BC] = 32000 * 1 ether;
             s.usersPayments[0x90F79bf6EB2c4f870365E785982E1f101E93b906] = 32000 * 1 ether;
-            s.flag = false;
+            s.indexFlag = false;
         }
 
         console.log('----- contract data -------');
@@ -146,39 +146,38 @@ contract ModExecutorFacet is Modifiers {
         console.log('totalVolume: ', s.totalVolume);
         console.log('----- contract data -------');
 
-       if (s.distributionIndex < 38 * oneETH && s.distributionIndex != 0) { // < 20 / 38
+       if (s.distributionIndex < 23700 * oneETH && s.distributionIndex != 0) { // < 20 / 38
             console.log(1);
 
-            if (s.invariantRegulator < 16) { //8 / 16
+            if (s.invariantRegulator < 16) { //8 / 16 / 32 / s.invariantRegulator < 16
                 console.log('there ^^^^^');
-                s.invariantRegulator *= 2;
+                s.invariantRegulator *= 2; //why can i do this * 2 in the if check from above??
                 s.indexRegulator++;
 
                 console.log('invariantRegulator after *= 2: ', s.invariantRegulator);
                 console.log('indexRegulator after ++: ', s.indexRegulator);
             } else {
                 console.log('here *******');
-                s.invariantRegulator /= 8; // 4 / 8
+                s.invariantRegulator /= 8; // 4 / 8 / 16
                 s.indexRegulator = 1; // 2 / 4 / s.indexRegulator - 2
                 
                 console.log('invariantRegulator after /=: ', s.invariantRegulator);
                 console.log('indexRegulator after --: ', s.indexRegulator);
 
-                s.flag = s.flag ? false : true;
+                s.indexFlag = s.indexFlag ? false : true;
 
-                if (!s.flag) console.log('s.flag is false ############');
+                if (!s.indexFlag) console.log('s.indexFlag is false ############');
             }
 
         } 
         
-        // uint modIndexVolume = s.flag ? s.indexVolume / 4 : s.indexVolume;
 
         s.distributionIndex = 
             s.totalVolume != 0 ? 
             oneETH.mulDivDown((s.invariant2 * s.invariantRegulator), s.totalVolume) * (s.invariant * s.invariantRegulator) : 
             0; 
 
-        s.distributionIndex = s.flag ? s.distributionIndex : s.distributionIndex * s.stabilizer;
+        s.distributionIndex = s.indexFlag ? s.distributionIndex : s.distributionIndex * s.stabilizer;
 
 
     }
