@@ -127,7 +127,7 @@ contract ExecutorFacet is Modifiers {
         // console.log('indexVolume: ', s.indexVolume);
         console.log('----- contract data -------');
 
-       if (s.distributionIndex < 20 * oneETH && s.distributionIndex != 0) {
+       if (s.distributionIndex < 20 * oneETH && s.distributionIndex != 0) { 
             console.log(1);
 
             if (s.invariantRegulator < 8) { 
