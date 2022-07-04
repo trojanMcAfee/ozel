@@ -529,6 +529,18 @@ describe('Unit testing', async function () {
 
 });
 
+/**
+ * The test from below tests the stabilizing mechanism performed on updateIndex()
+ * and balanceOf() which involves the main variable (Ozel Index) and its stabilizing
+ * variables. 
+ * 
+ * It uses the ModExecutorFacet contract with hard-coded values in order to represent
+ * a point in the future where the mechanism kicks in. 
+ * 
+ * The two main differences from the real implementation on ExecutorFacet is on
+ * line 133, 136 140 (from the Mod version) that uses much lower values in order to
+ * show the workings of the mechanism.
+ */
 
 describe('Ozel Index', async function () {
     this.timeout(100000000000000000000);
@@ -594,8 +606,6 @@ describe('Ozel Index', async function () {
             userDetails[0] = await signers[j].getAddress();
 
             await sendETH(userDetails, j); 
-            // x = await USDC.balanceOf(userDetails[0]);
-            // console.log(`USDC bal of user #${j}: `, Number(x) / 10 ** 6);
 
             distributionIndex = formatEther(await getDistributionIndex());
             if (i === 0) {
@@ -616,19 +626,11 @@ describe('Ozel Index', async function () {
             console.log('TOTAL: ', total);
 
             regulatorCounter = await getRegulatorCounter();
-            // console.log('regulatorCounter: ', Number(regulatorCounter));
 
             assert(total <= 100 && total >= 99.85);
             assert(distributionIndex > 0 && distributionIndex <= higherIndex);
             assert(regulatorCounter < 2 && regulatorCounter >= 0);
-
         }
-
-        // const acc = await hre.ethers.provider.listAccounts();
-        // for (let i=0; i < acc.length; i++) {
-        //     console.log('b: ', formatEther(await hre.ethers.provider.getBalance(acc[i])));
-        // }
-
     });
 
 

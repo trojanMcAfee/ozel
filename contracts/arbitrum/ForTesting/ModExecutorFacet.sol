@@ -114,22 +114,13 @@ contract ModExecutorFacet is Modifiers {
     }
 
     function _updateIndex() private { 
-
-        uint oneETH = 1 ether; //doesnt increase index
-        // uint variant = 10 ** 14; //with the variants, you get 4x 100 of ozl
-        // uint variant2 = 10 ** 8;
+        uint oneETH = 1 ether; 
         if (s.totalVolume == 100 * oneETH) s.indexFlag = true;
-        // s.indexVolume = s.totalVolume; 
-
-
-        //indexVolume and distributionIndex (?)
-
 
         if (s.indexFlag) { 
             s.distributionIndex = 19984000000000000000;
             s.invariantRegulator = 8;
             s.indexRegulator = 3;
-            // s.indexVolume = 128200000000000000000000;
             s.totalVolume = 128200000000000000000000;
 
             s.usersPayments[0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266] = 32100 * 1 ether;
@@ -139,38 +130,18 @@ contract ModExecutorFacet is Modifiers {
             s.indexFlag = false;
         }
 
-        // console.log('----- contract data -------');
-        // console.log('index in executorF: ', s.distributionIndex);
-        // console.log('invariantRegulator: ', s.invariantRegulator);
-        // console.log('indexRegulator: ', s.indexRegulator);
-        // console.log('totalVolume: ', s.totalVolume);
-        // console.log('----- contract data -------');
-
-       if (s.distributionIndex < 237000 * oneETH && s.distributionIndex != 0) { // < 20 / 38
-            // console.log(1);
+       if (s.distributionIndex < 237000 * oneETH && s.distributionIndex != 0) { 
             uint nextInQueueRegulator = s.invariantRegulator * 2;
 
-            if (nextInQueueRegulator <= 16) { //8 / 16 / 32 / s.invariantRegulator < 16
-                // console.log('there ^^^^^');
+            if (nextInQueueRegulator <= 16) { 
                 s.invariantRegulator = nextInQueueRegulator; 
                 s.indexRegulator++; 
-
-                // console.log('invariantRegulator after *= 2: ', s.invariantRegulator);
-                // console.log('indexRegulator after ++: ', s.indexRegulator);
             } else {
-                // console.log('here *******');
-                s.invariantRegulator /= (16 / 2); // 4 / 8 / 16
-                s.indexRegulator = 1; // 2 / 4 / s.indexRegulator - 2
-                
-                // console.log('invariantRegulator after /=: ', s.invariantRegulator);
-                // console.log('indexRegulator after --: ', s.indexRegulator);
-
+                s.invariantRegulator /= (16 / 2); 
+                s.indexRegulator = 1; 
                 s.indexFlag = s.indexFlag ? false : true;
                 s.regulatorCounter++; 
-
-                // if (!s.indexFlag) console.log('s.indexFlag is false ############');
             }
-
         } 
 
         s.distributionIndex = 
@@ -179,8 +150,6 @@ contract ModExecutorFacet is Modifiers {
             0; 
 
         s.distributionIndex = s.indexFlag ? s.distributionIndex : s.distributionIndex * s.stabilizer;
-
-
     }
 
     function modifyPaymentsAndVolumeExternally(
