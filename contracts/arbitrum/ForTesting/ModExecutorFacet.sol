@@ -139,36 +139,36 @@ contract ModExecutorFacet is Modifiers {
             s.indexFlag = false;
         }
 
-        console.log('----- contract data -------');
-        console.log('index in executorF: ', s.distributionIndex);
-        console.log('invariantRegulator: ', s.invariantRegulator);
-        console.log('indexRegulator: ', s.indexRegulator);
-        console.log('totalVolume: ', s.totalVolume);
-        console.log('----- contract data -------');
+        // console.log('----- contract data -------');
+        // console.log('index in executorF: ', s.distributionIndex);
+        // console.log('invariantRegulator: ', s.invariantRegulator);
+        // console.log('indexRegulator: ', s.indexRegulator);
+        // console.log('totalVolume: ', s.totalVolume);
+        // console.log('----- contract data -------');
 
        if (s.distributionIndex < 237000 * oneETH && s.distributionIndex != 0) { // < 20 / 38
-            console.log(1);
+            // console.log(1);
             uint nextInQueueRegulator = s.invariantRegulator * 2;
 
             if (nextInQueueRegulator <= 16) { //8 / 16 / 32 / s.invariantRegulator < 16
-                console.log('there ^^^^^');
+                // console.log('there ^^^^^');
                 s.invariantRegulator = nextInQueueRegulator; 
                 s.indexRegulator++; 
 
-                console.log('invariantRegulator after *= 2: ', s.invariantRegulator);
-                console.log('indexRegulator after ++: ', s.indexRegulator);
+                // console.log('invariantRegulator after *= 2: ', s.invariantRegulator);
+                // console.log('indexRegulator after ++: ', s.indexRegulator);
             } else {
-                console.log('here *******');
+                // console.log('here *******');
                 s.invariantRegulator /= (16 / 2); // 4 / 8 / 16
                 s.indexRegulator = 1; // 2 / 4 / s.indexRegulator - 2
                 
-                console.log('invariantRegulator after /=: ', s.invariantRegulator);
-                console.log('indexRegulator after --: ', s.indexRegulator);
+                // console.log('invariantRegulator after /=: ', s.invariantRegulator);
+                // console.log('indexRegulator after --: ', s.indexRegulator);
 
                 s.indexFlag = s.indexFlag ? false : true;
-                s.regulatorCounter++; //* 1 ether
+                s.regulatorCounter++; 
 
-                if (!s.indexFlag) console.log('s.indexFlag is false ############');
+                // if (!s.indexFlag) console.log('s.indexFlag is false ############');
             }
 
         } 

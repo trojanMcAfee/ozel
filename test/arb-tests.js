@@ -61,10 +61,10 @@ let deployedDiamond;
 let preYvCrvBalance, currYvCrvBalance;
 let toTransfer;
 let evilAmount, evilSwapDetails;
-let accounts, signers, ozelBalance, regulatorCounter;
+let accounts, signers, ozelBalance, regulatorCounter, higherIndex;
 
 
-xdescribe('Arbitrum-side', async function () {
+describe('Arbitrum-side', async function () {
     this.timeout(1000000);
 
     before( async () => {
@@ -94,7 +94,7 @@ xdescribe('Arbitrum-side', async function () {
         ];
     });
 
-    xdescribe('Standard user interaction', async () => {
+    describe('Standard user interaction', async () => {
         /**
          * Since Curve doesn't have testnets, sendETH() sends ETH directly to
          * exchangeToUserToken() which would simulate an Arbitrum L1 > L2 tx where
@@ -109,7 +109,7 @@ xdescribe('Arbitrum-side', async function () {
 
             it('should initiate the distribution index', async () => {
                 distributionIndex = await getDistributionIndex();
-                assert.equal(formatEther(distributionIndex), 100);
+                assert.equal(formatEther(distributionIndex), 1200000.0);
             });
 
             it('should allocate 1st user with OZL tokens', async () => {
@@ -133,7 +133,7 @@ xdescribe('Arbitrum-side', async function () {
 
             it('should re-calculate the distribution index', async () => {
                 distributionIndex = await getDistributionIndex();
-                assert.equal(formatEther(distributionIndex), 50);
+                assert.equal(formatEther(distributionIndex), 600000.0);
             });
 
             it('should distribute OZL tokens equally between users', async () => {
@@ -259,77 +259,10 @@ xdescribe('Arbitrum-side', async function () {
             });
         });
     });
-
-    describe('100 transactions between 4 users', async () => {
-
-        it('should bla bla bla', async () => {
-            userDetails[1] = usdcAddr;
-            accounts = await hre.ethers.provider.listAccounts();
-            signers = await hre.ethers.getSigners();
-
-            for (let i=5; i < accounts.length; i++) {
-                await signers[i].sendTransaction({
-                    to: accounts[4],
-                    value: parseEther('9999')
-                });
-            }
-
-            // console.log('accs: ', accounts);
-            const bal4 = formatEther(await signers[4].getBalance());
-
-            for (let i=0; i < 4; i++) {
-                const balQ = bal4 / 4;
-                await signers[4].sendTransaction({
-                    to: accounts[i],
-                    value: parseEther(i === 3 ? (balQ - 1).toString() : balQ.toString())
-                });
-            }
-
-
-            //----------
-
-            
-            for (let i=0, j=0; i < 2000; i++, j++) {
-                console.log('.');
-                console.log(`tx #${i}`);
-
-                if (j == 4) j = 0;
-                userDetails[0] = await signers[j].getAddress();
-
-                await sendETH(userDetails, j); 
-                x = await USDC.balanceOf(userDetails[0]);
-                console.log(`USDC bal of user #${j}: `, Number(x) / 10 ** 6);
-
-                distributionIndex = await getDistributionIndex();
-                console.log('index in test: ', formatEther(distributionIndex));
-
-                a = await balanceOfOZL(accounts[0]);
-                console.log('OZL bal #0: ', a);
-                b = await balanceOfOZL(accounts[1]);
-                console.log('OZL bal #1: ', b);
-                c = await balanceOfOZL(accounts[2]);
-                console.log('OZL bal #2: ', c);
-                d = await balanceOfOZL(accounts[3]);
-                console.log('OZL bal #3: ', d);
-                console.log('TOTAL: ', a + b + c + d);
-
-                //index gets too low after a while. Find a way to stabilize it
-            }
-
-            const acc = await hre.ethers.provider.listAccounts();
-            for (let i=0; i < acc.length; i++) {
-                console.log('b: ', formatEther(await hre.ethers.provider.getBalance(acc[i])));
-            }
-
-        }).timeout(100000000000000000000);
-
-
-
-    });
 });
 
 
-xdescribe('Unit testing', async function () {
+describe('Unit testing', async function () {
     this.timeout(1000000);
 
     before( async () => {
@@ -627,7 +560,7 @@ describe('Ozel Index', async function () {
         ];
     });
 
-    it('should successfully stabilize the index', async () => {
+    it('should successfully stabilize the index for OZL balances calculations / _updateIndex() & balanceOf()', async () => {
         userDetails[1] = usdcAddr;
         accounts = await hre.ethers.provider.listAccounts();
         signers = await hre.ethers.getSigners();
@@ -639,8 +572,7 @@ describe('Ozel Index', async function () {
             });
         }
 
-        // console.log('accs: ', accounts);
-        const bal4 = formatEther(await signers[4].getBalance());
+            const bal4 = formatEther(await signers[4].getBalance());
 
         for (let i=0; i < 4; i++) {
             const balQ = bal4 / 4;
@@ -650,9 +582,11 @@ describe('Ozel Index', async function () {
             });
         }
 
-
+        console.log('.');
+        console.log('*** stabilization happens in tx #16 ***');
+        console.log('calculating...');
         
-        for (let i=0, j=0; i < 2000; i++, j++) {
+        for (let i=0, j=0; i < 19; i++, j++) { 
             console.log('.');
             console.log(`tx #${i}`);
 
@@ -660,11 +594,15 @@ describe('Ozel Index', async function () {
             userDetails[0] = await signers[j].getAddress();
 
             await sendETH(userDetails, j); 
-            x = await USDC.balanceOf(userDetails[0]);
-            console.log(`USDC bal of user #${j}: `, Number(x) / 10 ** 6);
+            // x = await USDC.balanceOf(userDetails[0]);
+            // console.log(`USDC bal of user #${j}: `, Number(x) / 10 ** 6);
 
-            distributionIndex = await getDistributionIndex();
-            console.log('index in test: ', formatEther(distributionIndex));
+            distributionIndex = formatEther(await getDistributionIndex());
+            if (i === 0) {
+                higherIndex = distributionIndex;
+                console.log('high-once: ', higherIndex);
+            }
+            console.log('Ozel Index: ', distributionIndex);
 
             a = await balanceOfOZL(accounts[0]);
             console.log('OZL bal #0: ', a);
@@ -674,17 +612,22 @@ describe('Ozel Index', async function () {
             console.log('OZL bal #2: ', c);
             d = await balanceOfOZL(accounts[3]);
             console.log('OZL bal #3: ', d);
-            console.log('TOTAL: ', a + b + c + d);
+            const total = a + b + c + d;
+            console.log('TOTAL: ', total);
 
-            
             regulatorCounter = await getRegulatorCounter();
-            console.log('regulatorCounter: ', Number(regulatorCounter));
+            // console.log('regulatorCounter: ', Number(regulatorCounter));
+
+            assert(total <= 100 && total >= 99.85);
+            assert(distributionIndex > 0 && distributionIndex <= higherIndex);
+            assert(regulatorCounter < 2 && regulatorCounter >= 0);
+
         }
 
-        const acc = await hre.ethers.provider.listAccounts();
-        for (let i=0; i < acc.length; i++) {
-            console.log('b: ', formatEther(await hre.ethers.provider.getBalance(acc[i])));
-        }
+        // const acc = await hre.ethers.provider.listAccounts();
+        // for (let i=0; i < acc.length; i++) {
+        //     console.log('b: ', formatEther(await hre.ethers.provider.getBalance(acc[i])));
+        // }
 
     });
 
