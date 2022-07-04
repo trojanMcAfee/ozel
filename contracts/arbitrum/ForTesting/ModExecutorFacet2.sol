@@ -1,7 +1,7 @@
 //SPDX-License-Identifier: UNLICENSED
 pragma solidity ^0.8.0;
 
-import './oz20Facet.sol';
+import '../facets/oz20Facet.sol';
 import '@openzeppelin/contracts/token/ERC20/IERC20.sol';
 import '../AppStorage.sol';
 import '../../libraries/FixedPointMathLib.sol';
@@ -11,7 +11,7 @@ import '../Modifiers.sol';
 import 'hardhat/console.sol';
 
 
-contract ExecutorFacet is Modifiers { 
+contract ModExecutorFacet2 is Modifiers { 
 
     using FixedPointMathLib for uint;
 
@@ -49,7 +49,7 @@ contract ExecutorFacet is Modifiers {
                 );
                 slippage = calculateSlippage(minOut, userSlippage_ * i);
 
-                try IMulCurv(pool).exchange(
+                try IMulCurv(pool).exchange( //log here so i know it runs and start from there
                     swapDetails_.tokenIn, swapDetails_.tokenOut, inBalance / i, slippage
                 ) {
                     if (i == 2) {

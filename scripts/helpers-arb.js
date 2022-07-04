@@ -231,6 +231,17 @@ function getSelectorsFromAllFacets(facets) {
 
 //Deploys contracts in Arbitrum
 async function deploy(n = 0) { 
+    function chooseExecutor(m) {
+        switch(m) {
+            case 0:
+                return 'ExecutorFacet';
+            case 1:
+                return 'ModExecutorFacet';
+            case 2:
+                return 'ModExecutorFacet2';
+        }  
+    }
+
     const [callerAddr, caller2Addr] = await hre.ethers.provider.listAccounts();
     console.log('--');
     console.log('Caller 1: ', callerAddr);
@@ -247,12 +258,13 @@ async function deploy(n = 0) {
     const yvCrvTri = await hre.ethers.getContractAt('IYtri', yTricryptoPoolAddr);
     const FRAX = await hre.ethers.getContractAt('IERC20', fraxAddr);
 
+
     //Facets
     const diamondCutFacet = await deployFacet('DiamondCutFacet');
     const diamondLoupeFacet = await deployFacet('DiamondLoupeFacet'); 
     const ozlFacet = await deployFacet('OZLFacet');
     const gettersFacet = await deployFacet('GettersFacet');
-    const executorFacet = await deployFacet(n === 1 ? 'ModExecutorFacet' : 'ExecutorFacet');
+    const executorFacet = await deployFacet(chooseExecutor(n));
     const oz4626 = await deployFacet('oz4626Facet');
     const oz20 = await deployFacet('oz20Facet');
     const ownershipFacet = await deployFacet('OwnershipFacet'); 
@@ -366,7 +378,7 @@ async function deploy(n = 0) {
             ['DiamondLoupeFacet', diamondLoupeFacet],
             ['OZLFacet', ozlFacet],
             ['GettersFacet', gettersFacet],
-            [n === 1 ? 'ModExecutorFacet' : 'ExecutorFacet', executorFacet],
+            [chooseExecutor(n), executorFacet],
             ['oz4626Facet', oz4626],
             ['oz20Facet', oz20],
             ['OwnershipFacet', ownershipFacet]

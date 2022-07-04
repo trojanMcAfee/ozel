@@ -64,7 +64,7 @@ let evilAmount, evilSwapDetails;
 let accounts, signers, ozelBalance, regulatorCounter, higherIndex;
 
 
-describe('Arbitrum-side', async function () {
+xdescribe('Arbitrum-side', async function () {
     this.timeout(1000000);
 
     before( async () => {
@@ -262,7 +262,7 @@ describe('Arbitrum-side', async function () {
 });
 
 
-describe('Unit testing', async function () {
+xdescribe('Unit testing', async function () {
     this.timeout(1000000);
 
     before( async () => {
@@ -525,8 +525,6 @@ describe('Unit testing', async function () {
     });
 
 
-
-
 });
 
 
@@ -543,7 +541,7 @@ describe('Unit testing', async function () {
  * show the workings of the mechanism.
  */
 
-describe('Ozel Index', async function () {
+xdescribe('Ozel Index', async function () {
     this.timeout(100000000000000000000);
 
     before( async () => {
@@ -634,6 +632,46 @@ describe('Ozel Index', async function () {
         }
     });
 
+
+
+});
+
+
+describe('Anti-slippage system / ModExecutorFacet2', async function () {
+    this.timeout(1000000);
+
+    before( async () => {
+        const deployedVars = await deploy(2);
+        ({
+            deployedDiamond, 
+            WETH,
+            USDT,
+            WBTC,
+            renBTC,
+            USDC,
+            MIM,
+            FRAX,
+            crvTri,
+            callerAddr, 
+            caller2Addr,
+            ozlFacet,
+            yvCrvTri
+        } = deployedVars);
+    
+        getVarsForHelpers(deployedDiamond, ozlFacet);
+
+        userDetails = [
+            callerAddr,
+            fraxAddr,
+            defaultSlippage
+        ];
+    });
+
+    it('la la la la', async () => {
+        await sendETH(userDetails); 
+
+
+    });
 
 
 });
