@@ -114,8 +114,7 @@ contract DiamondInit {
         s.invariant2 = 10 ** 8;
         s.indexRegulator = 0;
         s.invariantRegulator = 1;
-        s.stabilizer = 12000; //1200
-        // s.flag2 = true;
+        s.stabilizer = 12000; 
         s.invariantRegulatorLimit = type(uint).max / s.invariant;
         s.regulatorCounter = 0;
      

@@ -18,7 +18,7 @@ const {
     getCalldata2,
     enableWithdrawals,
     deploy,
-    getDistributionIndex,
+    getOzelIndex,
     callDiamondProxy,
     addTokenToDatabase,
     getRegulatorCounter
@@ -55,7 +55,7 @@ const {
 let userDetails;
 let FRAX, WBTC, MIM, USDT, USDC;
 let callerAddr, caller2Addr;
-let distributionIndex, newDistributionIndex;
+let ozelIndex, newOzelIndex;
 let balance, OZLbalanceFirstUser, OZLbalanceSecondUser, totalOZLusers, halfOZLbalance;
 let deployedDiamond;
 let preYvCrvBalance, currYvCrvBalance;
@@ -107,9 +107,9 @@ describe('Arbitrum-side', async function () {
                 assert(formatEther(await FRAX.balanceOf(callerAddr)) > 0);
             });
 
-            it('should initiate the distribution index', async () => {
-                distributionIndex = await getDistributionIndex();
-                assert.equal(formatEther(distributionIndex), 1200000.0);
+            it('should initiate the Ozel index', async () => {
+                ozelIndex = await getOzelIndex();
+                assert.equal(formatEther(ozelIndex), 1200000.0);
             });
 
             it('should allocate 1st user with OZL tokens', async () => {
@@ -131,9 +131,9 @@ describe('Arbitrum-side', async function () {
                 assert(formatEther(await FRAX.balanceOf(callerAddr)) > 0);
             });
 
-            it('should re-calculate the distribution index', async () => {
-                distributionIndex = await getDistributionIndex();
-                assert.equal(formatEther(distributionIndex), 600000.0);
+            it('should re-calculate the Ozel index', async () => {
+                ozelIndex = await getOzelIndex();
+                assert.equal(formatEther(ozelIndex), 600000.0);
             });
 
             it('should distribute OZL tokens equally between users', async () => {
@@ -156,9 +156,9 @@ describe('Arbitrum-side', async function () {
                 assert(formatEther(await MIM.balanceOf(callerAddr)) > 0);
             });
             
-            it('should decrease the distribution index to its lowest level', async () => {
-                newDistributionIndex = await getDistributionIndex();
-                assert(newDistributionIndex < distributionIndex);
+            it('should decrease the Ozel index to its lowest level', async () => {
+                newOzelIndex = await getOzelIndex();
+                assert(newOzelIndex < ozelIndex);
             });
 
             it('should leave the first user with more OZL tokens than 2nd user', async () => {
@@ -202,7 +202,7 @@ describe('Arbitrum-side', async function () {
             it('should leave 2nd user with all OZL tokens', async () => {
                 OZLbalanceFirstUser = await balanceOfOZL(callerAddr);
                 OZLbalanceSecondUser = await balanceOfOZL(caller2Addr);
-                distributionIndex = await getDistributionIndex();
+                ozelIndex = await getOzelIndex();
 
                 assert.equal(OZLbalanceFirstUser, 0);
                 assert.equal(OZLbalanceSecondUser, 100.0);
@@ -608,12 +608,12 @@ describe('Ozel Index', async function () {
 
             await sendETH(userDetails, j); 
 
-            distributionIndex = formatEther(await getDistributionIndex());
+            ozelIndex = formatEther(await getOzelIndex());
             if (i === 0) {
-                higherIndex = distributionIndex;
+                higherIndex = ozelIndex;
                 console.log('high-once: ', higherIndex);
             }
-            console.log('Ozel Index: ', distributionIndex);
+            console.log('Ozel Index: ', ozelIndex);
 
             a = await balanceOfOZL(accounts[0]);
             console.log('OZL bal #0: ', a);
@@ -629,7 +629,7 @@ describe('Ozel Index', async function () {
             regulatorCounter = await getRegulatorCounter();
 
             assert(total <= 100 && total >= 99.85);
-            assert(distributionIndex > 0 && distributionIndex <= higherIndex);
+            assert(ozelIndex > 0 && ozelIndex <= higherIndex);
             assert(regulatorCounter < 2 && regulatorCounter >= 0);
         }
     });

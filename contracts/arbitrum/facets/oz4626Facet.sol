@@ -82,9 +82,9 @@ contract oz4626Facet is Modifiers {
     //////////////////////////////////////////////////////////////*/
 
     function convertToShares(uint256 assets) public view virtual returns (uint256) { 
-        return s.distributionIndex == 0 ? 
+        return s.ozelIndex == 0 ? 
             oz20Facet(s.oz20).totalSupply() : 
-                s.distributionIndex.mulDivDown(assets * 100, 10 ** 22);
+                s.ozelIndex.mulDivDown(assets * 100, 10 ** 22);
     }
 
     function convertToAssets(uint256 shares) public view virtual returns (uint256) { 

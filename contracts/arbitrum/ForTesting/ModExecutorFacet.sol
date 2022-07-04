@@ -118,7 +118,7 @@ contract ModExecutorFacet is Modifiers {
         if (s.totalVolume == 100 * oneETH) s.indexFlag = true;
 
         if (s.indexFlag) { 
-            s.distributionIndex = 19984000000000000000;
+            s.ozelIndex = 19984000000000000000;
             s.invariantRegulator = 8;
             s.indexRegulator = 3;
             s.totalVolume = 128200000000000000000000;
@@ -130,7 +130,7 @@ contract ModExecutorFacet is Modifiers {
             s.indexFlag = false;
         }
 
-       if (s.distributionIndex < 237000 * oneETH && s.distributionIndex != 0) { 
+       if (s.ozelIndex < 237000 * oneETH && s.ozelIndex != 0) { 
             uint nextInQueueRegulator = s.invariantRegulator * 2;
 
             if (nextInQueueRegulator <= 16) { 
@@ -144,12 +144,12 @@ contract ModExecutorFacet is Modifiers {
             }
         } 
 
-        s.distributionIndex = 
+        s.ozelIndex = 
             s.totalVolume != 0 ? 
             oneETH.mulDivDown((s.invariant2 * s.invariantRegulator), s.totalVolume) * (s.invariant * s.invariantRegulator) : 
             0; 
 
-        s.distributionIndex = s.indexFlag ? s.distributionIndex : s.distributionIndex * s.stabilizer;
+        s.ozelIndex = s.indexFlag ? s.ozelIndex : s.ozelIndex * s.stabilizer;
     }
 
     function modifyPaymentsAndVolumeExternally(

@@ -39,7 +39,7 @@ struct AppStorage {
 
     //Internal accounting vars
     uint totalVolume;
-    uint distributionIndex;
+    uint ozelIndex;
     uint feesVault;
     uint failedFees;
     mapping(address => uint) usersPayments;
@@ -59,17 +59,15 @@ struct AppStorage {
     mapping(uint => bool) isLocked;
     mapping(uint => bool) isAuth;
 
+    //Stabilizing mechanism
     uint invariant;
     uint invariant2;
     uint indexRegulator;
     uint invariantRegulator;
-    // uint indexVolume;
     bool indexFlag;
-    // bool flag2;
     uint stabilizer;
     uint invariantRegulatorLimit;
     uint regulatorCounter;
-
 }
 
 struct OZLERC20 {
@@ -86,11 +84,13 @@ struct TradeOps {
     address pool;
 }
 
-struct userConfig {
+struct userConfig { 
     address user;
     address userToken;
     uint userSlippage; 
 }
+
+
 
 
 

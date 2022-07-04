@@ -113,10 +113,10 @@ contract ExecutorFacet is Modifiers {
         _updateIndex();
     }
 
-    function _updateIndex() private { //once figured out, change index to ozelIndex
+    function _updateIndex() private { 
         uint oneETH = 1 ether;
 
-        if (s.distributionIndex < 20 * oneETH && s.distributionIndex != 0) { 
+        if (s.ozelIndex < 20 * oneETH && s.ozelIndex != 0) { 
             uint nextInQueueRegulator = s.invariantRegulator * 2; 
 
             if (nextInQueueRegulator <= s.invariantRegulatorLimit) { 
@@ -130,10 +130,10 @@ contract ExecutorFacet is Modifiers {
             }
         } 
 
-        s.distributionIndex = 
+        s.ozelIndex = 
             s.totalVolume != 0 ? oneETH.mulDivDown((s.invariant2 * s.invariantRegulator), s.totalVolume) * (s.invariant * s.invariantRegulator) : 0; 
 
-        s.distributionIndex = s.indexFlag ? s.distributionIndex : s.distributionIndex * s.stabilizer;
+        s.ozelIndex = s.indexFlag ? s.ozelIndex : s.ozelIndex * s.stabilizer;
     }
 
     function modifyPaymentsAndVolumeExternally(

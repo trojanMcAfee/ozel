@@ -16,9 +16,9 @@ contract GettersFacet {
     event GetCounter(uint counter);
 
 
-    function getDistributionIndex() external returns(uint) { 
-        emit GetIndex(s.distributionIndex);
-        return s.distributionIndex;
+    function getOzelIndex() external returns(uint) { 
+        emit GetIndex(s.ozelIndex);
+        return s.ozelIndex;
     }
 
 

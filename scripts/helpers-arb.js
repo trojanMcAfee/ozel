@@ -46,7 +46,7 @@ async function callDiamondProxy(params) {
     let decodedData;
     let signature;
     const signatures = {
-        getDistributionIndex: 'function getDistributionIndex() returns (uint256)',
+        getOzelIndex: 'function getOzelIndex() returns (uint256)',
         getRegulatorCounter: 'function getRegulatorCounter() returns (uint256)',
         balanceOf: 'function balanceOf(address account) view returns (uint256)',
         transfer: 'function transfer(address recipient, uint256 amount) returns (bool)',
@@ -171,9 +171,9 @@ async function sendETH(userDetails, signerIndex = 0) {
 }
 
 
-async function getDistributionIndex() {
+async function getOzelIndex() {
     return await callDiamondProxy({
-        method: 'getDistributionIndex',
+        method: 'getOzelIndex',
         dir: 1,
         type: 'uint256'
     });
@@ -406,7 +406,7 @@ module.exports = {
     getCalldata,
     enableWithdrawals,
     deploy,
-    getDistributionIndex,
+    getOzelIndex,
     callDiamondProxy,
     addTokenToDatabase,
     getRegulatorCounter

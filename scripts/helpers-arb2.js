@@ -46,7 +46,7 @@ async function callDiamondProxy(params) {
     let decodedData;
     let signature;
     const signatures = {
-        getDistributionIndex: 'function getDistributionIndex() returns (uint256)',
+        getOzelIndex: 'function getOzelIndex() returns (uint256)',
         balanceOf: 'function balanceOf(address account) view returns (uint256)',
         transfer: 'function transfer(address recipient, uint256 amount) returns (bool)',
         exchangeToUserToken: 'function exchangeToUserToken(tuple(address user, address userToken, uint userSlippage) userDetails_)', 
@@ -153,21 +153,21 @@ async function sendETH(userConfig, IERC20, tokenStr, decimals, signerIndex) {
         signerIndex
     });
 
-    const distributionIndex = await callDiamondProxy({
-        method: 'getDistributionIndex',
+    const ozelIndex = await callDiamondProxy({
+        method: 'getOzelIndex',
         dir: 1,
         type: 'uint256'
     });
-    console.log('index: ', distributionIndex.toString() / 10 ** 18);
+    console.log('index: ', ozelIndex.toString() / 10 ** 18);
     let tokenBalance = await IERC20.balanceOf(userConfig[0]);
     console.log(tokenStr + ' balance of callerAddr: ', tokenBalance.toString() / decimals);
     console.log('.'); 
 }
 
 
-async function getDistributionIndex() {
+async function getOzelIndex() {
     return await callDiamondProxy({
-        method: 'getDistributionIndex',
+        method: 'getOzelIndex',
         dir: 1,
         type: 'uint256'
     });
