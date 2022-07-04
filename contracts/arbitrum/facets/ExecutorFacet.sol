@@ -131,19 +131,18 @@ contract ExecutorFacet is Modifiers {
             console.log(1);
             uint nextInQueueRegulator = s.invariantRegulator *= 2; 
 
-            if (nextInQueueRegulator < s.invariantRegulatorLimit) { //s.invariantRegulator < 8 / s.invariantRegulator < invariantRegulatorLimit
+            if (nextInQueueRegulator <= s.invariantRegulatorLimit) { //s.invariantRegulator < 8 / s.invariantRegulator < invariantRegulatorLimit
                 console.log('there ^^^^^');
-                s.invariantRegulator *= nextInQueueRegulator; 
+                s.invariantRegulator = nextInQueueRegulator; 
                 s.indexRegulator++; 
 
                 console.log('invariantRegulator after *= 2: ', s.invariantRegulator);
                 console.log('indexRegulator after ++: ', s.indexRegulator);
             } else {
                 console.log('here *******');
-                // s.stabilizer++;
                 s.invariantRegulator /= (s.invariantRegulatorLimit / 2); // s.invariantRegulator /= 4; 
                 s.indexRegulator = 1; // s.indexRegulator - 2;
-                // s.indexVolume = amount_;
+
                 console.log('invariantRegulator after /=: ', s.invariantRegulator);
                 console.log('indexRegulator after --: ', s.indexRegulator);
 
@@ -154,7 +153,6 @@ contract ExecutorFacet is Modifiers {
 
         } 
 
-        // uint modIndexVolume = s.indexFlag ? s.indexVolume / 4 : s.indexVolume; // s.indexVolume / 2
 
         s.distributionIndex = 
             s.totalVolume != 0 ? oneETH.mulDivDown((s.invariant2 * s.invariantRegulator), s.totalVolume) * (s.invariant * s.invariantRegulator) : 0; 

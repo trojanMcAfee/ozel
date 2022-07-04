@@ -146,19 +146,20 @@ contract ModExecutorFacet is Modifiers {
         console.log('totalVolume: ', s.totalVolume);
         console.log('----- contract data -------');
 
-       if (s.distributionIndex < 23700 * oneETH && s.distributionIndex != 0) { // < 20 / 38
+       if (s.distributionIndex < 237000 * oneETH && s.distributionIndex != 0) { // < 20 / 38
             console.log(1);
+            uint nextInQueueRegulator = s.invariantRegulator * 2;
 
-            if (s.invariantRegulator < 16) { //8 / 16 / 32 / s.invariantRegulator < 16
+            if (nextInQueueRegulator <= 16) { //8 / 16 / 32 / s.invariantRegulator < 16
                 console.log('there ^^^^^');
-                s.invariantRegulator *= 2; //why can i do this * 2 in the if check from above??
-                s.indexRegulator++;
+                s.invariantRegulator = nextInQueueRegulator; 
+                s.indexRegulator++; 
 
                 console.log('invariantRegulator after *= 2: ', s.invariantRegulator);
                 console.log('indexRegulator after ++: ', s.indexRegulator);
             } else {
                 console.log('here *******');
-                s.invariantRegulator /= 8; // 4 / 8 / 16
+                s.invariantRegulator /= (16 / 2); // 4 / 8 / 16
                 s.indexRegulator = 1; // 2 / 4 / s.indexRegulator - 2
                 
                 console.log('invariantRegulator after /=: ', s.invariantRegulator);

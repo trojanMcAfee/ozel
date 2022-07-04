@@ -63,7 +63,7 @@ let evilAmount, evilSwapDetails;
 let accounts, signers, ozelBalance;
 
 
-xdescribe('Arbitrum-side', async function () {
+describe('Arbitrum-side', async function () {
     this.timeout(1000000);
 
     before( async () => {
@@ -596,7 +596,7 @@ xdescribe('Unit testing', async function () {
 });
 
 
-describe('Ozel Index', async function () {
+xdescribe('Ozel Index', async function () {
     this.timeout(100000000000000000000);
 
     before( async () => {
