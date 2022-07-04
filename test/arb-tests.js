@@ -529,6 +529,7 @@ describe('Unit testing', async function () {
 
 });
 
+
 /**
  * The test from below tests the stabilizing mechanism performed on updateIndex()
  * and balanceOf() which involves the main variable (Ozel Index) and its stabilizing
