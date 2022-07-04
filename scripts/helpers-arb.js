@@ -47,6 +47,7 @@ async function callDiamondProxy(params) {
     let signature;
     const signatures = {
         getDistributionIndex: 'function getDistributionIndex() returns (uint256)',
+        getRegulatorCounter: 'function getRegulatorCounter() returns (uint256)',
         balanceOf: 'function balanceOf(address account) view returns (uint256)',
         transfer: 'function transfer(address recipient, uint256 amount) returns (bool)',
         exchangeToUserToken: 'function exchangeToUserToken(tuple(address user, address userToken, uint userSlippage) userDetails_)', 
@@ -187,7 +188,6 @@ async function addTokenToDatabase(token, signerIndex) {
 }
 
 
-
 async function getCalldata(method, params) {
     const signatures = {
         exchangeToUserToken: 'function exchangeToUserToken(tuple(address user, address userToken, uint userSlippage) userDetails_)',
@@ -199,6 +199,14 @@ async function getCalldata(method, params) {
     const data = iface.encodeFunctionData(method, params);
     return data;
 } 
+
+async function getRegulatorCounter(method) {
+    return await callDiamondProxy({
+        method: 'getRegulatorCounter',
+        dir: 1,
+        type: 'uint256'
+    });
+}
 
 
 //------ From deploy.js ---------
@@ -400,5 +408,6 @@ module.exports = {
     deploy,
     getDistributionIndex,
     callDiamondProxy,
-    addTokenToDatabase
+    addTokenToDatabase,
+    getRegulatorCounter
 };

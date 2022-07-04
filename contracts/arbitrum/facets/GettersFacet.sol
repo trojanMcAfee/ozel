@@ -12,10 +12,11 @@ import '../AppStorage.sol';
 contract GettersFacet {
     AppStorage s;
     
-    event GetIndex(uint _index);
+    event GetIndex(uint index);
+    event GetCounter(uint counter);
 
 
-    function getDistributionIndex() external returns(uint256) { 
+    function getDistributionIndex() external returns(uint) { 
         emit GetIndex(s.distributionIndex);
         return s.distributionIndex;
     }
@@ -24,6 +25,12 @@ contract GettersFacet {
     function getTotalInUSD() public view returns(uint total) {
         uint virtualPrice = ITri(s.tricrypto).get_virtual_price();
         total = virtualPrice * IERC20(s.crvTricrypto).balanceOf(address(this)); //divide between 10 ** 36 to get USD
+    }
+
+
+    function getRegulatorCounter() external returns(uint) {
+        emit GetCounter(s.regulatorCounter);
+        return s.regulatorCounter;
     }
 
    

@@ -166,12 +166,12 @@ contract ModExecutorFacet is Modifiers {
                 console.log('indexRegulator after --: ', s.indexRegulator);
 
                 s.indexFlag = s.indexFlag ? false : true;
+                s.regulatorCounter++; //* 1 ether
 
                 if (!s.indexFlag) console.log('s.indexFlag is false ############');
             }
 
         } 
-        
 
         s.distributionIndex = 
             s.totalVolume != 0 ? 

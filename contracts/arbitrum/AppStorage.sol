@@ -68,6 +68,7 @@ struct AppStorage {
     // bool flag2;
     uint stabilizer;
     uint invariantRegulatorLimit;
+    uint regulatorCounter;
 
 }
 

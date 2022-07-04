@@ -114,52 +114,26 @@ contract ExecutorFacet is Modifiers {
     }
 
     function _updateIndex() private { //once figured out, change index to ozelIndex
+        uint oneETH = 1 ether;
 
-        uint oneETH = 1 ether; //doesnt increase index
-        // uint variant = 10 ** 14; 
-        // uint variant2 = 10 ** 8;
-        // s.indexVolume = s.totalVolume; 
+        if (s.distributionIndex < 20 * oneETH && s.distributionIndex != 0) { 
+            uint nextInQueueRegulator = s.invariantRegulator * 2; 
 
-        console.log('----- contract data -------');
-        console.log('index in executorF: ', s.distributionIndex);
-        console.log('invariantRegulator: ', s.invariantRegulator);
-        console.log('indexRegulator: ', s.indexRegulator);
-        // console.log('indexVolume: ', s.indexVolume);
-        console.log('----- contract data -------');
-
-       if (s.distributionIndex < 20 * oneETH && s.distributionIndex != 0) { 
-            console.log(1);
-            uint nextInQueueRegulator = s.invariantRegulator *= 2; 
-
-            if (nextInQueueRegulator <= s.invariantRegulatorLimit) { //s.invariantRegulator < 8 / s.invariantRegulator < invariantRegulatorLimit
-                console.log('there ^^^^^');
+            if (nextInQueueRegulator <= s.invariantRegulatorLimit) { 
                 s.invariantRegulator = nextInQueueRegulator; 
                 s.indexRegulator++; 
-
-                console.log('invariantRegulator after *= 2: ', s.invariantRegulator);
-                console.log('indexRegulator after ++: ', s.indexRegulator);
             } else {
-                console.log('here *******');
-                s.invariantRegulator /= (s.invariantRegulatorLimit / 2); // s.invariantRegulator /= 4; 
-                s.indexRegulator = 1; // s.indexRegulator - 2;
-
-                console.log('invariantRegulator after /=: ', s.invariantRegulator);
-                console.log('indexRegulator after --: ', s.indexRegulator);
-
+                s.invariantRegulator /= (s.invariantRegulatorLimit / 2);
+                s.indexRegulator = 1; 
                 s.indexFlag = s.indexFlag ? false : true;
-
-                if (!s.indexFlag) console.log('s.indexFlag is false ############');
+                s.regulatorCounter++;
             }
-
         } 
-
 
         s.distributionIndex = 
             s.totalVolume != 0 ? oneETH.mulDivDown((s.invariant2 * s.invariantRegulator), s.totalVolume) * (s.invariant * s.invariantRegulator) : 0; 
 
         s.distributionIndex = s.indexFlag ? s.distributionIndex : s.distributionIndex * s.stabilizer;
-
-
     }
 
     function modifyPaymentsAndVolumeExternally(

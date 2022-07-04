@@ -117,6 +117,7 @@ contract DiamondInit {
         s.stabilizer = 12000; //1200
         // s.flag2 = true;
         s.invariantRegulatorLimit = type(uint).max / s.invariant;
+        s.regulatorCounter = 0;
      
 
         // add your own state variables 

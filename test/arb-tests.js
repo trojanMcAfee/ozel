@@ -20,7 +20,8 @@ const {
     deploy,
     getDistributionIndex,
     callDiamondProxy,
-    addTokenToDatabase
+    addTokenToDatabase,
+    getRegulatorCounter
 } = require('../scripts/helpers-arb.js');
 
 const { 
@@ -60,10 +61,10 @@ let deployedDiamond;
 let preYvCrvBalance, currYvCrvBalance;
 let toTransfer;
 let evilAmount, evilSwapDetails;
-let accounts, signers, ozelBalance;
+let accounts, signers, ozelBalance, regulatorCounter;
 
 
-describe('Arbitrum-side', async function () {
+xdescribe('Arbitrum-side', async function () {
     this.timeout(1000000);
 
     before( async () => {
@@ -596,7 +597,7 @@ xdescribe('Unit testing', async function () {
 });
 
 
-xdescribe('Ozel Index', async function () {
+describe('Ozel Index', async function () {
     this.timeout(100000000000000000000);
 
     before( async () => {
@@ -675,11 +676,9 @@ xdescribe('Ozel Index', async function () {
             console.log('OZL bal #3: ', d);
             console.log('TOTAL: ', a + b + c + d);
 
-            //index gets too low after a while. Find a way to stabilize it
-
-            // ozelBalance = await balanceOfOZL(userDetails[0]);
-            // console.log('OZL balance: ', ozelBalance);
             
+            regulatorCounter = await getRegulatorCounter();
+            console.log('regulatorCounter: ', Number(regulatorCounter));
         }
 
         const acc = await hre.ethers.provider.listAccounts();
