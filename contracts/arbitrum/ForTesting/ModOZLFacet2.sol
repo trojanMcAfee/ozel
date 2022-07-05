@@ -21,9 +21,11 @@ import '../../Errors.sol';
 import '../Modifiers.sol';
 
 
-contract ModOZLFacet is Modifiers { 
+contract ModOZLFacet2 is Modifiers { 
 
     using SafeTransferLib for IERC20;
+
+    event ForTesting(bool indexed testVar);
 
     /**
     WBTC: 1 / USDT: 0 / WETH: 2
@@ -92,20 +94,30 @@ contract ModOZLFacet is Modifiers {
         for (uint i=1; i <= 2; i++) {
             uint minOut = ITri(s.tricrypto).get_dy(2, baseTokenOut_, amountIn_ / i);
             uint slippage = ExecutorFacet(s.executor).calculateSlippage(minOut, userDetails_.userSlippage * i);
+
+            uint testVar = i == 1 ? type(uint).max : slippage;
             
-            try ITri(s.tricrypto).exchange(2, baseTokenOut_, amountIn_ / i, type(uint).max, false) { 
+            try ITri(s.tricrypto).exchange(2, baseTokenOut_, amountIn_ / i, testVar, false) { 
                 if (i == 2) {
+                    console.log(2);
                     try ITri(s.tricrypto).exchange(2, baseTokenOut_, amountIn_ / i, slippage, false) {
+                        console.log(3);
+                        emit ForTesting(true);
                         break;
                     } catch {
+                        console.log(4);
                         IWETH(s.WETH).transfer(userDetails_.user, amountIn_ / 2); 
                     }
                 }
+                console.log(1);
                 break;
             } catch {
+                console.log(5);
                 if (i == 1) {
+                    console.log(6);
                     continue;
                 } else {
+                    console.log(7);
                     IWETH(s.WETH).transfer(userDetails_.user, amountIn_); 
                 }
             }
@@ -115,6 +127,7 @@ contract ModOZLFacet is Modifiers {
 
         // Delegates trade execution
         if ((userDetails_.userToken != s.USDT && userDetails_.userToken != s.WBTC) && baseBalance > 0) {
+            console.log('3 OZL');
             _tradeWithExecutor(userDetails_.userToken, userDetails_.userSlippage); 
         }
     }
@@ -161,7 +174,7 @@ contract ModOZLFacet is Modifiers {
     } 
     
 
-    function _depositInDeFi(uint fee_, bool isRetry_) private {
+    function _depositInDeFi(uint fee_, bool isRetry_) private { //payable
         //Deposit WETH in Curve Tricrypto pool
         (uint tokenAmountIn, uint[3] memory amounts) = _calculateTokenAmountCurve(fee_);
         IWETH(s.WETH).approve(s.tricrypto, tokenAmountIn);

@@ -105,10 +105,9 @@ async function callDiamondProxy(params) {
                     const estGas = await signer.estimateGas(unsignedTx);
                     unsignedTx.gasLimit = Math.floor(estGas.toString() * 1.10);
                 }
-
+                
                 tx = await signer.sendTransaction(unsignedTx);
-                await tx.wait();
-                return;
+                return await tx.wait();
             }
         case 1:
             encodedData = iface.encodeFunctionData(params.method);
@@ -162,12 +161,13 @@ async function withdrawShareOZL(userDetails, receiverAddr, balanceOZL, signerInd
 //Sends ETH to contracts (simulates ETH bridging) **** MAIN FUNCTION ****
 async function sendETH(userDetails, signerIndex = 0) {
     const value = ethers.utils.parseEther(signerIndex === '' ? '0' : '100');
-    await callDiamondProxy({
+    const receipt = await callDiamondProxy({
         method: 'exchangeToUserToken',
         args: userDetails, 
         value,
         signerIndex
     });
+    return receipt;
 }
 
 
@@ -241,8 +241,10 @@ async function deploy(n = 0) {
                 break;
             case 2: 
                 facets.ozel = 'ModOZLFacet';
-                facets.exec = 'ModExecutorFacet2';
                 break;
+            case 3: 
+                facets.ozel = 'ModOZLFacet2';
+
         }
         return facets;
     }

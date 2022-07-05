@@ -62,6 +62,7 @@ let preYvCrvBalance, currYvCrvBalance;
 let toTransfer;
 let evilAmount, evilSwapDetails;
 let accounts, signers, ozelBalance, regulatorCounter, higherIndex;
+let tx, receipt;
 
 
 xdescribe('Arbitrum-side', async function () {
@@ -637,48 +638,103 @@ xdescribe('Ozel Index', async function () {
 });
 
 
-describe('Anti-slippage system / ModExecutorFacet2', async function () {
+describe('Anti-slippage system', async function () {
     this.timeout(1000000);
 
-    before( async () => {
-        const deployedVars = await deploy(2);
-        ({
-            deployedDiamond, 
-            WETH,
-            USDT,
-            WBTC,
-            renBTC,
-            USDC,
-            MIM,
-            FRAX,
-            crvTri,
-            callerAddr, 
-            caller2Addr,
-            ozlFacet,
-            yvCrvTri
-        } = deployedVars);
+
+    describe('ModOZLFacet2', async function () {
+        before( async () => {
+            const deployedVars = await deploy(3);
+            ({
+                deployedDiamond, 
+                WETH,
+                USDT,
+                WBTC,
+                renBTC,
+                USDC,
+                MIM,
+                FRAX,
+                crvTri,
+                callerAddr, 
+                caller2Addr,
+                ozlFacet,
+                yvCrvTri
+            } = deployedVars);
+        
+            getVarsForHelpers(deployedDiamond, ozlFacet);
     
-        getVarsForHelpers(deployedDiamond, ozlFacet);
+            userDetails = [ 
+                callerAddr,
+                usdtAddrArb,
+                defaultSlippage
+            ];
+        });
 
-        userDetails = [ //fraxAddr goes to the else clause
-            callerAddr,
-            usdtAddrArb,
-            defaultSlippage
-        ];
+
+        it('should convert to userToken on 2nd attempt / _swapsForUserToken()', async () => {
+
+            x = await USDT.balanceOf(callerAddr);
+            console.log('USDT pre: ', x / 10 ** 6);
+    
+            receipt = await sendETH(userDetails); 
+            // balance = formatEther(await WETH.balanceOf(callerAddr));
+            // assert(balance > 99);
+    
+            x = await USDT.balanceOf(callerAddr);
+            console.log('USDT post: ', x / 10 ** 6);
+
+            console.log('receipt: ', receipt);
+
+            //read the ForTesting event from the receipt
+    
+            // x = await WETH.balanceOf(callerAddr);
+            // console.log('WETH post: ', formatEther(x));
+    
+        });
+
     });
 
-    it('la la la la', async () => {
 
-        x = await USDT.balanceOf(callerAddr);
-        console.log('x pre: ', x / 10 ** 6);
+    /**
+     * Changed the first slippage for type(uint).max in order
+     * to provoke all trades to fail (due to slippage) and invoke
+     * the last resort mechanism (send WETH back to user)
+     */
+    xdescribe('ModOZLFacet', async function () {
+        before( async () => {
+            const deployedVars = await deploy(2);
+            ({
+                deployedDiamond, 
+                WETH,
+                USDT,
+                WBTC,
+                renBTC,
+                USDC,
+                MIM,
+                FRAX,
+                crvTri,
+                callerAddr, 
+                caller2Addr,
+                ozlFacet,
+                yvCrvTri
+            } = deployedVars);
+        
+            getVarsForHelpers(deployedDiamond, ozlFacet);
+    
+            userDetails = [ 
+                callerAddr,
+                usdtAddrArb,
+                defaultSlippage
+            ];
+        });
 
-        await sendETH(userDetails); 
-
-        x = await USDT.balanceOf(callerAddr);
-        console.log('x post: ', x / 10 ** 6);
-
-
+        it('should send WETH to the user as last resort / _swapsForUserToken()', async () => {
+            await sendETH(userDetails); 
+            balance = formatEther(await WETH.balanceOf(callerAddr));
+            assert.equal(balance, 99.9);    
+        }); 
     });
+    
 
 
 });
