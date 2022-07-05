@@ -64,7 +64,7 @@ let evilAmount, evilSwapDetails;
 let accounts, signers, ozelBalance, regulatorCounter, higherIndex;
 
 
-xdescribe('Arbitrum-side', async function () {
+describe('Arbitrum-side', async function () {
     this.timeout(1000000);
 
     before( async () => {
@@ -262,7 +262,7 @@ xdescribe('Arbitrum-side', async function () {
 });
 
 
-xdescribe('Unit testing', async function () {
+describe('Unit testing', async function () {
     this.timeout(1000000);
 
     before( async () => {
@@ -541,7 +541,7 @@ xdescribe('Unit testing', async function () {
  * show the workings of the mechanism.
  */
 
-xdescribe('Ozel Index', async function () {
+describe('Ozel Index', async function () {
     this.timeout(100000000000000000000);
 
     before( async () => {
@@ -641,7 +641,7 @@ describe('Anti-slippage system / ModExecutorFacet2', async function () {
     this.timeout(1000000);
 
     before( async () => {
-        const deployedVars = await deploy(2);
+        const deployedVars = await deploy(3, true);
         ({
             deployedDiamond, 
             WETH,

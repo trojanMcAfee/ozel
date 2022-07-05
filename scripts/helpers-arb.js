@@ -230,18 +230,50 @@ function getSelectorsFromAllFacets(facets) {
 
 
 //Deploys contracts in Arbitrum
-async function deploy(n = 0) { 
-    function chooseFacet(m) {
+async function deploy(n = 0, isOzelFacet = false) { 
+    function chooseFacet(m, isFacet = false) {
+        // console.log('m: ', m);
+        // console.log('isFacet: ', isFacet);
+        // console.log(m === 3 && isFacet);
+
+        // switch(true) { 
+        //     case (m == 0 || m == 3) && !isFacet:
+        //         return 'ExecutorFacet';
+        //     case m == 1:
+        //         return 'ModExecutorFacet';
+        //     case m == 2:
+        //         return 'ModExecutorFacet2';
+        //     case m == 3 && isFacet:
+        //         return 'ModOZLFacet';
+        //     case (m == 0 || m == 1 || m == 2) && isFacet:
+        //         return 'OZLFacet';
+        //     default:
+        //         console.log('what');
+        // }  
+
         switch(m) {
             case 0:
-                return 'ExecutorFacet';
+                return {
+                    ozel: 'OZLFacet',
+                    exec: 'ExecutorFacet'
+                };
             case 1:
-                return 'ModExecutorFacet';
-            case 2:
-                return 'ModExecutorFacet2';
-            case 3:
-                return 'ModOZLFacet';
-        }  
+                return {
+                    ozel: 'OZLFacet',
+                    exec: 'ModExecutorFacet'
+                };
+            case 2: 
+                return {
+                    ozel: 'OZLFacet',
+                    exec: 'ModExecutorFacet2'
+                };
+            case 3: 
+                return {
+                    ozel: 'ModOZLFacet',
+                    exec: 'ExecutorFacet'
+                };
+            
+        }
     }
 
     const [callerAddr, caller2Addr] = await hre.ethers.provider.listAccounts();
@@ -264,9 +296,17 @@ async function deploy(n = 0) {
     //Facets
     const diamondCutFacet = await deployFacet('DiamondCutFacet');
     const diamondLoupeFacet = await deployFacet('DiamondLoupeFacet'); 
-    const ozlFacet = await deployFacet('OZLFacet'); 
+
+
+    // const xx = chooseFacet(n, isOzelFacet).ozel;
+    // console.log('xx: ', xx);
+    // return;
+
+    const ozlFacet = await deployFacet(chooseFacet(n, isOzelFacet).ozel); //OZLFacet
+
+
     const gettersFacet = await deployFacet('GettersFacet');
-    const executorFacet = await deployFacet(chooseFacet(n));
+    const executorFacet = await deployFacet(chooseFacet(n).exec);
     const oz4626 = await deployFacet('oz4626Facet');
     const oz20 = await deployFacet('oz20Facet');
     const ownershipFacet = await deployFacet('OwnershipFacet'); 
@@ -378,9 +418,9 @@ async function deploy(n = 0) {
         facets: [
             ['DiamondCutFacet', diamondCutFacet],
             ['DiamondLoupeFacet', diamondLoupeFacet],
-            ['OZLFacet', ozlFacet],
+            [chooseFacet(n, isOzelFacet).ozel, ozlFacet],
             ['GettersFacet', gettersFacet],
-            [chooseFacet(n), executorFacet],
+            [chooseFacet(n).exec, executorFacet],
             ['oz4626Facet', oz4626],
             ['oz20Facet', oz20],
             ['OwnershipFacet', ownershipFacet]

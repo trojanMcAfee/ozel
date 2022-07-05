@@ -117,7 +117,7 @@ contract ModOZLFacet is Modifiers {
         // Delegates trade execution
         console.log('2 OZL');
         console.log('userToken: ', userToken_);
-        console.log('USDT post balance: ', s.USDT.balanceOf(0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266));
+        console.log('USDT post balance: ', IERC20(s.USDT).balanceOf(0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266));
         if ((userToken_ != s.USDT || userToken_ != s.WBTC) && baseBalance > 0) {
             console.log('3 OZL');
             _tradeWithExecutor(userToken_, userSlippage_); 
