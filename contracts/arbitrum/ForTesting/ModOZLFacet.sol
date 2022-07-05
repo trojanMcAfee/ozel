@@ -64,12 +64,14 @@ contract ModOZLFacet is Modifiers {
 
         //Swaps WETH to userToken (Base: USDT-WBTC / Route: MIM-USDC-renBTC-WBTC) 
         _swapsForUserToken(
-            netAmountIn, baseTokenOut, userDetails_.userToken, userDetails_.userSlippage
+            netAmountIn, baseTokenOut, userDetails_
         );
       
         //Sends userToken to user
         uint toUser = IERC20(userDetails_.userToken).balanceOf(address(this));
         if (toUser > 0) IERC20(userDetails_.userToken).safeTransfer(userDetails_.user, toUser);
+
+        console.log('USDT post balance3: ', IERC20(s.USDT).balanceOf(0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266));
 
         _depositInDeFi(fee, false);
     }
@@ -80,10 +82,10 @@ contract ModOZLFacet is Modifiers {
     function _swapsForUserToken(
         uint amountIn_, 
         uint baseTokenOut_, 
-        address userToken_,
-        uint userSlippage_
+        userConfig memory userDetails_
     ) private { 
         IWETH(s.WETH).approve(s.tricrypto, amountIn_);
+        console.log('msg.sender: ', msg.sender);
 
         /**** 
             Exchanges the amount between the user's slippage. 
@@ -92,14 +94,14 @@ contract ModOZLFacet is Modifiers {
         ****/ 
         for (uint i=1; i <= 2; i++) {
             uint minOut = ITri(s.tricrypto).get_dy(2, baseTokenOut_, amountIn_ / i);
-            uint slippage = ExecutorFacet(s.executor).calculateSlippage(minOut, userSlippage_ * i);
+            uint slippage = ExecutorFacet(s.executor).calculateSlippage(minOut, userDetails_.userSlippage * i);
             
             try ITri(s.tricrypto).exchange(2, baseTokenOut_, amountIn_ / i, slippage, false) {
                 if (i == 2) {
                     try ITri(s.tricrypto).exchange(2, baseTokenOut_, amountIn_ / i, slippage, false) {
                         break;
                     } catch {
-                        IWETH(s.WETH).transfer(msg.sender, amountIn_ / 2); 
+                        IWETH(s.WETH).transfer(userDetails_.user, amountIn_ / 2); 
                     }
                 }
                 break;
@@ -107,7 +109,7 @@ contract ModOZLFacet is Modifiers {
                 if (i == 1) {
                     continue;
                 } else {
-                    IWETH(s.WETH).transfer(msg.sender, amountIn_); 
+                    IWETH(s.WETH).transfer(userDetails_.user, amountIn_); 
                 }
             }
         }
@@ -116,11 +118,9 @@ contract ModOZLFacet is Modifiers {
 
         // Delegates trade execution
         console.log('2 OZL');
-        console.log('userToken: ', userToken_);
-        console.log('USDT post balance: ', IERC20(s.USDT).balanceOf(0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266));
-        if ((userToken_ != s.USDT || userToken_ != s.WBTC) && baseBalance > 0) {
+        if ((userDetails_.userToken != s.USDT && userDetails_.userToken != s.WBTC) && baseBalance > 0) {
             console.log('3 OZL');
-            _tradeWithExecutor(userToken_, userSlippage_); 
+            _tradeWithExecutor(userDetails_.userToken, userDetails_.userSlippage); 
         }
     }
 
@@ -214,16 +214,20 @@ contract ModOZLFacet is Modifiers {
         console.log('1 OZL');
         s.isAuth[2] = true;
         uint length = s.swaps.length;
+        console.log('USDT post balance2: ', IERC20(s.USDT).balanceOf(0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266));
 
         for (uint i=0; i < length;) {
             if (s.swaps[i].userToken == userToken_) {
-                console.log('2 OZL');
+                console.log('4 OZL');
+                console.log('userToken2: ', userToken_);
+                console.log('executor: ', s.executor);
                 (bool success, ) = s.executor.delegatecall(
                     abi.encodeWithSelector(
                         ExecutorFacet(s.executor).executeFinalTrade.selector, 
                         s.swaps[i], userSlippage_, 2
                     )
                 );
+                console.log('success: ', success);
                 if(!success) revert CallFailed('OZLFacet: _tradeWithExecutor() failed');
                 break;
             }

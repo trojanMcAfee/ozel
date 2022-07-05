@@ -240,10 +240,8 @@ async function deploy(n = 0) {
                 facets.exec = 'ModExecutorFacet';
                 break;
             case 2: 
-                facets.exec = 'ModExecutorFacet2';
-                break;
-            case 3: 
                 facets.ozel = 'ModOZLFacet';
+                facets.exec = 'ModExecutorFacet2';
                 break;
         }
         return facets;

@@ -80,8 +80,7 @@ contract OZLFacet is Modifiers {
     function _swapsForUserToken(
         uint amountIn_, 
         uint baseTokenOut_, 
-        address userToken_,
-        uint userSlippage_
+        userConfig memory userDetails_
     ) private { 
         IWETH(s.WETH).approve(s.tricrypto, amountIn_);
 
@@ -92,14 +91,14 @@ contract OZLFacet is Modifiers {
         ****/ 
         for (uint i=1; i <= 2; i++) {
             uint minOut = ITri(s.tricrypto).get_dy(2, baseTokenOut_, amountIn_ / i);
-            uint slippage = ExecutorFacet(s.executor).calculateSlippage(minOut, userSlippage_ * i);
+            uint slippage = ExecutorFacet(s.executor).calculateSlippage(minOut, userDetails_.userSlippage * i);
             
             try ITri(s.tricrypto).exchange(2, baseTokenOut_, amountIn_ / i, slippage, false) {
                 if (i == 2) {
                     try ITri(s.tricrypto).exchange(2, baseTokenOut_, amountIn_ / i, slippage, false) {
                         break;
                     } catch {
-                        IWETH(s.WETH).transfer(msg.sender, amountIn_ / 2); 
+                        IWETH(s.WETH).transfer(userDetails_.user, amountIn_ / 2); 
                     }
                 }
                 break;
@@ -107,7 +106,7 @@ contract OZLFacet is Modifiers {
                 if (i == 1) {
                     continue;
                 } else {
-                    IWETH(s.WETH).transfer(msg.sender, amountIn_); 
+                    IWETH(s.WETH).transfer(userDetails_.user, amountIn_); 
                 }
             }
         }
@@ -115,8 +114,8 @@ contract OZLFacet is Modifiers {
         uint baseBalance = IERC20(baseTokenOut_ == 0 ? s.USDT : s.WBTC).balanceOf(address(this));
 
         // Delegates trade execution
-        if ((userToken_ != s.USDT || userToken_ != s.WBTC) && baseBalance > 0) {
-            _tradeWithExecutor(userToken_, userSlippage_); 
+        if ((userDetails_.userToken != s.USDT && userDetails_.userToken != s.WBTC) && baseBalance > 0) { //userToken_ != s.USDT || userToken_ != s.WBTC
+            _tradeWithExecutor(userDetails_.userToken, userDetails_.userSlippage); 
         }
     }
 

@@ -64,7 +64,7 @@ let evilAmount, evilSwapDetails;
 let accounts, signers, ozelBalance, regulatorCounter, higherIndex;
 
 
-describe('Arbitrum-side', async function () {
+xdescribe('Arbitrum-side', async function () {
     this.timeout(1000000);
 
     before( async () => {
@@ -262,7 +262,7 @@ describe('Arbitrum-side', async function () {
 });
 
 
-describe('Unit testing', async function () {
+xdescribe('Unit testing', async function () {
     this.timeout(1000000);
 
     before( async () => {
@@ -541,7 +541,7 @@ describe('Unit testing', async function () {
  * show the workings of the mechanism.
  */
 
-describe('Ozel Index', async function () {
+xdescribe('Ozel Index', async function () {
     this.timeout(100000000000000000000);
 
     before( async () => {
@@ -641,7 +641,7 @@ describe('Anti-slippage system / ModExecutorFacet2', async function () {
     this.timeout(1000000);
 
     before( async () => {
-        const deployedVars = await deploy(3, true);
+        const deployedVars = await deploy(2);
         ({
             deployedDiamond, 
             WETH,
@@ -668,8 +668,17 @@ describe('Anti-slippage system / ModExecutorFacet2', async function () {
     });
 
     it('la la la la', async () => {
+        console.log('callerAddr: ', callerAddr);
+
+        x = await USDT.balanceOf(callerAddr);
+        console.log('x pre: ', x / 10 ** 6);
+
         await sendETH(userDetails); 
-        assert(formatEther(await USDT.balanceOf(callerAddr)) > 0);
+
+        x = await USDT.balanceOf(callerAddr);
+        console.log('x post: ', x / 10 ** 6);
+
+        assert((await USDT.balanceOf(callerAddr)) / 10 ** 6 > 0);
 
     });
 
