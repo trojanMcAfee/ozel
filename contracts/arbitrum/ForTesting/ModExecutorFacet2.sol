@@ -29,6 +29,8 @@ contract ModExecutorFacet2 is Modifiers {
         uint userSlippage_,
         uint lockNum_
     ) external payable isAuthorized(lockNum_) noReentrancy(3) {
+        console.log(10);
+
         address pool = swapDetails_.pool;
         uint inBalance = IERC20(swapDetails_.baseToken).balanceOf(address(this));
         uint minOut;
@@ -42,6 +44,7 @@ contract ModExecutorFacet2 is Modifiers {
             If none works, sends the baseToken instead to the user.
         ****/ 
         for (uint i=1; i <= 2; i++) {
+            console.log(11);
             if (pool == s.renPool || pool == s.crv2Pool) {
 
                 minOut = IMulCurv(pool).get_dy(
@@ -49,27 +52,32 @@ contract ModExecutorFacet2 is Modifiers {
                 );
                 slippage = calculateSlippage(minOut, userSlippage_ * i);
 
-                try IMulCurv(pool).exchange( //log here so i know it runs and start from there
-                    swapDetails_.tokenIn, swapDetails_.tokenOut, inBalance / i, slippage
-                ) {
+                try IMulCurv(pool).exchange(swapDetails_.tokenIn, swapDetails_.tokenOut, inBalance / i, slippage) {
+                    console.log(9);
                     if (i == 2) {
-                        try IMulCurv(pool).exchange(
-                            swapDetails_.tokenIn, swapDetails_.tokenOut, inBalance / i, slippage
-                        ) {
+                        console.log(1);
+                        try IMulCurv(pool).exchange(swapDetails_.tokenIn, swapDetails_.tokenOut, inBalance / i, slippage) {
+                            console.log(2);
                             break;
                         } catch {
+                            console.log(3);
                             IERC20(swapDetails_.baseToken).transfer(msg.sender, inBalance / 2); //check if msg.sender should be changedd to user
                         }
                     }
+                    console.log(4);
                     break;
                 } catch {
+                    console.log(5);
                     if (i == 1) {
+                        console.log(6);
                         continue;
                     } else {
+                        console.log(7);
                         IERC20(swapDetails_.baseToken).transfer(msg.sender, inBalance); 
                     }
                 }
             } else {
+                console.log(8);
                 minOut = IMulCurv(pool).get_dy_underlying(
                     swapDetails_.tokenIn, swapDetails_.tokenOut, inBalance / i
                 );

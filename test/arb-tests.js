@@ -660,16 +660,16 @@ describe('Anti-slippage system / ModExecutorFacet2', async function () {
     
         getVarsForHelpers(deployedDiamond, ozlFacet);
 
-        userDetails = [
+        userDetails = [ //fraxAddr goes to the else clause
             callerAddr,
-            fraxAddr,
+            usdtAddrArb,
             defaultSlippage
         ];
     });
 
     it('la la la la', async () => {
         await sendETH(userDetails); 
-
+        assert(formatEther(await USDT.balanceOf(callerAddr)) > 0);
 
     });
 

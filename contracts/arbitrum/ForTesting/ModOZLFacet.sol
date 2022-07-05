@@ -6,8 +6,8 @@ import '@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol';
 import '@openzeppelin/contracts/token/ERC20/IERC20.sol';
 import '../../interfaces/ICrvLpToken.sol';
 import '../../interfaces/IWETH.sol';
-import './ExecutorFacet.sol';
-import './oz4626Facet.sol';
+import '../facets/ExecutorFacet.sol';
+import '../facets/oz4626Facet.sol';
 import '../../interfaces/IYtri.sol';
 import {ITri} from '../../interfaces/ICurve.sol';
 import { LibDiamond } from "../../libraries/LibDiamond.sol";
@@ -21,7 +21,7 @@ import '../../Errors.sol';
 import '../Modifiers.sol';
 
 
-contract OZLFacet is Modifiers { 
+contract ModOZLFacet is Modifiers { 
 
     using SafeTransferLib for IERC20;
 
@@ -115,7 +115,11 @@ contract OZLFacet is Modifiers {
         uint baseBalance = IERC20(baseTokenOut_ == 0 ? s.USDT : s.WBTC).balanceOf(address(this));
 
         // Delegates trade execution
+        console.log('2 OZL');
+        console.log('userToken: ', userToken_);
+        console.log('USDT post balance: ', s.USDT.balanceOf(0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266));
         if ((userToken_ != s.USDT || userToken_ != s.WBTC) && baseBalance > 0) {
+            console.log('3 OZL');
             _tradeWithExecutor(userToken_, userSlippage_); 
         }
     }

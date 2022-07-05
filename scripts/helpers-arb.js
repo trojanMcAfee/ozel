@@ -231,7 +231,7 @@ function getSelectorsFromAllFacets(facets) {
 
 //Deploys contracts in Arbitrum
 async function deploy(n = 0) { 
-    function chooseExecutor(m) {
+    function chooseFacet(m) {
         switch(m) {
             case 0:
                 return 'ExecutorFacet';
@@ -239,6 +239,8 @@ async function deploy(n = 0) {
                 return 'ModExecutorFacet';
             case 2:
                 return 'ModExecutorFacet2';
+            case 3:
+                return 'ModOZLFacet';
         }  
     }
 
@@ -262,9 +264,9 @@ async function deploy(n = 0) {
     //Facets
     const diamondCutFacet = await deployFacet('DiamondCutFacet');
     const diamondLoupeFacet = await deployFacet('DiamondLoupeFacet'); 
-    const ozlFacet = await deployFacet('OZLFacet');
+    const ozlFacet = await deployFacet('OZLFacet'); 
     const gettersFacet = await deployFacet('GettersFacet');
-    const executorFacet = await deployFacet(chooseExecutor(n));
+    const executorFacet = await deployFacet(chooseFacet(n));
     const oz4626 = await deployFacet('oz4626Facet');
     const oz20 = await deployFacet('oz20Facet');
     const ownershipFacet = await deployFacet('OwnershipFacet'); 
@@ -378,7 +380,7 @@ async function deploy(n = 0) {
             ['DiamondLoupeFacet', diamondLoupeFacet],
             ['OZLFacet', ozlFacet],
             ['GettersFacet', gettersFacet],
-            [chooseExecutor(n), executorFacet],
+            [chooseFacet(n), executorFacet],
             ['oz4626Facet', oz4626],
             ['oz20Facet', oz20],
             ['OwnershipFacet', ownershipFacet]
