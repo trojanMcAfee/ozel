@@ -64,7 +64,7 @@ contract OZLFacet is Modifiers {
 
         //Swaps WETH to userToken (Base: USDT-WBTC / Route: MIM-USDC-renBTC-WBTC) 
         _swapsForUserToken(
-            netAmountIn, baseTokenOut, userDetails_.userToken, userDetails_.userSlippage
+            netAmountIn, baseTokenOut, userDetails_
         );
       
         //Sends userToken to user

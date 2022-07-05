@@ -668,7 +668,6 @@ describe('Anti-slippage system / ModExecutorFacet2', async function () {
     });
 
     it('la la la la', async () => {
-        console.log('callerAddr: ', callerAddr);
 
         x = await USDT.balanceOf(callerAddr);
         console.log('x pre: ', x / 10 ** 6);
@@ -678,7 +677,6 @@ describe('Anti-slippage system / ModExecutorFacet2', async function () {
         x = await USDT.balanceOf(callerAddr);
         console.log('x post: ', x / 10 ** 6);
 
-        assert((await USDT.balanceOf(callerAddr)) / 10 ** 6 > 0);
 
     });
 

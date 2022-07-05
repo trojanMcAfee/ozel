@@ -85,7 +85,6 @@ contract ModOZLFacet is Modifiers {
         userConfig memory userDetails_
     ) private { 
         IWETH(s.WETH).approve(s.tricrypto, amountIn_);
-        console.log('msg.sender: ', msg.sender);
 
         /**** 
             Exchanges the amount between the user's slippage. 
@@ -98,17 +97,24 @@ contract ModOZLFacet is Modifiers {
             
             try ITri(s.tricrypto).exchange(2, baseTokenOut_, amountIn_ / i, slippage, false) {
                 if (i == 2) {
+                    console.log(2);
                     try ITri(s.tricrypto).exchange(2, baseTokenOut_, amountIn_ / i, slippage, false) {
+                        console.log(3);
                         break;
                     } catch {
+                        console.log(4);
                         IWETH(s.WETH).transfer(userDetails_.user, amountIn_ / 2); 
                     }
                 }
+                console.log(1);
                 break;
             } catch {
+                console.log(5);
                 if (i == 1) {
+                    console.log(6);
                     continue;
                 } else {
+                    console.log(7);
                     IWETH(s.WETH).transfer(userDetails_.user, amountIn_); 
                 }
             }
@@ -117,7 +123,6 @@ contract ModOZLFacet is Modifiers {
         uint baseBalance = IERC20(baseTokenOut_ == 0 ? s.USDT : s.WBTC).balanceOf(address(this));
 
         // Delegates trade execution
-        console.log('2 OZL');
         if ((userDetails_.userToken != s.USDT && userDetails_.userToken != s.WBTC) && baseBalance > 0) {
             console.log('3 OZL');
             _tradeWithExecutor(userDetails_.userToken, userDetails_.userSlippage); 
@@ -211,23 +216,17 @@ contract ModOZLFacet is Modifiers {
     }
 
     function _tradeWithExecutor(address userToken_, uint userSlippage_) private {
-        console.log('1 OZL');
         s.isAuth[2] = true;
         uint length = s.swaps.length;
-        console.log('USDT post balance2: ', IERC20(s.USDT).balanceOf(0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266));
 
         for (uint i=0; i < length;) {
             if (s.swaps[i].userToken == userToken_) {
-                console.log('4 OZL');
-                console.log('userToken2: ', userToken_);
-                console.log('executor: ', s.executor);
                 (bool success, ) = s.executor.delegatecall(
                     abi.encodeWithSelector(
                         ExecutorFacet(s.executor).executeFinalTrade.selector, 
                         s.swaps[i], userSlippage_, 2
                     )
                 );
-                console.log('success: ', success);
                 if(!success) revert CallFailed('OZLFacet: _tradeWithExecutor() failed');
                 break;
             }
