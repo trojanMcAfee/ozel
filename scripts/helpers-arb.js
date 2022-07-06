@@ -408,7 +408,8 @@ async function deploy(n = 0) {
         callerAddr, 
         caller2Addr,
         ozlFacet,
-        yvCrvTri
+        yvCrvTri,
+        ozlFacet
     };
 
 }

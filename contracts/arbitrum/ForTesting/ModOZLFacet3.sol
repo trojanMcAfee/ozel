@@ -21,7 +21,7 @@ import '../../Errors.sol';
 import '../Modifiers.sol';
 
 
-contract ModOZLFacet2 is Modifiers { 
+contract ModOZLFacet3 is Modifiers { 
 
     using SafeTransferLib for IERC20;
 
@@ -99,18 +99,25 @@ contract ModOZLFacet2 is Modifiers {
             
             try ITri(s.tricrypto).exchange(2, baseTokenOut_, amountIn_ / i, testVar, false) { 
                 if (i == 2) {
+                    console.log(2);
                     try ITri(s.tricrypto).exchange(2, baseTokenOut_, amountIn_ / i, slippage, false) {
+                        console.log(3);
                         emit ForTesting(23);
                         break;
                     } catch {
+                        console.log(4);
                         IWETH(s.WETH).transfer(userDetails_.user, amountIn_ / 2); 
                     }
                 }
+                console.log(1);
                 break;
             } catch {
+                console.log(5);
                 if (i == 1) {
+                    console.log(6);
                     continue;
                 } else {
+                    console.log(7);
                     IWETH(s.WETH).transfer(userDetails_.user, amountIn_); 
                 }
             }
@@ -120,6 +127,7 @@ contract ModOZLFacet2 is Modifiers {
 
         // Delegates trade execution
         if ((userDetails_.userToken != s.USDT && userDetails_.userToken != s.WBTC) && baseBalance > 0) {
+            console.log('3 OZL');
             _tradeWithExecutor(userDetails_.userToken, userDetails_.userSlippage); 
         }
     }

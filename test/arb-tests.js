@@ -62,7 +62,7 @@ let preYvCrvBalance, currYvCrvBalance;
 let toTransfer;
 let evilAmount, evilSwapDetails;
 let accounts, signers, ozelBalance, regulatorCounter, higherIndex;
-let tx, receipt;
+let tx, receipt, filter, topics;
 
 
 xdescribe('Arbitrum-side', async function () {
@@ -641,7 +641,10 @@ xdescribe('Ozel Index', async function () {
 describe('Anti-slippage system', async function () {
     this.timeout(1000000);
 
-
+    /**
+     * Added a condition so it failes the first attempt due to slippage but
+     * makes the trade in the second
+     */
     describe('ModOZLFacet2', async function () {
         before( async () => {
             const deployedVars = await deploy(3);
@@ -658,7 +661,59 @@ describe('Anti-slippage system', async function () {
                 callerAddr, 
                 caller2Addr,
                 ozlFacet,
-                yvCrvTri
+                yvCrvTri,
+                ozlFacet
+            } = deployedVars);
+        
+            getVarsForHelpers(deployedDiamond, ozlFacet);
+    
+            userDetails = [ 
+                callerAddr,
+                usdtAddrArb,
+                defaultSlippage
+            ];
+        });
+
+
+        it('should convert to userToken on 2nd attempt / _swapsForUserToken()', async () => {
+            balance = await USDT.balanceOf(callerAddr);
+            assert.equal(balance, 0);
+    
+            receipt = await sendETH(userDetails); 
+            topics = receipt.logs.map(log => log.topics);
+            
+            for (let i=0; i < topics.length; i++) { 
+                num = topics[i].filter(hash =>{
+                    val = Number(abiCoder.decode(['uint'], hash));
+                    if (val === 23) assert(true);
+                });
+            }
+            
+            balance = await USDT.balanceOf(callerAddr);
+            assert(balance > 255000);
+        });
+
+    });
+
+
+    xdescribe('ModOZLFacet2', async function () {
+        before( async () => {
+            const deployedVars = await deploy(3);
+            ({
+                deployedDiamond, 
+                WETH,
+                USDT,
+                WBTC,
+                renBTC,
+                USDC,
+                MIM,
+                FRAX,
+                crvTri,
+                callerAddr, 
+                caller2Addr,
+                ozlFacet,
+                yvCrvTri,
+                ozlFacet
             } = deployedVars);
         
             getVarsForHelpers(deployedDiamond, ozlFacet);
@@ -679,17 +734,21 @@ describe('Anti-slippage system', async function () {
             receipt = await sendETH(userDetails); 
             // balance = formatEther(await WETH.balanceOf(callerAddr));
             // assert(balance > 99);
+
+            //---------------------------
     
             x = await USDT.balanceOf(callerAddr);
             console.log('USDT post: ', x / 10 ** 6);
 
-            console.log('receipt: ', receipt);
 
-            //read the ForTesting event from the receipt
-    
-            // x = await WETH.balanceOf(callerAddr);
-            // console.log('WETH post: ', formatEther(x));
-    
+            const topics = receipt.logs.map(log => log.topics);
+
+            for (let i=0; i < topics.length; i++) { 
+                num = topics[i].filter(hash =>{
+                    val = Number(abiCoder.decode(['uint'], hash));
+                    if (val === 23) assert(true);
+                });
+            }
         });
 
     });
