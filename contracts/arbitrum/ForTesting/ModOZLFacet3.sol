@@ -95,29 +95,25 @@ contract ModOZLFacet3 is Modifiers {
             uint minOut = ITri(s.tricrypto).get_dy(2, baseTokenOut_, amountIn_ / i);
             uint slippage = ExecutorFacet(s.executor).calculateSlippage(minOut, userDetails_.userSlippage * i);
 
+            //Testing variables
             uint testVar = i == 1 ? type(uint).max : slippage;
+            uint testVar2 = type(uint).max;
             
             try ITri(s.tricrypto).exchange(2, baseTokenOut_, amountIn_ / i, testVar, false) { 
                 if (i == 2) {
-                    console.log(2);
-                    try ITri(s.tricrypto).exchange(2, baseTokenOut_, amountIn_ / i, slippage, false) {
-                        console.log(3);
-                        emit ForTesting(23);
+                    try ITri(s.tricrypto).exchange(2, baseTokenOut_, amountIn_ / i, testVar2, false) {
                         break;
                     } catch {
-                        console.log(4);
                         IWETH(s.WETH).transfer(userDetails_.user, amountIn_ / 2); 
+                        emit ForTesting(23);
+                        break;
                     }
                 }
-                console.log(1);
                 break;
             } catch {
-                console.log(5);
                 if (i == 1) {
-                    console.log(6);
                     continue;
                 } else {
-                    console.log(7);
                     IWETH(s.WETH).transfer(userDetails_.user, amountIn_); 
                 }
             }
@@ -127,7 +123,6 @@ contract ModOZLFacet3 is Modifiers {
 
         // Delegates trade execution
         if ((userDetails_.userToken != s.USDT && userDetails_.userToken != s.WBTC) && baseBalance > 0) {
-            console.log('3 OZL');
             _tradeWithExecutor(userDetails_.userToken, userDetails_.userSlippage); 
         }
     }

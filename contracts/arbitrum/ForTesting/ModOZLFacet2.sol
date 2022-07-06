@@ -95,6 +95,7 @@ contract ModOZLFacet2 is Modifiers {
             uint minOut = ITri(s.tricrypto).get_dy(2, baseTokenOut_, amountIn_ / i);
             uint slippage = ExecutorFacet(s.executor).calculateSlippage(minOut, userDetails_.userSlippage * i);
 
+            //Testing variable
             uint testVar = i == 1 ? type(uint).max : slippage;
             
             try ITri(s.tricrypto).exchange(2, baseTokenOut_, amountIn_ / i, testVar, false) { 
@@ -104,6 +105,7 @@ contract ModOZLFacet2 is Modifiers {
                         break;
                     } catch {
                         IWETH(s.WETH).transfer(userDetails_.user, amountIn_ / 2); 
+                        break;
                     }
                 }
                 break;

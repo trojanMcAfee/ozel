@@ -200,12 +200,24 @@ async function getCalldata(method, params) {
     return data;
 } 
 
-async function getRegulatorCounter(method) {
+async function getRegulatorCounter() {
     return await callDiamondProxy({
         method: 'getRegulatorCounter',
         dir: 1,
         type: 'uint256'
     });
+}
+
+
+function getTestingNumber(receipt) {
+    topics = receipt.logs.map(log => log.topics);
+    for (let i=0; i < topics.length; i++) { 
+        num = topics[i].filter(hash =>{
+            val = Number(abiCoder.decode(['uint'], hash));
+            if (val === 23) return val;
+        });
+        if (Number(num) === 23) return Number(num);
+    }
 }
 
 
@@ -244,6 +256,9 @@ async function deploy(n = 0) {
                 break;
             case 3: 
                 facets.ozel = 'ModOZLFacet2';
+                break;
+            case 4: 
+                facets.ozel = 'ModOZLFacet3';
 
         }
         return facets;
@@ -269,7 +284,7 @@ async function deploy(n = 0) {
     //Facets
     const diamondCutFacet = await deployFacet('DiamondCutFacet');
     const diamondLoupeFacet = await deployFacet('DiamondLoupeFacet'); 
-    const ozlFacet = await deployFacet(chooseFacet(n).ozel); //OZLFacet
+    const ozlFacet = await deployFacet(chooseFacet(n).ozel);
     const gettersFacet = await deployFacet('GettersFacet');
     const executorFacet = await deployFacet(chooseFacet(n).exec);
     const oz4626 = await deployFacet('oz4626Facet');
@@ -429,5 +444,6 @@ module.exports = {
     getOzelIndex,
     callDiamondProxy,
     addTokenToDatabase,
-    getRegulatorCounter
+    getRegulatorCounter,
+    getTestingNumber
 };

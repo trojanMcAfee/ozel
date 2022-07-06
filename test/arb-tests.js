@@ -21,7 +21,8 @@ const {
     getOzelIndex,
     callDiamondProxy,
     addTokenToDatabase,
-    getRegulatorCounter
+    getRegulatorCounter,
+    getTestingNumber
 } = require('../scripts/helpers-arb.js');
 
 const { 
@@ -642,10 +643,10 @@ describe('Anti-slippage system', async function () {
     this.timeout(1000000);
 
     /**
-     * Added a condition so it failes the first attempt due to slippage but
-     * makes the trade in the second
+     * Added a condition so it failes the first attempt due to slippage
+     * but makes the trade in the second.
      */
-    describe('ModOZLFacet2', async function () {
+    xdescribe('ModOZLFacet2', async function () {
         before( async () => {
             const deployedVars = await deploy(3);
             ({
@@ -680,14 +681,8 @@ describe('Anti-slippage system', async function () {
             assert.equal(balance, 0);
     
             receipt = await sendETH(userDetails); 
-            topics = receipt.logs.map(log => log.topics);
-            
-            for (let i=0; i < topics.length; i++) { 
-                num = topics[i].filter(hash =>{
-                    val = Number(abiCoder.decode(['uint'], hash));
-                    if (val === 23) assert(true);
-                });
-            }
+
+            assert.equal(getTestingNumber(receipt), 23);
             
             balance = await USDT.balanceOf(callerAddr);
             assert(balance > 255000);
@@ -696,9 +691,14 @@ describe('Anti-slippage system', async function () {
     });
 
 
-    xdescribe('ModOZLFacet2', async function () {
+    /**
+     * Added a 2nd testVar that causes the 3rd swap attempt to fail. The 2nd
+     * swap exchanged half of amountIn to userToken, and due to the failure on
+     * the 3rd swap, the other half of amountIn was sent as WETH back to the user.
+     */
+    describe('ModOZLFacet3', async function () {
         before( async () => {
-            const deployedVars = await deploy(3);
+            const deployedVars = await deploy(4);
             ({
                 deployedDiamond, 
                 WETH,
@@ -726,29 +726,20 @@ describe('Anti-slippage system', async function () {
         });
 
 
-        it('should convert to userToken on 2nd attempt / _swapsForUserToken()', async () => {
-
-            x = await USDT.balanceOf(callerAddr);
-            console.log('USDT pre: ', x / 10 ** 6);
+        it('should convert to half to userToken and half to WETH / _swapsForUserToken()', async () => {
+            balance = await USDT.balanceOf(callerAddr);
+            assert.equal(balance, 0);
+            balance = await WETH.balanceOf(callerAddr);
+            assert.equal(balance, 0);
     
             receipt = await sendETH(userDetails); 
-            // balance = formatEther(await WETH.balanceOf(callerAddr));
-            // assert(balance > 99);
+           
+            balance = await USDT.balanceOf(callerAddr);
+            assert(balance > 170000);
+            balance = await WETH.balanceOf(callerAddr)
+            assert(balance > 49);
 
-            //---------------------------
-    
-            x = await USDT.balanceOf(callerAddr);
-            console.log('USDT post: ', x / 10 ** 6);
-
-
-            const topics = receipt.logs.map(log => log.topics);
-
-            for (let i=0; i < topics.length; i++) { 
-                num = topics[i].filter(hash =>{
-                    val = Number(abiCoder.decode(['uint'], hash));
-                    if (val === 23) assert(true);
-                });
-            }
+            assert.equal(getTestingNumber(receipt), 23);
         });
 
     });

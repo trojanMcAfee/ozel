@@ -99,6 +99,7 @@ contract OZLFacet is Modifiers {
                         break;
                     } catch {
                         IWETH(s.WETH).transfer(userDetails_.user, amountIn_ / 2); 
+                        break;
                     }
                 }
                 break;
