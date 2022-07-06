@@ -22,7 +22,8 @@ const {
     callDiamondProxy,
     addTokenToDatabase,
     getRegulatorCounter,
-    getTestingNumber
+    getTestingNumber,
+    deployFacet
 } = require('../scripts/helpers-arb.js');
 
 const { 
@@ -64,6 +65,8 @@ let toTransfer;
 let evilAmount, evilSwapDetails;
 let accounts, signers, ozelBalance, regulatorCounter, higherIndex;
 let tx, receipt, filter, topics;
+let iface, encodedData, args, abi;
+let selector;
 
 
 xdescribe('Arbitrum-side', async function () {
@@ -646,7 +649,7 @@ describe('Anti-slippage system', async function () {
      * Added a condition so it failes the first attempt due to slippage
      * but makes the trade in the second.
      */
-    xdescribe('ModOZLFacet2', async function () {
+    describe('ModOZLFacet2', async function () {
         before( async () => {
             const deployedVars = await deploy(3);
             ({
@@ -676,7 +679,56 @@ describe('Anti-slippage system', async function () {
         });
 
 
-        it('should convert to userToken on 2nd attempt / _swapsForUserToken()', async () => {
+        it('should replace swapsUserToken for V2 / _swapsForUserTokenV2()', async () => {
+            abiV2 = ['function _swapsForUserToken(uint256 amountIn_, uint256 baseTokenOut_, tuple(address user, address userToken, uint256 userSlippage) userDetails_) private'];
+            abiV3 = ['function _swapsForUserToken(uint256 amountIn_, uint256 baseTokenOut_, tuple(address user, address userToken, uint256 userSlippage) userDetails_) private'];
+            iface2 = new ethers.utils.Interface(abiV2);
+            iface3 = new ethers.utils.Interface(abiV3);
+            selector2 = iface2.getSighash('_swapsForUserToken');
+            selector3 = iface3.getSighash('_swapsForUserToken');
+
+            const swapsFunctions = await deployFacet('SwapsForUserToken');
+            // encodedData2 = iface2.encodeFunctionData('_swapsForUserTokenV2', [
+
+            // ]);
+
+
+
+            faceCutArgs = [ //add this facet and try it out
+                swapsFunctions.address,
+                0,
+                [selector2]
+            ];
+
+            //----------
+
+
+            await callDiamondProxy({
+                method: 'diamondCut',
+                args: [
+                    faceCutArgs, 
+                    swapsFunctions.address,
+                    0x0
+                ]
+            });
+
+            //--------------
+
+            balance = await USDT.balanceOf(callerAddr);
+            assert.equal(balance, 0);
+    
+            receipt = await sendETH(userDetails); 
+
+            assert.equal(getTestingNumber(receipt), 23);
+            
+            balance = await USDT.balanceOf(callerAddr);
+            assert(balance > 255000);
+
+
+        });
+
+
+        xit('should convert to userToken on 2nd attempt / _swapsForUserToken()', async () => {
             balance = await USDT.balanceOf(callerAddr);
             assert.equal(balance, 0);
     
@@ -696,7 +748,7 @@ describe('Anti-slippage system', async function () {
      * swap exchanged half of amountIn to userToken, and due to the failure on
      * the 3rd swap, the other half of amountIn was sent as WETH back to the user.
      */
-    describe('ModOZLFacet3', async function () {
+    xdescribe('ModOZLFacet3', async function () {
         before( async () => {
             const deployedVars = await deploy(4);
             ({

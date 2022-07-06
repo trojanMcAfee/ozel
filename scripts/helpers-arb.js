@@ -60,7 +60,8 @@ async function callDiamondProxy(params) {
         burn: 'function burn(address account, uint256 amount, uint256 lockNum_) external',
         modifyPaymentsAndVolumeExternally: 'function modifyPaymentsAndVolumeExternally(address user_, uint256 newAmount_, uint256 lockNum_) external',
         addTokenToDatabase: 'function addTokenToDatabase(address newToken_) external',
-        transferUserAllocation: 'function transferUserAllocation(address sender_, address receiver_, uint256 amount_, uint256 senderBalance_, uint256 lockNum_) external'
+        transferUserAllocation: 'function transferUserAllocation(address sender_, address receiver_, uint256 amount_, uint256 senderBalance_, uint256 lockNum_) external',
+        diamondCut: 'function dimaondCut(tuple(address facetAddress, uint8 action, bytes4[] functionSelectors) _diamondCut, address _init, bytes _calldata) external'
     }; 
 
     for (let sign in signatures) {
@@ -445,5 +446,6 @@ module.exports = {
     callDiamondProxy,
     addTokenToDatabase,
     getRegulatorCounter,
-    getTestingNumber
+    getTestingNumber,
+    deployFacet
 };
