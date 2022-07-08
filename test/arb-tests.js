@@ -645,103 +645,6 @@ xdescribe('Ozel Index', async function () {
 describe('Anti-slippage system', async function () {
     this.timeout(1000000);
 
-    /**
-     * Added a condition so it failes the first attempt due to slippage
-     * but makes the trade in the second.
-     */
-    describe('ModOZLFacet2', async function () {
-        before( async () => {
-            const deployedVars = await deploy(3);
-            ({
-                deployedDiamond, 
-                WETH,
-                USDT,
-                WBTC,
-                renBTC,
-                USDC,
-                MIM,
-                FRAX,
-                crvTri,
-                callerAddr, 
-                caller2Addr,
-                ozlFacet,
-                yvCrvTri,
-                ozlFacet
-            } = deployedVars);
-        
-            getVarsForHelpers(deployedDiamond, ozlFacet);
-    
-            userDetails = [ 
-                callerAddr,
-                usdtAddrArb,
-                defaultSlippage
-            ];
-        });
-
-
-        it('should replace swapsUserToken for V2 / _swapsForUserTokenV2()', async () => {
-            abiV2 = ['function _swapsForUserToken(uint256 amountIn_, uint256 baseTokenOut_, tuple(address user, address userToken, uint256 userSlippage) userDetails_) private'];
-            abiV3 = ['function _swapsForUserToken(uint256 amountIn_, uint256 baseTokenOut_, tuple(address user, address userToken, uint256 userSlippage) userDetails_) private'];
-            iface2 = new ethers.utils.Interface(abiV2);
-            iface3 = new ethers.utils.Interface(abiV3);
-            selector2 = iface2.getSighash('_swapsForUserToken');
-            selector3 = iface3.getSighash('_swapsForUserToken');
-
-            const swapsFunctions = await deployFacet('SwapsForUserToken');
-            // encodedData2 = iface2.encodeFunctionData('_swapsForUserTokenV2', [
-
-            // ]);
-
-
-
-            faceCutArgs = [ //add this facet and try it out
-                swapsFunctions.address,
-                0,
-                [selector2]
-            ];
-
-            //----------
-
-
-            await callDiamondProxy({
-                method: 'diamondCut',
-                args: [
-                    faceCutArgs, 
-                    swapsFunctions.address,
-                    0x0
-                ]
-            });
-
-            //--------------
-
-            balance = await USDT.balanceOf(callerAddr);
-            assert.equal(balance, 0);
-    
-            receipt = await sendETH(userDetails); 
-
-            assert.equal(getTestingNumber(receipt), 23);
-            
-            balance = await USDT.balanceOf(callerAddr);
-            assert(balance > 255000);
-
-
-        });
-
-
-        xit('should convert to userToken on 2nd attempt / _swapsForUserToken()', async () => {
-            balance = await USDT.balanceOf(callerAddr);
-            assert.equal(balance, 0);
-    
-            receipt = await sendETH(userDetails); 
-
-            assert.equal(getTestingNumber(receipt), 23);
-            
-            balance = await USDT.balanceOf(callerAddr);
-            assert(balance > 255000);
-        });
-
-    });
-
 
     /**
      * Added a 2nd testVar that causes the 3rd swap attempt to fail. The 2nd
@@ -835,6 +738,93 @@ describe('Anti-slippage system', async function () {
             balance = formatEther(await WETH.balanceOf(callerAddr));
             assert.equal(balance, 99.9);    
         }); 
+    });
+
+
+    /**
+     * Added a condition so it failes the first attempt due to slippage
+     * but makes the trade in the second.
+     */
+     describe('ModOZLFacet2', async function () {
+        before( async () => {
+            const deployedVars = await deploy(2); //deploy(3) to get ModOZLFacet2
+            ({
+                deployedDiamond, 
+                WETH,
+                USDT,
+                WBTC,
+                renBTC,
+                USDC,
+                MIM,
+                FRAX,
+                crvTri,
+                callerAddr, 
+                caller2Addr,
+                ozlFacet,
+                yvCrvTri,
+                ozlFacet
+            } = deployedVars);
+        
+            getVarsForHelpers(deployedDiamond, ozlFacet);
+    
+            userDetails = [ 
+                callerAddr,
+                usdtAddrArb,
+                defaultSlippage
+            ];
+        });
+
+
+        it('should replace swapsUserToken for V2 / _swapsForUserTokenV2()', async () => {
+           
+            abi = ['function _swapsForUserToken(uint256 amountIn_, uint256 baseTokenOut_, tuple(address user, address userToken, uint256 userSlippage) userDetails_) private'];
+            iface = new ethers.utils.Interface(abi);
+            selector = iface.getSighash('_swapsForUserToken');
+            console.log('selector *****: ', selector);
+
+            const swapForUserTokenV2 = await deployFacet('SwapsForUserTokenV2');
+        
+            faceCutArgs = [[ swapForUserTokenV2.address, 1, [selector] ]];
+
+            //----------
+
+            await callDiamondProxy({
+                method: 'diamondCut',
+                args: [
+                    faceCutArgs, 
+                    swapForUserTokenV2.address,
+                    0x0
+                ]
+            });
+
+            //--------------
+
+            balance = await USDT.balanceOf(callerAddr);
+            assert.equal(balance, 0);
+    
+            receipt = await sendETH(userDetails); 
+
+            assert.equal(getTestingNumber(receipt), 23);
+            
+            balance = await USDT.balanceOf(callerAddr);
+            assert(balance > 255000);
+
+
+        });
+
+
+        xit('should convert to userToken on 2nd attempt / _swapsForUserToken()', async () => {
+            balance = await USDT.balanceOf(callerAddr);
+            assert.equal(balance, 0);
+    
+            receipt = await sendETH(userDetails); 
+
+            assert.equal(getTestingNumber(receipt), 23);
+            
+            balance = await USDT.balanceOf(callerAddr);
+            assert(balance > 255000);
+        });
+
     });
     
 

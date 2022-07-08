@@ -8,15 +8,14 @@ import '../../../interfaces/IWETH.sol';
 import '@openzeppelin/contracts/token/ERC20/IERC20.sol';
 
 
-contract SwapsForUserToken {
+contract SwapsForUserTokenV2 {
 
     AppStorage s;
 
     event ForTesting(uint indexed testNum);
-
-
     
-    function _swapsForUserTokenV2(
+    
+    function _swapsForUserToken(
         uint amountIn_, 
         uint baseTokenOut_, 
         userConfig memory userDetails_
@@ -55,11 +54,25 @@ contract SwapsForUserToken {
             }
         }
         
-        uint baseBalance = IERC20(baseTokenOut_ == 0 ? s.USDT : s.WBTC).balanceOf(address(this));
+        // uint baseBalance = IERC20(baseTokenOut_ == 0 ? s.USDT : s.WBTC).balanceOf(address(this));
+
+        // // Delegates trade execution
+        // if ((userDetails_.userToken != s.USDT && userDetails_.userToken != s.WBTC) && baseBalance > 0) { //userToken_ != s.USDT || userToken_ != s.WBTC
+        //     _tradeWithExecutor(userDetails_.userToken, userDetails_.userSlippage); 
+        // }
     }
+}
 
 
-    function _swapsForUserTokenV3(
+
+contract SwapsForUserTokenV3 {
+
+    AppStorage s;
+
+    event ForTesting(uint indexed testNum);
+
+
+    function _swapsForUserToken(
         uint amountIn_, 
         uint baseTokenOut_, 
         userConfig memory userDetails_
@@ -99,13 +112,11 @@ contract SwapsForUserToken {
             }
         }
         
-        uint baseBalance = IERC20(baseTokenOut_ == 0 ? s.USDT : s.WBTC).balanceOf(address(this));
+        // uint baseBalance = IERC20(baseTokenOut_ == 0 ? s.USDT : s.WBTC).balanceOf(address(this));
+
+        // // Delegates trade execution
+        // if ((userDetails_.userToken != s.USDT && userDetails_.userToken != s.WBTC) && baseBalance > 0) { //userToken_ != s.USDT || userToken_ != s.WBTC
+        //     _tradeWithExecutor(userDetails_.userToken, userDetails_.userSlippage); 
+        // }
     }
-
-    
-
-
-
-
-
 }
