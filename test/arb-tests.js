@@ -777,32 +777,33 @@ describe('Anti-slippage system', async function () {
 
         it('should replace swapsUserToken for V2 / _swapsForUserTokenV2()', async () => {
            
-            abi = ['function _swapsForUserToken(uint256 amountIn_, uint256 baseTokenOut_, tuple(address user, address userToken, uint256 userSlippage) userDetails_) private'];
+            abi = ['function exchangeToUserToken((address user, address userToken, uint256 userSlippage) userDetails_) external payable'];
             iface = new ethers.utils.Interface(abi);
-            selector = iface.getSighash('_swapsForUserToken');
-            console.log('selector *****: ', selector);
+            selector = iface.getSighash('exchangeToUserToken');
+            // console.log('selector *****: ', selector);
+            // encodedData = iface.encodeFunctionData('exchangeToUserToken', [userDetails]);
 
             const swapForUserTokenV2 = await deployFacet('SwapsForUserTokenV2');
         
             faceCutArgs = [[ swapForUserTokenV2.address, 1, [selector] ]];
 
             //----------
+            
+            balance = await USDT.balanceOf(callerAddr);
+            assert.equal(balance, 0);
 
             await callDiamondProxy({
                 method: 'diamondCut',
                 args: [
                     faceCutArgs, 
-                    swapForUserTokenV2.address,
-                    0x0
+                    nullAddr,
+                    '0x'
                 ]
+                // value: parseEther('100')
             });
-
-            //--------------
-
-            balance = await USDT.balanceOf(callerAddr);
-            assert.equal(balance, 0);
     
             receipt = await sendETH(userDetails); 
+            // console.log('receipt: ', receipt);
 
             assert.equal(getTestingNumber(receipt), 23);
             

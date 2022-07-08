@@ -215,7 +215,11 @@ function getTestingNumber(receipt) {
     for (let i=0; i < topics.length; i++) { 
         num = topics[i].filter(hash =>{
             val = Number(abiCoder.decode(['uint'], hash));
-            if (val === 23) return val;
+            console.log('val ^^^^^: ', val);
+            if (val === 23) {
+                console.log('val ***: ', val);
+                return val;
+            }
         });
         if (Number(num) === 23) return Number(num);
     }
