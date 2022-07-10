@@ -701,8 +701,8 @@ describe('Anti-slippage system', async function () {
 
 
     /**
-     * Changed the first slippage for type(uint).max in order
-     * to provoke all trades to fail (due to slippage) and invoke
+     * Changed the first slippage for type(uint).max in_swapsForUserToken 
+     * in order to provoke all trades to fail (due to slippage) and invoke
      * the last resort mechanism (send WETH back to user)
      */
     xdescribe('ModOZLFacet', async function () {
@@ -776,41 +776,25 @@ describe('Anti-slippage system', async function () {
 
 
         it('should replace swapsUserToken for V2 / _swapsForUserTokenV2()', async () => {
-           
             abi = ['function exchangeToUserToken(tuple(address user, address userToken, uint256 userSlippage) userDetails_) external payable'];
             iface = new ethers.utils.Interface(abi);
             selector = iface.getSighash('exchangeToUserToken');
-            console.log('selector *****: ', selector);
-            // encodedData = iface.encodeFunctionData('exchangeToUserToken', [userDetails]);
-
             const swapForUserTokenV2 = await deployFacet('SwapsForUserTokenV2');
-        
             faceCutArgs = [[ swapForUserTokenV2.address, 1, [selector] ]];
-
-            //----------
             
             balance = await USDT.balanceOf(callerAddr);
             assert.equal(balance, 0);
 
             await callDiamondProxy({
                 method: 'diamondCut',
-                args: [
-                    faceCutArgs, 
-                    nullAddr,
-                    '0x'
-                ]
-                // value: parseEther('100')
+                args: [faceCutArgs, nullAddr,'0x']
             });
     
             receipt = await sendETH(userDetails); 
-            // console.log('receipt: ', receipt);
-
             assert.equal(getTestingNumber(receipt), 23);
             
             balance = await USDT.balanceOf(callerAddr);
             assert(balance > 255000);
-
-
         });
 
 

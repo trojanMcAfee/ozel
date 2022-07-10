@@ -28,29 +28,13 @@ contract DiamondInit {
     AppStorage s;
     // You can add parameters to this function in order to pass in 
     // data to set your own state variables
-    function init(
-        // LibDiamond.Facets memory facets_,
-        LibDiamond.VarsAndAddresses memory vars_
-    ) external {
+    function init(LibDiamond.VarsAndAddresses memory vars_) external {
         // adding ERC165 data
         LibDiamond.DiamondStorage storage ds = LibDiamond.diamondStorage();
         ds.supportedInterfaces[type(IERC165).interfaceId] = true;
         ds.supportedInterfaces[type(IDiamondCut).interfaceId] = true;
         ds.supportedInterfaces[type(IDiamondLoupe).interfaceId] = true;
         ds.supportedInterfaces[type(IERC173).interfaceId] = true;
-
-        //Ads selectors to Facets mapping
-        // uint length = facets_.selectors.length;
-        // for (uint i; i < length;) {
-        //     bytes4[] memory selectors = facets_.selectors[i];
-        //     uint length2 = selectors.length;
-        //     for (uint j; j < length2;) {
-        //         ds.facets[selectors[j]] = facets_.addresses[i];
-        //         unchecked { ++j; }
-        //     }
-        //     unchecked { i++; }
-        // }
-
 
         //Sets addresses on contracts
         s.OZL = vars_.contracts[0]; 

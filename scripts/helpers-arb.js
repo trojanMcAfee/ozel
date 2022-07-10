@@ -215,11 +215,7 @@ function getTestingNumber(receipt) {
     for (let i=0; i < topics.length; i++) { 
         num = topics[i].filter(hash =>{
             val = Number(abiCoder.decode(['uint'], hash));
-            // console.log('val ^^^^^: ', val);
-            if (val === 23) {
-                console.log('val ***: ', val);
-                return val;
-            }
+            if (val === 23) return val;
         });
         if (Number(num) === 23) return Number(num);
     }
@@ -235,14 +231,6 @@ async function deployFacet(facetName) {
     console.log(`${facetName} deployed to: `, contract.address);
     return contract;
 }
-
-// function getSelectorsFromAllFacets(facets) { 
-//     const selectors = [];
-//     for (let i = 0; i < facets.length; i++) {
-//         selectors.push(getSelectors(facets[i]).filter((el) => typeof el === 'string'));
-//     }
-//     return selectors;
-// }
 
 
 
@@ -296,28 +284,6 @@ async function deploy(n = 0) {
     const oz20 = await deployFacet('oz20Facet');
     const ownershipFacet = await deployFacet('OwnershipFacet'); 
 
-    //Selectors
-    // const [
-    //     selecCut,
-    //     selecLoup,
-    //     selecOZL,
-    //     selectGetters,
-    //     selectExecutor,
-    //     select4626,
-    //     select20,
-    //     selectOwner
-    // ] = getSelectorsFromAllFacets([
-    //     diamondCutFacet,
-    //     diamondLoupeFacet,
-    //     ozlFacet,
-    //     gettersFacet,
-    //     executorFacet,
-    //     oz4626,
-    //     oz20,
-    //     ownershipFacet
-    // ]);
-
-
     const contractsAddr = [
         ozlFacet.address,
         tricryptoAddr,
@@ -366,28 +332,6 @@ async function deploy(n = 0) {
         ETH
     ];
 
-    // const FacetsStruct = [
-    //     [
-    //         selecCut, 
-    //         selecLoup, 
-    //         selecOZL, 
-    //         selectGetters,
-    //         selectExecutor,
-    //         select4626,
-    //         select20,
-    //         selectOwner
-    //     ],
-    //     [
-    //         diamondCutFacet.address, 
-    //         diamondLoupeFacet.address, 
-    //         ozlFacet.address,
-    //         gettersFacet.address,
-    //         executorFacet.address,
-    //         oz4626.address,
-    //         oz20.address,
-    //         ownershipFacet.address
-    //     ]
-    // ];
 
     //Deploy DiamondInit
     const DiamondInit = await hre.ethers.getContractFactory('DiamondInit');

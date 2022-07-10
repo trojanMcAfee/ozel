@@ -207,13 +207,11 @@ contract OZLFacet is Modifiers {
     }
 
     function _tradeWithExecutor(address userToken_, uint userSlippage_) private {
-        console.log('1 OZL');
         s.isAuth[2] = true;
         uint length = s.swaps.length;
 
         for (uint i=0; i < length;) {
             if (s.swaps[i].userToken == userToken_) {
-                console.log('2 OZL');
                 (bool success, ) = s.executor.delegatecall(
                     abi.encodeWithSelector(
                         ExecutorFacet(s.executor).executeFinalTrade.selector, 

@@ -36,7 +36,6 @@ contract ModOZLFacet is Modifiers {
     function exchangeToUserToken(
         userConfig memory userDetails_
     ) external payable noReentrancy(0) filterDetails(userDetails_) { 
-        console.log(12);
         if (msg.value <= 0) revert CantBeZero('msg.value');
 
         //Queries if there are failed fees. If true, it deposits them

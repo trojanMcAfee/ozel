@@ -24,12 +24,7 @@ contract SwapsForUserTokenV2 is Modifiers {
     function exchangeToUserToken(
         userConfig memory userDetails_
     ) external payable noReentrancy(0) filterDetails(userDetails_) { 
-        console.log(1);
-
         if (msg.value <= 0) revert CantBeZero('msg.value');
-
-        //Queries if there are failed fees. If true, it deposits them
-        // if (s.failedFees > 0) _depositInDeFi(s.failedFees, true);
 
         IWETH(s.WETH).deposit{value: msg.value}();
         uint wethIn = IWETH(s.WETH).balanceOf(address(this));
@@ -53,7 +48,6 @@ contract SwapsForUserTokenV2 is Modifiers {
             userDetails_.userToken == s.WBTC || userDetails_.userToken == s.renBTC ? 1 : 0;
 
         //Swaps WETH to userToken (Base: USDT-WBTC / Route: MIM-USDC-renBTC-WBTC) 
-        console.log(2);
         _swapsForUserToken(
             netAmountIn, baseTokenOut, userDetails_
         );
@@ -71,7 +65,6 @@ contract SwapsForUserTokenV2 is Modifiers {
         uint baseTokenOut_, 
         userConfig memory userDetails_
     ) private { 
-        console.log(3);
         IWETH(s.WETH).approve(s.tricrypto, amountIn_);
 
         /**** 
@@ -86,13 +79,9 @@ contract SwapsForUserTokenV2 is Modifiers {
             //Testing variable
             uint testVar = i == 1 ? type(uint).max : slippage;
             
-            console.log(4);
             try ITri(s.tricrypto).exchange(2, baseTokenOut_, amountIn_ / i, testVar, false) { 
-                console.log(5);
                 if (i == 2) {
-                    console.log(6);
                     try ITri(s.tricrypto).exchange(2, baseTokenOut_, amountIn_ / i, slippage, false) {
-                        console.log(7);
                         emit ForTesting(23);
                         break;
                     } catch {
@@ -109,13 +98,6 @@ contract SwapsForUserTokenV2 is Modifiers {
                 }
             }
         }
-        
-        // uint baseBalance = IERC20(baseTokenOut_ == 0 ? s.USDT : s.WBTC).balanceOf(address(this));
-
-        // // Delegates trade execution
-        // if ((userDetails_.userToken != s.USDT && userDetails_.userToken != s.WBTC) && baseBalance > 0) { //userToken_ != s.USDT || userToken_ != s.WBTC
-        //     _tradeWithExecutor(userDetails_.userToken, userDetails_.userSlippage); 
-        // }
     }
 
     function _getFee(uint amount_) private view returns(uint, uint) {
