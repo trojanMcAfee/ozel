@@ -741,9 +741,10 @@ describe('Anti-slippage system', async function () {
     describe('Modified OZLFacet', async () => {
 
         it('should replace swapsUserToken for V1 / _swapsForUserTokenV2()', async () => {
-            abi = ['function exchangeToUserToken(tuple(address user, address userToken, uint256 userSlippage) userDetails_) external payable'];
+            abi = ['function exchangeToUserToken((address user, address userToken, uint256 userSlippage) userDetails_) external payable'];
             iface = new ethers.utils.Interface(abi);
             selector = iface.getSighash('exchangeToUserToken');
+
             swapForUserTokenMod = await deployFacet('SwapsForUserTokenV1');
             faceCutArgs = [[ swapForUserTokenMod.address, 1, [selector] ]];
             
@@ -812,40 +813,40 @@ describe('Anti-slippage system', async function () {
      * Added a condition so it failes the first attempt due to slippage
      * but makes the trade in the second.
      */
-     xdescribe('ModOZLFacet2', async function () {
-        before( async () => {
-            const deployedVars = await deploy(2); //deploy(3) to get ModOZLFacet2
-            ({
-                deployedDiamond, 
-                WETH,
-                USDT,
-                WBTC,
-                renBTC,
-                USDC,
-                MIM,
-                FRAX,
-                crvTri,
-                callerAddr, 
-                caller2Addr,
-                ozlFacet,
-                yvCrvTri,
-                ozlFacet
-            } = deployedVars);
+     describe('ModOZLFacet2', async function () {
+        // before( async () => {
+        //     const deployedVars = await deploy(2); //deploy(3) to get ModOZLFacet2
+        //     ({
+        //         deployedDiamond, 
+        //         WETH,
+        //         USDT,
+        //         WBTC,
+        //         renBTC,
+        //         USDC,
+        //         MIM,
+        //         FRAX,
+        //         crvTri,
+        //         callerAddr, 
+        //         caller2Addr,
+        //         ozlFacet,
+        //         yvCrvTri,
+        //         ozlFacet
+        //     } = deployedVars);
         
-            getVarsForHelpers(deployedDiamond, ozlFacet);
+        //     getVarsForHelpers(deployedDiamond, ozlFacet);
     
-            userDetails = [ 
-                callerAddr,
-                usdtAddrArb,
-                defaultSlippage
-            ];
-        });
+        //     userDetails = [ 
+        //         callerAddr,
+        //         usdtAddrArb,
+        //         defaultSlippage
+        //     ];
+        // });
 
 
         it('should replace swapsUserToken for V2 / _swapsForUserTokenV2()', async () => {
-            abi = ['function exchangeToUserToken(tuple(address user, address userToken, uint256 userSlippage) userDetails_) external payable'];
-            iface = new ethers.utils.Interface(abi);
-            selector = iface.getSighash('exchangeToUserToken');
+            // abi = ['function exchangeToUserToken(tuple(address user, address userToken, uint256 userSlippage) userDetails_) external payable'];
+            // iface = new ethers.utils.Interface(abi);
+            // selector = iface.getSighash('exchangeToUserToken');
             swapForUserTokenMod = await deployFacet('SwapsForUserTokenV2');
             faceCutArgs = [[ swapForUserTokenMod.address, 1, [selector] ]];
             
