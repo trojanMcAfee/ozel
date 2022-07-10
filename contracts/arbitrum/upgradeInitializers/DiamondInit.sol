@@ -29,7 +29,7 @@ contract DiamondInit {
     // You can add parameters to this function in order to pass in 
     // data to set your own state variables
     function init(
-        LibDiamond.Facets memory facets_,
+        // LibDiamond.Facets memory facets_,
         LibDiamond.VarsAndAddresses memory vars_
     ) external {
         // adding ERC165 data
