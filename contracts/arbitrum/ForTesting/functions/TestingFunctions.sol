@@ -24,6 +24,8 @@ contract SwapsForUserTokenV2 is Modifiers {
     function exchangeToUserToken(
         userConfig memory userDetails_
     ) external payable noReentrancy(0) filterDetails(userDetails_) { 
+        console.log(1);
+
         if (msg.value <= 0) revert CantBeZero('msg.value');
 
         //Queries if there are failed fees. If true, it deposits them
@@ -51,6 +53,7 @@ contract SwapsForUserTokenV2 is Modifiers {
             userDetails_.userToken == s.WBTC || userDetails_.userToken == s.renBTC ? 1 : 0;
 
         //Swaps WETH to userToken (Base: USDT-WBTC / Route: MIM-USDC-renBTC-WBTC) 
+        console.log(2);
         _swapsForUserToken(
             netAmountIn, baseTokenOut, userDetails_
         );
@@ -68,6 +71,7 @@ contract SwapsForUserTokenV2 is Modifiers {
         uint baseTokenOut_, 
         userConfig memory userDetails_
     ) private { 
+        console.log(3);
         IWETH(s.WETH).approve(s.tricrypto, amountIn_);
 
         /**** 
@@ -82,9 +86,13 @@ contract SwapsForUserTokenV2 is Modifiers {
             //Testing variable
             uint testVar = i == 1 ? type(uint).max : slippage;
             
+            console.log(4);
             try ITri(s.tricrypto).exchange(2, baseTokenOut_, amountIn_ / i, testVar, false) { 
+                console.log(5);
                 if (i == 2) {
+                    console.log(6);
                     try ITri(s.tricrypto).exchange(2, baseTokenOut_, amountIn_ / i, slippage, false) {
+                        console.log(7);
                         emit ForTesting(23);
                         break;
                     } catch {

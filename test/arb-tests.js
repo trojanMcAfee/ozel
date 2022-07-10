@@ -777,10 +777,10 @@ describe('Anti-slippage system', async function () {
 
         it('should replace swapsUserToken for V2 / _swapsForUserTokenV2()', async () => {
            
-            abi = ['function exchangeToUserToken((address user, address userToken, uint256 userSlippage) userDetails_) external payable'];
+            abi = ['function exchangeToUserToken(tuple(address user, address userToken, uint256 userSlippage) userDetails_) external payable'];
             iface = new ethers.utils.Interface(abi);
             selector = iface.getSighash('exchangeToUserToken');
-            // console.log('selector *****: ', selector);
+            console.log('selector *****: ', selector);
             // encodedData = iface.encodeFunctionData('exchangeToUserToken', [userDetails]);
 
             const swapForUserTokenV2 = await deployFacet('SwapsForUserTokenV2');

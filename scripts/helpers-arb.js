@@ -215,7 +215,7 @@ function getTestingNumber(receipt) {
     for (let i=0; i < topics.length; i++) { 
         num = topics[i].filter(hash =>{
             val = Number(abiCoder.decode(['uint'], hash));
-            console.log('val ^^^^^: ', val);
+            // console.log('val ^^^^^: ', val);
             if (val === 23) {
                 console.log('val ***: ', val);
                 return val;
@@ -316,6 +316,8 @@ async function deploy(n = 0) {
         oz20,
         ownershipFacet
     ]);
+
+    console.log('selectOZL: ', selecOZL);
 
     const contractsAddr = [
         ozlFacet.address,

@@ -29,8 +29,25 @@ contract Diamond {
         bytes memory _functionCall, 
         address _init
     ) payable {        
+        // bytes4[] memory x = _diamondCut[2].functionSelectors;
+        // for (uint i=0; i < x.length; i++) {
+        //     console.logBytes4(x[i]);
+        // }
+        // console.log('selectors in constructor ^^^^^^');
+
+
         LibDiamond.diamondCut(_diamondCut, _init, _functionCall);
         LibDiamond.setContractOwner(_contractOwner);
+
+        // LibDiamond.DiamondStorage storage ds = LibDiamond.diamondStorage();
+        // bytes4[] memory y = ds.facetFunctionSelectors[0x2279B7A0a67DB372996a5FaB50D91eAA73d2eBe6].functionSelectors;
+        // console.log('^^^^^^^^^');
+        // for (uint i=0; i < y.length; i++) {
+        //     console.logBytes4(y[i]);
+        // }
+        // console.log('selectors in constructorrr ^^^^^^');
+
+
     }
 
 
@@ -44,7 +61,13 @@ contract Diamond {
             ds.slot := position
         }
         // get facet from function selector
-        address facet = ds.facets[msg.sig];
+        // address facet = ds.facets[msg.sig];
+
+        address facet = ds.selectorToFacetAndPosition[msg.sig].facetAddress;
+        console.log('facet of msg.sig: ', facet);
+
+
+
         require(facet != address(0), "Diamond: Function does not exist");
         // Execute external function from facet using delegatecall and return any value.
         assembly {

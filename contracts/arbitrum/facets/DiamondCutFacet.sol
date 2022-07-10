@@ -10,6 +10,8 @@ import { IDiamondCut } from "../../interfaces/IDiamondCut.sol";
 import { LibDiamond } from "../../libraries/LibDiamond.sol";
 import '../AppStorage.sol';
 
+import 'hardhat/console.sol';
+
 contract DiamondCutFacet is IDiamondCut {
     AppStorage s;
 
