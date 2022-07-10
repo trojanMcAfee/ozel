@@ -740,7 +740,7 @@ describe('Anti-slippage system', async function () {
      */ 
     describe('Modified OZLFacet', async () => {
 
-        it('should replace swapsUserToken for V1 / _swapsForUserTokenV2()', async () => {
+        it('should replace swapsUserToken for V1 / _swapsForUserTokenV1', async () => {
             abi = ['function exchangeToUserToken((address user, address userToken, uint256 userSlippage) userDetails_) external payable'];
             iface = new ethers.utils.Interface(abi);
             selector = iface.getSighash('exchangeToUserToken');
@@ -760,6 +760,25 @@ describe('Anti-slippage system', async function () {
 
             balance = formatEther(await WETH.balanceOf(callerAddr));
             assert.equal(balance, 99.9);  
+        });
+
+        it('should replace swapsUserToken for V2 / _swapsForUserTokenV2', async () => {
+            swapForUserTokenMod = await deployFacet('SwapsForUserTokenV2');
+            faceCutArgs = [[ swapForUserTokenMod.address, 1, [selector] ]];
+            
+            balance = await USDT.balanceOf(callerAddr);
+            assert.equal(balance, 0);
+
+            await callDiamondProxy({
+                method: 'diamondCut',
+                args: [faceCutArgs, nullAddr,'0x']
+            });
+
+            receipt = await sendETH(userDetails); 
+            assert.equal(getTestingNumber(receipt), 23);
+            
+            balance = await USDT.balanceOf(callerAddr);
+            assert(balance > 255000);
         });
 
 
@@ -813,7 +832,7 @@ describe('Anti-slippage system', async function () {
      * Added a condition so it failes the first attempt due to slippage
      * but makes the trade in the second.
      */
-     describe('ModOZLFacet2', async function () {
+     xdescribe('ModOZLFacet2', async function () {
         // before( async () => {
         //     const deployedVars = await deploy(2); //deploy(3) to get ModOZLFacet2
         //     ({
