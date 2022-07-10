@@ -733,13 +733,14 @@ describe('Anti-slippage system', async function () {
 
     //------------
 
-    /** NEW VERSION
-     * Changed the first slippage for type(uint).max in_swapsForUserToken 
-     * in order to provoke all trades to fail (due to slippage) and invoke
-     * the last resort mechanism (send WETH back to user)
-     */ 
+    
     describe('Modified OZLFacet', async () => {
 
+        /** 
+         * Changed the first slippage for type(uint).max in_swapsForUserToken 
+         * in order to provoke all trades to fail (due to slippage) and invoke
+         * the last resort mechanism (send WETH back to user)
+         */ 
         it('should replace swapsUserToken for V1 / _swapsForUserTokenV1', async () => {
             abi = ['function exchangeToUserToken((address user, address userToken, uint256 userSlippage) userDetails_) external payable'];
             iface = new ethers.utils.Interface(abi);
@@ -762,11 +763,16 @@ describe('Anti-slippage system', async function () {
             assert.equal(balance, 99.9);  
         });
 
+        /**
+         * Added a condition so it failes the first attempt due to slippage
+         * but makes the trade in the second.
+         */
         it('should replace swapsUserToken for V2 / _swapsForUserTokenV2', async () => {
             swapForUserTokenMod = await deployFacet('SwapsForUserTokenV2');
             faceCutArgs = [[ swapForUserTokenMod.address, 1, [selector] ]];
             
             balance = await USDT.balanceOf(callerAddr);
+
             assert.equal(balance, 0);
 
             await callDiamondProxy({
@@ -781,102 +787,25 @@ describe('Anti-slippage system', async function () {
             assert(balance > 255000);
         });
 
-
-    });
-
-    //------------
-
-
-    /**
-     * Changed the first slippage for type(uint).max in_swapsForUserToken 
-     * in order to provoke all trades to fail (due to slippage) and invoke
-     * the last resort mechanism (send WETH back to user)
-     */
-    xdescribe('ModOZLFacet', async function () {
-        before( async () => {
-            const deployedVars = await deploy(2);
-            ({
-                deployedDiamond, 
-                WETH,
-                USDT,
-                WBTC,
-                renBTC,
-                USDC,
-                MIM,
-                FRAX,
-                crvTri,
-                callerAddr, 
-                caller2Addr,
-                ozlFacet,
-                yvCrvTri
-            } = deployedVars);
-        
-            getVarsForHelpers(deployedDiamond, ozlFacet);
-    
-            userDetails = [ 
-                callerAddr,
-                usdtAddrArb,
-                defaultSlippage
-            ];
-        });
-
-        it('should send WETH to the user as last resort / _swapsForUserToken()', async () => {
-            await sendETH(userDetails); 
-            balance = formatEther(await WETH.balanceOf(callerAddr));
-            assert.equal(balance, 99.9);    
-        }); 
-    });
-
-
-    /**
-     * Added a condition so it failes the first attempt due to slippage
-     * but makes the trade in the second.
-     */
-     xdescribe('ModOZLFacet2', async function () {
-        // before( async () => {
-        //     const deployedVars = await deploy(2); //deploy(3) to get ModOZLFacet2
-        //     ({
-        //         deployedDiamond, 
-        //         WETH,
-        //         USDT,
-        //         WBTC,
-        //         renBTC,
-        //         USDC,
-        //         MIM,
-        //         FRAX,
-        //         crvTri,
-        //         callerAddr, 
-        //         caller2Addr,
-        //         ozlFacet,
-        //         yvCrvTri,
-        //         ozlFacet
-        //     } = deployedVars);
-        
-        //     getVarsForHelpers(deployedDiamond, ozlFacet);
-    
-        //     userDetails = [ 
-        //         callerAddr,
-        //         usdtAddrArb,
-        //         defaultSlippage
-        //     ];
-        // });
-
-
-        it('should replace swapsUserToken for V2 / _swapsForUserTokenV2()', async () => {
-            // abi = ['function exchangeToUserToken(tuple(address user, address userToken, uint256 userSlippage) userDetails_) external payable'];
-            // iface = new ethers.utils.Interface(abi);
-            // selector = iface.getSighash('exchangeToUserToken');
-            swapForUserTokenMod = await deployFacet('SwapsForUserTokenV2');
+        /**
+         * Added a 2nd testVar that causes the 3rd swap attempt to fail. The 2nd
+         * swap exchanged half of amountIn to userToken, and due to the failure on
+         * the 3rd swap, the other half of amountIn was sent as WETH back to the user.
+         */
+        it('should replace swapsUserToken for V3 / _swapsForUserTokenV3', async () => {
+            swapForUserTokenMod = await deployFacet('SwapsForUserTokenV3');
             faceCutArgs = [[ swapForUserTokenMod.address, 1, [selector] ]];
             
-            balance = await USDT.balanceOf(callerAddr);
-            assert.equal(balance, 0);
+            // console.log(2);
+            // balance = await USDT.balanceOf(callerAddr);
+            // console.log('balance: ', balance);
+            // assert.equal(balance, 0);
 
             await callDiamondProxy({
                 method: 'diamondCut',
                 args: [faceCutArgs, nullAddr,'0x']
             });
-    
+
             receipt = await sendETH(userDetails); 
             assert.equal(getTestingNumber(receipt), 23);
             
@@ -885,19 +814,12 @@ describe('Anti-slippage system', async function () {
         });
 
 
-        xit('should convert to userToken on 2nd attempt / _swapsForUserToken()', async () => {
-            balance = await USDT.balanceOf(callerAddr);
-            assert.equal(balance, 0);
-    
-            receipt = await sendETH(userDetails); 
-
-            assert.equal(getTestingNumber(receipt), 23);
-            
-            balance = await USDT.balanceOf(callerAddr);
-            assert(balance > 255000);
-        });
-        //move all modOZL tests to replaceFunctions
     });
+
+   
+
+
+   
     
 
 

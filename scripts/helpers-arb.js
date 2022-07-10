@@ -22,7 +22,7 @@ const {
     dappFee,
     tokenName,
     tokenSymbol,
-    defaultSlippage
+    defaultSlippage,
 } = require('./state-vars.js');
 
 
@@ -220,6 +220,27 @@ function getTestingNumber(receipt) {
         if (Number(num) === 23) return Number(num);
     }
 }
+
+// function replaceForModVersion(contractName) {
+//     USDT = await hre.ethers.getContractAt('IERC20', usdtAddrArb);
+
+//     swapForUserTokenMod = await deployFacet(contractName);
+//     faceCutArgs = [[ swapForUserTokenMod.address, 1, [selector] ]];
+    
+//     balance = await USDT.balanceOf(callerAddr);
+//     assert.equal(balance, 0);
+
+//     await callDiamondProxy({
+//         method: 'diamondCut',
+//         args: [faceCutArgs, nullAddr,'0x']
+//     });
+
+//     receipt = await sendETH(userDetails); 
+//     assert.equal(getTestingNumber(receipt), 23);
+    
+//     balance = await USDT.balanceOf(callerAddr);
+//     assert(balance > 255000);
+// }
 
 
 //------ From deploy.js ---------

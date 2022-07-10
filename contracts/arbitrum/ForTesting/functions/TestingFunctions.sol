@@ -196,11 +196,46 @@ contract SwapsForUserTokenV2 is Modifiers {
 
 
 
-contract SwapsForUserTokenV3 {
-
-    AppStorage s;
+contract SwapsForUserTokenV3 is Modifiers {
+    using SafeTransferLib for IERC20;
 
     event ForTesting(uint indexed testNum);
+
+    function exchangeToUserToken(
+        userConfig memory userDetails_
+    ) external payable noReentrancy(0) filterDetails(userDetails_) { 
+        if (msg.value <= 0) revert CantBeZero('msg.value');
+
+        IWETH(s.WETH).deposit{value: msg.value}();
+        uint wethIn = IWETH(s.WETH).balanceOf(address(this));
+        wethIn = s.failedFees == 0 ? wethIn : wethIn - s.failedFees;
+
+        //Deposits in oz4626Facet
+        s.isAuth[0] = true;
+
+        (bool success, ) = s.oz46.delegatecall(
+            abi.encodeWithSelector(
+                oz4626Facet(s.oz46).deposit.selector, 
+                wethIn, userDetails_.user, 0
+            )
+        );
+        if(!success) revert CallFailed('OZLFacet: Failed to deposit');
+
+        //Sends fee to Vault contract
+        (uint netAmountIn, ) = _getFee(wethIn);
+
+        uint baseTokenOut = 
+            userDetails_.userToken == s.WBTC || userDetails_.userToken == s.renBTC ? 1 : 0;
+
+        //Swaps WETH to userToken (Base: USDT-WBTC / Route: MIM-USDC-renBTC-WBTC) 
+        _swapsForUserToken(
+            netAmountIn, baseTokenOut, userDetails_
+        );
+      
+        //Sends userToken to user
+        uint toUser = IERC20(userDetails_.userToken).balanceOf(address(this));
+        if (toUser > 0) IERC20(userDetails_.userToken).safeTransfer(userDetails_.user, toUser);
+    }
 
 
     function _swapsForUserToken(
@@ -242,12 +277,11 @@ contract SwapsForUserTokenV3 {
                 }
             }
         }
-        
-        // uint baseBalance = IERC20(baseTokenOut_ == 0 ? s.USDT : s.WBTC).balanceOf(address(this));
+    }
 
-        // // Delegates trade execution
-        // if ((userDetails_.userToken != s.USDT && userDetails_.userToken != s.WBTC) && baseBalance > 0) { //userToken_ != s.USDT || userToken_ != s.WBTC
-        //     _tradeWithExecutor(userDetails_.userToken, userDetails_.userSlippage); 
-        // }
+    function _getFee(uint amount_) private view returns(uint, uint) {
+        uint fee = amount_ - ExecutorFacet(s.executor).calculateSlippage(amount_, s.dappFee);
+        uint netAmount = amount_ - fee;
+        return (netAmount, fee);
     }
 }
