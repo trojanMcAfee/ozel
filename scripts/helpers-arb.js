@@ -230,7 +230,7 @@ async function replaceForModVersion(contractName, checkUSDTbalance, selector, us
     const [callerAddr] = await hre.ethers.provider.listAccounts();
 
     swapForUserTokenMod = await deployFacet(contractName);
-    faceCutArgs = [[ swapForUserTokenMod.address, 1, [selector] ]];
+    faceCutArgs = [[ swapForUserTokenMod.address, 1, [selector] ]]; 
     
     if (checkUSDTbalance) {
         balance = await USDT.balanceOf(callerAddr);
