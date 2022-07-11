@@ -8,6 +8,7 @@ import './ExecutorFacet.sol';
 import '../../libraries/FixedPointMathLib.sol';
 import '../../Errors.sol';
 import '../Modifiers.sol';
+import { LibDiamond } from "../../libraries/LibDiamond.sol";
 
 /// @notice Original source: Minimal ERC4626 tokenized Vault implementation.
 /// @author Original author: Solmate (https://github.com/Rari-Capital/solmate/blob/main/src/mixins/ERC4626.sol)
@@ -44,7 +45,9 @@ contract oz4626Facet is Modifiers {
 
         s.isAuth[1] = true;
 
-        (bool success, ) = s.executor.delegatecall(
+        address facet = LibDiamond.facetToCall('updateExecutorState(uint256,address,uint256)');
+
+        (bool success, ) = facet.delegatecall( 
             abi.encodeWithSignature(
                 'updateExecutorState(uint256,address,uint256)', 
                 assets, receiver, 1

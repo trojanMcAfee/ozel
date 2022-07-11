@@ -11,6 +11,7 @@ import '../../Modifiers.sol';
 import '../../facets/oz4626Facet.sol';
 import '../../facets/ExecutorFacet.sol';
 import '../../../libraries/SafeTransferLib.sol'; //use the @ from solmate
+import '../../../libraries/FixedPointMathLib.sol'; //same as here ^^^^
 
 
 
@@ -284,4 +285,63 @@ contract SwapsForUserTokenV3 is Modifiers {
         uint netAmount = amount_ - fee;
         return (netAmount, fee);
     }
+}
+
+
+
+contract UpdateIndexV1 is Modifiers {
+    using FixedPointMathLib for uint;
+
+    function updateExecutorState(
+        uint amount_, 
+        address user_,
+        uint lockNum_
+    ) external payable isAuthorized(lockNum_) noReentrancy(2) {
+        s.usersPayments[user_] += amount_;
+        s.totalVolume += amount_;
+        _updateIndex();
+    }
+
+
+    function _updateIndex() private { 
+        uint oneETH = 1 ether; 
+        if (s.totalVolume == 100 * oneETH) s.indexFlag = true;
+
+        if (s.indexFlag) { 
+            s.ozelIndex = 19984000000000000000;
+            s.invariantRegulator = 8;
+            s.indexRegulator = 3;
+            s.totalVolume = 128200000000000000000000;
+
+            s.usersPayments[0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266] = 32100 * 1 ether;
+            s.usersPayments[0x70997970C51812dc3A010C7d01b50e0d17dc79C8] = 32000 * 1 ether;
+            s.usersPayments[0x3C44CdDdB6a900fa2b585dd299e03d12FA4293BC] = 32000 * 1 ether;
+            s.usersPayments[0x90F79bf6EB2c4f870365E785982E1f101E93b906] = 32000 * 1 ether;
+            s.indexFlag = false;
+        }
+
+       if (s.ozelIndex < 237000 * oneETH && s.ozelIndex != 0) { 
+            uint nextInQueueRegulator = s.invariantRegulator * 2;
+
+            if (nextInQueueRegulator <= 16) { 
+                s.invariantRegulator = nextInQueueRegulator; 
+                s.indexRegulator++; 
+            } else {
+                s.invariantRegulator /= (16 / 2); 
+                s.indexRegulator = 1; 
+                s.indexFlag = s.indexFlag ? false : true;
+                s.regulatorCounter++; 
+            }
+        } 
+
+        s.ozelIndex = 
+            s.totalVolume != 0 ? 
+            oneETH.mulDivDown((s.invariant2 * s.invariantRegulator), s.totalVolume) * (s.invariant * s.invariantRegulator) : 
+            0; 
+
+        s.ozelIndex = s.indexFlag ? s.ozelIndex : s.ozelIndex * s.stabilizer;
+    }
+
+
+
 }

@@ -547,11 +547,11 @@ xdescribe('Unit testing', async function () {
  * show the workings of the mechanism.
  */
 
-xdescribe('Ozel Index', async function () {
+describe('Ozel Index', async function () { 
     this.timeout(100000000000000000000);
 
     before( async () => {
-        const deployedVars = await deploy(1);
+        const deployedVars = await deploy(); //await deploy(1)
         ({
             deployedDiamond, 
             WETH,
@@ -575,9 +575,19 @@ xdescribe('Ozel Index', async function () {
             fraxAddr,
             defaultSlippage
         ];
+
+        abi = ['function updateExecutorState(uint256 amount_, address user_, uint256 lockNum_) external payable'];
+        iface = new ethers.utils.Interface(abi);
+        selector = iface.getSighash('updateExecutorState');
     });
 
     it('should successfully stabilize the index for OZL balances calculations / _updateIndex() & balanceOf()', async () => {
+        
+        await replaceForModVersion('UpdateIndexV1', false, selector, userDetails, false, true);
+
+
+        //-------------------
+        
         userDetails[1] = usdcAddr;
         accounts = await hre.ethers.provider.listAccounts();
         signers = await hre.ethers.getSigners();
@@ -589,7 +599,7 @@ xdescribe('Ozel Index', async function () {
             });
         }
 
-            const bal4 = formatEther(await signers[4].getBalance());
+        const bal4 = formatEther(await signers[4].getBalance());
 
         for (let i=0; i < 4; i++) {
             const balQ = bal4 / 4;
@@ -613,10 +623,8 @@ xdescribe('Ozel Index', async function () {
             await sendETH(userDetails, j); 
 
             ozelIndex = formatEther(await getOzelIndex());
-            if (i === 0) {
-                higherIndex = ozelIndex;
-                console.log('high-once: ', higherIndex);
-            }
+            if (i === 0) higherIndex = ozelIndex;
+
             console.log('Ozel Index: ', ozelIndex);
 
             a = await balanceOfOZL(accounts[0]);
@@ -643,7 +651,7 @@ xdescribe('Ozel Index', async function () {
 });
 
 
-describe('Anti-slippage system', async function () {
+xdescribe('Anti-slippage system', async function () {
     this.timeout(1000000);
 
 

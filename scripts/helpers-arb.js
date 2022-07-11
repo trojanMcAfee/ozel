@@ -224,7 +224,7 @@ function getTestingNumber(receipt) {
 }
 
 
-async function replaceForModVersion(contractName, checkUSDTbalance, selector, userDetails, checkWETH = false) {
+async function replaceForModVersion(contractName, checkUSDTbalance, selector, userDetails, checkWETH = false, isIndex = false) {
     const USDT = await hre.ethers.getContractAt('IERC20', usdtAddrArb);
     const WETH = await hre.ethers.getContractAt('IERC20', wethAddr);
     const [callerAddr] = await hre.ethers.provider.listAccounts();
@@ -242,14 +242,16 @@ async function replaceForModVersion(contractName, checkUSDTbalance, selector, us
         args: [faceCutArgs, nullAddr,'0x']
     });
 
-    receipt = await sendETH(userDetails); 
-    testingNum = getTestingNumber(receipt);
-    balance = await (checkWETH ? WETH : USDT).balanceOf(callerAddr);
+    if (!isIndex) {
+        receipt = await sendETH(userDetails); 
+        testingNum = getTestingNumber(receipt);
+        balance = await (checkWETH ? WETH : USDT).balanceOf(callerAddr);
 
-    return {
-        testingNum,
-        balance
-    };        
+        return {
+            testingNum,
+            balance
+        };        
+    }
 }
 
 

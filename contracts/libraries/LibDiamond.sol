@@ -221,4 +221,10 @@ library LibDiamond {
         }
         require(contractSize > 0, _errorMessage);
     }
+
+    function facetToCall(string memory funcSignature_) internal view returns(address) {
+        bytes4 selector = bytes4(keccak256(bytes(funcSignature_)));
+        DiamondStorage storage ds = diamondStorage();
+        return ds.selectorToFacetAndPosition[selector].facetAddress;
+    }
 }
