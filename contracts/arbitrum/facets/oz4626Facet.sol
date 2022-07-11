@@ -45,13 +45,10 @@ contract oz4626Facet is Modifiers {
 
         s.isAuth[1] = true;
 
-        address facet = LibDiamond.facetToCall('updateExecutorState(uint256,address,uint256)');
+        (address facet, bytes4 selector) = LibDiamond.facetToCall('updateExecutorState(uint256,address,uint256)');
 
         (bool success, ) = facet.delegatecall( 
-            abi.encodeWithSignature(
-                'updateExecutorState(uint256,address,uint256)', 
-                assets, receiver, 1
-            )
+            abi.encodeWithSelector(selector, assets, receiver, 1)
         );
         if(!success) revert CallFailed('oz4626Facet: Failed to update Manager');
 
