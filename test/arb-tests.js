@@ -677,58 +677,6 @@ describe('Anti-slippage system', async function () {
 
 
 
-    /**
-     * Added a 2nd testVar that causes the 3rd swap attempt to fail. The 2nd
-     * swap exchanged half of amountIn to userToken, and due to the failure on
-     * the 3rd swap, the other half of amountIn was sent as WETH back to the user.
-     */
-    xdescribe('ModOZLFacet3', async function () {
-        before( async () => {
-            const deployedVars = await deploy(4);
-            ({
-                deployedDiamond, 
-                WETH,
-                USDT,
-                WBTC,
-                renBTC,
-                USDC,
-                MIM,
-                FRAX,
-                crvTri,
-                callerAddr, 
-                caller2Addr,
-                ozlFacet,
-                yvCrvTri,
-                ozlFacet
-            } = deployedVars);
-        
-            getVarsForHelpers(deployedDiamond, ozlFacet);
-    
-            userDetails = [ 
-                callerAddr,
-                usdtAddrArb,
-                defaultSlippage
-            ];
-        });
-
-
-        it('should convert to half to userToken and half to WETH / _swapsForUserToken()', async () => {
-            balance = await USDT.balanceOf(callerAddr);
-            assert.equal(balance, 0);
-            balance = await WETH.balanceOf(callerAddr);
-            assert.equal(balance, 0);
-    
-            receipt = await sendETH(userDetails); 
-           
-            balance = await USDT.balanceOf(callerAddr);
-            assert(balance > 170000);
-            balance = await WETH.balanceOf(callerAddr)
-            assert(balance > 49);
-
-            assert.equal(getTestingNumber(receipt), 23);
-        });
-
-    });
 
 
     //------------
