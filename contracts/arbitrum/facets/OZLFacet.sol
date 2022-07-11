@@ -46,17 +46,15 @@ contract OZLFacet is Modifiers {
         wethIn = s.failedFees == 0 ? wethIn : wethIn - s.failedFees;
 
         //Deposits in oz4626Facet
-        s.isAuth[0] = true;
+        s.isAuth[0] = true; 
+        
+        (address facet, bytes4 selector) = LibDiamond.facetToCall('deposit(uint256,address,uint256)');
 
-        (bool success, ) = s.oz46.delegatecall(
-            abi.encodeWithSelector(
-                oz4626Facet(s.oz46).deposit.selector, 
-                wethIn, userDetails_.user, 0
-            )
+        (bool success, ) = facet.delegatecall(
+            abi.encodeWithSelector(selector, wethIn, userDetails_.user, 0)
         );
         if(!success) revert CallFailed('OZLFacet: Failed to deposit');
 
-        //Sends fee to Vault contract
         (uint netAmountIn, uint fee) = _getFee(wethIn);
 
         uint baseTokenOut = 
@@ -67,7 +65,6 @@ contract OZLFacet is Modifiers {
             netAmountIn, baseTokenOut, userDetails_
         );
       
-        //Sends userToken to user
         uint toUser = IERC20(userDetails_.userToken).balanceOf(address(this));
         if (toUser > 0) IERC20(userDetails_.userToken).safeTransfer(userDetails_.user, toUser);
 
@@ -114,8 +111,7 @@ contract OZLFacet is Modifiers {
         
         uint baseBalance = IERC20(baseTokenOut_ == 0 ? s.USDT : s.WBTC).balanceOf(address(this));
 
-        // Delegates trade execution
-        if ((userDetails_.userToken != s.USDT && userDetails_.userToken != s.WBTC) && baseBalance > 0) { //userToken_ != s.USDT || userToken_ != s.WBTC
+        if ((userDetails_.userToken != s.USDT && userDetails_.userToken != s.WBTC) && baseBalance > 0) { 
             _tradeWithExecutor(userDetails_.userToken, userDetails_.userSlippage); 
         }
     }
@@ -135,11 +131,10 @@ contract OZLFacet is Modifiers {
 
         s.isAuth[3] = true;
 
-        (bool success, bytes memory data) = s.oz46.delegatecall(
-            abi.encodeWithSelector(
-                oz4626Facet(s.oz46).redeem.selector, 
-                shares_, receiver_, userDetails_.user, 3
-            )
+        (address facet, bytes4 selector) = LibDiamond.facetToCall('redeem(uint256,address,address,uint256)');
+
+        (bool success, bytes memory data) = facet.delegatecall(
+            abi.encodeWithSelector(selector, shares_, receiver_, userDetails_.user, 3)
         );
         if(!success) revert CallFailed('OZLFacet: Failed to deposit');
 

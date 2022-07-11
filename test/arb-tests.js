@@ -70,7 +70,7 @@ let iface, encodedData, args, abi;
 let selector, swapForUserTokenMod, balanceWETH, balanceUSDT, formattedBalanceUSDT;
 
 
-describe('Arbitrum-side', async function () {
+xdescribe('Arbitrum-side', async function () {
     this.timeout(1000000);
 
     before( async () => {
@@ -268,7 +268,7 @@ describe('Arbitrum-side', async function () {
 });
 
 
-describe('Unit testing', async function () {
+xdescribe('Unit testing', async function () {
     this.timeout(1000000);
 
     before( async () => {
@@ -547,7 +547,7 @@ describe('Unit testing', async function () {
  * show the workings of the mechanism.
  */
 
-describe('Ozel Index', async function () { 
+xdescribe('Ozel Index', async function () { 
     this.timeout(100000000000000000000);
 
     before( async () => {
@@ -654,7 +654,6 @@ describe('Ozel Index', async function () {
 describe('Anti-slippage system', async function () {
     this.timeout(1000000);
 
-
     before( async () => {
         const deployedVars = await deploy();
         ({
@@ -734,6 +733,13 @@ describe('Anti-slippage system', async function () {
             assert.equal(testingNum, 23);
             assert(balanceUSDTdiff > 0 && balanceUSDTdiff < halfInitialTransferInUSDT);
             assert(balanceWETHdiff > 0 && balanceWETHdiff < halfInitialTransferInWETH);
+        });
+
+        
+
+        it('should add bla bla bla / _depositInDeFi()', async () => {
+
+            ({ testingNum, balance: balanceWETH } = await replaceForModVersion('SwapsForUserTokenV3', false, selector, userDetails, true));
 
         });
 

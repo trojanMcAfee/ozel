@@ -36,7 +36,7 @@ contract oz4626Facet is Modifiers {
     //////////////////////////////////////////////////////////////*/
 
     function deposit(
-        uint256 assets, 
+        uint assets, 
         address receiver,
         uint lockNum_
     ) external payable isAuthorized(lockNum_) noReentrancy(1) returns (uint256 shares) {
@@ -57,7 +57,7 @@ contract oz4626Facet is Modifiers {
 
 
     function redeem(
-        uint256 shares,
+        uint shares,
         address receiver,
         address owner,
         uint lockNum_
@@ -66,11 +66,10 @@ contract oz4626Facet is Modifiers {
 
         s.isAuth[4] = true;
 
-        (bool success, ) = s.oz20.delegatecall( 
-            abi.encodeWithSelector(
-                oz20Facet(s.oz20).burn.selector, 
-                owner, shares, 4
-            )
+        (address facet, bytes4 selector) = LibDiamond.facetToCall('burn(address,uint256,uint256)');
+
+        (bool success, ) = facet.delegatecall( 
+            abi.encodeWithSelector(selector, owner, shares, 4)
         );
         if(!success) revert CallFailed('oz4626Facet: redeem() failed');
 

@@ -221,7 +221,7 @@ contract oz20Facet is Modifiers, Context, IERC20, IERC20Metadata {
 
     function burn(
         address account, 
-        uint256 amount,
+        uint amount,
         uint lockNum_
     ) external isAuthorized(lockNum_) noReentrancy(4) { 
         if(account == address(0)) revert CantBeZero('oz4626Facet: address');
