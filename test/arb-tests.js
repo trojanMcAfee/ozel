@@ -676,12 +676,6 @@ describe('Anti-slippage system', async function () {
     });
 
 
-
-
-
-
-    //------------
-
     
     describe('Modified OZLFacet', async () => {
 
@@ -695,32 +689,10 @@ describe('Anti-slippage system', async function () {
             iface = new ethers.utils.Interface(abi);
             selector = iface.getSighash('exchangeToUserToken');
 
-            //-----------
-
-            // swapForUserTokenMod = await deployFacet('SwapsForUserTokenV1');
-            // faceCutArgs = [[ swapForUserTokenMod.address, 1, [selector] ]];
-            
-            // balance = await USDT.balanceOf(callerAddr);
-            // assert.equal(balance, 0);
-
-            // await callDiamondProxy({
-            //     method: 'diamondCut',
-            //     args: [faceCutArgs, nullAddr,'0x']
-            // });
-    
-            // await sendETH(userDetails); 
-
-            // balance = formatEther(await WETH.balanceOf(callerAddr));
-            // assert.equal(balance, 99.9);  
-
-            //---------
-
-
             ({ testingNum, balance: balanceWETH } = await replaceForModVersion('SwapsForUserTokenV1', true, selector, userDetails, true));
-            console.log('b: ', balanceWETH);
-
             assert.equal(formatEther(balanceWETH), 99.9);  
         });
+
 
         /**
          * Added a condition so it failes the first attempt due to slippage

@@ -223,26 +223,6 @@ function getTestingNumber(receipt) {
     }
 }
 
-// function replaceForModVersion(contractName) {
-//     USDT = await hre.ethers.getContractAt('IERC20', usdtAddrArb);
-
-//     swapForUserTokenMod = await deployFacet(contractName);
-//     faceCutArgs = [[ swapForUserTokenMod.address, 1, [selector] ]];
-    
-//     balance = await USDT.balanceOf(callerAddr);
-//     assert.equal(balance, 0);
-
-//     await callDiamondProxy({
-//         method: 'diamondCut',
-//         args: [faceCutArgs, nullAddr,'0x']
-//     });
-
-//     receipt = await sendETH(userDetails); 
-//     assert.equal(getTestingNumber(receipt), 23);
-    
-//     balance = await USDT.balanceOf(callerAddr);
-//     assert(balance > 255000);
-// }
 
 async function replaceForModVersion(contractName, checkUSDTbalance, selector, userDetails, checkWETH = false) {
     const USDT = await hre.ethers.getContractAt('IERC20', usdtAddrArb);
@@ -263,20 +243,13 @@ async function replaceForModVersion(contractName, checkUSDTbalance, selector, us
     });
 
     receipt = await sendETH(userDetails); 
-
-
     testingNum = getTestingNumber(receipt);
     balance = await (checkWETH ? WETH : USDT).balanceOf(callerAddr);
 
     return {
         testingNum,
         balance
-    };
-
-    assert.equal(getTestingNumber(receipt), 23);
-    
-    assert(balance > 255000);
-        
+    };        
 }
 
 
