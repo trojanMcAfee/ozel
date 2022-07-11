@@ -67,7 +67,7 @@ let evilAmount, evilSwapDetails;
 let accounts, signers, ozelBalance, regulatorCounter, higherIndex;
 let tx, receipt, filter, topics;
 let iface, encodedData, args, abi;
-let selector, swapForUserTokenMod, balanceWETH;
+let selector, swapForUserTokenMod, balanceWETH, balanceUSDT;
 
 
 xdescribe('Arbitrum-side', async function () {
@@ -698,24 +698,11 @@ describe('Anti-slippage system', async function () {
          * Added a condition so it failes the first attempt due to slippage
          * but makes the trade in the second.
          */
-        xit('should replace swapsUserToken for V2 / _swapsForUserTokenV2', async () => {
-            swapForUserTokenMod = await deployFacet('SwapsForUserTokenV2');
-            faceCutArgs = [[ swapForUserTokenMod.address, 1, [selector] ]];
-            
-            balance = await USDT.balanceOf(callerAddr);
+        it('should replace swapsUserToken for V2 / _swapsForUserTokenV2', async () => {
+            ({ testingNum, balance: balanceUSDT } = await replaceForModVersion('SwapsForUserTokenV2', true, selector, userDetails));
+            assert.equal(testingNum, 23);
+            assert(balanceUSDT / 10 ** 6 > 255000);
 
-            assert.equal(balance, 0);
-
-            await callDiamondProxy({
-                method: 'diamondCut',
-                args: [faceCutArgs, nullAddr,'0x']
-            });
-
-            receipt = await sendETH(userDetails); 
-            assert.equal(getTestingNumber(receipt), 23);
-            
-            balance = await USDT.balanceOf(callerAddr);
-            assert(balance > 255000);
         });
 
         /**
