@@ -1,4 +1,5 @@
 const diamond = require('diamond-util');
+const assert = require('assert');
 const { getSelectors } = require('./libraries/diamond.js');
 const { defaultAbiCoder: abiCoder, formatEther } = ethers.utils;
 const { MaxUint256 } = ethers.constants;
@@ -23,6 +24,7 @@ const {
     tokenName,
     tokenSymbol,
     defaultSlippage,
+    nullAddr
 } = require('./state-vars.js');
 
 
@@ -242,6 +244,41 @@ function getTestingNumber(receipt) {
 //     assert(balance > 255000);
 // }
 
+async function replaceForModVersion(contractName, checkUSDTbalance, selector, userDetails, checkWETH = false) {
+    const USDT = await hre.ethers.getContractAt('IERC20', usdtAddrArb);
+    const WETH = await hre.ethers.getContractAt('IERC20', wethAddr);
+    const [callerAddr] = await hre.ethers.provider.listAccounts();
+
+    swapForUserTokenMod = await deployFacet(contractName);
+    faceCutArgs = [[ swapForUserTokenMod.address, 1, [selector] ]];
+    
+    if (checkUSDTbalance) {
+        balance = await USDT.balanceOf(callerAddr);
+        assert.equal(balance, 0);
+    };
+    
+    await callDiamondProxy({
+        method: 'diamondCut',
+        args: [faceCutArgs, nullAddr,'0x']
+    });
+
+    receipt = await sendETH(userDetails); 
+
+
+    testingNum = getTestingNumber(receipt);
+    balance = await (checkWETH ? WETH : USDT).balanceOf(callerAddr);
+
+    return {
+        testingNum,
+        balance
+    };
+
+    assert.equal(getTestingNumber(receipt), 23);
+    
+    assert(balance > 255000);
+        
+}
+
 
 //------ From deploy.js ---------
 
@@ -414,5 +451,6 @@ module.exports = {
     addTokenToDatabase,
     getRegulatorCounter,
     getTestingNumber,
-    deployFacet
+    deployFacet,
+    replaceForModVersion
 };

@@ -23,7 +23,8 @@ const {
     addTokenToDatabase,
     getRegulatorCounter,
     getTestingNumber,
-    deployFacet
+    deployFacet,
+    replaceForModVersion
 } = require('../scripts/helpers-arb.js');
 
 const { 
@@ -66,7 +67,7 @@ let evilAmount, evilSwapDetails;
 let accounts, signers, ozelBalance, regulatorCounter, higherIndex;
 let tx, receipt, filter, topics;
 let iface, encodedData, args, abi;
-let selector, swapForUserTokenMod;
+let selector, swapForUserTokenMod, balanceWETH;
 
 
 xdescribe('Arbitrum-side', async function () {
@@ -685,7 +686,7 @@ describe('Anti-slippage system', async function () {
     describe('Modified OZLFacet', async () => {
 
         /** 
-         * Changed the first slippage for type(uint).max in_swapsForUserToken 
+         * Changed the first slippage for type(uint).max in _swapsForUserToken 
          * in order to provoke all trades to fail (due to slippage) and invoke
          * the last resort mechanism (send WETH back to user)
          */ 
@@ -694,28 +695,38 @@ describe('Anti-slippage system', async function () {
             iface = new ethers.utils.Interface(abi);
             selector = iface.getSighash('exchangeToUserToken');
 
-            swapForUserTokenMod = await deployFacet('SwapsForUserTokenV1');
-            faceCutArgs = [[ swapForUserTokenMod.address, 1, [selector] ]];
+            //-----------
+
+            // swapForUserTokenMod = await deployFacet('SwapsForUserTokenV1');
+            // faceCutArgs = [[ swapForUserTokenMod.address, 1, [selector] ]];
             
-            balance = await USDT.balanceOf(callerAddr);
-            assert.equal(balance, 0);
+            // balance = await USDT.balanceOf(callerAddr);
+            // assert.equal(balance, 0);
 
-            await callDiamondProxy({
-                method: 'diamondCut',
-                args: [faceCutArgs, nullAddr,'0x']
-            });
+            // await callDiamondProxy({
+            //     method: 'diamondCut',
+            //     args: [faceCutArgs, nullAddr,'0x']
+            // });
     
-            await sendETH(userDetails); 
+            // await sendETH(userDetails); 
 
-            balance = formatEther(await WETH.balanceOf(callerAddr));
-            assert.equal(balance, 99.9);  
+            // balance = formatEther(await WETH.balanceOf(callerAddr));
+            // assert.equal(balance, 99.9);  
+
+            //---------
+
+
+            ({ testingNum, balance: balanceWETH } = await replaceForModVersion('SwapsForUserTokenV1', true, selector, userDetails, true));
+            console.log('b: ', balanceWETH);
+
+            assert.equal(formatEther(balanceWETH), 99.9);  
         });
 
         /**
          * Added a condition so it failes the first attempt due to slippage
          * but makes the trade in the second.
          */
-        it('should replace swapsUserToken for V2 / _swapsForUserTokenV2', async () => {
+        xit('should replace swapsUserToken for V2 / _swapsForUserTokenV2', async () => {
             swapForUserTokenMod = await deployFacet('SwapsForUserTokenV2');
             faceCutArgs = [[ swapForUserTokenMod.address, 1, [selector] ]];
             
@@ -740,7 +751,7 @@ describe('Anti-slippage system', async function () {
          * swap exchanged half of amountIn to userToken, and due to the failure on
          * the 3rd swap, the other half of amountIn was sent as WETH back to the user.
          */
-        it('should replace swapsUserToken for V3 / _swapsForUserTokenV3', async () => {
+        xit('should replace swapsUserToken for V3 / _swapsForUserTokenV3', async () => {
             swapForUserTokenMod = await deployFacet('SwapsForUserTokenV3');
             faceCutArgs = [[ swapForUserTokenMod.address, 1, [selector] ]];
             
