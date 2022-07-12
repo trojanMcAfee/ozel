@@ -36,7 +36,7 @@ contract SecondaryFunctions is Modifiers {
 }
 
 
-contract SwapsForUserTokenV1 is Modifiers {
+contract SwapsForUserTokenV1 is SecondaryFunctions {
     using SafeTransferLib for IERC20;
 
     event ForTesting(uint indexed testNum);
@@ -114,19 +114,11 @@ contract SwapsForUserTokenV1 is Modifiers {
             }
         }
     }
-
-
-    function _getFee(uint amount_) private view returns(uint, uint) {
-        uint fee = amount_ - ExecutorFacet(s.executor).calculateSlippage(amount_, s.dappFee);
-        uint netAmount = amount_ - fee;
-        return (netAmount, fee);
-    }
-    
 }
 
 
 
-contract SwapsForUserTokenV2 is Modifiers {
+contract SwapsForUserTokenV2 is SecondaryFunctions {
     using SafeTransferLib for IERC20;
 
     event ForTesting(uint indexed testNum);
@@ -207,17 +199,11 @@ contract SwapsForUserTokenV2 is Modifiers {
             }
         }
     }
-
-    function _getFee(uint amount_) private view returns(uint, uint) {
-        uint fee = amount_ - ExecutorFacet(s.executor).calculateSlippage(amount_, s.dappFee);
-        uint netAmount = amount_ - fee;
-        return (netAmount, fee);
-    }
 }
 
 
 
-contract SwapsForUserTokenV3 is Modifiers {
+contract SwapsForUserTokenV3 is SecondaryFunctions {
     using SafeTransferLib for IERC20;
 
     event ForTesting(uint indexed testNum);
@@ -299,12 +285,6 @@ contract SwapsForUserTokenV3 is Modifiers {
             }
         }
     }
-
-    function _getFee(uint amount_) private view returns(uint, uint) {
-        uint fee = amount_ - ExecutorFacet(s.executor).calculateSlippage(amount_, s.dappFee);
-        uint netAmount = amount_ - fee;
-        return (netAmount, fee);
-    }
 }
 
 
@@ -361,9 +341,6 @@ contract UpdateIndexV1 is Modifiers {
 
         s.ozelIndex = s.indexFlag ? s.ozelIndex : s.ozelIndex * s.stabilizer;
     }
-
-
-
 }
 
 
@@ -372,8 +349,6 @@ contract DepositInDeFiV1 is SecondaryFunctions {
     using SafeTransferLib for IERC20;
 
     event ForTesting(uint indexed testNum);
-    // event ForTesting2(uint indexed testNum2);
-    // event ShowFailedFees(uint indexed failedFees);
 
     function exchangeToUserToken(
         userConfig memory userDetails_
