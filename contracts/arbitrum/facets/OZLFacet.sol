@@ -33,12 +33,18 @@ contract OZLFacet is Modifiers {
         State changing functions
      ******/    
 
+
+    function _formatSignatures(uint path_) private pure returns(string[] memory signs) {
+        signs[0] = path_ == 1 ? 'deposit(uint256,address,uint256)' : 'redeem(uint256,address,address,uint256)';
+        signs[1] = 'executeFinalTrade((int128,int128,address,address,address),uint256,address,uint256)';
+    }
+
+
     function exchangeToUserToken(
         userConfig memory userDetails_
     ) external payable noReentrancy(0) filterDetails(userDetails_) { 
         if (msg.value <= 0) revert CantBeZero('msg.value');
 
-        //Queries if there are failed fees. If true, it deposits them
         if (s.failedFees > 0) _depositInDeFi(s.failedFees, true);
 
         IWETH(s.WETH).deposit{value: msg.value}();
@@ -48,10 +54,12 @@ contract OZLFacet is Modifiers {
         //Deposits in oz4626Facet
         s.isAuth[0] = true; 
         
-        (address facet, bytes4 selector) = LibDiamond.facetToCall('deposit(uint256,address,uint256)');
+        (
+            address[] memory facets, bytes4[] memory selectors
+        ) = LibDiamond.facetToCall(_formatSignatures(1));
 
-        (bool success, ) = facet.delegatecall(
-            abi.encodeWithSelector(selector, wethIn, userDetails_.user, 0)
+        (bool success, ) = facets[0].delegatecall(
+            abi.encodeWithSelector(selectors[0], wethIn, userDetails_.user, 0)
         );
         if(!success) revert CallFailed('OZLFacet: Failed to deposit');
 
@@ -62,7 +70,7 @@ contract OZLFacet is Modifiers {
 
         //Swaps WETH to userToken (Base: USDT-WBTC / Route: MIM-USDC-renBTC-WBTC) 
         _swapsForUserToken(
-            netAmountIn, baseTokenOut, userDetails_
+            netAmountIn, baseTokenOut, userDetails_, facets[1], selectors[1]
         );
       
         uint toUser = IERC20(userDetails_.userToken).balanceOf(address(this));
@@ -77,7 +85,9 @@ contract OZLFacet is Modifiers {
     function _swapsForUserToken(
         uint amountIn_, 
         uint baseTokenOut_, 
-        userConfig memory userDetails_
+        userConfig memory userDetails_,
+        address facetExecutor_,
+        bytes4 execSelector_
     ) private { 
         IWETH(s.WETH).approve(s.tricrypto, amountIn_);
 
@@ -112,7 +122,7 @@ contract OZLFacet is Modifiers {
         uint baseBalance = IERC20(baseTokenOut_ == 0 ? s.USDT : s.WBTC).balanceOf(address(this));
 
         if ((userDetails_.userToken != s.USDT && userDetails_.userToken != s.WBTC) && baseBalance > 0) { 
-            _tradeWithExecutor(userDetails_.userToken, userDetails_.userSlippage); 
+            _tradeWithExecutor(userDetails_, facetExecutor_, execSelector_); 
         }
     }
 
@@ -131,10 +141,14 @@ contract OZLFacet is Modifiers {
 
         s.isAuth[3] = true;
 
-        (address facet, bytes4 selector) = LibDiamond.facetToCall('redeem(uint256,address,address,uint256)');
+        // (address facet, bytes4 selector) = LibDiamond.facetToCall('redeem(uint256,address,address,uint256)');
 
-        (bool success, bytes memory data) = facet.delegatecall(
-            abi.encodeWithSelector(selector, shares_, receiver_, userDetails_.user, 3)
+        (
+            address[] memory facets, bytes4[] memory selectors
+        ) = LibDiamond.facetToCall(_formatSignatures(2));
+
+        (bool success, bytes memory data) = facets[0].delegatecall(
+            abi.encodeWithSelector(selectors[0], shares_, receiver_, userDetails_.user, 3)
         );
         if(!success) revert CallFailed('OZLFacet: Failed to deposit');
 
@@ -150,7 +164,7 @@ contract OZLFacet is Modifiers {
         ); 
         ITri(s.tricrypto).remove_liquidity_one_coin(assets, 0, minOut);
 
-        _tradeWithExecutor(userDetails_.userToken, userDetails_.userSlippage);
+        _tradeWithExecutor(userDetails_, facets[1], selectors[1]); 
 
         uint userTokens = IERC20(userDetails_.userToken).balanceOf(address(this));
         IERC20(userDetails_.userToken).safeTransfer(receiver_, userTokens); 
@@ -201,16 +215,20 @@ contract OZLFacet is Modifiers {
         return (netAmount, fee);
     }
 
-    function _tradeWithExecutor(address userToken_, uint userSlippage_) private {
+    function _tradeWithExecutor(
+        userConfig memory userDetails_,
+        address facetExecutor_,
+        bytes4 execSelector_
+    ) private { //address userToken_, uint userSlippage_
         s.isAuth[2] = true;
         uint length = s.swaps.length;
 
         for (uint i=0; i < length;) {
-            if (s.swaps[i].userToken == userToken_) {
-                (bool success, ) = s.executor.delegatecall(
+            if (s.swaps[i].userToken == userDetails_.userToken) {
+                (bool success, ) = facetExecutor_.delegatecall(
                     abi.encodeWithSelector(
-                        ExecutorFacet(s.executor).executeFinalTrade.selector, 
-                        s.swaps[i], userSlippage_, 2
+                        execSelector_, 
+                        s.swaps[i], userDetails_.userSlippage, userDetails_.user, 2
                     )
                 );
                 if(!success) revert CallFailed('OZLFacet: _tradeWithExecutor() failed');

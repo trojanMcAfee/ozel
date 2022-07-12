@@ -228,4 +228,22 @@ library LibDiamond {
         address facet = ds.selectorToFacetAndPosition[selector].facetAddress;
         return (facet, selector);
     }
+
+    function facetToCall(
+        string[] memory funcSignatures
+    ) internal view returns(address[] memory facets, bytes4[] memory selectors) {
+        DiamondStorage storage ds = diamondStorage();
+
+        uint length = funcSignatures.length;
+        for (uint i=0; i < length;) {
+            bytes4 selector = bytes4(keccak256(bytes(funcSignatures[i])));
+            address facet = ds.selectorToFacetAndPosition[selector].facetAddress;
+
+            facets[i] = facet;
+            selectors[i] = selector;
+            unchecked { ++i; }
+        }
+    }
+
+
 }

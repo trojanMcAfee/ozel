@@ -27,6 +27,7 @@ contract ExecutorFacet is Modifiers {
     function executeFinalTrade( 
         TradeOps memory swapDetails_, 
         uint userSlippage_,
+        address user_,
         uint lockNum_
     ) external payable isAuthorized(lockNum_) noReentrancy(3) {
         address pool = swapDetails_.pool;
@@ -58,7 +59,7 @@ contract ExecutorFacet is Modifiers {
                         ) {
                             break;
                         } catch {
-                            IERC20(swapDetails_.baseToken).transfer(msg.sender, inBalance / 2); //check if msg.sender should be changedd to user
+                            IERC20(swapDetails_.baseToken).transfer(user_, inBalance / 2); //check if msg.sender should be changedd to user
                         }
                     }
                     break;
@@ -66,7 +67,7 @@ contract ExecutorFacet is Modifiers {
                     if (i == 1) {
                         continue;
                     } else {
-                        IERC20(swapDetails_.baseToken).transfer(msg.sender, inBalance); 
+                        IERC20(swapDetails_.baseToken).transfer(user_, inBalance); 
                     }
                 }
             } else {
@@ -84,7 +85,7 @@ contract ExecutorFacet is Modifiers {
                         ) {
                             break;
                         } catch {
-                            IERC20(swapDetails_.baseToken).transfer(msg.sender, inBalance / 2);
+                            IERC20(swapDetails_.baseToken).transfer(user_, inBalance / 2);
                         }
                     }
                     break;
@@ -92,7 +93,7 @@ contract ExecutorFacet is Modifiers {
                     if (i == 1) {
                         continue;
                     } else {
-                        IERC20(swapDetails_.baseToken).transfer(msg.sender, inBalance); 
+                        IERC20(swapDetails_.baseToken).transfer(user_, inBalance); 
                     }
                 }
             }
