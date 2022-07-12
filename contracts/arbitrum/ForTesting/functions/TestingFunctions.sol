@@ -12,8 +12,28 @@ import '../../facets/oz4626Facet.sol';
 import '../../facets/ExecutorFacet.sol';
 import '../../../libraries/SafeTransferLib.sol'; //use the @ from solmate
 import '../../../libraries/FixedPointMathLib.sol'; //same as here ^^^^
+import '../../../interfaces/IYtri.sol';
 
 
+contract SecondaryFunctions is Modifiers {
+
+    function _getFee(uint amount_) internal view returns(uint, uint) {
+        uint fee = amount_ - ExecutorFacet(s.executor).calculateSlippage(amount_, s.dappFee);
+        uint netAmount = amount_ - fee;
+        return (netAmount, fee);
+    }
+
+    function _calculateTokenAmountCurve(uint wethAmountIn_) internal returns(uint, uint[3] memory) {
+        uint[3] memory amounts;
+        amounts[0] = 0;
+        amounts[1] = 0;
+        amounts[2] = wethAmountIn_;
+        uint tokenAmount = ITri(s.tricrypto).calc_token_amount(amounts, true);
+        return (tokenAmount, amounts);
+    }
+
+
+}
 
 
 contract SwapsForUserTokenV1 is Modifiers {
@@ -348,7 +368,12 @@ contract UpdateIndexV1 is Modifiers {
 
 
 
-contract DepositInDefiV1 is Modifiers {
+contract DepositInDeFiV1 is SecondaryFunctions {
+    using SafeTransferLib for IERC20;
+
+    event ForTesting(uint indexed testNum);
+    // event ForTesting2(uint indexed testNum2);
+    // event ShowFailedFees(uint indexed failedFees);
 
     function exchangeToUserToken(
         userConfig memory userDetails_
@@ -427,6 +452,7 @@ contract DepositInDefiV1 is Modifiers {
 
 
     function _depositInDeFi(uint fee_, bool isRetry_) private { 
+
         //Deposit WETH in Curve Tricrypto pool
         (uint tokenAmountIn, uint[3] memory amounts) = _calculateTokenAmountCurve(fee_);
         IWETH(s.WETH).approve(s.tricrypto, tokenAmountIn);
@@ -434,7 +460,11 @@ contract DepositInDefiV1 is Modifiers {
         for (uint i=1; i <= 2; i++) {
             uint minAmount = ExecutorFacet(s.executor).calculateSlippage(tokenAmountIn, s.defaultSlippage * i);
 
-            try ITri(s.tricrypto).add_liquidity(amounts, minAmount) {
+            //Testing variable
+            uint testVar = isRetry_ ? minAmount : type(uint).max;
+
+            try ITri(s.tricrypto).add_liquidity(amounts, testVar) { 
+
                 //Deposit crvTricrypto in Yearn
                 IERC20(s.crvTricrypto).approve(s.yTriPool, IERC20(s.crvTricrypto).balanceOf(address(this)));
                 IYtri(s.yTriPool).deposit(IERC20(s.crvTricrypto).balanceOf(address(this)));
@@ -442,12 +472,17 @@ contract DepositInDefiV1 is Modifiers {
                 //Internal fees accounting
                 if (s.failedFees > 0) s.failedFees = 0;
                 s.feesVault += fee_;
+
+                emit ForTesting(24);
                 break;
             } catch {
                 if (i == 1) {
                     continue;
                 } else {
-                    if (!isRetry_) s.failedFees += fee_; 
+                    if (!isRetry_) {
+                        s.failedFees += fee_;
+                        emit ForTesting(23);
+                    } 
                 }
             }
         }

@@ -212,14 +212,16 @@ async function getRegulatorCounter() {
 }
 
 
-function getTestingNumber(receipt) {
+function getTestingNumber(receipt, isSecond = false) {
+    const testNum = isSecond ? 24 : 23;
     topics = receipt.logs.map(log => log.topics);
+    
     for (let i=0; i < topics.length; i++) { 
-        num = topics[i].filter(hash =>{
+        num = topics[i].filter(hash => {
             val = Number(abiCoder.decode(['uint'], hash));
-            if (val === 23) return val;
+            if (val === testNum) return val;
         });
-        if (Number(num) === 23) return Number(num);
+        if (Number(num) === testNum) return Number(num);
     }
 }
 
