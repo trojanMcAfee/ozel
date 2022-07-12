@@ -735,13 +735,21 @@ describe('Anti-slippage system', async function () {
             assert(balanceWETHdiff > 0 && balanceWETHdiff < halfInitialTransferInWETH);
         });
 
-        
-
-        it('should add bla bla bla / _depositInDeFi()', async () => {
-
+        /**
+         * Changed the slipppage amount for a type(uint).max condition so depositing
+         * the dapp's fees failes and stores the fees into its own variable, which
+         * are attempted to be deposited once again through any main action from
+         * the app (deposit - withdraw).
+         */
+        it('should add failed fees to its own variable / _depositInDeFi()', async () => {
             ({ testingNum } = await replaceForModVersion('DepositInDeFiV1', false, selector, userDetails));
             assert.equal(testingNum, 23);
+        });
 
+        /**
+         * It deposits -in DeFi- the failedFees that weren't deposited in the prior test.
+         */
+        it('should deposit any failed fees found in the failedFees variable / _depositInDeFi()', async () => {
             receipt = await sendETH(userDetails);
             assert.equal(getTestingNumber(receipt, true), 24);
         });
