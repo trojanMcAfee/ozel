@@ -687,7 +687,7 @@ describe('Anti-slippage system', async function () {
 
 
     
-    describe('Modified OZLFacet', async () => {
+    xdescribe('Modified OZLFacet', async () => {
 
         /** 
          * Changed the first slippage for type(uint).max in _swapsForUserToken 
@@ -759,6 +759,18 @@ describe('Anti-slippage system', async function () {
 
 
     describe('Modified ExecutorFacet', async () => {
+        // abi = ['function executeFinalTrade((int128 tokenIn, int128 tokenOut, address baseToken, address userToken, address pool) swapDetails_, uint256 userSlippage_, uint256 lockNum_) external payable'];
+        // iface = new ethers.utils.Interface(abi);
+        // selector = iface.getSighash('executeFinalTrade');
+
+        it('should bla bla / executeFinalTrade()', async () => {
+            abi = ['function executeFinalTrade((int128 tokenIn, int128 tokenOut, address baseToken, address userToken, address pool) swapDetails_, uint256 userSlippage_, address user_, uint256 lockNum_) external payable'];
+            iface = new ethers.utils.Interface(abi);
+            selector = iface.getSighash('executeFinalTrade');
+
+            ({ testingNum, balance: balanceWETH } = await replaceForModVersion('ExecutorFacetV1', false, selector, userDetails, false));
+
+        });
 
 
 

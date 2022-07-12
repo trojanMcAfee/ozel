@@ -231,10 +231,8 @@ async function replaceForModVersion(contractName, checkUSDTbalance, selector, us
     const WETH = await hre.ethers.getContractAt('IERC20', wethAddr);
     const [callerAddr] = await hre.ethers.provider.listAccounts();
 
-    swapForUserTokenMod = 
-        typeof contractName === 'string' ? await deployFacet(contractName) : contractName;
-    
-    faceCutArgs = [[ swapForUserTokenMod.address, 1, [selector] ]]; 
+    modContract = typeof contractName === 'string' ? await deployFacet(contractName) : contractName;
+    faceCutArgs = [[ modContract.address, 1, [selector] ]]; 
     
     if (checkUSDTbalance) {
         balance = await USDT.balanceOf(callerAddr);
