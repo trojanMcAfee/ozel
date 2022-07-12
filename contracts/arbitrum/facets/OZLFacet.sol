@@ -34,9 +34,11 @@ contract OZLFacet is Modifiers {
      ******/    
 
 
-    function _formatSignatures(uint path_) private pure returns(string[2] memory signs) {
+    function _formatSignatures(uint path_) private pure returns(string[] memory) {
+        string[] memory signs = new string[](2);
         signs[0] = path_ == 1 ? 'deposit(uint256,address,uint256)' : 'redeem(uint256,address,address,uint256)';
         signs[1] = 'executeFinalTrade((int128,int128,address,address,address),uint256,address,uint256)';
+        return signs;
     }
 
 
@@ -55,7 +57,7 @@ contract OZLFacet is Modifiers {
         s.isAuth[0] = true; 
         
         (
-            address[2] memory facets, bytes4[2] memory selectors
+            address[] memory facets, bytes4[] memory selectors
         ) = LibDiamond.facetToCall(_formatSignatures(1));
 
         (bool success, ) = facets[0].delegatecall(
@@ -144,7 +146,7 @@ contract OZLFacet is Modifiers {
         // (address facet, bytes4 selector) = LibDiamond.facetToCall('redeem(uint256,address,address,uint256)');
 
         (
-            address[2] memory facets, bytes4[2] memory selectors
+            address[] memory facets, bytes4[] memory selectors
         ) = LibDiamond.facetToCall(_formatSignatures(2));
 
         (bool success, bytes memory data) = facets[0].delegatecall(

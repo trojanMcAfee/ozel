@@ -230,9 +230,11 @@ library LibDiamond {
     }
 
     function facetToCall(
-        string[2] memory funcSignatures
-    ) internal view returns(address[2] memory facets, bytes4[2] memory selectors) {
+        string[] memory funcSignatures
+    ) internal view returns(address[] memory, bytes4[] memory) {
         DiamondStorage storage ds = diamondStorage();
+        address[] memory facets = new address[](2);
+        bytes4[] memory selectors = new bytes4[](2);
 
         uint length = funcSignatures.length;
         for (uint i=0; i < length;) {
@@ -243,6 +245,8 @@ library LibDiamond {
             selectors[i] = selector;
             unchecked { ++i; }
         }
+
+        return (facets, selectors);
     }
 
 
