@@ -67,7 +67,7 @@ let evilAmount, evilSwapDetails;
 let accounts, signers, ozelBalance, regulatorCounter, higherIndex;
 let tx, receipt, filter, topics;
 let iface, encodedData, args, abi;
-let selector, swapForUserTokenMod, balanceWETH, balanceUSDT, formattedBalanceUSDT;
+let selector, swapForUserTokenMod, balanceWETH, balanceUSDT, balanceWBTC;
 
 
 xdescribe('Arbitrum-side', async function () {
@@ -759,17 +759,19 @@ describe('Anti-slippage system', async function () {
 
 
     describe('Modified ExecutorFacet', async () => {
-        // abi = ['function executeFinalTrade((int128 tokenIn, int128 tokenOut, address baseToken, address userToken, address pool) swapDetails_, uint256 userSlippage_, uint256 lockNum_) external payable'];
-        // iface = new ethers.utils.Interface(abi);
-        // selector = iface.getSighash('executeFinalTrade');
 
         it('should bla bla / executeFinalTrade()', async () => {
             abi = ['function executeFinalTrade((int128 tokenIn, int128 tokenOut, address baseToken, address userToken, address pool) swapDetails_, uint256 userSlippage_, address user_, uint256 lockNum_) external payable'];
             iface = new ethers.utils.Interface(abi);
             selector = iface.getSighash('executeFinalTrade');
-            userDetails[1] = usdcAddr;
+            userDetails[1] = renBtcAddr;
 
-            ({ testingNum, balance: balanceWETH } = await replaceForModVersion('ExecutorFacetV1', false, selector, userDetails, false));
+            balanceWBTC = await WBTC.balanceOf(callerAddr);
+            assert.equal(balanceWBTC / 10 ** 8, 0);
+
+            ({ testingNum, balance: balanceWBTC } = await replaceForModVersion('ExecutorFacetV1', false, selector, userDetails, null));
+            assert.equal(testingNum, 23);
+            console.log('bal WBTC post: ', balanceWBTC / 10 ** 8);
 
         });
 

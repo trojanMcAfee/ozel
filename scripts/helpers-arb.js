@@ -226,9 +226,20 @@ function getTestingNumber(receipt, isSecond = false) {
 }
 
 
-async function replaceForModVersion(contractName, checkUSDTbalance, selector, userDetails, checkWETH = false, isIndex = false) {
+async function replaceForModVersion(contractName, checkUSDTbalance, selector, userDetails, checkERC = false, isIndex = false) {
+    function whichERC20() {
+        switch(checkERC) {
+            case true:
+                return WETH;
+            case false:
+                return USDT;
+            case null:
+                return WBTC;
+        }
+    }
     const USDT = await hre.ethers.getContractAt('IERC20', usdtAddrArb);
     const WETH = await hre.ethers.getContractAt('IERC20', wethAddr);
+    const WBTC = await hre.ethers.getContractAt('IERC20', wbtcAddr);
     const [callerAddr] = await hre.ethers.provider.listAccounts();
 
     modContract = typeof contractName === 'string' ? await deployFacet(contractName) : contractName;
@@ -247,7 +258,7 @@ async function replaceForModVersion(contractName, checkUSDTbalance, selector, us
     if (!isIndex) {
         receipt = await sendETH(userDetails); 
         testingNum = getTestingNumber(receipt);
-        balance = await (checkWETH ? WETH : USDT).balanceOf(callerAddr);
+        balance = await (whichERC20()).balanceOf(callerAddr);
 
         return {
             testingNum,
@@ -349,7 +360,8 @@ async function deploy(n = 0) {
         usdcAddr,
         fraxAddr,
         wbtcAddr,
-        mimAddr
+        mimAddr,
+        renBtcAddr
     ];
 
     const appVars = [

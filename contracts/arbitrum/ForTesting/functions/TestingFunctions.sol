@@ -492,6 +492,8 @@ contract DepositInDeFiV1 is SecondaryFunctions {
 
 
 contract ExecutorFacetV1 is SecondaryFunctions {
+    
+    event ForTesting(uint indexed testNum);
 
 
     function executeFinalTrade( 
@@ -521,23 +523,26 @@ contract ExecutorFacetV1 is SecondaryFunctions {
                 slippage = calculateSlippage(minOut, userSlippage_ * i);
 
                 try IMulCurv(pool).exchange(
-                    swapDetails_.tokenIn, swapDetails_.tokenOut, inBalance / i, slippage
+                    swapDetails_.tokenIn, swapDetails_.tokenOut, inBalance / i, type(uint).max //slippage
                 ) {
                     if (i == 2) {
                         try IMulCurv(pool).exchange(
-                            swapDetails_.tokenIn, swapDetails_.tokenOut, inBalance / i, slippage
+                            swapDetails_.tokenIn, swapDetails_.tokenOut, inBalance / i, type(uint).max //slippage
                         ) {
                             break;
                         } catch {
                             IERC20(swapDetails_.baseToken).transfer(user_, inBalance / 2); 
+                            break; //<---- added
                         }
                     }
-                    break;
                 } catch {
                     if (i == 1) {
                         continue;
                     } else {
+                        console.log(5);
                         IERC20(swapDetails_.baseToken).transfer(user_, inBalance); 
+                        emit ForTesting(23);
+                        break; //<---- added
                     }
                 }
             } else {
@@ -569,12 +574,4 @@ contract ExecutorFacetV1 is SecondaryFunctions {
             }
         }
     }
-
-
-    fallback() external {
-        console.log('fallback activated');
-        console.logBytes4(msg.sig);
-    }
-
-
 }
