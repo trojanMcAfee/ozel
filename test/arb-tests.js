@@ -669,8 +669,7 @@ describe('Anti-slippage system', async function () {
             callerAddr, 
             caller2Addr,
             ozlFacet,
-            yvCrvTri,
-            ozlFacet
+            yvCrvTri
         } = deployedVars);
     
         getVarsForHelpers(deployedDiamond, ozlFacet);
@@ -752,7 +751,15 @@ describe('Anti-slippage system', async function () {
         it('should deposit any failed fees found in the failedFees variable / _depositInDeFi()', async () => {
             receipt = await sendETH(userDetails);
             assert.equal(getTestingNumber(receipt, true), 24);
+
+            //Reverts to the original _depositInDeFi()
+            await replaceForModVersion(ozlFacet, false, selector, userDetails, false, true);
         });
+    });
+
+
+    xdescribe('Modified ExecutorFacet', async () => {
+
 
 
     });

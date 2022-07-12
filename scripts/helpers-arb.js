@@ -215,7 +215,7 @@ async function getRegulatorCounter() {
 function getTestingNumber(receipt, isSecond = false) {
     const testNum = isSecond ? 24 : 23;
     topics = receipt.logs.map(log => log.topics);
-    
+
     for (let i=0; i < topics.length; i++) { 
         num = topics[i].filter(hash => {
             val = Number(abiCoder.decode(['uint'], hash));
@@ -231,7 +231,9 @@ async function replaceForModVersion(contractName, checkUSDTbalance, selector, us
     const WETH = await hre.ethers.getContractAt('IERC20', wethAddr);
     const [callerAddr] = await hre.ethers.provider.listAccounts();
 
-    swapForUserTokenMod = await deployFacet(contractName);
+    swapForUserTokenMod = 
+        typeof contractName === 'string' ? await deployFacet(contractName) : contractName;
+    
     faceCutArgs = [[ swapForUserTokenMod.address, 1, [selector] ]]; 
     
     if (checkUSDTbalance) {
@@ -405,8 +407,7 @@ async function deploy(n = 0) {
         callerAddr, 
         caller2Addr,
         ozlFacet,
-        yvCrvTri,
-        ozlFacet
+        yvCrvTri
     };
 
 }
