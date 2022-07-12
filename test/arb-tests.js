@@ -70,7 +70,7 @@ let iface, encodedData, args, abi;
 let selector, swapForUserTokenMod, balanceWETH, balanceUSDT, formattedBalanceUSDT;
 
 
-describe('Arbitrum-side', async function () {
+xdescribe('Arbitrum-side', async function () {
     this.timeout(1000000);
 
     before( async () => {
@@ -651,7 +651,7 @@ xdescribe('Ozel Index', async function () {
 });
 
 
-xdescribe('Anti-slippage system', async function () {
+describe('Anti-slippage system', async function () {
     this.timeout(1000000);
 
     before( async () => {
@@ -687,7 +687,7 @@ xdescribe('Anti-slippage system', async function () {
 
 
     
-    xdescribe('Modified OZLFacet', async () => {
+    describe('Modified OZLFacet', async () => {
 
         /** 
          * Changed the first slippage for type(uint).max in _swapsForUserToken 

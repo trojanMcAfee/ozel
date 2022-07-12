@@ -31,16 +31,7 @@ contract OZLFacet is Modifiers {
 
      /*******
         State changing functions
-     ******/    
-
-
-    function _formatSignatures(uint path_) private pure returns(string[] memory) {
-        string[] memory signs = new string[](2);
-        signs[0] = path_ == 1 ? 'deposit(uint256,address,uint256)' : 'redeem(uint256,address,address,uint256)';
-        signs[1] = 'executeFinalTrade((int128,int128,address,address,address),uint256,address,uint256)';
-        return signs;
-    }
-
+     ******/   
 
     function exchangeToUserToken(
         userConfig memory userDetails_
@@ -142,8 +133,6 @@ contract OZLFacet is Modifiers {
         if (s.failedFees > 0) _depositInDeFi(s.failedFees, true);
 
         s.isAuth[3] = true;
-
-        // (address facet, bytes4 selector) = LibDiamond.facetToCall('redeem(uint256,address,address,uint256)');
 
         (
             address[] memory facets, bytes4[] memory selectors
@@ -247,6 +236,14 @@ contract OZLFacet is Modifiers {
         amounts[2] = wethAmountIn_;
         uint tokenAmount = ITri(s.tricrypto).calc_token_amount(amounts, true);
         return (tokenAmount, amounts);
+    }
+
+
+    function _formatSignatures(uint path_) private pure returns(string[] memory) {
+        string[] memory signs = new string[](2);
+        signs[0] = path_ == 1 ? 'deposit(uint256,address,uint256)' : 'redeem(uint256,address,address,uint256)';
+        signs[1] = 'executeFinalTrade((int128,int128,address,address,address),uint256,address,uint256)';
+        return signs;
     }
 
 }
