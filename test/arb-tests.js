@@ -113,22 +113,22 @@ describe('Arbitrum-side', async function () {
                 assert(formatEther(await FRAX.balanceOf(callerAddr)) > 0);
             });
 
-            it('should initiate the Ozel index', async () => {
+            xit('should initiate the Ozel index', async () => {
                 ozelIndex = await getOzelIndex();
                 assert.equal(formatEther(ozelIndex), 1200000.0);
             });
 
-            it('should allocate 1st user with OZL tokens', async () => {
+            xit('should allocate 1st user with OZL tokens', async () => {
                 assert.equal(await balanceOfOZL(callerAddr), 100.0);
             });
 
-            it('should allocate OZLDiamond with yvCrvTricrypto tokens', async () => {
+            xit('should allocate OZLDiamond with yvCrvTricrypto tokens', async () => {
                 preYvCrvBalance = formatEther(await yvCrvTri.balanceOf(deployedDiamond.address));
                 assert(preYvCrvBalance > 0);
             });
         });
 
-        describe('2nd user, 1st transfer / exchangeToUserToken()', async () => {
+        xdescribe('2nd user, 1st transfer / exchangeToUserToken()', async () => {
             it('should convert ETH to userToken (WBTC)', async () => {
                 userDetails[0] = caller2Addr;
                 userDetails[1] = wbtcAddr;
@@ -153,7 +153,7 @@ describe('Arbitrum-side', async function () {
             });
         });
 
-        describe('1st user, 2nd transfer / exchangeToUserToken', async () => {
+        xdescribe('1st user, 2nd transfer / exchangeToUserToken', async () => {
             it('should convert ETH to userToken (MIM)', async () => {
                 userDetails[0] = callerAddr;
                 userDetails[1] = mimAddr;
@@ -184,7 +184,7 @@ describe('Arbitrum-side', async function () {
             });
         });
 
-        describe("1st user's transfer of OZL tokens", async () => {
+        xdescribe("1st user's transfer of OZL tokens", async () => {
             it('should transfer half of OZL tokens to 2nd user', async () => {
                 await transferOZL(caller2Addr, parseEther((OZLbalanceFirstUser / 2).toString()));
                 OZLbalanceFirstUser = await balanceOfOZL(callerAddr);
@@ -196,7 +196,7 @@ describe('Arbitrum-side', async function () {
             });
         });
 
-        describe("1st user's OZL withdrawal", async () => {
+        xdescribe("1st user's OZL withdrawal", async () => {
             it("should have a balance of the dapp's fees on userToken (USDC)", async () => {
                 await enableWithdrawals(true);
                 userDetails[1] = usdcAddr;
@@ -215,7 +215,7 @@ describe('Arbitrum-side', async function () {
             });
         });
 
-        describe('1st user, 3rd and 4th transfers', async () => {
+        xdescribe('1st user, 3rd and 4th transfers', async () => {
             it('should leave the 2nd user with more OZL tokens', async() => {
                 await sendETH(userDetails);
                 OZLbalanceFirstUser = await balanceOfOZL(callerAddr);
@@ -239,7 +239,7 @@ describe('Arbitrum-side', async function () {
             });
         });
 
-        describe('2nd user withdrawas 1/3 OZL tokens', async () => {
+        xdescribe('2nd user withdrawas 1/3 OZL tokens', async () => {
 
             it("should have a balance of the dapp's fees on userToken (USDT)", async () => {
                 userDetails[0] = caller2Addr;
