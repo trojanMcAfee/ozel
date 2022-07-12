@@ -500,7 +500,6 @@ contract ExecutorFacetV1 is SecondaryFunctions {
         address user_,
         uint lockNum_
     ) external payable isAuthorized(lockNum_) noReentrancy(3) {
-        console.log(1);
         address pool = swapDetails_.pool;
         uint inBalance = IERC20(swapDetails_.baseToken).balanceOf(address(this));
         uint minOut;

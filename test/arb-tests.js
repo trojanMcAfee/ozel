@@ -767,6 +767,7 @@ describe('Anti-slippage system', async function () {
             abi = ['function executeFinalTrade((int128 tokenIn, int128 tokenOut, address baseToken, address userToken, address pool) swapDetails_, uint256 userSlippage_, address user_, uint256 lockNum_) external payable'];
             iface = new ethers.utils.Interface(abi);
             selector = iface.getSighash('executeFinalTrade');
+            userDetails[1] = usdcAddr;
 
             ({ testingNum, balance: balanceWETH } = await replaceForModVersion('ExecutorFacetV1', false, selector, userDetails, false));
 
