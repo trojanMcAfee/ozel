@@ -227,7 +227,6 @@ function getTestingNumber(receipt, isSecond = false) {
 
 
 async function replaceForModVersion(contractName, checkUSDTbalance, selector, userDetails, checkERC = false, isIndex = false) {
-    console.log('check: ', checkERC);
     function whichERC20() {
         switch(checkERC) {
             case true:

@@ -545,31 +545,7 @@ contract ExecutorFacetV1 is SecondaryFunctions {
                     }
                 }
             } else {
-                minOut = IMulCurv(pool).get_dy_underlying(
-                    swapDetails_.tokenIn, swapDetails_.tokenOut, inBalance / i
-                );
-                slippage = calculateSlippage(minOut, userSlippage_ * i);
-                
-                try IMulCurv(pool).exchange_underlying(
-                    swapDetails_.tokenIn, swapDetails_.tokenOut, inBalance / i, slippage
-                ) {
-                    if (i == 2) {
-                        try IMulCurv(pool).exchange_underlying(
-                            swapDetails_.tokenIn, swapDetails_.tokenOut, inBalance / i, slippage
-                        ) {
-                            break;
-                        } catch {
-                            IERC20(swapDetails_.baseToken).transfer(user_, inBalance / 2);
-                        }
-                    }
-                    break;
-                } catch {
-                    if (i == 1) {
-                        continue;
-                    } else {
-                        IERC20(swapDetails_.baseToken).transfer(user_, inBalance); 
-                    }
-                }
+                //code omitted (out of scope of test)
             }
         }
     }
@@ -631,31 +607,7 @@ contract ExecutorFacetV2 is SecondaryFunctions {
                     }
                 }
             } else {
-                minOut = IMulCurv(pool).get_dy_underlying(
-                    swapDetails_.tokenIn, swapDetails_.tokenOut, inBalance / i
-                );
-                slippage = calculateSlippage(minOut, userSlippage_ * i);
-                
-                try IMulCurv(pool).exchange_underlying(
-                    swapDetails_.tokenIn, swapDetails_.tokenOut, inBalance / i, slippage
-                ) {
-                    if (i == 2) {
-                        try IMulCurv(pool).exchange_underlying(
-                            swapDetails_.tokenIn, swapDetails_.tokenOut, inBalance / i, slippage
-                        ) {
-                            break;
-                        } catch {
-                            IERC20(swapDetails_.baseToken).transfer(user_, inBalance / 2);
-                        }
-                    }
-                    break;
-                } catch {
-                    if (i == 1) {
-                        continue;
-                    } else {
-                        IERC20(swapDetails_.baseToken).transfer(user_, inBalance); 
-                    }
-                }
+                //code omitted (out of scope of test)
             }
         }
     }
@@ -718,31 +670,7 @@ contract ExecutorFacetV3 is SecondaryFunctions {
                     }
                 }
             } else {
-                minOut = IMulCurv(pool).get_dy_underlying(
-                    swapDetails_.tokenIn, swapDetails_.tokenOut, inBalance / i
-                );
-                slippage = calculateSlippage(minOut, userSlippage_ * i);
-                
-                try IMulCurv(pool).exchange_underlying(
-                    swapDetails_.tokenIn, swapDetails_.tokenOut, inBalance / i, slippage
-                ) {
-                    if (i == 2) {
-                        try IMulCurv(pool).exchange_underlying(
-                            swapDetails_.tokenIn, swapDetails_.tokenOut, inBalance / i, slippage
-                        ) {
-                            break;
-                        } catch {
-                            IERC20(swapDetails_.baseToken).transfer(user_, inBalance / 2);
-                        }
-                    }
-                    break;
-                } catch {
-                    if (i == 1) {
-                        continue;
-                    } else {
-                        IERC20(swapDetails_.baseToken).transfer(user_, inBalance); 
-                    }
-                }
+                //code omitted (out of scope of test)
             }
         }
     }
