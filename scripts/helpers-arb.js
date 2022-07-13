@@ -236,7 +236,7 @@ async function replaceForModVersion(contractName, checkUSDTbalance, selector, us
                 return USDT;
             case null:
                 return WBTC;
-            case undefined:
+            case 3:
                 return renBTC;
         }
     }
