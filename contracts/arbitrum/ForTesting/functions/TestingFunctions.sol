@@ -523,16 +523,16 @@ contract ExecutorFacetV1 is SecondaryFunctions {
                 slippage = calculateSlippage(minOut, userSlippage_ * i);
 
                 try IMulCurv(pool).exchange(
-                    swapDetails_.tokenIn, swapDetails_.tokenOut, inBalance / i, type(uint).max //slippage
+                    swapDetails_.tokenIn, swapDetails_.tokenOut, inBalance / i, type(uint).max 
                 ) {
                     if (i == 2) {
                         try IMulCurv(pool).exchange(
-                            swapDetails_.tokenIn, swapDetails_.tokenOut, inBalance / i, type(uint).max //slippage
+                            swapDetails_.tokenIn, swapDetails_.tokenOut, inBalance / i, type(uint).max 
                         ) {
                             break;
                         } catch {
                             IERC20(swapDetails_.baseToken).transfer(user_, inBalance / 2); 
-                            break; //<---- added
+                            break; 
                         }
                     }
                 } catch {
@@ -541,7 +541,7 @@ contract ExecutorFacetV1 is SecondaryFunctions {
                     } else {
                         IERC20(swapDetails_.baseToken).transfer(user_, inBalance); 
                         emit ForTesting(23);
-                        break; //<---- added
+                        break;
                     }
                 }
             } else {

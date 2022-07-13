@@ -67,7 +67,7 @@ let evilAmount, evilSwapDetails;
 let accounts, signers, ozelBalance, regulatorCounter, higherIndex;
 let tx, receipt, filter, topics;
 let iface, encodedData, args, abi;
-let selector, swapForUserTokenMod, balanceWETH, balanceUSDT, balanceWBTC;
+let selector, balanceRenBTC, balanceWETH, balanceUSDT, balanceWBTC;
 
 
 xdescribe('Arbitrum-side', async function () {
@@ -760,7 +760,10 @@ describe('Anti-slippage system', async function () {
 
     describe('Modified ExecutorFacet', async () => {
 
-        it('should bla bla / executeFinalTrade()', async () => {
+        /**
+         * Changed slippage to type(uint).max in order to fail all trades due to slippage
+         */
+        it("should send the funds to the user in their baseToken / ExecutorFacetV1 - executeFinalTrade()", async () => {
             abi = ['function executeFinalTrade((int128 tokenIn, int128 tokenOut, address baseToken, address userToken, address pool) swapDetails_, uint256 userSlippage_, address user_, uint256 lockNum_) external payable'];
             iface = new ethers.utils.Interface(abi);
             selector = iface.getSighash('executeFinalTrade');
@@ -770,9 +773,13 @@ describe('Anti-slippage system', async function () {
             assert.equal(balanceWBTC / 10 ** 8, 0);
 
             ({ testingNum, balance: balanceWBTC } = await replaceForModVersion('ExecutorFacetV1', false, selector, userDetails, null));
+            balanceRenBTC = (await renBTC.balanceOf(callerAddr)) / 10 ** 8;
             assert.equal(testingNum, 23);
             assert(balanceWBTC > 6);
+            assert.equal(balanceRenBTC, 0);
         });
+
+
 
 
 

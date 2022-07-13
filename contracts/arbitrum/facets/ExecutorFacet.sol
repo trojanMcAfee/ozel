@@ -63,7 +63,6 @@ contract ExecutorFacet is Modifiers {
                             break; //<--- added
                         }
                     }
-                    // break;
                 } catch {
                     if (i == 1) {
                         continue;
