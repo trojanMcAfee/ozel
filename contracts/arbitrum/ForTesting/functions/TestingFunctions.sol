@@ -588,8 +588,6 @@ contract ExecutorFacetV2 is SecondaryFunctions {
         address user_,
         uint lockNum_
     ) external payable isAuthorized(lockNum_) noReentrancy(3) {
-        console.log(11);
-
         address pool = swapDetails_.pool;
         uint inBalance = IERC20(swapDetails_.baseToken).balanceOf(address(this));
         uint minOut;
@@ -616,25 +614,20 @@ contract ExecutorFacetV2 is SecondaryFunctions {
                 uint testVar = i == 1 ? type(uint).max : slippage;
                 
                 try IMulCurv(pool).exchange(swapDetails_.tokenIn, swapDetails_.tokenOut, inBalance / i, testVar) {
-                    console.log(31);
                     if (i == 2) {
                         try IMulCurv(pool).exchange(swapDetails_.tokenIn, swapDetails_.tokenOut, inBalance / i, slippage) {
-                            console.log(6);
+                            emit ForTesting(23);
                             break;
                         } catch {
-                            console.log(7);
-                            IERC20(swapDetails_.baseToken).transfer(user_, inBalance / 2); 
+                            IERC20(swapDetails_.baseToken).transfer(user_, inBalance / 2);
                         }
                     }
-                    console.log(41);
                     break;
                 } catch {
-                    console.log(51);
                     if (i == 1) {
                         continue;
                     } else {
                         IERC20(swapDetails_.baseToken).transfer(user_, inBalance); 
-                        emit ForTesting(23);
                     }
                 }
             } else {

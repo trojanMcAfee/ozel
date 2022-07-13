@@ -61,7 +61,7 @@ contract ExecutorFacet is Modifiers {
                         ) {
                             break;
                         } catch {
-                            IERC20(swapDetails_.baseToken).transfer(user_, inBalance / 2); //check if msg.sender should be changedd to user
+                            IERC20(swapDetails_.baseToken).transfer(user_, inBalance / 2); 
                         }
                     }
                     break;

@@ -767,14 +767,9 @@ describe('Anti-slippage system', async function () {
         });
 
         /**
-         * Changed slippage to type(uint).max in order to fail all trades due to slippage
+         * Changed slippage to type(uint).max in order to fail all trades and activate the last path
          */
-        xit("should send the funds to the user in their baseToken / ExecutorFacetV1 - executeFinalTrade()", async () => {
-            // abi = ['function executeFinalTrade((int128 tokenIn, int128 tokenOut, address baseToken, address userToken, address pool) swapDetails_, uint256 userSlippage_, address user_, uint256 lockNum_) external payable'];
-            // iface = new ethers.utils.Interface(abi);
-            // selector = iface.getSighash('executeFinalTrade');
-            // userDetails[1] = renBtcAddr;
-
+        it("should send the funds to the user in their baseToken / ExecutorFacetV1 - executeFinalTrade()", async () => {
             balanceWBTC = await WBTC.balanceOf(callerAddr);
             assert.equal(balanceWBTC / 10 ** 8, 0);
 
@@ -785,22 +780,18 @@ describe('Anti-slippage system', async function () {
             assert.equal(balanceRenBTC, 0);
         });
 
-        it('bla bla /', async () => {
-
+        /**
+         * Added an slippage condition so it fails the 1st attempt and activates the slippage mechanism
+         */
+        it('should send userToken to the user in the 2nd loop iteration / ExecutorFacetV2 - executeFinalTrade()', async () => {
             balanceRenBTC = (await renBTC.balanceOf(callerAddr)) / 10 ** 8;
-            console.log('pre ren: ', balanceRenBTC);
+            assert.equal(balanceRenBTC, 0);
 
-            balanceWBTC = (await WBTC.balanceOf(callerAddr)) / 10 ** 8;
-            console.log('pre wbtc: ', balanceWBTC);
+            ({ testingNum, balance: balanceRenBTC } = await replaceForModVersion('ExecutorFacetV2', false, selector, userDetails, undefined));
 
-            ({ testingNum, balance: balanceWBTC } = await replaceForModVersion('ExecutorFacetV2', false, selector, userDetails, null));
-
+            assert.equal(testingNum, 23);
             balanceRenBTC = await renBTC.balanceOf(callerAddr);
-            console.log('post ren: ', balanceRenBTC / 10 ** 8);
-
-            balanceWBTC = (await WBTC.balanceOf(callerAddr)) / 10 ** 8;
-            console.log('post wbtc: ', balanceWBTC);
-
+            assert(balanceRenBTC / 10 ** 8 > 6);
         });
 
 
