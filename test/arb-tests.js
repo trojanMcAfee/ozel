@@ -771,8 +771,7 @@ describe('Anti-slippage system', async function () {
 
             ({ testingNum, balance: balanceWBTC } = await replaceForModVersion('ExecutorFacetV1', false, selector, userDetails, null));
             assert.equal(testingNum, 23);
-            console.log('bal WBTC post: ', balanceWBTC / 10 ** 8);
-
+            assert(balanceWBTC > 6);
         });
 
 

@@ -539,7 +539,6 @@ contract ExecutorFacetV1 is SecondaryFunctions {
                     if (i == 1) {
                         continue;
                     } else {
-                        console.log(5);
                         IERC20(swapDetails_.baseToken).transfer(user_, inBalance); 
                         emit ForTesting(23);
                         break; //<---- added
