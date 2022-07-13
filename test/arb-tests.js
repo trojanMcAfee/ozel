@@ -769,7 +769,7 @@ describe('Anti-slippage system', async function () {
         /**
          * Changed slippage to type(uint).max in order to fail all trades and activate the last path
          */
-        xit("should send the funds to the user in their baseToken / ExecutorFacetV1 - executeFinalTrade()", async () => {
+        it("should send the funds to the user in their baseToken / ExecutorFacetV1 - executeFinalTrade()", async () => {
             balanceWBTC = await WBTC.balanceOf(callerAddr);
             assert.equal(balanceWBTC / 10 ** 8, 0);
 
@@ -783,7 +783,7 @@ describe('Anti-slippage system', async function () {
         /**
          * Added an slippage condition so it fails the 1st attempt and activates the slippage mechanism
          */
-        xit('should send userToken to the user in the 2nd loop iteration / ExecutorFacetV2 - executeFinalTrade()', async () => {
+        it('should send userToken to the user in the 2nd loop iteration / ExecutorFacetV2 - executeFinalTrade()', async () => {
             balanceRenBTC = (await renBTC.balanceOf(callerAddr)) / 10 ** 8;
             assert.equal(balanceRenBTC, 0);
 
@@ -792,6 +792,7 @@ describe('Anti-slippage system', async function () {
             assert.equal(testingNum, 23);
             balanceRenBTC = await renBTC.balanceOf(callerAddr);
             assert(balanceRenBTC / 10 ** 8 > 6);
+            await renBTC.transfer(caller2Addr, balanceRenBTC);
         });
 
 
@@ -800,9 +801,6 @@ describe('Anti-slippage system', async function () {
          * and the baseToken of their chosing
          */
         it('should divide the funds between baseToken and userToken / ExecutorFacetV3 - executeFinalTrade()', async () => {
-            balanceRenBTC = await renBTC.balanceOf(callerAddr);
-            await renBTC.transfer(caller2Addr, balanceRenBTC);
-
             balanceRenBTC = (await renBTC.balanceOf(callerAddr)) / 10 ** 8;
             assert.equal(balanceRenBTC, 0);
 
@@ -813,9 +811,19 @@ describe('Anti-slippage system', async function () {
             assert.equal(testingNum, 24);
 
             balanceWBTC = await WBTC.balanceOf(callerAddr);
-            assert(balanceRenBTC / 10 ** 8 > 3);
-            assert(balanceWBTC / 10 ** 8 > 3);
+            assert(balanceRenBTC / 10 ** 8 > 2.99);
+            assert(balanceWBTC / 10 ** 8 > 2.99);
         }); 
+
+
+        xit('ja ja ja', async () => {
+
+
+            ({ testingNum, balance: balanceRenBTC, receipt } = await replaceForModVersion('ExecutorFacetV4', false, selector, userDetails, 4));
+
+
+
+        });
 
 
 

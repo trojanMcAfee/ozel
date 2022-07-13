@@ -237,12 +237,15 @@ async function replaceForModVersion(contractName, checkUSDTbalance, selector, us
                 return WBTC;
             case 3:
                 return renBTC;
+            case 4:
+                return MIM;
         }
     }
     const USDT = await hre.ethers.getContractAt('IERC20', usdtAddrArb);
     const WETH = await hre.ethers.getContractAt('IERC20', wethAddr);
     const WBTC = await hre.ethers.getContractAt('IERC20', wbtcAddr);
     const renBTC = await hre.ethers.getContractAt('IERC20', renBtcAddr);
+    const MIM = await hre.ethers.getContractAt('IERC20', mimAddr);
     const [callerAddr] = await hre.ethers.provider.listAccounts();
 
     modContract = typeof contractName === 'string' ? await deployFacet(contractName) : contractName;
