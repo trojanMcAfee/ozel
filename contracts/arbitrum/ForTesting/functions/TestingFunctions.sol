@@ -741,3 +741,71 @@ contract ExecutorFacetV4 is SecondaryFunctions {
 
 
 }
+
+
+
+contract ExecutorFacetV5 is SecondaryFunctions {
+
+    event ForTesting(uint indexed testNum);
+
+
+    function executeFinalTrade( 
+        TradeOps memory swapDetails_, 
+        uint userSlippage_,
+        address user_,
+        uint lockNum_
+    ) external payable isAuthorized(lockNum_) noReentrancy(3) {
+        address pool = swapDetails_.pool;
+        uint inBalance = IERC20(swapDetails_.baseToken).balanceOf(address(this));
+        uint minOut;
+        uint slippage;
+
+        IERC20(
+            pool != s.renPool ? s.USDT : s.WBTC
+        ).approve(pool, inBalance);
+
+        /**** 
+            Exchanges the amount between the user's slippage (final swap)
+            If it fails, it doubles the slippage, divides the amount between two and tries again.
+            If none works, sends the baseToken instead to the user.
+        ****/ 
+        for (uint i=1; i <= 2; i++) {
+            if (pool == s.renPool || pool == s.crv2Pool) {
+                //code omitted (out of scope of test)
+            } else {
+                minOut = IMulCurv(pool).get_dy_underlying(
+                    swapDetails_.tokenIn, swapDetails_.tokenOut, inBalance / i
+                );
+                slippage = calculateSlippage(minOut, userSlippage_ * i);
+
+                //Test var
+                uint testVar = i == 1 ? type(uint).max : slippage;
+                
+                try IMulCurv(pool).exchange_underlying(
+                    swapDetails_.tokenIn, swapDetails_.tokenOut, inBalance / i, testVar 
+                ) {
+                    if (i == 2) {
+                        try IMulCurv(pool).exchange_underlying(
+                            swapDetails_.tokenIn, swapDetails_.tokenOut, inBalance / i, slippage
+                        ) {
+                            emit ForTesting(23);
+                            break;
+                        } catch {
+                            IERC20(swapDetails_.baseToken).transfer(user_, inBalance / 2);
+                        }
+                    }
+                    break;
+                } catch {
+                    if (i == 1) {
+                        continue;
+                    } else {
+                        IERC20(swapDetails_.baseToken).transfer(user_, inBalance); 
+                    }
+                }
+            }
+        }
+    }
+
+
+
+}
