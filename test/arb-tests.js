@@ -773,7 +773,7 @@ describe('Anti-slippage system', async function () {
             balanceWBTC = await WBTC.balanceOf(callerAddr);
             assert.equal(balanceWBTC / 10 ** 8, 0);
 
-            ({ testingNum, balance: balanceWBTC } = await replaceForModVersion('ExecutorFacetV1', false, selector, userDetails, null));
+            ({ testingNum, balance: balanceWBTC } = await replaceForModVersion('ExecutorFacetV1', false, selector, userDetails, 2));
             balanceRenBTC = (await renBTC.balanceOf(callerAddr)) / 10 ** 8;
             assert.equal(testingNum, 23);
             assert(balanceWBTC / 10 ** 8 > 6);
@@ -795,23 +795,26 @@ describe('Anti-slippage system', async function () {
         });
 
 
-        it('la la la', async () => {
+        /**
+         * Fails the 1st and 3rd swapping attempts so half of the user's funds are traded in ther token
+         * and the baseToken of their chosing
+         */
+        it('should divide the funds between baseToken and userToken / ExecutorFacetV3 - executeFinalTrade()', async () => {
             balanceRenBTC = await renBTC.balanceOf(callerAddr);
             await renBTC.transfer(caller2Addr, balanceRenBTC);
 
             balanceRenBTC = (await renBTC.balanceOf(callerAddr)) / 10 ** 8;
             assert.equal(balanceRenBTC, 0);
 
-            ({ testingNum, balance: balanceRenBTC2 } = await replaceForModVersion('ExecutorFacetV3', false, selector, userDetails, 3));
+            ({ testingNum, balance: balanceRenBTC, receipt } = await replaceForModVersion('ExecutorFacetV3', false, selector, userDetails, 3));
             assert.equal(testingNum, 23);
 
-            // balanceRenBTC = await renBTC.balanceOf(callerAddr);
-            console.log('renn around 3: ', balanceRenBTC2 / 10 ** 8);
-            
+            testingNum = getTestingNumber(receipt, true);
+            assert.equal(testingNum, 24);
+
             balanceWBTC = await WBTC.balanceOf(callerAddr);
-            console.log('wbtcc around 3: ', balanceWBTC / 10 ** 8);
-
-
+            assert(balanceRenBTC / 10 ** 8 > 3);
+            assert(balanceWBTC / 10 ** 8 > 3);
         }); 
 
 

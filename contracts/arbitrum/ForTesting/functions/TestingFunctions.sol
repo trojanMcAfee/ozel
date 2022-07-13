@@ -696,7 +696,7 @@ contract ExecutorFacetV3 is SecondaryFunctions {
                 );
                 slippage = calculateSlippage(minOut, userSlippage_ * i);
 
-                //Testing vars
+                //Testing var
                 uint testVar = i == 1 ? type(uint).max : slippage;
                 
                 try IMulCurv(pool).exchange(swapDetails_.tokenIn, swapDetails_.tokenOut, inBalance / i, testVar) {

@@ -234,7 +234,7 @@ async function replaceForModVersion(contractName, checkUSDTbalance, selector, us
                 return WETH;
             case false:
                 return USDT;
-            case null:
+            case 2:
                 return WBTC;
             case 3:
                 return renBTC;
@@ -262,17 +262,12 @@ async function replaceForModVersion(contractName, checkUSDTbalance, selector, us
     if (!isIndex) {
         receipt = await sendETH(userDetails); 
         testingNum = getTestingNumber(receipt);
-
-        x = whichERC20().address;
-        console.log('x: ', x);
-
         balance = await (whichERC20()).balanceOf(callerAddr);
-
-        console.log('b: ', balance);
 
         return {
             testingNum,
-            balance
+            balance,
+            receipt
         };        
     }
 }
