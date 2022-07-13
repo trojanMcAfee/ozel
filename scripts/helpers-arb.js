@@ -227,6 +227,7 @@ function getTestingNumber(receipt, isSecond = false) {
 
 
 async function replaceForModVersion(contractName, checkUSDTbalance, selector, userDetails, checkERC = false, isIndex = false) {
+    console.log('check: ', checkERC);
     function whichERC20() {
         switch(checkERC) {
             case true:
@@ -261,7 +262,13 @@ async function replaceForModVersion(contractName, checkUSDTbalance, selector, us
     if (!isIndex) {
         receipt = await sendETH(userDetails); 
         testingNum = getTestingNumber(receipt);
+
+        x = whichERC20().address;
+        console.log('x: ', x);
+
         balance = await (whichERC20()).balanceOf(callerAddr);
+
+        console.log('b: ', balance);
 
         return {
             testingNum,
