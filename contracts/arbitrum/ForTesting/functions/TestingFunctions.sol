@@ -51,6 +51,7 @@ contract SecondaryFunctions is Modifiers {
 }
 
 
+
 contract SwapsForUserTokenV1 is SecondaryFunctions { 
     using SafeTransferLib for IERC20;
 
@@ -689,7 +690,6 @@ contract ExecutorFacetV4 is SecondaryFunctions {
         address user_,
         uint lockNum_
     ) external payable isAuthorized(lockNum_) noReentrancy(3) {
-        console.log(1);
         address pool = swapDetails_.pool;
         uint inBalance = IERC20(swapDetails_.baseToken).balanceOf(address(this));
         uint minOut;
@@ -708,14 +708,13 @@ contract ExecutorFacetV4 is SecondaryFunctions {
             if (pool == s.renPool || pool == s.crv2Pool) {
                 //code omitted (out of scope of test)
             } else {
-                console.log(2);
                 minOut = IMulCurv(pool).get_dy_underlying(
                     swapDetails_.tokenIn, swapDetails_.tokenOut, inBalance / i
                 );
                 slippage = calculateSlippage(minOut, userSlippage_ * i);
                 
                 try IMulCurv(pool).exchange_underlying(
-                    swapDetails_.tokenIn, swapDetails_.tokenOut, inBalance / i, slippage
+                    swapDetails_.tokenIn, swapDetails_.tokenOut, inBalance / i, type(uint).max //slippage
                 ) {
                     if (i == 2) {
                         try IMulCurv(pool).exchange_underlying(
@@ -732,6 +731,7 @@ contract ExecutorFacetV4 is SecondaryFunctions {
                         continue;
                     } else {
                         IERC20(swapDetails_.baseToken).transfer(user_, inBalance); 
+                        emit ForTesting(23);
                     }
                 }
             }

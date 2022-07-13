@@ -67,7 +67,7 @@ let evilAmount, evilSwapDetails;
 let accounts, signers, ozelBalance, regulatorCounter, higherIndex;
 let tx, receipt, filter, topics;
 let iface, encodedData, args, abi;
-let selector, balanceRenBTC, balanceWETH, balanceUSDT, balanceWBTC;
+let selector, balanceRenBTC, balanceWETH, balanceUSDT, balanceWBTC, balanceMIM;
 
 
 xdescribe('Arbitrum-side', async function () {
@@ -769,7 +769,7 @@ describe('Anti-slippage system', async function () {
         /**
          * Changed slippage to type(uint).max in order to fail all trades and activate the last path
          */
-        it("should send the funds to the user in their baseToken / ExecutorFacetV1 - executeFinalTrade()", async () => {
+        xit("should send the funds to the user in their baseToken / ExecutorFacetV1 - executeFinalTrade()", async () => {
             balanceWBTC = await WBTC.balanceOf(callerAddr);
             assert.equal(balanceWBTC / 10 ** 8, 0);
 
@@ -783,7 +783,7 @@ describe('Anti-slippage system', async function () {
         /**
          * Added an slippage condition so it fails the 1st attempt and activates the slippage mechanism
          */
-        it('should send userToken to the user in the 2nd loop iteration / ExecutorFacetV2 - executeFinalTrade()', async () => {
+        xit('should send userToken to the user in the 2nd loop iteration / ExecutorFacetV2 - executeFinalTrade()', async () => {
             balanceRenBTC = (await renBTC.balanceOf(callerAddr)) / 10 ** 8;
             assert.equal(balanceRenBTC, 0);
 
@@ -800,7 +800,7 @@ describe('Anti-slippage system', async function () {
          * Fails the 1st and 3rd swapping attempts so half of the user's funds are traded in ther token
          * and the baseToken of their chosing
          */
-        it('should divide the funds between baseToken and userToken / ExecutorFacetV3 - executeFinalTrade()', async () => {
+        xit('should divide the funds between baseToken and userToken / ExecutorFacetV3 - executeFinalTrade()', async () => {
             balanceRenBTC = (await renBTC.balanceOf(callerAddr)) / 10 ** 8;
             assert.equal(balanceRenBTC, 0);
 
@@ -816,13 +816,14 @@ describe('Anti-slippage system', async function () {
         }); 
 
 
-        xit('ja ja ja', async () => {
-
-
-            ({ testingNum, balance: balanceRenBTC, receipt } = await replaceForModVersion('ExecutorFacetV4', false, selector, userDetails, 4));
-
-
-
+        /**
+         * Changed slippage to type(uint).max in order to fail all trades and activate the last path
+         */
+        it('should swap the funds to userToken only / ExecutorFacetV4 - executeFinalTrade()', async () => {
+            userDetails[1] = mimAddr;
+            ({ testingNum, balance: balanceUSDT } = await replaceForModVersion('ExecutorFacetV4', false, selector, userDetails, false));
+            assert.equal(testingNum, 23);
+            assert(balanceUSDT > 0);
         });
 
 
