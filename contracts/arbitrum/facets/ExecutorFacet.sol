@@ -35,7 +35,9 @@ contract ExecutorFacet is Modifiers {
         uint minOut;
         uint slippage;
 
-        if (pool != s.renPool) IERC20(s.USDT).approve(pool, inBalance);
+        IERC20(
+            pool != s.renPool ? s.USDT : s.WBTC
+        ).approve(pool, inBalance);
 
         /**** 
             Exchanges the amount between the user's slippage (final swap)
@@ -59,16 +61,15 @@ contract ExecutorFacet is Modifiers {
                         ) {
                             break;
                         } catch {
-                            IERC20(swapDetails_.baseToken).transfer(user_, inBalance / 2);
-                            break; //<--- added
+                            IERC20(swapDetails_.baseToken).transfer(user_, inBalance / 2); //check if msg.sender should be changedd to user
                         }
                     }
+                    break;
                 } catch {
                     if (i == 1) {
                         continue;
                     } else {
                         IERC20(swapDetails_.baseToken).transfer(user_, inBalance); 
-                        break; //<---- added
                     }
                 }
             } else {

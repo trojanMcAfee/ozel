@@ -95,7 +95,7 @@ xdescribe('Arbitrum-side', async function () {
 
         userDetails = [
             callerAddr,
-            fraxAddr,
+            fraxAddr, 
             defaultSlippage
         ];
     });
@@ -128,7 +128,7 @@ xdescribe('Arbitrum-side', async function () {
             });
         });
 
-        describe('2nd user, 1st transfer / exchangeToUserToken()', async () => {
+        xdescribe('2nd user, 1st transfer / exchangeToUserToken()', async () => {
             it('should convert ETH to userToken (WBTC)', async () => {
                 userDetails[0] = caller2Addr;
                 userDetails[1] = wbtcAddr;
@@ -153,7 +153,7 @@ xdescribe('Arbitrum-side', async function () {
             });
         });
 
-        describe('1st user, 2nd transfer / exchangeToUserToken', async () => {
+        xdescribe('1st user, 2nd transfer / exchangeToUserToken', async () => {
             it('should convert ETH to userToken (MIM)', async () => {
                 userDetails[0] = callerAddr;
                 userDetails[1] = mimAddr;
@@ -184,7 +184,7 @@ xdescribe('Arbitrum-side', async function () {
             });
         });
 
-        describe("1st user's transfer of OZL tokens", async () => {
+        xdescribe("1st user's transfer of OZL tokens", async () => {
             it('should transfer half of OZL tokens to 2nd user', async () => {
                 await transferOZL(caller2Addr, parseEther((OZLbalanceFirstUser / 2).toString()));
                 OZLbalanceFirstUser = await balanceOfOZL(callerAddr);
@@ -196,7 +196,7 @@ xdescribe('Arbitrum-side', async function () {
             });
         });
 
-        describe("1st user's OZL withdrawal", async () => {
+        xdescribe("1st user's OZL withdrawal", async () => {
             it("should have a balance of the dapp's fees on userToken (USDC)", async () => {
                 await enableWithdrawals(true);
                 userDetails[1] = usdcAddr;
@@ -215,7 +215,7 @@ xdescribe('Arbitrum-side', async function () {
             });
         });
 
-        describe('1st user, 3rd and 4th transfers', async () => {
+        xdescribe('1st user, 3rd and 4th transfers', async () => {
             it('should leave the 2nd user with more OZL tokens', async() => {
                 await sendETH(userDetails);
                 OZLbalanceFirstUser = await balanceOfOZL(callerAddr);
@@ -239,7 +239,7 @@ xdescribe('Arbitrum-side', async function () {
             });
         });
 
-        describe('2nd user withdrawas 1/3 OZL tokens', async () => {
+        xdescribe('2nd user withdrawas 1/3 OZL tokens', async () => {
 
             it("should have a balance of the dapp's fees on userToken (USDT)", async () => {
                 userDetails[0] = caller2Addr;
@@ -759,15 +759,21 @@ describe('Anti-slippage system', async function () {
 
 
     describe('Modified ExecutorFacet', async () => {
-
-        /**
-         * Changed slippage to type(uint).max in order to fail all trades due to slippage
-         */
-        it("should send the funds to the user in their baseToken / ExecutorFacetV1 - executeFinalTrade()", async () => {
+        before( async () => {
             abi = ['function executeFinalTrade((int128 tokenIn, int128 tokenOut, address baseToken, address userToken, address pool) swapDetails_, uint256 userSlippage_, address user_, uint256 lockNum_) external payable'];
             iface = new ethers.utils.Interface(abi);
             selector = iface.getSighash('executeFinalTrade');
             userDetails[1] = renBtcAddr;
+        });
+
+        /**
+         * Changed slippage to type(uint).max in order to fail all trades due to slippage
+         */
+        xit("should send the funds to the user in their baseToken / ExecutorFacetV1 - executeFinalTrade()", async () => {
+            // abi = ['function executeFinalTrade((int128 tokenIn, int128 tokenOut, address baseToken, address userToken, address pool) swapDetails_, uint256 userSlippage_, address user_, uint256 lockNum_) external payable'];
+            // iface = new ethers.utils.Interface(abi);
+            // selector = iface.getSighash('executeFinalTrade');
+            // userDetails[1] = renBtcAddr;
 
             balanceWBTC = await WBTC.balanceOf(callerAddr);
             assert.equal(balanceWBTC / 10 ** 8, 0);
@@ -777,6 +783,24 @@ describe('Anti-slippage system', async function () {
             assert.equal(testingNum, 23);
             assert(balanceWBTC > 6);
             assert.equal(balanceRenBTC, 0);
+        });
+
+        it('bla bla /', async () => {
+
+            balanceRenBTC = (await renBTC.balanceOf(callerAddr)) / 10 ** 8;
+            console.log('pre ren: ', balanceRenBTC);
+
+            balanceWBTC = (await WBTC.balanceOf(callerAddr)) / 10 ** 8;
+            console.log('pre wbtc: ', balanceWBTC);
+
+            ({ testingNum, balance: balanceWBTC } = await replaceForModVersion('ExecutorFacetV2', false, selector, userDetails, null));
+
+            balanceRenBTC = await renBTC.balanceOf(callerAddr);
+            console.log('post ren: ', balanceRenBTC / 10 ** 8);
+
+            balanceWBTC = (await WBTC.balanceOf(callerAddr)) / 10 ** 8;
+            console.log('post wbtc: ', balanceWBTC);
+
         });
 
 
