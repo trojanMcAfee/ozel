@@ -149,7 +149,6 @@ contract OZLFacet is Modifiers {
         //tricrypto= USDT: 0 / crv2- USDT: 1 , USDC: 0 / mim- MIM: 0 , CRV2lp: 1
         uint tokenAmountIn = ITri(s.tricrypto).calc_withdraw_one_coin(assets, 0); 
         
-        //If tx reverts due to slippage, user can re-submit a new one
         uint minOut = ExecutorFacet(s.executor).calculateSlippage(
             tokenAmountIn, userDetails_.userSlippage
         ); 
@@ -162,7 +161,7 @@ contract OZLFacet is Modifiers {
     } 
     
 
-    function _depositInDeFi(uint fee_, bool isRetry_) private { //payable
+    function _depositInDeFi(uint fee_, bool isRetry_) private { 
         //Deposit WETH in Curve Tricrypto pool
         (uint tokenAmountIn, uint[3] memory amounts) = _calculateTokenAmountCurve(fee_);
         IWETH(s.WETH).approve(s.tricrypto, tokenAmountIn);

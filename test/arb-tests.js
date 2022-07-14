@@ -302,7 +302,7 @@ xdescribe('Unit testing', async function () {
         ];
     });
 
-    describe('OZLFacet', async () => {
+    describe('OZLFacet', async () => { //done
         describe('exchangeToUserToken()', async () => {
             it('should fail with user as address(0)', async () => {
                 userDetails[0] = nullAddr;
@@ -437,7 +437,7 @@ xdescribe('Unit testing', async function () {
         });
     });
 
-    describe('ExecutorFacet', async () => {
+    describe('ExecutorFacet', async () => { //done
         it('shout not allow an unauthorized user to run the function / updateExecutorState()', async () => {
             evilAmount = parseEther('1000');
             await assert.rejects(async () => {
@@ -518,7 +518,7 @@ xdescribe('Unit testing', async function () {
 
     });
 
-    describe('oz20Facet', async () => {
+    describe('oz20Facet', async () => { //done
         it('shout not allow an unauthorized user to run the function / burn()', async () => {
             await assert.rejects(async () => {
                 await callDiamondProxy({
@@ -530,8 +530,6 @@ xdescribe('Unit testing', async function () {
                 message: err().notAuthorized 
             });
         });
-
-
     });
 
 
