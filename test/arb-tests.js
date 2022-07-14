@@ -70,7 +70,7 @@ let iface, encodedData, args, abi;
 let selector, balanceRenBTC, balanceWETH, balanceUSDT, balanceWBTC, balanceMIM;
 
 
-xdescribe('Arbitrum-side', async function () {
+describe('Arbitrum-side', async function () {
     this.timeout(1000000);
 
     before( async () => {
@@ -128,7 +128,7 @@ xdescribe('Arbitrum-side', async function () {
             });
         });
 
-        xdescribe('2nd user, 1st transfer / exchangeToUserToken()', async () => {
+        describe('2nd user, 1st transfer / exchangeToUserToken()', async () => {
             it('should convert ETH to userToken (WBTC)', async () => {
                 userDetails[0] = caller2Addr;
                 userDetails[1] = wbtcAddr;
@@ -153,13 +153,17 @@ xdescribe('Arbitrum-side', async function () {
             });
         });
 
-        xdescribe('1st user, 2nd transfer / exchangeToUserToken', async () => {
+        describe('1st user, 2nd transfer / exchangeToUserToken', async () => {
             it('should convert ETH to userToken (MIM)', async () => {
                 userDetails[0] = callerAddr;
                 userDetails[1] = mimAddr;
 
                 await sendETH(userDetails);
-                assert(formatEther(await MIM.balanceOf(callerAddr)) > 0);
+                balanceMIM = await MIM.balanceOf(callerAddr);
+                assert(formatEther(balanceMIM) > 0);
+
+                //Cleans up by sending all MIM to another user
+                await MIM.transfer(caller2Addr, balanceMIM);
             });
             
             it('should decrease the Ozel index to its lowest level', async () => {
@@ -184,7 +188,7 @@ xdescribe('Arbitrum-side', async function () {
             });
         });
 
-        xdescribe("1st user's transfer of OZL tokens", async () => {
+        describe("1st user's transfer of OZL tokens", async () => {
             it('should transfer half of OZL tokens to 2nd user', async () => {
                 await transferOZL(caller2Addr, parseEther((OZLbalanceFirstUser / 2).toString()));
                 OZLbalanceFirstUser = await balanceOfOZL(callerAddr);
@@ -196,7 +200,7 @@ xdescribe('Arbitrum-side', async function () {
             });
         });
 
-        xdescribe("1st user's OZL withdrawal", async () => {
+        describe("1st user's OZL withdrawal", async () => {
             it("should have a balance of the dapp's fees on userToken (USDC)", async () => {
                 await enableWithdrawals(true);
                 userDetails[1] = usdcAddr;
@@ -215,7 +219,7 @@ xdescribe('Arbitrum-side', async function () {
             });
         });
 
-        xdescribe('1st user, 3rd and 4th transfers', async () => {
+        describe('1st user, 3rd and 4th transfers', async () => {
             it('should leave the 2nd user with more OZL tokens', async() => {
                 await sendETH(userDetails);
                 OZLbalanceFirstUser = await balanceOfOZL(callerAddr);
@@ -239,7 +243,7 @@ xdescribe('Arbitrum-side', async function () {
             });
         });
 
-        xdescribe('2nd user withdrawas 1/3 OZL tokens', async () => {
+        describe('2nd user withdrawas 1/3 OZL tokens', async () => {
 
             it("should have a balance of the dapp's fees on userToken (USDT)", async () => {
                 userDetails[0] = caller2Addr;
@@ -268,7 +272,7 @@ xdescribe('Arbitrum-side', async function () {
 });
 
 
-xdescribe('Unit testing', async function () {
+describe('Unit testing', async function () {
     this.timeout(1000000);
 
     before( async () => {
@@ -452,7 +456,7 @@ xdescribe('Unit testing', async function () {
             await assert.rejects(async () => {
                 await callDiamondProxy({
                     method: 'executeFinalTrade',
-                    args: [evilSwapDetails, 0, 2]
+                    args: [evilSwapDetails, 0, deadAddr, 2]
                 });
             }, {
                 name: 'Error',
@@ -547,7 +551,7 @@ xdescribe('Unit testing', async function () {
  * show the workings of the mechanism.
  */
 
-xdescribe('Ozel Index', async function () { 
+describe('Ozel Index', async function () { 
     this.timeout(100000000000000000000);
 
     before( async () => {
@@ -651,6 +655,11 @@ xdescribe('Ozel Index', async function () {
 });
 
 
+
+/**
+ * It tests the anti-slippage system designed with try/catch blocks on the contracts
+ * OZLFacet and ExecutorFacet.
+ */
 describe('Anti-slippage system', async function () {
     this.timeout(1000000);
 
@@ -685,16 +694,14 @@ describe('Anti-slippage system', async function () {
         selector = iface.getSighash('exchangeToUserToken');
     });
 
-
-    
-    xdescribe('Modified OZLFacet', async () => {
+    describe('Modified OZLFacet', async () => {
 
         /** 
          * Changed the first slippage for type(uint).max in _swapsForUserToken 
          * in order to provoke all trades to fail (due to slippage) and invoke
          * the last resort mechanism (send WETH back to user)
          */ 
-        it('should replace swapsUserToken for V1 / _swapsForUserTokenV1', async () => {
+        it('should replace swapsUserToken for V1 / _swapsForUserTokenV1', async () => {            
             ({ testingNum, balance: balanceWETH } = await replaceForModVersion('SwapsForUserTokenV1', true, selector, userDetails, true));
             assert.equal(formatEther(balanceWETH), 99.9);  
         });
@@ -704,7 +711,7 @@ describe('Anti-slippage system', async function () {
          * Added a condition so it failes the first attempt due to slippage
          * but makes the trade in the second.
          */
-        it('should replace swapsUserToken for V2 / _swapsForUserTokenV2', async () => {
+        it('should replace swapsUserToken for V2 / _swapsForUserTokenV2', async () => {            
             ({ testingNum, balance: balanceUSDT } = await replaceForModVersion('SwapsForUserTokenV2', true, selector, userDetails));
             assert.equal(testingNum, 23);
             assert(balanceUSDT / 10 ** 6 > 0);
@@ -716,7 +723,7 @@ describe('Anti-slippage system', async function () {
          * swap exchanged half of amountIn to userToken, and due to the failure on
          * the 3rd swap, the other half of amountIn was sent as WETH back to the user.
          */
-        it('should replace swapsUserToken for V3 / _swapsForUserTokenV3', async () => {
+        it('should replace swapsUserToken for V3 / _swapsForUserTokenV3', async () => {            
             balanceUSDTpre = (await USDT.balanceOf(callerAddr)) / 10 ** 6;
             balanceWETHpre = formatEther(await WETH.balanceOf(callerAddr));
 
@@ -740,7 +747,7 @@ describe('Anti-slippage system', async function () {
          * are attempted to be deposited once again through any main action from
          * the app (deposit - withdraw).
          */
-        it('should add failed fees to its own variable / _depositInDeFi()', async () => {
+        it('should add failed fees to its own variable / _depositInDeFi()', async () => {            
             ({ testingNum } = await replaceForModVersion('DepositInDeFiV1', false, selector, userDetails));
             assert.equal(testingNum, 23);
         });
@@ -748,7 +755,7 @@ describe('Anti-slippage system', async function () {
         /**
          * It deposits -in DeFi- the failedFees that weren't deposited in the prior test.
          */
-        it('should deposit any failed fees found in the failedFees variable / _depositInDeFi()', async () => {
+        it('should deposit any failed fees found in the failedFees variable / _depositInDeFi()', async () => {            
             receipt = await sendETH(userDetails);
             assert.equal(getTestingNumber(receipt, true), 24);
 
@@ -769,30 +776,34 @@ describe('Anti-slippage system', async function () {
         /**
          * Changed slippage to type(uint).max in order to fail all trades and activate the last path
          */
-        it("should send the funds to the user in their baseToken / ExecutorFacetV1 - executeFinalTrade()", async () => {
+        it("should send the funds to the user in their baseToken / ExecutorFacetV1 - executeFinalTrade()", async () => {            
             balanceWBTC = await WBTC.balanceOf(callerAddr);
             assert.equal(balanceWBTC / 10 ** 8, 0);
 
             ({ testingNum, balance: balanceWBTC } = await replaceForModVersion('ExecutorFacetV1', false, selector, userDetails, 2));
             balanceRenBTC = (await renBTC.balanceOf(callerAddr)) / 10 ** 8;
             assert.equal(testingNum, 23);
-            assert(balanceWBTC / 10 ** 8 > 6);
+            
+            assert(balanceWBTC / 10 ** 8 > 0);
             assert.equal(balanceRenBTC, 0);
+
+            //Cleans up
+            await WBTC.transfer(caller2Addr, balanceWBTC);
         });
 
         /**
          * Added an slippage condition so it fails the 1st attempt and activates the slippage mechanism.
          * All funds are in userToken through two swaps
          */
-        it('should send userToken to the user in the 2nd loop iteration / ExecutorFacetV2 - executeFinalTrade()', async () => {
+        it('should send userToken to the user in the 2nd loop iteration / ExecutorFacetV2 - executeFinalTrade()', async () => {            
             balanceRenBTC = (await renBTC.balanceOf(callerAddr)) / 10 ** 8;
             assert.equal(balanceRenBTC, 0);
 
             ({ testingNum, balance: balanceRenBTC } = await replaceForModVersion('ExecutorFacetV2', false, selector, userDetails, 3));
-
             assert.equal(testingNum, 23);
+
             balanceRenBTC = await renBTC.balanceOf(callerAddr);
-            assert(balanceRenBTC / 10 ** 8 > 6);
+            assert(balanceRenBTC / 10 ** 8 > 0);
             await renBTC.transfer(caller2Addr, balanceRenBTC);
         });
 
@@ -801,9 +812,12 @@ describe('Anti-slippage system', async function () {
          * Fails the 1st and 3rd swapping attempts so half of the user's funds are traded in userToken
          * and the other half in the baseToken.
          */
-        it('should divide the funds between baseToken and userToken / ExecutorFacetV3 - executeFinalTrade()', async () => {
+        it('should divide the funds between baseToken and userToken / ExecutorFacetV3 - executeFinalTrade()', async () => {            
             balanceRenBTC = (await renBTC.balanceOf(callerAddr)) / 10 ** 8;
-            assert.equal(balanceRenBTC, 0);
+            assert(balanceRenBTC < 0.000001);
+
+            balanceWBTC = (await WBTC.balanceOf(callerAddr)) / 10 ** 8;
+            assert.equal(balanceWBTC, 0);
 
             ({ testingNum, balance: balanceRenBTC, receipt } = await replaceForModVersion('ExecutorFacetV3', false, selector, userDetails, 3));
             assert.equal(testingNum, 23);
@@ -812,8 +826,8 @@ describe('Anti-slippage system', async function () {
             assert.equal(testingNum, 24);
 
             balanceWBTC = await WBTC.balanceOf(callerAddr);
-            assert(balanceRenBTC / 10 ** 8 > 2.99);
-            assert(balanceWBTC / 10 ** 8 > 2.99);
+            assert(balanceRenBTC / 10 ** 8 > 1);
+            assert(balanceWBTC / 10 ** 8 > 1);
         }); 
 
 
@@ -821,7 +835,7 @@ describe('Anti-slippage system', async function () {
          * Changed slippage to type(uint).max in order to fail all trades and activate the last path
          * (2nd leg for non-BTC-2Pool coins)
          */
-        it('should swap the funds to userToken only / ExecutorFacetV4 - executeFinalTrade()', async () => {
+        it('should swap the funds to userToken only / ExecutorFacetV4 - executeFinalTrade()', async () => {            
             userDetails[1] = mimAddr;
             ({ testingNum, balance: balanceUSDT } = await replaceForModVersion('ExecutorFacetV4', false, selector, userDetails, false));
             assert.equal(testingNum, 23);
@@ -842,6 +856,7 @@ describe('Anti-slippage system', async function () {
             ({ testingNum, balance: balanceMIM } = await replaceForModVersion('ExecutorFacetV5', false, selector, userDetails, 4));
             assert.equal(testingNum, 23);
             assert(formatEther(balanceMIM) > 0);
+
             await MIM.transfer(caller2Addr, balanceMIM);
         });
 
@@ -850,7 +865,7 @@ describe('Anti-slippage system', async function () {
          * Fails the 1st and 3rd swapping attempts so half of the user's funds are traded in userToken
          * and the other half in the baseToken.
          */
-        it('should divide the funds between baseToken and userToken / ExecutorFacetV6 - executeFinalTrade()', async () => {
+        it('should divide the funds between baseToken and userToken / ExecutorFacetV6 - executeFinalTrade()', async () => {            
             userDetails[1] = mimAddr;
             balanceMIM = formatEther(await MIM.balanceOf(callerAddr));
             assert.equal(balanceMIM, 0);
