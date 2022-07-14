@@ -24,7 +24,9 @@ const {
     tokenName,
     tokenSymbol,
     defaultSlippage,
-    nullAddr
+    nullAddr,
+    chainlinkAggregatorAddr,
+    swapRouterUniAddr
 } = require('./state-vars.js');
 
 
@@ -328,7 +330,9 @@ async function deploy() {
         fraxPoolAddr,
         executorFacet.address,
         oz4626.address,
-        oz20.address
+        oz20.address,
+        chainlinkAggregatorAddr,
+        swapRouterUniAddr
     ];
 
     const erc20sAddr = [

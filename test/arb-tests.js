@@ -896,7 +896,7 @@ xdescribe('Anti-slippage system', async function () {
 
 
 
-describe('testing ozERC20', async () => {
+describe('My Revenue', async () => {
 
     // this.timeout(1000000);
 
@@ -927,39 +927,15 @@ describe('testing ozERC20', async () => {
         ];
     });
 
+    it('should give me tons of moneyyy', async () => {
 
-    it('should convert ETH to userToken (FRAX)', async () => {
-        await sendETH(userDetails); 
-        
-        balanceOZL = await balanceOfOZL(callerAddr);
-        console.log('ozl bal 1: ', balanceOZL);
-
-        balanceOZL = await balanceOfOZL(caller2Addr);
-        console.log('ozl bal 2: ', balanceOZL);
+        await deployedDiamond.kaChing$$$();
 
 
-        [ signer1, signer2 ] = await hre.ethers.getSigners();
-        abi = ['function transferUserAllocation(address sender_, address receiver_, uint256 amount, uint256 senderBalance_, uint256 lockNum_) external'];
-        iface = new ethers.utils.Interface(abi)
-        data = iface.encodeFunctionData('transferUserAllocation', [
-            callerAddr, caller2Addr, parseEther('50'), parseEther('100'), 6
-        ]);
-
-        await signer2.sendTransaction({
-            to: deployedDiamond.address,
-            data
-        });
-
-        //-------------
-
-        // await transferOZL(caller2Addr, parseEther('50'));
-
-        balanceOZL = await balanceOfOZL(caller2Addr);
-        console.log('ozl bal 2 again: ', balanceOZL);
+    });
 
 
-
-    }).timeout(1000000);
+    
 
 
 

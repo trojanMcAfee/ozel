@@ -109,8 +109,9 @@ switch(network) {
         fraxAddr = '0x17FC002b466eEc40DaE837Fc4bE5c67993ddBd6F';
         gelatoAddr = '0x4775af8fef4809fe10bf05867d2b038a4b5b2146';
         deadAddr = '0x000000000000000000000000000000000000dEaD';
+        chainlinkAggregatorAddr = '0x639fe6ab55c921f74e7fac1ee960c0b6293ba612';
+        swapRouterUniAddr = '0xE592427A0AEce92De3Edee1F18E0157C05861564';
 } 
-
 
 
 

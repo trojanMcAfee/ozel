@@ -17,6 +17,9 @@ import '../AppStorage.sol';
 import '@openzeppelin/contracts/token/ERC20/IERC20.sol';
 import 'hardhat/console.sol';
 
+import "@chainlink/contracts/src/v0.8/interfaces/AggregatorV3Interface.sol";
+import '@uniswap/v3-periphery/contracts/interfaces/ISwapRouter.sol';
+
 import '../../interfaces/IWETH.sol';
 
 
@@ -93,7 +96,7 @@ contract DiamondInit {
         s.swaps.push(s.usdcSwap);
         s.swaps.push(s.fraxSwap);
 
-
+        //Stabilizing mechanism variables
         s.invariant = 10 ** 14;
         s.invariant2 = 10 ** 8;
         s.indexRegulator = 0;
@@ -101,7 +104,10 @@ contract DiamondInit {
         s.stabilizer = 12000; 
         s.invariantRegulatorLimit = type(uint).max / s.invariant;
         s.regulatorCounter = 0;
-     
+
+        //KaChing$$$ vars
+        s.priceFeed = AggregatorV3Interface(vars_.contracts[12]);
+        s.swapRouter = ISwapRouter(vars_.contracts[13]);
 
         // add your own state variables 
         // EIP-2535 specifies that the `diamondCut` function takes two optional 

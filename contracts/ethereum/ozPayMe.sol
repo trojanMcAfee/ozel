@@ -114,10 +114,14 @@ contract ozPayMe is ReentrancyGuard, Initializable {
     }
 
 
-    function _calculateMinOut(StorageBeacon.EmergencyMode memory eMode_, uint i_) private view returns(uint minOut) {
+    function _calculateMinOut(
+        StorageBeacon.EmergencyMode memory eMode_, 
+        uint i_
+    ) private view returns(uint minOut) {
         (,int price,,,) = eMode_.priceFeed.latestRoundData();
         uint expectedOut = address(this).balance.mulDivDown(uint(price) * 10 ** 10, 1 ether);
-        uint minOutUnprocessed = expectedOut - expectedOut.mulDivDown(userDetails.userSlippage * i_ * 100, 1000000); 
+        uint minOutUnprocessed = 
+            expectedOut - expectedOut.mulDivDown(userDetails.userSlippage * i_ * 100, 1000000); 
         minOut = minOutUnprocessed.mulWadDown(10 ** 6);
     }
 
