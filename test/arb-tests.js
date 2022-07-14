@@ -798,8 +798,8 @@ describe('Anti-slippage system', async function () {
 
 
         /**
-         * Fails the 1st and 3rd swapping attempts so half of the user's funds are traded in ther token
-         * and the other half in the baseToken of their chosing
+         * Fails the 1st and 3rd swapping attempts so half of the user's funds are traded in userToken
+         * and the other half in the baseToken.
          */
         it('should divide the funds between baseToken and userToken / ExecutorFacetV3 - executeFinalTrade()', async () => {
             balanceRenBTC = (await renBTC.balanceOf(callerAddr)) / 10 ** 8;
@@ -826,6 +826,7 @@ describe('Anti-slippage system', async function () {
             ({ testingNum, balance: balanceUSDT } = await replaceForModVersion('ExecutorFacetV4', false, selector, userDetails, false));
             assert.equal(testingNum, 23);
             assert(balanceUSDT > 0);
+            await USDT.transfer(caller2Addr, balanceUSDT);
         });
 
 
@@ -841,7 +842,28 @@ describe('Anti-slippage system', async function () {
             ({ testingNum, balance: balanceMIM } = await replaceForModVersion('ExecutorFacetV5', false, selector, userDetails, 4));
             assert.equal(testingNum, 23);
             assert(formatEther(balanceMIM) > 0);
+            await MIM.transfer(caller2Addr, balanceMIM);
+        });
 
+
+        /**
+         * Fails the 1st and 3rd swapping attempts so half of the user's funds are traded in userToken
+         * and the other half in the baseToken.
+         */
+        it('should divide the funds between baseToken and userToken / ExecutorFacetV6 - executeFinalTrade()', async () => {
+            userDetails[1] = mimAddr;
+            balanceMIM = formatEther(await MIM.balanceOf(callerAddr));
+            assert.equal(balanceMIM, 0);
+
+            balanceUSDT = (await USDT.balanceOf(callerAddr)) / 10 ** 6;
+            assert.equal(balanceUSDT, 0);
+
+            ({ testingNum, balance: balanceMIM } = await replaceForModVersion('ExecutorFacetV6', false, selector, userDetails, 4));
+            assert.equal(testingNum, 23);
+            assert(formatEther(balanceMIM) > 0);
+
+            balanceUSDT = (await USDT.balanceOf(callerAddr)) / 10 ** 6;
+            assert(balanceUSDT > 0);
         });
 
 
