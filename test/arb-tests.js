@@ -70,7 +70,7 @@ let iface, encodedData, args, abi;
 let selector, balanceRenBTC, balanceWETH, balanceUSDT, balanceWBTC, balanceMIM;
 
 
-describe('Arbitrum-side', async function () {
+xdescribe('Arbitrum-side', async function () {
     this.timeout(1000000);
 
     before( async () => {
@@ -272,7 +272,7 @@ describe('Arbitrum-side', async function () {
 });
 
 
-describe('Unit testing', async function () {
+xdescribe('Unit testing', async function () {
     this.timeout(1000000);
 
     before( async () => {
@@ -489,7 +489,7 @@ describe('Unit testing', async function () {
         });
     });
 
-    describe('oz4626Facet', async () => {
+    describe('oz4626Facet', async () => { //done
         it('shout not allow an unauthorized user to run the function / deposit()', async () => {
             await assert.rejects(async () => {
                 await callDiamondProxy({
@@ -551,7 +551,7 @@ describe('Unit testing', async function () {
  * show the workings of the mechanism.
  */
 
-describe('Ozel Index', async function () { 
+xdescribe('Ozel Index', async function () { 
     this.timeout(100000000000000000000);
 
     before( async () => {
@@ -660,7 +660,7 @@ describe('Ozel Index', async function () {
  * It tests the anti-slippage system designed with try/catch blocks on the contracts
  * OZLFacet and ExecutorFacet.
  */
-describe('Anti-slippage system', async function () {
+xdescribe('Anti-slippage system', async function () {
     this.timeout(1000000);
 
     before( async () => {
@@ -892,6 +892,78 @@ describe('Anti-slippage system', async function () {
 
    
     
+
+
+});
+
+
+
+describe('testing ozERC20', async () => {
+
+    // this.timeout(1000000);
+
+    before( async () => {
+        const deployedVars = await deploy();
+        ({
+            deployedDiamond, 
+            WETH,
+            USDT,
+            WBTC,
+            renBTC,
+            USDC,
+            MIM,
+            FRAX,
+            crvTri,
+            callerAddr, 
+            caller2Addr,
+            ozlFacet,
+            yvCrvTri
+        } = deployedVars);
+    
+        getVarsForHelpers(deployedDiamond, ozlFacet);
+
+        userDetails = [
+            callerAddr,
+            fraxAddr, 
+            defaultSlippage
+        ];
+    });
+
+
+    it('should convert ETH to userToken (FRAX)', async () => {
+        await sendETH(userDetails); 
+        
+        balanceOZL = await balanceOfOZL(callerAddr);
+        console.log('ozl bal 1: ', balanceOZL);
+
+        balanceOZL = await balanceOfOZL(caller2Addr);
+        console.log('ozl bal 2: ', balanceOZL);
+
+
+        [ signer1, signer2 ] = await hre.ethers.getSigners();
+        abi = ['function transferUserAllocation(address sender_, address receiver_, uint256 amount, uint256 senderBalance_, uint256 lockNum_) external'];
+        iface = new ethers.utils.Interface(abi)
+        data = iface.encodeFunctionData('transferUserAllocation', [
+            callerAddr, caller2Addr, parseEther('50'), parseEther('100'), 6
+        ]);
+
+        await signer2.sendTransaction({
+            to: deployedDiamond.address,
+            data
+        });
+
+        //-------------
+
+        // await transferOZL(caller2Addr, parseEther('50'));
+
+        balanceOZL = await balanceOfOZL(caller2Addr);
+        console.log('ozl bal 2 again: ', balanceOZL);
+
+
+
+    }).timeout(1000000);
+
+
 
 
 });

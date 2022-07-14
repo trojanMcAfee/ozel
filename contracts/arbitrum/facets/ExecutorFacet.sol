@@ -151,7 +151,7 @@ contract ExecutorFacet is Modifiers {
         _updateIndex();
     }
 
-    function transferUserAllocation( //can someone modify s.isAuth?
+    function transferUserAllocation( 
         address sender_, 
         address receiver_, 
         uint amount_, 
