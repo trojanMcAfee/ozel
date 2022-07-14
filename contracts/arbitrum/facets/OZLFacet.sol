@@ -34,7 +34,7 @@ contract OZLFacet is Modifiers {
      ******/   
 
     function exchangeToUserToken(
-        userConfig memory userDetails_
+        UserConfig memory userDetails_
     ) external payable noReentrancy(0) filterDetails(userDetails_) { 
         if (msg.value <= 0) revert CantBeZero('msg.value');
 
@@ -78,7 +78,7 @@ contract OZLFacet is Modifiers {
     function _swapsForUserToken(
         uint amountIn_, 
         uint baseTokenOut_, 
-        userConfig memory userDetails_,
+        UserConfig memory userDetails_,
         address facetExecutor_,
         bytes4 execSelector_
     ) private { 
@@ -122,7 +122,7 @@ contract OZLFacet is Modifiers {
     
 
     function withdrawUserShare(
-        userConfig memory userDetails_,
+        UserConfig memory userDetails_,
         address receiver_,
         uint shares_
     ) external onlyWhenEnabled filterDetails(userDetails_) { 
@@ -207,7 +207,7 @@ contract OZLFacet is Modifiers {
     }
 
     function _tradeWithExecutor(
-        userConfig memory userDetails_,
+        UserConfig memory userDetails_,
         address facetExecutor_,
         bytes4 execSelector_
     ) private { 

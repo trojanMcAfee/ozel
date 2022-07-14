@@ -31,7 +31,7 @@ abstract contract Modifiers {
         _;
     }
 
-    modifier filterDetails(userConfig memory userDetails_) {
+    modifier filterDetails(UserConfig memory userDetails_) {
         if (userDetails_.user == address(0) || userDetails_.userToken == address(0)) revert CantBeZero('address'); 
         if (userDetails_.userSlippage <= 0) revert CantBeZero('slippage');
         if (!s.tokenDatabase[userDetails_.userToken]) revert NotFoundInDatabase('token');

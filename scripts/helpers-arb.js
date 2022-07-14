@@ -288,28 +288,7 @@ async function deployFacet(facetName) {
 
 
 //Deploys contracts in Arbitrum
-async function deploy(n = 0) { 
-    function chooseFacet(m) {
-        let facets = {ozel: 'OZLFacet', exec: 'ExecutorFacet'};
-        switch(m) {
-            case 0:
-                return facets;
-            case 1:
-                facets.exec = 'ModExecutorFacet';
-                break;
-            case 2: 
-                facets.ozel = 'ModOZLFacet';
-                break;
-            case 3: 
-                facets.ozel = 'ModOZLFacet2';
-                break;
-            case 4: 
-                facets.ozel = 'ModOZLFacet3';
-
-        }
-        return facets;
-    }
-
+async function deploy() { 
     const [callerAddr, caller2Addr] = await hre.ethers.provider.listAccounts();
     console.log('--');
     console.log('Caller 1: ', callerAddr);
@@ -330,9 +309,9 @@ async function deploy(n = 0) {
     //Facets
     const diamondCutFacet = await deployFacet('DiamondCutFacet');
     const diamondLoupeFacet = await deployFacet('DiamondLoupeFacet'); 
-    const ozlFacet = await deployFacet(chooseFacet(n).ozel);
+    const ozlFacet = await deployFacet('OZLFacet');
     const gettersFacet = await deployFacet('GettersFacet');
-    const executorFacet = await deployFacet(chooseFacet(n).exec);
+    const executorFacet = await deployFacet('ExecutorFacet');
     const oz4626 = await deployFacet('oz4626Facet');
     const oz20 = await deployFacet('oz20Facet');
     const ownershipFacet = await deployFacet('OwnershipFacet'); 
@@ -399,9 +378,9 @@ async function deploy(n = 0) {
         facets: [
             ['DiamondCutFacet', diamondCutFacet],
             ['DiamondLoupeFacet', diamondLoupeFacet],
-            [chooseFacet(n).ozel, ozlFacet],
+            ['OZLFacet', ozlFacet],
             ['GettersFacet', gettersFacet],
-            [chooseFacet(n).exec, executorFacet],
+            ['ExecutorFacet', executorFacet],
             ['oz4626Facet', oz4626],
             ['oz20Facet', oz20],
             ['OwnershipFacet', ownershipFacet]

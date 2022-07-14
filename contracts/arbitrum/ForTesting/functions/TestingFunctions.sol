@@ -62,7 +62,7 @@ contract SwapsForUserTokenV1 is SecondaryFunctions {
     event DeadVariables(address variable, bytes4 variable2);
 
     function exchangeToUserToken(
-        userConfig memory userDetails_
+        UserConfig memory userDetails_
     ) external payable noReentrancy(0) filterDetails(userDetails_) { 
         if (msg.value <= 0) revert CantBeZero('msg.value');
 
@@ -99,7 +99,7 @@ contract SwapsForUserTokenV1 is SecondaryFunctions {
     function _swapsForUserToken(
         uint amountIn_, 
         uint baseTokenOut_, 
-        userConfig memory userDetails_,
+        UserConfig memory userDetails_,
         address facetExecutor_,
         bytes4 execSelector_
     ) private { 
@@ -145,7 +145,7 @@ contract SwapsForUserTokenV2 is SecondaryFunctions {
     event DeadVariables(address variable, bytes4 variable2);
 
     function exchangeToUserToken(
-        userConfig memory userDetails_
+        UserConfig memory userDetails_
     ) external payable noReentrancy(0) filterDetails(userDetails_) { 
         if (msg.value <= 0) revert CantBeZero('msg.value');
 
@@ -182,7 +182,7 @@ contract SwapsForUserTokenV2 is SecondaryFunctions {
     function _swapsForUserToken(
         uint amountIn_, 
         uint baseTokenOut_, 
-        userConfig memory userDetails_,
+        UserConfig memory userDetails_,
         address facetExecutor_,
         bytes4 execSelector_
     ) private { 
@@ -232,7 +232,7 @@ contract SwapsForUserTokenV3 is SecondaryFunctions {
     event DeadVariables(address variable, bytes4 variable2);
 
     function exchangeToUserToken(
-        userConfig memory userDetails_
+        UserConfig memory userDetails_
     ) external payable noReentrancy(0) filterDetails(userDetails_) { 
         if (msg.value <= 0) revert CantBeZero('msg.value');
 
@@ -270,7 +270,7 @@ contract SwapsForUserTokenV3 is SecondaryFunctions {
     function _swapsForUserToken(
         uint amountIn_, 
         uint baseTokenOut_, 
-        userConfig memory userDetails_,
+        UserConfig memory userDetails_,
         address facetExecutor_,
         bytes4 execSelector_
     ) private { 
@@ -383,7 +383,7 @@ contract DepositInDeFiV1 is SecondaryFunctions {
     event DeadVariables(address variable, bytes4 variable2);
 
     function exchangeToUserToken(
-        userConfig memory userDetails_
+        UserConfig memory userDetails_
     ) external payable noReentrancy(0) filterDetails(userDetails_) { 
         if (msg.value <= 0) revert CantBeZero('msg.value');
 
@@ -425,7 +425,7 @@ contract DepositInDeFiV1 is SecondaryFunctions {
     function _swapsForUserToken(
         uint amountIn_, 
         uint baseTokenOut_, 
-        userConfig memory userDetails_,
+        UserConfig memory userDetails_,
         address facetExecutor_,
         bytes4 execSelector_
     ) private { 

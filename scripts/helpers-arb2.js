@@ -134,21 +134,21 @@ async function transferOZL(recipient, amount, signerIndex) {
     }); 
 }
 
-async function withdrawShareOZL(userConfig, receiverAddr, balanceOZL, signerIndex) {  
+async function withdrawShareOZL(UserConfig, receiverAddr, balanceOZL, signerIndex) {  
     await callDiamondProxy({
         method: 'withdrawUserShare',
-        args: [userConfig, receiverAddr, balanceOZL],
+        args: [UserConfig, receiverAddr, balanceOZL],
         signerIndex
     });
 } 
 
 
 //Sends ETH to contracts (simulates ETH bridging) **** MAIN FUNCTION ****
-async function sendETH(userConfig, IERC20, tokenStr, decimals, signerIndex) {
+async function sendETH(UserConfig, IERC20, tokenStr, decimals, signerIndex) {
     const value = ethers.utils.parseEther('100');
     await callDiamondProxy({
         method: 'exchangeToUserToken',
-        args: userConfig, 
+        args: UserConfig, 
         value,
         signerIndex
     });
@@ -159,7 +159,7 @@ async function sendETH(userConfig, IERC20, tokenStr, decimals, signerIndex) {
         type: 'uint256'
     });
     console.log('index: ', ozelIndex.toString() / 10 ** 18);
-    let tokenBalance = await IERC20.balanceOf(userConfig[0]);
+    let tokenBalance = await IERC20.balanceOf(UserConfig[0]);
     console.log(tokenStr + ' balance of callerAddr: ', tokenBalance.toString() / decimals);
     console.log('.'); 
 }

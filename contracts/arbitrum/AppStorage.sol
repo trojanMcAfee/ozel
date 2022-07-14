@@ -84,7 +84,7 @@ struct TradeOps {
     address pool;
 }
 
-struct userConfig { //change this to UserConfig
+struct UserConfig { 
     address user;
     address userToken;
     uint userSlippage; 
