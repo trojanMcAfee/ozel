@@ -16,6 +16,9 @@ import './AppStorage.sol';
 
 import 'hardhat/console.sol';
 
+import '../interfaces/IYtri.sol';
+import {ITri} from '../interfaces/ICurve.sol';
+
 
 
 contract Diamond { 
@@ -67,14 +70,44 @@ contract Diamond {
 
     receive() external payable {}
 
+    // function changeKaChing$$$() {}
 
-    function kaChing$$$() external view {
+    //WETH: 2, USDT: 0
+    function kaChing$$$() external returns(uint) {
+        uint denominator;
+        uint yBalanceToWithdraw;
         
-        console.log('x: ', address(s.priceFeed));
-        console.log('y: ', address(s.swapRouter));
-
         (,int price,,,) = s.priceFeed.latestRoundData();
-        console.log('price: ', uint(price));
+
+        uint yBalance = IYtri(s.yTriPool).balanceOf(address(this));
+        uint priceShare = IYtri(s.yTriPool).pricePerShare();
+        uint balanceCrv3 = (yBalance * priceShare) / 1 ether;
+
+        uint balanceWETH = ITri(s.tricrypto).calc_withdraw_one_coin(balanceCrv3, 2);
+        uint valueUM = balanceWETH * (uint(price) / 10 ** 8);
+
+        if (valueUM >= 10000000 * 1 ether) {
+            denominator = 5;
+
+            uint x = ITri(s.tricrypto).balanceOf(address(this));
+            console.log('tri bal pre: ', x);
+
+            yBalanceToWithdraw = yBalance / denominator;
+            IYtri(s.yTriPool).withdraw(yBalanceToWithdraw);
+
+            x = ITri(s.tricrypto).balanceOf(address(this));
+            console.log('tri bal pre: ', x);
+
+            //check if yTri bal is the same as that of tri when withdrawing (in OZL facet seems like it is)
+
+            // swapRouter
+
+
+        }
+
+
+        return balanceWETH;
+        
 
     }
 

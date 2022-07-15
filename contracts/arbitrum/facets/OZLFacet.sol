@@ -162,6 +162,8 @@ contract OZLFacet is Modifiers {
     
 
     function _depositInDeFi(uint fee_, bool isRetry_) private { 
+        // console.log('fee: ', fee_);
+
         //Deposit WETH in Curve Tricrypto pool
         (uint tokenAmountIn, uint[3] memory amounts) = _calculateTokenAmountCurve(fee_);
         IWETH(s.WETH).approve(s.tricrypto, tokenAmountIn);
@@ -173,6 +175,7 @@ contract OZLFacet is Modifiers {
                 //Deposit crvTricrypto in Yearn
                 IERC20(s.crvTricrypto).approve(s.yTriPool, IERC20(s.crvTricrypto).balanceOf(address(this)));
                 IYtri(s.yTriPool).deposit(IERC20(s.crvTricrypto).balanceOf(address(this)));
+                // console.log('yTriPool in OZLFacet: ', s.yTriPool);
 
                 //Internal fees accounting
                 if (s.failedFees > 0) s.failedFees = 0;
