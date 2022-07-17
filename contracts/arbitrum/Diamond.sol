@@ -22,6 +22,8 @@ import 'hardhat/console.sol';
 
 contract Diamond is Revenue { 
 
+    // AppStorage s;
+
 
     constructor(
         IDiamondCut.FacetCut[] memory _diamondCut, 

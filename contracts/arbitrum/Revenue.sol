@@ -26,67 +26,89 @@ contract Revenue {
     //WETH: 2, USDT: 0
     function _showMeTheMoney() internal {
         uint yBalance = IYtri(s.yTriPool).balanceOf(address(this));
-        // console.log('yBalance: ', yBalance);
 
         if (yBalance > 0) {
-            uint denominator;
-            uint assetsToWithdraw;
-            address owner;
             (,int price,,,) = s.priceFeed.latestRoundData();
 
             uint priceShare = IYtri(s.yTriPool).pricePerShare();
-            // console.log('priceShare: ', priceShare);
             uint balanceCrv3 = (yBalance * priceShare) / 1 ether;
-            // console.log('balanceCrv3: ', balanceCrv3);
 
-            console.log(1);
             uint triBalance = ITri(s.tricrypto).calc_withdraw_one_coin(balanceCrv3, 2);
-            console.log(2);
             uint valueUM = triBalance * (uint(price) / 10 ** 8);
 
-            if (valueUM >= 10000000 * 1 ether) {
-                denominator = 5;
-                assetsToWithdraw = yBalance / denominator;
-                IYtri(s.yTriPool).withdraw(assetsToWithdraw);
+            console.log('valueUM: ', valueUM);
+            console.log('feesVault: ', s.feesVault);
 
-                for (uint i=0; i < 2; i++) {
-                    uint triAmountWithdraw = ITri(s.tricrypto).calc_withdraw_one_coin(assetsToWithdraw / i, 2); 
-                    uint minOut = ExecutorFacet(s.executor).calculateSlippage(
-                        triAmountWithdraw, s.defaultSlippage
-                    ); 
+            for (uint i=0; i < s.revenueAmounts.length; i++) {
 
-                    try ITri(s.tricrypto).remove_liquidity_one_coin(assetsToWithdraw / i, 2, minOut) {
-                        uint balanceWETH = IERC20(s.WETH).balanceOf(address(this));
-                        owner = LibDiamond.contractOwner();
+                if (valueUM >= (s.revenueAmounts[i] * 1 ether)) {
+                    uint denominator = s.revenueAmounts[i] == 10000000 ? 5 : 10;
+                    _computeRevenue(denominator, yBalance, uint(price));
+                }
 
-                            if (i == 2) {
-                                try ITri(s.tricrypto).remove_liquidity_one_coin(assetsToWithdraw / i, 2, minOut) {
-                                    _swapWETHforRevenue(owner, balanceWETH, uint(price));
-                                    break;
-                                } catch {
-                                    _meh_sendMeTri(owner); 
-                                }
-                            }
-                            _swapWETHforRevenue(owner, balanceWETH, uint(price));
+            }
+
+
+
+            if (valueUM >= 250 * 1 ether) { //10000000 - 10m
+                _computeRevenue(5, yBalance, uint(price));
+            }  else if (valueUM >= 50000000 * 1 ether) { //50m
+                _computeRevenue(10, yBalance, uint(price));
+            } else if (valueUM >= 100000000 * 1 ether) { //100m
+                _computeRevenue(10, yBalance, uint(price));
+            } else if (valueUM >= 500000000 * 1 ether) { //500m
+                _computeRevenue(10, yBalance, uint(price));
+            } else if (valueUM >= 1000000000 * 1 ether) { //1b
+                _computeRevenue(10, yBalance, uint(price));
+            } else if (valueUM >= 5000000000 * 1 ether) { //5b
+                _computeRevenue(10, yBalance, uint(price));
+            } else if (valueUM >= 10000000000 * 1 ether) { //10b
+                _computeRevenue(10, yBalance, uint(price));
+            }
+        }
+
+       
+            
+    }
+
+    function _computeRevenue(uint denominator_, uint balance_, uint price_) private {
+        address owner;
+        uint assetsToWithdraw = balance_ / denominator_;
+        IYtri(s.yTriPool).withdraw(assetsToWithdraw);
+
+        for (uint i=1; i <= 2; i++) {
+            uint triAmountWithdraw = ITri(s.tricrypto).calc_withdraw_one_coin(assetsToWithdraw / i, 2); 
+            uint minOut = ExecutorFacet(s.executor).calculateSlippage(
+                triAmountWithdraw, s.defaultSlippage
+            ); 
+
+            try ITri(s.tricrypto).remove_liquidity_one_coin(assetsToWithdraw / i, 2, minOut) {
+                uint balanceWETH = IERC20(s.WETH).balanceOf(address(this));
+                owner = LibDiamond.contractOwner();
+
+                    if (i == 2) {
+                        try ITri(s.tricrypto).remove_liquidity_one_coin(assetsToWithdraw / i, 2, minOut) {
+                            _swapWETHforRevenue(owner, balanceWETH, price_);
                             break;
                         } catch {
-                            if (i == 1) {
-                                continue;
-                            } else {
-                                _meh_sendMeTri(owner); 
-                            }
+                            _meh_sendMeTri(owner); 
                         }
+                    }
+                    _swapWETHforRevenue(owner, balanceWETH, price_);
+                    break;
+                } catch {
+                    if (i == 1) {
+                        continue;
+                    } else {
+                        _meh_sendMeTri(owner); 
+                    }
                 }
-            } else {
-                console.log('came here');
-            }    
         }
-            
     }
 
 
     function _swapWETHforRevenue(address owner_, uint balanceWETH_, uint price_) private {
-        for (uint i=0; i < 2; i++) {
+        for (uint i=1; i <= 2; i++) {
             ISwapRouter.ExactInputSingleParams memory params =
                 ISwapRouter.ExactInputSingleParams({
                     tokenIn: s.WETH,
@@ -107,6 +129,7 @@ contract Revenue {
                         IERC20(s.WETH).transfer(owner_, balanceWETH_ / i);
                     }
                 }
+                console.log('here');
                 break;
             } catch {
                 if (i == 1) {

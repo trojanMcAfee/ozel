@@ -928,9 +928,15 @@ describe('My Revenue', async function() {
     });
 
     it('should give me tons of moneyyy', async () => {
+
+        x = formatEther(await WETH.balanceOf(callerAddr));
+        console.log('weth pre: ', x);
         
         await sendETH(userDetails);
         await sendETH(userDetails);
+
+        x = formatEther(await WETH.balanceOf(callerAddr));
+        console.log('weth post: ', x);
         
         // balanceWETH = await deployedDiamond.showMeTheMoney();
         // console.log(3);

@@ -62,7 +62,7 @@ struct AppStorage {
     mapping(uint => bool) isLocked;
     mapping(uint => bool) isAuth;
 
-    //Stabilizing mechanism
+    //Stabilizing mechanism (for ozelIndex)
     uint invariant;
     uint invariant2;
     uint indexRegulator;
@@ -72,11 +72,12 @@ struct AppStorage {
     uint invariantRegulatorLimit;
     uint regulatorCounter;
 
-    //KaChing$$$ vars
+    //Revenue vars
     ISwapRouter swapRouter;
     AggregatorV3Interface priceFeed;
     address revenueToken;
     uint24 poolFee;
+    uint[] revenueAmounts;
 
 }
 

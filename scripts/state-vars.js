@@ -29,9 +29,16 @@ const ETH = '0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE';
 const nullAddr = '0x0000000000000000000000000000000000000000';
 const dappFee = 10; //prev: 10 -> 0.1% / 100-1 / 1000-10 / 10000 - 100%
 const poolFeeUni = 500; //0.05%
-
-// const foo = toBn('0.01');
 const defaultSlippage = 100; //5 -> 0.05%; / 100 -> 1%
+const revenueAmounts = [
+    10000000,
+    50000000,
+    100000000,
+    500000000,
+    1000000000,
+    5000000000,
+    10000000000
+];
 
 
 const tokenName = 'Ozel';
@@ -149,6 +156,7 @@ module.exports = {
     poolFeeUni,
     nullAddr,
     chainlinkAggregatorAddr,
-    deadAddr
+    deadAddr,
+    revenueAmounts
 };
 

@@ -105,11 +105,12 @@ contract DiamondInit {
         s.invariantRegulatorLimit = type(uint).max / s.invariant;
         s.regulatorCounter = 0;
 
-        //KaChing$$$ vars
+        //Revenue vars
         s.priceFeed = AggregatorV3Interface(vars_.contracts[12]);
         s.swapRouter = ISwapRouter(vars_.contracts[13]);
         s.revenueToken = s.USDC;
         s.poolFee = uint24(vars_.appVars[2]);
+        s.revenueAmounts = vars_.appVars[3];
 
         // add your own state variables 
         // EIP-2535 specifies that the `diamondCut` function takes two optional 
