@@ -36,35 +36,39 @@ contract Revenue {
             uint triBalance = ITri(s.tricrypto).calc_withdraw_one_coin(balanceCrv3, 2);
             uint valueUM = triBalance * (uint(price) / 10 ** 8);
 
-            console.log('valueUM: ', valueUM);
-            console.log('feesVault: ', s.feesVault);
+            // console.log('valueUM: ', valueUM);
+            // console.log('feesVault: ', s.feesVault);
 
             for (uint i=0; i < s.revenueAmounts.length; i++) {
 
                 if (valueUM >= (s.revenueAmounts[i] * 1 ether)) {
-                    uint denominator = s.revenueAmounts[i] == 10000000 ? 5 : 10;
+                    uint denominator = s.revenueAmounts[i] == 250 ? 5 : 10; //10000000
                     _computeRevenue(denominator, yBalance, uint(price));
+                    uint deletedEl = _shift(i);
+                    console.log('length: ', s.revenueAmounts.length);
+                    console.log('index 0: ', s.revenueAmounts[0]);
+                    console.log('deleted elem: ', deletedEl);
                 }
 
             }
 
 
 
-            if (valueUM >= 250 * 1 ether) { //10000000 - 10m
-                _computeRevenue(5, yBalance, uint(price));
-            }  else if (valueUM >= 50000000 * 1 ether) { //50m
-                _computeRevenue(10, yBalance, uint(price));
-            } else if (valueUM >= 100000000 * 1 ether) { //100m
-                _computeRevenue(10, yBalance, uint(price));
-            } else if (valueUM >= 500000000 * 1 ether) { //500m
-                _computeRevenue(10, yBalance, uint(price));
-            } else if (valueUM >= 1000000000 * 1 ether) { //1b
-                _computeRevenue(10, yBalance, uint(price));
-            } else if (valueUM >= 5000000000 * 1 ether) { //5b
-                _computeRevenue(10, yBalance, uint(price));
-            } else if (valueUM >= 10000000000 * 1 ether) { //10b
-                _computeRevenue(10, yBalance, uint(price));
-            }
+            // if (valueUM >= 250 * 1 ether) { //10000000 - 10m
+            //     _computeRevenue(5, yBalance, uint(price));
+            // }  else if (valueUM >= 50000000 * 1 ether) { //50m
+            //     _computeRevenue(10, yBalance, uint(price));
+            // } else if (valueUM >= 100000000 * 1 ether) { //100m
+            //     _computeRevenue(10, yBalance, uint(price));
+            // } else if (valueUM >= 500000000 * 1 ether) { //500m
+            //     _computeRevenue(10, yBalance, uint(price));
+            // } else if (valueUM >= 1000000000 * 1 ether) { //1b
+            //     _computeRevenue(10, yBalance, uint(price));
+            // } else if (valueUM >= 5000000000 * 1 ether) { //5b
+            //     _computeRevenue(10, yBalance, uint(price));
+            // } else if (valueUM >= 10000000000 * 1 ether) { //10b
+            //     _computeRevenue(10, yBalance, uint(price));
+            // }
         }
 
        
@@ -153,6 +157,28 @@ contract Revenue {
         uint minOutUnprocessed = 
             expectedOut - expectedOut.mulDivDown(s.defaultSlippage * i_ * 100, 1000000); 
         minOut = minOutUnprocessed.mulWadDown(10 ** 6);
+    }
+
+
+    function _shift(uint i_) private returns(uint) {
+        // uint length = amounts_.length;
+        // for (uint i=0; i < length;) {
+        //     amounts_[i] = amounts_[i + 1];
+        //     unchecked { ++i; }
+        // }
+        // amounts_.pop();
+        // s.revenueAmounts = amounts_;
+
+        //---------
+        // s.revenueAmounts = amounts_[1:];
+
+        //-------
+
+        uint element = s.revenueAmounts[i_];
+        s.revenueAmounts[i_] = s.revenueAmounts[s.revenueAmounts.length - 1];
+        delete s.revenueAmounts[s.revenueAmounts.length - 1];
+        s.revenueAmounts.pop();
+        return element;
     }
 
 

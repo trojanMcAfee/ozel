@@ -359,8 +359,7 @@ async function deploy() {
     const appVars = [
         dappFee,
         defaultSlippage,
-        poolFeeUni,
-        revenueAmounts
+        poolFeeUni
     ];
 
     //Data structs for init()
@@ -370,7 +369,8 @@ async function deploy() {
         tokensDatabase,
         appVars,
         [tokenName, tokenSymbol],
-        ETH
+        ETH,
+        revenueAmounts
     ];
 
 

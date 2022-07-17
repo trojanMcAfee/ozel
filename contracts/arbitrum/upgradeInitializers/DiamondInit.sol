@@ -110,7 +110,7 @@ contract DiamondInit {
         s.swapRouter = ISwapRouter(vars_.contracts[13]);
         s.revenueToken = s.USDC;
         s.poolFee = uint24(vars_.appVars[2]);
-        s.revenueAmounts = vars_.appVars[3];
+        s.revenueAmounts = vars_.revenueAmounts;
 
         // add your own state variables 
         // EIP-2535 specifies that the `diamondCut` function takes two optional 

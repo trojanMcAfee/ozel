@@ -31,7 +31,7 @@ const dappFee = 10; //prev: 10 -> 0.1% / 100-1 / 1000-10 / 10000 - 100%
 const poolFeeUni = 500; //0.05%
 const defaultSlippage = 100; //5 -> 0.05%; / 100 -> 1%
 const revenueAmounts = [
-    10000000,
+    250, //10000000
     50000000,
     100000000,
     500000000,
