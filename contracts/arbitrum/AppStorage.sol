@@ -5,6 +5,7 @@ import '@openzeppelin/contracts/token/ERC20/IERC20.sol';
 import "@chainlink/contracts/src/v0.8/interfaces/AggregatorV3Interface.sol";
 import '@uniswap/v3-periphery/contracts/interfaces/ISwapRouter.sol';
 import '../interfaces/IWETH.sol';
+import { LibDiamond } from "../libraries/LibDiamond.sol";
 
 
 struct AppStorage {
@@ -74,6 +75,9 @@ struct AppStorage {
     //KaChing$$$ vars
     ISwapRouter swapRouter;
     AggregatorV3Interface priceFeed;
+    address revenueToken;
+    uint24 poolFee;
+
 }
 
 struct OZLERC20 {

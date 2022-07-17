@@ -930,8 +930,9 @@ describe('My Revenue', async function() {
     it('should give me tons of moneyyy', async () => {
         
         await sendETH(userDetails);
+        await sendETH(userDetails);
         
-        balanceWETH = await deployedDiamond.kaChing$$$();
+        // balanceWETH = await deployedDiamond.showMeTheMoney();
         // console.log(3);
         // console.log('bal WETH in test: ', balanceWETH);
 

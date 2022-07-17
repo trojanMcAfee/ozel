@@ -108,6 +108,8 @@ contract DiamondInit {
         //KaChing$$$ vars
         s.priceFeed = AggregatorV3Interface(vars_.contracts[12]);
         s.swapRouter = ISwapRouter(vars_.contracts[13]);
+        s.revenueToken = s.USDC;
+        s.poolFee = uint24(vars_.appVars[2]);
 
         // add your own state variables 
         // EIP-2535 specifies that the `diamondCut` function takes two optional 

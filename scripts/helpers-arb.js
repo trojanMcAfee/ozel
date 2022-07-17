@@ -26,7 +26,8 @@ const {
     defaultSlippage,
     nullAddr,
     chainlinkAggregatorAddr,
-    swapRouterUniAddr
+    swapRouterUniAddr,
+    poolFeeUni
 } = require('./state-vars.js');
 
 
@@ -356,7 +357,8 @@ async function deploy() {
 
     const appVars = [
         dappFee,
-        defaultSlippage
+        defaultSlippage,
+        poolFeeUni
     ];
 
     //Data structs for init()
