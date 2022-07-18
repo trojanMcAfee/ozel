@@ -13,16 +13,17 @@ import { IDiamondCut } from "../interfaces/IDiamondCut.sol";
 import { IDiamondLoupe } from "../interfaces/IDiamondLoupe.sol";
 import { IERC173 } from "../interfaces/IERC173.sol";
 import './AppStorage.sol';
-import './Revenue.sol';
+// import './facets/RevenueFacet.sol';
+import '../Errors.sol';
 
 import 'hardhat/console.sol';
 
 
 
 
-contract Diamond is Revenue { 
+contract Diamond { 
 
-    // AppStorage s;
+    AppStorage s;
 
 
     constructor(
@@ -39,7 +40,7 @@ contract Diamond is Revenue {
     // Find facet for function that is called and execute the
     // function if a facet is found and return any value.
     fallback() external payable { 
-        _showMeTheMoney();
+        _callCheckForRevenue();
 
         LibDiamond.DiamondStorage storage ds;
         bytes32 position = LibDiamond.DIAMOND_STORAGE_POSITION;
@@ -70,6 +71,13 @@ contract Diamond is Revenue {
     }
 
     receive() external payable {}
+
+
+    function _callCheckForRevenue() private {
+        bytes memory data = abi.encodeWithSignature('checkForRevenue()');
+        (bool success, ) = s.revenue.delegatecall(data);
+        require(success, 'OZLDiamond: _callCheckForRevenue() failed');
+    }
 
 
 

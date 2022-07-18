@@ -78,6 +78,8 @@ struct AppStorage {
     address revenueToken;
     uint24 poolFee;
     uint[] revenueAmounts;
+    bytes revenueCalldata;
+    address revenue;
 
 }
 

@@ -19,6 +19,7 @@ import '../AppStorage.sol';
 import '../../libraries/SafeTransferLib.sol'; //use the @ from solmate
 import '../../Errors.sol';
 import '../Modifiers.sol';
+import './RevenueFacet.sol';
 
 
 contract OZLFacet is Modifiers { 
@@ -37,6 +38,15 @@ contract OZLFacet is Modifiers {
         UserConfig memory userDetails_
     ) external payable noReentrancy(0) filterDetails(userDetails_) { 
         if (msg.value <= 0) revert CantBeZero('msg.value');
+
+        // RevenueFacet(s.revenue).checkForRevenue();
+
+        // console.log(7);
+        // console.log('s.revenue: ', s.revenue);
+        // (bool success2, ) = s.revenue.call(
+        //     abi.encodeWithSignature('checkForRevenue()')
+        // );
+        // require(success2, 'not');
 
         if (s.failedFees > 0) _depositInDeFi(s.failedFees, true);
 

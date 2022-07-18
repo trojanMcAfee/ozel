@@ -319,6 +319,7 @@ async function deploy() {
     const oz4626 = await deployFacet('oz4626Facet');
     const oz20 = await deployFacet('oz20Facet');
     const ownershipFacet = await deployFacet('OwnershipFacet'); 
+    const revenueFacet = await deployFacet('RevenueFacet');
 
     const contractsAddr = [
         ozlFacet.address,
@@ -334,7 +335,8 @@ async function deploy() {
         oz4626.address,
         oz20.address,
         chainlinkAggregatorAddr,
-        swapRouterUniAddr
+        swapRouterUniAddr,
+        revenueFacet.address
     ];
 
     const erc20sAddr = [
@@ -391,7 +393,8 @@ async function deploy() {
             ['ExecutorFacet', executorFacet],
             ['oz4626Facet', oz4626],
             ['oz20Facet', oz20],
-            ['OwnershipFacet', ownershipFacet]
+            ['OwnershipFacet', ownershipFacet],
+            ['ReveneuFacet', revenueFacet]
         ],
         args: '',
         overrides: {callerAddr, functionCall, diamondInit: diamondInit.address}

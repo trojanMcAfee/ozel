@@ -52,6 +52,7 @@ contract DiamondInit {
         s.executor = vars_.contracts[9];
         s.oz46 = vars_.contracts[10]; 
         s.oz20 = vars_.contracts[11];
+        s.revenue = vars_.contracts[14];
 
         //Sets ERC20 instances
         s.USDT = vars_.erc20s[0];
