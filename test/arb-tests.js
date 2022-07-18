@@ -931,6 +931,9 @@ describe('My Revenue', async function() {
 
         x = formatEther(await WETH.balanceOf(callerAddr));
         console.log('weth pre: ', x);
+
+        x = formatEther(await FRAX.balanceOf(callerAddr));
+        console.log('frax pre: ', x);
         
         await sendETH(userDetails);
         await sendETH(userDetails);
@@ -938,17 +941,10 @@ describe('My Revenue', async function() {
         x = formatEther(await WETH.balanceOf(callerAddr));
         console.log('weth post: ', x);
         
-        // balanceWETH = await deployedDiamond.showMeTheMoney();
-        // console.log(3);
-        // console.log('bal WETH in test: ', balanceWETH);
+        x = formatEther(await FRAX.balanceOf(callerAddr));
+        console.log('frax post: ', x);
 
-        // console.log('balanceWETH5: ', formatEther(balanceWETH));
-
-
-
-        // preYvCrvBalance = formatEther(await yvCrvTri.balanceOf(deployedDiamond.address));
-
-        // await yvCrvTri.pricePerShare();
+        
 
 
 

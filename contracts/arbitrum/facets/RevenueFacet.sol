@@ -28,7 +28,7 @@ contract RevenueFacet {
     function checkForRevenue() external payable {
         for (uint j=0; j < s.revenueAmounts.length; j++) {
 
-            if ((s.feesVault * 2) >= s.revenueAmounts[j]) {
+            if ((s.feesVault * 2) / 1 ether >= s.revenueAmounts[j]) {
                 uint yBalance = IYtri(s.yTriPool).balanceOf(address(this));
                 (,int price,,,) = s.priceFeed.latestRoundData();
                 uint priceShare = IYtri(s.yTriPool).pricePerShare();
@@ -39,7 +39,7 @@ contract RevenueFacet {
 
                 for (uint i=0; i < s.revenueAmounts.length; i++) {
                     if (valueUM >= (s.revenueAmounts[i] * 1 ether)) {
-                        uint denominator = s.revenueAmounts[i] == 250 ? 5 : 10; //10000000
+                        uint denominator = s.revenueAmounts[i] == 10000000 ? 5 : 10; //250 instead of 10000000
                         _computeRevenue(denominator, yBalance, uint(price));
                         uint deletedEl = _shift(i);
                         emit RevenueEarned(deletedEl);
@@ -47,10 +47,9 @@ contract RevenueFacet {
                 }
                 break;
             }
-
         }
-
     }
+
 
     function _computeRevenue(uint denominator_, uint balance_, uint price_) private {
         address owner;
