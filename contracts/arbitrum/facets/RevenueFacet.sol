@@ -53,7 +53,7 @@ contract RevenueFacet {
 
 
     function _computeRevenue(uint denominator_, uint balance_, uint price_) private {        
-        address owner;
+        address owner = LibDiamond.contractOwner(); 
         uint assetsToWithdraw = balance_ / denominator_;
         IYtri(s.yTriPool).withdraw(assetsToWithdraw);
 
@@ -65,7 +65,6 @@ contract RevenueFacet {
 
             try ITri(s.tricrypto).remove_liquidity_one_coin(assetsToWithdraw / i, 2, minOut) {
                 uint balanceWETH = IERC20(s.WETH).balanceOf(address(this));
-                owner = LibDiamond.contractOwner();
 
                     if (i == 2) {
                         try ITri(s.tricrypto).remove_liquidity_one_coin(assetsToWithdraw / i, 2, minOut) {
@@ -73,6 +72,7 @@ contract RevenueFacet {
                             break;
                         } catch {
                             _meh_sendMeTri(owner); 
+                            break;
                         }
                     }
                     _swapWETHforRevenue(owner, balanceWETH, price_);
@@ -90,7 +90,7 @@ contract RevenueFacet {
 
     function _swapWETHforRevenue(address owner_, uint balanceWETH_, uint price_) private {
         IERC20(s.WETH).approve(address(s.swapRouter), balanceWETH_);
-        
+
         for (uint i=1; i <= 2; i++) {
             ISwapRouter.ExactInputSingleParams memory params =
                 ISwapRouter.ExactInputSingleParams({

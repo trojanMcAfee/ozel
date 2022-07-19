@@ -50,7 +50,8 @@ const {
     poolFeeUni,
     nullAddr,
     chainlinkAggregatorAddr,
-    deadAddr
+    deadAddr,
+    crvTricrypto
 } = require('../scripts/state-vars.js');
 
 
@@ -68,7 +69,7 @@ let accounts, signers, ozelBalance, regulatorCounter, higherIndex;
 let tx, receipt, filter, topics;
 let iface, encodedData, args, abi;
 let selector, balanceRenBTC, balanceWETH, balanceUSDT, balanceWBTC, balanceMIM;
-let yvCrvTri, balanceFRAX, testingNum, priceFeed, ethPrice, balanceUSDC;
+let yvCrvTri, balanceFRAX, testingNum, priceFeed, ethPrice, balanceUSDC, balanceTri;
 
 
 xdescribe('Arbitrum-side', async function () {
@@ -932,14 +933,16 @@ describe('My Revenue', async function() {
 
         // priceFeed = await hre.ethers.getContractAt('AggregatorV3Interface', chainlinkAggregatorAddr);
         // ([ y, ethPrice ] = await priceFeed.latestRoundData());
+
+        tricryptoCrv = await hre.ethers.getContractAt('IERC20', crvTricrypto);
     });
 
 
-    it('should send the accrued revenue to the deployer in the USDC / CheckForRevenueV1 - checkForRevenue()', async () => {
+    it('should send the accrued revenue to the deployer in USDC / CheckForRevenueV1 - checkForRevenue()', async () => {
         balanceUSDC = await USDC.balanceOf(callerAddr) / 10 ** 6;
         assert.equal(balanceUSDC, 0);
 
-        await replaceForModVersion('CheckForRevenueV1', false, selector, userDetails, 5);
+        await replaceForModVersion('CheckForRevenueV1', false, selector, userDetails);
         receipt = await sendETH(userDetails);
 
         testingNum = getTestingNumber(receipt);
@@ -948,6 +951,21 @@ describe('My Revenue', async function() {
         balanceUSDC = await USDC.balanceOf(callerAddr) / 10 ** 6;
         assert(balanceUSDC > 0);
     }); 
+
+    it('should send the accrued revenue to the deployer in tricrypto / CheckForRevenueV2 - checkForRevenue()', async () => {
+        balanceTri = formatEther(await tricryptoCrv.balanceOf(callerAddr));
+        assert.equal(balanceTri, 0);
+
+        await replaceForModVersion('CheckForRevenueV2', false, selector, userDetails);
+        receipt = await sendETH(userDetails);
+
+        testingNum = getTestingNumber(receipt);
+        assert.equal(testingNum, 23);
+
+        balanceTri = formatEther(await tricryptoCrv.balanceOf(callerAddr));
+        console.log('balance tri: ', balanceTri);
+        assert(balanceTri > 0);
+    });
 
 
     xit('should give me tons of moneyyy', async () => {
