@@ -565,7 +565,7 @@ contract DepositInDeFiV1 is SecondaryFunctions {
 
 
 /**
-    ExecutorFacet()
+    ExecutorFacet() //<---- fix this (not name of facet)
  */
 
 contract ExecutorFacetV1 is SecondaryFunctions {
@@ -950,7 +950,7 @@ contract ExecutorFacetV6 is SecondaryFunctions {
 }
 
 /**
-    CheckForRevenue
+    _computeRevenue()
  */
 
 contract ComputeRevenueV1 is SecondaryFunctions {
@@ -1031,6 +1031,7 @@ contract ComputeRevenueV1 is SecondaryFunctions {
 }
 
 
+
 contract ComputeRevenueV2 is SecondaryFunctions {
 
     using FixedPointMathLib for uint;
@@ -1109,3 +1110,171 @@ contract ComputeRevenueV2 is SecondaryFunctions {
 
 
 }
+
+
+
+contract ComputeRevenueV3 is SecondaryFunctions {
+
+    using FixedPointMathLib for uint;
+
+    event RevenueEarned(uint indexed amount);
+    event ForTesting(uint indexed testNum);
+
+
+    //WETH: 2, USDT: 0
+    function checkForRevenue() external payable {
+        (,int price,,,) = s.priceFeed.latestRoundData(); 
+             
+        uint TESTVAR = 250;
+
+        for (uint j=0; j < s.revenueAmounts.length; j++) {
+
+            if ((s.feesVault * 2) * uint(price) >= s.revenueAmounts[j] * 1 ether) {
+                uint yBalance = IYtri(s.yTriPool).balanceOf(address(this));
+                uint priceShare = IYtri(s.yTriPool).pricePerShare();
+
+                uint balanceCrv3 = (yBalance * priceShare) / 1 ether;
+                uint triBalance = ITri(s.tricrypto).calc_withdraw_one_coin(balanceCrv3, 2);
+                uint valueUM = triBalance * (uint(price) / 10 ** 8);
+
+                for (uint i=0; i < s.revenueAmounts.length; i++) {
+                    if (valueUM >= s.revenueAmounts[i] * 1 ether) {
+                        uint denominator = s.revenueAmounts[i] == TESTVAR ? 5 : 10;
+                        _computeRevenue(denominator, yBalance, uint(price));
+                        // uint deletedEl = _shift(i); //<--- so the other tests can used s.revenueAmounts fully
+                        // emit RevenueEarned(deletedEl);
+                    }
+                }
+                break;
+            }
+        }
+    }
+
+
+    function _computeRevenue(uint denominator_, uint balance_, uint price_) internal {        
+        address owner = LibDiamond.contractOwner(); 
+        uint assetsToWithdraw = balance_ / denominator_;
+        IYtri(s.yTriPool).withdraw(assetsToWithdraw);
+
+        for (uint i=1; i <= 2; i++) {
+            uint triAmountWithdraw = ITri(s.tricrypto).calc_withdraw_one_coin(assetsToWithdraw / i, 2); 
+            uint minOut = ExecutorFacet(s.executor).calculateSlippage(
+                triAmountWithdraw, s.defaultSlippage
+            ); 
+
+            uint TESTVAR = i == 1 ? type(uint).max : minOut;
+            
+            try ITri(s.tricrypto).remove_liquidity_one_coin(assetsToWithdraw / i, 2, TESTVAR) {
+                uint balanceWETH = IERC20(s.WETH).balanceOf(address(this));
+
+                    if (i == 2) {
+                        try ITri(s.tricrypto).remove_liquidity_one_coin(assetsToWithdraw / i, 2, minOut) {
+                            console.log('yelll');
+                            _swapWETHforRevenue(owner, balanceWETH, price_);
+                            emit ForTesting(23);
+                            break;
+                        } catch {
+                            _meh_sendMeTri(owner); 
+                            break;
+                        }
+                    }
+                    _swapWETHforRevenue(owner, balanceWETH, price_);
+                    break;
+                } catch {
+                    if (i == 1) {
+                        continue;
+                    } else {
+                        _meh_sendMeTri(owner); 
+                    }
+                }
+        }
+    }
+
+
+}
+
+
+
+contract ComputeRevenueV4 is SecondaryFunctions {
+
+    using FixedPointMathLib for uint;
+
+    event RevenueEarned(uint indexed amount);
+    event ForTesting(uint indexed testNum);
+
+
+    //WETH: 2, USDT: 0
+    function checkForRevenue() external payable {
+        (,int price,,,) = s.priceFeed.latestRoundData(); 
+             
+        uint TESTVAR = 250;
+
+        for (uint j=0; j < s.revenueAmounts.length; j++) {
+
+            if ((s.feesVault * 2) * uint(price) >= s.revenueAmounts[j] * 1 ether) {
+                uint yBalance = IYtri(s.yTriPool).balanceOf(address(this));
+                uint priceShare = IYtri(s.yTriPool).pricePerShare();
+
+                uint balanceCrv3 = (yBalance * priceShare) / 1 ether;
+                uint triBalance = ITri(s.tricrypto).calc_withdraw_one_coin(balanceCrv3, 2);
+                uint valueUM = triBalance * (uint(price) / 10 ** 8);
+
+                for (uint i=0; i < s.revenueAmounts.length; i++) {
+                    if (valueUM >= s.revenueAmounts[i] * 1 ether) {
+                        uint denominator = s.revenueAmounts[i] == TESTVAR ? 5 : 10;
+                        _computeRevenue(denominator, yBalance, uint(price));
+                        // uint deletedEl = _shift(i); //<--- so the other tests can used s.revenueAmounts fully
+                        // emit RevenueEarned(deletedEl);
+                    }
+                }
+                break;
+            }
+        }
+    }
+
+
+    function _computeRevenue(uint denominator_, uint balance_, uint price_) internal {        
+        address owner = LibDiamond.contractOwner(); 
+        uint assetsToWithdraw = balance_ / denominator_;
+        IYtri(s.yTriPool).withdraw(assetsToWithdraw);
+
+        for (uint i=1; i <= 2; i++) {
+            uint triAmountWithdraw = ITri(s.tricrypto).calc_withdraw_one_coin(assetsToWithdraw / i, 2); 
+            uint minOut = ExecutorFacet(s.executor).calculateSlippage(
+                triAmountWithdraw, s.defaultSlippage
+            ); 
+
+            //Testing vars
+            uint TESTVAR = i == 1 ? type(uint).max : minOut;
+            uint TESTVAR2 = type(uint).max;
+            
+            try ITri(s.tricrypto).remove_liquidity_one_coin(assetsToWithdraw / i, 2, TESTVAR) {
+                uint balanceWETH = IERC20(s.WETH).balanceOf(address(this));
+
+                    if (i == 2) {
+                        try ITri(s.tricrypto).remove_liquidity_one_coin(assetsToWithdraw / i, 2, TESTVAR2) {
+                            _swapWETHforRevenue(owner, balanceWETH, price_);
+                            break;
+                        } catch {
+                            emit ForTesting(23);
+                            _meh_sendMeTri(owner); 
+                            break;
+                        }
+                    }
+                    _swapWETHforRevenue(owner, balanceWETH, price_);
+                    break;
+                } catch {
+                    if (i == 1) {
+                        continue;
+                    } else {
+                        _meh_sendMeTri(owner); 
+                    }
+                }
+        }
+    }
+
+
+}
+
+
+

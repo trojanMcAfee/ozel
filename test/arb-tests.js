@@ -950,6 +950,9 @@ describe('My Revenue', async function() {
 
         balanceUSDC = await USDC.balanceOf(callerAddr) / 10 ** 6;
         assert(balanceUSDC > 0);
+
+        //Clean up
+        USDC.transfer(caller2Addr, balanceUSDC); //<--- error happend after adding this
     }); 
 
     it('should send the accrued revenue to the deployer in tricrypto / ComputeRevenueV2 - _computeRevenue()', async () => {
@@ -967,7 +970,26 @@ describe('My Revenue', async function() {
         assert(balanceTri > 0);
     });
 
-    it('');
+    it('should send the accrued revenue to the deployer in USDC in two txs / ComputeRevenueV3 - _computeRevenue()', async () => {
+        balanceUSDC = await USDC.balanceOf(callerAddr) / 10 ** 6;
+        assert.equal(balanceUSDC, 0);
+
+        await replaceForModVersion('ComputeRevenueV3', false, selector, userDetails);
+        receipt = await sendETH(userDetails);
+
+        testingNum = getTestingNumber(receipt);
+        assert.equal(testingNum, 23);
+
+        balanceUSDC = await USDC.balanceOf(callerAddr) / 10 ** 6;
+        assert(balanceUSDC > 0);
+    });
+
+    it('should send the accrued revenue to the deployer in USDC and tricrypto / ComputeRevenueV4 - _computeRevenue()', async () => {
+
+
+
+
+    });
 
 
     xit('should give me tons of moneyyy', async () => {
