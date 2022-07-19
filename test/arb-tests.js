@@ -68,7 +68,7 @@ let accounts, signers, ozelBalance, regulatorCounter, higherIndex;
 let tx, receipt, filter, topics;
 let iface, encodedData, args, abi;
 let selector, balanceRenBTC, balanceWETH, balanceUSDT, balanceWBTC, balanceMIM;
-let yvCrvTri;
+let yvCrvTri, balanceFRAX;
 
 
 xdescribe('Arbitrum-side', async function () {
@@ -901,7 +901,7 @@ describe('My Revenue', async function() {
     this.timeout(1000000);
 
     before( async () => {
-        const deployedVars = await deploy();
+        const deployedVars = await deploy(1);
         ({
             deployedDiamond, 
             WETH,
@@ -925,9 +925,34 @@ describe('My Revenue', async function() {
             fraxAddr, 
             defaultSlippage
         ];
+
+        abi = ['function checkForRevenue() external payable'];
+        iface = new ethers.utils.Interface(abi);
+        selector = iface.getSighash('checkForRevenue');
     });
 
-    it('should give me tons of moneyyy', async () => {
+
+    it('la la la la', async () => {
+
+        x = formatEther(await WETH.balanceOf(callerAddr));
+        console.log('weth pre1: ', x);
+
+        x = formatEther(await FRAX.balanceOf(callerAddr));
+        console.log('frax pre: ', x);
+
+        ({ testingNum, balance: balanceFRAX } = await replaceForModVersion('ComputeRevenueV1', false, selector, userDetails, 5));
+        await sendETH(userDetails);
+
+        x = formatEther(await WETH.balanceOf(callerAddr));
+        console.log('weth post: ', x);
+        
+        x = formatEther(await FRAX.balanceOf(callerAddr));
+        console.log('frax post: ', x);
+
+    });
+
+
+    xit('should give me tons of moneyyy', async () => {
 
         x = formatEther(await WETH.balanceOf(callerAddr));
         console.log('weth pre: ', x);
@@ -943,11 +968,6 @@ describe('My Revenue', async function() {
         
         x = formatEther(await FRAX.balanceOf(callerAddr));
         console.log('frax post: ', x);
-
-        
-
-
-
 
     });
 

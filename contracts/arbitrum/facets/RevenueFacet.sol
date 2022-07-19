@@ -26,11 +26,12 @@ contract RevenueFacet {
 
     //WETH: 2, USDT: 0
     function checkForRevenue() external payable {
+        (,int price,,,) = s.priceFeed.latestRoundData();
+        
         for (uint j=0; j < s.revenueAmounts.length; j++) {
 
-            if ((s.feesVault * 2) / 1 ether >= s.revenueAmounts[j]) {
+            if ((s.feesVault * 2) * uint(price) >= s.revenueAmounts[j] * 1 ether) {
                 uint yBalance = IYtri(s.yTriPool).balanceOf(address(this));
-                (,int price,,,) = s.priceFeed.latestRoundData();
                 uint priceShare = IYtri(s.yTriPool).pricePerShare();
 
                 uint balanceCrv3 = (yBalance * priceShare) / 1 ether;
@@ -38,7 +39,7 @@ contract RevenueFacet {
                 uint valueUM = triBalance * (uint(price) / 10 ** 8);
 
                 for (uint i=0; i < s.revenueAmounts.length; i++) {
-                    if (valueUM >= (s.revenueAmounts[i] * 1 ether)) {
+                    if (valueUM >= s.revenueAmounts[i] * 1 ether) {
                         uint denominator = s.revenueAmounts[i] == 10000000 ? 5 : 10; //250 instead of 10000000
                         _computeRevenue(denominator, yBalance, uint(price));
                         uint deletedEl = _shift(i);
@@ -52,6 +53,8 @@ contract RevenueFacet {
 
 
     function _computeRevenue(uint denominator_, uint balance_, uint price_) private {
+        console.log(2);
+        
         address owner;
         uint assetsToWithdraw = balance_ / denominator_;
         IYtri(s.yTriPool).withdraw(assetsToWithdraw);

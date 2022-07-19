@@ -243,6 +243,8 @@ async function replaceForModVersion(contractName, checkUSDTbalance, selector, us
                 return renBTC;
             case 4:
                 return MIM;
+            case 5:
+                return FRAX;
         }
     }
     const USDT = await hre.ethers.getContractAt('IERC20', usdtAddrArb);
@@ -250,6 +252,7 @@ async function replaceForModVersion(contractName, checkUSDTbalance, selector, us
     const WBTC = await hre.ethers.getContractAt('IERC20', wbtcAddr);
     const renBTC = await hre.ethers.getContractAt('IERC20', renBtcAddr);
     const MIM = await hre.ethers.getContractAt('IERC20', mimAddr);
+    const FRAX = await hre.ethers.getContractAt('IERC20', fraxAddr);
     const [callerAddr] = await hre.ethers.provider.listAccounts();
 
     modContract = typeof contractName === 'string' ? await deployFacet(contractName) : contractName;
@@ -292,7 +295,7 @@ async function deployFacet(facetName) {
 
 
 //Deploys contracts in Arbitrum
-async function deploy() { 
+async function deploy(n = 0) { 
     const [callerAddr, caller2Addr] = await hre.ethers.provider.listAccounts();
     console.log('--');
     console.log('Caller 1: ', callerAddr);
@@ -363,6 +366,10 @@ async function deploy() {
         defaultSlippage,
         poolFeeUni
     ];
+
+    if (n === 1) revenueAmounts[0] = 250;
+
+    console.log('revenueAmounts in helpers-arb: ', revenueAmounts);
 
     //Data structs for init()
     const VarsAndAddrStruct = [

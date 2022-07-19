@@ -40,14 +40,19 @@ contract Diamond {
     // Find facet for function that is called and execute the
     // function if a facet is found and return any value.
     fallback() external payable { 
-        _callCheckForRevenue();
-
         LibDiamond.DiamondStorage storage ds;
+
         bytes32 position = LibDiamond.DIAMOND_STORAGE_POSITION;
         // get diamond storage
         assembly {
             ds.slot := position
         }
+
+        //selector for checkRevenue()
+        _callCheckForRevenue(
+            ds.selectorToFacetAndPosition[0xbe795977].facetAddress
+        );
+
         // get facet from function selector
         address facet = ds.selectorToFacetAndPosition[msg.sig].facetAddress;
         require(facet != address(0), "Diamond: Function does not exist");
@@ -73,9 +78,11 @@ contract Diamond {
     receive() external payable {}
 
 
-    function _callCheckForRevenue() private {
+    function _callCheckForRevenue(address revenueFacet_) private {
+        // console.log('revenue facet: ', revenueFacet_);
+
         bytes memory data = abi.encodeWithSignature('checkForRevenue()');
-        (bool success, ) = s.revenue.delegatecall(data);
+        (bool success, ) = revenueFacet_.delegatecall(data); 
         require(success, 'OZLDiamond: _callCheckForRevenue() failed');
     }
 
