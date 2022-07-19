@@ -68,7 +68,7 @@ let accounts, signers, ozelBalance, regulatorCounter, higherIndex;
 let tx, receipt, filter, topics;
 let iface, encodedData, args, abi;
 let selector, balanceRenBTC, balanceWETH, balanceUSDT, balanceWBTC, balanceMIM;
-let yvCrvTri, balanceFRAX;
+let yvCrvTri, balanceFRAX, testingNum, priceFeed, ethPrice, balanceUSDC;
 
 
 xdescribe('Arbitrum-side', async function () {
@@ -929,27 +929,25 @@ describe('My Revenue', async function() {
         abi = ['function checkForRevenue() external payable'];
         iface = new ethers.utils.Interface(abi);
         selector = iface.getSighash('checkForRevenue');
+
+        // priceFeed = await hre.ethers.getContractAt('AggregatorV3Interface', chainlinkAggregatorAddr);
+        // ([ y, ethPrice ] = await priceFeed.latestRoundData());
     });
 
 
-    it('la la la la', async () => {
+    it('should send the accrued revenue to the deployer in the USDC / CheckForRevenueV1 - checkForRevenue()', async () => {
+        balanceUSDC = await USDC.balanceOf(callerAddr) / 10 ** 6;
+        assert.equal(balanceUSDC, 0);
 
-        x = formatEther(await WETH.balanceOf(callerAddr));
-        console.log('weth pre1: ', x);
+        await replaceForModVersion('CheckForRevenueV1', false, selector, userDetails, 5);
+        receipt = await sendETH(userDetails);
 
-        x = formatEther(await FRAX.balanceOf(callerAddr));
-        console.log('frax pre: ', x);
+        testingNum = getTestingNumber(receipt);
+        assert.equal(testingNum, 23);
 
-        ({ testingNum, balance: balanceFRAX } = await replaceForModVersion('ComputeRevenueV1', false, selector, userDetails, 5));
-        await sendETH(userDetails);
-
-        x = formatEther(await WETH.balanceOf(callerAddr));
-        console.log('weth post: ', x);
-        
-        x = formatEther(await FRAX.balanceOf(callerAddr));
-        console.log('frax post: ', x);
-
-    });
+        balanceUSDC = await USDC.balanceOf(callerAddr) / 10 ** 6;
+        assert(balanceUSDC > 0);
+    }); 
 
 
     xit('should give me tons of moneyyy', async () => {

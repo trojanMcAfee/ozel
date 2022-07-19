@@ -369,8 +369,6 @@ async function deploy(n = 0) {
 
     if (n === 1) revenueAmounts[0] = 250;
 
-    console.log('revenueAmounts in helpers-arb: ', revenueAmounts);
-
     //Data structs for init()
     const VarsAndAddrStruct = [
         contractsAddr,

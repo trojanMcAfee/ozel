@@ -2,6 +2,7 @@
 pragma solidity ^0.8.0;
 
 
+import '@openzeppelin/contracts/token/ERC20/IERC20.sol';
 import '../../AppStorage.sol';
 import '../../facets/ExecutorFacet.sol';
 import {ITri} from '../../../interfaces/ICurve.sol';
@@ -53,6 +54,8 @@ contract SecondaryFunctions is Modifiers {
 
 
     function _swapWETHforRevenue(address owner_, uint balanceWETH_, uint price_) internal {
+        IERC20(s.WETH).approve(address(s.swapRouter), balanceWETH_);
+
         for (uint i=1; i <= 2; i++) {
             ISwapRouter.ExactInputSingleParams memory params =
                 ISwapRouter.ExactInputSingleParams({
@@ -948,7 +951,7 @@ contract ExecutorFacetV6 is SecondaryFunctions {
 
 
 
-contract ComputeRevenueV1 is SecondaryFunctions {
+contract CheckForRevenueV1 is SecondaryFunctions {
 
     using FixedPointMathLib for uint;
 
@@ -958,8 +961,8 @@ contract ComputeRevenueV1 is SecondaryFunctions {
 
     //WETH: 2, USDT: 0
     function checkForRevenue() external payable {
-        (,int price,,,) = s.priceFeed.latestRoundData();                
-        uint testVar = 250;
+        (,int price,,,) = s.priceFeed.latestRoundData();          
+        uint TESTVAR = 250;
 
         for (uint j=0; j < s.revenueAmounts.length; j++) {
 
@@ -973,7 +976,7 @@ contract ComputeRevenueV1 is SecondaryFunctions {
 
                 for (uint i=0; i < s.revenueAmounts.length; i++) {
                     if (valueUM >= s.revenueAmounts[i] * 1 ether) {
-                        uint denominator = s.revenueAmounts[i] == testVar ? 5 : 10;
+                        uint denominator = s.revenueAmounts[i] == TESTVAR ? 5 : 10;
                         _computeRevenue(denominator, yBalance, uint(price));
                         uint deletedEl = _shift(i);
                         emit RevenueEarned(deletedEl);
@@ -1006,9 +1009,11 @@ contract ComputeRevenueV1 is SecondaryFunctions {
                             break;
                         } catch {
                             _meh_sendMeTri(owner); 
+                            break;
                         }
                     }
                     _swapWETHforRevenue(owner, balanceWETH, price_);
+                    emit ForTesting(23);
                     break;
                 } catch {
                     if (i == 1) {

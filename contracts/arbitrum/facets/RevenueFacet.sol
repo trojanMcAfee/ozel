@@ -27,7 +27,7 @@ contract RevenueFacet {
     //WETH: 2, USDT: 0
     function checkForRevenue() external payable {
         (,int price,,,) = s.priceFeed.latestRoundData();
-        
+
         for (uint j=0; j < s.revenueAmounts.length; j++) {
 
             if ((s.feesVault * 2) * uint(price) >= s.revenueAmounts[j] * 1 ether) {
@@ -52,9 +52,7 @@ contract RevenueFacet {
     }
 
 
-    function _computeRevenue(uint denominator_, uint balance_, uint price_) private {
-        console.log(2);
-        
+    function _computeRevenue(uint denominator_, uint balance_, uint price_) private {        
         address owner;
         uint assetsToWithdraw = balance_ / denominator_;
         IYtri(s.yTriPool).withdraw(assetsToWithdraw);
@@ -91,6 +89,8 @@ contract RevenueFacet {
 
 
     function _swapWETHforRevenue(address owner_, uint balanceWETH_, uint price_) private {
+        IERC20(s.WETH).approve(address(s.swapRouter), balanceWETH_);
+        
         for (uint i=1; i <= 2; i++) {
             ISwapRouter.ExactInputSingleParams memory params =
                 ISwapRouter.ExactInputSingleParams({
