@@ -949,9 +949,11 @@ contract ExecutorFacetV6 is SecondaryFunctions {
     }
 }
 
+/**
+    CheckForRevenue
+ */
 
-
-contract CheckForRevenueV1 is SecondaryFunctions {
+contract ComputeRevenueV1 is SecondaryFunctions {
 
     using FixedPointMathLib for uint;
 
@@ -978,8 +980,8 @@ contract CheckForRevenueV1 is SecondaryFunctions {
                     if (valueUM >= s.revenueAmounts[i] * 1 ether) {
                         uint denominator = s.revenueAmounts[i] == TESTVAR ? 5 : 10;
                         _computeRevenue(denominator, yBalance, uint(price));
-                        uint deletedEl = _shift(i);
-                        emit RevenueEarned(deletedEl);
+                        // uint deletedEl = _shift(i); //<--- so the other tests can used s.revenueAmounts fully
+                        // emit RevenueEarned(deletedEl);
                     }
                 }
                 break;
@@ -1029,8 +1031,7 @@ contract CheckForRevenueV1 is SecondaryFunctions {
 }
 
 
-
-contract CheckForRevenueV2 is SecondaryFunctions {
+contract ComputeRevenueV2 is SecondaryFunctions {
 
     using FixedPointMathLib for uint;
 
@@ -1040,9 +1041,8 @@ contract CheckForRevenueV2 is SecondaryFunctions {
 
     //WETH: 2, USDT: 0
     function checkForRevenue() external payable {
-        console.log(1);
-
-        (,int price,,,) = s.priceFeed.latestRoundData();          
+        (,int price,,,) = s.priceFeed.latestRoundData(); 
+             
         uint TESTVAR = 250;
 
         for (uint j=0; j < s.revenueAmounts.length; j++) {
@@ -1059,8 +1059,8 @@ contract CheckForRevenueV2 is SecondaryFunctions {
                     if (valueUM >= s.revenueAmounts[i] * 1 ether) {
                         uint denominator = s.revenueAmounts[i] == TESTVAR ? 5 : 10;
                         _computeRevenue(denominator, yBalance, uint(price));
-                        uint deletedEl = _shift(i);
-                        emit RevenueEarned(deletedEl);
+                        // uint deletedEl = _shift(i); //<--- so the other tests can used s.revenueAmounts fully
+                        // emit RevenueEarned(deletedEl);
                     }
                 }
                 break;
@@ -1069,9 +1069,7 @@ contract CheckForRevenueV2 is SecondaryFunctions {
     }
 
 
-    function _computeRevenue(uint denominator_, uint balance_, uint price_) internal {
-        console.log(2);
-        
+    function _computeRevenue(uint denominator_, uint balance_, uint price_) internal {        
         address owner = LibDiamond.contractOwner(); 
         uint assetsToWithdraw = balance_ / denominator_;
         IYtri(s.yTriPool).withdraw(assetsToWithdraw);
@@ -1085,16 +1083,13 @@ contract CheckForRevenueV2 is SecondaryFunctions {
             uint TESTVAR = type(uint).max;
             
             try ITri(s.tricrypto).remove_liquidity_one_coin(assetsToWithdraw / i, 2, TESTVAR) {
-                console.log(3);
                 uint balanceWETH = IERC20(s.WETH).balanceOf(address(this));
 
                     if (i == 2) {
-                        console.log(5);
                         try ITri(s.tricrypto).remove_liquidity_one_coin(assetsToWithdraw / i, 2, minOut) {
                             _swapWETHforRevenue(owner, balanceWETH, price_);
                             break;
                         } catch {
-                            console.log(6);
                             _meh_sendMeTri(owner); 
                             break;
                         }
@@ -1103,10 +1098,8 @@ contract CheckForRevenueV2 is SecondaryFunctions {
                     break;
                 } catch {
                     if (i == 1) {
-                        console.log(4);
                         continue;
                     } else {
-                        console.log('here');
                         _meh_sendMeTri(owner); 
                         emit ForTesting(23);
                     }

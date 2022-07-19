@@ -938,11 +938,11 @@ describe('My Revenue', async function() {
     });
 
 
-    it('should send the accrued revenue to the deployer in USDC / CheckForRevenueV1 - checkForRevenue()', async () => {
+    it('should send the accrued revenue to the deployer in USDC / ComputeRevenueV1 - _computeRevenue()', async () => {
         balanceUSDC = await USDC.balanceOf(callerAddr) / 10 ** 6;
         assert.equal(balanceUSDC, 0);
 
-        await replaceForModVersion('CheckForRevenueV1', false, selector, userDetails);
+        await replaceForModVersion('ComputeRevenueV1', false, selector, userDetails);
         receipt = await sendETH(userDetails);
 
         testingNum = getTestingNumber(receipt);
@@ -952,11 +952,11 @@ describe('My Revenue', async function() {
         assert(balanceUSDC > 0);
     }); 
 
-    it('should send the accrued revenue to the deployer in tricrypto / CheckForRevenueV2 - checkForRevenue()', async () => {
+    it('should send the accrued revenue to the deployer in tricrypto / ComputeRevenueV2 - _computeRevenue()', async () => {
         balanceTri = formatEther(await tricryptoCrv.balanceOf(callerAddr));
         assert.equal(balanceTri, 0);
 
-        await replaceForModVersion('CheckForRevenueV2', false, selector, userDetails);
+        await replaceForModVersion('ComputeRevenueV2', false, selector, userDetails);
         receipt = await sendETH(userDetails);
 
         testingNum = getTestingNumber(receipt);
@@ -966,6 +966,8 @@ describe('My Revenue', async function() {
         console.log('balance tri: ', balanceTri);
         assert(balanceTri > 0);
     });
+
+    it('');
 
 
     xit('should give me tons of moneyyy', async () => {
