@@ -40,9 +40,14 @@ const revenueAmounts = [
     10000000000
 ];
 
-
 const tokenName = 'Ozel';
 const tokenSymbol = 'OZL';
+
+
+const diamondABI = [
+    'function setTESTVAR2(uint256) public',
+    'function diamondCut(tuple(address facetAddress, uint8 action, bytes4[] functionSelectors)[] calldata _diamondCut, address _init, bytes calldata _calldata) external'
+];
 
 
 
@@ -157,6 +162,7 @@ module.exports = {
     nullAddr,
     chainlinkAggregatorAddr,
     deadAddr,
-    revenueAmounts
+    revenueAmounts,
+    diamondABI
 };
 

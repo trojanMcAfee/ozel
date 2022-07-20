@@ -255,18 +255,49 @@ async function replaceForModVersion(contractName, checkUSDTbalance, selector, us
     const FRAX = await hre.ethers.getContractAt('IERC20', fraxAddr);
     const [callerAddr] = await hre.ethers.provider.listAccounts();
 
+    const USDC = await hre.ethers.getContractAt('IERC20', usdcAddr);
+
     modContract = typeof contractName === 'string' ? await deployFacet(contractName) : contractName;
+    const abi = [
+        'function setTESTVAR2(uint256) public',
+        'function diamondCut(tuple(address facetAddress, uint8 action, bytes4[] functionSelectors)[] calldata _diamondCut, address _init, bytes calldata _calldata) external'
+    ];
+    const dproxy = await hre.ethers.getContractAt(abi, '0x959922bE3CAee4b8Cd9a407cc3ac1C251C2007B1');
+    
+    if (contractName === 'ComputeRevenueV1') {
+        const iface = new ethers.utils.Interface(abi);
+        const selectorTESTVAR = iface.getSighash('setTESTVAR2');
+        await dproxy.diamondCut(
+            [[ modContract.address, 0, [selectorTESTVAR] ]],
+            nullAddr,
+            '0x'
+        );
+        await dproxy.setTESTVAR2(1);
+    }
+    
     faceCutArgs = [[ modContract.address, 1, [selector] ]]; 
     
     if (checkUSDTbalance) {
         balance = await USDT.balanceOf(callerAddr);
         assert.equal(balance, 0);
     };
+
+    balanceUSDC = await USDC.balanceOf(callerAddr);
+    console.log('b USDC on helpers 11 - must be 0: ', balanceUSDC /10 ** 6);
+
+    //--------
+
+    await dproxy.diamondCut(faceCutArgs, nullAddr, '0x');
+
+    //-----------
     
-    await callDiamondProxy({
-        method: 'diamondCut',
-        args: [faceCutArgs, nullAddr,'0x']
-    });
+    // await callDiamondProxy({
+    //     method: 'diamondCut',
+    //     args: [faceCutArgs, nullAddr,'0x']
+    // });
+
+    balanceUSDC = await USDC.balanceOf(callerAddr);
+    console.log('b USDC on helpers 22 - must be 0: ', balanceUSDC /10 ** 6);
 
     if (!isIndex) {
         receipt = await sendETH(userDetails); 
@@ -276,7 +307,8 @@ async function replaceForModVersion(contractName, checkUSDTbalance, selector, us
         return {
             testingNum,
             balance,
-            receipt
+            receipt,
+            modContract
         };        
     }
 }

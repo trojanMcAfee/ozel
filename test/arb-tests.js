@@ -51,7 +51,8 @@ const {
     nullAddr,
     chainlinkAggregatorAddr,
     deadAddr,
-    crvTricrypto
+    crvTricrypto,
+    diamondABI
 } = require('../scripts/state-vars.js');
 
 
@@ -70,6 +71,7 @@ let tx, receipt, filter, topics;
 let iface, encodedData, args, abi;
 let selector, balanceRenBTC, balanceWETH, balanceUSDT, balanceWBTC, balanceMIM;
 let yvCrvTri, balanceFRAX, testingNum, priceFeed, ethPrice, balanceUSDC, balanceTri;
+let ozlDiamondProxy;
 
 
 xdescribe('Arbitrum-side', async function () {
@@ -935,6 +937,8 @@ describe('My Revenue', async function() {
         // ([ y, ethPrice ] = await priceFeed.latestRoundData());
 
         tricryptoCrv = await hre.ethers.getContractAt('IERC20', crvTricrypto);
+
+        ozlDiamondProxy = await hre.ethers.getContractAt(diamondABI, deployedDiamond.address);
     });
 
 
@@ -942,17 +946,30 @@ describe('My Revenue', async function() {
         balanceUSDC = await USDC.balanceOf(callerAddr) / 10 ** 6;
         assert.equal(balanceUSDC, 0);
 
-        await replaceForModVersion('ComputeRevenueV1', false, selector, userDetails);
+        ({ a, b, c, modContract} = await replaceForModVersion('ComputeRevenueV1', false, selector, userDetails));        
         receipt = await sendETH(userDetails);
 
         testingNum = getTestingNumber(receipt);
+
+        console.log(Number(5));
+
         assert.equal(testingNum, 23);
 
-        balanceUSDC = await USDC.balanceOf(callerAddr) / 10 ** 6;
-        assert(balanceUSDC > 0);
+        console.log(Number(6));
 
-        //Clean up
-        USDC.transfer(caller2Addr, balanceUSDC); //<--- error happend after adding this
+        balanceUSDC = await USDC.balanceOf(callerAddr);
+        // console.log('balanceUSDC: *****', balanceUSDC / 10 ** 6);
+        assert(balanceUSDC / 10 ** 6 > 0);
+
+        //Cleans up
+        // const iface = new ethers.utils.Interface(diamondABI);
+        // const selectorTESTVAR = iface.getSighash('setTESTVAR2');
+        // await ozlDiamondProxy.diamondCut(
+        //     [[ modContract.address, 0, [selectorTESTVAR] ]]
+        // );
+        // await ozlDiamondProxy.setTESTVAR2(1);
+        await USDC.transfer(deadAddr, balanceUSDC); 
+
     }); 
 
     it('should send the accrued revenue to the deployer in tricrypto / ComputeRevenueV2 - _computeRevenue()', async () => {
@@ -960,17 +977,21 @@ describe('My Revenue', async function() {
         assert.equal(balanceTri, 0);
 
         await replaceForModVersion('ComputeRevenueV2', false, selector, userDetails);
+        
         receipt = await sendETH(userDetails);
 
         testingNum = getTestingNumber(receipt);
         assert.equal(testingNum, 23);
 
         balanceTri = formatEther(await tricryptoCrv.balanceOf(callerAddr));
-        console.log('balance tri: ', balanceTri);
         assert(balanceTri > 0);
+
     });
 
     it('should send the accrued revenue to the deployer in USDC in two txs / ComputeRevenueV3 - _computeRevenue()', async () => {
+        // balanceUSDC = await USDC.balanceOf(callerAddr);
+        // console.log('b USDCC4 - must be 0: ', balanceUSDC);
+        
         balanceUSDC = await USDC.balanceOf(callerAddr) / 10 ** 6;
         assert.equal(balanceUSDC, 0);
 
@@ -984,7 +1005,7 @@ describe('My Revenue', async function() {
         assert(balanceUSDC > 0);
     });
 
-    it('should send the accrued revenue to the deployer in USDC and tricrypto / ComputeRevenueV4 - _computeRevenue()', async () => {
+    xit('should send the accrued revenue to the deployer in USDC and tricrypto / ComputeRevenueV4 - _computeRevenue()', async () => {
 
 
 
