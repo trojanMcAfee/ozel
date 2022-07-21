@@ -131,10 +131,12 @@ async function callDiamondProxy(params) {
             [ decodedData ] = abiCoder.decode([params.type], data);
             return decodedData;
     }
-}
+} 
 
 
 async function enableWithdrawals(state) {
+    
+
     await callDiamondProxy({
         method: 'enableWithdrawals',
         args: [state]
@@ -262,9 +264,7 @@ async function replaceForModVersion(contractName, checkUSDTbalance, selector, us
     const USDC = await hre.ethers.getContractAt('IERC20', usdcAddr);
 
     modContract = typeof contractName === 'string' ? await deployFacet(contractName) : contractName;
-   
-    // OZLDiamond = await hre.ethers.getContractAt(diamondABI, '0x959922bE3CAee4b8Cd9a407cc3ac1C251C2007B1');
-    
+       
     if (contractName === 'ComputeRevenueV1') {
         const iface = new ethers.utils.Interface(diamondABI);
         const selectorTESTVAR = iface.getSighash('setTESTVAR2');
@@ -283,16 +283,7 @@ async function replaceForModVersion(contractName, checkUSDTbalance, selector, us
         assert.equal(balance, 0);
     };
 
-    //--------
-
     await OZLDiamond.diamondCut(faceCutArgs, nullAddr, '0x');
-
-    //-----------
-    
-    // await callDiamondProxy({
-    //     method: 'diamondCut',
-    //     args: [faceCutArgs, nullAddr,'0x']
-    // });
 
     if (!isIndex) {
         receipt = await sendETH(userDetails); 

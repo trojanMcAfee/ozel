@@ -46,7 +46,22 @@ const tokenSymbol = 'OZL';
 
 const diamondABI = [
     'function setTESTVAR2(uint256) public',
-    'function diamondCut(tuple(address facetAddress, uint8 action, bytes4[] functionSelectors)[] calldata _diamondCut, address _init, bytes calldata _calldata) external'
+    'function diamondCut(tuple(address facetAddress, uint8 action, bytes4[] functionSelectors)[] calldata _diamondCut, address _init, bytes calldata _calldata) external',
+    'function getOzelIndex() returns (uint256)',
+    'function getRegulatorCounter() returns (uint256)',
+    'function balanceOf(address account) view returns (uint256)',
+    'function transfer(address recipient, uint256 amount) returns (bool)',
+    'function exchangeToUserToken(tuple(address user, address userToken, uint userSlippage) userDetails_)',
+    'function withdrawUserShare(tuple(address user, address userToken, uint userSlippage) userDetails_, address receiver, uint shares_)',
+    'function enableWithdrawals(bool state_) external',
+    'function updateExecutorState(uint256 amount_, address user_, uint256 lockNum_) external payable',
+    'function deposit(uint256 assets, address receiver, uint256 lockNum_) external payable returns (uint256 shares)',
+    'function executeFinalTrade(tuple(int128 tokenIn, int128 tokenOut, address baseToken, address userToken, address pool) swapDetails_, uint256 userSlippage, address user_, uint256 lockNum_) external payable',
+    'function redeem(uint256 shares, address receiver, address owner, uint256 lockNum_) external returns (uint256 assets)',
+    'function burn(address account, uint256 amount, uint256 lockNum_) external',
+    'function modifyPaymentsAndVolumeExternally(address user_, uint256 newAmount_, uint256 lockNum_) external',
+    'function addTokenToDatabase(address newToken_) external',
+    'function transferUserAllocation(address sender_, address receiver_, uint256 amount_, uint256 senderBalance_, uint256 lockNum_) external',
 ];
 
 
