@@ -74,7 +74,7 @@ let yvCrvTri, balanceFRAX, testingNum, priceFeed, ethPrice, balanceUSDC, balance
 let ozlDiamondProxy;
 
 
-xdescribe('Arbitrum-side', async function () {
+describe('Arbitrum-side', async function () {
     this.timeout(1000000);
 
     before( async () => {
@@ -104,6 +104,9 @@ xdescribe('Arbitrum-side', async function () {
         ];
     });
 
+    /**
+     * "Describe" meant to be run as one test
+     */
     describe('Standard user interaction', async () => {
         /**
          * Since Curve doesn't have testnets, sendETH() sends ETH directly to
@@ -132,7 +135,7 @@ xdescribe('Arbitrum-side', async function () {
             });
         });
 
-        xdescribe('2nd user, 1st transfer / exchangeToUserToken()', async () => {
+        describe('2nd user, 1st transfer / exchangeToUserToken()', async () => {
             it('should convert ETH to userToken (WBTC)', async () => {
                 userDetails[0] = caller2Addr;
                 userDetails[1] = wbtcAddr;
@@ -157,7 +160,7 @@ xdescribe('Arbitrum-side', async function () {
             });
         });
 
-        xdescribe('1st user, 2nd transfer / exchangeToUserToken', async () => {
+        describe('1st user, 2nd transfer / exchangeToUserToken', async () => {
             it('should convert ETH to userToken (MIM)', async () => {
                 userDetails[0] = callerAddr;
                 userDetails[1] = mimAddr;
@@ -192,7 +195,7 @@ xdescribe('Arbitrum-side', async function () {
             });
         });
 
-        xdescribe("1st user's transfer of OZL tokens", async () => {
+        describe("1st user's transfer of OZL tokens", async () => {
             it('should transfer half of OZL tokens to 2nd user', async () => {
                 await transferOZL(caller2Addr, parseEther((OZLbalanceFirstUser / 2).toString()));
                 OZLbalanceFirstUser = await balanceOfOZL(callerAddr);
@@ -204,7 +207,7 @@ xdescribe('Arbitrum-side', async function () {
             });
         });
 
-        xdescribe("1st user's OZL withdrawal", async () => {
+        describe("1st user's OZL withdrawal", async () => {
             it("should have a balance of the dapp's fees on userToken (USDC)", async () => {
                 await enableWithdrawals(true);
                 userDetails[1] = usdcAddr;
@@ -223,7 +226,7 @@ xdescribe('Arbitrum-side', async function () {
             });
         });
 
-        xdescribe('1st user, 3rd and 4th transfers', async () => {
+        describe('1st user, 3rd and 4th transfers', async () => {
             it('should leave the 2nd user with more OZL tokens', async() => {
                 await sendETH(userDetails);
                 OZLbalanceFirstUser = await balanceOfOZL(callerAddr);
@@ -247,7 +250,7 @@ xdescribe('Arbitrum-side', async function () {
             });
         });
 
-        xdescribe('2nd user withdrawas 1/3 OZL tokens', async () => {
+        describe('2nd user withdrawas 1/3 OZL tokens', async () => {
 
             it("should have a balance of the dapp's fees on userToken (USDT)", async () => {
                 userDetails[0] = caller2Addr;
@@ -276,7 +279,7 @@ xdescribe('Arbitrum-side', async function () {
 });
 
 
-xdescribe('Unit testing', async function () {
+describe('Unit testing', async function () {
     this.timeout(1000000);
 
     before( async () => {
@@ -354,7 +357,7 @@ xdescribe('Unit testing', async function () {
             it('should fail when msg.value is equal to 0', async () => {
                 userDetails[1] = usdcAddr;
                 await assert.rejects(async () => {
-                    await sendETH(userDetails, '');
+                    await sendETH(userDetails, 'no value');
                 }, {
                     name: 'Error',
                     message: err().zeroMsgValue 
@@ -427,16 +430,18 @@ xdescribe('Unit testing', async function () {
             });
         });
 
-        it('should allow the owner to add a new userToken to database / addTokenToDatabase()', async () => {
-            await addTokenToDatabase(renBtcAddr);
-        });
-
-        it('should not allow an unauthorized user to add a new userToken to database / addTokenToDatabase()', async () => {
-            await assert.rejects(async () => {
-                await addTokenToDatabase(deadAddr, 1);
-            }, {
-                name: 'Error',
-                message: err(2).notAuthorized 
+        describe('addTokenToDatabase()', async () => {
+            it('should allow the owner to add a new userToken to database', async () => {
+                await addTokenToDatabase(renBtcAddr);
+            });
+    
+            it('should not allow an unauthorized user to add a new userToken to database', async () => {
+                await assert.rejects(async () => {
+                    await addTokenToDatabase(deadAddr, 1);
+                }, {
+                    name: 'Error',
+                    message: err(2).notAuthorized 
+                });
             });
         });
     });
@@ -553,7 +558,7 @@ xdescribe('Unit testing', async function () {
  * show the workings of the mechanism.
  */
 
-xdescribe('Ozel Index', async function () { 
+describe('Ozel Index', async function () { 
     this.timeout(100000000000000000000);
 
     before( async () => {
@@ -662,7 +667,7 @@ xdescribe('Ozel Index', async function () {
  * It tests the anti-slippage system designed with try/catch blocks on the contracts
  * OZLFacet and ExecutorFacet.
  */
-xdescribe('Anti-slippage system', async function () {
+describe('Anti-slippage system', async function () {
     this.timeout(1000000);
 
     before( async () => {
@@ -938,7 +943,11 @@ describe('My Revenue', async function() {
 
         tricryptoCrv = await hre.ethers.getContractAt('IERC20', crvTricrypto);
 
-        ozlDiamondProxy = await hre.ethers.getContractAt(diamondABI, deployedDiamond.address);
+        //Clean up
+        balanceUSDC = await USDC.balanceOf(callerAddr);
+        await USDC.transfer(deadAddr, balanceUSDC);
+
+        // ozlDiamondProxy = await hre.ethers.getContractAt(diamondABI, deployedDiamond.address);
     });
 
 

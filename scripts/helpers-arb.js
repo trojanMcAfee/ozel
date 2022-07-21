@@ -156,9 +156,9 @@ async function balanceOfOZL(user) {
     // return Number(formatEther(balance));
 }
 
-async function transferOZL(recipient, amount, signerIndex) { 
+async function transferOZL(recipient, amount, signerIndex = 0) { 
     const signers = await hre.ethers.getSigners();
-    const signer = signers[signerIndex ? 0 : signerIndex];
+    const signer = signers[signerIndex];
 
     await OZLDiamond.connect(signer).transfer(recipient, amount);
 
@@ -169,7 +169,7 @@ async function transferOZL(recipient, amount, signerIndex) {
     // }); 
 }
 
-async function withdrawShareOZL(userDetails, receiverAddr, balanceOZL, signerIndex) {  
+async function withdrawShareOZL(userDetails, receiverAddr, balanceOZL, signerIndex = 0) {  
     const signers = await hre.ethers.getSigners();
     const signer = signers[signerIndex ? 0 : signerIndex];
     
@@ -187,7 +187,7 @@ async function withdrawShareOZL(userDetails, receiverAddr, balanceOZL, signerInd
 async function sendETH(userDetails, signerIndex = 0) {
     const signers = await hre.ethers.getSigners();
     const signer = signers[signerIndex ? 0 : signerIndex];
-    const value = ethers.utils.parseEther(signerIndex === '' ? '0' : '100');
+    const value = ethers.utils.parseEther(signerIndex === 'no value' ? '0' : '100');
     const tx = await OZLDiamond.connect(signer).exchangeToUserToken(userDetails, { value });
     const receipt = await tx.wait();
 
@@ -207,7 +207,7 @@ async function getOzelIndex() {
     const tx = await OZLDiamond.getOzelIndex();
     const receipt = await tx.wait();
     const { data } = receipt.logs[0];
-    [ decodedData ] = abiCoder.decode([params.type], data);
+    [ decodedData ] = abiCoder.decode(['uint256'], data);
 
     return decodedData;
 
@@ -218,9 +218,9 @@ async function getOzelIndex() {
     // });
 }
 
-async function addTokenToDatabase(token, signerIndex) {
+async function addTokenToDatabase(token, signerIndex = 0) {
     const signers = await hre.ethers.getSigners();
-    const signer = signers[signerIndex ? 0 : signerIndex];
+    const signer = signers[signerIndex];
 
     await OZLDiamond.connect(signer).addTokenToDatabase(token);
 
@@ -248,7 +248,7 @@ async function getRegulatorCounter() {
     const tx = await OZLDiamond.getRegulatorCounter();
     const receipt = await tx.wait();
     const { data } = receipt.logs[0];
-    [ decodedData ] = abiCoder.decode([params.type], data);
+    [ decodedData ] = abiCoder.decode(['uint256'], data);
 
     return decodedData;
 
