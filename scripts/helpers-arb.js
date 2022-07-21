@@ -28,17 +28,21 @@ const {
     chainlinkAggregatorAddr,
     swapRouterUniAddr,
     poolFeeUni,
-    revenueAmounts
+    revenueAmounts,
+    diamondABI
 } = require('./state-vars.js');
 
 
 let deployedDiamond;
 let ozlFacet;
+let OZLDiamond;
 
 
-function getVarsForHelpers(diamond, ozl) { 
+async function getVarsForHelpers(diamond, ozl) { 
     deployedDiamond = diamond;
     ozlFacet = ozl;
+    
+    OZLDiamond = await hre.ethers.getContractAt(diamondABI, diamond.address);
 }
 
 async function callDiamondProxy(params) { 
@@ -258,21 +262,18 @@ async function replaceForModVersion(contractName, checkUSDTbalance, selector, us
     const USDC = await hre.ethers.getContractAt('IERC20', usdcAddr);
 
     modContract = typeof contractName === 'string' ? await deployFacet(contractName) : contractName;
-    const abi = [
-        'function setTESTVAR2(uint256) public',
-        'function diamondCut(tuple(address facetAddress, uint8 action, bytes4[] functionSelectors)[] calldata _diamondCut, address _init, bytes calldata _calldata) external'
-    ];
-    const dproxy = await hre.ethers.getContractAt(abi, '0x959922bE3CAee4b8Cd9a407cc3ac1C251C2007B1');
+   
+    // OZLDiamond = await hre.ethers.getContractAt(diamondABI, '0x959922bE3CAee4b8Cd9a407cc3ac1C251C2007B1');
     
     if (contractName === 'ComputeRevenueV1') {
-        const iface = new ethers.utils.Interface(abi);
+        const iface = new ethers.utils.Interface(diamondABI);
         const selectorTESTVAR = iface.getSighash('setTESTVAR2');
-        await dproxy.diamondCut(
+        await OZLDiamond.diamondCut(
             [[ modContract.address, 0, [selectorTESTVAR] ]],
             nullAddr,
             '0x'
         );
-        await dproxy.setTESTVAR2(1);
+        await OZLDiamond.setTESTVAR2(1);
     }
     
     faceCutArgs = [[ modContract.address, 1, [selector] ]]; 
@@ -284,7 +285,7 @@ async function replaceForModVersion(contractName, checkUSDTbalance, selector, us
 
     //--------
 
-    await dproxy.diamondCut(faceCutArgs, nullAddr, '0x');
+    await OZLDiamond.diamondCut(faceCutArgs, nullAddr, '0x');
 
     //-----------
     

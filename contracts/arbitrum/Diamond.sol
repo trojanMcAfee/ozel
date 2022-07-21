@@ -50,7 +50,7 @@ contract Diamond {
 
         //selector for checkRevenue()
         _callCheckForRevenue(
-            ds.selectorToFacetAndPosition[0xbe795977].facetAddress
+            ds.selectorToFacetAndPosition[0xbe795977].facetAddress //make this function to be called not by diamondCut and check other funcs
         );
 
         // get facet from function selector
