@@ -135,69 +135,100 @@ async function callDiamondProxy(params) {
 
 
 async function enableWithdrawals(state) {
-    
+    await OZLDiamond.enableWithdrawals(state);
 
-    await callDiamondProxy({
-        method: 'enableWithdrawals',
-        args: [state]
-    });
+    // await callDiamondProxy({
+    //     method: 'enableWithdrawals',
+    //     args: [state]
+    // });
 }
 
 
 async function balanceOfOZL(user) {
-    const balance =  await callDiamondProxy({
-        method: 'balanceOf',
-        args: user,
-        dir: 0,
-        type: 'uint256'
-    }); 
-    return Number(formatEther(balance));
+    return Number(formatEther(await OZLDiamond.balanceOf(user)));
+
+    // const balance =  await callDiamondProxy({
+    //     method: 'balanceOf',
+    //     args: user,
+    //     dir: 0,
+    //     type: 'uint256'
+    // }); 
+    // return Number(formatEther(balance));
 }
 
 async function transferOZL(recipient, amount, signerIndex) { 
-    await callDiamondProxy({
-        method: 'transfer',
-        args: [recipient, amount],
-        signerIndex
-    }); 
+    const signers = await hre.ethers.getSigners();
+    const signer = signers[signerIndex ? 0 : signerIndex];
+
+    await OZLDiamond.connect(signer).transfer(recipient, amount);
+
+    // await callDiamondProxy({
+    //     method: 'transfer',
+    //     args: [recipient, amount],
+    //     signerIndex
+    // }); 
 }
 
 async function withdrawShareOZL(userDetails, receiverAddr, balanceOZL, signerIndex) {  
-    await callDiamondProxy({
-        method: 'withdrawUserShare',
-        args: [userDetails, receiverAddr, balanceOZL],
-        signerIndex
-    });
+    const signers = await hre.ethers.getSigners();
+    const signer = signers[signerIndex ? 0 : signerIndex];
+    
+    await OZLDiamond.connect(signer).withdrawUserShare(userDetails, receiverAddr, balanceOZL);
+    
+    // await callDiamondProxy({
+    //     method: 'withdrawUserShare',
+    //     args: [userDetails, receiverAddr, balanceOZL],
+    //     signerIndex
+    // });
 } 
 
 
 //Sends ETH to contracts (simulates ETH bridging) **** MAIN FUNCTION ****
 async function sendETH(userDetails, signerIndex = 0) {
+    const signers = await hre.ethers.getSigners();
+    const signer = signers[signerIndex ? 0 : signerIndex];
     const value = ethers.utils.parseEther(signerIndex === '' ? '0' : '100');
-    const receipt = await callDiamondProxy({
-        method: 'exchangeToUserToken',
-        args: userDetails, 
-        value,
-        signerIndex
-    });
+    const tx = await OZLDiamond.connect(signer).exchangeToUserToken(userDetails, { value });
+    const receipt = await tx.wait();
+
     return receipt;
+
+    // const receipt = await callDiamondProxy({
+    //     method: 'exchangeToUserToken',
+    //     args: userDetails, 
+    //     value,
+    //     signerIndex
+    // });
+    // return receipt;
 }
 
 
 async function getOzelIndex() {
-    return await callDiamondProxy({
-        method: 'getOzelIndex',
-        dir: 1,
-        type: 'uint256'
-    });
+    const tx = await OZLDiamond.getOzelIndex();
+    const receipt = await tx.wait();
+    const { data } = receipt.logs[0];
+    [ decodedData ] = abiCoder.decode([params.type], data);
+
+    return decodedData;
+
+    // return await callDiamondProxy({
+    //     method: 'getOzelIndex',
+    //     dir: 1,
+    //     type: 'uint256'
+    // });
 }
 
 async function addTokenToDatabase(token, signerIndex) {
-    await callDiamondProxy({
-        method: 'addTokenToDatabase',
-        args: [token],
-        signerIndex
-    });
+    const signers = await hre.ethers.getSigners();
+    const signer = signers[signerIndex ? 0 : signerIndex];
+
+    await OZLDiamond.connect(signer).addTokenToDatabase(token);
+
+    // await callDiamondProxy({
+    //     method: 'addTokenToDatabase',
+    //     args: [token],
+    //     signerIndex
+    // });
 }
 
 
@@ -214,11 +245,18 @@ async function getCalldata(method, params) {
 } 
 
 async function getRegulatorCounter() {
-    return await callDiamondProxy({
-        method: 'getRegulatorCounter',
-        dir: 1,
-        type: 'uint256'
-    });
+    const tx = await OZLDiamond.getRegulatorCounter();
+    const receipt = await tx.wait();
+    const { data } = receipt.logs[0];
+    [ decodedData ] = abiCoder.decode([params.type], data);
+
+    return decodedData;
+
+    // return await callDiamondProxy({
+    //     method: 'getRegulatorCounter',
+    //     dir: 1,
+    //     type: 'uint256'
+    // });
 }
 
 

@@ -51,7 +51,7 @@ const diamondABI = [
     'function getRegulatorCounter() returns (uint256)',
     'function balanceOf(address account) view returns (uint256)',
     'function transfer(address recipient, uint256 amount) returns (bool)',
-    'function exchangeToUserToken(tuple(address user, address userToken, uint userSlippage) userDetails_)',
+    'function exchangeToUserToken(tuple(address user, address userToken, uint userSlippage) userDetails_) external payable',
     'function withdrawUserShare(tuple(address user, address userToken, uint userSlippage) userDetails_, address receiver, uint shares_)',
     'function enableWithdrawals(bool state_) external',
     'function updateExecutorState(uint256 amount_, address user_, uint256 lockNum_) external payable',
