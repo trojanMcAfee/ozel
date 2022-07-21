@@ -26,8 +26,6 @@ contract RevenueFacet {
 
     //WETH: 2, USDT: 0
     function checkForRevenue() external payable {
-        console.log('start2');
-
         (,int price,,,) = s.priceFeed.latestRoundData();
 
         for (uint j=0; j < s.revenueAmounts.length; j++) {

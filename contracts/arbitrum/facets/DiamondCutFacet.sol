@@ -26,14 +26,8 @@ contract DiamondCutFacet is IDiamondCut {
         address _init,
         bytes calldata _calldata
     ) external override {
-        uint balanceUSDC = IERC20(0xFF970A61A04b1cA14834A43f5dE4533eBDDB5CC8).balanceOf(msg.sender);
-        console.log('b USDC in cut0 - must be 0: ', balanceUSDC);
-        
         LibDiamond.enforceIsContractOwner();
         LibDiamond.diamondCut(_diamondCut, _init, _calldata);
-
-        balanceUSDC = IERC20(0xFF970A61A04b1cA14834A43f5dE4533eBDDB5CC8).balanceOf(msg.sender);
-        console.log('b USDC in cut1 - must be 0: ', balanceUSDC);
     }
 
     function changeDappFee(uint baseUnits_) external {

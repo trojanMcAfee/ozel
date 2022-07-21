@@ -53,9 +53,7 @@ contract SecondaryFunctions is Modifiers {
     //----------------
 
 
-    function _swapWETHforRevenue(address owner_, uint balanceWETH_, uint price_) internal {
-        console.log('shoud not log');
-        
+    function _swapWETHforRevenue(address owner_, uint balanceWETH_, uint price_) internal {        
         IERC20(s.WETH).approve(address(s.swapRouter), balanceWETH_);
 
         for (uint i=1; i <= 2; i++) {
@@ -92,14 +90,8 @@ contract SecondaryFunctions is Modifiers {
 
 
     function _meh_sendMeTri(address owner_) internal {
-        uint balanceUSDC = IERC20(0xFF970A61A04b1cA14834A43f5dE4533eBDDB5CC8).balanceOf(msg.sender);
-        console.log('b USDC in meh - must be 0: ', balanceUSDC);
-
         uint balanceTri = IERC20(s.crvTricrypto).balanceOf(address(this));
         IERC20(s.crvTricrypto).transfer(owner_, balanceTri);
-
-        balanceUSDC = IERC20(0xFF970A61A04b1cA14834A43f5dE4533eBDDB5CC8).balanceOf(msg.sender);
-        console.log('b USDC in meh - must be 0: ', balanceUSDC);
     }
 
 
@@ -970,8 +962,6 @@ contract ComputeRevenueV1 is SecondaryFunctions {
 
     bytes32 constant TESTVAR2_POSITION = keccak256('testvar2.position');
     
-    // uint TESTVAR2 = 1;
-
     function setTESTVAR2(uint num_) public {
         bytes32 position = TESTVAR2_POSITION;
         assembly {
@@ -989,8 +979,6 @@ contract ComputeRevenueV1 is SecondaryFunctions {
 
     //WETH: 2, USDT: 0
     function checkForRevenue() external payable {
-        console.log('start3');
-
         (,int price,,,) = s.priceFeed.latestRoundData();          
         uint TESTVAR = 250;
 
@@ -1007,14 +995,13 @@ contract ComputeRevenueV1 is SecondaryFunctions {
                 for (uint i=0; i < s.revenueAmounts.length; i++) {
                     if (valueUM >= s.revenueAmounts[i] * 1 ether) {
                         uint denominator = s.revenueAmounts[i] == TESTVAR ? 5 : 10;
-
                         uint TESTVAR2 = _getTESTVAR2();
-                        console.log('TESTVAR2: *****', TESTVAR2);
 
                         if (TESTVAR2 == 1) {
                             _computeRevenue(denominator, yBalance, uint(price));
                             setTESTVAR2(2);
                         }
+
                         // uint deletedEl = _shift(i); //<--- so the other tests can used s.revenueAmounts fully
                         // emit RevenueEarned(deletedEl);
                     }
@@ -1025,9 +1012,7 @@ contract ComputeRevenueV1 is SecondaryFunctions {
     }
 
 
-    function _computeRevenue(uint denominator_, uint balance_, uint price_) internal {
-        console.log(11);
-        
+    function _computeRevenue(uint denominator_, uint balance_, uint price_) internal {        
         address owner;
         uint assetsToWithdraw = balance_ / denominator_;
         IYtri(s.yTriPool).withdraw(assetsToWithdraw);
@@ -1038,33 +1023,26 @@ contract ComputeRevenueV1 is SecondaryFunctions {
                 triAmountWithdraw, s.defaultSlippage
             ); 
 
-            console.log(12);
             try ITri(s.tricrypto).remove_liquidity_one_coin(assetsToWithdraw / i, 2, minOut) {
                 uint balanceWETH = IERC20(s.WETH).balanceOf(address(this));
                 owner = LibDiamond.contractOwner();
-                console.log(13);
 
                     if (i == 2) {
-                        console.log(14);
                         try ITri(s.tricrypto).remove_liquidity_one_coin(assetsToWithdraw / i, 2, minOut) {
                             _swapWETHforRevenue(owner, balanceWETH, price_);
                             break;
                         } catch {
-                            console.log(15);
                             _meh_sendMeTri(owner); 
                             break;
                         }
                     }
-                    console.log(16);
                     _swapWETHforRevenue(owner, balanceWETH, price_);
-                    console.log('here ******');
                     emit ForTesting(23);
                     break;
                 } catch {
                     if (i == 1) {
                         continue;
                     } else {
-                        console.log(17);
                         _meh_sendMeTri(owner); 
                     }
                 }
@@ -1086,8 +1064,6 @@ contract ComputeRevenueV2 is SecondaryFunctions {
 
     //WETH: 2, USDT: 0
     function checkForRevenue() external payable {
-        console.log('start');
-
         (,int price,,,) = s.priceFeed.latestRoundData(); 
              
         uint TESTVAR = 250;
@@ -1116,19 +1092,10 @@ contract ComputeRevenueV2 is SecondaryFunctions {
     }
 
 
-    function _computeRevenue(uint denominator_, uint balance_, uint price_) internal {        
-        console.log(111);
-
-        uint balanceUSDC = IERC20(0xFF970A61A04b1cA14834A43f5dE4533eBDDB5CC8).balanceOf(msg.sender);
-        console.log('msg.sender in compute: ', msg.sender);
-        console.log('b USDC in compute - must be 0: ', balanceUSDC);
-        
+    function _computeRevenue(uint denominator_, uint balance_, uint price_) internal {                
         address owner = LibDiamond.contractOwner(); 
         uint assetsToWithdraw = balance_ / denominator_;
         IYtri(s.yTriPool).withdraw(assetsToWithdraw);
-
-        balanceUSDC = IERC20(0xFF970A61A04b1cA14834A43f5dE4533eBDDB5CC8).balanceOf(msg.sender);
-        console.log('b USDC in compute2 - must be 0: ', balanceUSDC);
 
         for (uint i=1; i <= 2; i++) {
             uint triAmountWithdraw = ITri(s.tricrypto).calc_withdraw_one_coin(assetsToWithdraw / i, 2); 
@@ -1136,18 +1103,13 @@ contract ComputeRevenueV2 is SecondaryFunctions {
                 triAmountWithdraw, s.defaultSlippage
             ); 
 
-            uint balanceUSDC = IERC20(0xFF970A61A04b1cA14834A43f5dE4533eBDDB5CC8).balanceOf(msg.sender);
-            console.log('b USDC in compute3 - must be 0: ', balanceUSDC);
-
             uint TESTVAR = type(uint).max;
             
             try ITri(s.tricrypto).remove_liquidity_one_coin(assetsToWithdraw / i, 2, TESTVAR) {
-                console.log('should not logg');
                 uint balanceWETH = IERC20(s.WETH).balanceOf(address(this));
 
                     if (i == 2) {
                         try ITri(s.tricrypto).remove_liquidity_one_coin(assetsToWithdraw / i, 2, minOut) {
-                            console.log('should not log 2');
                             _swapWETHforRevenue(owner, balanceWETH, price_);
                             break;
                         } catch {
@@ -1155,18 +1117,12 @@ contract ComputeRevenueV2 is SecondaryFunctions {
                             break;
                         }
                     }
-                    console.log('should not log 3');
                     _swapWETHforRevenue(owner, balanceWETH, price_);
                     break;
                 } catch {
                     if (i == 1) {
                         continue;
                     } else {
-                        console.log('should log');
-
-                        uint balanceUSDC = IERC20(0xFF970A61A04b1cA14834A43f5dE4533eBDDB5CC8).balanceOf(msg.sender);
-                        console.log('b USDC in compute4 - must be 0: ', balanceUSDC);
-
                         _meh_sendMeTri(owner); 
                         emit ForTesting(23);
                     }
@@ -1235,7 +1191,6 @@ contract ComputeRevenueV3 is SecondaryFunctions {
 
                     if (i == 2) {
                         try ITri(s.tricrypto).remove_liquidity_one_coin(assetsToWithdraw / i, 2, minOut) {
-                            console.log('yelll');
                             _swapWETHforRevenue(owner, balanceWETH, price_);
                             emit ForTesting(23);
                             break;

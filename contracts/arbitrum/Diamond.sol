@@ -79,17 +79,9 @@ contract Diamond {
 
 
     function _callCheckForRevenue(address revenueFacet_) private {
-        console.log('revenue facet: ', revenueFacet_);
-
-        uint balanceUSDC = IERC20(0xFF970A61A04b1cA14834A43f5dE4533eBDDB5CC8).balanceOf(msg.sender);
-        console.log('b USDC in callCheck0 - must be 0: ', balanceUSDC);
-
         bytes memory data = abi.encodeWithSignature('checkForRevenue()');
         (bool success, ) = revenueFacet_.delegatecall(data); 
         require(success, 'OZLDiamond: _callCheckForRevenue() failed');
-
-        balanceUSDC = IERC20(0xFF970A61A04b1cA14834A43f5dE4533eBDDB5CC8).balanceOf(msg.sender);
-        console.log('b USDC in callCheck1 - must be 0: ', balanceUSDC);
     }
 
 

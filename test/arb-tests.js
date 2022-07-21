@@ -950,24 +950,12 @@ describe('My Revenue', async function() {
         receipt = await sendETH(userDetails);
 
         testingNum = getTestingNumber(receipt);
-
-        console.log(Number(5));
-
         assert.equal(testingNum, 23);
 
-        console.log(Number(6));
-
         balanceUSDC = await USDC.balanceOf(callerAddr);
-        // console.log('balanceUSDC: *****', balanceUSDC / 10 ** 6);
         assert(balanceUSDC / 10 ** 6 > 0);
 
         //Cleans up
-        // const iface = new ethers.utils.Interface(diamondABI);
-        // const selectorTESTVAR = iface.getSighash('setTESTVAR2');
-        // await ozlDiamondProxy.diamondCut(
-        //     [[ modContract.address, 0, [selectorTESTVAR] ]]
-        // );
-        // await ozlDiamondProxy.setTESTVAR2(1);
         await USDC.transfer(deadAddr, balanceUSDC); 
 
     }); 
@@ -977,9 +965,8 @@ describe('My Revenue', async function() {
         assert.equal(balanceTri, 0);
 
         await replaceForModVersion('ComputeRevenueV2', false, selector, userDetails);
-        
+       
         receipt = await sendETH(userDetails);
-
         testingNum = getTestingNumber(receipt);
         assert.equal(testingNum, 23);
 
@@ -989,9 +976,6 @@ describe('My Revenue', async function() {
     });
 
     it('should send the accrued revenue to the deployer in USDC in two txs / ComputeRevenueV3 - _computeRevenue()', async () => {
-        // balanceUSDC = await USDC.balanceOf(callerAddr);
-        // console.log('b USDCC4 - must be 0: ', balanceUSDC);
-        
         balanceUSDC = await USDC.balanceOf(callerAddr) / 10 ** 6;
         assert.equal(balanceUSDC, 0);
 

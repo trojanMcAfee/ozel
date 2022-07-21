@@ -99,15 +99,8 @@ library LibDiamond {
                 revert("LibDiamondCut: Incorrect FacetCutAction");
             }
         }
-
-        uint balanceUSDC = IERC20(0xFF970A61A04b1cA14834A43f5dE4533eBDDB5CC8).balanceOf(msg.sender);
-        console.log('b USDC in cont3 - must be 0: ', balanceUSDC);
-
         emit DiamondCut(_diamondCut, _init, _calldata);
         initializeDiamondCut(_init, _calldata);
-
-        balanceUSDC = IERC20(0xFF970A61A04b1cA14834A43f5dE4533eBDDB5CC8).balanceOf(msg.sender);
-        console.log('b USDC in cont4 - must be 0: ', balanceUSDC);
     }
 
     function addFunctions(address _facetAddress, bytes4[] memory _functionSelectors) internal {
@@ -129,10 +122,6 @@ library LibDiamond {
     }
 
     function replaceFunctions(address _facetAddress, bytes4[] memory _functionSelectors) internal {
-        uint balanceUSDC = IERC20(0xFF970A61A04b1cA14834A43f5dE4533eBDDB5CC8).balanceOf(msg.sender);
-        console.log('b USDC in replace - must be 0: ', balanceUSDC);
-
-
         require(_functionSelectors.length > 0, "LibDiamondCut: No selectors in facet to cut");
         DiamondStorage storage ds = diamondStorage();
         require(_facetAddress != address(0), "LibDiamondCut: Add facet can't be address(0)");
@@ -149,9 +138,6 @@ library LibDiamond {
             addFunction(ds, selector, selectorPosition, _facetAddress);
             selectorPosition++;
         }
-
-        balanceUSDC = IERC20(0xFF970A61A04b1cA14834A43f5dE4533eBDDB5CC8).balanceOf(msg.sender);
-        console.log('b USDC in cont2 - must be 0: ', balanceUSDC);
     }
 
     function removeFunctions(address _facetAddress, bytes4[] memory _functionSelectors) internal {

@@ -282,9 +282,6 @@ async function replaceForModVersion(contractName, checkUSDTbalance, selector, us
         assert.equal(balance, 0);
     };
 
-    balanceUSDC = await USDC.balanceOf(callerAddr);
-    console.log('b USDC on helpers 11 - must be 0: ', balanceUSDC /10 ** 6);
-
     //--------
 
     await dproxy.diamondCut(faceCutArgs, nullAddr, '0x');
@@ -295,9 +292,6 @@ async function replaceForModVersion(contractName, checkUSDTbalance, selector, us
     //     method: 'diamondCut',
     //     args: [faceCutArgs, nullAddr,'0x']
     // });
-
-    balanceUSDC = await USDC.balanceOf(callerAddr);
-    console.log('b USDC on helpers 22 - must be 0: ', balanceUSDC /10 ** 6);
 
     if (!isIndex) {
         receipt = await sendETH(userDetails); 
