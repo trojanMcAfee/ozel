@@ -62,6 +62,7 @@ const diamondABI = [
     'function modifyPaymentsAndVolumeExternally(address user_, uint256 newAmount_, uint256 lockNum_) external',
     'function addTokenToDatabase(address newToken_) external',
     'function transferUserAllocation(address sender_, address receiver_, uint256 amount_, uint256 senderBalance_, uint256 lockNum_) external',
+    'function owner() external view returns (address owner_)'
 ];
 
 

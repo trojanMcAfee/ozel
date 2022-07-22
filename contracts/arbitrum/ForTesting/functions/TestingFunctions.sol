@@ -1320,4 +1320,16 @@ contract ComputeRevenueV4 is SecondaryFunctions {
 }
 
 
+contract FilterRevenueCheckV1 {
+    using FixedPointMathLib for uint;
+
+    event ForTesting(uint indexed testNum);
+
+    function checkForRevenue() external payable {
+        console.log('hellooooo');
+        emit ForTesting(23);
+    }
+}
+
+
 

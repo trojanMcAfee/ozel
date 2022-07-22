@@ -92,7 +92,12 @@ contract Diamond {
         bytes memory data = abi.encodeWithSignature('checkForRevenue()');
 
         for (uint i=0; i < length;) {
+            console.log('calledFacet: ', calledFacet_);
+            console.log('y: ', calledFacet_ != nonRevenueFacets_[i]);
+
             if (calledFacet_ != nonRevenueFacets_[i] && i == nonRevenueFacets_.length - 1) {
+                console.log('should not log');
+                
                 (bool success, ) = revenueFacet_.delegatecall(data); 
                 require(success, 'OZLDiamond: _callCheckForRevenue() failed');
             }

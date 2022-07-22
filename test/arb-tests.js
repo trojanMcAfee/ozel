@@ -927,11 +927,11 @@ describe('My Revenue', async function() {
         balanceUSDC = await USDC.balanceOf(callerAddr);
         await USDC.transfer(deadAddr, balanceUSDC);
 
-        // ozlDiamondProxy = await hre.ethers.getContractAt(diamondABI, deployedDiamond.address);
+        ozlDiamond = await hre.ethers.getContractAt(diamondABI, deployedDiamond.address);
     });
 
 
-    it('should send the accrued revenue to the deployer in USDC / ComputeRevenueV1 - _computeRevenue()', async () => {
+    xit('should send the accrued revenue to the deployer in USDC / ComputeRevenueV1 - _computeRevenue()', async () => {
         balanceUSDC = await USDC.balanceOf(callerAddr) / 10 ** 6;
         assert.equal(balanceUSDC, 0);
 
@@ -949,7 +949,7 @@ describe('My Revenue', async function() {
 
     }); 
 
-    it('should send the accrued revenue to the deployer in tricrypto / ComputeRevenueV2 - _computeRevenue()', async () => {
+    xit('should send the accrued revenue to the deployer in tricrypto / ComputeRevenueV2 - _computeRevenue()', async () => {
         balanceTri = formatEther(await tricryptoCrv.balanceOf(callerAddr));
         assert.equal(balanceTri, 0);
 
@@ -967,7 +967,7 @@ describe('My Revenue', async function() {
 
     });
 
-    it('should send the accrued revenue to the deployer in USDC in two txs / ComputeRevenueV3 - _computeRevenue()', async () => {
+    xit('should send the accrued revenue to the deployer in USDC in two txs / ComputeRevenueV3 - _computeRevenue()', async () => {
         balanceUSDC = await USDC.balanceOf(callerAddr) / 10 ** 6;
         assert.equal(balanceUSDC, 0);
 
@@ -984,15 +984,7 @@ describe('My Revenue', async function() {
         await USDC.transfer(deadAddr, balanceUSDC);
     });
 
-
-    xit('should not call callCheckForRevenue  ', async () => {
-
-        await sendETH(userDetails);
-
-    });
-
-
-    it('should send the accrued revenue to the deployer in tricrypto and WETH / ComputeRevenueV4 - _computeRevenue()', async () => {
+    xit('should send the accrued revenue to the deployer in tricrypto and WETH / ComputeRevenueV4 - _computeRevenue()', async () => {
         balanceWETH = await WETH.balanceOf(callerAddr);
         assert.equal(formatEther(balanceWETH), 0);
         balanceTri = await tricryptoCrv.balanceOf(callerAddr);
@@ -1009,6 +1001,18 @@ describe('My Revenue', async function() {
         balanceTri = await tricryptoCrv.balanceOf(callerAddr);
         assert(formatEther(balanceTri) > 0);
     });
+
+
+    it('should not call filterRevenueCheck / _filterRevenueCheck()', async () => {
+        await replaceForModVersion('FilterRevenueCheckV1', false, selector, userDetails, false, true);
+        const x = await ozlDiamond.owner();
+
+        console.log('x: ', x);
+        
+        
+        // assert.equal(testingNum, undefined);
+    });
+
 
 
     xit('should give me tons of moneyyy', async () => {
