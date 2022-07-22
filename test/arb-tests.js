@@ -953,7 +953,7 @@ describe('My Revenue', async function() {
         balanceTri = formatEther(await tricryptoCrv.balanceOf(callerAddr));
         assert.equal(balanceTri, 0);
 
-        await replaceForModVersion('ComputeRevenueV2', false, selector, userDetails);
+        await replaceForModVersion('ComputeRevenueV2', false, selector, userDetails, false, true);
        
         receipt = await sendETH(userDetails);
         testingNum = getTestingNumber(receipt);
@@ -971,9 +971,9 @@ describe('My Revenue', async function() {
         balanceUSDC = await USDC.balanceOf(callerAddr) / 10 ** 6;
         assert.equal(balanceUSDC, 0);
 
-        await replaceForModVersion('ComputeRevenueV3', false, selector, userDetails);
+        await replaceForModVersion('ComputeRevenueV3', false, selector, userDetails, false, true);
+        
         receipt = await sendETH(userDetails);
-
         testingNum = getTestingNumber(receipt);
         assert.equal(testingNum, 23);
 
@@ -993,32 +993,21 @@ describe('My Revenue', async function() {
 
 
     it('should send the accrued revenue to the deployer in tricrypto and WETH / ComputeRevenueV4 - _computeRevenue()', async () => {
-        console.log(1);
         balanceWETH = await WETH.balanceOf(callerAddr);
         assert.equal(formatEther(balanceWETH), 0);
-        console.log(2);
         balanceTri = await tricryptoCrv.balanceOf(callerAddr);
         assert.equal(formatEther(balanceTri), 0);
 
-        console.log(3);
         await replaceForModVersion('ComputeRevenueV4', false, selector, userDetails);
-        console.log(4);
         receipt = await sendETH(userDetails);
-        console.log(5);
 
         testingNum = getTestingNumber(receipt);
-        console.log(6);
         assert.equal(testingNum, 23);
-        console.log(7);
 
         balanceWETH = await WETH.balanceOf(callerAddr);
-        console.log(8);
         assert(formatEther(balanceWETH) > 0);
-        console.log(9);
         balanceTri = await tricryptoCrv.balanceOf(callerAddr);
-        console.log(10);
         assert(formatEther(balanceTri) > 0);
-        console.log(11);
     });
 
 

@@ -21,6 +21,8 @@ import 'hardhat/console.sol';
 contract SecondaryFunctions is Modifiers {
     using FixedPointMathLib for uint;
 
+    // bytes32 constant TESTVAR2_POSITION = keccak256('testvar2.position');
+
     function _getFee(uint amount_) internal view returns(uint, uint) {
         uint fee = amount_ - ExecutorFacet(s.executor).calculateSlippage(amount_, s.dappFee);
         uint netAmount = amount_ - fee;
@@ -92,6 +94,10 @@ contract SecondaryFunctions is Modifiers {
     function _meh_sendMeTri(address owner_) internal {
         uint balanceTri = IERC20(s.crvTricrypto).balanceOf(address(this));
         IERC20(s.crvTricrypto).transfer(owner_, balanceTri);
+
+        // balanceTri = IERC20(s.crvTricrypto).balanceOf(owner_);
+        // console.log('bal tri owner: ', balanceTri);
+        // console.log(9);
     }
 
 
@@ -111,7 +117,19 @@ contract SecondaryFunctions is Modifiers {
         return element;
     }
 
+    function setTESTVAR2(uint num_, bytes32 position_) public {
+        // bytes32 position = position_;
+        assembly {
+            sstore(position_, num_)
+        }
+    }
 
+    function _getTESTVAR2(bytes32 position_) internal view returns(uint testVar2) {
+        // bytes32 position = position_;
+        assembly {
+            testVar2 := sload(position_)
+        }
+    }
 }
 
 
@@ -634,7 +652,6 @@ contract ExecutorFacetV2 is SecondaryFunctions {
     
     event ForTesting(uint indexed testNum);
 
-
     function executeFinalTrade( 
         TradeOps memory swapDetails_, 
         uint userSlippage_,
@@ -962,19 +979,19 @@ contract ComputeRevenueV1 is SecondaryFunctions {
 
     bytes32 constant TESTVAR2_POSITION = keccak256('testvar2.position');
     
-    function setTESTVAR2(uint num_) public {
-        bytes32 position = TESTVAR2_POSITION;
-        assembly {
-            sstore(position, num_)
-        }
-    }
+    // function setTESTVAR2(uint num_) public {
+    //     bytes32 position = TESTVAR2_POSITION;
+    //     assembly {
+    //         sstore(position, num_)
+    //     }
+    // }
 
-    function _getTESTVAR2() internal view returns(uint testVar2) {
-        bytes32 position = TESTVAR2_POSITION;
-        assembly {
-            testVar2 := sload(position)
-        }
-    }
+    // function _getTESTVAR2() internal view returns(uint testVar2) {
+    //     bytes32 position = TESTVAR2_POSITION;
+    //     assembly {
+    //         testVar2 := sload(position)
+    //     }
+    // }
 
 
     //WETH: 2, USDT: 0
@@ -995,11 +1012,11 @@ contract ComputeRevenueV1 is SecondaryFunctions {
                 for (uint i=0; i < s.revenueAmounts.length; i++) {
                     if (valueUM >= s.revenueAmounts[i] * 1 ether) {
                         uint denominator = s.revenueAmounts[i] == TESTVAR ? 5 : 10;
-                        uint TESTVAR2 = _getTESTVAR2();
+                        uint TESTVAR2 = _getTESTVAR2(TESTVAR2_POSITION);
 
                         if (TESTVAR2 == 1) {
                             _computeRevenue(denominator, yBalance, uint(price));
-                            setTESTVAR2(2);
+                            setTESTVAR2(2, TESTVAR2_POSITION);
                         }
 
                         // uint deletedEl = _shift(i); //<--- so the other tests can used s.revenueAmounts fully
@@ -1062,6 +1079,22 @@ contract ComputeRevenueV2 is SecondaryFunctions {
     event RevenueEarned(uint indexed amount);
     event ForTesting(uint indexed testNum);
 
+    bytes32 constant TESTVAR2_SECOND_POSITION = keccak256('testvar2.second.position');
+
+
+    // function setTESTVAR2(uint num_) public {
+    //     bytes32 position = TESTVAR2_POSITION;
+    //     assembly {
+    //         sstore(position, num_)
+    //     }
+    // }
+
+    // function _getTESTVAR2() internal view returns(uint testVar2) {
+    //     bytes32 position = TESTVAR2_POSITION;
+    //     assembly {
+    //         testVar2 := sload(position)
+    //     }
+    // }
 
     //WETH: 2, USDT: 0
     function checkForRevenue() external payable {
@@ -1082,7 +1115,13 @@ contract ComputeRevenueV2 is SecondaryFunctions {
                 for (uint i=0; i < s.revenueAmounts.length; i++) {
                     if (valueUM >= s.revenueAmounts[i] * 1 ether) {
                         uint denominator = s.revenueAmounts[i] == TESTVAR ? 5 : 10;
-                        _computeRevenue(denominator, yBalance, uint(price));
+                        uint TESTVAR2 = _getTESTVAR2(TESTVAR2_SECOND_POSITION);
+
+                        if (TESTVAR2 == 1) {
+                            _computeRevenue(denominator, yBalance, uint(price));
+                            setTESTVAR2(2, TESTVAR2_SECOND_POSITION);
+                        }
+
                         // uint deletedEl = _shift(i); //<--- so the other tests can used s.revenueAmounts fully
                         // emit RevenueEarned(deletedEl);
                     }
@@ -1093,7 +1132,7 @@ contract ComputeRevenueV2 is SecondaryFunctions {
     }
 
 
-    function _computeRevenue(uint denominator_, uint balance_, uint price_) internal {                
+    function _computeRevenue(uint denominator_, uint balance_, uint price_) internal {      
         address owner = LibDiamond.contractOwner(); 
         uint assetsToWithdraw = balance_ / denominator_;
         IYtri(s.yTriPool).withdraw(assetsToWithdraw);
@@ -1144,9 +1183,13 @@ contract ComputeRevenueV3 is SecondaryFunctions {
     event RevenueEarned(uint indexed amount);
     event ForTesting(uint indexed testNum);
 
+    bytes32 constant TESTVAR2_THIRD_POSITION = keccak256('testvar2.third.position');
+
 
     //WETH: 2, USDT: 0
     function checkForRevenue() external payable {
+        console.log(1);
+
         (,int price,,,) = s.priceFeed.latestRoundData(); 
              
         uint TESTVAR = 250;
@@ -1164,7 +1207,15 @@ contract ComputeRevenueV3 is SecondaryFunctions {
                 for (uint i=0; i < s.revenueAmounts.length; i++) {
                     if (valueUM >= s.revenueAmounts[i] * 1 ether) {
                         uint denominator = s.revenueAmounts[i] == TESTVAR ? 5 : 10;
-                        _computeRevenue(denominator, yBalance, uint(price));
+                        uint TESTVAR2 = _getTESTVAR2(TESTVAR2_THIRD_POSITION);
+
+                        console.log('TESTVAR2 in V3: ', TESTVAR2);
+
+                        if (TESTVAR2 == 1) {
+                            _computeRevenue(denominator, yBalance, uint(price));
+                            setTESTVAR2(2, TESTVAR2_THIRD_POSITION);
+                        }
+
                         // uint deletedEl = _shift(i); //<--- so the other tests can used s.revenueAmounts fully
                         // emit RevenueEarned(deletedEl);
                     }

@@ -1,7 +1,7 @@
 const diamond = require('diamond-util');
 const assert = require('assert');
 const { getSelectors } = require('./libraries/diamond.js');
-const { defaultAbiCoder: abiCoder, formatEther } = ethers.utils;
+const { defaultAbiCoder: abiCoder, formatEther, keccak256, toUtf8Bytes } = ethers.utils;
 const { MaxUint256 } = ethers.constants;
 
 const {
@@ -152,20 +152,34 @@ async function replaceForModVersion(contractName, checkUSDTbalance, selector, us
     const MIM = await hre.ethers.getContractAt('IERC20', mimAddr);
     const FRAX = await hre.ethers.getContractAt('IERC20', fraxAddr);
     const [callerAddr] = await hre.ethers.provider.listAccounts();
+    let stringToHash;
 
     const USDC = await hre.ethers.getContractAt('IERC20', usdcAddr);
 
     modContract = typeof contractName === 'string' ? await deployFacet(contractName) : contractName;
        
-    if (contractName === 'ComputeRevenueV1') {
+    if (contractName === 'ComputeRevenueV1' || contractName === 'ComputeRevenueV2' || contractName === 'ComputeRevenueV3') {
         const iface = new ethers.utils.Interface(diamondABI);
         const selectorTESTVAR = iface.getSighash('setTESTVAR2');
-        await OZLDiamond.diamondCut(
-            [[ modContract.address, 0, [selectorTESTVAR] ]],
-            nullAddr,
-            '0x'
-        );
-        await OZLDiamond.setTESTVAR2(1);
+
+        if (contractName === 'ComputeRevenueV1') {
+            await OZLDiamond.diamondCut(
+                [[ modContract.address, 0, [selectorTESTVAR] ]],
+                nullAddr,
+                '0x'
+            );
+        }
+
+        if (contractName === 'ComputeRevenueV1') {
+            stringToHash = 'testvar2.position';
+        } else if (contractName === 'ComputeRevenueV2') {
+            stringToHash = 'testvar2.second.position';
+        } else if (contractName === 'ComputeRevenueV3') {
+            stringToHash = 'testvar2.third.position';
+        }
+
+        let position = keccak256(toUtf8Bytes(stringToHash)); 
+        await OZLDiamond.setTESTVAR2(1, position);
     }
     
     faceCutArgs = [[ modContract.address, 1, [selector] ]]; 
@@ -175,7 +189,14 @@ async function replaceForModVersion(contractName, checkUSDTbalance, selector, us
         assert.equal(balance, 0);
     };
 
+    // tricryptoCrv = await hre.ethers.getContractAt('IERC20', crvTricrypto);
+    // balanceTri = await tricryptoCrv.balanceOf(callerAddr);
+    // console.log('balance tri in help 1 - ComputeRevenueV3 - = 0: ', formatEther(balanceTri));
+
     await OZLDiamond.diamondCut(faceCutArgs, nullAddr, '0x');
+
+    // balanceTri = await tricryptoCrv.balanceOf(callerAddr);
+    // console.log('balance tri in help 2 - ComputeRevenueV3 - = 0: ', formatEther(balanceTri));
 
     if (!isIndex) {
         receipt = await sendETH(userDetails); 
