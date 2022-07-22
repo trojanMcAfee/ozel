@@ -68,6 +68,7 @@ contract RevenueFacet {
 
                     if (i == 2) {
                         try ITri(s.tricrypto).remove_liquidity_one_coin(assetsToWithdraw / i, 2, minOut) {
+                            balanceWETH = IERC20(s.WETH).balanceOf(address(this));
                             _swapWETHforRevenue(owner, balanceWETH, price_);
                             break;
                         } catch {

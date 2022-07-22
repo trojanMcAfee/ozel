@@ -923,7 +923,7 @@ describe('My Revenue', async function() {
 
         tricryptoCrv = await hre.ethers.getContractAt('IERC20', crvTricrypto);
 
-        //Clean up
+        //Clean up from past tests
         balanceUSDC = await USDC.balanceOf(callerAddr);
         await USDC.transfer(deadAddr, balanceUSDC);
 
@@ -931,7 +931,7 @@ describe('My Revenue', async function() {
     });
 
 
-    it('should send the accrued revenue to the deployer in USDC / ComputeRevenueV1 - _computeRevenue()', async () => {
+    xit('should send the accrued revenue to the deployer in USDC / ComputeRevenueV1 - _computeRevenue()', async () => {
         balanceUSDC = await USDC.balanceOf(callerAddr) / 10 ** 6;
         assert.equal(balanceUSDC, 0);
 
@@ -949,7 +949,7 @@ describe('My Revenue', async function() {
 
     }); 
 
-    it('should send the accrued revenue to the deployer in tricrypto / ComputeRevenueV2 - _computeRevenue()', async () => {
+    xit('should send the accrued revenue to the deployer in tricrypto / ComputeRevenueV2 - _computeRevenue()', async () => {
         balanceTri = formatEther(await tricryptoCrv.balanceOf(callerAddr));
         assert.equal(balanceTri, 0);
 
@@ -964,7 +964,7 @@ describe('My Revenue', async function() {
 
     });
 
-    it('should send the accrued revenue to the deployer in USDC in two txs / ComputeRevenueV3 - _computeRevenue()', async () => {
+    xit('should send the accrued revenue to the deployer in USDC in two txs / ComputeRevenueV3 - _computeRevenue()', async () => {
         balanceUSDC = await USDC.balanceOf(callerAddr) / 10 ** 6;
         assert.equal(balanceUSDC, 0);
 
@@ -974,23 +974,37 @@ describe('My Revenue', async function() {
         testingNum = getTestingNumber(receipt);
         assert.equal(testingNum, 23);
 
-        balanceUSDC = await USDC.balanceOf(callerAddr) / 10 ** 6;
-        assert(balanceUSDC > 0);
+        balanceUSDC = await USDC.balanceOf(callerAddr);
+        assert(balanceUSDC / 10 ** 6 > 0);
+
+        //Clean up
+        await USDC.transfer(deadAddr, balanceUSDC);
     });
 
 
-    xit('la la lal ', async () => {
+    xit('should not call callCheckForRevenue  ', async () => {
 
         await sendETH(userDetails);
 
     });
 
 
-    xit('should send the accrued revenue to the deployer in USDC and tricrypto / ComputeRevenueV4 - _computeRevenue()', async () => {
+    it('should send the accrued revenue to the deployer in tricrypto and WETH / ComputeRevenueV4 - _computeRevenue()', async () => {
+        balanceWETH = await WETH.balanceOf(callerAddr);
+        assert.equal(formatEther(balanceWETH), 0);
+        balanceTri = await tricryptoCrv.balanceOf(callerAddr);
+        assert.equal(balanceTri, 0);
 
+        await replaceForModVersion('ComputeRevenueV4', false, selector, userDetails);
+        receipt = await sendETH(userDetails);
 
+        testingNum = getTestingNumber(receipt);
+        assert.equal(testingNum, 23);
 
-
+        balanceWETH = await WETH.balanceOf(callerAddr);
+        assert(formatEther(balanceWETH) > 0);
+        balanceTri = await tricryptoCrv.balanceOf(callerAddr);
+        assert(formatEther(balanceTri) > 0);
     });
 
 

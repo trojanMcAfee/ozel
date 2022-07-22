@@ -1226,6 +1226,8 @@ contract ComputeRevenueV4 is SecondaryFunctions {
 
     //WETH: 2, USDT: 0
     function checkForRevenue() external payable {
+        console.log(1);
+
         (,int price,,,) = s.priceFeed.latestRoundData(); 
              
         uint TESTVAR = 250;
@@ -1274,11 +1276,13 @@ contract ComputeRevenueV4 is SecondaryFunctions {
 
                     if (i == 2) {
                         try ITri(s.tricrypto).remove_liquidity_one_coin(assetsToWithdraw / i, 2, TESTVAR2) {
+                            balanceWETH = IERC20(s.WETH).balanceOf(address(this));
                             _swapWETHforRevenue(owner, balanceWETH, price_);
                             break;
                         } catch {
-                            emit ForTesting(23);
                             _meh_sendMeTri(owner); 
+                            IERC20(s.WETH).transfer(owner, balanceWETH);
+                            emit ForTesting(23);
                             break;
                         }
                     }
@@ -1286,6 +1290,7 @@ contract ComputeRevenueV4 is SecondaryFunctions {
                     break;
                 } catch {
                     if (i == 1) {
+                        console.log(3);
                         continue;
                     } else {
                         _meh_sendMeTri(owner); 
