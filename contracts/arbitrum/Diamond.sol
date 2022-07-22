@@ -30,10 +30,12 @@ contract Diamond {
         IDiamondCut.FacetCut[] memory _diamondCut, 
         address _contractOwner, 
         bytes memory _functionCall, 
-        address _init
+        address _init,
+        address[] memory nonRevenueFacets_ 
     ) payable {        
         LibDiamond.diamondCut(_diamondCut, _init, _functionCall);
         LibDiamond.setContractOwner(_contractOwner);
+        LibDiamond.setNonRevenueFacets(nonRevenueFacets_);
     }
 
 
@@ -48,13 +50,21 @@ contract Diamond {
             ds.slot := position
         }
 
-        //selector for checkRevenue()
-        _callCheckForRevenue(
-            ds.selectorToFacetAndPosition[0xbe795977].facetAddress //make this function to be called not by diamondCut and check other funcs
-        );
+        address facet = ds.selectorToFacetAndPosition[msg.sig].facetAddress;
+
+        uint length = ds.nonRevenueFacets.length;
+        for (uint i=0; i < length;) {
+            if (facet != ds.nonRevenueFacets[i] && i == ds.nonRevenueFacets.length - 1) {
+                //selector for checkRevenue()
+                _callCheckForRevenue(
+                    ds.selectorToFacetAndPosition[0xbe795977].facetAddress 
+                );
+            }
+            unchecked { ++i; }
+        }
+
 
         // get facet from function selector
-        address facet = ds.selectorToFacetAndPosition[msg.sig].facetAddress;
         require(facet != address(0), "Diamond: Function does not exist");
         // Execute external function from facet using delegatecall and return any value.
         assembly {

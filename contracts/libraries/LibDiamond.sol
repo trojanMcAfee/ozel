@@ -37,6 +37,7 @@ library LibDiamond {
         string[] ozlVars;
         address ETH;
         uint[] revenueAmounts;
+        // address[] nonRevenueFacets;
     }
 
 
@@ -53,6 +54,8 @@ library LibDiamond {
         mapping(bytes4 => bool) supportedInterfaces;
         // owner of the contract
         address contractOwner; 
+        //facets that don't check revenue
+        address[] nonRevenueFacets;
     }
 
     function diamondStorage() internal pure returns (DiamondStorage storage ds) {
@@ -250,6 +253,15 @@ library LibDiamond {
         }
 
         return (facets, selectors);
+    }
+
+    function setNonRevenueFacets(address[] memory nonRevenueFacets_) internal {
+        DiamondStorage storage ds = diamondStorage();
+        uint length = nonRevenueFacets_.length;
+        for (uint i=0; i < length;) {
+            ds.nonRevenueFacets.push(nonRevenueFacets_[i]);
+            unchecked { ++i; }
+        }
     }
 
 

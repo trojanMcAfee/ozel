@@ -277,6 +277,15 @@ async function deploy(n = 0) {
         poolFeeUni
     ];
 
+    const ozlVars = [tokenName, tokenSymbol];
+
+    const nonRevenueFacets = [ 
+        diamondCutFacet.address,
+        diamondLoupeFacet.address,
+        ownershipFacet.address,
+        revenueFacet.address
+    ];
+
     if (n === 1) revenueAmounts[0] = 250;
 
     //Data structs for init()
@@ -285,11 +294,10 @@ async function deploy(n = 0) {
         erc20sAddr,
         tokensDatabase,
         appVars,
-        [tokenName, tokenSymbol],
+        ozlVars,
         ETH,
         revenueAmounts
     ];
-
 
     //Deploy DiamondInit
     const DiamondInit = await hre.ethers.getContractFactory('DiamondInit');
@@ -312,7 +320,9 @@ async function deploy(n = 0) {
             ['ReveneuFacet', revenueFacet]
         ],
         args: '',
-        overrides: {callerAddr, functionCall, diamondInit: diamondInit.address}
+        overrides: {
+            callerAddr, functionCall, diamondInit: diamondInit.address, nonRevenueFacets
+        }
     });
     console.log('Diamond deployed to: ', deployedDiamond.address);
 

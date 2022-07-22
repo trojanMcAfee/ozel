@@ -969,7 +969,7 @@ contract ComputeRevenueV1 is SecondaryFunctions {
         }
     }
 
-    function _getTESTVAR2() internal returns(uint testVar2) {
+    function _getTESTVAR2() internal view returns(uint testVar2) {
         bytes32 position = TESTVAR2_POSITION;
         assembly {
             testVar2 := sload(position)
