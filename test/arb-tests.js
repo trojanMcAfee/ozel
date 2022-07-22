@@ -73,7 +73,7 @@ let yvCrvTri, balanceFRAX, testingNum, priceFeed, ethPrice, balanceUSDC, balance
 let ozlDiamond;
 
 
-describe('Arbitrum-side', async function () {
+xdescribe('Arbitrum-side', async function () {
     this.timeout(1000000);
 
     before( async () => {
@@ -310,7 +310,7 @@ describe('Unit testing', async function () {
         ozlDiamond = await hre.ethers.getContractAt(diamondABI, deployedDiamond.address);
     });
 
-    describe('OZLFacet', async () => { //done
+    describe('OZLFacet', async () => { 
         describe('exchangeToUserToken()', async () => {
             it('should fail with user as address(0)', async () => {
                 userDetails[0] = nullAddr;
@@ -447,16 +447,11 @@ describe('Unit testing', async function () {
         });
     });
 
-    describe('ExecutorFacet', async () => { //done
+    describe('ExecutorFacet', async () => { 
         it('shout not allow an unauthorized user to run the function / updateExecutorState()', async () => {
             evilAmount = parseEther('1000');
             await assert.rejects(async () => {
                 await ozlDiamond.updateExecutorState(evilAmount, deadAddr, 1);
-                
-                // await callDiamondProxy({
-                //     method: 'updateExecutorState',
-                //     args: [evilAmount, deadAddr, 1]
-                // });
             }, {
                 name: 'Error',
                 message: err().notAuthorized 
@@ -467,11 +462,6 @@ describe('Unit testing', async function () {
             evilSwapDetails = [0, 0, deadAddr, deadAddr, deadAddr];
             await assert.rejects(async () => {
                 await ozlDiamond.executeFinalTrade(evilSwapDetails, 0, deadAddr, 2);
-
-                // await callDiamondProxy({
-                //     method: 'executeFinalTrade',
-                //     args: [evilSwapDetails, 0, deadAddr, 2]
-                // });
             }, {
                 name: 'Error',
                 message: err().notAuthorized 
@@ -481,11 +471,6 @@ describe('Unit testing', async function () {
         it('shout not allow an unauthorized user to run the function / modifyPaymentsAndVolumeExternally()', async () => {
             await assert.rejects(async () => {
                 await ozlDiamond.modifyPaymentsAndVolumeExternally(caller2Addr, evilAmount, 5);
-
-                // await callDiamondProxy({
-                //     method: 'modifyPaymentsAndVolumeExternally',
-                //     args: [caller2Addr, evilAmount, 5]
-                // });
             }, {
                 name: 'Error',
                 message: err().notAuthorized 
@@ -495,11 +480,6 @@ describe('Unit testing', async function () {
         it('shout not allow an unauthorized user to run the function / transferUserAllocation()', async () => {
             await assert.rejects(async () => {
                 await ozlDiamond.transferUserAllocation(deadAddr, deadAddr, evilAmount, evilAmount, 6);
-
-                // await callDiamondProxy({
-                //     method: 'transferUserAllocation',
-                //     args: [deadAddr, deadAddr, evilAmount, evilAmount, 6]
-                // });
             }, {
                 name: 'Error',
                 message: err().notAuthorized 
@@ -507,15 +487,10 @@ describe('Unit testing', async function () {
         });
     });
 
-    describe('oz4626Facet', async () => { //done
+    describe('oz4626Facet', async () => { 
         it('shout not allow an unauthorized user to run the function / deposit()', async () => {
             await assert.rejects(async () => {
                 await ozlDiamond.deposit(evilAmount, deadAddr, 0);
-
-                // await callDiamondProxy({
-                //     method: 'deposit',
-                //     args: [evilAmount, deadAddr, 0]
-                // });
             }, {
                 name: 'Error',
                 message: err().notAuthorized 
@@ -525,11 +500,6 @@ describe('Unit testing', async function () {
         it('shout not allow an unauthorized user to run the function / redeem()', async () => {
             await assert.rejects(async () => {
                 await ozlDiamond.redeem(evilAmount, caller2Addr, caller2Addr, 3);
-
-                // await callDiamondProxy({
-                //     method: 'redeem',
-                //     args: [evilAmount, caller2Addr, caller2Addr, 3]
-                // });
             }, {
                 name: 'Error',
                 message: err().notAuthorized 
@@ -540,15 +510,10 @@ describe('Unit testing', async function () {
 
     });
 
-    describe('oz20Facet', async () => { //done
+    describe('oz20Facet', async () => { 
         it('shout not allow an unauthorized user to run the function / burn()', async () => {
             await assert.rejects(async () => {
                 await ozlDiamond.burn(caller2Addr, evilAmount, 4);
-
-                // await callDiamondProxy({
-                //     method: 'burn',
-                //     args: [caller2Addr, evilAmount, 4]
-                // });
             }, {
                 name: 'Error',
                 message: err().notAuthorized 
@@ -573,7 +538,7 @@ describe('Unit testing', async function () {
  * show the workings of the mechanism.
  */
 
-describe('Ozel Index', async function () { 
+xdescribe('Ozel Index', async function () { 
     this.timeout(100000000000000000000);
 
     before( async () => {
@@ -682,7 +647,7 @@ describe('Ozel Index', async function () {
  * It tests the anti-slippage system designed with try/catch blocks on the contracts
  * OZLFacet and ExecutorFacet.
  */
-describe('Anti-slippage system', async function () {
+xdescribe('Anti-slippage system', async function () {
     this.timeout(1000000);
 
     before( async () => {
@@ -920,7 +885,7 @@ describe('Anti-slippage system', async function () {
 
 
 
-describe('My Revenue', async function() {
+xdescribe('My Revenue', async function() {
     this.timeout(1000000);
 
     before( async () => {
