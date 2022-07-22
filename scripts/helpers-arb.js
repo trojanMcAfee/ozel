@@ -41,145 +41,29 @@ let OZLDiamond;
 async function getVarsForHelpers(diamond, ozl) { 
     deployedDiamond = diamond;
     ozlFacet = ozl;
-    
     OZLDiamond = await hre.ethers.getContractAt(diamondABI, diamond.address);
 }
-
-async function callDiamondProxy(params) { 
-    const signers = await hre.ethers.getSigners();
-    const signer = signers[!params.signerIndex ? 0 : params.signerIndex];
-    const abi = [];
-    let callArgs = [];
-    let iface;
-    let encodedData;
-    let tx;
-    let decodedData;
-    let signature;
-    const signatures = {
-        getOzelIndex: 'function getOzelIndex() returns (uint256)',
-        getRegulatorCounter: 'function getRegulatorCounter() returns (uint256)',
-        balanceOf: 'function balanceOf(address account) view returns (uint256)',
-        transfer: 'function transfer(address recipient, uint256 amount) returns (bool)',
-        exchangeToUserToken: 'function exchangeToUserToken(tuple(address user, address userToken, uint userSlippage) userDetails_)', 
-        withdrawUserShare: 'function withdrawUserShare(tuple(address user, address userToken, uint userSlippage) userDetails_, address receiver, uint shares_)',
-        enableWithdrawals: 'function enableWithdrawals(bool state_) external',
-        updateExecutorState: 'function updateExecutorState(uint256 amount_, address user_, uint256 lockNum_) external payable',
-        deposit: 'function deposit(uint256 assets, address receiver, uint256 lockNum_) external payable returns (uint256 shares)',
-        executeFinalTrade: 'function executeFinalTrade(tuple(int128 tokenIn, int128 tokenOut, address baseToken, address userToken, address pool) swapDetails_, uint256 userSlippage, address user_, uint256 lockNum_) external payable',
-        redeem: 'function redeem(uint256 shares, address receiver, address owner, uint256 lockNum_) external returns (uint256 assets)',
-        burn: 'function burn(address account, uint256 amount, uint256 lockNum_) external',
-        modifyPaymentsAndVolumeExternally: 'function modifyPaymentsAndVolumeExternally(address user_, uint256 newAmount_, uint256 lockNum_) external',
-        addTokenToDatabase: 'function addTokenToDatabase(address newToken_) external',
-        transferUserAllocation: 'function transferUserAllocation(address sender_, address receiver_, uint256 amount_, uint256 senderBalance_, uint256 lockNum_) external',
-        diamondCut: 'function diamondCut(tuple(address facetAddress, uint8 action, bytes4[] functionSelectors)[] calldata _diamondCut, address _init, bytes calldata _calldata) external'
-    }; 
-
-    for (let sign in signatures) {
-        if (sign === params.method) {
-            signature = signatures[sign];
-        }
-    }
-    abi.push(signature);
-    iface = new ethers.utils.Interface(abi);
-
-
-    switch(!params.dir ? 0 : params.dir) {
-        case 0: 
-           const args = params.args;
-            switch(true) {
-                case args.length === 2:
-                    callArgs = [...args];
-                    break;
-                case typeof args[0] === 'object':
-                    for (let i=0; i < args.length; i++) callArgs.push(args[i]);
-                    break;
-                default:
-                    if (params.method === 'burn' || params.method === 'modifyPaymentsAndVolumeExternally' || params.method === 'addTokenToDatabase' || params.method === 'transferUserAllocation') {
-                        callArgs = [...args];
-                    } else {
-                        callArgs.push(args);
-                    }
-            }
-            
-            encodedData = iface.encodeFunctionData(params.method, callArgs);
-            const unsignedTx = {
-                to: deployedDiamond.address,
-                data: encodedData,
-                value: params.value
-            };
-            if (typeof params.args === 'string') { 
-                tx = await signer.call(unsignedTx);
-                [ decodedData ] = abiCoder.decode([params.type], tx);
-                return decodedData;
-            } else {
-                if (iface.fragments[0].name === 'exchangeToUserToken') {
-                    const estGas = await signer.estimateGas(unsignedTx);
-                    unsignedTx.gasLimit = Math.floor(estGas.toString() * 1.10);
-                }
-                
-                tx = await signer.sendTransaction(unsignedTx);
-                return await tx.wait();
-            }
-        case 1:
-            encodedData = iface.encodeFunctionData(params.method);
-            tx = await signer.sendTransaction({
-                to: deployedDiamond.address,
-                data: encodedData
-            });
-            const receipt = await tx.wait();
-            const { data } = receipt.logs[0];
-            [ decodedData ] = abiCoder.decode([params.type], data);
-            return decodedData;
-    }
-} 
 
 
 async function enableWithdrawals(state) {
     await OZLDiamond.enableWithdrawals(state);
-
-    // await callDiamondProxy({
-    //     method: 'enableWithdrawals',
-    //     args: [state]
-    // });
 }
 
 
 async function balanceOfOZL(user) {
     return Number(formatEther(await OZLDiamond.balanceOf(user)));
-
-    // const balance =  await callDiamondProxy({
-    //     method: 'balanceOf',
-    //     args: user,
-    //     dir: 0,
-    //     type: 'uint256'
-    // }); 
-    // return Number(formatEther(balance));
 }
 
 async function transferOZL(recipient, amount, signerIndex = 0) { 
     const signers = await hre.ethers.getSigners();
     const signer = signers[signerIndex];
-
     await OZLDiamond.connect(signer).transfer(recipient, amount);
-
-    // await callDiamondProxy({
-    //     method: 'transfer',
-    //     args: [recipient, amount],
-    //     signerIndex
-    // }); 
 }
 
 async function withdrawShareOZL(userDetails, receiverAddr, balanceOZL, signerIndex = 0) {  
     const signers = await hre.ethers.getSigners();
     const signer = signers[signerIndex ? 0 : signerIndex];
-    
     await OZLDiamond.connect(signer).withdrawUserShare(userDetails, receiverAddr, balanceOZL);
-    
-    // await callDiamondProxy({
-    //     method: 'withdrawUserShare',
-    //     args: [userDetails, receiverAddr, balanceOZL],
-    //     signerIndex
-    // });
 } 
 
 
@@ -190,16 +74,7 @@ async function sendETH(userDetails, signerIndex = 0) {
     const value = ethers.utils.parseEther(signerIndex === 'no value' ? '0' : '100');
     const tx = await OZLDiamond.connect(signer).exchangeToUserToken(userDetails, { value });
     const receipt = await tx.wait();
-
     return receipt;
-
-    // const receipt = await callDiamondProxy({
-    //     method: 'exchangeToUserToken',
-    //     args: userDetails, 
-    //     value,
-    //     signerIndex
-    // });
-    // return receipt;
 }
 
 
@@ -208,27 +83,13 @@ async function getOzelIndex() {
     const receipt = await tx.wait();
     const { data } = receipt.logs[0];
     [ decodedData ] = abiCoder.decode(['uint256'], data);
-
     return decodedData;
-
-    // return await callDiamondProxy({
-    //     method: 'getOzelIndex',
-    //     dir: 1,
-    //     type: 'uint256'
-    // });
 }
 
 async function addTokenToDatabase(token, signerIndex = 0) {
     const signers = await hre.ethers.getSigners();
     const signer = signers[signerIndex];
-
     await OZLDiamond.connect(signer).addTokenToDatabase(token);
-
-    // await callDiamondProxy({
-    //     method: 'addTokenToDatabase',
-    //     args: [token],
-    //     signerIndex
-    // });
 }
 
 
@@ -249,14 +110,7 @@ async function getRegulatorCounter() {
     const receipt = await tx.wait();
     const { data } = receipt.logs[0];
     [ decodedData ] = abiCoder.decode(['uint256'], data);
-
     return decodedData;
-
-    // return await callDiamondProxy({
-    //     method: 'getRegulatorCounter',
-    //     dir: 1,
-    //     type: 'uint256'
-    // });
 }
 
 
@@ -493,7 +347,6 @@ module.exports = {
     enableWithdrawals,
     deploy,
     getOzelIndex,
-    callDiamondProxy,
     addTokenToDatabase,
     getRegulatorCounter,
     getTestingNumber,

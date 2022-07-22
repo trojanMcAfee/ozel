@@ -19,7 +19,6 @@ const {
     enableWithdrawals,
     deploy,
     getOzelIndex,
-    callDiamondProxy,
     addTokenToDatabase,
     getRegulatorCounter,
     getTestingNumber,
@@ -71,7 +70,7 @@ let tx, receipt, filter, topics;
 let iface, encodedData, args, abi;
 let selector, balanceRenBTC, balanceWETH, balanceUSDT, balanceWBTC, balanceMIM;
 let yvCrvTri, balanceFRAX, testingNum, priceFeed, ethPrice, balanceUSDC, balanceTri;
-let ozlDiamondProxy;
+let ozlDiamond;
 
 
 describe('Arbitrum-side', async function () {
@@ -307,6 +306,8 @@ describe('Unit testing', async function () {
             fraxAddr,
             defaultSlippage
         ];
+
+        ozlDiamond = await hre.ethers.getContractAt(diamondABI, deployedDiamond.address);
     });
 
     describe('OZLFacet', async () => { //done
@@ -450,10 +451,12 @@ describe('Unit testing', async function () {
         it('shout not allow an unauthorized user to run the function / updateExecutorState()', async () => {
             evilAmount = parseEther('1000');
             await assert.rejects(async () => {
-                await callDiamondProxy({
-                    method: 'updateExecutorState',
-                    args: [evilAmount, deadAddr, 1]
-                });
+                await ozlDiamond.updateExecutorState(evilAmount, deadAddr, 1);
+                
+                // await callDiamondProxy({
+                //     method: 'updateExecutorState',
+                //     args: [evilAmount, deadAddr, 1]
+                // });
             }, {
                 name: 'Error',
                 message: err().notAuthorized 
@@ -463,10 +466,12 @@ describe('Unit testing', async function () {
         it('shout not allow an unauthorized user to run the function / executeFinalTrade()', async () => {
             evilSwapDetails = [0, 0, deadAddr, deadAddr, deadAddr];
             await assert.rejects(async () => {
-                await callDiamondProxy({
-                    method: 'executeFinalTrade',
-                    args: [evilSwapDetails, 0, deadAddr, 2]
-                });
+                await ozlDiamond.executeFinalTrade(evilSwapDetails, 0, deadAddr, 2);
+
+                // await callDiamondProxy({
+                //     method: 'executeFinalTrade',
+                //     args: [evilSwapDetails, 0, deadAddr, 2]
+                // });
             }, {
                 name: 'Error',
                 message: err().notAuthorized 
@@ -475,10 +480,12 @@ describe('Unit testing', async function () {
 
         it('shout not allow an unauthorized user to run the function / modifyPaymentsAndVolumeExternally()', async () => {
             await assert.rejects(async () => {
-                await callDiamondProxy({
-                    method: 'modifyPaymentsAndVolumeExternally',
-                    args: [caller2Addr, evilAmount, 5]
-                });
+                await ozlDiamond.modifyPaymentsAndVolumeExternally(caller2Addr, evilAmount, 5);
+
+                // await callDiamondProxy({
+                //     method: 'modifyPaymentsAndVolumeExternally',
+                //     args: [caller2Addr, evilAmount, 5]
+                // });
             }, {
                 name: 'Error',
                 message: err().notAuthorized 
@@ -487,10 +494,12 @@ describe('Unit testing', async function () {
 
         it('shout not allow an unauthorized user to run the function / transferUserAllocation()', async () => {
             await assert.rejects(async () => {
-                await callDiamondProxy({
-                    method: 'transferUserAllocation',
-                    args: [deadAddr, deadAddr, evilAmount, evilAmount, 6]
-                });
+                await ozlDiamond.transferUserAllocation(deadAddr, deadAddr, evilAmount, evilAmount, 6);
+
+                // await callDiamondProxy({
+                //     method: 'transferUserAllocation',
+                //     args: [deadAddr, deadAddr, evilAmount, evilAmount, 6]
+                // });
             }, {
                 name: 'Error',
                 message: err().notAuthorized 
@@ -501,10 +510,12 @@ describe('Unit testing', async function () {
     describe('oz4626Facet', async () => { //done
         it('shout not allow an unauthorized user to run the function / deposit()', async () => {
             await assert.rejects(async () => {
-                await callDiamondProxy({
-                    method: 'deposit',
-                    args: [evilAmount, deadAddr, 0]
-                });
+                await ozlDiamond.deposit(evilAmount, deadAddr, 0);
+
+                // await callDiamondProxy({
+                //     method: 'deposit',
+                //     args: [evilAmount, deadAddr, 0]
+                // });
             }, {
                 name: 'Error',
                 message: err().notAuthorized 
@@ -513,10 +524,12 @@ describe('Unit testing', async function () {
 
         it('shout not allow an unauthorized user to run the function / redeem()', async () => {
             await assert.rejects(async () => {
-                await callDiamondProxy({
-                    method: 'redeem',
-                    args: [evilAmount, caller2Addr, caller2Addr, 3]
-                });
+                await ozlDiamond.redeem(evilAmount, caller2Addr, caller2Addr, 3);
+
+                // await callDiamondProxy({
+                //     method: 'redeem',
+                //     args: [evilAmount, caller2Addr, caller2Addr, 3]
+                // });
             }, {
                 name: 'Error',
                 message: err().notAuthorized 
@@ -530,10 +543,12 @@ describe('Unit testing', async function () {
     describe('oz20Facet', async () => { //done
         it('shout not allow an unauthorized user to run the function / burn()', async () => {
             await assert.rejects(async () => {
-                await callDiamondProxy({
-                    method: 'burn',
-                    args: [caller2Addr, evilAmount, 4]
-                });
+                await ozlDiamond.burn(caller2Addr, evilAmount, 4);
+
+                // await callDiamondProxy({
+                //     method: 'burn',
+                //     args: [caller2Addr, evilAmount, 4]
+                // });
             }, {
                 name: 'Error',
                 message: err().notAuthorized 
