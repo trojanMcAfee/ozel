@@ -15,14 +15,14 @@ abstract contract Modifiers {
         require(!(s.isLocked[lockNum_]), "No reentrance");
         s.isLocked[lockNum_] = true;
         _;
-        s.isLocked[lockNum_]= false;
+        s.isLocked[lockNum_] = false;
     }
 
 
     modifier isAuthorized(uint lockNum_) {
         require(s.isAuth[lockNum_], "Not authorized");
         _;
-        s.isAuth[lockNum_]= false;
+        s.isAuth[lockNum_] = false;
     }
 
 

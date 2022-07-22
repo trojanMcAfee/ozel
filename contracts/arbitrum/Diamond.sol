@@ -61,7 +61,7 @@ contract Diamond {
                 );
             }
             unchecked { ++i; }
-        }
+        } //put this into its own function
 
 
         // get facet from function selector

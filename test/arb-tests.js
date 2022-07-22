@@ -959,8 +959,11 @@ describe('My Revenue', async function() {
         testingNum = getTestingNumber(receipt);
         assert.equal(testingNum, 23);
 
-        balanceTri = formatEther(await tricryptoCrv.balanceOf(callerAddr));
-        assert(balanceTri > 0);
+        balanceTri = await tricryptoCrv.balanceOf(callerAddr);
+        assert(formatEther(balanceTri) > 0);
+
+        //Clean up
+        await tricryptoCrv.transfer(deadAddr, balanceTri);
 
     });
 
@@ -995,7 +998,7 @@ describe('My Revenue', async function() {
         assert.equal(formatEther(balanceWETH), 0);
         console.log(2);
         balanceTri = await tricryptoCrv.balanceOf(callerAddr);
-        assert.equal(balanceTri, 0);
+        assert.equal(formatEther(balanceTri), 0);
 
         console.log(3);
         await replaceForModVersion('ComputeRevenueV4', false, selector, userDetails);
