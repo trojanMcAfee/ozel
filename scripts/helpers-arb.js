@@ -189,14 +189,7 @@ async function replaceForModVersion(contractName, checkUSDTbalance, selector, us
         assert.equal(balance, 0);
     };
 
-    // tricryptoCrv = await hre.ethers.getContractAt('IERC20', crvTricrypto);
-    // balanceTri = await tricryptoCrv.balanceOf(callerAddr);
-    // console.log('balance tri in help 1 - ComputeRevenueV3 - = 0: ', formatEther(balanceTri));
-
     await OZLDiamond.diamondCut(faceCutArgs, nullAddr, '0x');
-
-    // balanceTri = await tricryptoCrv.balanceOf(callerAddr);
-    // console.log('balance tri in help 2 - ComputeRevenueV3 - = 0: ', formatEther(balanceTri));
 
     if (!isIndex) {
         receipt = await sendETH(userDetails); 

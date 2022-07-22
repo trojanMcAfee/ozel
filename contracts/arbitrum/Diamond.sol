@@ -52,17 +52,12 @@ contract Diamond {
 
         address facet = ds.selectorToFacetAndPosition[msg.sig].facetAddress;
 
-        uint length = ds.nonRevenueFacets.length;
-        for (uint i=0; i < length;) {
-            if (facet != ds.nonRevenueFacets[i] && i == ds.nonRevenueFacets.length - 1) {
-                //selector for checkRevenue()
-                _callCheckForRevenue(
-                    ds.selectorToFacetAndPosition[0xbe795977].facetAddress 
-                );
-            }
-            unchecked { ++i; }
-        } //put this into its own function
-
+        //with selector for checkRevenue()
+        _filterRevenueCheck(
+            facet, 
+            ds.nonRevenueFacets, 
+            ds.selectorToFacetAndPosition[0xbe795977].facetAddress 
+        );
 
         // get facet from function selector
         require(facet != address(0), "Diamond: Function does not exist");
@@ -88,14 +83,22 @@ contract Diamond {
     receive() external payable {}
 
 
-    function _callCheckForRevenue(address revenueFacet_) private {
+    function _filterRevenueCheck(
+        address calledFacet_, 
+        address[] memory nonRevenueFacets_, 
+        address revenueFacet_
+    ) private {
+        uint length = nonRevenueFacets_.length;
         bytes memory data = abi.encodeWithSignature('checkForRevenue()');
-        (bool success, ) = revenueFacet_.delegatecall(data); 
-        require(success, 'OZLDiamond: _callCheckForRevenue() failed');
+
+        for (uint i=0; i < length;) {
+            if (calledFacet_ != nonRevenueFacets_[i] && i == nonRevenueFacets_.length - 1) {
+                (bool success, ) = revenueFacet_.delegatecall(data); 
+                require(success, 'OZLDiamond: _callCheckForRevenue() failed');
+            }
+            unchecked { ++i; }
+        }
     }
-
-
-
 }
 
 

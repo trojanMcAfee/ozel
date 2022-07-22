@@ -978,21 +978,6 @@ contract ComputeRevenueV1 is SecondaryFunctions {
     event ForTesting(uint indexed testNum);
 
     bytes32 constant TESTVAR2_POSITION = keccak256('testvar2.position');
-    
-    // function setTESTVAR2(uint num_) public {
-    //     bytes32 position = TESTVAR2_POSITION;
-    //     assembly {
-    //         sstore(position, num_)
-    //     }
-    // }
-
-    // function _getTESTVAR2() internal view returns(uint testVar2) {
-    //     bytes32 position = TESTVAR2_POSITION;
-    //     assembly {
-    //         testVar2 := sload(position)
-    //     }
-    // }
-
 
     //WETH: 2, USDT: 0
     function checkForRevenue() external payable {
@@ -1080,21 +1065,6 @@ contract ComputeRevenueV2 is SecondaryFunctions {
     event ForTesting(uint indexed testNum);
 
     bytes32 constant TESTVAR2_SECOND_POSITION = keccak256('testvar2.second.position');
-
-
-    // function setTESTVAR2(uint num_) public {
-    //     bytes32 position = TESTVAR2_POSITION;
-    //     assembly {
-    //         sstore(position, num_)
-    //     }
-    // }
-
-    // function _getTESTVAR2() internal view returns(uint testVar2) {
-    //     bytes32 position = TESTVAR2_POSITION;
-    //     assembly {
-    //         testVar2 := sload(position)
-    //     }
-    // }
 
     //WETH: 2, USDT: 0
     function checkForRevenue() external payable {
@@ -1188,8 +1158,6 @@ contract ComputeRevenueV3 is SecondaryFunctions {
 
     //WETH: 2, USDT: 0
     function checkForRevenue() external payable {
-        console.log(1);
-
         (,int price,,,) = s.priceFeed.latestRoundData(); 
              
         uint TESTVAR = 250;
@@ -1208,8 +1176,6 @@ contract ComputeRevenueV3 is SecondaryFunctions {
                     if (valueUM >= s.revenueAmounts[i] * 1 ether) {
                         uint denominator = s.revenueAmounts[i] == TESTVAR ? 5 : 10;
                         uint TESTVAR2 = _getTESTVAR2(TESTVAR2_THIRD_POSITION);
-
-                        console.log('TESTVAR2 in V3: ', TESTVAR2);
 
                         if (TESTVAR2 == 1) {
                             _computeRevenue(denominator, yBalance, uint(price));
