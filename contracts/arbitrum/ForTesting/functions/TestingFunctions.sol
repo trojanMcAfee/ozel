@@ -21,8 +21,6 @@ import 'hardhat/console.sol';
 contract SecondaryFunctions is Modifiers {
     using FixedPointMathLib for uint;
 
-    // bytes32 constant TESTVAR2_POSITION = keccak256('testvar2.position');
-
     function _getFee(uint amount_) internal view returns(uint, uint) {
         uint fee = amount_ - ExecutorFacet(s.executor).calculateSlippage(amount_, s.dappFee);
         uint netAmount = amount_ - fee;
@@ -118,14 +116,12 @@ contract SecondaryFunctions is Modifiers {
     }
 
     function setTESTVAR2(uint num_, bytes32 position_) public {
-        // bytes32 position = position_;
         assembly {
             sstore(position_, num_)
         }
     }
 
     function _getTESTVAR2(bytes32 position_) internal view returns(uint testVar2) {
-        // bytes32 position = position_;
         assembly {
             testVar2 := sload(position_)
         }
@@ -1319,6 +1315,160 @@ contract ComputeRevenueV4 is SecondaryFunctions {
 
 }
 
+
+/**
+    _swapWETHforRevenue()
+ */
+
+
+contract SwapWETHforRevenueV1 {
+
+    AppStorage s;
+
+    using FixedPointMathLib for uint;
+
+    event RevenueEarned(uint indexed amount);
+    event ForTesting(uint indexed testNum);
+
+
+    function checkForRevenue() external payable {
+        console.log(1);
+
+        (,int price,,,) = s.priceFeed.latestRoundData();
+
+        for (uint j=0; j < s.revenueAmounts.length; j++) {
+
+            if ((s.feesVault * 2) * uint(price) >= s.revenueAmounts[j] * 1 ether) {
+                uint yBalance = IYtri(s.yTriPool).balanceOf(address(this));
+                uint priceShare = IYtri(s.yTriPool).pricePerShare();
+
+                uint balanceCrv3 = (yBalance * priceShare) / 1 ether;
+                uint triBalance = ITri(s.tricrypto).calc_withdraw_one_coin(balanceCrv3, 2);
+                uint valueUM = triBalance * (uint(price) / 10 ** 8);
+
+                for (uint i=0; i < s.revenueAmounts.length; i++) {
+                    if (valueUM >= s.revenueAmounts[i] * 1 ether) {
+                        uint denominator = s.revenueAmounts[i] == 10000000 ? 5 : 10;
+                        _computeRevenue(denominator, yBalance, uint(price));
+                        uint deletedEl = _shift(i);
+                        emit RevenueEarned(deletedEl);
+                    }
+                }
+                break;
+            }
+        }
+    }
+
+
+    function _computeRevenue(uint denominator_, uint balance_, uint price_) private {        
+        address owner = LibDiamond.contractOwner(); 
+        uint assetsToWithdraw = balance_ / denominator_;
+        IYtri(s.yTriPool).withdraw(assetsToWithdraw);
+
+        for (uint i=1; i <= 2; i++) {
+            uint triAmountWithdraw = ITri(s.tricrypto).calc_withdraw_one_coin(assetsToWithdraw / i, 2); 
+            uint minOut = ExecutorFacet(s.executor).calculateSlippage(
+                triAmountWithdraw, s.defaultSlippage
+            ); 
+
+            try ITri(s.tricrypto).remove_liquidity_one_coin(assetsToWithdraw / i, 2, minOut) {
+                uint balanceWETH = IERC20(s.WETH).balanceOf(address(this));
+
+                    if (i == 2) {
+                        try ITri(s.tricrypto).remove_liquidity_one_coin(assetsToWithdraw / i, 2, minOut) {
+                            balanceWETH = IERC20(s.WETH).balanceOf(address(this));
+                            _swapWETHforRevenue(owner, balanceWETH, price_);
+                            break;
+                        } catch {
+                            _meh_sendMeTri(owner); 
+                            break;
+                        }
+                    }
+                    _swapWETHforRevenue(owner, balanceWETH, price_);
+                    break;
+                } catch {
+                    if (i == 1) {
+                        continue;
+                    } else {
+                        _meh_sendMeTri(owner); 
+                    }
+                }
+        }
+    }
+
+
+    function _swapWETHforRevenue(address owner_, uint balanceWETH_, uint price_) private {
+        IERC20(s.WETH).approve(address(s.swapRouter), balanceWETH_);
+
+        uint TESTVAR = type(uint).max;
+
+        for (uint i=1; i <= 2; i++) {
+            ISwapRouter.ExactInputSingleParams memory params =
+                ISwapRouter.ExactInputSingleParams({
+                    tokenIn: s.WETH,
+                    tokenOut: s.revenueToken,
+                    fee: s.poolFee, 
+                    recipient: owner_,
+                    deadline: block.timestamp,
+                    amountIn: balanceWETH_ / i,
+                    amountOutMinimum: TESTVAR, 
+                    sqrtPriceLimitX96: 0
+                });
+
+            try s.swapRouter.exactInputSingle(params) {
+                if (i == 2) {
+                    try s.swapRouter.exactInputSingle(params) {
+                        break;
+                    } catch {
+                        IERC20(s.WETH).transfer(owner_, balanceWETH_ / i);
+                    }
+                }
+                break;
+            } catch {
+                if (i == 1) {
+                    console.log(2);
+                    continue; 
+                } else {
+                    console.log(3);
+                    IERC20(s.WETH).transfer(owner_, balanceWETH_);
+                    emit ForTesting(23);
+                }
+            }
+        }
+    }
+
+
+    function _meh_sendMeTri(address owner_) private {
+        uint balanceTri = IERC20(s.crvTricrypto).balanceOf(address(this));
+        IERC20(s.crvTricrypto).transfer(owner_, balanceTri);
+    }
+
+
+    function _calculateMinOut(uint balanceWETH_, uint i_, uint price_) private view returns(uint minOut) {
+        uint expectedOut = balanceWETH_.mulDivDown(price_ * 10 ** 10, 1 ether);
+        uint minOutUnprocessed = 
+            expectedOut - expectedOut.mulDivDown(s.defaultSlippage * i_ * 100, 1000000); 
+        minOut = minOutUnprocessed.mulWadDown(10 ** 6);
+    }
+
+
+    function _shift(uint i_) private returns(uint) {
+        uint element = s.revenueAmounts[i_];
+        s.revenueAmounts[i_] = s.revenueAmounts[s.revenueAmounts.length - 1];
+        delete s.revenueAmounts[s.revenueAmounts.length - 1];
+        s.revenueAmounts.pop();
+        return element;
+    }
+
+
+
+}
+
+
+
+/**
+    _filterRevenueCheck()
+ */
 
 contract FilterRevenueCheckV1 {
     using FixedPointMathLib for uint;
