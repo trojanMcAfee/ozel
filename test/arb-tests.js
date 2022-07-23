@@ -70,7 +70,7 @@ let tx, receipt, filter, topics;
 let iface, encodedData, args, abi;
 let selector, balanceRenBTC, balanceWETH, balanceUSDT, balanceWBTC, balanceMIM;
 let yvCrvTri, balanceFRAX, testingNum, priceFeed, ethPrice, balanceUSDC, balanceTri;
-let ozlDiamond;
+let ozlDiamond, owner;
 
 
 xdescribe('Arbitrum-side', async function () {
@@ -1005,12 +1005,8 @@ describe('My Revenue', async function() {
 
     it('should not call filterRevenueCheck / _filterRevenueCheck()', async () => {
         await replaceForModVersion('FilterRevenueCheckV1', false, selector, userDetails, false, true);
-        const x = await ozlDiamond.owner();
-
-        console.log('x: ', x);
-        
-        
-        // assert.equal(testingNum, undefined);
+        owner = await ozlDiamond.owner();
+        assert.equal(owner, callerAddr);
     });
 
 

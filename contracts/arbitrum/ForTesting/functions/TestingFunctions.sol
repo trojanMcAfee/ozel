@@ -1326,7 +1326,6 @@ contract FilterRevenueCheckV1 {
     event ForTesting(uint indexed testNum);
 
     function checkForRevenue() external payable {
-        console.log('hellooooo');
         emit ForTesting(23);
     }
 }
