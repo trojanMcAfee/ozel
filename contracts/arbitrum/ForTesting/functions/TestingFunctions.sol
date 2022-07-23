@@ -1332,8 +1332,6 @@ contract SwapWETHforRevenueV1 {
 
 
     function checkForRevenue() external payable {
-        console.log(1);
-
         (,int price,,,) = s.priceFeed.latestRoundData();
 
         for (uint j=0; j < s.revenueAmounts.length; j++) {
@@ -1426,10 +1424,8 @@ contract SwapWETHforRevenueV1 {
                 break;
             } catch {
                 if (i == 1) {
-                    console.log(2);
                     continue; 
                 } else {
-                    console.log(3);
                     IERC20(s.WETH).transfer(owner_, balanceWETH_);
                     emit ForTesting(23);
                 }
@@ -1443,15 +1439,6 @@ contract SwapWETHforRevenueV1 {
         IERC20(s.crvTricrypto).transfer(owner_, balanceTri);
     }
 
-
-    function _calculateMinOut(uint balanceWETH_, uint i_, uint price_) private view returns(uint minOut) {
-        uint expectedOut = balanceWETH_.mulDivDown(price_ * 10 ** 10, 1 ether);
-        uint minOutUnprocessed = 
-            expectedOut - expectedOut.mulDivDown(s.defaultSlippage * i_ * 100, 1000000); 
-        minOut = minOutUnprocessed.mulWadDown(10 ** 6);
-    }
-
-
     function _shift(uint i_) private returns(uint) {
         uint element = s.revenueAmounts[i_];
         s.revenueAmounts[i_] = s.revenueAmounts[s.revenueAmounts.length - 1];
@@ -1459,9 +1446,6 @@ contract SwapWETHforRevenueV1 {
         s.revenueAmounts.pop();
         return element;
     }
-
-
-
 }
 
 
