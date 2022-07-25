@@ -14,7 +14,6 @@ import 'hardhat/console.sol';
 
 
 
-
 contract ProxyFactory is ReentrancyGuard, Initializable { 
     address private beacon;
 

@@ -101,7 +101,7 @@ contract RevenueFacet {
                     recipient: owner_,
                     deadline: block.timestamp,
                     amountIn: balanceWETH_ / i,
-                    amountOutMinimum: _calculateMinOut(balanceWETH_, i, price_), 
+                    amountOutMinimum: _calculateMinOut(balanceWETH_, i, price_) / i, 
                     sqrtPriceLimitX96: 0
                 });
 

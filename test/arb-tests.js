@@ -931,7 +931,7 @@ describe('My Revenue', async function() {
     });
 
 
-    xit('should send the accrued revenue to the deployer in USDC / ComputeRevenueV1 - _computeRevenue()', async () => {
+    it('should send the accrued revenue to the deployer in USDC / ComputeRevenueV1 - _computeRevenue()', async () => {
         balanceUSDC = await USDC.balanceOf(callerAddr) / 10 ** 6;
         assert.equal(balanceUSDC, 0);
 
@@ -949,7 +949,7 @@ describe('My Revenue', async function() {
 
     }); 
 
-    xit('should send the accrued revenue to the deployer in tricrypto / ComputeRevenueV2 - _computeRevenue()', async () => {
+    it('should send the accrued revenue to the deployer in tricrypto / ComputeRevenueV2 - _computeRevenue()', async () => {
         balanceTri = formatEther(await tricryptoCrv.balanceOf(callerAddr));
         assert.equal(balanceTri, 0);
 
@@ -967,7 +967,7 @@ describe('My Revenue', async function() {
 
     });
 
-    xit('should send the accrued revenue to the deployer in USDC in two txs / ComputeRevenueV3 - _computeRevenue()', async () => {
+    it('should send the accrued revenue to the deployer in USDC in two txs / ComputeRevenueV3 - _computeRevenue()', async () => {
         balanceUSDC = await USDC.balanceOf(callerAddr) / 10 ** 6;
         assert.equal(balanceUSDC, 0);
 
@@ -984,7 +984,7 @@ describe('My Revenue', async function() {
         await USDC.transfer(deadAddr, balanceUSDC);
     });
 
-    xit('should send the accrued revenue to the deployer in tricrypto and WETH / ComputeRevenueV4 - _computeRevenue()', async () => {
+    it('should send the accrued revenue to the deployer in tricrypto and WETH / ComputeRevenueV4 - _computeRevenue()', async () => {
         balanceWETH = await WETH.balanceOf(callerAddr);
         assert.equal(formatEther(balanceWETH), 0);
         balanceTri = await tricryptoCrv.balanceOf(callerAddr);
@@ -1005,7 +1005,7 @@ describe('My Revenue', async function() {
         await WETH.transfer(deadAddr, balanceWETH);
     });
 
-    xit('should send the accrued revenue to deployer in WETH / SwapWETHforRevenueV1 - _swapWETHforRevenue()', async () => {
+    it('should send the accrued revenue to deployer in WETH / SwapWETHforRevenueV1 - _swapWETHforRevenue()', async () => {
         balanceWETH = await WETH.balanceOf(callerAddr);
         assert.equal(formatEther(balanceWETH), 0); 
 
@@ -1019,17 +1019,17 @@ describe('My Revenue', async function() {
         await WETH.transfer(deadAddr, balanceWETH);
     });
 
-    it('should send the accrued revenue to deployer in WETH at the 2nd attempt / SwapWETHforRevenueV2 - _swapWETHforRevenue()', async () => {
-        balanceWETH = await WETH.balanceOf(callerAddr);
-        assert.equal(formatEther(balanceWETH), 0);
+    it('should send the accrued revenue to deployer in revenueToken (USDC) at the 2nd attempt / SwapWETHforRevenueV2 - _swapWETHforRevenue()', async () => {
+        balanceUSDC = await USDC.balanceOf(callerAddr);
+        assert.equal(formatEther(balanceUSDC), 0);
 
         await replaceForModVersion('SwapWETHforRevenueV2', false, selector, userDetails);
         receipt = await sendETH(userDetails);
         testingNum = getTestingNumber(receipt);
         assert.equal(testingNum, 23);
 
-        balanceWETH = await WETH.balanceOf(callerAddr);
-        assert(formatEther(balanceWETH) > 0);
+        balanceUSDC = await USDC.balanceOf(callerAddr);
+        assert(formatEther(balanceUSDC) > 0);
     });
 
 

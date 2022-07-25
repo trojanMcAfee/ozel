@@ -1461,21 +1461,11 @@ contract SwapWETHforRevenueV2 {
 
 
     function checkForRevenue() external payable {
-        console.log('correct');
-
         (,int price,,,) = s.priceFeed.latestRoundData();
 
         for (uint j=0; j < s.revenueAmounts.length; j++) {
 
-            // console.log('--------');
-            // console.log(s.revenueAmounts[j]);
-            // console.log((s.feesVault * 2) * uint(price));
-            // console.log((s.feesVault * 2) * uint(price) >= s.revenueAmounts[j] * 1 ether);
-
-
-            if ((s.feesVault * 2) * uint(price) >= s.revenueAmounts[j] * 1 ether) {
-                console.log(1);
-                
+            if ((s.feesVault * 2) * uint(price) >= s.revenueAmounts[j] * 1 ether) {                
                 uint yBalance = IYtri(s.yTriPool).balanceOf(address(this));
                 uint priceShare = IYtri(s.yTriPool).pricePerShare();
 
@@ -1486,7 +1476,6 @@ contract SwapWETHforRevenueV2 {
                 for (uint i=0; i < s.revenueAmounts.length; i++) {
                     if (valueUM >= s.revenueAmounts[i] * 1 ether) {
                         uint denominator = s.revenueAmounts[i] == 10000000 ? 5 : 10;
-                        console.log(2);
                         _computeRevenue(denominator, yBalance, uint(price));
                         // uint deletedEl = _shift(i); //<--- so the other tests can used s.revenueAmounts fully
                         // emit RevenueEarned(deletedEl);
@@ -1498,9 +1487,7 @@ contract SwapWETHforRevenueV2 {
     }
 
 
-    function _computeRevenue(uint denominator_, uint balance_, uint price_) private {        
-        console.log(3);
-        
+    function _computeRevenue(uint denominator_, uint balance_, uint price_) private {                
         address owner = LibDiamond.contractOwner(); 
         uint assetsToWithdraw = balance_ / denominator_;
         IYtri(s.yTriPool).withdraw(assetsToWithdraw);
@@ -1524,7 +1511,6 @@ contract SwapWETHforRevenueV2 {
                             break;
                         }
                     }
-                    console.log(4);
                     _swapWETHforRevenue(owner, balanceWETH, price_);
                     break;
                 } catch {
@@ -1538,15 +1524,11 @@ contract SwapWETHforRevenueV2 {
     }
 
 
-    function _swapWETHforRevenue(address owner_, uint balanceWETH_, uint price_) private {
-        console.log(5);
-        
+    function _swapWETHforRevenue(address owner_, uint balanceWETH_, uint price_) private {        
         IERC20(s.WETH).approve(address(s.swapRouter), balanceWETH_);
 
         for (uint i=1; i <= 2; i++) {
-            uint TESTVAR = _calculateMinOut(balanceWETH_, i, price_);
-            console.log('i: ', i);
-            console.log('TESTVAR: ', TESTVAR);
+            uint TESTVAR = i == 1 ? type(uint).max : (_calculateMinOut(balanceWETH_, i, price_) / i);
 
             ISwapRouter.ExactInputSingleParams memory params =
                 ISwapRouter.ExactInputSingleParams({
@@ -1560,13 +1542,9 @@ contract SwapWETHforRevenueV2 {
                     sqrtPriceLimitX96: 0
                 });
 
-            console.log(6);
             try s.swapRouter.exactInputSingle(params) {
-                console.log(7);
                 if (i == 2) {
-                    console.log(8);
                     try s.swapRouter.exactInputSingle(params) {
-                        console.log(9);
                         emit ForTesting(23);
                         break;
                     } catch {
@@ -1576,10 +1554,8 @@ contract SwapWETHforRevenueV2 {
                 break;
             } catch {
                 if (i == 1) {
-                    console.log(10);
                     continue; 
                 } else {
-                    console.log(11);
                     IERC20(s.WETH).transfer(owner_, balanceWETH_);
                 }
             }
