@@ -579,7 +579,7 @@ contract DepositInDeFiV1 is SecondaryFunctions {
 
 
 /**
-    ExecutorFacet() //<---- fix this (not name of facet)
+    ExecutorFacet() 
  */
 
 contract ExecutorFacetV1 is SecondaryFunctions {
@@ -1661,9 +1661,7 @@ contract SwapWETHforRevenueV3 {
     }
 
 
-    function _swapWETHforRevenue(address owner_, uint balanceWETH_, uint price_) private {
-        console.log(1);
-        
+    function _swapWETHforRevenue(address owner_, uint balanceWETH_, uint price_) private {        
         IERC20(s.WETH).approve(address(s.swapRouter), balanceWETH_);
 
         for (uint i=1; i <= 2; i++) {
@@ -1683,15 +1681,11 @@ contract SwapWETHforRevenueV3 {
                 });
 
             try s.swapRouter.exactInputSingle(params) {
-                console.log(2);
                 if (i == 2) {
                     params.amountOutMinimum = TESTVAR2;
-                    console.log(3);
                     try s.swapRouter.exactInputSingle(params) {
-                        console.log('4 - not');
                         break;
                     } catch {
-                        console.log(5);
                         IERC20(s.WETH).transfer(owner_, balanceWETH_ / i);
                         emit ForTesting(23);
                     }
@@ -1701,7 +1695,6 @@ contract SwapWETHforRevenueV3 {
                 if (i == 1) {
                     continue; 
                 } else {
-                    console.log('6 - not');
                     IERC20(s.WETH).transfer(owner_, balanceWETH_);
                 }
             }

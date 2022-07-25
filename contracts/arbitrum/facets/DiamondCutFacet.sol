@@ -44,6 +44,16 @@ contract DiamondCutFacet is IDiamondCut {
         LibDiamond.enforceIsContractOwner();
         s.isEnabled = state_;
     }
+
+    function changeRevenueToken(address newToken_) external {
+        LibDiamond.enforceIsContractOwner();
+        s.revenueToken = newToken_;
+    }
+
+    function changeUniPoolFee(uint24 newPoolFee_) external {
+        LibDiamond.enforceIsContractOwner();
+        s.poolFee = newPoolFee_;
+    }
 }
 
 
