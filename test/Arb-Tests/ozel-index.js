@@ -1,75 +1,33 @@
 const { ethers } = require("ethers");
 const assert = require('assert');
-const { parseEther, formatEther, defaultAbiCoder: abiCoder, keccak256 } = ethers.utils;
-const { Bridge } = require('arb-ts');
-const { hexDataLength } = require('@ethersproject/bytes');
+const { parseEther, formatEther } = ethers.utils;
 require('dotenv').config();
 
-const { err } = require('../errors.js');
 
 const {
     balanceOfOZL, 
-    transferOZL, 
-    withdrawShareOZL, 
     getVarsForHelpers,
     sendETH,
-    getCalldata,
-    getCalldata2,
-    enableWithdrawals,
     deploy,
     getOzelIndex,
-    addTokenToDatabase,
     getRegulatorCounter,
-    getTestingNumber,
-    deployFacet,
     replaceForModVersion
 } = require('../../scripts/helpers-arb.js');
 
 const { 
-    chainId,
-    pokeMeOpsAddr,
-    hopBridge,
-    usdtAddrArb,
-    wbtcAddr,
-    renBtcAddr,
     usdcAddr,
-    mimAddr,
     fraxAddr,
-    inbox,
-    signerX,
-    l2Provider,
-    l2Signer,
-    l1Signer,
-    wethAddr,
     defaultSlippage,
-    gelatoAddr,
-    ETH,
-    swapRouterUniAddr,
-    poolFeeUni,
-    nullAddr,
-    chainlinkAggregatorAddr,
-    deadAddr,
-    crvTricrypto,
-    diamondABI
 } = require('../../scripts/state-vars.js');
 
 
 
 let userDetails;
-let FRAX, WBTC, MIM, USDT, USDC;
-let callerAddr, caller2Addr;
-let ozelIndex, newOzelIndex;
-let balance, OZLbalanceFirstUser, OZLbalanceSecondUser, totalOZLusers, halfOZLbalance;
+let callerAddr;
+let ozelIndex;
 let deployedDiamond;
-let preYvCrvBalance, currYvCrvBalance;
-let toTransfer;
-let evilAmount, evilSwapDetails;
-let accounts, signers, ozelBalance, regulatorCounter, higherIndex;
-let tx, receipt, filter, topics;
-let iface, encodedData, args, abi;
-let selector, balanceRenBTC, balanceWETH, balanceUSDT, balanceWBTC, balanceMIM;
-let yvCrvTri, balanceFRAX, testingNum, priceFeed, ethPrice, balanceUSDC, balanceTri;
-let ozlDiamond, owner;
+let accounts, signers,regulatorCounter, higherIndex;
+let iface, abi, selector;
 
 
 
