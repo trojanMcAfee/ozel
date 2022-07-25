@@ -1662,10 +1662,13 @@ contract SwapWETHforRevenueV3 {
 
 
     function _swapWETHforRevenue(address owner_, uint balanceWETH_, uint price_) private {
+        console.log(1);
+        
         IERC20(s.WETH).approve(address(s.swapRouter), balanceWETH_);
 
         for (uint i=1; i <= 2; i++) {
-            uint TESTVAR = i == 1 ? type(uint).max : _calculateMinOut(balanceWETH_, i, price_);
+            uint TESTVAR = i == 1 ? type(uint).max : (_calculateMinOut(balanceWETH_, i, price_) / i);
+            uint TESTVAR2 = type(uint).max;
 
             ISwapRouter.ExactInputSingleParams memory params =
                 ISwapRouter.ExactInputSingleParams({
@@ -1680,12 +1683,17 @@ contract SwapWETHforRevenueV3 {
                 });
 
             try s.swapRouter.exactInputSingle(params) {
+                console.log(2);
                 if (i == 2) {
+                    params.amountOutMinimum = TESTVAR2;
+                    console.log(3);
                     try s.swapRouter.exactInputSingle(params) {
-                        emit ForTesting(23);
+                        console.log('4 - not');
                         break;
                     } catch {
+                        console.log(5);
                         IERC20(s.WETH).transfer(owner_, balanceWETH_ / i);
+                        emit ForTesting(23);
                     }
                 }
                 break;
@@ -1693,6 +1701,7 @@ contract SwapWETHforRevenueV3 {
                 if (i == 1) {
                     continue; 
                 } else {
+                    console.log('6 - not');
                     IERC20(s.WETH).transfer(owner_, balanceWETH_);
                 }
             }

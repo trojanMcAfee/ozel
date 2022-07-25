@@ -918,9 +918,6 @@ describe('My Revenue', async function() {
         iface = new ethers.utils.Interface(abi);
         selector = iface.getSighash('checkForRevenue');
 
-        // priceFeed = await hre.ethers.getContractAt('AggregatorV3Interface', chainlinkAggregatorAddr);
-        // ([ y, ethPrice ] = await priceFeed.latestRoundData());
-
         tricryptoCrv = await hre.ethers.getContractAt('IERC20', crvTricrypto);
 
         //Clean up from past tests
@@ -1021,7 +1018,7 @@ describe('My Revenue', async function() {
 
     it('should send the accrued revenue to deployer in revenueToken (USDC) at the 2nd attempt / SwapWETHforRevenueV2 - _swapWETHforRevenue()', async () => {
         balanceUSDC = await USDC.balanceOf(callerAddr);
-        assert.equal(formatEther(balanceUSDC), 0);
+        assert.equal(balanceUSDC / 10 ** 6, 0);
 
         await replaceForModVersion('SwapWETHforRevenueV2', false, selector, userDetails);
         receipt = await sendETH(userDetails);
@@ -1029,11 +1026,36 @@ describe('My Revenue', async function() {
         assert.equal(testingNum, 23);
 
         balanceUSDC = await USDC.balanceOf(callerAddr);
-        assert(formatEther(balanceUSDC) > 0);
+        assert(balanceUSDC / 10 ** 6 > 0);
+
+        //Clean up
+        await USDC.transfer(deadAddr, balanceUSDC);
     });
 
+    it('should send the accrued revenue to deployer in both USDC and WETH / SwapWETHforRevenueV3 - _swapWETHforRevenue()', async () => {
+        balanceUSDC = await USDC.balanceOf(callerAddr);
+        console.log('bal USDC pre - should be 0: ', balanceUSDC / 10 ** 6);
+        assert.equal(balanceUSDC / 10 ** 6, 0);
 
-    xit('should not call filterRevenueCheck / _filterRevenueCheck()', async () => {
+        balanceWETH = await WETH.balanceOf(callerAddr);
+        console.log('bal WETH pre - should be 0: ', formatEther(balanceWETH));
+        assert.equal(formatEther(balanceWETH), 0); 
+
+        ({ testingNum } = await replaceForModVersion('SwapWETHforRevenueV3', false, selector, userDetails));
+        // receipt = await sendETH(userDetails);
+        // testingNum = getTestingNumber(receipt);
+        assert.equal(testingNum, 23);
+
+        balanceUSDC = await USDC.balanceOf(callerAddr);
+        console.log('bal USDC post - should be more than 0: ', balanceUSDC / 10 ** 6);
+        assert(balanceUSDC / 10 ** 6 > 0);
+
+        balanceWETH = await WETH.balanceOf(callerAddr);
+        console.log('bal WETH post - should be more than 0: ', formatEther(balanceWETH));
+        assert(formatEther(balanceWETH) > 0);
+    });
+
+    it('should not call filterRevenueCheck / _filterRevenueCheck()', async () => {
         await replaceForModVersion('FilterRevenueCheckV1', false, selector, userDetails, false, true);
         owner = await ozlDiamond.owner();
         assert.equal(owner, callerAddr);
@@ -1041,24 +1063,6 @@ describe('My Revenue', async function() {
 
 
 
-    xit('should give me tons of moneyyy', async () => {
-
-        x = formatEther(await WETH.balanceOf(callerAddr));
-        console.log('weth pre: ', x);
-
-        x = formatEther(await FRAX.balanceOf(callerAddr));
-        console.log('frax pre: ', x);
-        
-        await sendETH(userDetails);
-        await sendETH(userDetails);
-
-        x = formatEther(await WETH.balanceOf(callerAddr));
-        console.log('weth post: ', x);
-        
-        x = formatEther(await FRAX.balanceOf(callerAddr));
-        console.log('frax post: ', x);
-
-    });
 
 
     
