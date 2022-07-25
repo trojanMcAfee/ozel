@@ -1544,7 +1544,9 @@ contract SwapWETHforRevenueV2 {
         IERC20(s.WETH).approve(address(s.swapRouter), balanceWETH_);
 
         for (uint i=1; i <= 2; i++) {
-            uint TESTVAR = i == 1 ? type(uint).max : _calculateMinOut(balanceWETH_, i, price_);
+            uint TESTVAR = _calculateMinOut(balanceWETH_, i, price_);
+            console.log('i: ', i);
+            console.log('TESTVAR: ', TESTVAR);
 
             ISwapRouter.ExactInputSingleParams memory params =
                 ISwapRouter.ExactInputSingleParams({
@@ -1574,8 +1576,10 @@ contract SwapWETHforRevenueV2 {
                 break;
             } catch {
                 if (i == 1) {
+                    console.log(10);
                     continue; 
                 } else {
+                    console.log(11);
                     IERC20(s.WETH).transfer(owner_, balanceWETH_);
                 }
             }
