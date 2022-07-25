@@ -1,11 +1,9 @@
 const { ethers } = require("ethers");
 const assert = require('assert');
-const { parseEther, formatEther, defaultAbiCoder: abiCoder, keccak256 } = ethers.utils;
-const { Bridge } = require('arb-ts');
-const { hexDataLength } = require('@ethersproject/bytes');
+const { parseEther, formatEther } = ethers.utils;
 require('dotenv').config();
 
-const { err } = require('./errors.js');
+const { err } = require('./errors.js'); 
 
 const {
     balanceOfOZL, 
@@ -13,41 +11,24 @@ const {
     withdrawShareOZL, 
     getVarsForHelpers,
     sendETH,
-    getCalldata,
-    getCalldata2,
     enableWithdrawals,
     deploy,
     getOzelIndex,
     addTokenToDatabase,
     getRegulatorCounter,
     getTestingNumber,
-    deployFacet,
     replaceForModVersion
 } = require('../scripts/helpers-arb.js');
 
 const { 
-    chainId,
-    pokeMeOpsAddr,
-    hopBridge,
     usdtAddrArb,
     wbtcAddr,
     renBtcAddr,
     usdcAddr,
     mimAddr,
     fraxAddr,
-    inbox,
-    signerX,
-    l2Provider,
-    l2Signer,
-    l1Signer,
-    wethAddr,
     defaultSlippage,
-    gelatoAddr,
-    ETH,
-    swapRouterUniAddr,
-    poolFeeUni,
     nullAddr,
-    chainlinkAggregatorAddr,
     deadAddr,
     crvTricrypto,
     diamondABI
@@ -64,15 +45,19 @@ let deployedDiamond;
 let preYvCrvBalance, currYvCrvBalance;
 let toTransfer;
 let evilAmount, evilSwapDetails;
-let accounts, signers, ozelBalance, regulatorCounter, higherIndex;
-let tx, receipt, filter, topics;
-let iface, encodedData, args, abi;
+let accounts, signers, regulatorCounter, higherIndex;
+let receipt;
+let iface, abi;
 let selector, balanceRenBTC, balanceWETH, balanceUSDT, balanceWBTC, balanceMIM;
-let yvCrvTri, balanceFRAX, testingNum, priceFeed, ethPrice, balanceUSDC, balanceTri;
+let yvCrvTri, testingNum, balanceUSDC, balanceTri;
 let ozlDiamond, owner;
 
+/**
+ * DURATION of all tests: 13:45 mins
+ */
 
-xdescribe('Arbitrum-side', async function () {
+
+describe('Standard user interaction', async function () {
     this.timeout(1000000);
 
     before( async () => {
@@ -102,182 +87,181 @@ xdescribe('Arbitrum-side', async function () {
         ];
     });
 
+
     /**
-     * "Describe" meant to be run as one test
-     */
-    describe('Standard user interaction', async () => {
-        /**
-         * Since Curve doesn't have testnets, sendETH() sends ETH directly to
-         * exchangeToUserToken() which would simulate an Arbitrum L1 > L2 tx where
-         * sendToArb() in L1 in ozPayMe would send the ETH to OZLFacet in L2
-        */
+     * Since Curve doesn't have testnets, sendETH() sends ETH directly to
+     * exchangeToUserToken() which would simulate an Arbitrum L1 > L2 tx where
+     * sendToArb() in L1 in ozPayMe would send the ETH to OZLFacet in L2.
+     * 
+     * Meant to be run as one test
+    */
 
-        describe('1st user, 1st transfer', async () => {
-            it('should convert ETH to userToken (FRAX)', async () => {
-                await sendETH(userDetails); 
-                assert(formatEther(await FRAX.balanceOf(callerAddr)) > 0);
-            });
-
-            it('should initiate the Ozel index', async () => {
-                ozelIndex = await getOzelIndex();
-                assert.equal(formatEther(ozelIndex), 1200000.0);
-            });
-
-            it('should allocate 1st user with OZL tokens', async () => {
-                assert.equal(await balanceOfOZL(callerAddr), 100.0);
-            });
-
-            it('should allocate OZLDiamond with yvCrvTricrypto tokens', async () => {
-                preYvCrvBalance = formatEther(await yvCrvTri.balanceOf(deployedDiamond.address));
-                assert(preYvCrvBalance > 0);
-            });
+    describe('1st user, 1st transfer', async () => {
+        it('should convert ETH to userToken (FRAX)', async () => {
+            await sendETH(userDetails); 
+            assert(formatEther(await FRAX.balanceOf(callerAddr)) > 0);
         });
 
-        describe('2nd user, 1st transfer', async () => {
-            it('should convert ETH to userToken (WBTC)', async () => {
-                userDetails[0] = caller2Addr;
-                userDetails[1] = wbtcAddr;
-
-                await sendETH(userDetails); 
-                assert(formatEther(await FRAX.balanceOf(callerAddr)) > 0);
-            });
-
-            it('should re-calculate the Ozel index', async () => {
-                ozelIndex = await getOzelIndex();
-                assert.equal(formatEther(ozelIndex), 600000.0);
-            });
-
-            it('should distribute OZL tokens equally between users', async () => {
-                assert.equal(await balanceOfOZL(callerAddr), 50.0);
-                assert.equal(await balanceOfOZL(caller2Addr), 50.0);
-            });
-
-            it('should add more yvCrvTricrypto tokens to OZLDiamond', async () => {
-                currYvCrvBalance = formatEther(await yvCrvTri.balanceOf(deployedDiamond.address));
-                assert(currYvCrvBalance > preYvCrvBalance);
-            });
+        it('should initiate the Ozel index', async () => {
+            ozelIndex = await getOzelIndex();
+            assert.equal(formatEther(ozelIndex), 1200000.0);
         });
 
-        describe('1st user, 2nd transfer', async () => {
-            it('should convert ETH to userToken (MIM)', async () => {
-                userDetails[0] = callerAddr;
-                userDetails[1] = mimAddr;
-
-                await sendETH(userDetails);
-                balanceMIM = await MIM.balanceOf(callerAddr);
-                assert(formatEther(balanceMIM) > 0);
-
-                //Cleans up by sending all MIM to another user
-                await MIM.transfer(caller2Addr, balanceMIM);
-            });
-            
-            it('should decrease the Ozel index to its lowest level', async () => {
-                newOzelIndex = await getOzelIndex();
-                assert(newOzelIndex < ozelIndex);
-            });
-
-            it('should leave the first user with more OZL tokens than 2nd user', async () => {
-
-                OZLbalanceFirstUser = await balanceOfOZL(callerAddr);
-                OZLbalanceSecondUser = await balanceOfOZL(caller2Addr);
-                assert(OZLbalanceFirstUser > OZLbalanceSecondUser);
-
-                totalOZLusers = OZLbalanceFirstUser + OZLbalanceSecondUser;
-                assert(totalOZLusers <= 100 && totalOZLusers >= 99.9);
-            });
-
-            it("should increase yvCrvTricrypto's balance on OZLDiamond", async () => {
-                preYvCrvBalance = currYvCrvBalance;
-                currYvCrvBalance = formatEther(await yvCrvTri.balanceOf(deployedDiamond.address));
-                assert(currYvCrvBalance > preYvCrvBalance);
-            });
+        it('should allocate 1st user with OZL tokens', async () => {
+            assert.equal(await balanceOfOZL(callerAddr), 100.0);
         });
 
-        describe("1st user's transfer of OZL tokens", async () => {
-            it('should transfer half of OZL tokens to 2nd user', async () => {
-                await transferOZL(caller2Addr, parseEther((OZLbalanceFirstUser / 2).toString()));
-                OZLbalanceFirstUser = await balanceOfOZL(callerAddr);
-                OZLbalanceSecondUser = await balanceOfOZL(caller2Addr);
-                assert(OZLbalanceSecondUser > OZLbalanceFirstUser);
-
-                totalOZLusers = OZLbalanceFirstUser + OZLbalanceSecondUser;
-                assert(totalOZLusers <= 100 && totalOZLusers >= 99.9);
-            });
-        });
-
-        describe("1st user's OZL withdrawal", async () => {
-            it("should have a balance of the dapp's fees on userToken (USDC)", async () => {
-                await enableWithdrawals(true);
-                userDetails[1] = usdcAddr;
-                await withdrawShareOZL(userDetails, callerAddr, parseEther((await balanceOfOZL(callerAddr)).toString()));
-                balance = await USDC.balanceOf(callerAddr);
-                assert(balance > 0);
-            });
-
-            it('should leave 2nd user with all OZL tokens', async () => {
-                OZLbalanceFirstUser = await balanceOfOZL(callerAddr);
-                OZLbalanceSecondUser = await balanceOfOZL(caller2Addr);
-                ozelIndex = await getOzelIndex();
-
-                assert.equal(OZLbalanceFirstUser, 0);
-                assert.equal(OZLbalanceSecondUser, 100.0);
-            });
-        });
-
-        describe('1st user, 3rd and 4th transfers', async () => {
-            it('should leave the 2nd user with more OZL tokens', async() => {
-                await sendETH(userDetails);
-                OZLbalanceFirstUser = await balanceOfOZL(callerAddr);
-                OZLbalanceSecondUser = await balanceOfOZL(caller2Addr);
-                assert(OZLbalanceSecondUser > OZLbalanceFirstUser);
-
-                totalOZLusers = OZLbalanceFirstUser + OZLbalanceSecondUser;
-                assert(totalOZLusers <= 100 && totalOZLusers >= 99.9);
-            });
-
-            it('should leave the 1st user with more OZL tokens after 2nd transfer 1/3', async () => {
-                toTransfer = await balanceOfOZL(caller2Addr) / 3;
-                await transferOZL(callerAddr, parseEther(toTransfer.toString()), 1);
-                OZLbalanceFirstUser = await balanceOfOZL(callerAddr);
-                OZLbalanceSecondUser = await balanceOfOZL(caller2Addr);
-                assert(OZLbalanceFirstUser > OZLbalanceSecondUser);
-
-                totalOZLusers = OZLbalanceFirstUser + OZLbalanceSecondUser;
-                assert(totalOZLusers <= 100 && totalOZLusers >= 99.9);
-
-            });
-        });
-
-        describe('2nd user withdrawas 1/3 OZL tokens', async () => {
-
-            it("should have a balance of the dapp's fees on userToken (USDT)", async () => {
-                userDetails[0] = caller2Addr;
-                userDetails[1] = usdtAddrArb;
-                await withdrawShareOZL(userDetails, caller2Addr, parseEther(toTransfer.toString()), 1);
-                balance = await USDT.balanceOf(caller2Addr);
-                assert(balance > 0);
-            });
-
-            it('leave 1st user with more OZL tokens', async () => {
-                OZLbalanceFirstUser = await balanceOfOZL(callerAddr);
-                OZLbalanceSecondUser = await balanceOfOZL(caller2Addr);
-                assert(OZLbalanceFirstUser > OZLbalanceSecondUser);
-
-                totalOZLusers = OZLbalanceFirstUser + OZLbalanceSecondUser;
-                assert(totalOZLusers <= 100 && totalOZLusers >= 99.9);
-            });
-
-            it('should leave OZLDiamond with a reduction on yvCrvTricrypto tokens', async () => {
-                preYvCrvBalance = currYvCrvBalance;
-                currYvCrvBalance = formatEther(await yvCrvTri.balanceOf(deployedDiamond.address));
-                assert(currYvCrvBalance < preYvCrvBalance);
-            });
+        it('should allocate OZLDiamond with yvCrvTricrypto tokens', async () => {
+            preYvCrvBalance = formatEther(await yvCrvTri.balanceOf(deployedDiamond.address));
+            assert(preYvCrvBalance > 0);
         });
     });
+
+    describe('2nd user, 1st transfer', async () => {
+        it('should convert ETH to userToken (WBTC)', async () => {
+            userDetails[0] = caller2Addr;
+            userDetails[1] = wbtcAddr;
+
+            await sendETH(userDetails); 
+            assert(formatEther(await FRAX.balanceOf(callerAddr)) > 0);
+        });
+
+        it('should re-calculate the Ozel index', async () => {
+            ozelIndex = await getOzelIndex();
+            assert.equal(formatEther(ozelIndex), 600000.0);
+        });
+
+        it('should distribute OZL tokens equally between users', async () => {
+            assert.equal(await balanceOfOZL(callerAddr), 50.0);
+            assert.equal(await balanceOfOZL(caller2Addr), 50.0);
+        });
+
+        it('should add more yvCrvTricrypto tokens to OZLDiamond', async () => {
+            currYvCrvBalance = formatEther(await yvCrvTri.balanceOf(deployedDiamond.address));
+            assert(currYvCrvBalance > preYvCrvBalance);
+        });
+    });
+
+    describe('1st user, 2nd transfer', async () => {
+        it('should convert ETH to userToken (MIM)', async () => {
+            userDetails[0] = callerAddr;
+            userDetails[1] = mimAddr;
+
+            await sendETH(userDetails);
+            balanceMIM = await MIM.balanceOf(callerAddr);
+            assert(formatEther(balanceMIM) > 0);
+
+            //Cleans up by sending all MIM to another user
+            await MIM.transfer(caller2Addr, balanceMIM);
+        });
+        
+        it('should decrease the Ozel index to its lowest level', async () => {
+            newOzelIndex = await getOzelIndex();
+            assert(newOzelIndex < ozelIndex);
+        });
+
+        it('should leave the first user with more OZL tokens than 2nd user', async () => {
+
+            OZLbalanceFirstUser = await balanceOfOZL(callerAddr);
+            OZLbalanceSecondUser = await balanceOfOZL(caller2Addr);
+            assert(OZLbalanceFirstUser > OZLbalanceSecondUser);
+
+            totalOZLusers = OZLbalanceFirstUser + OZLbalanceSecondUser;
+            assert(totalOZLusers <= 100 && totalOZLusers >= 99.9);
+        });
+
+        it("should increase yvCrvTricrypto's balance on OZLDiamond", async () => {
+            preYvCrvBalance = currYvCrvBalance;
+            currYvCrvBalance = formatEther(await yvCrvTri.balanceOf(deployedDiamond.address));
+            assert(currYvCrvBalance > preYvCrvBalance);
+        });
+    });
+
+    describe("1st user's transfer of OZL tokens", async () => {
+        it('should transfer half of OZL tokens to 2nd user', async () => {
+            await transferOZL(caller2Addr, parseEther((OZLbalanceFirstUser / 2).toString()));
+            OZLbalanceFirstUser = await balanceOfOZL(callerAddr);
+            OZLbalanceSecondUser = await balanceOfOZL(caller2Addr);
+            assert(OZLbalanceSecondUser > OZLbalanceFirstUser);
+
+            totalOZLusers = OZLbalanceFirstUser + OZLbalanceSecondUser;
+            assert(totalOZLusers <= 100 && totalOZLusers >= 99.9);
+        });
+    });
+
+    describe("1st user's OZL withdrawal", async () => {
+        it("should have a balance of the dapp's fees on userToken (USDC)", async () => {
+            await enableWithdrawals(true);
+            userDetails[1] = usdcAddr;
+            await withdrawShareOZL(userDetails, callerAddr, parseEther((await balanceOfOZL(callerAddr)).toString()));
+            balance = await USDC.balanceOf(callerAddr);
+            assert(balance > 0);
+        });
+
+        it('should leave 2nd user with all OZL tokens', async () => {
+            OZLbalanceFirstUser = await balanceOfOZL(callerAddr);
+            OZLbalanceSecondUser = await balanceOfOZL(caller2Addr);
+            ozelIndex = await getOzelIndex();
+
+            assert.equal(OZLbalanceFirstUser, 0);
+            assert.equal(OZLbalanceSecondUser, 100.0);
+        });
+    });
+
+    describe('1st user, 3rd and 4th transfers', async () => {
+        it('should leave the 2nd user with more OZL tokens', async() => {
+            await sendETH(userDetails);
+            OZLbalanceFirstUser = await balanceOfOZL(callerAddr);
+            OZLbalanceSecondUser = await balanceOfOZL(caller2Addr);
+            assert(OZLbalanceSecondUser > OZLbalanceFirstUser);
+
+            totalOZLusers = OZLbalanceFirstUser + OZLbalanceSecondUser;
+            assert(totalOZLusers <= 100 && totalOZLusers >= 99.9);
+        });
+
+        it('should leave the 1st user with more OZL tokens after 2nd transfer 1/3', async () => {
+            toTransfer = await balanceOfOZL(caller2Addr) / 3;
+            await transferOZL(callerAddr, parseEther(toTransfer.toString()), 1);
+            OZLbalanceFirstUser = await balanceOfOZL(callerAddr);
+            OZLbalanceSecondUser = await balanceOfOZL(caller2Addr);
+            assert(OZLbalanceFirstUser > OZLbalanceSecondUser);
+
+            totalOZLusers = OZLbalanceFirstUser + OZLbalanceSecondUser;
+            assert(totalOZLusers <= 100 && totalOZLusers >= 99.9);
+
+        });
+    });
+
+    describe('2nd user withdrawas 1/3 OZL tokens', async () => {
+
+        it("should have a balance of the dapp's fees on userToken (USDT)", async () => {
+            userDetails[0] = caller2Addr;
+            userDetails[1] = usdtAddrArb;
+            await withdrawShareOZL(userDetails, caller2Addr, parseEther(toTransfer.toString()), 1);
+            balance = await USDT.balanceOf(caller2Addr);
+            assert(balance > 0);
+        });
+
+        it('leave 1st user with more OZL tokens', async () => {
+            OZLbalanceFirstUser = await balanceOfOZL(callerAddr);
+            OZLbalanceSecondUser = await balanceOfOZL(caller2Addr);
+            assert(OZLbalanceFirstUser > OZLbalanceSecondUser);
+
+            totalOZLusers = OZLbalanceFirstUser + OZLbalanceSecondUser;
+            assert(totalOZLusers <= 100 && totalOZLusers >= 99.9);
+        });
+
+        it('should leave OZLDiamond with a reduction on yvCrvTricrypto tokens', async () => {
+            preYvCrvBalance = currYvCrvBalance;
+            currYvCrvBalance = formatEther(await yvCrvTri.balanceOf(deployedDiamond.address));
+            assert(currYvCrvBalance < preYvCrvBalance);
+        });
+    });
+    
 });
 
 
-xdescribe('Unit testing', async function () {
+describe('Unit testing', async function () {
     this.timeout(1000000);
 
     before( async () => {
@@ -644,7 +628,7 @@ describe('Ozel Index', async function () {
  * 
  * It uses the functions from TestingFunctions.sol
  */
-xdescribe('Anti-slippage system', async function () {
+describe('Anti-slippage system', async function () {
     this.timeout(1000000);
 
     before( async () => {
@@ -871,7 +855,7 @@ xdescribe('Anti-slippage system', async function () {
 /**
  * Tests the anti-slippage system used in RevenueFacet.sol
  */
-xdescribe('My Revenue', async function() {
+describe('My Revenue', async function() {
     this.timeout(1000000);
 
     before( async () => {

@@ -207,14 +207,4 @@ let ozlDiamond, owner;
         owner = await ozlDiamond.owner();
         assert.equal(owner, callerAddr);
     });
-
-
-
-
-
-    
-
-
-
-
 });
