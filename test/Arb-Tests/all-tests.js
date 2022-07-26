@@ -3,7 +3,7 @@ const assert = require('assert');
 const { parseEther, formatEther } = ethers.utils;
 require('dotenv').config();
 
-const { err } = require('./errors.js'); 
+const { err } = require('../errors.js'); 
 
 const {
     balanceOfOZL, 
@@ -18,7 +18,7 @@ const {
     getRegulatorCounter,
     getTestingNumber,
     replaceForModVersion
-} = require('../scripts/helpers-arb.js');
+} = require('../../scripts/helpers-arb.js');
 
 const { 
     usdtAddrArb,
@@ -32,7 +32,7 @@ const {
     deadAddr,
     crvTricrypto,
     diamondABI
-} = require('../scripts/state-vars.js');
+} = require('../../scripts/state-vars.js');
 
 
 
