@@ -15,16 +15,18 @@ import { LibDiamond } from "../../libraries/LibDiamond.sol";
 import 'hardhat/console.sol';
 
 import '../AppStorage.sol';
-
 import '../../libraries/SafeTransferLib.sol'; //use the @ from solmate
 import '../../Errors.sol';
 import '../Modifiers.sol';
 import './RevenueFacet.sol';
 
+import '@rari-capital/solmate/src/utils/SSTORE2.sol';
+
 
 contract OZLFacet is Modifiers { 
 
     using SafeTransferLib for IERC20;
+    using SSTORE2 for bytes;
 
     /**
     WBTC: 1 / USDT: 0 / WETH: 2
@@ -46,7 +48,16 @@ contract OZLFacet is Modifiers {
         wethIn = s.failedFees == 0 ? wethIn : wethIn - s.failedFees;
 
         //Deposits in oz4626Facet
+
+        //--------
+
+        // console.log('gas pre: ******', gasleft());
+
         s.isAuth[0] = true; 
+
+        // console.log('gas post: ', gasleft());
+
+        //----------
         
         (
             address[] memory facets, bytes4[] memory selectors

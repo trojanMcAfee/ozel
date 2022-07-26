@@ -57,6 +57,14 @@ let ozlDiamond, owner;
  */
 
 
+
+/**
+ * Since Curve doesn't have testnets, sendETH() sends ETH directly to
+ * exchangeToUserToken() which would simulate an Arbitrum L1 > L2 tx where
+ * sendToArb() in L1 in ozPayMe would send the ETH to OZLFacet in L2.
+ * 
+ * Meant to be run as one test
+*/
 describe('Standard user interaction', async function () {
     this.timeout(1000000);
 
@@ -88,30 +96,22 @@ describe('Standard user interaction', async function () {
     });
 
 
-    /**
-     * Since Curve doesn't have testnets, sendETH() sends ETH directly to
-     * exchangeToUserToken() which would simulate an Arbitrum L1 > L2 tx where
-     * sendToArb() in L1 in ozPayMe would send the ETH to OZLFacet in L2.
-     * 
-     * Meant to be run as one test
-    */
-
     describe('1st user, 1st transfer', async () => {
         it('should convert ETH to userToken (FRAX)', async () => {
             await sendETH(userDetails); 
             assert(formatEther(await FRAX.balanceOf(callerAddr)) > 0);
         });
 
-        it('should initiate the Ozel index', async () => {
+        xit('should initiate the Ozel index', async () => {
             ozelIndex = await getOzelIndex();
             assert.equal(formatEther(ozelIndex), 1200000.0);
         });
 
-        it('should allocate 1st user with OZL tokens', async () => {
+        xit('should allocate 1st user with OZL tokens', async () => {
             assert.equal(await balanceOfOZL(callerAddr), 100.0);
         });
 
-        it('should allocate OZLDiamond with yvCrvTricrypto tokens', async () => {
+        xit('should allocate OZLDiamond with yvCrvTricrypto tokens', async () => {
             preYvCrvBalance = formatEther(await yvCrvTri.balanceOf(deployedDiamond.address));
             assert(preYvCrvBalance > 0);
         });
