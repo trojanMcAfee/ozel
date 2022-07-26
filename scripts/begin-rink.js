@@ -1,6 +1,6 @@
 const { ethers } = require("ethers");
 const { parseEther, formatEther, defaultAbiCoder: abiCoder, keccak256 } = ethers.utils;
-// const { deploy } = require('./deploy.js');
+const { deploy } = require('./deploy.js');
 const { Bridge } = require('arb-ts');
 const { hexDataLength } = require('@ethersproject/bytes');
 require('dotenv').config();
@@ -12,10 +12,8 @@ const {
     getVarsForHelpers,
     sendETH,
     getCalldata,
-    getCalldata2,
-    enableWithdrawals,
-    deploy
-} = require('./helpers-arb2.js');
+    getCalldata2
+} = require('./helpers-arb.js');
 
 const { 
     chainId,
@@ -51,9 +49,9 @@ const {
 async function sendTx(receiver, isAmount, method, args) {
     const signer = await hre.ethers.provider.getSigner(0);
     const txDetails = {
-        to: receiver
-        // gasLimit: ethers.BigNumber.from('5000000'),
-        // gasPrice: ethers.BigNumber.from('30897522792')
+        to: receiver,
+        gasLimit: ethers.BigNumber.from('5000000'),
+        gasPrice: ethers.BigNumber.from('30897522792')
     };
     const signatures = {
         createNewProxy: 'function createNewProxy(tuple(address user, address userToken, uint256 userSlippage) userDetails_)',
@@ -221,39 +219,39 @@ async function tryPrecompile() {
 
 
 async function deployContract(contractName, signer, constrArgs) {
-    // const Contract = await (
-    //     await hre.ethers.getContractFactory(contractName)
-    // ).connect(signer);
-    const Contract = await hre.ethers.getContractFactory(contractName);
+    const Contract = await (
+        await hre.ethers.getContractFactory(contractName)
+    ).connect(signer);
+    // const Contract = await hre.ethers.getContractFactory(contractName);
 
-    // const ops = {
-    //     gasLimit: ethers.BigNumber.from('5000000'),
-    //     gasPrice: ethers.BigNumber.from('30897522792')
-    // };
+    const ops = {
+        gasLimit: ethers.BigNumber.from('5000000'),
+        gasPrice: ethers.BigNumber.from('30897522792')
+    };
 
     let contract;
     let var1, var2, var3, var4;
 
     switch(contractName) {
         case 'UpgradeableBeacon':
-            contract = await Contract.deploy(constrArgs);
+            contract = await Contract.deploy(constrArgs, ops);
             break;
         case 'ozUpgradeableBeacon':
         case 'ozERC1967Proxy':
         case 'RolesAuthority':
             ([ var1, var2 ] = constrArgs);
-            contract = await Contract.deploy(var1, var2);
+            contract = await Contract.deploy(var1, var2, ops);
             break;
         case 'ozERC1967Proxy':
             ([ var1, var2, var3 ] = constrArgs);
-            contract = await Contract.deploy(var1, var2, var3);
+            contract = await Contract.deploy(var1, var2, var3, ops);
             break;
         case 'StorageBeacon':
             ([ var1, var2, var3, var4 ] = constrArgs);
-            contract = await Contract.deploy(var1, var2, var3, var4);
+            contract = await Contract.deploy(var1, var2, var3, var4, ops);
             break;
         default:
-            contract = await Contract.deploy();
+            contract = await Contract.deploy(ops);
     }
 
     await contract.deployed();
@@ -552,107 +550,7 @@ async function getCount() {
 
 
 
-async function beginSimulatedDiamond() {
-    const deployedVars = await deploy();
-    const {
-        deployedDiamond, 
-        WETH,
-        USDT,
-        WBTC,
-        renBTC,
-        USDC,
-        MIM,
-        FRAX,
-        crvTri,
-        callerAddr, 
-        caller2Addr,
-        ozlFacet,
-        yvCrvTri
-    } = deployedVars;
-    
-    getVarsForHelpers(deployedDiamond, ozlFacet); 
 
-
-    //First user
-    console.log('1st user first transfer');
-
-    /**
-     * Since Curve doesn't have testnets, sendETH() sends ETH directly to
-     * exchangeToUserToken() which would simulate an Arbitrum L1 > L2 tx where
-     * sendToArb() in L1 in ozPayMe would send the ETH to OZLFacet in L2
-    */
-
-    await sendETH([callerAddr, fraxAddr, defaultSlippage], FRAX, 'FRAX', 10 ** 18); //callerAddr, fraxAddr, FRAX, 'FRAX', 10 ** 18
-    console.log('OZL balance on caller 1: ', formatEther(await balanceOfOZL(callerAddr)));
-    console.log('yvCrvTricrypto token balance on diamondProxy: ', formatEther(await yvCrvTri.balanceOf(deployedDiamond.address)));
-    console.log('---------------------------------------'); 
-
-    // console.log('return here')
-    // return;
-
-    //Second user
-    console.log('2nd user first transfer');
-    await sendETH([caller2Addr, wbtcAddr, defaultSlippage], WBTC, 'WBTC', 10 ** 8, 1); 
-    console.log('OZL balance on caller 2: ', formatEther(await balanceOfOZL(caller2Addr)));
-    console.log('OZL balance on caller 1 after caller2 swap: ', formatEther(await balanceOfOZL(callerAddr)));
-    console.log('yvCrvTricrypto token balance on diamondProxy: ', formatEther(await yvCrvTri.balanceOf(deployedDiamond.address)));
-    console.log('---------------------------------------'); 
-
-
-    // //First user - 2nd transfer
-    console.log('1st user second transfer'); 
-    await sendETH([callerAddr, mimAddr, defaultSlippage], MIM, 'MIM', 10 ** 18); //in Arb, USDC has 6
-    console.log('OZL balance on caller 1 after 2nd swap: ', formatEther(await balanceOfOZL(callerAddr)));
-    console.log('OZL balance on caller 2 after caller1 2nd swap: ', formatEther(await balanceOfOZL(caller2Addr)));
-    console.log('yvCrvTricrypto token balance on diamondProxy: ', formatEther(await yvCrvTri.balanceOf(deployedDiamond.address)));
-    console.log('---------------------------------------'); 
-    
-    //Transfer half of OZL from caller1 to caller2
-    console.log('Transfer half of OZL');
-    const halfOZLbalance = formatEther(await balanceOfOZL(callerAddr)) / 2;  
-    await transferOZL(caller2Addr, parseEther(halfOZLbalance.toString()));
-    console.log('OZL balance on caller 1 after transferring half: ', formatEther(await balanceOfOZL(callerAddr)));
-    console.log('OZL balance on caller 2 after getting half: ', formatEther(await balanceOfOZL(caller2Addr)));
-    console.log('---------------------------------------'); 
-    
-    //1st user withdraw remaining share (half)
-    console.log('Withdraw 1st user share (remainder)');
-    await enableWithdrawals(true);
-    await withdrawShareOZL([callerAddr, usdtAddrArb, defaultSlippage], callerAddr, parseEther(formatEther(await balanceOfOZL(callerAddr))));
-    let usdtBalance = await USDT.balanceOf(callerAddr);
-    console.log('USDT balance from fees of caller1: ', usdtBalance.toString() / 10 ** 6); 
-    console.log('OZL balance on caller 1 after fees withdrawal: ', formatEther(await balanceOfOZL(callerAddr)));
-    console.log('OZL balance on caller 2 after fees withdrawal ', formatEther(await balanceOfOZL(caller2Addr)));
-    console.log('---------------------------------------'); 
-
-    //1st user third transfer
-    console.log('1st user third transfer');
-    await sendETH([callerAddr, usdtAddrArb, defaultSlippage], USDT, 'USDT', 10 ** 6);
-    console.log('OZL balance on caller 1: ', formatEther(await balanceOfOZL(callerAddr)));
-    console.log('OZL balance on caller 2: ', formatEther(await balanceOfOZL(caller2Addr)));
-    console.log('.');
-    
-    console.log('After OZL transfer'); 
-    const toTransfer = formatEther(await balanceOfOZL(caller2Addr)) / 3;
-    await transferOZL(callerAddr, parseEther(toTransfer.toString()), 1);
-    console.log('OZL balance on caller 1: ', formatEther(await balanceOfOZL(callerAddr)));
-    console.log('OZL balance on caller 2: ', formatEther(await balanceOfOZL(caller2Addr)));
-    console.log('.');
-
-    console.log('Withdrawing 1/3 (caller 2)'); 
-    await withdrawShareOZL([caller2Addr, usdtAddrArb, defaultSlippage], caller2Addr, parseEther(toTransfer.toString()), 1);
-    usdtBalance = await USDT.balanceOf(caller2Addr);
-    console.log('USDT balance from fees of caller2: ', usdtBalance.toString() / 10 ** 6);
-    console.log('OZL balance on caller 1: ', formatEther(await balanceOfOZL(callerAddr)));
-    console.log('OZL balance on caller 2: ', formatEther(await balanceOfOZL(caller2Addr)));
-    console.log('.');
-    console.log('yvCrvTricrypto token balance on diamondProxy: ', formatEther(await yvCrvTri.balanceOf(deployedDiamond.address)));
-
-
-    // usdtBalance = await USDT.balanceOf(callerAddr);
-    // console.log('USDT balance from fees of caller: ', usdtBalance.toString() / 10 ** 6);
-    /**+++++++++ END OF SIMULATION CURVE SWAPS ++++++++**/
-}
 
 
 
@@ -661,7 +559,6 @@ async function beginSimulatedDiamond() {
 
 // tryGelatoRopsten();
 
-beginSimulatedDiamond();
 
 // sendArb();
 

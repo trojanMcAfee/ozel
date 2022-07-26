@@ -10,6 +10,8 @@ import { IDiamondCut } from "../../interfaces/IDiamondCut.sol";
 import { LibDiamond } from "../../libraries/LibDiamond.sol";
 import '../AppStorage.sol';
 
+import 'hardhat/console.sol';
+
 contract DiamondCutFacet is IDiamondCut {
     AppStorage s;
 
@@ -36,6 +38,21 @@ contract DiamondCutFacet is IDiamondCut {
     function changeDefaultSlippage(uint baseUnits_) external {
         LibDiamond.enforceIsContractOwner();
         s.defaultSlippage = baseUnits_;
+    }
+
+    function enableWithdrawals(bool state_) external {
+        LibDiamond.enforceIsContractOwner();
+        s.isEnabled = state_;
+    }
+
+    function changeRevenueToken(address newToken_) external {
+        LibDiamond.enforceIsContractOwner();
+        s.revenueToken = newToken_;
+    }
+
+    function changeUniPoolFee(uint24 newPoolFee_) external {
+        LibDiamond.enforceIsContractOwner();
+        s.poolFee = newPoolFee_;
     }
 }
 

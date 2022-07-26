@@ -1,4 +1,4 @@
-//SPDX-License-Identifier: UNLICENSED
+// SPDX-License-Identifier: GPL-2.0-or-later
 pragma solidity 0.8.14; 
 
 
@@ -8,10 +8,9 @@ import '../interfaces/IOps.sol';
 import './ozBeaconProxy.sol';
 import './StorageBeacon.sol';
 import './ozUpgradeableBeacon.sol';
-import './Errors.sol';
+import '../Errors.sol';
 
 import 'hardhat/console.sol';
-
 
 
 

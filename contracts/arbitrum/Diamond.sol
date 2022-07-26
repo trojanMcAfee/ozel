@@ -13,8 +13,11 @@ import { IDiamondCut } from "../interfaces/IDiamondCut.sol";
 import { IDiamondLoupe } from "../interfaces/IDiamondLoupe.sol";
 import { IERC173 } from "../interfaces/IERC173.sol";
 import './AppStorage.sol';
+// import './facets/RevenueFacet.sol';
+import '../Errors.sol';
 
 import 'hardhat/console.sol';
+
 
 
 
@@ -27,10 +30,12 @@ contract Diamond {
         IDiamondCut.FacetCut[] memory _diamondCut, 
         address _contractOwner, 
         bytes memory _functionCall, 
-        address _init
+        address _init,
+        address[] memory nonRevenueFacets_ 
     ) payable {        
         LibDiamond.diamondCut(_diamondCut, _init, _functionCall);
         LibDiamond.setContractOwner(_contractOwner);
+        LibDiamond.setNonRevenueFacets(nonRevenueFacets_);
     }
 
 
@@ -38,13 +43,23 @@ contract Diamond {
     // function if a facet is found and return any value.
     fallback() external payable { 
         LibDiamond.DiamondStorage storage ds;
+
         bytes32 position = LibDiamond.DIAMOND_STORAGE_POSITION;
         // get diamond storage
         assembly {
             ds.slot := position
         }
+
+        address facet = ds.selectorToFacetAndPosition[msg.sig].facetAddress;
+
+        //with selector for checkRevenue()
+        _filterRevenueCheck(
+            facet, 
+            ds.nonRevenueFacets, 
+            ds.selectorToFacetAndPosition[0xbe795977].facetAddress 
+        );
+
         // get facet from function selector
-        address facet = ds.facets[msg.sig];
         require(facet != address(0), "Diamond: Function does not exist");
         // Execute external function from facet using delegatecall and return any value.
         assembly {
@@ -66,4 +81,32 @@ contract Diamond {
     }
 
     receive() external payable {}
+
+
+    function _filterRevenueCheck(
+        address calledFacet_, 
+        address[] memory nonRevenueFacets_, 
+        address revenueFacet_
+    ) private {
+        bytes memory data = abi.encodeWithSignature('checkForRevenue()');
+        uint length = nonRevenueFacets_.length;
+        bool callFlag;
+
+        for (uint i=0; i < length;) {
+            if (calledFacet_ == nonRevenueFacets_[i]) {
+                callFlag = true;
+                break;
+            }
+            unchecked { ++i; }
+        }
+
+        if (!callFlag) {
+            (bool success, ) = revenueFacet_.delegatecall(data); 
+            require(success, 'OZLDiamond: _filterRevenueCheck() failed');
+        }
+    }
 }
+
+
+
+

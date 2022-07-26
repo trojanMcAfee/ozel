@@ -46,24 +46,12 @@ async function getGasDetailsL2(userDetails, bridge) {
 
     const [_submissionPriceWei, nextUpdateTimestamp] =
     await bridge.l2Bridge.getTxnSubmissionPrice(sendToArbBytesLength);
-    // console.log(
-    // `Current retryable base submission price: ${_submissionPriceWei.toString()}`
-    // );
-
-    const timeNow = Math.floor(new Date().getTime() / 1000);
-    // console.log(
-    //     `time in seconds till price update: ${
-    //     nextUpdateTimestamp.toNumber() - timeNow
-    //     }`
-    // );
-
+  
     let maxSubmissionCost = _submissionPriceWei.mul(5);
     maxSubmissionCost = ethers.BigNumber.from(maxSubmissionCost).mul(100)
-    // console.log('maxSubmissionCost: ', maxSubmissionCost.toString());
 
     let gasPriceBid = await bridge.l2Provider.getGasPrice();
     gasPriceBid = gasPriceBid.add(ethers.BigNumber.from(gasPriceBid).div(2));
-    // console.log(`gasPriceBid: ${gasPriceBid.toString()}`);
 
     return {
         maxSubmissionCost,
@@ -265,32 +253,6 @@ function compareTopicWith(type , value, receipt) {
     }
 }
 
-// function compareTopicWith2(type , value, receipt) {
-//     if (receipt.events) {
-//         for (let i=0; i < receipt.events.length; i++) {
-//             for (let j=0; j < receipt.events[i].topics.length; j++) {
-//                 let topic = hexStripZeros(receipt.events[i].topics[j]);
-//                 console.log('topic: ', topic);
-//                 console.log('value: ', value);
-//                 console.log('.');
-//                 if (parseInt(topic) === parseInt(value)) { 
-//                     if (type === 'Signer') {
-//                         return true;
-//                     } else if (type === 'Signature') {
-//                         const ticketID = receipt.events[i].topics[1];
-//                         console.log('ticketID ^^^^: ', ticketID);
-//                         return ticketID;
-//                     }
-//                 }
-//             }
-//         }
-//         console.log('here');
-//         return false;
-//     } else {
-//         return false;
-//     }
-// }
-
 
 async function compareEventWithVar(receipt, variable) {
     for (let i=0; i < receipt.events.length;) {
@@ -423,7 +385,7 @@ async function deploySystem(type, userDetails, signerAddr) {
     //Deploys ProxyFactory
     const [proxyFactoryAddr] = await deployContract('ProxyFactory', l1Signer);
 
-    //Deploys pyERC1967Proxy
+    //Deploys ozERC1967Proxy
     constrArgs = [
         proxyFactoryAddr,
         '0x'

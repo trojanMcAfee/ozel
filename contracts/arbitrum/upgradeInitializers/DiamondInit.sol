@@ -17,6 +17,9 @@ import '../AppStorage.sol';
 import '@openzeppelin/contracts/token/ERC20/IERC20.sol';
 import 'hardhat/console.sol';
 
+import "@chainlink/contracts/src/v0.8/interfaces/AggregatorV3Interface.sol";
+import '@uniswap/v3-periphery/contracts/interfaces/ISwapRouter.sol';
+
 import '../../interfaces/IWETH.sol';
 
 
@@ -28,10 +31,7 @@ contract DiamondInit {
     AppStorage s;
     // You can add parameters to this function in order to pass in 
     // data to set your own state variables
-    function init(
-        LibDiamond.Facets memory facets_,
-        LibDiamond.VarsAndAddresses memory vars_
-    ) external {
+    function init(LibDiamond.VarsAndAddresses memory vars_) external {
         // adding ERC165 data
         LibDiamond.DiamondStorage storage ds = LibDiamond.diamondStorage();
         ds.supportedInterfaces[type(IERC165).interfaceId] = true;
@@ -39,17 +39,8 @@ contract DiamondInit {
         ds.supportedInterfaces[type(IDiamondLoupe).interfaceId] = true;
         ds.supportedInterfaces[type(IERC173).interfaceId] = true;
 
-        //Ads selectors to Facets mapping
-        for (uint i; i < facets_.selectors.length; i++) {
-            bytes4[] memory selectors = facets_.selectors[i];
-            for (uint j; j < selectors.length; j++) {
-                ds.facets[selectors[j]] = facets_.addresses[i];
-            }
-        }
-
-
         //Sets addresses on contracts
-        s.PYY = vars_.contracts[0]; 
+        s.OZL = vars_.contracts[0]; 
         s.tricrypto = vars_.contracts[1];
         s.crvTricrypto = vars_.contracts[2];
         s.getters = vars_.contracts[3];
@@ -59,8 +50,9 @@ contract DiamondInit {
         s.yTriPool = vars_.contracts[7];
         s.fraxPool = vars_.contracts[8];
         s.executor = vars_.contracts[9];
-        s.py46 = vars_.contracts[10]; 
-        s.py20 = vars_.contracts[11];
+        s.oz46 = vars_.contracts[10]; 
+        s.oz20 = vars_.contracts[11];
+        s.revenue = vars_.contracts[14];
 
         //Sets ERC20 instances
         s.USDT = vars_.erc20s[0];
@@ -71,13 +63,20 @@ contract DiamondInit {
         s.WETH = vars_.erc20s[5];
         s.FRAX = vars_.erc20s[6];
 
+        //Set up the tokens database
+        uint length = vars_.tokensDb.length;
+        for (uint i=0; i < length;) {
+            s.tokenDatabase[vars_.tokensDb[i]] = true;
+            unchecked { ++i; }
+        }
+
         //Sets app's general variables
         s.dappFee = vars_.appVars[0];
         s.defaultSlippage = vars_.appVars[1];
 
-        //Sets name and symbol on PayToken (PYY)
-        s.py.name_ = vars_.pyyVars[0];
-        s.py.symbol_ = vars_.pyyVars[1];
+        //Sets name and symbol on PayToken (OZL)
+        s.oz.name = vars_.ozlVars[0];
+        s.oz.symbol = vars_.ozlVars[1];
 
         //Sets ETH address
         s.ETH = vars_.ETH;
@@ -97,6 +96,22 @@ contract DiamondInit {
         s.swaps.push(s.mimSwap);
         s.swaps.push(s.usdcSwap);
         s.swaps.push(s.fraxSwap);
+
+        //Stabilizing mechanism variables
+        s.invariant = 10 ** 14;
+        s.invariant2 = 10 ** 8;
+        s.indexRegulator = 0;
+        s.invariantRegulator = 1;
+        s.stabilizer = 12000; 
+        s.invariantRegulatorLimit = type(uint).max / s.invariant;
+        s.regulatorCounter = 0;
+
+        //Revenue vars
+        s.priceFeed = AggregatorV3Interface(vars_.contracts[12]);
+        s.swapRouter = ISwapRouter(vars_.contracts[13]);
+        s.revenueToken = s.USDC;
+        s.poolFee = uint24(vars_.appVars[2]);
+        s.revenueAmounts = vars_.revenueAmounts;
 
         // add your own state variables 
         // EIP-2535 specifies that the `diamondCut` function takes two optional 

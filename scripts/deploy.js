@@ -62,18 +62,18 @@ async function deploy() {
     //Facets
     const diamondCutFacet = await deployFacet('DiamondCutFacet');
     const diamondLoupeFacet = await deployFacet('DiamondLoupeFacet'); 
-    const pyyFacet = await deployFacet('PYYFacet');
+    const ozlFacet = await deployFacet('OZLFacet');
     const gettersFacet = await deployFacet('GettersFacet');
-    const executorF = await deployFacet('ExecutorF');
-    const py4626 = await deployFacet('pyERC4626');
-    const py20 = await deployFacet('pyERC20');
+    const executorFacet = await deployFacet('ExecutorFacet');
+    const oz4626 = await deployFacet('oz4626Facet');
+    const oz20 = await deployFacet('oz20Facet');
     const ownershipFacet = await deployFacet('OwnershipFacet'); 
 
     //Selectors
     const [
         selecCut,
         selecLoup,
-        selecPYY,
+        selecOZL,
         selectGetters,
         selectExecutor,
         select4626,
@@ -82,16 +82,16 @@ async function deploy() {
     ] = getSelectorsFromAllFacets([
         diamondCutFacet,
         diamondLoupeFacet,
-        pyyFacet,
+        ozlFacet,
         gettersFacet,
-        executorF,
-        py4626,
-        py20,
+        executorFacet,
+        oz4626,
+        oz20,
         ownershipFacet
     ]);
 
     const contractsAddr = [
-        pyyFacet.address,
+        ozlFacet.address,
         tricryptoAddr,
         crvTricrypto,
         gettersFacet.address,
@@ -100,9 +100,9 @@ async function deploy() {
         crv2PoolAddr,
         yTricryptoPoolAddr,
         fraxPoolAddr,
-        executorF.address,
-        py4626.address,
-        py20.address
+        executorFacet.address,
+        oz4626.address,
+        oz20.address
     ];
 
     const erc20sAddr = [
@@ -133,7 +133,7 @@ async function deploy() {
         [
             selecCut, 
             selecLoup, 
-            selecPYY, 
+            selecOZL, 
             selectGetters,
             selectExecutor,
             select4626,
@@ -143,15 +143,14 @@ async function deploy() {
         [
             diamondCutFacet.address, 
             diamondLoupeFacet.address, 
-            pyyFacet.address,
+            ozlFacet.address,
             gettersFacet.address,
-            executorF.address,
-            py4626.address,
-            py20.address,
+            executorFacet.address,
+            oz4626.address,
+            oz20.address,
             ownershipFacet.address
         ]
     ];
-
 
     //Deploy DiamondInit
     const DiamondInit = await hre.ethers.getContractFactory('DiamondInit');
@@ -168,11 +167,11 @@ async function deploy() {
         facets: [
             ['DiamondCutFacet', diamondCutFacet],
             ['DiamondLoupeFacet', diamondLoupeFacet],
-            ['PYYFacet', pyyFacet],
+            ['OZLFacet', ozlFacet],
             ['GettersFacet', gettersFacet],
-            ['ExecutorF', executorF],
-            ['pyERC4626', py4626],
-            ['pyERC20', py20],
+            ['ExecutorFacet', executorFacet],
+            ['oz4626Facet', oz4626],
+            ['oz20Facet', oz20],
             ['OwnershipFacet', ownershipFacet]
         ],
         args: '',
@@ -192,7 +191,7 @@ async function deploy() {
         crvTri,
         callerAddr, 
         caller2Addr,
-        pyyFacet,
+        ozlFacet,
         yvCrvTri
     };
 

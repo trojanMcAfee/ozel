@@ -45,6 +45,7 @@ interface ITri {
   function calc_token_amount(uint256[3] calldata amounts, bool deposit) external returns(uint256);
   function remove_liquidity_one_coin(uint256 token_amount, uint256 i, uint256 min_amount) external;
   function calc_withdraw_one_coin(uint256 token_amount, uint256 i) external returns(uint256);
+  function balanceOf(address account) external view returns (uint256);
 }
 
 

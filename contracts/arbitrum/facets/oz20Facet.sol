@@ -2,43 +2,23 @@
 
 pragma solidity ^0.8.0;
 
-import "./pyIERC20.sol";
-import "./pyIERC20Metadata.sol";
-import "./pyContext.sol";
+import '@openzeppelin/contracts/token/ERC20/extensions/IERC20Metadata.sol';
+import '@openzeppelin/contracts/token/ERC20/IERC20.sol';
+import '@openzeppelin/contracts/utils/Context.sol';
 
 import 'hardhat/console.sol';
 
-import '../../AppStorage.sol';
-import '../ExecutorF.sol';
-import '../../../libraries/FixedPointMathLib.sol';
+import '../AppStorage.sol';
+import './ExecutorFacet.sol';
+import '../../libraries/FixedPointMathLib.sol';
+import '../Modifiers.sol';
+import '../../Errors.sol';
 
 /**
  * @dev Implementation of the {IERC20} interface.
- *
- * This implementation is agnostic to the way tokens are created. This means
- * that a supply mechanism has to be added in a derived contract using {_mint}.
- * For a generic mechanism see {ERC20PresetMinterPauser}.
- *
- * TIP: For a detailed writeup see our guide
- * https://forum.zeppelin.solutions/t/how-to-implement-erc20-supply-mechanisms/226[How
- * to implement supply mechanisms].
- *
- * We have followed general OpenZeppelin Contracts guidelines: functions revert
- * instead returning `false` on failure. This behavior is nonetheless
- * conventional and does not conflict with the expectations of ERC20
- * applications.
- *
- * Additionally, an {Approval} event is emitted on calls to {transferFrom}.
- * This allows applications to reconstruct the allowance for all accounts just
- * by listening to said events. Other implementations of the EIP may not emit
- * these events, as it isn't required by the specification.
- *
- * Finally, the non-standard {decreaseAllowance} and {increaseAllowance}
- * functions have been added to mitigate the well-known issues around setting
- * allowances. See {IERC20-approve}.
+ * @author Original author: OpenZeppelin
  */
-contract pyERC20 is pyContext, pyIERC20, pyIERC20Metadata { 
-    AppStorage s;
+contract oz20Facet is Modifiers, Context, IERC20, IERC20Metadata {
     
     using FixedPointMathLib for uint;
     /**
@@ -55,7 +35,7 @@ contract pyERC20 is pyContext, pyIERC20, pyIERC20Metadata {
      * @dev Returns the name of the token.
      */
     function name() public view virtual override returns (string memory) {
-        return s.py.name_;
+        return s.oz.name;
     }
 
     /**
@@ -63,7 +43,7 @@ contract pyERC20 is pyContext, pyIERC20, pyIERC20Metadata {
      * name.
      */
     function symbol() public view virtual override returns (string memory) {
-        return s.py.symbol_; 
+        return s.oz.symbol; 
     }
 
     /**
@@ -94,7 +74,8 @@ contract pyERC20 is pyContext, pyIERC20, pyIERC20Metadata {
      * @dev See {IERC20-balanceOf}.
      */
     function balanceOf(address account) public view virtual override returns (uint256) { 
-        return s.distributionIndex.mulDivDown(s.usersPayments[account] * 100, 10 ** 22); 
+        uint stableMod = s.indexFlag ? 1 : s.stabilizer; 
+        return (s.ozelIndex.mulDivDown(s.usersPayments[account] * 100, 10 ** 22) / 4 ** s.indexRegulator) / stableMod;
     }
 
     /**
@@ -114,7 +95,7 @@ contract pyERC20 is pyContext, pyIERC20, pyIERC20Metadata {
      * @dev See {IERC20-allowance}.
      */
     function allowance(address owner, address spender) public view virtual override returns (uint256) {
-        return s.py.allowances_[owner][spender];
+        return s.oz.allowances[owner][spender];
     }
 
     /**
@@ -149,7 +130,7 @@ contract pyERC20 is pyContext, pyIERC20, pyIERC20Metadata {
     ) public virtual override returns (bool) {
         _transfer(sender, recipient, amount);
 
-        uint256 currentAllowance = s.py.allowances_[sender][_msgSender()];
+        uint256 currentAllowance = s.oz.allowances[sender][_msgSender()];
         require(currentAllowance >= amount, "ERC20: transfer amount exceeds allowance");
         unchecked {
             _approve(sender, _msgSender(), currentAllowance - amount);
@@ -171,7 +152,7 @@ contract pyERC20 is pyContext, pyIERC20, pyIERC20Metadata {
      * - `spender` cannot be the zero address.
      */
     function increaseAllowance(address spender, uint256 addedValue) public virtual returns (bool) {
-        _approve(_msgSender(), spender, s.py.allowances_[_msgSender()][spender] + addedValue);
+        _approve(_msgSender(), spender, s.oz.allowances[_msgSender()][spender] + addedValue);
         return true;
     }
 
@@ -190,7 +171,7 @@ contract pyERC20 is pyContext, pyIERC20, pyIERC20Metadata {
      * `subtractedValue`.
      */
     function decreaseAllowance(address spender, uint256 subtractedValue) public virtual returns (bool) {
-        uint256 currentAllowance = s.py.allowances_[_msgSender()][spender];
+        uint256 currentAllowance = s.oz.allowances[_msgSender()][spender];
         require(currentAllowance >= subtractedValue, "ERC20: decreased allowance below zero");
         unchecked {
             _approve(_msgSender(), spender, currentAllowance - subtractedValue);
@@ -218,65 +199,53 @@ contract pyERC20 is pyContext, pyIERC20, pyIERC20Metadata {
         address recipient,
         uint256 amount
     ) internal virtual {
-        require(sender != address(0), "pyERC20Facet: transfer from the zero address");
-        require(recipient != address(0), "pyERC20Facet: transfer to the zero address");
-
-        _beforeTokenTransfer(sender, recipient, amount);
+        require(sender != address(0), "oz20Facet: transfer from the zero address");
+        require(recipient != address(0), "oz20Facet: transfer to the zero address");
 
         uint256 senderBalance = balanceOf(sender);
-        require(senderBalance >= amount, "pyERC20Facet: transfer amount exceeds balance");
+        require(senderBalance >= amount, "oz20Facet: transfer amount exceeds balance");
+
+        s.isAuth[6] = true;
 
         (bool success, ) = s.executor.delegatecall(
             abi.encodeWithSelector(
-                ExecutorF(s.executor).transferUserAllocation.selector, 
-                sender,recipient, amount, senderBalance
+                ExecutorFacet(s.executor).transferUserAllocation.selector, 
+                sender, recipient, amount, senderBalance, 6
             )
         );
-        require(success, 'pyERC20: transferUserAllocation() failed');
+        require(success, 'oz20Facet: transferUserAllocation() failed'); //put an if erro here
 
         emit Transfer(sender, recipient, amount);
-
-        _afterTokenTransfer(sender, recipient, amount);
     }
 
 
-    /**
-     * @dev Destroys `amount` tokens from `account`, reducing the
-     * total supply.
-     *
-     * Emits a {Transfer} event with `to` set to the zero address.
-     *
-     * Requirements:
-     *
-     * - `account` cannot be the zero address.
-     * - `account` must have at least `amount` tokens.
-     */
-    function _burn(address account, uint256 amount) external virtual { //<---------- switched this to external (do proper security checks)
-        require(account != address(0), "pyERC20: burn from the zero address");
-        // console.log('msg.sender in burn: ', msg.sender);
-
-        _beforeTokenTransfer(account, address(0), amount);
+    function burn(
+        address account, 
+        uint amount,
+        uint lockNum_
+    ) external isAuthorized(lockNum_) noReentrancy(4) { 
+        if(account == address(0)) revert CantBeZero('oz4626Facet: address');
 
         uint256 accountBalance = balanceOf(account); 
-        require(accountBalance >= amount, "pyERC20: burn amount exceeds balance");
+        if(!(accountBalance >= amount)) revert ConditionNotMet("oz20Facet: burn amount exceeds balance");
 
-        uint userBalancePYY = balanceOf(account);
-        require(userBalancePYY > 0, "pyERC20: userBalancePYY cannot be 0"); //<-------- added
+        uint userBalanceOZL = balanceOf(account);
+        if(!(userBalanceOZL > 0)) revert ConditionNotMet("oz20Facet: userBalanceOZL cannot be 0");
 
-        uint allocationPercentage = (amount.mulDivDown(10000, userBalancePYY)).mulDivDown(1 ether, 100);
+        uint allocationPercentage = (amount.mulDivDown(10000, userBalanceOZL)).mulDivDown(1 ether, 100);
         uint amountToReduce = allocationPercentage.mulDivDown(s.usersPayments[account], 100 * 1 ether);
+
+        s.isAuth[5] = true;
 
         (bool success, ) = s.executor.delegatecall(
             abi.encodeWithSelector(
-                ExecutorF(s.executor).modifyPaymentsAndVolumeExternally.selector, 
-                account, amountToReduce
+                ExecutorFacet(s.executor).modifyPaymentsAndVolumeExternally.selector, 
+                account, amountToReduce, 5
             )
         );
-        require(success, 'pyERC20: modifyPaymentsAndVolumeExternally() failed');
+        if(!success) revert CallFailed('oz20Facet: modifyPaymentsAndVolumeExternally() failed');
 
         emit Transfer(account, address(0), amount);
-
-        _afterTokenTransfer(account, address(0), amount);
     }
 
     /**
@@ -297,53 +266,12 @@ contract pyERC20 is pyContext, pyIERC20, pyIERC20Metadata {
         address spender,
         uint256 amount
     ) internal virtual {
-        require(owner != address(0), "pyERC20: approve from the zero address");
-        require(spender != address(0), "pyERC20: approve to the zero address");
+        require(owner != address(0), "oz20Facet: approve from the zero address");
+        require(spender != address(0), "oz20Facet: approve to the zero address");
 
-        s.py.allowances_[owner][spender] = amount;
+        s.oz.allowances[owner][spender] = amount;
         emit Approval(owner, spender, amount);
     }
 
-    /**
-     * @dev Hook that is called before any transfer of tokens. This includes
-     * minting and burning.
-     *
-     * Calling conditions:
-     *
-     * - when `from` and `to` are both non-zero, `amount` of ``from``'s tokens
-     * will be transferred to `to`.
-     * - when `from` is zero, `amount` tokens will be minted for `to`.
-     * - when `to` is zero, `amount` of ``from``'s tokens will be burned.
-     * - `from` and `to` are never both zero.
-     *
-     * To learn more about hooks, head to xref:ROOT:extending-contracts.adoc#using-hooks[Using Hooks].
-     */
-    function _beforeTokenTransfer(
-        address from,
-        address to,
-        uint256 amount
-    ) internal virtual {}
 
-    /**
-     * @dev Hook that is called after any transfer of tokens. This includes
-     * minting and burning.
-     *
-     * Calling conditions:
-     *
-     * - when `from` and `to` are both non-zero, `amount` of ``from``'s tokens
-     * has been transferred to `to`.
-     * - when `from` is zero, `amount` tokens have been minted for `to`.
-     * - when `to` is zero, `amount` of ``from``'s tokens have been burned.
-     * - `from` and `to` are never both zero.
-     *
-     * To learn more about hooks, head to xref:ROOT:extending-contracts.adoc#using-hooks[Using Hooks].
-     */
-    function _afterTokenTransfer(
-        address from,
-        address to,
-        uint256 amount
-    ) internal virtual {}
-
-
-    
 }

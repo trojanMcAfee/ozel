@@ -14,7 +14,7 @@ import '../FakeOZL.sol';
 import '../Emitter.sol';
 import '../StorageBeacon.sol';
 import '../ozUpgradeableBeacon.sol';
-import '../Errors.sol';
+import '../../Errors.sol';
 
 import 'hardhat/console.sol';
 

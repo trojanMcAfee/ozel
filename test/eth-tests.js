@@ -23,9 +23,9 @@ require('dotenv').config();
 
 
 const {
-    balanceOfPYY, 
-    transferPYY, 
-    withdrawSharePYY, 
+    balanceOfOZL, 
+    transferOZL, 
+    withdrawShareOZL, 
     getVarsForHelpers,
     sendETH,
     getCalldata,
@@ -209,7 +209,6 @@ let isExist;
         });
 
         describe('ozBeaconProxy / ozPayMe', async () => {
-
             describe('fallback()', async () => {
                 it('should not allow re-calling / initialize()', async () => {
                     await assert.rejects(async () => {
@@ -346,7 +345,6 @@ let isExist;
         });
 
         describe('Emitter', async () => {
-
             it('should emit ticket ID / forwardEvent()', async () => {
                 await sendETHv2(newProxyAddr, 0.01);
                 receipt = await activateProxyLikeOps(newProxyAddr, ozERC1967proxyAddr);
@@ -372,12 +370,9 @@ let isExist;
                     message: err().alreadyInitialized 
                 });
             }); 
-    
-    
         });
     
         describe('StorageBeacon', async () => {
-
             it('shoud not allow an user to issue an userID / issueUserID()', async () => {
                 await assert.rejects(async () => {
                     await storageBeacon.issueUserID(evilUserDetails);

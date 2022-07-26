@@ -29,13 +29,41 @@ const ETH = '0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE';
 const nullAddr = '0x0000000000000000000000000000000000000000';
 const dappFee = 10; //prev: 10 -> 0.1% / 100-1 / 1000-10 / 10000 - 100%
 const poolFeeUni = 500; //0.05%
-
-// const foo = toBn('0.01');
 const defaultSlippage = 100; //5 -> 0.05%; / 100 -> 1%
+const revenueAmounts = [
+    10000000, //250 instead of 10000000
+    50000000,
+    100000000,
+    500000000,
+    1000000000,
+    5000000000,
+    10000000000
+];
+
+const tokenName = 'Ozel';
+const tokenSymbol = 'OZL';
 
 
-const tokenName = 'PayToken';
-const tokenSymbol = 'PYY';
+const diamondABI = [
+    'function setTESTVAR2(uint256, bytes32 position_) public',
+    'function diamondCut(tuple(address facetAddress, uint8 action, bytes4[] functionSelectors)[] calldata _diamondCut, address _init, bytes calldata _calldata) external',
+    'function getOzelIndex() returns (uint256)',
+    'function getRegulatorCounter() returns (uint256)',
+    'function balanceOf(address account) view returns (uint256)',
+    'function transfer(address recipient, uint256 amount) returns (bool)',
+    'function exchangeToUserToken(tuple(address user, address userToken, uint userSlippage) userDetails_) external payable',
+    'function withdrawUserShare(tuple(address user, address userToken, uint userSlippage) userDetails_, address receiver, uint shares_)',
+    'function enableWithdrawals(bool state_) external',
+    'function updateExecutorState(uint256 amount_, address user_, uint256 lockNum_) external payable',
+    'function deposit(uint256 assets, address receiver, uint256 lockNum_) external payable returns (uint256 shares)',
+    'function executeFinalTrade(tuple(int128 tokenIn, int128 tokenOut, address baseToken, address userToken, address pool) swapDetails_, uint256 userSlippage, address user_, uint256 lockNum_) external payable',
+    'function redeem(uint256 shares, address receiver, address owner, uint256 lockNum_) external returns (uint256 assets)',
+    'function burn(address account, uint256 amount, uint256 lockNum_) external',
+    'function modifyPaymentsAndVolumeExternally(address user_, uint256 newAmount_, uint256 lockNum_) external',
+    'function addTokenToDatabase(address newToken_) external',
+    'function transferUserAllocation(address sender_, address receiver_, uint256 amount_, uint256 senderBalance_, uint256 lockNum_) external',
+    'function owner() external view returns (address owner_)'
+];
 
 
 
@@ -50,7 +78,7 @@ const l1Signer = signerX.connect(l1ProviderRinkeby);
 
 
 
-let network = 'rinkeby';
+let network = 'arbitrum';
 switch(network) {
     case 'rinkeby':
         chainId = 421611;
@@ -108,8 +136,10 @@ switch(network) {
         fraxPoolAddr = '0xf07d553B195080F84F582e88ecdD54bAa122b279';
         fraxAddr = '0x17FC002b466eEc40DaE837Fc4bE5c67993ddBd6F';
         gelatoAddr = '0x4775af8fef4809fe10bf05867d2b038a4b5b2146';
+        deadAddr = '0x000000000000000000000000000000000000dEaD';
+        chainlinkAggregatorAddr = '0x639fe6ab55c921f74e7fac1ee960c0b6293ba612';
+        swapRouterUniAddr = '0xE592427A0AEce92De3Edee1F18E0157C05861564';
 } 
-
 
 
 
@@ -147,6 +177,8 @@ module.exports = {
     poolFeeUni,
     nullAddr,
     chainlinkAggregatorAddr,
-    deadAddr
+    deadAddr,
+    revenueAmounts,
+    diamondABI
 };
 

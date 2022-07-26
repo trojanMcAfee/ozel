@@ -1,16 +1,18 @@
 // SPDX-License-Identifier: AGPL-3.0-only
 pragma solidity >=0.8.0;
 
-import '../pyERC20/pyERC20.sol';
+
+import './oz20Facet.sol';
 import '@openzeppelin/contracts/token/ERC20/IERC20.sol';
-import '../ExecutorF.sol';
-import '../../../libraries/FixedPointMathLib.sol';
+import './ExecutorFacet.sol';
+import '../../libraries/FixedPointMathLib.sol';
+import '../../Errors.sol';
+import '../Modifiers.sol';
+import { LibDiamond } from "../../libraries/LibDiamond.sol";
 
-/// @notice Minimal ERC4626 tokenized Vault implementation.
-/// @author Solmate (https://github.com/Rari-Capital/solmate/blob/main/src/mixins/ERC4626.sol)
-contract pyERC4626 { 
-
-    AppStorage s;
+/// @notice Original source: Minimal ERC4626 tokenized Vault implementation.
+/// @author Original author: Solmate (https://github.com/Rari-Capital/solmate/blob/main/src/mixins/ERC4626.sol)
+contract oz4626Facet is Modifiers { 
 
     using FixedPointMathLib for uint256;
 
@@ -33,43 +35,43 @@ contract pyERC4626 {
                         DEPOSIT/WITHDRAWAL LOGIC
     //////////////////////////////////////////////////////////////*/
 
-    function deposit(uint256 assets, address receiver) public virtual payable returns (uint256 shares) {
+    function deposit(
+        uint assets, 
+        address receiver,
+        uint lockNum_
+    ) external payable isAuthorized(lockNum_) noReentrancy(1) returns (uint256 shares) {
         // Check for rounding error since we round down in previewDeposit.
         require((shares = previewDeposit(assets)) != 0, "ZERO_SHARES");
 
-        // Need to transfer before minting or ERC777s could reenter. <-----------------------------
+        s.isAuth[1] = true;
 
-        (bool success, ) = s.executor.delegatecall(
-            abi.encodeWithSignature(
-                'updateManagerState(uint256,address)', 
-                assets, receiver
-            )
+        (address facet, bytes4 selector) = LibDiamond.facetToCall('updateExecutorState(uint256,address,uint256)');
+
+        (bool success, ) = facet.delegatecall( 
+            abi.encodeWithSelector(selector, assets, receiver, 1)
         );
-        require(success, 'pyERC4626: deposit() failed');
+        if(!success) revert CallFailed('oz4626Facet: Failed to update Manager');
 
         emit Deposit(msg.sender, receiver, assets, shares);
-
-        afterDeposit(assets, shares);
     }
 
 
     function redeem(
-        uint256 shares,
+        uint shares,
         address receiver,
-        address owner
-    ) public virtual returns (uint256 assets) {
+        address owner,
+        uint lockNum_
+    ) external isAuthorized(lockNum_) noReentrancy(6) returns (uint256 assets) {
         require((assets = previewRedeem(shares)) != 0, "ZERO_ASSETS");
-        // console.log('msg.sender in redeem: ', msg.sender);
 
-        beforeWithdraw(assets, shares);
+        s.isAuth[4] = true;
 
-        (bool success, ) = s.py20.delegatecall(
-            abi.encodeWithSelector(
-                pyERC20(s.py20)._burn.selector, 
-                owner, shares
-            )
+        (address facet, bytes4 selector) = LibDiamond.facetToCall('burn(address,uint256,uint256)');
+
+        (bool success, ) = facet.delegatecall( 
+            abi.encodeWithSelector(selector, owner, shares, 4)
         );
-        require(success, 'pyERC4626: redeem() failed');
+        if(!success) revert CallFailed('oz4626Facet: redeem() failed');
 
         emit Withdraw(msg.sender, receiver, owner, assets, shares);
     }
@@ -79,9 +81,9 @@ contract pyERC4626 {
     //////////////////////////////////////////////////////////////*/
 
     function convertToShares(uint256 assets) public view virtual returns (uint256) { 
-        return s.distributionIndex == 0 ? 
-            pyERC20(s.py20).totalSupply() : 
-                s.distributionIndex.mulDivDown(assets * 100, 10 ** 22);
+        return s.ozelIndex == 0 ? 
+            oz20Facet(s.oz20).totalSupply() : 
+                s.ozelIndex.mulDivDown(assets * 100, 10 ** 22);
     }
 
     function convertToAssets(uint256 shares) public view virtual returns (uint256) { 
@@ -102,7 +104,7 @@ contract pyERC4626 {
                      DEPOSIT/WITHDRAWAL LIMIT LOGIC
     //////////////////////////////////////////////////////////////*/
 
-    function maxDeposit(address) public view virtual returns (uint256) {
+    function maxDeposit(address) public view virtual returns (uint256) { 
         return type(uint256).max;
     }
 
@@ -111,18 +113,10 @@ contract pyERC4626 {
     }
 
     function maxWithdraw(address owner) public view virtual returns (uint256) {
-        return convertToAssets(pyERC20(s.py20).balanceOf(owner));
+        return convertToAssets(maxRedeem(owner));
     }
 
     function maxRedeem(address owner) public view virtual returns (uint256) {
-        return pyERC20(s.py20).balanceOf(owner);
+        return oz20Facet(s.oz20).balanceOf(owner);
     }
-
-    /*///////////////////////////////////////////////////////////////
-                         INTERNAL HOOKS LOGIC
-    //////////////////////////////////////////////////////////////*/
-
-    function beforeWithdraw(uint256 assets, uint256 shares) internal virtual {}
-
-    function afterDeposit(uint256 assets, uint256 shares) internal virtual {}
 }

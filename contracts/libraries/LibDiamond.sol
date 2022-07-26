@@ -7,6 +7,8 @@ pragma solidity ^0.8.0;
 /******************************************************************************/
 import { IDiamondCut } from "../interfaces/IDiamondCut.sol";
 
+import '@openzeppelin/contracts/token/ERC20/IERC20.sol';
+
 import 'hardhat/console.sol';
 
 library LibDiamond {
@@ -27,12 +29,15 @@ library LibDiamond {
         address[] addresses;
     }
 
-    struct VarsAndAddresses {
+    struct VarsAndAddresses { //order this struct
         address[] contracts;
         address[] erc20s;
+        address[] tokensDb;
         uint[] appVars;
-        string[] pyyVars;
+        string[] ozlVars;
         address ETH;
+        uint[] revenueAmounts;
+        // address[] nonRevenueFacets;
     }
 
 
@@ -42,9 +47,6 @@ library LibDiamond {
         mapping(bytes4 => FacetAddressAndPosition) selectorToFacetAndPosition;
         // // maps facet addresses to function selectors
         mapping(address => FacetFunctionSelectors) facetFunctionSelectors;
-
-        mapping(bytes4 => address) facets;
-
         // facet addresses
         address[] facetAddresses;
         // Used to query if a contract implements an interface.
@@ -52,6 +54,8 @@ library LibDiamond {
         mapping(bytes4 => bool) supportedInterfaces;
         // owner of the contract
         address contractOwner; 
+        //facets that don't check revenue
+        address[] nonRevenueFacets;
     }
 
     function diamondStorage() internal pure returns (DiamondStorage storage ds) {
@@ -223,4 +227,42 @@ library LibDiamond {
         }
         require(contractSize > 0, _errorMessage);
     }
+
+    function facetToCall(string memory funcSignature_) internal view returns(address, bytes4) {
+        bytes4 selector = bytes4(keccak256(bytes(funcSignature_)));
+        DiamondStorage storage ds = diamondStorage();
+        address facet = ds.selectorToFacetAndPosition[selector].facetAddress;
+        return (facet, selector);
+    }
+
+    function facetToCall(
+        string[] memory funcSignatures
+    ) internal view returns(address[] memory, bytes4[] memory) {
+        DiamondStorage storage ds = diamondStorage();
+        address[] memory facets = new address[](2);
+        bytes4[] memory selectors = new bytes4[](2);
+
+        uint length = funcSignatures.length;
+        for (uint i=0; i < length;) {
+            bytes4 selector = bytes4(keccak256(bytes(funcSignatures[i])));
+            address facet = ds.selectorToFacetAndPosition[selector].facetAddress;
+
+            facets[i] = facet;
+            selectors[i] = selector;
+            unchecked { ++i; }
+        }
+
+        return (facets, selectors);
+    }
+
+    function setNonRevenueFacets(address[] memory nonRevenueFacets_) internal {
+        DiamondStorage storage ds = diamondStorage();
+        uint length = nonRevenueFacets_.length;
+        for (uint i=0; i < length;) {
+            ds.nonRevenueFacets.push(nonRevenueFacets_[i]);
+            unchecked { ++i; }
+        }
+    }
+
+
 }
