@@ -11,6 +11,7 @@ import './oz4626Facet.sol';
 import '../../interfaces/IYtri.sol';
 import {ITri} from '../../interfaces/ICurve.sol';
 import { LibDiamond } from "../../libraries/LibDiamond.sol";
+import '@openzeppelin/contracts/utils/Address.sol';
 
 import 'hardhat/console.sol';
 
@@ -20,13 +21,12 @@ import '../../Errors.sol';
 import '../Modifiers.sol';
 import './RevenueFacet.sol';
 
-import '@rari-capital/solmate/src/utils/SSTORE2.sol';
 
 
 contract OZLFacet is Modifiers { 
 
     using SafeTransferLib for IERC20;
-    using SSTORE2 for bytes;
+    using Address for address;
 
     /**
     WBTC: 1 / USDT: 0 / WETH: 2
@@ -48,25 +48,14 @@ contract OZLFacet is Modifiers {
         wethIn = s.failedFees == 0 ? wethIn : wethIn - s.failedFees;
 
         //Deposits in oz4626Facet
-
-        //--------
-
-        // console.log('gas pre: ******', gasleft());
-
         s.isAuth[0] = true; 
 
-        // console.log('gas post: ', gasleft());
-
-        //----------
-        
         (
             address[] memory facets, bytes4[] memory selectors
         ) = LibDiamond.facetToCall(_formatSignatures(1));
 
-        (bool success, ) = facets[0].delegatecall(
-            abi.encodeWithSelector(selectors[0], wethIn, userDetails_.user, 0)
-        );
-        if(!success) revert CallFailed('OZLFacet: Failed to deposit');
+        bytes memory data = abi.encodeWithSelector(selectors[0], wethIn, userDetails_.user, 0);
+        facets[0].functionDelegateCall(data);
 
         (uint netAmountIn, uint fee) = _getFee(wethIn);
 
@@ -150,12 +139,15 @@ contract OZLFacet is Modifiers {
             address[] memory facets, bytes4[] memory selectors
         ) = LibDiamond.facetToCall(_formatSignatures(2));
 
-        (bool success, bytes memory data) = facets[0].delegatecall(
-            abi.encodeWithSelector(selectors[0], shares_, receiver_, userDetails_.user, 3)
-        );
-        if(!success) revert CallFailed('OZLFacet: Failed to redeem');
+        // (bool success, bytes memory returnData) = facets[0].delegatecall(
+        //     abi.encodeWithSelector(selectors[0], shares_, receiver_, userDetails_.user, 3)
+        // );
+        // if(!success) revert CallFailed('OZLFacet: Failed to redeem');
 
-        uint assets = abi.decode(data, (uint));
+        bytes memory data = abi.encodeWithSelector(selectors[0], shares_, receiver_, userDetails_.user, 3);
+        bytes memory returnData = facets[0].functionDelegateCall(data);
+
+        uint assets = abi.decode(returnData, (uint));
         IYtri(s.yTriPool).withdraw(assets);
 
         //tricrypto= USDT: 0 / crv2- USDT: 1 , USDC: 0 / mim- MIM: 0 , CRV2lp: 1
@@ -227,13 +219,21 @@ contract OZLFacet is Modifiers {
 
         for (uint i=0; i < length;) {
             if (s.swaps[i].userToken == userDetails_.userToken) {
-                (bool success, ) = facetExecutor_.delegatecall(
-                    abi.encodeWithSelector(
-                        execSelector_, 
-                        s.swaps[i], userDetails_.userSlippage, userDetails_.user, 2
-                    )
+
+
+                // (bool success, ) = facetExecutor_.delegatecall(
+                //     abi.encodeWithSelector(
+                //         execSelector_, 
+                //         s.swaps[i], userDetails_.userSlippage, userDetails_.user, 2
+                //     )
+                // );
+                // if(!success) revert CallFailed('OZLFacet: _tradeWithExecutor() failed');
+
+                bytes memory data = abi.encodeWithSelector(
+                    execSelector_, s.swaps[i], userDetails_.userSlippage, userDetails_.user, 2
                 );
-                if(!success) revert CallFailed('OZLFacet: _tradeWithExecutor() failed');
+                facetExecutor_.functionDelegateCall(data);
+                
                 break;
             }
             unchecked { ++i; }
