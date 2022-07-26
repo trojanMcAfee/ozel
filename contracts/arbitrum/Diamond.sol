@@ -60,7 +60,7 @@ contract Diamond {
 
         // get facet from function selector
         require(facet != address(0), "Diamond: Function does not exist");
-        // Execute external function from facet using delegatecall and return any value.
+        // Execute external function from facet using delegatecall and return any value. 
         assembly {
             // copy function selector and any arguments
             calldatacopy(0, 0, calldatasize())
@@ -101,7 +101,7 @@ contract Diamond {
 
         if (!callFlag) {
             (bool success, ) = revenueFacet_.delegatecall(data); 
-            require(success, 'OZLDiamond: _filterRevenueCheck() failed');
+            if (!success) revert CallFailed('OZLDiamond: _filterRevenueCheck() failed');
         }
     }
 }

@@ -9,12 +9,15 @@ import '../../libraries/FixedPointMathLib.sol';
 import '../../Errors.sol';
 import '../Modifiers.sol';
 import { LibDiamond } from "../../libraries/LibDiamond.sol";
+import '@openzeppelin/contracts/utils/Address.sol';
+
 
 /// @notice Original source: Minimal ERC4626 tokenized Vault implementation.
 /// @author Original author: Solmate (https://github.com/Rari-Capital/solmate/blob/main/src/mixins/ERC4626.sol)
 contract oz4626Facet is Modifiers { 
 
     using FixedPointMathLib for uint256;
+    using Address for address;
 
     /*///////////////////////////////////////////////////////////////
                                  EVENTS
@@ -47,10 +50,8 @@ contract oz4626Facet is Modifiers {
 
         (address facet, bytes4 selector) = LibDiamond.facetToCall('updateExecutorState(uint256,address,uint256)');
 
-        (bool success, ) = facet.delegatecall( 
-            abi.encodeWithSelector(selector, assets, receiver, 1)
-        );
-        if(!success) revert CallFailed('oz4626Facet: Failed to update Manager');
+        bytes memory data = abi.encodeWithSelector(selector, assets, receiver, 1);
+        facet.functionDelegateCall(data);
 
         emit Deposit(msg.sender, receiver, assets, shares);
     }
@@ -68,10 +69,8 @@ contract oz4626Facet is Modifiers {
 
         (address facet, bytes4 selector) = LibDiamond.facetToCall('burn(address,uint256,uint256)');
 
-        (bool success, ) = facet.delegatecall( 
-            abi.encodeWithSelector(selector, owner, shares, 4)
-        );
-        if(!success) revert CallFailed('oz4626Facet: redeem() failed');
+        bytes memory data = abi.encodeWithSelector(selector, owner, shares, 4);
+        facet.functionDelegateCall(data);
 
         emit Withdraw(msg.sender, receiver, owner, assets, shares);
     }

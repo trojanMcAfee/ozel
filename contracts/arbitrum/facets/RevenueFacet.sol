@@ -96,8 +96,8 @@ contract RevenueFacet {
             ISwapRouter.ExactInputSingleParams memory params =
                 ISwapRouter.ExactInputSingleParams({
                     tokenIn: s.WETH,
-                    tokenOut: s.revenueToken, //add to AppStorage and a way....
-                    fee: s.poolFee, //add to AppStorage and a way to change it
+                    tokenOut: s.revenueToken, 
+                    fee: s.poolFee, 
                     recipient: owner_,
                     deadline: block.timestamp,
                     amountIn: balanceWETH_ / i,

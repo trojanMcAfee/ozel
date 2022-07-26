@@ -139,11 +139,6 @@ contract OZLFacet is Modifiers {
             address[] memory facets, bytes4[] memory selectors
         ) = LibDiamond.facetToCall(_formatSignatures(2));
 
-        // (bool success, bytes memory returnData) = facets[0].delegatecall(
-        //     abi.encodeWithSelector(selectors[0], shares_, receiver_, userDetails_.user, 3)
-        // );
-        // if(!success) revert CallFailed('OZLFacet: Failed to redeem');
-
         bytes memory data = abi.encodeWithSelector(selectors[0], shares_, receiver_, userDetails_.user, 3);
         bytes memory returnData = facets[0].functionDelegateCall(data);
 
@@ -219,21 +214,10 @@ contract OZLFacet is Modifiers {
 
         for (uint i=0; i < length;) {
             if (s.swaps[i].userToken == userDetails_.userToken) {
-
-
-                // (bool success, ) = facetExecutor_.delegatecall(
-                //     abi.encodeWithSelector(
-                //         execSelector_, 
-                //         s.swaps[i], userDetails_.userSlippage, userDetails_.user, 2
-                //     )
-                // );
-                // if(!success) revert CallFailed('OZLFacet: _tradeWithExecutor() failed');
-
                 bytes memory data = abi.encodeWithSelector(
                     execSelector_, s.swaps[i], userDetails_.userSlippage, userDetails_.user, 2
                 );
                 facetExecutor_.functionDelegateCall(data);
-                
                 break;
             }
             unchecked { ++i; }
