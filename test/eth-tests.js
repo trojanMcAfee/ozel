@@ -1,75 +1,35 @@
 const { ethers } = require("ethers");
 const assert = require('assert');
-// const expect = require('chai').expect;
-// const expect = require('expect');
-const truffleAssert = require('truffle-assertions');
 
 const { 
-    parseEther, 
     formatEther, 
-    defaultAbiCoder: abiCoder, 
-    keccak256,
-    id,
-    hexZeroPad,
-    hexStripZeros,
     arrayify,
     formatBytes32String
 } = ethers.utils;
-const { deploy } = require('../scripts/deploy.js');
-const { Bridge } = require('arb-ts');
-const { hexDataLength } = require('@ethersproject/bytes');
 require('dotenv').config();
 
 
-
-const {
-    balanceOfOZL, 
-    transferOZL, 
-    withdrawShareOZL, 
-    getVarsForHelpers,
-    sendETH,
-    getCalldata,
-    getCalldata2
-} = require('../scripts/helpers-arb.js');
-
 const { 
-    chainId,
     pokeMeOpsAddr,
-    hopBridge,
     usdtAddrArb,
-    wbtcAddr,
-    renBtcAddr,
     usdcAddr,
-    mimAddr,
     fraxAddr,
-    inbox,
-    signerX,
-    l2Provider,
-    l2Signer,
     l1Signer,
-    wethAddr,
     defaultSlippage,
-    gelatoAddr,
     ETH,
-    swapRouterUniAddr,
-    poolFeeUni,
     nullAddr,
-    chainlinkAggregatorAddr,
     deadAddr
  } = require('../scripts/state-vars.js');
 
  const {
     deployContract,
     sendTx,
-    getArbitrumParams,
     activateOzBeaconProxy,
     deploySystem,
-    errors,
     getEventParam,
     sendETHv2,
     activateProxyLikeOps,
     compareTopicWith,
-    deployAnotherStorageBeacon,
     createProxy,
     storeVarsInHelpers,
     compareEventWithVar
@@ -85,18 +45,14 @@ let userDetails;
 let newProxyAddr, newProxy;
 let balance;
 let newUserToken, newUserSlippage;
-let user;
 let ops;
 let signer2;
 let showTicketSignature;
-let isSuccess;
-let otherStorageBeaconAddr;
-let tx, receipt;
-let ticketIDtype, ticketID;
-let modUserDetails;
+let receipt;
+let ticketIDtype;
 let pulledUserDetails;
 let taskID;
-let storageBeaconMockAddr, storageBeaconMock; 
+let storageBeaconMockAddr; 
 let USDC;
 let usersProxies = [];
 let evilVarConfig = [0, 0, 0];
@@ -108,7 +64,6 @@ let isExist;
 
  describe('Ethereum-side', async () => {
     before( async () => {
-        // const bridge = await Bridge.init(l1Signer, l2Signer);
         ([signerAddr, signerAddr2] = await hre.ethers.provider.listAccounts()); 
         console.log('signer address: ', signerAddr);
         console.log('.');
