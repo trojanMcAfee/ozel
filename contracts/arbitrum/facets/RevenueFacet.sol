@@ -40,7 +40,7 @@ contract RevenueFacet {
 
                 for (uint i=0; i < s.revenueAmounts.length; i++) {
                     if (valueUM >= s.revenueAmounts[i] * 1 ether) {
-                        uint denominator = s.revenueAmounts[i] == 10000000 ? 5 : 10; //250 instead of 10000000
+                        uint denominator = s.revenueAmounts[i] == 10000000 ? 5 : 10; 
                         _computeRevenue(denominator, yBalance, uint(price));
                         uint deletedEl = _shift(i);
                         emit RevenueEarned(deletedEl);

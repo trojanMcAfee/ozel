@@ -23,7 +23,7 @@ contract ProxyFactory is ReentrancyGuard, Initializable {
     }
 
 
-    function createNewProxy(StorageBeacon.UserConfig memory userDetails_) external nonReentrant { //unsafe
+    function createNewProxy(StorageBeacon.UserConfig memory userDetails_) external nonReentrant {
         if (userDetails_.user == address(0) || userDetails_.userToken == address(0)) revert CantBeZero('address');
         if (userDetails_.userSlippage <= 0) revert CantBeZero('slippage');
         if (!StorageBeacon(_getStorageBeacon(0)).queryTokenDatabase(userDetails_.userToken)) revert NotFoundInDatabase('token');
@@ -60,7 +60,7 @@ contract ProxyFactory is ReentrancyGuard, Initializable {
     }
 
 
-    // *** GELATO PART ******
+    // *** GELATO TASK ******
 
     function _startTask(address beaconProxy_) private { 
         StorageBeacon.FixedConfig memory fxConfig = StorageBeacon(_getStorageBeacon(0)).getFixedConfig(); 

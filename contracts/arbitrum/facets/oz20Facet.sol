@@ -5,6 +5,7 @@ pragma solidity ^0.8.0;
 import '@openzeppelin/contracts/token/ERC20/extensions/IERC20Metadata.sol';
 import '@openzeppelin/contracts/token/ERC20/IERC20.sol';
 import '@openzeppelin/contracts/utils/Context.sol';
+import '@openzeppelin/contracts/utils/Address.sol';
 
 import 'hardhat/console.sol';
 
@@ -21,6 +22,8 @@ import '../../Errors.sol';
 contract oz20Facet is Modifiers, Context, IERC20, IERC20Metadata {
     
     using FixedPointMathLib for uint;
+    using Address for address;
+
     /**
      * @dev Sets the values for {name} and {symbol}.
      *
@@ -207,13 +210,12 @@ contract oz20Facet is Modifiers, Context, IERC20, IERC20Metadata {
 
         s.isAuth[6] = true;
 
-        (bool success, ) = s.executor.delegatecall(
-            abi.encodeWithSelector(
-                ExecutorFacet(s.executor).transferUserAllocation.selector, 
-                sender, recipient, amount, senderBalance, 6
-            )
+        bytes memory data = abi.encodeWithSelector(
+            ExecutorFacet(s.executor).transferUserAllocation.selector, 
+            sender, recipient, amount, senderBalance, 6
         );
-        require(success, 'oz20Facet: transferUserAllocation() failed'); //put an if erro here
+
+        s.executor.functionDelegateCall(data);
 
         emit Transfer(sender, recipient, amount);
     }
@@ -237,13 +239,12 @@ contract oz20Facet is Modifiers, Context, IERC20, IERC20Metadata {
 
         s.isAuth[5] = true;
 
-        (bool success, ) = s.executor.delegatecall(
-            abi.encodeWithSelector(
-                ExecutorFacet(s.executor).modifyPaymentsAndVolumeExternally.selector, 
-                account, amountToReduce, 5
-            )
+        bytes memory data = abi.encodeWithSelector(
+            ExecutorFacet(s.executor).modifyPaymentsAndVolumeExternally.selector, 
+            account, amountToReduce, 5
         );
-        if(!success) revert CallFailed('oz20Facet: modifyPaymentsAndVolumeExternally() failed');
+
+        s.executor.functionDelegateCall(data);
 
         emit Transfer(account, address(0), amount);
     }
@@ -272,6 +273,4 @@ contract oz20Facet is Modifiers, Context, IERC20, IERC20Metadata {
         s.oz.allowances[owner][spender] = amount;
         emit Approval(owner, spender, amount);
     }
-
-
 }
