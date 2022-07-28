@@ -38,7 +38,7 @@ contract OZLFacet is Modifiers {
 
     function exchangeToUserToken(
         UserConfig calldata userDetails_
-    ) external payable noReentrancy2(0) filterDetails(userDetails_) { 
+    ) external payable noReentrancy(0) filterDetails(userDetails_) { 
         if (msg.value <= 0) revert CantBeZero('msg.value');
 
         if (s.failedFees > 0) _depositInDeFi(s.failedFees, true);

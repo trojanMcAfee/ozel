@@ -64,8 +64,8 @@ struct AppStorage {
     mapping(uint => bool) isLocked;
     mapping(uint => bool) isAuth;
     //----
-    // mapping(uint => BitMaps.BitMap) bitLocks2;
-    // BitMaps.BitMap[] locks;
+    mapping(uint => BitMaps.BitMap) bitLocks2;
+    BitMaps.BitMap[] locks;
     // BitMaps.BitMap reEntrancyLocks;
     // BitMaps.BitMap authLocks;
     //------

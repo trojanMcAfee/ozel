@@ -116,11 +116,14 @@ contract DiamondInit {
         s.revenueAmounts = vars_.revenueAmounts;
 
         //Mutex bitmap locks
-        // BitMaps.BitMap storage locks = s.bitLocks2[0];
+        // BitMaps.BitMap storage noReentrancyLock = s.locks.push();
+        // BitMaps.BitMap storage isAuthorizedLock = s.locks.push();
+        // // BitMaps.BitMap storage locks = s.bitLocks2[0];
         // locks._data[0] = 0; //noReentrancy - 7 (0-index)
         // locks._data[1] = 0; //isAuthorized - 6 (0-index)
+        // s.locks.push(locks);
         //---------
-        s.bitLocks[0] = 0;  //noReentrancy - 7 (0-index)
+        s.bitLocks[0] = 255;  //noReentrancy - 7 (0-index)
         s.bitLocks[1] = 0; //isAuthorized - 6 (0-index)
 
         
