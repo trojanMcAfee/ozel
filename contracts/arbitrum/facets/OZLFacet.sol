@@ -37,7 +37,7 @@ contract OZLFacet is Modifiers {
      ******/   
 
     function exchangeToUserToken(
-        UserConfig memory userDetails_
+        UserConfig calldata userDetails_
     ) external payable noReentrancy(0) filterDetails(userDetails_) { 
         if (msg.value <= 0) revert CantBeZero('msg.value');
 

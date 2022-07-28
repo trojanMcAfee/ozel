@@ -102,16 +102,16 @@ describe('Standard user interaction', async function () {
             assert(formatEther(await FRAX.balanceOf(callerAddr)) > 0);
         });
 
-        xit('should initiate the Ozel index', async () => {
+        it('should initiate the Ozel index', async () => {
             ozelIndex = await getOzelIndex();
             assert.equal(formatEther(ozelIndex), 1200000.0);
         });
 
-        xit('should allocate 1st user with OZL tokens', async () => {
+        it('should allocate 1st user with OZL tokens', async () => {
             assert.equal(await balanceOfOZL(callerAddr), 100.0);
         });
 
-        xit('should allocate OZLDiamond with yvCrvTricrypto tokens', async () => {
+        it('should allocate OZLDiamond with yvCrvTricrypto tokens', async () => {
             preYvCrvBalance = formatEther(await yvCrvTri.balanceOf(deployedDiamond.address));
             assert(preYvCrvBalance > 0);
         });

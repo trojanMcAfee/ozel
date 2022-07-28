@@ -108,7 +108,7 @@ contract StorageBeacon is Initializable, Ownable {
  
 
     //State changing functions
-    function issueUserID(UserConfig memory userDetails_) external hasRole(0x74e0ea7a) returns(uint id) {
+    function issueUserID(UserConfig calldata userDetails_) external hasRole(0x74e0ea7a) returns(uint id) {
         idToUserDetails[internalId] = userDetails_;
         id = internalId;
         unchecked { ++internalId; }
@@ -125,7 +125,7 @@ contract StorageBeacon is Initializable, Ownable {
         taskIDs[proxy_] = id_;
     }
 
-    function changeVariableConfig(VariableConfig memory newVarConfig_) external onlyOwner {
+    function changeVariableConfig(VariableConfig calldata newVarConfig_) external onlyOwner {
         varConfig = newVarConfig_;
     }
 
@@ -137,7 +137,7 @@ contract StorageBeacon is Initializable, Ownable {
         beacon = ozUpgradeableBeacon(beacon_);
     }
 
-    function changeEmergencyMode(EmergencyMode memory newEmode_) external onlyOwner {
+    function changeEmergencyMode(EmergencyMode calldata newEmode_) external onlyOwner {
         eMode = newEmode_;
     }
 

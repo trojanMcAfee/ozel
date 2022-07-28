@@ -25,7 +25,7 @@ contract ExecutorFacet is Modifiers {
 
 
     function executeFinalTrade( 
-        TradeOps memory swapDetails_, 
+        TradeOps calldata swapDetails_, 
         uint userSlippage_,
         address user_,
         uint lockNum_

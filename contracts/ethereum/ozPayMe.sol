@@ -59,8 +59,8 @@ contract ozPayMe is ReentrancyGuard, Initializable {
 
 
     function sendToArb( 
-        StorageBeacon.VariableConfig memory varConfig_,
-        StorageBeacon.UserConfig memory userDetails_
+        StorageBeacon.VariableConfig calldata varConfig_,
+        StorageBeacon.UserConfig calldata userDetails_
     ) external payable onlyOps { 
         StorageBeacon storageBeacon = StorageBeacon(_getStorageBeacon(_beacon, 0)); 
 
