@@ -15,12 +15,14 @@ import { IERC173 } from "../../interfaces/IERC173.sol";
 import { IERC165 } from "../../interfaces/IERC165.sol";
 import '../AppStorage.sol'; 
 import '@openzeppelin/contracts/token/ERC20/IERC20.sol';
-import 'hardhat/console.sol';
+import '../../interfaces/IWETH.sol';
 
 import "@chainlink/contracts/src/v0.8/interfaces/AggregatorV3Interface.sol";
 import '@uniswap/v3-periphery/contracts/interfaces/ISwapRouter.sol';
 
-import '../../interfaces/IWETH.sol';
+import 'hardhat/console.sol';
+
+import '@openzeppelin/contracts/utils/structs/BitMaps.sol';
 
 
 
@@ -112,6 +114,18 @@ contract DiamondInit {
         s.revenueToken = s.USDC;
         s.poolFee = uint24(vars_.appVars[2]);
         s.revenueAmounts = vars_.revenueAmounts;
+
+        //Mutex bitmap locks
+        // BitMaps.BitMap storage locks = s.bitLocks2[0];
+        // locks._data[0] = 0; //noReentrancy - 7 (0-index)
+        // locks._data[1] = 0; //isAuthorized - 6 (0-index)
+        //---------
+        s.bitLocks[0] = 0;  //noReentrancy - 7 (0-index)
+        s.bitLocks[1] = 0; //isAuthorized - 6 (0-index)
+
+        
+
+
 
         // add your own state variables 
         // EIP-2535 specifies that the `diamondCut` function takes two optional 

@@ -18,6 +18,13 @@ abstract contract Modifiers {
         s.isLocked[lockNum_] = false;
     }
 
+    modifier noReentrancy2(uint index_) {
+        require(!(_getBit(0, index_)), 'No reentrance');
+        _toggleBit(0, index_);
+        _;
+        _toggleBit(0, index_);
+    }
+
 
     modifier isAuthorized(uint lockNum_) {
         require(s.isAuth[lockNum_], "Not authorized");
@@ -36,6 +43,19 @@ abstract contract Modifiers {
         if (userDetails_.userSlippage <= 0) revert CantBeZero('slippage');
         if (!s.tokenDatabase[userDetails_.userToken]) revert NotFoundInDatabase('token');
         _;
+    }
+
+    /**
+        Bits manipulation
+     */
+
+    function _getBit(uint bitmap_, uint index_) private view returns(bool) {
+        uint bit = s.bitLocks[bitmap_] & (1 << index_);
+        return bit > 0;
+    }
+
+    function _toggleBit(uint bitmap_, uint index_) private view {
+        s.bitLocks[bitmap_] ^ uint(1) << index_;
     }
 
 }
