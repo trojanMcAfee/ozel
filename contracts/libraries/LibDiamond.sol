@@ -228,14 +228,6 @@ library LibDiamond {
         require(contractSize > 0, _errorMessage);
     }
 
-    // function facetToCall(string memory funcSignature_) internal view returns(address, bytes4) {
-    //     bytes4 selector = bytes4(keccak256(bytes(funcSignature_)));
-    //     DiamondStorage storage ds = diamondStorage();
-    //     address facet = ds.selectorToFacetAndPosition[selector].facetAddress;
-    //     return (facet, selector);
-    // }
-
-
     function callFacet(bytes memory data_) internal returns(bytes memory) {
         DiamondStorage storage ds = diamondStorage();
         address facet = ds.selectorToFacetAndPosition[bytes4(data_)].facetAddress;
@@ -243,27 +235,6 @@ library LibDiamond {
         require(success, 'LibDiamond: callFacet() failed');
         return data;
     }
-
-
-    // function facetToCall(
-    //     string[] memory funcSignatures
-    // ) internal view returns(address[] memory, bytes4[] memory) {
-    //     DiamondStorage storage ds = diamondStorage();
-    //     address[] memory facets = new address[](2);
-    //     bytes4[] memory selectors = new bytes4[](2);
-
-    //     uint length = funcSignatures.length;
-    //     for (uint i=0; i < length;) {
-    //         bytes4 selector = bytes4(keccak256(bytes(funcSignatures[i])));
-    //         address facet = ds.selectorToFacetAndPosition[selector].facetAddress;
-
-    //         facets[i] = facet;
-    //         selectors[i] = selector;
-    //         unchecked { ++i; }
-    //     }
-
-    //     return (facets, selectors);
-    // }
 
     function setNonRevenueFacets(address[] memory nonRevenueFacets_) internal {
         DiamondStorage storage ds = diamondStorage();
@@ -273,6 +244,4 @@ library LibDiamond {
             unchecked { ++i; }
         }
     }
-
-
 }
