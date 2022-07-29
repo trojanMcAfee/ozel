@@ -137,10 +137,9 @@ contract SwapsForUserTokenV1 is SecondaryFunctions {
     using SafeTransferLib for IERC20;
 
     event ForTesting(uint indexed testNum);
-    event DeadVariables(address variable, bytes4 variable2);
 
     function exchangeToUserToken(
-        UserConfig memory userDetails_
+        UserConfig calldata userDetails_
     ) external payable noReentrancy(0) filterDetails(userDetails_) { 
         if (msg.value <= 0) revert CantBeZero('msg.value');
 
@@ -148,17 +147,16 @@ contract SwapsForUserTokenV1 is SecondaryFunctions {
         uint wethIn = IWETH(s.WETH).balanceOf(address(this));
         wethIn = s.failedFees == 0 ? wethIn : wethIn - s.failedFees;
 
-        //Deposits in oz4626Facet
+        //Mutex bitmap lock
         _toggleBit(1, 0);
-        
-        (
-            address[] memory facets, bytes4[] memory selectors
-        ) = LibDiamond.facetToCall(_formatSignatures(1));
 
-        (bool success, ) = facets[0].delegatecall(
-            abi.encodeWithSelector(selectors[0], wethIn, userDetails_.user, 0)
+        //Deposits in oz4626Facet
+        bytes memory data = abi.encodeWithSignature(
+            'deposit(uint256,address,uint256)', 
+            wethIn, userDetails_.user, 0
         );
-        if(!success) revert CallFailed('OZLFacet: Failed to deposit');
+
+        LibDiamond.callFacet(data);
 
         (uint netAmountIn, ) = _getFee(wethIn);
 
@@ -167,7 +165,7 @@ contract SwapsForUserTokenV1 is SecondaryFunctions {
 
         //Swaps WETH to userToken (Base: USDT-WBTC / Route: MIM-USDC-renBTC-WBTC) 
         _swapsForUserToken(
-            netAmountIn, baseTokenOut, userDetails_, facets[1], selectors[1]
+            netAmountIn, baseTokenOut, userDetails_
         );
       
         uint toUser = IERC20(userDetails_.userToken).balanceOf(address(this));
@@ -177,12 +175,9 @@ contract SwapsForUserTokenV1 is SecondaryFunctions {
     function _swapsForUserToken(
         uint amountIn_, 
         uint baseTokenOut_, 
-        UserConfig memory userDetails_,
-        address facetExecutor_,
-        bytes4 execSelector_
+        UserConfig memory userDetails_
     ) private { 
         IWETH(s.WETH).approve(s.tricrypto, amountIn_);
-        emit DeadVariables(facetExecutor_, execSelector_);
 
         /**** 
             Exchanges the amount between the user's slippage. 
@@ -220,10 +215,9 @@ contract SwapsForUserTokenV2 is SecondaryFunctions {
     using SafeTransferLib for IERC20;
 
     event ForTesting(uint indexed testNum);
-    event DeadVariables(address variable, bytes4 variable2);
 
     function exchangeToUserToken(
-        UserConfig memory userDetails_
+        UserConfig calldata userDetails_
     ) external payable noReentrancy(0) filterDetails(userDetails_) { 
         if (msg.value <= 0) revert CantBeZero('msg.value');
 
@@ -231,17 +225,16 @@ contract SwapsForUserTokenV2 is SecondaryFunctions {
         uint wethIn = IWETH(s.WETH).balanceOf(address(this));
         wethIn = s.failedFees == 0 ? wethIn : wethIn - s.failedFees;
 
-        //Deposits in oz4626Facet
+        //Mutex bitmap lock
         _toggleBit(1, 0);
-        
-        (
-            address[] memory facets, bytes4[] memory selectors
-        ) = LibDiamond.facetToCall(_formatSignatures(1));
 
-        (bool success, ) = facets[0].delegatecall(
-            abi.encodeWithSelector(selectors[0], wethIn, userDetails_.user, 0)
+        //Deposits in oz4626Facet
+        bytes memory data = abi.encodeWithSignature(
+            'deposit(uint256,address,uint256)', 
+            wethIn, userDetails_.user, 0
         );
-        if(!success) revert CallFailed('OZLFacet: Failed to deposit');
+
+        LibDiamond.callFacet(data);
 
         (uint netAmountIn, ) = _getFee(wethIn);
 
@@ -250,7 +243,7 @@ contract SwapsForUserTokenV2 is SecondaryFunctions {
 
         //Swaps WETH to userToken (Base: USDT-WBTC / Route: MIM-USDC-renBTC-WBTC) 
         _swapsForUserToken(
-            netAmountIn, baseTokenOut, userDetails_, facets[1], selectors[1]
+            netAmountIn, baseTokenOut, userDetails_
         );
       
         uint toUser = IERC20(userDetails_.userToken).balanceOf(address(this));
@@ -260,12 +253,9 @@ contract SwapsForUserTokenV2 is SecondaryFunctions {
     function _swapsForUserToken(
         uint amountIn_, 
         uint baseTokenOut_, 
-        UserConfig memory userDetails_,
-        address facetExecutor_,
-        bytes4 execSelector_
+        UserConfig memory userDetails_
     ) private { 
         IWETH(s.WETH).approve(s.tricrypto, amountIn_);
-        emit DeadVariables(facetExecutor_, execSelector_);
 
         /**** 
             Exchanges the amount between the user's slippage. 
@@ -307,10 +297,9 @@ contract SwapsForUserTokenV3 is SecondaryFunctions {
     using SafeTransferLib for IERC20;
 
     event ForTesting(uint indexed testNum);
-    event DeadVariables(address variable, bytes4 variable2);
 
     function exchangeToUserToken(
-        UserConfig memory userDetails_
+        UserConfig calldata userDetails_
     ) external payable noReentrancy(0) filterDetails(userDetails_) { 
         if (msg.value <= 0) revert CantBeZero('msg.value');
 
@@ -318,17 +307,16 @@ contract SwapsForUserTokenV3 is SecondaryFunctions {
         uint wethIn = IWETH(s.WETH).balanceOf(address(this));
         wethIn = s.failedFees == 0 ? wethIn : wethIn - s.failedFees;
 
-        //Deposits in oz4626Facet
+        //Mutex bitmap lock
         _toggleBit(1, 0);
-        
-        (
-            address[] memory facets, bytes4[] memory selectors
-        ) = LibDiamond.facetToCall(_formatSignatures(1));
 
-        (bool success, ) = facets[0].delegatecall(
-            abi.encodeWithSelector(selectors[0], wethIn, userDetails_.user, 0)
+        //Deposits in oz4626Facet
+        bytes memory data = abi.encodeWithSignature(
+            'deposit(uint256,address,uint256)', 
+            wethIn, userDetails_.user, 0
         );
-        if(!success) revert CallFailed('OZLFacet: Failed to deposit');
+
+        LibDiamond.callFacet(data);
 
         (uint netAmountIn, ) = _getFee(wethIn);
 
@@ -337,7 +325,7 @@ contract SwapsForUserTokenV3 is SecondaryFunctions {
 
         //Swaps WETH to userToken (Base: USDT-WBTC / Route: MIM-USDC-renBTC-WBTC) 
         _swapsForUserToken(
-            netAmountIn, baseTokenOut, userDetails_, facets[1], selectors[1]
+            netAmountIn, baseTokenOut, userDetails_
         );
       
         uint toUser = IERC20(userDetails_.userToken).balanceOf(address(this));
@@ -348,12 +336,9 @@ contract SwapsForUserTokenV3 is SecondaryFunctions {
     function _swapsForUserToken(
         uint amountIn_, 
         uint baseTokenOut_, 
-        UserConfig memory userDetails_,
-        address facetExecutor_,
-        bytes4 execSelector_
+        UserConfig memory userDetails_
     ) private { 
         IWETH(s.WETH).approve(s.tricrypto, amountIn_);
-        emit DeadVariables(facetExecutor_, execSelector_);
 
         /**** 
             Exchanges the amount between the user's slippage. 
@@ -458,10 +443,9 @@ contract DepositFeesInDeFiV1 is SecondaryFunctions {
     using SafeTransferLib for IERC20;
 
     event ForTesting(uint indexed testNum);
-    event DeadVariables(address variable, bytes4 variable2);
 
     function exchangeToUserToken(
-        UserConfig memory userDetails_
+        UserConfig calldata userDetails_
     ) external payable noReentrancy(0) filterDetails(userDetails_) { 
         if (msg.value <= 0) revert CantBeZero('msg.value');
 
@@ -471,17 +455,16 @@ contract DepositFeesInDeFiV1 is SecondaryFunctions {
         uint wethIn = IWETH(s.WETH).balanceOf(address(this));
         wethIn = s.failedFees == 0 ? wethIn : wethIn - s.failedFees;
 
-        //Deposits in oz4626Facet
+        //Mutex bitmap lock
         _toggleBit(1, 0);
-        
-        (
-            address[] memory facets, bytes4[] memory selectors
-        ) = LibDiamond.facetToCall(_formatSignatures(1));
 
-        (bool success, ) = facets[0].delegatecall(
-            abi.encodeWithSelector(selectors[0], wethIn, userDetails_.user, 0)
+        //Deposits in oz4626Facet
+        bytes memory data = abi.encodeWithSignature(
+            'deposit(uint256,address,uint256)', 
+            wethIn, userDetails_.user, 0
         );
-        if(!success) revert CallFailed('OZLFacet: Failed to deposit');
+
+        LibDiamond.callFacet(data);
 
         (uint netAmountIn, uint fee) = _getFee(wethIn);
 
@@ -490,7 +473,7 @@ contract DepositFeesInDeFiV1 is SecondaryFunctions {
 
         //Swaps WETH to userToken (Base: USDT-WBTC / Route: MIM-USDC-renBTC-WBTC) 
         _swapsForUserToken(
-            netAmountIn, baseTokenOut, userDetails_, facets[1], selectors[1]
+            netAmountIn, baseTokenOut, userDetails_
         );
       
         uint toUser = IERC20(userDetails_.userToken).balanceOf(address(this));
@@ -503,12 +486,9 @@ contract DepositFeesInDeFiV1 is SecondaryFunctions {
     function _swapsForUserToken(
         uint amountIn_, 
         uint baseTokenOut_, 
-        UserConfig memory userDetails_,
-        address facetExecutor_,
-        bytes4 execSelector_
+        UserConfig memory userDetails_
     ) private { 
         IWETH(s.WETH).approve(s.tricrypto, amountIn_);
-        emit DeadVariables(facetExecutor_, execSelector_);
 
         /**** 
             Exchanges the amount between the user's slippage. 
