@@ -55,9 +55,6 @@ contract oz4626Facet is Modifiers {
 
         LibDiamond.callFacet(data);
 
-        // bytes memory data = abi.encodeWithSelector(selector, assets, receiver, 1);
-        // facet.functionDelegateCall(data);
-
         emit Deposit(msg.sender, receiver, assets, shares);
     }
 
@@ -73,10 +70,12 @@ contract oz4626Facet is Modifiers {
         //Mutex bitmap lock
         _toggleBit(1, 4);
 
-        (address facet, bytes4 selector) = LibDiamond.facetToCall('burn(address,uint256,uint256)');
+        bytes memory data = abi.encodeWithSignature(
+            'burn(address,uint256,uint256)', 
+            owner, shares, 4
+        );
 
-        bytes memory data = abi.encodeWithSelector(selector, owner, shares, 4);
-        facet.functionDelegateCall(data);
+        LibDiamond.callFacet(data);
 
         emit Withdraw(msg.sender, receiver, owner, assets, shares);
     }
