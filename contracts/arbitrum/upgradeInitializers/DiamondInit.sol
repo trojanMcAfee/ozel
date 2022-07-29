@@ -124,7 +124,7 @@ contract DiamondInit {
         // s.locks.push(locks);
         //---------
         s.bitLocks[0] = 255;  //noReentrancy - 7 (0-index)
-        s.bitLocks[1] = 0; //isAuthorized - 6 (0-index)
+        s.bitLocks[1] = 255; //isAuthorized - 6 (0-index)
 
 
 
