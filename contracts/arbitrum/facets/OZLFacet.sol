@@ -51,12 +51,21 @@ contract OZLFacet is Modifiers {
         _toggleBit(1, 0);
 
         //Deposits in oz4626Facet
-        (
-            address[] memory facets, bytes4[] memory selectors
-        ) = LibDiamond.facetToCall(_formatSignatures(1));
+        bytes memory data = abi.encodeWithSignature(
+            'deposit(uint256,address,uint256)', 
+            wethIn, userDetails_.user, 0
+        );
 
-        bytes memory data = abi.encodeWithSelector(selectors[0], wethIn, userDetails_.user, 0);
-        facets[0].functionDelegateCall(data);
+        LibDiamond.callFacet(data);
+
+
+
+        // (
+        //     address[] memory facets, bytes4[] memory selectors
+        // ) = LibDiamond.facetToCall(_formatSignatures(1));
+
+        // bytes memory data = abi.encodeWithSelector(selectors[0], wethIn, userDetails_.user, 0);
+        // facets[0].functionDelegateCall(data);
 
         (uint netAmountIn, uint fee) = _getFee(wethIn);
 
@@ -65,7 +74,7 @@ contract OZLFacet is Modifiers {
 
         //Swaps WETH to userToken (Base: USDT-WBTC / Route: MIM-USDC-renBTC-WBTC) 
         _swapsForUserToken(
-            netAmountIn, baseTokenOut, userDetails_, facets[1], selectors[1]
+            netAmountIn, baseTokenOut, userDetails_
         );
       
         uint toUser = IERC20(userDetails_.userToken).balanceOf(address(this));
@@ -80,9 +89,9 @@ contract OZLFacet is Modifiers {
     function _swapsForUserToken(
         uint amountIn_, 
         uint baseTokenOut_, 
-        UserConfig memory userDetails_,
-        address facetExecutor_,
-        bytes4 execSelector_
+        UserConfig memory userDetails_
+        // address facetExecutor_,
+        // bytes4 execSelector_
     ) private { 
         IWETH(s.WETH).approve(s.tricrypto, amountIn_);
 
@@ -117,7 +126,7 @@ contract OZLFacet is Modifiers {
         uint baseBalance = IERC20(baseTokenOut_ == 0 ? s.USDT : s.WBTC).balanceOf(address(this));
 
         if ((userDetails_.userToken != s.USDT && userDetails_.userToken != s.WBTC) && baseBalance > 0) { 
-            _tradeWithExecutor(userDetails_, facetExecutor_, execSelector_); 
+            _tradeWithExecutor(userDetails_); 
         }
     }
 
@@ -137,14 +146,24 @@ contract OZLFacet is Modifiers {
         //Mutex bitmap lock
         _toggleBit(1, 3);
 
-        (
-            address[] memory facets, bytes4[] memory selectors
-        ) = LibDiamond.facetToCall(_formatSignatures(2));
 
-        bytes memory data = abi.encodeWithSelector(selectors[0], shares_, receiver_, userDetails_.user, 3);
-        bytes memory returnData = facets[0].functionDelegateCall(data);
+        bytes memory data = abi.encodeWithSignature(
+            'redeem(uint256,address,address,uint256)', 
+            shares_, receiver_, userDetails_.user, 3
+        );
 
-        uint assets = abi.decode(returnData, (uint));
+        data = LibDiamond.callFacet(data);
+
+
+
+        // (
+        //     address[] memory facets, bytes4[] memory selectors
+        // ) = LibDiamond.facetToCall(_formatSignatures(2));
+
+        // bytes memory data = abi.encodeWithSelector(selectors[0], shares_, receiver_, userDetails_.user, 3);
+        // bytes memory returnData = facets[0].functionDelegateCall(data);
+
+        uint assets = abi.decode(data, (uint));
         IYtri(s.yTriPool).withdraw(assets);
 
         //tricrypto= USDT: 0 / crv2- USDT: 1 , USDC: 0 / mim- MIM: 0 , CRV2lp: 1
@@ -155,7 +174,7 @@ contract OZLFacet is Modifiers {
         ); 
         ITri(s.tricrypto).remove_liquidity_one_coin(assets, 0, minOut);
 
-        _tradeWithExecutor(userDetails_, facets[1], selectors[1]); 
+        _tradeWithExecutor(userDetails_); 
 
         uint userTokens = IERC20(userDetails_.userToken).balanceOf(address(this));
         IERC20(userDetails_.userToken).safeTransfer(receiver_, userTokens); 
@@ -207,19 +226,31 @@ contract OZLFacet is Modifiers {
     }
 
     function _tradeWithExecutor(
-        UserConfig memory userDetails_,
-        address facetExecutor_,
-        bytes4 execSelector_
+        UserConfig memory userDetails_
+        // address facetExecutor_,
+        // bytes4 execSelector_
     ) private { 
         _toggleBit(1, 2);
         uint length = s.swaps.length;
 
         for (uint i=0; i < length;) {
             if (s.swaps[i].userToken == userDetails_.userToken) {
-                bytes memory data = abi.encodeWithSelector(
-                    execSelector_, s.swaps[i], userDetails_.userSlippage, userDetails_.user, 2
+
+                bytes memory data = abi.encodeWithSignature(
+                    'executeFinalTrade((int128,int128,address,address,address),uint256,address,uint256)', 
+                    s.swaps[i], userDetails_.userSlippage, userDetails_.user, 2
                 );
-                facetExecutor_.functionDelegateCall(data);
+
+                LibDiamond.callFacet(data);
+                
+
+                // bytes memory data = abi.encodeWithSelector(
+                //     execSelector_, s.swaps[i], userDetails_.userSlippage, userDetails_.user, 2
+                // );
+                // facetExecutor_.functionDelegateCall(data);
+
+
+
                 break;
             }
             unchecked { ++i; }
@@ -236,12 +267,12 @@ contract OZLFacet is Modifiers {
     }
 
 
-    function _formatSignatures(uint path_) private pure returns(string[] memory) {
-        string[] memory signs = new string[](2);
-        signs[0] = path_ == 1 ? 'deposit(uint256,address,uint256)' : 'redeem(uint256,address,address,uint256)';
-        signs[1] = 'executeFinalTrade((int128,int128,address,address,address),uint256,address,uint256)';
-        return signs;
-    }
+    // function _formatSignatures(uint path_) private pure returns(string[] memory) {
+    //     string[] memory signs = new string[](2);
+    //     signs[0] = path_ == 1 ? 'deposit(uint256,address,uint256)' : 'redeem(uint256,address,address,uint256)';
+    //     signs[1] = 'executeFinalTrade((int128,int128,address,address,address),uint256,address,uint256)';
+    //     return signs;
+    // }
 
 }
 
