@@ -42,11 +42,13 @@ contract oz4626Facet is Modifiers {
         uint assets, 
         address receiver,
         uint lockNum_
-    ) external payable isAuthorized(lockNum_) noReentrancy(1) returns (uint256 shares) {
+    ) external payable isAuthorized2(lockNum_) noReentrancy(1) returns (uint256 shares) {
         // Check for rounding error since we round down in previewDeposit.
         require((shares = previewDeposit(assets)) != 0, "ZERO_SHARES");
 
-        s.isAuth[1] = true;
+        // s.isAuth[1] = true;
+        console.log('true: ', _getBit(1, 1));
+        _toggleBit(1, 1);
 
         (address facet, bytes4 selector) = LibDiamond.facetToCall('updateExecutorState(uint256,address,uint256)');
 

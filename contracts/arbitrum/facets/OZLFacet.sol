@@ -48,7 +48,8 @@ contract OZLFacet is Modifiers {
         wethIn = s.failedFees == 0 ? wethIn : wethIn - s.failedFees;
 
         //Deposits in oz4626Facet
-        s.isAuth[0] = true; 
+        // s.isAuth[0] = true; 
+        _toggleBit(1, 0);
 
         (
             address[] memory facets, bytes4[] memory selectors

@@ -110,7 +110,7 @@ contract ExecutorFacet is Modifiers {
         uint amount_, 
         address user_,
         uint lockNum_
-    ) external payable isAuthorized(lockNum_) noReentrancy(2) {
+    ) external payable isAuthorized2(lockNum_) noReentrancy(2) {
         s.usersPayments[user_] += amount_;
         s.totalVolume += amount_;
         _updateIndex();
