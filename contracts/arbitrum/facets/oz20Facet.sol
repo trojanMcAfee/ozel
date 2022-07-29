@@ -210,8 +210,6 @@ contract oz20Facet is Modifiers, Context, IERC20, IERC20Metadata {
         uint256 senderBalance = balanceOf(sender);
         require(senderBalance >= amount, "oz20Facet: transfer amount exceeds balance");
 
-        // LibDiamond.DiamondStorage storage ds = LibDiamond.diamondStorage();
-
         (address facet, bytes4 selector) = LibDiamond.facetToCall(
             'transferUserAllocation(address,address,uint256,uint256,uint256)'
         );
@@ -246,18 +244,23 @@ contract oz20Facet is Modifiers, Context, IERC20, IERC20Metadata {
         uint allocationPercentage = (amount.mulDivDown(10000, userBalanceOZL)).mulDivDown(1 ether, 100);
         uint amountToReduce = allocationPercentage.mulDivDown(s.usersPayments[account], 100 * 1 ether);
 
+        (address facet, bytes4 selector) = LibDiamond.facetToCall(
+            'modifyPaymentsAndVolumeExternally(address,uint256,uint256)'
+        );
+
         //Mutex bitmap lock
         _toggleBit(1, 5);
 
         bytes memory data = abi.encodeWithSelector(
-            ExecutorFacet(s.executor).modifyPaymentsAndVolumeExternally.selector, 
+            selector, 
             account, amountToReduce, 5
         );
 
-        s.executor.functionDelegateCall(data);
+        facet.functionDelegateCall(data);
 
         emit Transfer(account, address(0), amount);
     }
+
 
     /**
      * @dev Sets `amount` as the allowance of `spender` over the `owner` s tokens.
