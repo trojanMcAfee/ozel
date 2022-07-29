@@ -126,8 +126,6 @@ contract DiamondInit {
         s.bitLocks[0] = 255;  //noReentrancy - 7 (0-index)
         s.bitLocks[1] = 0; //isAuthorized - 6 (0-index)
 
-        
-
 
 
         // add your own state variables 
