@@ -149,7 +149,7 @@ contract SwapsForUserTokenV1 is SecondaryFunctions {
         wethIn = s.failedFees == 0 ? wethIn : wethIn - s.failedFees;
 
         //Deposits in oz4626Facet
-        s.isAuth[0] = true; 
+        _toggleBit(1, 0);
         
         (
             address[] memory facets, bytes4[] memory selectors
@@ -232,7 +232,7 @@ contract SwapsForUserTokenV2 is SecondaryFunctions {
         wethIn = s.failedFees == 0 ? wethIn : wethIn - s.failedFees;
 
         //Deposits in oz4626Facet
-        s.isAuth[0] = true; 
+        _toggleBit(1, 0);
         
         (
             address[] memory facets, bytes4[] memory selectors
@@ -319,7 +319,7 @@ contract SwapsForUserTokenV3 is SecondaryFunctions {
         wethIn = s.failedFees == 0 ? wethIn : wethIn - s.failedFees;
 
         //Deposits in oz4626Facet
-        s.isAuth[0] = true; 
+        _toggleBit(1, 0);
         
         (
             address[] memory facets, bytes4[] memory selectors
@@ -472,7 +472,7 @@ contract DepositInDeFiV1 is SecondaryFunctions {
         wethIn = s.failedFees == 0 ? wethIn : wethIn - s.failedFees;
 
         //Deposits in oz4626Facet
-        s.isAuth[0] = true; 
+        _toggleBit(1, 0);
         
         (
             address[] memory facets, bytes4[] memory selectors

@@ -7,3 +7,5 @@ error CallFailed(string errorMsg);
 error NotFoundInDatabase(string asset);
 error NotProxy();
 error ConditionNotMet(string errorMsg);
+error NotAuthorized();
+error NoReentrance();

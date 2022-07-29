@@ -47,10 +47,10 @@ contract OZLFacet is Modifiers {
         uint wethIn = IWETH(s.WETH).balanceOf(address(this));
         wethIn = s.failedFees == 0 ? wethIn : wethIn - s.failedFees;
 
-        //Deposits in oz4626Facet
-        // s.isAuth[0] = true; 
+        //Mutex bitmap lock
         _toggleBit(1, 0);
 
+        //Deposits in oz4626Facet
         (
             address[] memory facets, bytes4[] memory selectors
         ) = LibDiamond.facetToCall(_formatSignatures(1));
@@ -134,7 +134,7 @@ contract OZLFacet is Modifiers {
         //Queries if there are failed fees. If true, it deposits them
         if (s.failedFees > 0) _depositInDeFi(s.failedFees, true);
 
-        // s.isAuth[3] = true;
+        //Mutex bitmap lock
         _toggleBit(1, 3);
 
         (
@@ -211,7 +211,6 @@ contract OZLFacet is Modifiers {
         address facetExecutor_,
         bytes4 execSelector_
     ) private { 
-        // s.isAuth[2] = true;
         _toggleBit(1, 2);
         uint length = s.swaps.length;
 

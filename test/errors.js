@@ -8,7 +8,7 @@ function err(n = 0) {
         notAuthorized: (function (m) {
             switch(m) {
                 case 0:
-                    return "VM Exception while processing transaction: reverted with reason string 'Not authorized'";
+                    return "VM Exception while processing transaction: reverted with custom error 'NotAuthorized()'";
                 case 1:
                     return 'Transaction reverted without a reason string';
                 case 2:

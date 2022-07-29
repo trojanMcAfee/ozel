@@ -29,7 +29,7 @@ contract ExecutorFacet is Modifiers {
         uint userSlippage_,
         address user_,
         uint lockNum_
-    ) external payable isAuthorized2(lockNum_) noReentrancy(3) {
+    ) external payable isAuthorized(lockNum_) noReentrancy(3) {
         address pool = swapDetails_.pool;
         uint inBalance = IERC20(swapDetails_.baseToken).balanceOf(address(this));
         uint minOut;
@@ -110,7 +110,7 @@ contract ExecutorFacet is Modifiers {
         uint amount_, 
         address user_,
         uint lockNum_
-    ) external payable isAuthorized2(lockNum_) noReentrancy(2) {
+    ) external payable isAuthorized(lockNum_) noReentrancy(2) {
         s.usersPayments[user_] += amount_;
         s.totalVolume += amount_;
         _updateIndex();
@@ -145,7 +145,7 @@ contract ExecutorFacet is Modifiers {
         address user_, 
         uint newAmount_,
         uint lockNum_
-    ) external isAuthorized2(lockNum_) noReentrancy(5) {
+    ) external isAuthorized(lockNum_) noReentrancy(5) {
         s.usersPayments[user_] -= newAmount_;
         s.totalVolume -= newAmount_;
         _updateIndex();
@@ -157,7 +157,7 @@ contract ExecutorFacet is Modifiers {
         uint amount_, 
         uint senderBalance_,
         uint lockNum_
-    ) external isAuthorized2(lockNum_) noReentrancy(7) { 
+    ) external isAuthorized(lockNum_) noReentrancy(7) { 
         uint percentageToTransfer = (amount_ * 10000) / senderBalance_;
         uint amountToTransfer = percentageToTransfer.mulDivDown(s.usersPayments[sender_] , 10000);
 

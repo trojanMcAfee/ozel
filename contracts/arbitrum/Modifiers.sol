@@ -25,7 +25,8 @@ abstract contract Modifiers is Bits {
 
     modifier noReentrancy(uint index_) { 
         // console.log('gas pre: ', gasleft());
-        require(_getBit(0, index_), 'No reentrance');
+        // require(_getBit(0, index_), 'No reentrance');
+        if (!(_getBit(0, index_))) revert NoReentrance();
         _toggleBit(0, index_);
         // console.log('false: ', _getBit(0, index_));
         _;
@@ -35,17 +36,18 @@ abstract contract Modifiers is Bits {
     }
 
 
-    modifier isAuthorized(uint lockNum_) {
+    modifier isAuthorized2(uint lockNum_) {
         require(s.isAuth[lockNum_], "Not authorized");
         _;
         s.isAuth[lockNum_] = false;
     }
 
-    modifier isAuthorized2(uint index_) {
+    modifier isAuthorized(uint index_) {
         // console.log('index - 1: ', index_);
         // console.log('false: ', _getBit(1, index_));
+        if (_getBit(1, index_)) revert NotAuthorized();
 
-        require(!(_getBit(1, index_)), "Not authorized");
+        // require(!(_getBit(1, index_)), "Not authorized");
         _;
         _toggleBit(1, index_);
         // console.log('true: ', _getBit(1, index_));
