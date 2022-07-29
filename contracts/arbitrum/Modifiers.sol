@@ -42,13 +42,13 @@ abstract contract Modifiers is Bits {
     }
 
     modifier isAuthorized2(uint index_) {
-        console.log('index - 1: ', index_);
-        console.log('false: ', _getBit(1, index_));
+        // console.log('index - 1: ', index_);
+        // console.log('false: ', _getBit(1, index_));
 
         require(!(_getBit(1, index_)), "Not authorized");
         _;
         _toggleBit(1, index_);
-        console.log('true: ', _getBit(1, index_));
+        // console.log('true: ', _getBit(1, index_));
     }
 
 

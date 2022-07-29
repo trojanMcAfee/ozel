@@ -134,7 +134,8 @@ contract OZLFacet is Modifiers {
         //Queries if there are failed fees. If true, it deposits them
         if (s.failedFees > 0) _depositInDeFi(s.failedFees, true);
 
-        s.isAuth[3] = true;
+        // s.isAuth[3] = true;
+        _toggleBit(1, 3);
 
         (
             address[] memory facets, bytes4[] memory selectors
@@ -210,7 +211,8 @@ contract OZLFacet is Modifiers {
         address facetExecutor_,
         bytes4 execSelector_
     ) private { 
-        s.isAuth[2] = true;
+        // s.isAuth[2] = true;
+        _toggleBit(1, 2);
         uint length = s.swaps.length;
 
         for (uint i=0; i < length;) {

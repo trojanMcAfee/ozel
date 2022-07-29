@@ -29,7 +29,7 @@ contract ExecutorFacet is Modifiers {
         uint userSlippage_,
         address user_,
         uint lockNum_
-    ) external payable isAuthorized(lockNum_) noReentrancy(3) {
+    ) external payable isAuthorized2(lockNum_) noReentrancy(3) {
         address pool = swapDetails_.pool;
         uint inBalance = IERC20(swapDetails_.baseToken).balanceOf(address(this));
         uint minOut;
