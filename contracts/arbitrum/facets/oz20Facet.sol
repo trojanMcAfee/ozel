@@ -15,6 +15,8 @@ import '../../libraries/FixedPointMathLib.sol';
 import '../Modifiers.sol';
 import '../../Errors.sol';
 
+import { LibDiamond } from "../../libraries/LibDiamond.sol";
+
 /**
  * @dev Implementation of the {IERC20} interface.
  * @author Original author: OpenZeppelin
@@ -197,7 +199,7 @@ contract oz20Facet is Modifiers, Context, IERC20, IERC20Metadata {
      * - `recipient` cannot be the zero address.
      * - `sender` must have a balance of at least `amount`.
      */
-    function _transfer(
+    function _transfer( 
         address sender,
         address recipient,
         uint256 amount
@@ -208,15 +210,21 @@ contract oz20Facet is Modifiers, Context, IERC20, IERC20Metadata {
         uint256 senderBalance = balanceOf(sender);
         require(senderBalance >= amount, "oz20Facet: transfer amount exceeds balance");
 
+        // LibDiamond.DiamondStorage storage ds = LibDiamond.diamondStorage();
+
+        (address facet, bytes4 selector) = LibDiamond.facetToCall(
+            'transferUserAllocation(address,address,uint256,uint256,uint256)'
+        );
+
         //Mutex bitmap lock
         _toggleBit(1, 6);
 
         bytes memory data = abi.encodeWithSelector(
-            ExecutorFacet(s.executor).transferUserAllocation.selector, 
+            selector, 
             sender, recipient, amount, senderBalance, 6
         );
 
-        s.executor.functionDelegateCall(data);
+        facet.functionDelegateCall(data);
 
         emit Transfer(sender, recipient, amount);
     }

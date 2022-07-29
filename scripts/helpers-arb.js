@@ -57,7 +57,9 @@ async function balanceOfOZL(user) {
 async function transferOZL(recipient, amount, signerIndex = 0) { 
     const signers = await hre.ethers.getSigners();
     const signer = signers[signerIndex];
-    await OZLDiamond.connect(signer).transfer(recipient, amount);
+    const tx = await OZLDiamond.connect(signer).transfer(recipient, amount);
+    const receipt = await tx.wait();
+    return receipt;
 }
 
 async function withdrawShareOZL(userDetails, receiverAddr, balanceOZL, signerIndex = 0) {  

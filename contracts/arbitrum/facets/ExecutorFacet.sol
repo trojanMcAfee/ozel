@@ -135,7 +135,9 @@ contract ExecutorFacet is Modifiers {
         } 
 
         s.ozelIndex = 
-            s.totalVolume != 0 ? oneETH.mulDivDown((s.invariant2 * s.invariantRegulator), s.totalVolume) * (s.invariant * s.invariantRegulator) : 0; 
+            s.totalVolume != 0 ? 
+            oneETH.mulDivDown((s.invariant2 * s.invariantRegulator), s.totalVolume) * (s.invariant * s.invariantRegulator) : 
+            0; 
 
         s.ozelIndex = s.indexFlag ? s.ozelIndex : s.ozelIndex * s.stabilizer;
     }
