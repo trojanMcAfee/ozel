@@ -145,7 +145,7 @@ contract ExecutorFacet is Modifiers {
         address user_, 
         uint newAmount_,
         uint lockNum_
-    ) external isAuthorized(lockNum_) noReentrancy(5) {
+    ) external isAuthorized2(lockNum_) noReentrancy(5) {
         s.usersPayments[user_] -= newAmount_;
         s.totalVolume -= newAmount_;
         _updateIndex();
@@ -157,7 +157,7 @@ contract ExecutorFacet is Modifiers {
         uint amount_, 
         uint senderBalance_,
         uint lockNum_
-    ) external isAuthorized(lockNum_) noReentrancy(7) { 
+    ) external isAuthorized2(lockNum_) noReentrancy(7) { 
         uint percentageToTransfer = (amount_ * 10000) / senderBalance_;
         uint amountToTransfer = percentageToTransfer.mulDivDown(s.usersPayments[sender_] , 10000);
 

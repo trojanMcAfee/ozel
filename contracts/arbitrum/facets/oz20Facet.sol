@@ -208,7 +208,8 @@ contract oz20Facet is Modifiers, Context, IERC20, IERC20Metadata {
         uint256 senderBalance = balanceOf(sender);
         require(senderBalance >= amount, "oz20Facet: transfer amount exceeds balance");
 
-        s.isAuth[6] = true;
+        // s.isAuth[6] = true;
+        _toggleBit(1, 6);
 
         bytes memory data = abi.encodeWithSelector(
             ExecutorFacet(s.executor).transferUserAllocation.selector, 
@@ -225,7 +226,7 @@ contract oz20Facet is Modifiers, Context, IERC20, IERC20Metadata {
         address account, 
         uint amount,
         uint lockNum_
-    ) external isAuthorized(lockNum_) noReentrancy(4) { 
+    ) external isAuthorized2(lockNum_) noReentrancy(4) { 
         if(account == address(0)) revert CantBeZero('oz4626Facet: address');
 
         uint256 accountBalance = balanceOf(account); 
@@ -237,7 +238,8 @@ contract oz20Facet is Modifiers, Context, IERC20, IERC20Metadata {
         uint allocationPercentage = (amount.mulDivDown(10000, userBalanceOZL)).mulDivDown(1 ether, 100);
         uint amountToReduce = allocationPercentage.mulDivDown(s.usersPayments[account], 100 * 1 ether);
 
-        s.isAuth[5] = true;
+        // s.isAuth[5] = true;
+        _toggleBit(1, 5);
 
         bytes memory data = abi.encodeWithSelector(
             ExecutorFacet(s.executor).modifyPaymentsAndVolumeExternally.selector, 

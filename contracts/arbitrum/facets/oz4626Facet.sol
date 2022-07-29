@@ -67,7 +67,8 @@ contract oz4626Facet is Modifiers {
     ) external isAuthorized2(lockNum_) noReentrancy(6) returns (uint256 assets) {
         require((assets = previewRedeem(shares)) != 0, "ZERO_ASSETS");
 
-        s.isAuth[4] = true;
+        // s.isAuth[4] = true;
+        _toggleBit(1, 4);
 
         (address facet, bytes4 selector) = LibDiamond.facetToCall('burn(address,uint256,uint256)');
 
