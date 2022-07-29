@@ -2,57 +2,28 @@
 pragma solidity ^0.8.0;
 
 
-// import { LibDiamond } from "../libraries/LibDiamond.sol";
 import './AppStorage.sol';
 import '../Errors.sol';
 import './Bits.sol';
 
 import 'hardhat/console.sol';
 
-// import '@openzeppelin/contracts/utils/structs/BitMaps.sol';
 
 
 abstract contract Modifiers is Bits {
 
-    // AppStorage s;
-
-    modifier noReentrancy2(uint lockNum_) { 
-        require(!(s.isLocked[lockNum_]), "No reentrance");
-        s.isLocked[lockNum_] = true;
-        _;
-        s.isLocked[lockNum_] = false;
-    }
-
     modifier noReentrancy(uint index_) { 
-        // console.log('gas pre: ', gasleft());
-        // require(_getBit(0, index_), 'No reentrance');
         if (!(_getBit(0, index_))) revert NoReentrance();
         _toggleBit(0, index_);
-        // console.log('false: ', _getBit(0, index_));
         _;
         _toggleBit(0, index_);
-        // console.log('true: ', _getBit(0, index_));
-        // console.log('gas post: ', gasleft());
-    }
-
-
-    modifier isAuthorized2(uint lockNum_) {
-        require(s.isAuth[lockNum_], "Not authorized");
-        _;
-        s.isAuth[lockNum_] = false;
     }
 
     modifier isAuthorized(uint index_) {
-        // console.log('index - 1: ', index_);
-        // console.log('false: ', _getBit(1, index_));
         if (_getBit(1, index_)) revert NotAuthorized();
-
-        // require(!(_getBit(1, index_)), "Not authorized");
         _;
         _toggleBit(1, index_);
-        // console.log('true: ', _getBit(1, index_));
     }
-
 
     modifier onlyWhenEnabled() {
         require(s.isEnabled, 'Operation not enabled');
@@ -65,18 +36,4 @@ abstract contract Modifiers is Bits {
         if (!s.tokenDatabase[userDetails_.userToken]) revert NotFoundInDatabase('token');
         _;
     }
-
-    /**
-        Bits manipulation
-     */
-
-    // function _getBit(uint bitmap_, uint index_) private view returns(bool) {
-    //     uint bit = s.bitLocks[bitmap_] & (1 << index_);
-    //     return bit > 0;
-    // }
-
-    // function _toggleBit(uint bitmap_, uint index_) private view {
-    //     s.bitLocks[bitmap_] ^ uint(1) << index_;
-    // }
-
 }

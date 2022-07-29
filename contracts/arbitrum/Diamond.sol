@@ -24,7 +24,6 @@ contract Diamond {
 
     AppStorage s;
 
-
     constructor(
         IDiamondCut.FacetCut[] memory _diamondCut, 
         address _contractOwner, 
