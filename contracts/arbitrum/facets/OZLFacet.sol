@@ -41,7 +41,7 @@ contract OZLFacet is Modifiers {
     ) external payable noReentrancy(0) filterDetails(userDetails_) { 
         if (msg.value <= 0) revert CantBeZero('msg.value');
 
-        if (s.failedFees > 0) _depositInDeFi(s.failedFees, true);
+        if (s.failedFees > 0) _depositFeesInDeFi(s.failedFees, true);
 
         IWETH(s.WETH).deposit{value: msg.value}();
         uint wethIn = IWETH(s.WETH).balanceOf(address(this));
@@ -71,7 +71,7 @@ contract OZLFacet is Modifiers {
         uint toUser = IERC20(userDetails_.userToken).balanceOf(address(this));
         if (toUser > 0) IERC20(userDetails_.userToken).safeTransfer(userDetails_.user, toUser);
 
-        _depositInDeFi(fee, false);
+        _depositFeesInDeFi(fee, false);
     }
 
 
@@ -132,7 +132,7 @@ contract OZLFacet is Modifiers {
         if (shares_ <= 0) revert CantBeZero('shares');
 
         //Queries if there are failed fees. If true, it deposits them
-        if (s.failedFees > 0) _depositInDeFi(s.failedFees, true);
+        if (s.failedFees > 0) _depositFeesInDeFi(s.failedFees, true);
 
         //Mutex bitmap lock
         _toggleBit(1, 3);
@@ -162,7 +162,7 @@ contract OZLFacet is Modifiers {
     } 
     
 
-    function _depositInDeFi(uint fee_, bool isRetry_) private { //change later to _depositFeesInDeFi
+    function _depositFeesInDeFi(uint fee_, bool isRetry_) private { 
         //Deposit WETH in Curve Tricrypto pool
         (uint tokenAmountIn, uint[3] memory amounts) = _calculateTokenAmountCurve(fee_);
         IWETH(s.WETH).approve(s.tricrypto, tokenAmountIn);

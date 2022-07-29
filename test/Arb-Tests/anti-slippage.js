@@ -124,19 +124,19 @@ let testingNum;
          * are attempted to be deposited once again through any main action from
          * the app (deposit - withdraw).
          */
-        it('should add failed fees to its own variable / DepositInDeFiV1', async () => {            
-            ({ testingNum } = await replaceForModVersion('DepositInDeFiV1', false, selector, userDetails));
+        it('should add failed fees to its own variable / DepositFeesInDeFiV1', async () => {            
+            ({ testingNum } = await replaceForModVersion('DepositFeesInDeFiV1', false, selector, userDetails));
             assert.equal(testingNum, 23);
         });
 
         /**
          * It deposits -in DeFi- the failedFees that weren't deposited in the prior test.
          */
-        it('should deposit any failed fees found in the failedFees variable / DepositInDeFiV1', async () => {            
+        it('should deposit any failed fees found in the failedFees variable / DepositFeesInDeFiV1', async () => {            
             receipt = await sendETH(userDetails);
             assert.equal(getTestingNumber(receipt, true), 24);
 
-            //Reverts to the original _depositInDeFi()
+            //Reverts to the original _depositFeesInDeFi()
             await replaceForModVersion(ozlFacet, false, selector, userDetails, false, true);
         });
     });

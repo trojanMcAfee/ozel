@@ -7,7 +7,7 @@ import '@uniswap/v3-periphery/contracts/interfaces/ISwapRouter.sol';
 import '../interfaces/IWETH.sol';
 import { LibDiamond } from "../libraries/LibDiamond.sol";
 
-import '@openzeppelin/contracts/utils/structs/BitMaps.sol';
+// import '@openzeppelin/contracts/utils/structs/BitMaps.sol';
 
 
 struct AppStorage {
@@ -61,14 +61,6 @@ struct AppStorage {
     bool isEnabled;
 
     //Mutex locks
-    mapping(uint => bool) isLocked;
-    mapping(uint => bool) isAuth;
-    //----
-    mapping(uint => BitMaps.BitMap) bitLocks2;
-    BitMaps.BitMap[] locks;
-    // BitMaps.BitMap reEntrancyLocks;
-    // BitMaps.BitMap authLocks;
-    //------
     mapping(uint => uint) bitLocks;
 
     //Stabilizing mechanism (for ozelIndex)

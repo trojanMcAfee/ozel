@@ -451,10 +451,10 @@ contract UpdateIndexV1 is Modifiers {
 
 
 /**
-    DepositInDeFi()
+    DepositFeesInDeFi()
  */
 
-contract DepositInDeFiV1 is SecondaryFunctions {
+contract DepositFeesInDeFiV1 is SecondaryFunctions {
     using SafeTransferLib for IERC20;
 
     event ForTesting(uint indexed testNum);
@@ -465,7 +465,7 @@ contract DepositInDeFiV1 is SecondaryFunctions {
     ) external payable noReentrancy(0) filterDetails(userDetails_) { 
         if (msg.value <= 0) revert CantBeZero('msg.value');
 
-        if (s.failedFees > 0) _depositInDeFi(s.failedFees, true);
+        if (s.failedFees > 0) _depositFeesInDeFi(s.failedFees, true);
 
         IWETH(s.WETH).deposit{value: msg.value}();
         uint wethIn = IWETH(s.WETH).balanceOf(address(this));
@@ -496,7 +496,7 @@ contract DepositInDeFiV1 is SecondaryFunctions {
         uint toUser = IERC20(userDetails_.userToken).balanceOf(address(this));
         if (toUser > 0) IERC20(userDetails_.userToken).safeTransfer(userDetails_.user, toUser);
 
-        _depositInDeFi(fee, false);
+        _depositFeesInDeFi(fee, false);
     }
 
 
@@ -540,7 +540,7 @@ contract DepositInDeFiV1 is SecondaryFunctions {
     }
 
 
-    function _depositInDeFi(uint fee_, bool isRetry_) private { 
+    function _depositFeesInDeFi(uint fee_, bool isRetry_) private { 
         //Deposit WETH in Curve Tricrypto pool
         (uint tokenAmountIn, uint[3] memory amounts) = _calculateTokenAmountCurve(fee_);
         IWETH(s.WETH).approve(s.tricrypto, tokenAmountIn);
