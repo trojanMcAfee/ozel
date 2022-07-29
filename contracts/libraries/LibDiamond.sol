@@ -235,6 +235,15 @@ library LibDiamond {
         return (facet, selector);
     }
 
+
+    function callFacet(bytes memory data_) internal {
+        DiamondStorage storage ds = diamondStorage();
+        address facet = ds.selectorToFacetAndPosition[bytes4(data_)].facetAddress;
+        (bool success, ) = facet.delegatecall(data_);
+        require(success, 'LibDiamond: callFacet() failed');
+    }
+
+
     function facetToCall(
         string[] memory funcSignatures
     ) internal view returns(address[] memory, bytes4[] memory) {

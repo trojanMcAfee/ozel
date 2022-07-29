@@ -46,12 +46,17 @@ contract oz4626Facet is Modifiers {
         require((shares = previewDeposit(assets)) != 0, "ZERO_SHARES");
 
         //Mutex bitmap lock
-        _toggleBit(1, 1);
+        _toggleBit(1, 1); 
 
-        (address facet, bytes4 selector) = LibDiamond.facetToCall('updateExecutorState(uint256,address,uint256)');
+        bytes memory data = abi.encodeWithSignature(
+            'updateExecutorState(uint256,address,uint256)', 
+            assets, receiver, 1
+        );
 
-        bytes memory data = abi.encodeWithSelector(selector, assets, receiver, 1);
-        facet.functionDelegateCall(data);
+        LibDiamond.callFacet(data);
+
+        // bytes memory data = abi.encodeWithSelector(selector, assets, receiver, 1);
+        // facet.functionDelegateCall(data);
 
         emit Deposit(msg.sender, receiver, assets, shares);
     }
