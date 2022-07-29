@@ -210,19 +210,26 @@ contract oz20Facet is Modifiers, Context, IERC20, IERC20Metadata {
         uint256 senderBalance = balanceOf(sender);
         require(senderBalance >= amount, "oz20Facet: transfer amount exceeds balance");
 
-        (address facet, bytes4 selector) = LibDiamond.facetToCall(
-            'transferUserAllocation(address,address,uint256,uint256,uint256)'
-        );
+        // (address facet, bytes4 selector) = LibDiamond.facetToCall(
+        //     'transferUserAllocation(address,address,uint256,uint256,uint256)'
+        // );
 
         //Mutex bitmap lock
         _toggleBit(1, 6);
 
-        bytes memory data = abi.encodeWithSelector(
-            selector, 
+        bytes memory data = abi.encodeWithSignature(
+            'transferUserAllocation(address,address,uint256,uint256,uint256)', 
             sender, recipient, amount, senderBalance, 6
         );
 
-        facet.functionDelegateCall(data);
+        LibDiamond.callFacet(data);
+
+        // bytes memory data = abi.encodeWithSelector(
+        //     selector, 
+        //     sender, recipient, amount, senderBalance, 6
+        // );
+
+        // facet.functionDelegateCall(data);
 
         emit Transfer(sender, recipient, amount);
     }
@@ -244,19 +251,26 @@ contract oz20Facet is Modifiers, Context, IERC20, IERC20Metadata {
         uint allocationPercentage = (amount.mulDivDown(10000, userBalanceOZL)).mulDivDown(1 ether, 100);
         uint amountToReduce = allocationPercentage.mulDivDown(s.usersPayments[account], 100 * 1 ether);
 
-        (address facet, bytes4 selector) = LibDiamond.facetToCall(
-            'modifyPaymentsAndVolumeExternally(address,uint256,uint256)'
-        );
+        // (address facet, bytes4 selector) = LibDiamond.facetToCall(
+        //     'modifyPaymentsAndVolumeExternally(address,uint256,uint256)'
+        // );
 
         //Mutex bitmap lock
         _toggleBit(1, 5);
 
-        bytes memory data = abi.encodeWithSelector(
-            selector, 
+        bytes memory data = abi.encodeWithSignature(
+            'modifyPaymentsAndVolumeExternally(address,uint256,uint256)', 
             account, amountToReduce, 5
         );
 
-        facet.functionDelegateCall(data);
+        LibDiamond.callFacet(data);
+
+        // bytes memory data = abi.encodeWithSelector(
+        //     selector, 
+        //     account, amountToReduce, 5
+        // );
+
+        // facet.functionDelegateCall(data);
 
         emit Transfer(account, address(0), amount);
     }
