@@ -19,6 +19,8 @@ let fraxAddr;
 let swapRouterUniAddr; 
 let chainlinkAggregatorAddr;
 let deadAddr;
+let usxAddr;
+let dForcePoolAddr;
 //------
 let chainId; //arbitrum
 let pokeMeOpsAddr; //gelato
@@ -60,9 +62,10 @@ const diamondABI = [
     'function redeem(uint256 shares, address receiver, address owner, uint256 lockNum_) external returns (uint256 assets)',
     'function burn(address account, uint256 amount, uint256 lockNum_) external',
     'function modifyPaymentsAndVolumeExternally(address user_, uint256 newAmount_, uint256 lockNum_) external',
-    'function addTokenToDatabase(address newToken_) external',
+    'function addTokenToDatabase(tuple(int128 tokenIn, int128 tokenOut, address baseToken, address userToken, address pool) newSwap_) external',
     'function transferUserAllocation(address sender_, address receiver_, uint256 amount_, uint256 senderBalance_, uint256 lockNum_) external',
-    'function owner() external view returns (address owner_)'
+    'function owner() external view returns (address owner_)',
+    'function queryTokenDatabase(address token_) external view returns (bool)'
 ];
 
 
@@ -139,6 +142,8 @@ switch(network) {
         deadAddr = '0x000000000000000000000000000000000000dEaD';
         chainlinkAggregatorAddr = '0x639fe6ab55c921f74e7fac1ee960c0b6293ba612';
         swapRouterUniAddr = '0xE592427A0AEce92De3Edee1F18E0157C05861564';
+        usxAddr = '0x641441c631e2F909700d2f41FD87F0aA6A6b4EDb';
+        dForcePoolAddr = '0x2ce5Fd6f6F4a159987eac99FF5158B7B62189Acf';
 } 
 
 
@@ -179,6 +184,8 @@ module.exports = {
     chainlinkAggregatorAddr,
     deadAddr,
     revenueAmounts,
-    diamondABI
+    diamondABI,
+    usxAddr,
+    dForcePoolAddr
 };
 

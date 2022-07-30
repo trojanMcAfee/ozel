@@ -17,7 +17,8 @@ const {
     addTokenToDatabase,
     getRegulatorCounter,
     getTestingNumber,
-    replaceForModVersion
+    replaceForModVersion,
+    queryTokenDatabase
 } = require('../../scripts/helpers-arb.js');
 
 const { 
@@ -31,7 +32,9 @@ const {
     nullAddr,
     deadAddr,
     crvTricrypto,
-    diamondABI
+    diamondABI,
+    usxAddr,
+    dForcePoolAddr
 } = require('../../scripts/state-vars.js');
 
 
@@ -65,7 +68,7 @@ let ozlDiamond, owner;
  * 
  * Meant to be run as one test
 */
-describe('Standard user interaction', async function () {
+xdescribe('Standard user interaction', async function () {
     this.timeout(1000000);
 
     before( async () => {
@@ -261,7 +264,7 @@ describe('Standard user interaction', async function () {
 });
 
 
-describe('Unit testing', async function () {
+xdescribe('Unit testing', async function () {
     this.timeout(1000000);
 
     before( async () => {
@@ -521,7 +524,7 @@ describe('Unit testing', async function () {
  * show the workings of the mechanism.
  */
 
-describe('Ozel Index', async function () { 
+xdescribe('Ozel Index', async function () { 
     this.timeout(100000000000000000000);
 
     before( async () => {
@@ -628,7 +631,7 @@ describe('Ozel Index', async function () {
  * 
  * It uses the functions from TestingFunctions.sol
  */
-describe('Anti-slippage system', async function () {
+xdescribe('Anti-slippage system', async function () {
     this.timeout(1000000);
 
     before( async () => {
@@ -855,7 +858,7 @@ describe('Anti-slippage system', async function () {
 /**
  * Tests the anti-slippage system used in RevenueFacet.sol
  */
-describe('My Revenue', async function() {
+xdescribe('My Revenue', async function() {
     this.timeout(1000000);
 
     before( async () => {
@@ -1034,6 +1037,70 @@ describe('My Revenue', async function() {
 
 
     
+
+
+
+
+});
+
+
+
+describe('Adding a new userToken', async function() {
+    this.timeout(1000000);
+
+    before( async () => {
+        const deployedVars = await deploy();
+        ({
+            deployedDiamond, 
+            WETH,
+            USDT,
+            WBTC,
+            renBTC,
+            USDC,
+            MIM,
+            FRAX,
+            crvTri,
+            callerAddr, 
+            caller2Addr,
+            ozlFacet,
+            yvCrvTri,
+            USX
+        } = deployedVars);
+    
+        getVarsForHelpers(deployedDiamond, ozlFacet);
+
+        userDetails = [
+            callerAddr,
+            fraxAddr, 
+            defaultSlippage
+        ];
+    });
+
+
+    it('adds a new userToken (USX) to tokenDatabase / OZLFacet - addTokenToDatabase', async () => {
+        //dForcePool --> USX: 0 / USDT: 2 / USDC: 1
+        tokenSwap = [
+            2,
+            0,
+            usdtAddrArb,
+            usxAddr,
+            dForcePoolAddr
+        ];
+        
+        await addTokenToDatabase(tokenSwap);
+
+        balanceUSX = await USX.balanceOf(callerAddr);
+        assert.equal(formatEther(balanceUSX), 0);
+        
+        userDetails[1] = usxAddr;
+        await sendETH(userDetails);
+        
+        balanceUSX = await USX.balanceOf(callerAddr);
+        assert(formatEther(balanceUSX) > 0)
+
+        doesExist = await queryTokenDatabase(usxAddr);
+        assert(doesExist);
+    });
 
 
 

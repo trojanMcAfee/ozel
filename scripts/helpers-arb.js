@@ -29,7 +29,8 @@ const {
     swapRouterUniAddr,
     poolFeeUni,
     revenueAmounts,
-    diamondABI
+    diamondABI,
+    usxAddr
 } = require('./state-vars.js');
 
 
@@ -88,10 +89,10 @@ async function getOzelIndex() {
     return decodedData;
 }
 
-async function addTokenToDatabase(token, signerIndex = 0) {
+async function addTokenToDatabase(tokenSwap, signerIndex = 0) {
     const signers = await hre.ethers.getSigners();
     const signer = signers[signerIndex];
-    await OZLDiamond.connect(signer).addTokenToDatabase(token);
+    await OZLDiamond.connect(signer).addTokenToDatabase(tokenSwap);
 }
 
 
@@ -208,6 +209,11 @@ async function replaceForModVersion(contractName, checkUSDTbalance, selector, us
 }
 
 
+async function queryTokenDatabase(token) {
+    return await OZLDiamond.queryTokenDatabase(token);
+}
+
+
 //------ From deploy.js ---------
 
 async function deployFacet(facetName) { 
@@ -237,6 +243,7 @@ async function deploy(n = 0) {
     const crvTri = await hre.ethers.getContractAt('IERC20', crvTricrypto);
     const yvCrvTri = await hre.ethers.getContractAt('IYtri', yTricryptoPoolAddr);
     const FRAX = await hre.ethers.getContractAt('IERC20', fraxAddr);
+    const USX = await hre.ethers.getContractAt('IERC20', usxAddr);
 
 
     //Facets
@@ -355,7 +362,8 @@ async function deploy(n = 0) {
         callerAddr, 
         caller2Addr,
         ozlFacet,
-        yvCrvTri
+        yvCrvTri,
+        USX
     };
 
 }
@@ -377,5 +385,6 @@ module.exports = {
     getRegulatorCounter,
     getTestingNumber,
     deployFacet,
-    replaceForModVersion
+    replaceForModVersion,
+    queryTokenDatabase
 };

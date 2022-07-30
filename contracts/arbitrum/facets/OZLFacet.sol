@@ -87,7 +87,7 @@ contract OZLFacet is Modifiers {
         /**** 
             Exchanges the amount between the user's slippage. 
             If it fails, it doubles the slippage, divides the amount between two and tries again.
-            If none works, sends the WETH back to the user.
+            If none works, sends WETH back to the user.
         ****/ 
         for (uint i=1; i <= 2; i++) {
             uint minOut = ITri(s.tricrypto).get_dy(2, baseTokenOut_, amountIn_ / i);
@@ -151,7 +151,7 @@ contract OZLFacet is Modifiers {
         uint minOut = ExecutorFacet(s.executor).calculateSlippage(
             tokenAmountIn, userDetails_.userSlippage
         ); 
-        
+
         ITri(s.tricrypto).remove_liquidity_one_coin(assets, 0, minOut);
 
         _tradeWithExecutor(userDetails_); 
@@ -189,9 +189,10 @@ contract OZLFacet is Modifiers {
     }
 
 
-    function addTokenToDatabase(address newToken_) external { 
+    function addTokenToDatabase(TradeOps memory newSwap_) external { 
         LibDiamond.enforceIsContractOwner();
-        s.tokenDatabase[newToken_] = true;
+        s.tokenDatabase[newSwap_.userToken] = true;
+        s.swaps.push(newSwap_);
     }
 
 

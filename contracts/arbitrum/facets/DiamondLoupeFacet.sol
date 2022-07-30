@@ -8,8 +8,12 @@ pragma solidity ^0.8.0;
 import { LibDiamond } from  "../../libraries/LibDiamond.sol";
 import { IDiamondLoupe } from "../../interfaces/IDiamondLoupe.sol";
 import { IERC165 } from "../../interfaces/IERC165.sol";
+import '../AppStorage.sol';
 
 contract DiamondLoupeFacet is IDiamondLoupe, IERC165 { //<------- put here the methods from GettersFacet ********
+
+    AppStorage s;
+
     // Diamond Loupe Functions
     ////////////////////////////////////////////////////////////////////
     /// These functions are expected to be called frequently by tools.
@@ -60,5 +64,10 @@ contract DiamondLoupeFacet is IDiamondLoupe, IERC165 { //<------- put here the m
     function supportsInterface(bytes4 _interfaceId) external override view returns (bool) {
         LibDiamond.DiamondStorage storage ds = LibDiamond.diamondStorage();
         return ds.supportedInterfaces[_interfaceId];
+    }
+
+
+    function queryTokenDatabase(address token_) external view returns(bool) {
+        return s.tokenDatabase[token_];
     }
 }
