@@ -19,10 +19,4 @@ abstract contract Bits {
     function _toggleBit(uint bitmap_, uint index_) internal {
         s.bitLocks[bitmap_] ^= (1 << index_);
     }
-
-    function set(uint256 index) internal {
-        uint256 bucket = index >> 8;
-        uint256 mask = 1 << (index & 0xff);
-        s.bitLocks[bucket] |= mask;
-    }
 }

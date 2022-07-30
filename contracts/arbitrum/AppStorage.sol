@@ -73,7 +73,7 @@ struct AppStorage {
     uint invariantRegulatorLimit;
     uint regulatorCounter;
 
-    //Revenue vars
+    //Revenue vars (order this)
     ISwapRouter swapRouter;
     AggregatorV3Interface priceFeed;
     address revenueToken;

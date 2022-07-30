@@ -151,6 +151,7 @@ contract OZLFacet is Modifiers {
         uint minOut = ExecutorFacet(s.executor).calculateSlippage(
             tokenAmountIn, userDetails_.userSlippage
         ); 
+        
         ITri(s.tricrypto).remove_liquidity_one_coin(assets, 0, minOut);
 
         _tradeWithExecutor(userDetails_); 

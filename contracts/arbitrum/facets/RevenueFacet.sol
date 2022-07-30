@@ -42,7 +42,7 @@ contract RevenueFacet {
                     if (valueUM >= s.revenueAmounts[i] * 1 ether) {
                         uint denominator = s.revenueAmounts[i] == 10000000 ? 5 : 10; 
                         _computeRevenue(denominator, yBalance, uint(price));
-                        uint deletedEl = _shift(i);
+                        uint deletedEl = _shiftAmounts(i); 
                         emit RevenueEarned(deletedEl);
                     }
                 }
@@ -139,16 +139,13 @@ contract RevenueFacet {
     }
 
 
-    function _shift(uint i_) private returns(uint) {
+    function _shiftAmounts(uint i_) private returns(uint) {
         uint element = s.revenueAmounts[i_];
         s.revenueAmounts[i_] = s.revenueAmounts[s.revenueAmounts.length - 1];
         delete s.revenueAmounts[s.revenueAmounts.length - 1];
         s.revenueAmounts.pop();
         return element;
     }
-
-
-
 }
 
 
