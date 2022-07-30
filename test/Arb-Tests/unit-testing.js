@@ -1,6 +1,6 @@
 const { ethers } = require("ethers");
 const assert = require('assert');
-const { parseEther } = ethers.utils;
+const { parseEther, formatEther } = ethers.utils;
 require('dotenv').config();
 
 const { err } = require('../errors.js');
@@ -12,17 +12,20 @@ const {
     sendETH,
     enableWithdrawals,
     deploy,
-    addTokenToDatabase
+    addTokenToDatabase,
+    queryTokenDatabase
 } = require('../../scripts/helpers-arb.js');
 
 const { 
-    renBtcAddr,
+    usdtAddrArb,
     usdcAddr,
     fraxAddr,
     defaultSlippage,
     nullAddr,
     deadAddr,
-    diamondABI
+    diamondABI,
+    usxAddr,
+    dForcePoolAddr
 } = require('../../scripts/state-vars.js');
 
 
@@ -31,7 +34,7 @@ let userDetails;
 let callerAddr, caller2Addr;
 let deployedDiamond, ozlDiamond;
 let evilAmount, evilSwapDetails;
-
+let tokenSwap;
 
 
 describe('Unit testing', async function () {
@@ -52,7 +55,8 @@ describe('Unit testing', async function () {
             callerAddr, 
             caller2Addr,
             ozlFacet,
-            yvCrvTri
+            yvCrvTri,
+            USX
         } = deployedVars);
     
         getVarsForHelpers(deployedDiamond, ozlFacet);
@@ -188,13 +192,34 @@ describe('Unit testing', async function () {
         });
 
         describe('addTokenToDatabase()', async () => {
-            it('should allow the owner to add a new userToken to database', async () => {
-                await addTokenToDatabase(renBtcAddr);
+            it('should allow the owner to add a new userToken (USX) to database', async () => {
+                //dForcePool --> USX: 0 / USDT: 2 / USDC: 1
+                tokenSwap = [
+                    2,
+                    0,
+                    usdtAddrArb,
+                    usxAddr,
+                    dForcePoolAddr
+                ];
+                await addTokenToDatabase(tokenSwap);
+        
+                balanceUSX = await USX.balanceOf(callerAddr);
+                assert.equal(formatEther(balanceUSX), 0);
+                
+                userDetails[1] = usxAddr;
+                await sendETH(userDetails);
+                
+                balanceUSX = await USX.balanceOf(callerAddr);
+                assert(formatEther(balanceUSX) > 0)
+        
+                doesExist = await queryTokenDatabase(usxAddr);
+                assert(doesExist);
             });
-    
+
             it('should not allow an unauthorized user to add a new userToken to database', async () => {
+                tokenSwap[3] = deadAddr;
                 await assert.rejects(async () => {
-                    await addTokenToDatabase(deadAddr, 1);
+                    await addTokenToDatabase(tokenSwap, 1);
                 }, {
                     name: 'Error',
                     message: err(2).notAuthorized 

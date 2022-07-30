@@ -264,7 +264,7 @@ xdescribe('Standard user interaction', async function () {
 });
 
 
-xdescribe('Unit testing', async function () {
+describe('Unit testing', async function () {
     this.timeout(1000000);
 
     before( async () => {
@@ -282,7 +282,8 @@ xdescribe('Unit testing', async function () {
             callerAddr, 
             caller2Addr,
             ozlFacet,
-            yvCrvTri
+            yvCrvTri,
+            USX
         } = deployedVars);
     
         getVarsForHelpers(deployedDiamond, ozlFacet);
@@ -418,13 +419,34 @@ xdescribe('Unit testing', async function () {
         });
 
         describe('addTokenToDatabase()', async () => {
-            it('should allow the owner to add a new userToken to database', async () => {
-                await addTokenToDatabase(renBtcAddr);
+            it('should allow the owner to add a new userToken (USX) to database', async () => {
+                //dForcePool --> USX: 0 / USDT: 2 / USDC: 1
+                tokenSwap = [
+                    2,
+                    0,
+                    usdtAddrArb,
+                    usxAddr,
+                    dForcePoolAddr
+                ];
+                await addTokenToDatabase(tokenSwap);
+        
+                balanceUSX = await USX.balanceOf(callerAddr);
+                assert.equal(formatEther(balanceUSX), 0);
+                
+                userDetails[1] = usxAddr;
+                await sendETH(userDetails);
+                
+                balanceUSX = await USX.balanceOf(callerAddr);
+                assert(formatEther(balanceUSX) > 0)
+        
+                doesExist = await queryTokenDatabase(usxAddr);
+                assert(doesExist);
             });
-    
+
             it('should not allow an unauthorized user to add a new userToken to database', async () => {
+                tokenSwap[3] = deadAddr;
                 await assert.rejects(async () => {
-                    await addTokenToDatabase(deadAddr, 1);
+                    await addTokenToDatabase(tokenSwap, 1);
                 }, {
                     name: 'Error',
                     message: err(2).notAuthorized 
@@ -1037,70 +1059,6 @@ xdescribe('My Revenue', async function() {
 
 
     
-
-
-
-
-});
-
-
-
-describe('Adding a new userToken', async function() {
-    this.timeout(1000000);
-
-    before( async () => {
-        const deployedVars = await deploy();
-        ({
-            deployedDiamond, 
-            WETH,
-            USDT,
-            WBTC,
-            renBTC,
-            USDC,
-            MIM,
-            FRAX,
-            crvTri,
-            callerAddr, 
-            caller2Addr,
-            ozlFacet,
-            yvCrvTri,
-            USX
-        } = deployedVars);
-    
-        getVarsForHelpers(deployedDiamond, ozlFacet);
-
-        userDetails = [
-            callerAddr,
-            fraxAddr, 
-            defaultSlippage
-        ];
-    });
-
-
-    it('adds a new userToken (USX) to tokenDatabase / OZLFacet - addTokenToDatabase', async () => {
-        //dForcePool --> USX: 0 / USDT: 2 / USDC: 1
-        tokenSwap = [
-            2,
-            0,
-            usdtAddrArb,
-            usxAddr,
-            dForcePoolAddr
-        ];
-        
-        await addTokenToDatabase(tokenSwap);
-
-        balanceUSX = await USX.balanceOf(callerAddr);
-        assert.equal(formatEther(balanceUSX), 0);
-        
-        userDetails[1] = usxAddr;
-        await sendETH(userDetails);
-        
-        balanceUSX = await USX.balanceOf(callerAddr);
-        assert(formatEther(balanceUSX) > 0)
-
-        doesExist = await queryTokenDatabase(usxAddr);
-        assert(doesExist);
-    });
 
 
 
