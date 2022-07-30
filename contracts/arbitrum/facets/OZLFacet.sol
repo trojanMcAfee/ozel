@@ -28,6 +28,8 @@ contract OZLFacet is Modifiers {
     using SafeTransferLib for IERC20;
     using Address for address;
 
+    event NewUserToken(address userToken);
+
     /**
     WBTC: 1 / USDT: 0 / WETH: 2
      */
@@ -193,6 +195,7 @@ contract OZLFacet is Modifiers {
         LibDiamond.enforceIsContractOwner();
         s.tokenDatabase[newSwap_.userToken] = true;
         s.swaps.push(newSwap_);
+        emit NewUserToken(newSwap_.userToken);
     }
 
 
