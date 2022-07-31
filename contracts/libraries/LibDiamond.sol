@@ -37,7 +37,6 @@ library LibDiamond {
         string[] ozlVars;
         address ETH;
         uint[] revenueAmounts;
-        // address[] nonRevenueFacets;
     }
 
 

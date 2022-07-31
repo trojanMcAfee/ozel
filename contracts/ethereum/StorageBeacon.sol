@@ -187,7 +187,6 @@ contract StorageBeacon is Initializable, Ownable {
     function getEmitterStatus() external view returns(bool) {
         return isEmitter;
     }
-
 }
 
 

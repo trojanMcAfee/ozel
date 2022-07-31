@@ -68,7 +68,7 @@ let ozlDiamond, owner;
  * 
  * Meant to be run as one test
 */
-xdescribe('Standard user interaction', async function () {
+describe('Standard user interaction', async function () {
     this.timeout(1000000);
 
     before( async () => {
@@ -264,7 +264,7 @@ xdescribe('Standard user interaction', async function () {
 });
 
 
-xdescribe('Unit testing', async function () {
+describe('Unit testing', async function () {
     this.timeout(1000000);
 
     before( async () => {
@@ -653,7 +653,7 @@ describe('Ozel Index', async function () {
  * 
  * It uses the functions from TestingFunctions.sol
  */
-xdescribe('Anti-slippage system', async function () {
+describe('Anti-slippage system', async function () {
     this.timeout(1000000);
 
     before( async () => {
@@ -880,7 +880,7 @@ xdescribe('Anti-slippage system', async function () {
 /**
  * Tests the anti-slippage system used in RevenueFacet.sol
  */
-xdescribe('My Revenue', async function() {
+describe('My Revenue', async function() {
     this.timeout(1000000);
 
     before( async () => {
