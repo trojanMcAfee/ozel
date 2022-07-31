@@ -14,6 +14,9 @@ contract DiamondLoupeFacet is IDiamondLoupe, IERC165 { //<------- put here the m
 
     AppStorage s;
 
+    event GetIndex(uint index);
+    event GetCounter(uint counter);
+
     // Diamond Loupe Functions
     ////////////////////////////////////////////////////////////////////
     /// These functions are expected to be called frequently by tools.
@@ -69,5 +72,15 @@ contract DiamondLoupeFacet is IDiamondLoupe, IERC165 { //<------- put here the m
 
     function queryTokenDatabase(address token_) external view returns(bool) {
         return s.tokenDatabase[token_];
+    }
+
+    function getOzelIndex() external returns(uint) { 
+        emit GetIndex(s.ozelIndex);
+        return s.ozelIndex;
+    }
+
+    function getRegulatorCounter() external returns(uint) {
+        emit GetCounter(s.regulatorCounter);
+        return s.regulatorCounter;
     }
 }

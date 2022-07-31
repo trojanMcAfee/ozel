@@ -44,7 +44,7 @@ let iface, abi, selector;
  * show the workings of the mechanism.
  */
 
- describe('Ozel Index', async function () { 
+describe('Ozel Index', async function () { 
     this.timeout(100000000000000000000);
 
     before( async () => {

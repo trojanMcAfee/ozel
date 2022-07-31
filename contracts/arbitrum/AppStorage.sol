@@ -15,7 +15,6 @@ struct AppStorage {
     address OZL; 
     address tricrypto;
     address crvTricrypto; 
-    address getters;
     address renPool;
     address mimPool;
     address crv2Pool;

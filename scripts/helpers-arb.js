@@ -250,7 +250,6 @@ async function deploy(n = 0) {
     const diamondCutFacet = await deployFacet('DiamondCutFacet');
     const diamondLoupeFacet = await deployFacet('DiamondLoupeFacet'); 
     const ozlFacet = await deployFacet('OZLFacet');
-    const gettersFacet = await deployFacet('GettersFacet');
     const executorFacet = await deployFacet('ExecutorFacet');
     const oz4626 = await deployFacet('oz4626Facet');
     const oz20 = await deployFacet('oz20Facet');
@@ -261,7 +260,6 @@ async function deploy(n = 0) {
         ozlFacet.address,
         tricryptoAddr,
         crvTricrypto,
-        gettersFacet.address,
         renPoolAddr,
         mimPoolAddr,
         crv2PoolAddr,
@@ -335,7 +333,6 @@ async function deploy(n = 0) {
             ['DiamondCutFacet', diamondCutFacet],
             ['DiamondLoupeFacet', diamondLoupeFacet],
             ['OZLFacet', ozlFacet],
-            ['GettersFacet', gettersFacet],
             ['ExecutorFacet', executorFacet],
             ['oz4626Facet', oz4626],
             ['oz20Facet', oz20],

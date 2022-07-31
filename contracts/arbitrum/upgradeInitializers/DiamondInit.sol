@@ -45,16 +45,15 @@ contract DiamondInit {
         s.OZL = vars_.contracts[0]; 
         s.tricrypto = vars_.contracts[1];
         s.crvTricrypto = vars_.contracts[2];
-        s.getters = vars_.contracts[3];
-        s.renPool = vars_.contracts[4];
-        s.mimPool = vars_.contracts[5];
-        s.crv2Pool = vars_.contracts[6];
-        s.yTriPool = vars_.contracts[7];
-        s.fraxPool = vars_.contracts[8];
-        s.executor = vars_.contracts[9];
-        s.oz46 = vars_.contracts[10]; 
-        s.oz20 = vars_.contracts[11];
-        s.revenue = vars_.contracts[14];
+        s.renPool = vars_.contracts[3];
+        s.mimPool = vars_.contracts[4];
+        s.crv2Pool = vars_.contracts[5];
+        s.yTriPool = vars_.contracts[6];
+        s.fraxPool = vars_.contracts[7];
+        s.executor = vars_.contracts[8];
+        s.oz46 = vars_.contracts[9]; 
+        s.oz20 = vars_.contracts[10];
+        s.revenue = vars_.contracts[13];
 
         //Sets ERC20 instances
         s.USDT = vars_.erc20s[0];
@@ -109,8 +108,8 @@ contract DiamondInit {
         s.regulatorCounter = 0;
 
         //Revenue vars
-        s.priceFeed = AggregatorV3Interface(vars_.contracts[12]);
-        s.swapRouter = ISwapRouter(vars_.contracts[13]);
+        s.priceFeed = AggregatorV3Interface(vars_.contracts[11]);
+        s.swapRouter = ISwapRouter(vars_.contracts[12]);
         s.revenueToken = s.USDC;
         s.poolFee = uint24(vars_.appVars[2]);
         s.revenueAmounts = vars_.revenueAmounts;

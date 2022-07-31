@@ -264,7 +264,7 @@ xdescribe('Standard user interaction', async function () {
 });
 
 
-describe('Unit testing', async function () {
+xdescribe('Unit testing', async function () {
     this.timeout(1000000);
 
     before( async () => {
@@ -546,7 +546,7 @@ describe('Unit testing', async function () {
  * show the workings of the mechanism.
  */
 
-xdescribe('Ozel Index', async function () { 
+describe('Ozel Index', async function () { 
     this.timeout(100000000000000000000);
 
     before( async () => {
