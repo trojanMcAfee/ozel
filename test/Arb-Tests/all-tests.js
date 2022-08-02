@@ -65,10 +65,8 @@ let ozlDiamond, owner;
  * Since Curve doesn't have testnets, sendETH() sends ETH directly to
  * exchangeToUserToken() which would simulate an Arbitrum L1 > L2 tx where
  * sendToArb() in L1 in ozPayMe would send the ETH to OZLFacet in L2.
- * 
- * Meant to be run as one test
 */
-describe('Standard user interaction', async function () {
+describe('Integration testing', async function () {
     this.timeout(1000000);
 
     before( async () => {
