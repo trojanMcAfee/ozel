@@ -1,5 +1,7 @@
 const { Bridge } = require('arb-ts');
 const { hexDataLength } = require('@ethersproject/bytes');
+const { L1ToL2MessageGasEstimator} = require('@arbitrum/sdk/dist/lib/message/L1ToL2MessageGasEstimator')
+
 
 const { 
     chainId,
@@ -13,7 +15,7 @@ const {
     fraxAddr,
     inbox,
     signerX,
-    l2Provider,
+    l2ProviderRinkeby,
     l2Signer,
     l1Signer,
     wethAddr,
@@ -23,8 +25,11 @@ const {
     swapRouterUniAddr,
     poolFeeUni,
     nullAddr,
-    chainlinkAggregatorAddr
+    chainlinkAggregatorAddr,
+    l1ProviderRinkeby,
+    l2Provider
 } = require('./state-vars.js');
+const { ethers } = require('hardhat');
 
 const { 
     hexStripZeros, 
@@ -37,37 +42,96 @@ let proxyFactory;
 
 
 
-async function getGasDetailsL2(userDetails, bridge) {
+async function getGasDetailsL2(userDetails) {
     console.log(1);
-    console.log(userDetails);
+
+    const nitroInboxRinkeby = '0x578BAde599406A8fE3d24Fd7f7211c0911F5B29e';
+    const abi = ['function calculateRetryableSubmissionFee(uint256 dataLength, uint256 baseFee) public view returns (uint256)']; 
+    const delayedInbox = await hre.ethers.getContractAt(abi, nitroInboxRinkeby);
+
+    console.log(2);
 
     const sendToArbBytes = ethers.utils.defaultAbiCoder.encode(
         ['tuple(address, address, uint256)'],
         [userDetails]
     );
-    console.log(sendToArbBytes);
-    console.log(2);
     const sendToArbBytesLength = hexDataLength(sendToArbBytes) + 4;
-    console.log(3);
-    console.log(sendToArbBytesLength);
 
-    const [_submissionPriceWei] = await bridge.l2Bridge.getTxnSubmissionPrice(sendToArbBytesLength);
+    console.log(3);
+    console.log('adr: ', delayedInbox.address);
+
+    const _submissionPriceWei = await delayedInbox.connect(l1Signer).calculateRetryableSubmissionFee(
+        sendToArbBytesLength,
+        0
+    );
+
     console.log(4);
   
-    let maxSubmissionCost = _submissionPriceWei.mul(5);
-    console.log(5);
-    maxSubmissionCost = ethers.BigNumber.from(maxSubmissionCost).mul(100)
-    console.log(6);
+    let submissionPriceWei = _submissionPriceWei.mul(5);
+    submissionPriceWei = ethers.BigNumber.from(submissionPriceWei).mul(100)
 
-    let gasPriceBid = await bridge.l2Provider.getGasPrice();
-    console.log(7);
+    let gasPriceBid = await l2ProviderRinkeby.getGasPrice();
     gasPriceBid = gasPriceBid.add(ethers.BigNumber.from(gasPriceBid).div(2));
-    console.log(8);
 
     return {
-        maxSubmissionCost,
+        submissionPriceWei,
         gasPriceBid
     }
+}
+
+
+
+async function getGasDetailsL22(userDetails, fakeOZLaddr) {
+    const sendToArbBytes = ethers.utils.defaultAbiCoder.encode(
+        ['tuple(address, address, uint256)'],
+        [userDetails]
+    );
+    const sendToArbBytesLength = hexDataLength(sendToArbBytes) + 4;
+
+    const l1ToL2MessageGasEstimate = new L1ToL2MessageGasEstimator(l2Provider);
+
+    const _submissionPriceWei = await l1ToL2MessageGasEstimate.estimateSubmissionFee(
+        l1ProviderRinkeby,
+        await l1ProviderRinkeby.getGasPrice(),
+        sendToArbBytesLength
+    );
+
+    // const [_submissionPriceWei] = await bridge.l2Bridge.getTxnSubmissionPrice(sendToArbBytesLength);
+  
+    let submissionPriceWei = _submissionPriceWei.mul(5);
+    submissionPriceWei = ethers.BigNumber.from(submissionPriceWei).mul(100);
+
+    let gasPriceBid = await l2Provider.getGasPrice();
+    gasPriceBid = gasPriceBid.add(ethers.BigNumber.from(gasPriceBid).div(2));
+
+    const abi = ['function exchangeToUserToken(tuple(address user, address userToken, uint userSlippage) userDetails_) external payable'];
+    const iface = new ethers.utils.Interface(abi);
+    const calldata = iface.encodeFunctionData('exchangeToUserToken', [userDetails]);
+
+    let maxGas = await l1ToL2MessageGasEstimate.estimateRetryableTicketGasLimit(
+        pokeMeOpsAddr,
+        fakeOZLaddr,
+        0,
+        fakeOZLaddr,
+        fakeOZLaddr,
+        calldata,
+        ethers.utils.parseEther('1')
+    );
+
+    maxGas = maxGas.mul(5);
+
+    // const callvalue = (submissionPriceWei.add(gasPriceBid.mul(maxGas))).mul(5);
+
+    return {
+        submissionPriceWei,
+        maxGas,
+        gasPriceBid
+    }
+
+    // return {
+    //     maxSubmissionCost,
+    //     gasPriceBid
+    // }
 }
 
 
@@ -162,19 +226,32 @@ async function createProxy(userDetails) {
 
 
 async function getArbitrumParams(userDetails) {
-    const bridge = await Bridge.init(l1Signer, l2Signer);
-    const { maxSubmissionCost, gasPriceBid } = await getGasDetailsL2(userDetails, bridge);
-    const maxGas = 3000000;
-    const autoRedeem = maxSubmissionCost.add(gasPriceBid.mul(maxGas));
+    
+    const { submissionPriceWei, gasPriceBid } = await getGasDetailsL2(userDetails);
+    
+    //-----------
+    // const { submissionPriceWei, maxGas, gasPriceBid } = await getGasDetailsL2(userDetails, fakeOZLaddr);
 
-    console.log(4);
+    //--------
+    // const { maxSubmissionCost, gasPriceBid } = await getGasDetailsL2(userDetails, fakeOZLaddr);
+    const maxGas = 3000000;
+    // const autoRedeem = maxSubmissionCost.add(gasPriceBid.mul(maxGas));
+
+    const autoRedeem = submissionPriceWei.add(gasPriceBid.mul(maxGas));
 
     return [
-        maxSubmissionCost,
+        submissionPriceWei,
         gasPriceBid,
         maxGas,
         autoRedeem
     ];
+
+    // return [
+    //     maxSubmissionCost,
+    //     gasPriceBid,
+    //     maxGas,
+    //     autoRedeem
+    // ];
 }
 
 
@@ -333,7 +410,6 @@ async function deploySystem(type, userDetails, signerAddr) {
 
     //Deploys the fake OZL on arbitrum testnet 
     const [ fakeOZLaddr ] = await deployContract('FakeOZL', l1Signer);
-    // const fakeOZLaddr = '0xCF383dD43481703a6ebe84DC4137Ae388cD7214b';
 
     //Calculate fees on L1 > L2 arbitrum tx
     let [ maxSubmissionCost, gasPriceBid, maxGas, autoRedeem ] = await getArbitrumParams(userDetails);

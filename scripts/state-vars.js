@@ -74,9 +74,11 @@ const diamondABI = [
 
 
 const signerX = new ethers.Wallet(process.env.PK);
-const l2Provider = new ethers.providers.JsonRpcProvider(process.env.ARB_TESTNET);
+const l1Provider = new ethers.providers.JsonRpcProvider(process.env.ALCHEMY_ETH);
+const l2Provider = new ethers.providers.JsonRpcProvider(process.env.ARBITRUM);
+const l2ProviderRinkeby = new ethers.providers.JsonRpcProvider(process.env.ARB_TESTNET);
 const l1ProviderRinkeby = new ethers.providers.JsonRpcProvider(process.env.RINKEBY);
-const l2Signer = signerX.connect(l2Provider);
+const l2Signer = signerX.connect(l2ProviderRinkeby);
 const l1Signer = signerX.connect(l1ProviderRinkeby);
 
 
@@ -174,7 +176,7 @@ module.exports = {
     usdtAddrArb,
     inbox,
     signerX,
-    l2Provider,
+    l2ProviderRinkeby,
     l2Signer,
     l1Signer,
     gelatoAddr,
@@ -186,6 +188,8 @@ module.exports = {
     revenueAmounts,
     diamondABI,
     usxAddr,
-    dForcePoolAddr
+    dForcePoolAddr,
+    l1ProviderRinkeby,
+    l2Provider
 };
 
