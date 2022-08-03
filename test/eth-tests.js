@@ -507,7 +507,7 @@ let isExist;
     });
 
 
-    xdescribe('Pesimistic deployment', async () => {
+    describe('Pesimistic deployment', async () => {
         before( async () => {
             //autoRedeem set to 0
             ([beacon, beaconAddr, ozERC1967proxyAddr, storageBeacon, storageBeaconAddr, emitter, emitterAddr, fakeOZLaddr, varConfig, eMode] = await deploySystem('Pessimistically', userDetails, signerAddr));
