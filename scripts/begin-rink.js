@@ -2,6 +2,7 @@ const { ethers } = require("ethers");
 const { parseEther, formatEther, defaultAbiCoder: abiCoder, keccak256 } = ethers.utils;
 const { deploy } = require('./deploy.js');
 const { Bridge } = require('arb-ts');
+const { L1TransactionReceipt, L1ToL2MessageStatus } = require('@arbitrum/sdk')
 const { hexDataLength } = require('@ethersproject/bytes');
 require('dotenv').config();
 
@@ -37,7 +38,8 @@ const {
     swapRouterUniAddr,
     poolFeeUni,
     nullAddr,
-    chainlinkAggregatorAddr
+    chainlinkAggregatorAddr,
+    l2ProviderRinkeby
  } = require('./state-vars.js');
 
 
@@ -51,7 +53,7 @@ async function sendTx(receiver, isAmount, method, args) {
     const txDetails = {
         to: receiver,
         gasLimit: ethers.BigNumber.from('5000000'),
-        gasPrice: ethers.BigNumber.from('30897522792')
+        gasPrice: ethers.BigNumber.from('40134698068')
     };
     const signatures = {
         createNewProxy: 'function createNewProxy(tuple(address user, address userToken, uint256 userSlippage) userDetails_)',
@@ -120,36 +122,30 @@ async function calculateMaxGas(
 
 
 
-async function getGasDetailsL2(userDetails, bridge) {
+async function getGasDetailsL2(userDetails) {
+    const nitroInboxRinkeby = '0x578BAde599406A8fE3d24Fd7f7211c0911F5B29e';
+    const abi = ['function calculateRetryableSubmissionFee(uint256 dataLength, uint256 baseFee) public view returns (uint256)']; 
+    const delayedInbox = await hre.ethers.getContractAt(abi, nitroInboxRinkeby);
+
     const sendToArbBytes = ethers.utils.defaultAbiCoder.encode(
         ['tuple(address, address, uint256)'],
         [userDetails]
     );
     const sendToArbBytesLength = hexDataLength(sendToArbBytes) + 4;
 
-    const [_submissionPriceWei, nextUpdateTimestamp] =
-    await bridge.l2Bridge.getTxnSubmissionPrice(sendToArbBytesLength);
-    console.log(
-    `Current retryable base submission price: ${_submissionPriceWei.toString()}`
+    const _submissionPriceWei = await delayedInbox.connect(l1Signer).calculateRetryableSubmissionFee(
+        sendToArbBytesLength,
+        0
     );
+  
+    let submissionPriceWei = _submissionPriceWei.mul(5);
+    submissionPriceWei = ethers.BigNumber.from(submissionPriceWei).mul(100)
 
-    const timeNow = Math.floor(new Date().getTime() / 1000);
-    console.log(
-        `time in seconds till price update: ${
-        nextUpdateTimestamp.toNumber() - timeNow
-        }`
-    );
-
-    let maxSubmissionCost = _submissionPriceWei.mul(5);
-    maxSubmissionCost = ethers.BigNumber.from(maxSubmissionCost).mul(100)
-    console.log('maxSubmissionCost: ', maxSubmissionCost.toString());
-
-    let gasPriceBid = await bridge.l2Provider.getGasPrice();
+    let gasPriceBid = await l2ProviderRinkeby.getGasPrice();
     gasPriceBid = gasPriceBid.add(ethers.BigNumber.from(gasPriceBid).div(2));
-    console.log(`gasPriceBid: ${gasPriceBid.toString()}`);
 
     return {
-        maxSubmissionCost,
+        submissionPriceWei,
         gasPriceBid
     }
 }
@@ -176,13 +172,13 @@ async function tryPrecompile() {
     // hashes.push(x);
 
 
-    const timeOut = await arbRetryable.getTimeout('0xb67d0f7174d86b566c3551d26e50400471e8b01d1ada658edac28e29e960b18b', {
-        gasLimit: ethers.BigNumber.from('10000000')
-    });
-    console.log('timeOut: ', timeOut.toString());
+    // const timeOut = await arbRetryable.getTimeout('0xaa756e9028ebe9d3b21c4dcc656a98a907e73be218353c5141b00e389180e333', {
+    //     gasLimit: ethers.BigNumber.from('10000000')
+    // });
+    // console.log('timeOut: ', timeOut.toString());
 
-    // await arbRetryable.redeem('0x6b1e2c8ddd28d450eb80b8bf0fb87b1e7201897c077b66992610019d12c5a4c8');
-    // console.log('redeemed');
+    await arbRetryable.redeem('0xaa756e9028ebe9d3b21c4dcc656a98a907e73be218353c5141b00e389180e333');
+    console.log('redeemed');
 
     // await arbRetryable.redeem('0x51cdb4f34b799bbe96b4750627dd5e714194adf4ebfc9cfa378083e7aa5fd810');
     // console.log('redeemed');
@@ -213,6 +209,8 @@ async function tryPrecompile() {
 
 
 }
+
+tryPrecompile();
 
 
 
@@ -307,15 +305,15 @@ async function sendArb() { //mainnet
     let constrArgs = [];
     
     //Deploys the fake OZL on arbitrum testnet 
-    // const [fakeOZLaddr] = await deployContract('FakeOZL', l2Signer); //fake OZL address in arbitrum
-    const fakeOZLaddr = '0x8cE038796243813805593E16211C8Def67a81454'; //old: 0xCF383dD43481703a6ebe84DC4137Ae388cD7214b
+    const [fakeOZLaddr] = await deployContract('FakeOZL', l2Signer); //fake OZL address in arbitrum
+    // const fakeOZLaddr = '0x8cE038796243813805593E16211C8Def67a81454'; //old: 0x8cE038796243813805593E16211C8Def67a81454
    
 
     //Calculate fees on L1 > L2 arbitrum tx
-    const { maxSubmissionCost, gasPriceBid } = await getGasDetailsL2(userDetails, bridge);
-    // const maxGas = await calculateMaxGas(userDetails, fakeOZLaddr, value, maxSubmissionCost, gasPriceBid);
+    const { submissionPriceWei, gasPriceBid } = await getGasDetailsL2(userDetails);
     const maxGas = 3000000;
-    const autoRedeem = maxSubmissionCost.add(gasPriceBid.mul(maxGas));
+    const autoRedeem = submissionPriceWei.add(gasPriceBid.mul(maxGas));
+    const maxSubmissionCost = submissionPriceWei;
     console.log('autoRedeem: ', autoRedeem.toString()); 
 
 
@@ -396,7 +394,7 @@ async function sendArb() { //mainnet
     const [rolesAuthorityAddr, rolesAuthority] = await deployContract('RolesAuthority', l1Signer, constrArgs);
     const ops = {
         gasLimit: ethers.BigNumber.from('5000000'),
-        gasPrice: ethers.BigNumber.from('30897522792')
+        gasPrice: ethers.BigNumber.from('40134698068')
     };
     await beacon.setAuth(rolesAuthorityAddr, ops);
 
@@ -555,12 +553,14 @@ async function getCount() {
 
 
 
+
 // createTask();
 
 // tryGelatoRopsten();
 
 
 // sendArb();
+
 
 // tryPrecompile();
 
