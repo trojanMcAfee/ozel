@@ -1,12 +1,12 @@
 const { ethers } = require("ethers");
 const assert = require('assert');
+require('dotenv').config();
 
 const { 
     formatEther, 
     arrayify,
     formatBytes32String
 } = ethers.utils;
-require('dotenv').config();
 
 
 const { 
@@ -507,7 +507,7 @@ let isExist;
     });
 
 
-    describe('Pesimistic deployment', async () => {
+    xdescribe('Pesimistic deployment', async () => {
         before( async () => {
             //autoRedeem set to 0
             ([beacon, beaconAddr, ozERC1967proxyAddr, storageBeacon, storageBeaconAddr, emitter, emitterAddr, fakeOZLaddr, varConfig, eMode] = await deploySystem('Pessimistically', userDetails, signerAddr));

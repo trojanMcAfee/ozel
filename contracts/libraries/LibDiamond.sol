@@ -9,7 +9,7 @@ import { IDiamondCut } from "../interfaces/IDiamondCut.sol";
 
 import '@openzeppelin/contracts/token/ERC20/IERC20.sol';
 
-import 'hardhat/console.sol';
+// import 'hardhat/console.sol';
 
 library LibDiamond {
     bytes32 constant DIAMOND_STORAGE_POSITION = keccak256("diamond.standard.diamond.storage");

@@ -10,7 +10,7 @@ import { IDiamondLoupe } from "../../interfaces/IDiamondLoupe.sol";
 import { IERC165 } from "../../interfaces/IERC165.sol";
 import '../AppStorage.sol';
 
-contract DiamondLoupeFacet is IDiamondLoupe, IERC165 { //<------- put here the methods from GettersFacet ********
+contract DiamondLoupeFacet is IDiamondLoupe, IERC165 { 
 
     AppStorage s;
 

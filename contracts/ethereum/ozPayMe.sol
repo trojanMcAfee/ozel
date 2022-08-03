@@ -16,7 +16,7 @@ import './StorageBeacon.sol';
 import './ozUpgradeableBeacon.sol';
 import '../Errors.sol';
 
-import 'hardhat/console.sol'; 
+// import 'hardhat/console.sol'; 
 
 
 contract ozPayMe is ReentrancyGuard, Initializable { 
@@ -73,7 +73,7 @@ contract ozPayMe is ReentrancyGuard, Initializable {
         (uint fee, ) = IOps(fxConfig.ops).getFeeDetails();
         _transfer(fee, fxConfig.ETH);
 
-        bool isEmergency;
+        bool isEmergency = false;
 
         bytes memory swapData = abi.encodeWithSelector(
             FakeOZL(payable(fxConfig.OZL)).exchangeToUserToken.selector, 
@@ -142,8 +142,12 @@ contract ozPayMe is ReentrancyGuard, Initializable {
                     sqrtPriceLimitX96: 0
                 });
 
-            try eMode.swapRouter.exactInputSingle{value: address(this).balance}(params) {
-                break;
+            try eMode.swapRouter.exactInputSingle{value: address(this).balance}(params) returns(uint amountOut) { 
+                if (amountOut > 0) {
+                    break;
+                } else {
+                    continue; //double check this continue with the loop and fix it (use i if necessary)
+                }
             } catch {
                 if (i == 1) {
                     unchecked { ++i; }

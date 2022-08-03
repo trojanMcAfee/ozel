@@ -3,7 +3,7 @@ pragma solidity >=0.8.0;
 
 import '@openzeppelin/contracts/token/ERC20/IERC20.sol';
 
-import 'hardhat/console.sol';
+// import 'hardhat/console.sol';
 
 /// @notice Safe ETH and ERC20 transfer library that gracefully handles missing return values.
 /// @author Solmate (https://github.com/Rari-Capital/solmate/blob/main/src/utils/SafeTransferLib.sol)
@@ -70,7 +70,7 @@ library SafeTransferLib {
         uint256 amount
     ) internal {
         bool success;
-        console.log(' ');
+        // console.log(' ');
         assembly {
             // Get a pointer to some free memory.
             let freeMemoryPointer := mload(0x40)

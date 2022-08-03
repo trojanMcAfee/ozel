@@ -24,7 +24,7 @@ const {
     poolFeeUni,
     nullAddr,
     chainlinkAggregatorAddr
-} = require('../scripts/state-vars.js');
+} = require('./state-vars.js');
 
 const { 
     hexStripZeros, 
@@ -38,20 +38,31 @@ let proxyFactory;
 
 
 async function getGasDetailsL2(userDetails, bridge) {
+    console.log(1);
+    console.log(userDetails);
+
     const sendToArbBytes = ethers.utils.defaultAbiCoder.encode(
         ['tuple(address, address, uint256)'],
         [userDetails]
     );
+    console.log(sendToArbBytes);
+    console.log(2);
     const sendToArbBytesLength = hexDataLength(sendToArbBytes) + 4;
+    console.log(3);
+    console.log(sendToArbBytesLength);
 
-    const [_submissionPriceWei, nextUpdateTimestamp] =
-    await bridge.l2Bridge.getTxnSubmissionPrice(sendToArbBytesLength);
+    const [_submissionPriceWei] = await bridge.l2Bridge.getTxnSubmissionPrice(sendToArbBytesLength);
+    console.log(4);
   
     let maxSubmissionCost = _submissionPriceWei.mul(5);
+    console.log(5);
     maxSubmissionCost = ethers.BigNumber.from(maxSubmissionCost).mul(100)
+    console.log(6);
 
     let gasPriceBid = await bridge.l2Provider.getGasPrice();
+    console.log(7);
     gasPriceBid = gasPriceBid.add(ethers.BigNumber.from(gasPriceBid).div(2));
+    console.log(8);
 
     return {
         maxSubmissionCost,
@@ -155,6 +166,8 @@ async function getArbitrumParams(userDetails) {
     const { maxSubmissionCost, gasPriceBid } = await getGasDetailsL2(userDetails, bridge);
     const maxGas = 3000000;
     const autoRedeem = maxSubmissionCost.add(gasPriceBid.mul(maxGas));
+
+    console.log(4);
 
     return [
         maxSubmissionCost,
@@ -324,6 +337,7 @@ async function deploySystem(type, userDetails, signerAddr) {
 
     //Calculate fees on L1 > L2 arbitrum tx
     let [ maxSubmissionCost, gasPriceBid, maxGas, autoRedeem ] = await getArbitrumParams(userDetails);
+
     if (type === 'Pessimistically') autoRedeem = 0;
 
     // Deploys Emitter
