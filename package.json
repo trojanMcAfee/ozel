@@ -13,6 +13,7 @@
     "@arbitrum/sdk": "^1.1.4",
     "@chainlink/contracts": "^0.4.1",
     "@ethersproject/experimental": "^5.6.0",
+    "@gelatonetwork/ops-sdk": "^1.1.1",
     "@openzeppelin/contracts": "^4.3.2",
     "@rari-capital/solmate": "^6.4.0",
     "@renproject/chains": "^2.5.6",

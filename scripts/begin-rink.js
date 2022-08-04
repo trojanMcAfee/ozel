@@ -217,14 +217,14 @@ async function tryPrecompile() {
 
 
 async function deployContract(contractName, signer, constrArgs) {
-    const Contract = await (
-        await hre.ethers.getContractFactory(contractName)
-    ).connect(signer);
-    // const Contract = await hre.ethers.getContractFactory(contractName);
+    // const Contract = await (
+    //     await hre.ethers.getContractFactory(contractName)
+    // ).connect(signer); 
+    const Contract = await hre.ethers.getContractFactory(contractName);
 
     const ops = {
         gasLimit: ethers.BigNumber.from('5000000'),
-        gasPrice: ethers.BigNumber.from('30897522792')
+        gasPrice: ethers.BigNumber.from('40134698068')
     };
 
     let contract;
@@ -232,24 +232,24 @@ async function deployContract(contractName, signer, constrArgs) {
 
     switch(contractName) {
         case 'UpgradeableBeacon':
-            contract = await Contract.deploy(constrArgs, ops);
+            contract = await Contract.connect(signer).deploy(constrArgs, ops);
             break;
         case 'ozUpgradeableBeacon':
         case 'ozERC1967Proxy':
         case 'RolesAuthority':
             ([ var1, var2 ] = constrArgs);
-            contract = await Contract.deploy(var1, var2, ops);
+            contract = await Contract.connect(signer).deploy(var1, var2, ops);
             break;
         case 'ozERC1967Proxy':
             ([ var1, var2, var3 ] = constrArgs);
-            contract = await Contract.deploy(var1, var2, var3, ops);
+            contract = await Contract.connect(signer).deploy(var1, var2, var3, ops);
             break;
         case 'StorageBeacon':
             ([ var1, var2, var3, var4 ] = constrArgs);
-            contract = await Contract.deploy(var1, var2, var3, var4, ops);
+            contract = await Contract.connect(signer).deploy(var1, var2, var3, var4, ops);
             break;
         default:
-            contract = await Contract.deploy(ops);
+            contract = await Contract.connect(signer).deploy(ops);
     }
 
     await contract.deployed();
@@ -270,7 +270,7 @@ async function getTheTask() {
 
     const ops = {
         gasLimit: ethers.BigNumber.from('5000000'),
-        gasPrice: ethers.BigNumber.from('30897522792')
+        gasPrice: ethers.BigNumber.from('40134698068')
     };
 
     const taskId = await sBeacon.taskIDs(newProxyAddr, ops);
@@ -308,15 +308,14 @@ async function sendArb() { //mainnet
     
     //Deploys the fake OZL on arbitrum testnet 
     const [fakeOZLaddr] = await deployContract('FakeOZL', l2Signer); //fake OZL address in arbitrum
-    // const fakeOZLaddr = '0x8cE038796243813805593E16211C8Def67a81454'; //old: 0x8cE038796243813805593E16211C8Def67a81454
+    // const fakeOZLaddr = '0x8cE038796243813805593E16211C8Def67a81454'; //old: 0xCF383dD43481703a6ebe84DC4137Ae388cD7214b
    
-
     //Calculate fees on L1 > L2 arbitrum tx
     const { submissionPriceWei, gasPriceBid } = await getGasDetailsL2(userDetails);
     const maxGas = 3000000;
     const autoRedeem = submissionPriceWei.add(gasPriceBid.mul(maxGas));
     const maxSubmissionCost = submissionPriceWei;
-    console.log('autoRedeem: ', autoRedeem.toString()); 
+    console.log('autoRedeem: ', autoRedeem.toString());
 
 
     //Deploys Emitter
@@ -562,7 +561,6 @@ async function getCount() {
 
 
 sendArb();
-
 
 // tryPrecompile();
 
