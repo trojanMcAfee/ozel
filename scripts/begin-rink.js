@@ -210,7 +210,7 @@ async function tryPrecompile() {
 
 }
 
-tryPrecompile();
+// tryPrecompile();
 
 
 
@@ -285,9 +285,11 @@ async function getTheTask() {
 
 
 
+
+
 //Deploys ozPayMe in mainnet and routes ETH to Manager (OZL) in Arbitrum
 async function sendArb() { //mainnet
-    const bridge = await Bridge.init(l1Signer, l2Signer);
+    // const bridge = await Bridge.init(l1Signer, l2Signer);
     const signerAddr = await signerX.getAddress();
     // const [signerAddr, addr2] = await hre.ethers.provider.listAccounts(); 
     console.log('signer address: ', signerAddr);
@@ -426,21 +428,21 @@ async function sendArb() { //mainnet
     };
 
 
-    await hre.ethers.provider.on(filter, async (encodedData) => {
-        const topic = encodedData.topics[1];
-        const ourMessagesSequenceNum = ethers.utils.defaultAbiCoder.decode(['uint'], topic);
+    // await hre.ethers.provider.on(filter, async (encodedData) => {
+    //     const topic = encodedData.topics[1];
+    //     const ourMessagesSequenceNum = ethers.utils.defaultAbiCoder.decode(['uint'], topic);
 
-        console.log('inboxSeqNums: ', ourMessagesSequenceNum.toString());
-        const retryableTxnHash = await bridge.calculateL2RetryableTransactionHash(
-            ourMessagesSequenceNum[0]
-        );
-        console.log('retryableTxnHash: ', retryableTxnHash);
-        console.log(
-            `waiting for L2 tx 🕐... (should take < 10 minutes, current time: ${new Date().toTimeString()}`
-        );
-        const retryRec = await l2Provider.waitForTransaction(retryableTxnHash)
-        console.log(`L2 retryable txn executed 🥳 ${retryRec.transactionHash} at ${new Date().toTimeString()}`);
-    });
+    //     console.log('inboxSeqNums: ', ourMessagesSequenceNum.toString());
+    //     const retryableTxnHash = await bridge.calculateL2RetryableTransactionHash(
+    //         ourMessagesSequenceNum[0]
+    //     );
+    //     console.log('retryableTxnHash: ', retryableTxnHash);
+    //     console.log(
+    //         `waiting for L2 tx 🕐... (should take < 10 minutes, current time: ${new Date().toTimeString()}`
+    //     );
+    //     const retryRec = await l2Provider.waitForTransaction(retryableTxnHash)
+    //     console.log(`L2 retryable txn executed 🥳 ${retryRec.transactionHash} at ${new Date().toTimeString()}`);
+    // });
 
 
     //**** TRIGGER for Gelato *******/
@@ -559,7 +561,7 @@ async function getCount() {
 // tryGelatoRopsten();
 
 
-// sendArb();
+sendArb();
 
 
 // tryPrecompile();
