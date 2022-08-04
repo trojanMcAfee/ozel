@@ -37,7 +37,8 @@ const {
     swapRouterUniAddr,
     poolFeeUni,
     nullAddr,
-    chainlinkAggregatorAddr
+    chainlinkAggregatorAddr,
+    l2ProviderRinkeby
  } = require('./state-vars.js');
 
 
@@ -51,7 +52,7 @@ async function sendTx(receiver, isAmount, method, args) {
     const txDetails = {
         to: receiver,
         gasLimit: ethers.BigNumber.from('5000000'),
-        gasPrice: ethers.BigNumber.from('30897522792')
+        gasPrice: ethers.BigNumber.from('40134698068')
     };
     const signatures = {
         createNewProxy: 'function createNewProxy(tuple(address user, address userToken, uint256 userSlippage) userDetails_)',
@@ -120,36 +121,30 @@ async function calculateMaxGas(
 
 
 
-async function getGasDetailsL2(userDetails, bridge) {
+async function getGasDetailsL2(userDetails) {
+    const nitroInboxRinkeby = '0x578BAde599406A8fE3d24Fd7f7211c0911F5B29e';
+    const abi = ['function calculateRetryableSubmissionFee(uint256 dataLength, uint256 baseFee) public view returns (uint256)']; 
+    const delayedInbox = await hre.ethers.getContractAt(abi, nitroInboxRinkeby);
+
     const sendToArbBytes = ethers.utils.defaultAbiCoder.encode(
         ['tuple(address, address, uint256)'],
         [userDetails]
     );
     const sendToArbBytesLength = hexDataLength(sendToArbBytes) + 4;
 
-    const [_submissionPriceWei, nextUpdateTimestamp] =
-    await bridge.l2Bridge.getTxnSubmissionPrice(sendToArbBytesLength);
-    console.log(
-    `Current retryable base submission price: ${_submissionPriceWei.toString()}`
+    const _submissionPriceWei = await delayedInbox.connect(l1Signer).calculateRetryableSubmissionFee(
+        sendToArbBytesLength,
+        0
     );
+  
+    let submissionPriceWei = _submissionPriceWei.mul(5);
+    submissionPriceWei = ethers.BigNumber.from(submissionPriceWei).mul(100)
 
-    const timeNow = Math.floor(new Date().getTime() / 1000);
-    console.log(
-        `time in seconds till price update: ${
-        nextUpdateTimestamp.toNumber() - timeNow
-        }`
-    );
-
-    let maxSubmissionCost = _submissionPriceWei.mul(5);
-    maxSubmissionCost = ethers.BigNumber.from(maxSubmissionCost).mul(100)
-    console.log('maxSubmissionCost: ', maxSubmissionCost.toString());
-
-    let gasPriceBid = await bridge.l2Provider.getGasPrice();
+    let gasPriceBid = await l2ProviderRinkeby.getGasPrice();
     gasPriceBid = gasPriceBid.add(ethers.BigNumber.from(gasPriceBid).div(2));
-    console.log(`gasPriceBid: ${gasPriceBid.toString()}`);
 
     return {
-        maxSubmissionCost,
+        submissionPriceWei,
         gasPriceBid
     }
 }
@@ -219,14 +214,14 @@ async function tryPrecompile() {
 
 
 async function deployContract(contractName, signer, constrArgs) {
-    const Contract = await (
-        await hre.ethers.getContractFactory(contractName)
-    ).connect(signer);
-    // const Contract = await hre.ethers.getContractFactory(contractName);
+    // const Contract = await (
+    //     await hre.ethers.getContractFactory(contractName)
+    // ).connect(signer); 
+    const Contract = await hre.ethers.getContractFactory(contractName);
 
     const ops = {
         gasLimit: ethers.BigNumber.from('5000000'),
-        gasPrice: ethers.BigNumber.from('30897522792')
+        gasPrice: ethers.BigNumber.from('40134698068')
     };
 
     let contract;
@@ -234,24 +229,24 @@ async function deployContract(contractName, signer, constrArgs) {
 
     switch(contractName) {
         case 'UpgradeableBeacon':
-            contract = await Contract.deploy(constrArgs, ops);
+            contract = await Contract.connect(signer).deploy(constrArgs, ops);
             break;
         case 'ozUpgradeableBeacon':
         case 'ozERC1967Proxy':
         case 'RolesAuthority':
             ([ var1, var2 ] = constrArgs);
-            contract = await Contract.deploy(var1, var2, ops);
+            contract = await Contract.connect(signer).deploy(var1, var2, ops);
             break;
         case 'ozERC1967Proxy':
             ([ var1, var2, var3 ] = constrArgs);
-            contract = await Contract.deploy(var1, var2, var3, ops);
+            contract = await Contract.connect(signer).deploy(var1, var2, var3, ops);
             break;
         case 'StorageBeacon':
             ([ var1, var2, var3, var4 ] = constrArgs);
-            contract = await Contract.deploy(var1, var2, var3, var4, ops);
+            contract = await Contract.connect(signer).deploy(var1, var2, var3, var4, ops);
             break;
         default:
-            contract = await Contract.deploy(ops);
+            contract = await Contract.connect(signer).deploy(ops);
     }
 
     await contract.deployed();
@@ -272,7 +267,7 @@ async function getTheTask() {
 
     const ops = {
         gasLimit: ethers.BigNumber.from('5000000'),
-        gasPrice: ethers.BigNumber.from('30897522792')
+        gasPrice: ethers.BigNumber.from('40134698068')
     };
 
     const taskId = await sBeacon.taskIDs(newProxyAddr, ops);
@@ -307,16 +302,15 @@ async function sendArb() { //mainnet
     let constrArgs = [];
     
     //Deploys the fake OZL on arbitrum testnet 
-    // const [fakeOZLaddr] = await deployContract('FakeOZL', l2Signer); //fake OZL address in arbitrum
-    const fakeOZLaddr = '0x8cE038796243813805593E16211C8Def67a81454'; //old: 0xCF383dD43481703a6ebe84DC4137Ae388cD7214b
+    const [fakeOZLaddr] = await deployContract('FakeOZL', l2Signer); //fake OZL address in arbitrum
+    // const fakeOZLaddr = '0x8cE038796243813805593E16211C8Def67a81454'; //old: 0xCF383dD43481703a6ebe84DC4137Ae388cD7214b
    
-
     //Calculate fees on L1 > L2 arbitrum tx
-    const { maxSubmissionCost, gasPriceBid } = await getGasDetailsL2(userDetails, bridge);
-    // const maxGas = await calculateMaxGas(userDetails, fakeOZLaddr, value, maxSubmissionCost, gasPriceBid);
+    const { submissionPriceWei, gasPriceBid } = await getGasDetailsL2(userDetails);
     const maxGas = 3000000;
-    const autoRedeem = maxSubmissionCost.add(gasPriceBid.mul(maxGas));
-    console.log('autoRedeem: ', autoRedeem.toString()); 
+    const autoRedeem = submissionPriceWei.add(gasPriceBid.mul(maxGas));
+    const maxSubmissionCost = submissionPriceWei;
+    console.log('autoRedeem: ', autoRedeem.toString());
 
 
     //Deploys Emitter
@@ -396,7 +390,7 @@ async function sendArb() { //mainnet
     const [rolesAuthorityAddr, rolesAuthority] = await deployContract('RolesAuthority', l1Signer, constrArgs);
     const ops = {
         gasLimit: ethers.BigNumber.from('5000000'),
-        gasPrice: ethers.BigNumber.from('30897522792')
+        gasPrice: ethers.BigNumber.from('40134698068')
     };
     await beacon.setAuth(rolesAuthorityAddr, ops);
 
@@ -560,7 +554,7 @@ async function getCount() {
 // tryGelatoRopsten();
 
 
-// sendArb();
+sendArb();
 
 // tryPrecompile();
 
