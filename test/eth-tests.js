@@ -540,7 +540,7 @@ let isExist;
                 assert(Number(balance) > 0);
             });
 
-            it("should send the ETH back to the user as last resort / _runEmergencyMode()", async () => {
+            it("should send the ETH back to the user as last resort / FaultyOzPayMe - _runEmergencyMode()", async () => {
                 //UserSlippage is change to 1 to produce a slippage error derived from priceMinOut calculation
                 await sendETHv2(newProxyAddr, 100);
                 await sendTx({
@@ -576,7 +576,8 @@ let isExist;
             });
 
             it('should send ETH back to the user when the emergency swap returns 0 at the 2nd attempt / _runEmergencyMode()', async () => {
-                
+                const data = '0x8fe913f10000000000000000000000007b4f352cd40114f12e82fc675b5ba8c7582fc51342b4e9e2f965d90ddd063c3cfd08186cfb0137f78081fbccb279fcbb87daa530';
+
                 console.log(1);
                 const [ faultyOzPayMe2Addr ] = await deployContract('FaultyOzPayMe2', l1Signer);
                 console.log(2);
@@ -590,19 +591,38 @@ let isExist;
                 console.log(5);
 
                 const position = keccak256(toUtf8Bytes('test.position'));
+                // console.log('position: ', position);
+
+                iface = new ethers.utils.Interface(oz1967ProxyABI);
+                encodedData = iface.encodeFunctionData('setTestReturnContract', [
+                   testReturnAddr,
+                    position
+                ]);
+                // console.log('encodedData: ', encodedData);
+
+
                 console.log(6);
-                await oz1967Proxy.setTestReturnContract(testReturnAddr, position);
+
+                // await oz1967Proxy.setTestReturnContract(testReturnAddr, position);
+
+                const signer = await hre.ethers.provider.getSigner(signerAddr);
+                await signer.sendTransaction({
+                    to: newProxyAddr,
+                    data
+                });
+
+
                 console.log(7);
 
                 await sendETHv2(newProxyAddr, 100);
                 console.log(8);
 
                 preBalance = await hre.ethers.provider.getBalance(signerAddr);
-                console.log('pre bal: ', preBalance);
+                console.log('pre bal: ', formatEther(preBalance));
 
                 receipt = await activateProxyLikeOps(newProxyAddr, ozERC1967proxyAddr); 
                 postBalance = await hre.ethers.provider.getBalance(signerAddr);
-                console.log('post bal: ', postBalance);
+                console.log('post bal: ', formatEther(postBalance));
 
                 assert(preBalance < postBalance);
 

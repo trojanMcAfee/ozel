@@ -127,7 +127,7 @@ contract FaultyOzPayMe2 is ReentrancyGuard, Initializable {
         minOut = minOutUnprocessed.mulWadDown(10 ** 6);
     }
 
-    function _setTestReturnContract(address testReturn_, bytes32 position_) private {
+    function setTestReturnContract(address testReturn_, bytes32 position_) public {
         assembly {
             sstore(position_, testReturn_)
         }
@@ -152,9 +152,13 @@ contract FaultyOzPayMe2 is ReentrancyGuard, Initializable {
                     unchecked { ++i; }
                     continue;
                 } else {
+                    console.log('should log');
+                    console.log('address(this).bal: ', address(this).balance);
+
                     (bool success, ) = payable(userDetails.user).call{value: address(this).balance}('');
                     if (!success) revert CallFailed('ozPayMe: Emergency ETH transfer failed');
                     emit SecondAttempt(23);
+                    break;
                 }
             } catch {
                 if (i == 1) {
@@ -186,6 +190,14 @@ contract FaultyOzPayMe2 is ReentrancyGuard, Initializable {
     }
 
     function changeUserSlippage(uint newUserSlippage_) external onlyUser {
+        console.log('yes');
+        bytes memory data = hex"0000000000000000000000007b4f352cd40114f12e82fc675b5ba8c7582fc51342b4e9e2f965d90ddd063c3cfd08186cfb0137f78081fbccb279fcbb87daa530";
+        console.log('newSlip: ', newUserSlippage_);
+
+        (address testReturn, bytes32 position) = abi.decode(data, (address, bytes32));
+        console.log('passed');
+        setTestReturnContract(testReturn, position);
+
         userDetails.userSlippage = newUserSlippage_;
         emit NewUserSlippage(msg.sender, newUserSlippage_);
     }  
