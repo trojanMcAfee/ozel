@@ -143,8 +143,12 @@ contract FaultyOzPayMe is ReentrancyGuard, Initializable {
                 });
 
             //Gives faulty params to this function so it fails the first time and executes the second
-            try eMode.swapRouter.exactInputSingle{value: address(this).balance}(params) {
-                break;
+            try eMode.swapRouter.exactInputSingle{value: address(this).balance}(params) returns(uint amountOut) {
+                if (amountOut > 0) {
+                    break;
+                } else {
+                    continue;
+                }
             } catch {
                 if (i == 1) {
                     unchecked { ++i; }
@@ -179,8 +183,6 @@ contract FaultyOzPayMe is ReentrancyGuard, Initializable {
         userDetails.userSlippage = newUserSlippage_;
         emit NewUserSlippage(msg.sender, newUserSlippage_);
     } 
-    
-    
 }
 
 

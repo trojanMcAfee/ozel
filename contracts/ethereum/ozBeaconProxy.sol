@@ -8,7 +8,7 @@ import '@rari-capital/solmate/src/utils/ReentrancyGuard.sol';
 import './ozUpgradeableBeacon.sol';
 import './StorageBeacon.sol';
 
-// import 'hardhat/console.sol';
+import 'hardhat/console.sol';
 
 
 
@@ -55,6 +55,7 @@ contract ozBeaconProxy is ReentrancyGuard, Initializable, BeaconProxy {
         ) { 
             data = msg.data;
         } else {
+            console.logBytes(msg.data);
             data = abi.encodeWithSignature(
                 'sendToArb((uint256,uint256,uint256),(address,address,uint256))', 
                 varConfig,

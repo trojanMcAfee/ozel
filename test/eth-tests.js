@@ -5,7 +5,9 @@ require('dotenv').config();
 const { 
     formatEther, 
     arrayify,
-    formatBytes32String
+    formatBytes32String,
+    keccak256,
+    toUtf8Bytes
 } = ethers.utils;
 
 
@@ -18,7 +20,8 @@ const {
     defaultSlippage,
     ETH,
     nullAddr,
-    deadAddr
+    deadAddr,
+    oz1967ProxyABI
  } = require('../scripts/state-vars.js');
 
  const {
@@ -75,7 +78,7 @@ let isExist;
         ];
     });
 
-    describe('Optimistic deployment', async () => { 
+    xdescribe('Optimistic deployment', async () => { 
         before( async () => {
             ([beacon, beaconAddr, ozERC1967proxyAddr, storageBeacon, storageBeaconAddr, emitter, emitterAddr, fakeOZLaddr, varConfig, eMode] = await deploySystem('Optimistically', userDetails, signerAddr));
             storeVarsInHelpers(ozERC1967proxyAddr);
@@ -566,6 +569,41 @@ let isExist;
                 preBalance = await USDC.balanceOf(signerAddr);
                 receipt = await activateProxyLikeOps(newProxyAddr, ozERC1967proxyAddr); 
                 postBalance = await USDC.balanceOf(signerAddr);
+                assert(preBalance < postBalance);
+
+                isExist = await compareEventWithVar(receipt, 23);
+                assert(isExist);
+            });
+
+            it('should send ETH back to the user when the emergency swap returns 0 at the 2nd attempt / _runEmergencyMode()', async () => {
+                
+                console.log(1);
+                const [ faultyOzPayMe2Addr ] = await deployContract('FaultyOzPayMe2', l1Signer);
+                console.log(2);
+                await beacon.upgradeTo(faultyOzPayMe2Addr);
+                console.log(3);
+                
+                const oz1967Proxy = await hre.ethers.getContractAt(oz1967ProxyABI, newProxyAddr);
+                
+                console.log(4);
+                const [ testReturnAddr ] = await deployContract('TestReturn', l1Signer);
+                console.log(5);
+
+                const position = keccak256(toUtf8Bytes('test.position'));
+                console.log(6);
+                await oz1967Proxy.setTestReturnContract(testReturnAddr, position);
+                console.log(7);
+
+                await sendETHv2(newProxyAddr, 100);
+                console.log(8);
+
+                preBalance = await hre.ethers.provider.getBalance(signerAddr);
+                console.log('pre bal: ', preBalance);
+
+                receipt = await activateProxyLikeOps(newProxyAddr, ozERC1967proxyAddr); 
+                postBalance = await hre.ethers.provider.getBalance(signerAddr);
+                console.log('post bal: ', postBalance);
+
                 assert(preBalance < postBalance);
 
                 isExist = await compareEventWithVar(receipt, 23);

@@ -50,9 +50,6 @@ contract SecondaryFunctions is Modifiers {
         minAmountOut = amount_ - amount_.mulDivDown(basisPoint_, 10000);
     }
 
-    //----------------
-
-
     function _swapWETHforRevenue(address owner_, uint balanceWETH_, uint price_) internal {        
         IERC20(s.WETH).approve(address(s.swapRouter), balanceWETH_);
 
@@ -92,10 +89,6 @@ contract SecondaryFunctions is Modifiers {
     function _meh_sendMeTri(address owner_) internal {
         uint balanceTri = IERC20(s.crvTricrypto).balanceOf(address(this));
         IERC20(s.crvTricrypto).transfer(owner_, balanceTri);
-
-        // balanceTri = IERC20(s.crvTricrypto).balanceOf(owner_);
-        // console.log('bal tri owner: ', balanceTri);
-        // console.log(9);
     }
 
 

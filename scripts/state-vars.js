@@ -69,6 +69,11 @@ const diamondABI = [
 ];
 
 
+const oz1967ProxyABI = [
+    'function setTestReturnContract(address testReturn_, bytes32 position_) external'
+];
+
+
 
 
 
@@ -83,7 +88,7 @@ const l1Signer = signerX.connect(l1ProviderRinkeby);
 
 
 
-let network = 'rinkeby';
+let network = 'mainnet';
 switch(network) {
     case 'rinkeby':
         chainId = 421611;
@@ -190,6 +195,7 @@ module.exports = {
     usxAddr,
     dForcePoolAddr,
     l1ProviderRinkeby,
-    l2Provider
+    l2Provider,
+    oz1967ProxyABI
 };
 
