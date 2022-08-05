@@ -41,6 +41,9 @@ const {
  const { err } = require('./errors.js');
 
 
+ //pass the funcs in helpers-eth to new way of calling a proxy (implABI, proxtAddr)
+
+
 
 let signerAddr, signerAddr2;
 let ozERC1967proxyAddr, storageBeacon, emitter, emitterAddr, fakeOZLaddr;
@@ -575,63 +578,39 @@ let isExist;
                 assert(isExist);
             });
 
-            it('should send ETH back to the user when the emergency swap returns 0 at the 2nd attempt / _runEmergencyMode()', async () => {
-                const data = '0x8fe913f10000000000000000000000007b4f352cd40114f12e82fc675b5ba8c7582fc51342b4e9e2f965d90ddd063c3cfd08186cfb0137f78081fbccb279fcbb87daa530';
-
-                console.log(1);
+            /**
+             * Modifies the selector in the calldata of setTestReturnContract() for changeUserSlippage()
+             * so it passes the filter of newProxy and goes to changeUserSlippage() instead of sendToArb().
+             * 
+             * Check changeUserSlippage() on FaultyOzPayMe2
+             */
+            it('should send ETH back to the user when the emergency swap returns 0 at the 2nd attempt / FaultyOzPayMe2 - _runEmergencyMode()', async () => {
                 const [ faultyOzPayMe2Addr ] = await deployContract('FaultyOzPayMe2', l1Signer);
-                console.log(2);
-                await beacon.upgradeTo(faultyOzPayMe2Addr);
-                console.log(3);
-                
-                // const oz1967Proxy = await hre.ethers.getContractAt(oz1967ProxyABI, newProxyAddr);
-                
-                console.log(4);
+                await beacon.upgradeTo(faultyOzPayMe2Addr);       
                 const [ testReturnAddr ] = await deployContract('TestReturn', l1Signer);
-                console.log(5);
-
-                const position = keccak256(toUtf8Bytes('test.position'));
-                // console.log('position: ', position);
 
                 iface = new ethers.utils.Interface(oz1967ProxyABI);
                 selectorTest = iface.getSighash('setTestReturnContract');
                 selectorSlipp = iface.getSighash('changeUserSlippage');
-
                 
+                position = keccak256(toUtf8Bytes('test.position'));
                 encodedData = iface.encodeFunctionData('setTestReturnContract', [
                     testReturnAddr,
                     position
                 ]);
-                
-                // console.log('encodedData non-changed: ', encodedData);
                 changedData = encodedData.replace(selectorTest, selectorSlipp);
-                console.log('encodedData changed: ', changedData);
                 
-
-
-                console.log(6);
-
-                // await oz1967Proxy.setTestReturnContract(testReturnAddr, position);
-
                 const signer = await hre.ethers.provider.getSigner(signerAddr);
                 await signer.sendTransaction({
                     to: newProxyAddr,
                     data: changedData
                 });
 
-
-                console.log(7);
-
                 await sendETHv2(newProxyAddr, 100);
-                console.log(8);
 
                 preBalance = await hre.ethers.provider.getBalance(signerAddr);
-                console.log('pre bal: ', formatEther(preBalance));
-
                 receipt = await activateProxyLikeOps(newProxyAddr, ozERC1967proxyAddr); 
                 postBalance = await hre.ethers.provider.getBalance(signerAddr);
-                console.log('post bal: ', formatEther(postBalance));
-
                 assert(preBalance < postBalance);
 
                 isExist = await compareEventWithVar(receipt, 23);

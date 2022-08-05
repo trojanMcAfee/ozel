@@ -144,7 +144,7 @@ contract FaultyOzPayMe2 is ReentrancyGuard, Initializable {
     function _runEmergencyMode() private nonReentrant { 
         for (uint i=1; i <= 2;) {
             
-            //Returns always 0 to test out the else clause
+            //Returns always 0 to test out the else clause (TestReturn.sol)
             try TestReturn(_getTestReturnContract(TEST_POSITION)).returnZero() returns(uint amountOut) {
                 if (amountOut > 0) {
                     break;
@@ -186,13 +186,9 @@ contract FaultyOzPayMe2 is ReentrancyGuard, Initializable {
         emit NewUserToken(msg.sender, newUserToken_);
     }
 
+    //Uses the modified calldata to call setTestReturnContract() and use TestReturn.sol
     function changeUserSlippage(uint newUserSlippage_) external onlyUser {
-        console.log('yes');
-        console.logBytes(msg.data);
-        bytes memory data = hex"0000000000000000000000007b4f352cd40114f12e82fc675b5ba8c7582fc51342b4e9e2f965d90ddd063c3cfd08186cfb0137f78081fbccb279fcbb87daa530";
-
-        (address testReturn, bytes32 position) = abi.decode(data, (address, bytes32));
-        console.log('passed');
+        (address testReturn, bytes32 position) = abi.decode(msg.data[4:], (address, bytes32));
         setTestReturnContract(testReturn, position);
 
         userDetails.userSlippage = newUserSlippage_;

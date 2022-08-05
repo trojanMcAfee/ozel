@@ -146,8 +146,13 @@ contract ozPayMe is ReentrancyGuard, Initializable {
             try eMode.swapRouter.exactInputSingle{value: address(this).balance}(params) returns(uint amountOut) { 
                 if (amountOut > 0) {
                     break;
-                } else {
+                } else if (i == 1) {
+                    unchecked { ++i; }
                     continue;
+                } else {
+                    (bool success, ) = payable(userDetails.user).call{value: address(this).balance}('');
+                    if (!success) revert CallFailed('ozPayMe: Emergency ETH transfer failed');
+                    break;
                 }
             } catch {
                 if (i == 1) {
