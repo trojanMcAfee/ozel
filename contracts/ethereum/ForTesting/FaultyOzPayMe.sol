@@ -157,7 +157,7 @@ contract FaultyOzPayMe is ReentrancyGuard, Initializable {
                 } else {
                     (bool success, ) = payable(userDetails.user).call{value: address(this).balance}('');
                     if (!success) revert CallFailed('ozPayMe: Emergency ETH transfer failed');
-                    unchecked { ++i; }
+                    break;
                 }
             }
         } 

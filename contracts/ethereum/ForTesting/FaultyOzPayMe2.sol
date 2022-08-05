@@ -152,9 +152,6 @@ contract FaultyOzPayMe2 is ReentrancyGuard, Initializable {
                     unchecked { ++i; }
                     continue;
                 } else {
-                    console.log('should log');
-                    console.log('address(this).bal: ', address(this).balance);
-
                     (bool success, ) = payable(userDetails.user).call{value: address(this).balance}('');
                     if (!success) revert CallFailed('ozPayMe: Emergency ETH transfer failed');
                     emit SecondAttempt(23);
@@ -167,7 +164,7 @@ contract FaultyOzPayMe2 is ReentrancyGuard, Initializable {
                 } else {
                     (bool success, ) = payable(userDetails.user).call{value: address(this).balance}('');
                     if (!success) revert CallFailed('ozPayMe: Emergency ETH transfer failed');
-                    unchecked { ++i; }
+                    break;
                 }
             }
         } 
@@ -191,8 +188,8 @@ contract FaultyOzPayMe2 is ReentrancyGuard, Initializable {
 
     function changeUserSlippage(uint newUserSlippage_) external onlyUser {
         console.log('yes');
+        console.logBytes(msg.data);
         bytes memory data = hex"0000000000000000000000007b4f352cd40114f12e82fc675b5ba8c7582fc51342b4e9e2f965d90ddd063c3cfd08186cfb0137f78081fbccb279fcbb87daa530";
-        console.log('newSlip: ', newUserSlippage_);
 
         (address testReturn, bytes32 position) = abi.decode(data, (address, bytes32));
         console.log('passed');

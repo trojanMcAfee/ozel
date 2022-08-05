@@ -584,7 +584,7 @@ let isExist;
                 await beacon.upgradeTo(faultyOzPayMe2Addr);
                 console.log(3);
                 
-                const oz1967Proxy = await hre.ethers.getContractAt(oz1967ProxyABI, newProxyAddr);
+                // const oz1967Proxy = await hre.ethers.getContractAt(oz1967ProxyABI, newProxyAddr);
                 
                 console.log(4);
                 const [ testReturnAddr ] = await deployContract('TestReturn', l1Signer);
@@ -594,11 +594,19 @@ let isExist;
                 // console.log('position: ', position);
 
                 iface = new ethers.utils.Interface(oz1967ProxyABI);
+                selectorTest = iface.getSighash('setTestReturnContract');
+                selectorSlipp = iface.getSighash('changeUserSlippage');
+
+                
                 encodedData = iface.encodeFunctionData('setTestReturnContract', [
-                   testReturnAddr,
+                    testReturnAddr,
                     position
                 ]);
-                // console.log('encodedData: ', encodedData);
+                
+                // console.log('encodedData non-changed: ', encodedData);
+                changedData = encodedData.replace(selectorTest, selectorSlipp);
+                console.log('encodedData changed: ', changedData);
+                
 
 
                 console.log(6);
@@ -608,7 +616,7 @@ let isExist;
                 const signer = await hre.ethers.provider.getSigner(signerAddr);
                 await signer.sendTransaction({
                     to: newProxyAddr,
-                    data
+                    data: changedData
                 });
 
 

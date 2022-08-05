@@ -70,7 +70,8 @@ const diamondABI = [
 
 
 const oz1967ProxyABI = [
-    'function setTestReturnContract(address testReturn_, bytes32 position_) public'
+    'function setTestReturnContract(address testReturn_, bytes32 position_) public',
+    'function changeUserSlippage(uint256 newUserSlippage_) external'
 ];
 
 
