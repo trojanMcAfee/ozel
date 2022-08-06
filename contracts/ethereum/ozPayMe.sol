@@ -134,7 +134,7 @@ contract ozPayMe is ReentrancyGuard, Initializable {
             ISwapRouter.ExactInputSingleParams memory params =
                 ISwapRouter.ExactInputSingleParams({
                     tokenIn: eMode.tokenIn,
-                    tokenOut: eMode.tokenOut,
+                    tokenOut: eMode.tokenOut, //change this from ETH to WETH
                     fee: eMode.poolFee,
                     recipient: userDetails.user,
                     deadline: block.timestamp,
