@@ -5,6 +5,7 @@ pragma solidity ^0.8.0;
 import "@chainlink/contracts/src/v0.8/interfaces/AggregatorV3Interface.sol";
 import '@uniswap/v3-periphery/contracts/interfaces/ISwapRouter.sol';
 import "@openzeppelin/contracts/proxy/utils/Initializable.sol";
+import '@openzeppelin/contracts/token/ERC20/IERC20.sol';
 import '@openzeppelin/contracts/access/Ownable.sol';
 import './ozUpgradeableBeacon.sol';
 
@@ -54,6 +55,7 @@ contract StorageBeacon is Initializable, Ownable {
     mapping(uint => UserConfig) public idToUserDetails;
     mapping(address => address) public proxyToUser; 
     mapping(address => address[]) public userToProxy;
+    mapping(address => mapping(IERC20 => uint)) public userToFailedERC;
 
     uint private internalId;
 
@@ -145,6 +147,12 @@ contract StorageBeacon is Initializable, Ownable {
         isEmitter = newStatus;
     }
 
+    //-------
+
+    function setFailedERCFunds(address user_, IERC20 token_, uint amount_) external {
+        userToFailedERC[user_][token_] = amount_;
+    }
+
 
 
     //View functions
@@ -186,6 +194,12 @@ contract StorageBeacon is Initializable, Ownable {
 
     function getEmitterStatus() external view returns(bool) {
         return isEmitter;
+    }
+
+    //------
+
+    function getFailedERCFunds(address user_, address erc20_) external view returns(uint) {
+        return userToFailedERC[user_][IERC20(erc20_)]; //for front-end when to know that there are failed ERC funds to collect
     }
 }
 

@@ -4,8 +4,9 @@ pragma solidity 0.8.14;
 
 import '@rari-capital/solmate/src/utils/ReentrancyGuard.sol';
 import '@rari-capital/solmate/src/utils/SafeTransferLib.sol';
-import '@rari-capital/solmate/src/tokens/ERC20.sol';
+// import '@rari-capital/solmate/src/tokens/ERC20.sol';
 import "@openzeppelin/contracts/proxy/utils/Initializable.sol";
+import '@openzeppelin/contracts/token/ERC20/IERC20.sol';
 import '@uniswap/v3-periphery/contracts/interfaces/ISwapRouter.sol';
 import '../libraries/FixedPointMathLib.sol';
 import '../interfaces/DelayedInbox.sol';
@@ -32,6 +33,7 @@ contract ozPayMe is ReentrancyGuard, Initializable {
     event EmergencyTriggered(address indexed sender, uint amount);
     event NewUserToken(address indexed user, address indexed newToken);
     event NewUserSlippage(address indexed user, uint indexed newSlippage);
+    event FailedERCFunds(address indexed user_, uint indexed amount_);
 
 
     modifier onlyOps() {
@@ -41,7 +43,6 @@ contract ozPayMe is ReentrancyGuard, Initializable {
 
     modifier onlyUser() {
         if (msg.sender != userDetails.user) revert NotAuthorized();
-        // require(msg.sender == userDetails.user, 'Not authorized');
         _;
     }
 
@@ -155,7 +156,7 @@ contract ozPayMe is ReentrancyGuard, Initializable {
                     unchecked { ++i; }
                     continue;
                 } else {
-                    IWETH(eMode.tokenIn).transfer(userDetails.user, balanceWETH);
+                    _lastResortWETHTransfer(userDetails.user, IERC20(eMode.tokenIn), balanceWETH);
                     break;
                 }
             } catch {
@@ -163,15 +164,20 @@ contract ozPayMe is ReentrancyGuard, Initializable {
                     unchecked { ++i; }
                     continue; 
                 } else {
-                    IWETH(eMode.tokenIn).transfer(userDetails.user, balanceWETH);
-                    unchecked { ++i; }
+                    _lastResortWETHTransfer(userDetails.user, IERC20(eMode.tokenIn), balanceWETH);
+                    break;
                 }
             }
         } 
     }
 
-    function handleERC20FalseReturn(IERC20 token_, uint amount_, address user_) public {
-        
+
+    function _lastResortWETHTransfer(address user_, IERC20 token_, uint amount_) private {
+        bool success = token_.transfer(user_, amount_);
+        if (!success) {
+            StorageBeacon(_getStorageBeacon(_beacon, 0)).setFailedERCFunds(user_, token_, amount_);
+            emit FailedERCFunds(user_, amount_);
+        }
     }
 
 
@@ -194,6 +200,7 @@ contract ozPayMe is ReentrancyGuard, Initializable {
         userDetails.userToken = newUserToken_;
         emit NewUserToken(msg.sender, newUserToken_);
     }
+
 
     function changeUserSlippage(uint newUserSlippage_) external onlyUser {
         if (newUserSlippage_ <= 0) revert CantBeZero('slippage');
