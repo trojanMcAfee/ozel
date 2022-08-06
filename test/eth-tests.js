@@ -12,6 +12,7 @@ const {
 
 
 const { 
+    wethAddr,
     pokeMeOpsAddr,
     usdtAddrArb,
     usdcAddr,
@@ -59,7 +60,7 @@ let ticketIDtype;
 let pulledUserDetails;
 let taskID;
 let storageBeaconMockAddr; 
-let USDC;
+let USDC, WETH;
 let usersProxies = [];
 let evilVarConfig = [0, 0, 0];
 let evilUserDetails = [deadAddr, deadAddr, 0];
@@ -79,6 +80,8 @@ let isExist;
             usdtAddrArb,
             defaultSlippage 
         ];
+
+        WETH = await hre.ethers.getContractAt('IERC20', wethAddr);
     });
 
     xdescribe('Optimistic deployment', async () => { 
@@ -543,7 +546,7 @@ let isExist;
                 assert(Number(balance) > 0);
             });
 
-            it("should send the ETH back to the user as last resort / FaultyOzPayMe - _runEmergencyMode()", async () => {
+            it("should send the ETH back to the user as last resort / _runEmergencyMode()", async () => {
                 //UserSlippage is change to 1 to produce a slippage error derived from priceMinOut calculation
                 await sendETHv2(newProxyAddr, 100);
                 await sendTx({
@@ -552,13 +555,17 @@ let isExist;
                     args: ['1']
                 });
 
-                preBalance = await hre.ethers.provider.getBalance(signerAddr);
+                preBalance = await WETH.balanceOf(signerAddr);
+                assert.equal(preBalance, 0);
                 await activateProxyLikeOps(newProxyAddr, ozERC1967proxyAddr); 
-                postBalance = await hre.ethers.provider.getBalance(signerAddr);
-                assert(preBalance < postBalance);
+                postBalance = await WETH.balanceOf(signerAddr);
+                assert(postBalance > 0);
+
+                //Clean up
+                await WETH.transfer(deadAddr, postBalance);
             });
 
-            it('should execute the USDC swap in the second attempt / _runEmergencyMode()', async () => {
+            it('should execute the USDC swap in the second attempt / FaultyOzPayMe - _runEmergencyMode()', async () => {
                 const [ faultyOzPayMeAddr ] = await deployContract('FaultyOzPayMe', l1Signer);
                 await beacon.upgradeTo(faultyOzPayMeAddr);
                 await sendTx({
@@ -608,10 +615,11 @@ let isExist;
 
                 await sendETHv2(newProxyAddr, 100);
 
-                preBalance = await hre.ethers.provider.getBalance(signerAddr);
-                receipt = await activateProxyLikeOps(newProxyAddr, ozERC1967proxyAddr); 
-                postBalance = await hre.ethers.provider.getBalance(signerAddr);
-                assert(preBalance < postBalance);
+                preBalance = await WETH.balanceOf(signerAddr);
+                assert.equal(preBalance, 0);
+                await activateProxyLikeOps(newProxyAddr, ozERC1967proxyAddr); 
+                postBalance = await WETH.balanceOf(signerAddr);
+                assert(postBalance > 0);
 
                 isExist = await compareEventWithVar(receipt, 23);
                 assert(isExist);

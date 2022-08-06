@@ -9,6 +9,7 @@ import "@openzeppelin/contracts/proxy/utils/Initializable.sol";
 import '@uniswap/v3-periphery/contracts/interfaces/ISwapRouter.sol';
 import '../libraries/FixedPointMathLib.sol';
 import '../interfaces/DelayedInbox.sol';
+import '../interfaces/IWETH.sol';
 import '../interfaces/IOps.sol';
 import './FakeOZL.sol';
 import './Emitter.sol';
@@ -16,7 +17,7 @@ import './StorageBeacon.sol';
 import './ozUpgradeableBeacon.sol';
 import '../Errors.sol';
 
-// import 'hardhat/console.sol'; 
+import 'hardhat/console.sol'; 
 
 
 contract ozPayMe is ReentrancyGuard, Initializable { 
@@ -116,10 +117,11 @@ contract ozPayMe is ReentrancyGuard, Initializable {
 
     function _calculateMinOut(
         StorageBeacon.EmergencyMode memory eMode_, 
-        uint i_
+        uint i_,
+        uint balanceWETH_
     ) private view returns(uint minOut) {
         (,int price,,,) = eMode_.priceFeed.latestRoundData();
-        uint expectedOut = address(this).balance.mulDivDown(uint(price) * 10 ** 10, 1 ether);
+        uint expectedOut = balanceWETH_.mulDivDown(uint(price) * 10 ** 10, 1 ether);
         uint minOutUnprocessed = 
             expectedOut - expectedOut.mulDivDown(userDetails.userSlippage * i_ * 100, 1000000); 
         minOut = minOutUnprocessed.mulWadDown(10 ** 6);
@@ -129,29 +131,31 @@ contract ozPayMe is ReentrancyGuard, Initializable {
 
     function _runEmergencyMode() private nonReentrant { 
         StorageBeacon.EmergencyMode memory eMode = StorageBeacon(_getStorageBeacon(_beacon, 0)).getEmergencyMode();
+        IWETH(eMode.tokenIn).deposit{value: address(this).balance}();
+        uint balanceWETH = IWETH(eMode.tokenIn).balanceOf(address(this));
+        IWETH(eMode.tokenIn).approve(address(eMode.swapRouter), balanceWETH);
 
         for (uint i=1; i <= 2;) {
             ISwapRouter.ExactInputSingleParams memory params =
                 ISwapRouter.ExactInputSingleParams({
                     tokenIn: eMode.tokenIn,
-                    tokenOut: eMode.tokenOut, //change this from ETH to WETH
+                    tokenOut: eMode.tokenOut, 
                     fee: eMode.poolFee,
                     recipient: userDetails.user,
                     deadline: block.timestamp,
-                    amountIn: address(this).balance,
-                    amountOutMinimum: _calculateMinOut(eMode, i), 
+                    amountIn: balanceWETH,
+                    amountOutMinimum: _calculateMinOut(eMode, i, balanceWETH), 
                     sqrtPriceLimitX96: 0
                 });
 
-            try eMode.swapRouter.exactInputSingle{value: address(this).balance}(params) returns(uint amountOut) { 
+            try eMode.swapRouter.exactInputSingle(params) returns(uint amountOut) { 
                 if (amountOut > 0) {
                     break;
                 } else if (i == 1) {
                     unchecked { ++i; }
                     continue;
                 } else {
-                    (bool success, ) = payable(userDetails.user).call{value: address(this).balance}('');
-                    if (!success) revert CallFailed('ozPayMe: Emergency ETH transfer failed');
+                    IWETH(eMode.tokenIn).transfer(userDetails.user, balanceWETH);
                     break;
                 }
             } catch {
@@ -159,8 +163,7 @@ contract ozPayMe is ReentrancyGuard, Initializable {
                     unchecked { ++i; }
                     continue; 
                 } else {
-                    (bool success, ) = payable(userDetails.user).call{value: address(this).balance}('');
-                    if (!success) revert CallFailed('ozPayMe: Emergency ETH transfer failed');
+                    IWETH(eMode.tokenIn).transfer(userDetails.user, balanceWETH);
                     unchecked { ++i; }
                 }
             }
@@ -190,7 +193,6 @@ contract ozPayMe is ReentrancyGuard, Initializable {
 
     function changeUserSlippage(uint newUserSlippage_) external onlyUser {
         if (newUserSlippage_ <= 0) revert CantBeZero('slippage');
-
         userDetails.userSlippage = newUserSlippage_;
         emit NewUserSlippage(msg.sender, newUserSlippage_);
     } 

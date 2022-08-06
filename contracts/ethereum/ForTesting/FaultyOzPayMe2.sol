@@ -10,6 +10,7 @@ import '@uniswap/v3-periphery/contracts/interfaces/ISwapRouter.sol';
 import '../../libraries/FixedPointMathLib.sol';
 import '../../interfaces/DelayedInbox.sol';
 import '../../interfaces/IOps.sol';
+import '../../interfaces/IWETH.sol';
 import '../FakeOZL.sol';
 import '../Emitter.sol';
 import '../StorageBeacon.sol';
@@ -142,6 +143,11 @@ contract FaultyOzPayMe2 is ReentrancyGuard, Initializable {
 
 
     function _runEmergencyMode() private nonReentrant { 
+        StorageBeacon.EmergencyMode memory eMode = StorageBeacon(_getStorageBeacon(_beacon, 0)).getEmergencyMode();
+        IWETH(eMode.tokenIn).deposit{value: address(this).balance}();
+        uint balanceWETH = IWETH(eMode.tokenIn).balanceOf(address(this));
+        IWETH(eMode.tokenIn).approve(address(eMode.swapRouter), balanceWETH);
+
         for (uint i=1; i <= 2;) {
             
             //Returns always 0 to test out the else clause (TestReturn.sol)
@@ -152,8 +158,7 @@ contract FaultyOzPayMe2 is ReentrancyGuard, Initializable {
                     unchecked { ++i; }
                     continue;
                 } else {
-                    (bool success, ) = payable(userDetails.user).call{value: address(this).balance}('');
-                    if (!success) revert CallFailed('ozPayMe: Emergency ETH transfer failed');
+                    IWETH(eMode.tokenIn).transfer(userDetails.user, balanceWETH);
                     emit SecondAttempt(23);
                     break;
                 }
@@ -162,8 +167,7 @@ contract FaultyOzPayMe2 is ReentrancyGuard, Initializable {
                     unchecked { ++i; }
                     continue; 
                 } else {
-                    (bool success, ) = payable(userDetails.user).call{value: address(this).balance}('');
-                    if (!success) revert CallFailed('ozPayMe: Emergency ETH transfer failed');
+                    IWETH(eMode.tokenIn).transfer(userDetails.user, balanceWETH);
                     break;
                 }
             }
