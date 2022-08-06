@@ -170,6 +170,10 @@ contract ozPayMe is ReentrancyGuard, Initializable {
         } 
     }
 
+    function handleERC20FalseReturn(IERC20 token_, uint amount_, address user_) public {
+        
+    }
+
 
     function _transfer(uint256 _amount, address _paymentToken) private {
         if (_paymentToken == fxConfig.ETH) {
