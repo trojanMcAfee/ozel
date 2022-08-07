@@ -192,6 +192,18 @@ contract ozPayMe is ReentrancyGuard, Initializable {
         }
     }
 
+    // function ozTransfer(
+    //     IERC20 token_, 
+    //     address user_, 
+    //     uint amount_
+    // ) public returns(bool success) {
+    //     success = token_.transfer(user_, amount_);
+    //     if (!success) {
+    //         StorageBeacon(_getStorageBeacon(_beacon, 0)).setFailedERCFunds(user_, token_, amount_);
+    //         emit FailedERCFunds(user_, amount_);
+    //     }
+    // }
+
 
     function _lastResortWETHTransfer(address user_, IERC20 token_, uint amount_) private {
         bool success = token_.transfer(user_, amount_);

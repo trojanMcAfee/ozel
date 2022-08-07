@@ -9,6 +9,8 @@ import '@openzeppelin/contracts/token/ERC20/IERC20.sol';
 import '@openzeppelin/contracts/access/Ownable.sol';
 import './ozUpgradeableBeacon.sol';
 
+import { ozERC20Lib } from '../libraries/ozERC20Lib.sol';
+
 // import 'hardhat/console.sol';
 
 
@@ -110,6 +112,12 @@ contract StorageBeacon is Initializable, Ownable {
  
 
     //State changing functions
+    function addStorageOzERC20Lib() external { //put a custom initializer since it's already used in storeBeacon
+        ozERC20Lib.ozERC20Storage storage oz = ozERC20Lib.getLibStorage();
+        oz.storageBeacon = this;
+    }
+
+
     function issueUserID(UserConfig calldata userDetails_) external hasRole(0x74e0ea7a) returns(uint id) {
         idToUserDetails[internalId] = userDetails_;
         id = internalId;

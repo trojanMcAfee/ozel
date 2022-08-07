@@ -381,6 +381,7 @@ async function deploySystem(type, userDetails, signerAddr) {
     ]; 
 
     const [storageBeaconAddr, storageBeacon] = await deployContract('StorageBeacon', l1Signer, constrArgs);
+    await storageBeacon.addStorageOzERC20Lib();
 
     //Deploys UpgradeableBeacon
     constrArgs = [
@@ -424,14 +425,6 @@ async function deploySystem(type, userDetails, signerAddr) {
     await rolesAuthority.setRoleCapability(1, storageBeaconAddr, '0x74e0ea7a', true); //issueUserID(UserConfig memory userDetails_)
     await rolesAuthority.setRoleCapability(1, storageBeaconAddr, '0x68e540e5', true); //saveUserProxy(address sender_, address proxy_)
     await rolesAuthority.setRoleCapability(1, storageBeaconAddr, '0xf2034a69', true); //saveTaskId(address proxy_, bytes32 id_)
-
-
-    //Set signerAddr to role 0 for calling disableEmitter() on ozPayMe
-    // await rolesAuthority.setUserRole(signerAddr, 0, true); //<---- try to replace onlyOwner by this later
-    
-    // await rolesAuthority.setRoleCapability(0, storageBeaconAddr, '0xf9f4db8a', true); //changeVariableConfig(VariableConfig memory newVarConfig_)
-    // await rolesAuthority.setRoleCapability(0, newProxyAddr, '0xa2d4d48b', true); //disableEmitter()
-
     console.log('.');
 
     return [
