@@ -18,11 +18,15 @@ import './StorageBeacon.sol';
 import './ozUpgradeableBeacon.sol';
 import '../Errors.sol';
 
+import '../libraries/ozERC20Lib.sol';
+
 import 'hardhat/console.sol'; 
 
 
 contract ozPayMe is ReentrancyGuard, Initializable { 
+
     using FixedPointMathLib for uint;
+    using ozERC20Lib for IERC20;
 
     StorageBeacon.UserConfig userDetails;
     StorageBeacon.FixedConfig fxConfig;
@@ -137,9 +141,13 @@ contract ozPayMe is ReentrancyGuard, Initializable {
         uint balanceWETH = IWETH(eMode.tokenIn).balanceOf(address(this));
         // IWETH(eMode.tokenIn).approve(address(eMode.swapRouter), balanceWETH);
 
-        bool success = ozApprove(
-            IERC20(eMode.tokenIn), address(eMode.swapRouter), userDetails.user, balanceWETH
+        bool success = IERC20(eMode.tokenIn).ozApprove(
+            address(eMode.swapRouter), userDetails.user, balanceWETH
         );
+
+        // bool success = ozApprove(
+        //     IERC20(eMode.tokenIn), address(eMode.swapRouter), userDetails.user, balanceWETH
+        // );
 
         if (success) {
             for (uint i=1; i <= 2;) {
