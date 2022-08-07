@@ -53,7 +53,7 @@ let newProxyAddr, newProxy;
 let balance;
 let newUserToken, newUserSlippage;
 let ops;
-let signer2;
+let signer, signer2;
 let showTicketSignature;
 let receipt;
 let ticketIDtype;
@@ -82,11 +82,23 @@ let isExist;
         ];
 
         WETH = await hre.ethers.getContractAt('IERC20', wethAddr);
+        signer = await hre.ethers.provider.getSigner(signerAddr);
     });
 
     xdescribe('Optimistic deployment', async () => { 
         before( async () => {
-            ([beacon, beaconAddr, ozERC1967proxyAddr, storageBeacon, storageBeaconAddr, emitter, emitterAddr, fakeOZLaddr, varConfig, eMode] = await deploySystem('Optimistically', userDetails, signerAddr));
+            ([
+                beacon, 
+                beaconAddr, 
+                ozERC1967proxyAddr, 
+                storageBeacon, 
+                storageBeaconAddr, 
+                emitter, 
+                emitterAddr, 
+                fakeOZLaddr, 
+                varConfig, 
+                eMode
+            ] = await deploySystem('Optimistically', userDetails, signerAddr));
             storeVarsInHelpers(ozERC1967proxyAddr);
         });
 
@@ -519,7 +531,18 @@ let isExist;
     describe('Pesimistic deployment', async () => {
         before( async () => {
             //autoRedeem set to 0
-            ([beacon, beaconAddr, ozERC1967proxyAddr, storageBeacon, storageBeaconAddr, emitter, emitterAddr, fakeOZLaddr, varConfig, eMode] = await deploySystem('Pessimistically', userDetails, signerAddr));
+            ([
+                beacon, 
+                beaconAddr, 
+                ozERC1967proxyAddr, 
+                storageBeacon, 
+                storageBeaconAddr, 
+                emitter, emitterAddr, 
+                fakeOZLaddr, 
+                varConfig, 
+                eMode
+            ] = await deploySystem('Pessimistically', userDetails, signerAddr));
+
             storeVarsInHelpers(ozERC1967proxyAddr);
         });
 
@@ -607,7 +630,6 @@ let isExist;
                 ]);
                 changedData = encodedData.replace(selectorTest, selectorSlipp);
                 
-                const signer = await hre.ethers.provider.getSigner(signerAddr);
                 await signer.sendTransaction({
                     to: newProxyAddr,
                     data: changedData
@@ -617,9 +639,35 @@ let isExist;
 
                 preBalance = await WETH.balanceOf(signerAddr);
                 assert.equal(preBalance, 0);
-                await activateProxyLikeOps(newProxyAddr, ozERC1967proxyAddr); 
+                receipt = await activateProxyLikeOps(newProxyAddr, ozERC1967proxyAddr); 
                 postBalance = await WETH.balanceOf(signerAddr);
                 assert(postBalance > 0);
+
+                isExist = await compareEventWithVar(receipt, 23);
+                assert(isExist);
+
+                //Clean up
+                await WETH.transfer(deadAddr, postBalance);
+            });
+
+            it("should store the user's WETH from a failed ERC20 transfer / FaultyOzPayMe3 -_lastResortWETHTransfer()", async () => {
+                const [ faultyOzPayMe3Addr ] = await deployContract('FaultyOzPayMe3', l1Signer);
+                await beacon.upgradeTo(faultyOzPayMe3Addr);
+                await sendTx({
+                    receiver: newProxyAddr,
+                    method: 'changeUserSlippage',
+                    args: ['1']
+                });
+
+                await sendETHv2(newProxyAddr, 100);
+
+                failedFunds = await storageBeacon.getFailedERCFunds(signerAddr, wethAddr);
+                assert.equal(formatEther(failedFunds), 0);
+
+                receipt = await activateProxyLikeOps(newProxyAddr, ozERC1967proxyAddr);
+
+                failedFunds = await storageBeacon.getFailedERCFunds(signerAddr, wethAddr);
+                assert(formatEther(failedFunds) > 0);
 
                 isExist = await compareEventWithVar(receipt, 23);
                 assert(isExist);

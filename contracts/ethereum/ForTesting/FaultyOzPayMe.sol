@@ -34,6 +34,7 @@ contract FaultyOzPayMe is ReentrancyGuard, Initializable {
     event EmergencyTriggered(address indexed sender, uint amount);
     event NewUserToken(address indexed user, address indexed newToken);
     event NewUserSlippage(address indexed user, uint indexed newSlippage);
+    event FailedERCFunds(address indexed user_, uint indexed amount_);
 
     //Custom event that checks for the second attempt on EmergencyMode
     event SecondAttempt(uint success);
@@ -154,7 +155,7 @@ contract FaultyOzPayMe is ReentrancyGuard, Initializable {
                     unchecked { ++i; }
                     continue;
                 } else {
-                    IWETH(eMode.tokenIn).transfer(userDetails.user, balanceWETH);
+                    _lastResortWETHTransfer(userDetails.user, IERC20(eMode.tokenIn), balanceWETH);
                     break;
                 }
             } catch {
@@ -163,11 +164,19 @@ contract FaultyOzPayMe is ReentrancyGuard, Initializable {
                     emit SecondAttempt(23);
                     continue; 
                 } else {
-                    IWETH(eMode.tokenIn).transfer(userDetails.user, balanceWETH);
+                    _lastResortWETHTransfer(userDetails.user, IERC20(eMode.tokenIn), balanceWETH);
                     break;
                 }
             }
         } 
+    }
+
+    function _lastResortWETHTransfer(address user_, IERC20 token_, uint amount_) private {
+        bool success = token_.transfer(user_, amount_);
+        if (!success) {
+            StorageBeacon(_getStorageBeacon(_beacon, 0)).setFailedERCFunds(user_, token_, amount_);
+            emit FailedERCFunds(user_, amount_);
+        }
     }
 
 

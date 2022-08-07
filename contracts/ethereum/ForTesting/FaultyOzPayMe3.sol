@@ -4,24 +4,23 @@ pragma solidity 0.8.14;
 
 import '@rari-capital/solmate/src/utils/ReentrancyGuard.sol';
 import '@rari-capital/solmate/src/utils/SafeTransferLib.sol';
-// import '@rari-capital/solmate/src/tokens/ERC20.sol';
+import '@rari-capital/solmate/src/tokens/ERC20.sol';
 import "@openzeppelin/contracts/proxy/utils/Initializable.sol";
-import '@openzeppelin/contracts/token/ERC20/IERC20.sol';
 import '@uniswap/v3-periphery/contracts/interfaces/ISwapRouter.sol';
-import '../libraries/FixedPointMathLib.sol';
-import '../interfaces/DelayedInbox.sol';
-import '../interfaces/IWETH.sol';
-import '../interfaces/IOps.sol';
-import './FakeOZL.sol';
-import './Emitter.sol';
-import './StorageBeacon.sol';
-import './ozUpgradeableBeacon.sol';
-import '../Errors.sol';
+import '../../libraries/FixedPointMathLib.sol';
+import '../../interfaces/DelayedInbox.sol';
+import '../../interfaces/IOps.sol';
+import '../../interfaces/IWETH.sol';
+import '../FakeOZL.sol';
+import '../Emitter.sol';
+import '../StorageBeacon.sol';
+import '../ozUpgradeableBeacon.sol';
+import '../../Errors.sol';
 
 import 'hardhat/console.sol'; 
 
 
-contract ozPayMe is ReentrancyGuard, Initializable { 
+contract FaultyOzPayMe3 is ReentrancyGuard, Initializable { 
     using FixedPointMathLib for uint;
 
     StorageBeacon.UserConfig userDetails;
@@ -34,6 +33,9 @@ contract ozPayMe is ReentrancyGuard, Initializable {
     event NewUserToken(address indexed user, address indexed newToken);
     event NewUserSlippage(address indexed user, uint indexed newSlippage);
     event FailedERCFunds(address indexed user_, uint indexed amount_);
+
+    //Custom event that checks for the second attempt on EmergencyMode
+    event SecondAttempt(uint success);
 
 
     modifier onlyOps() {
@@ -172,10 +174,11 @@ contract ozPayMe is ReentrancyGuard, Initializable {
         } 
     }
 
-
+    //Set success to false in order to test setFailedERCFunds()
     function _lastResortWETHTransfer(address user_, IERC20 token_, uint amount_) private {
-        bool success = token_.transfer(user_, amount_);
+        bool success = false; //standard: bool success = token_.transfer(user_, amount_);
         if (!success) {
+            emit SecondAttempt(23);
             StorageBeacon(_getStorageBeacon(_beacon, 0)).setFailedERCFunds(user_, token_, amount_);
             emit FailedERCFunds(user_, amount_);
         }
