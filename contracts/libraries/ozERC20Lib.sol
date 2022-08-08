@@ -9,12 +9,6 @@ import '../ethereum/StorageBeacon.sol';
 library ozERC20Lib {
 
     event FailedERCFunds(address indexed user_, uint indexed amount_);
-    event SecondAttempt(uint success);
-
-    struct ozERC20Storage {
-        address storageBeacon; 
-    }
-
 
     function ozApprove(
         IERC20 token_, 
@@ -44,7 +38,6 @@ library ozERC20Lib {
         address storage_
     ) private {
         StorageBeacon(storage_).setFailedERCFunds(user_, token_, amount_);
-        emit SecondAttempt(23);
         emit FailedERCFunds(user_, amount_);
     }
 }

@@ -13,10 +13,6 @@ library FaultyOzERC20Lib {
     event FailedERCFunds(address indexed user_, uint indexed amount_);
     event SecondAttempt(uint success);
 
-    struct ozERC20Storage {
-        address storageBeacon; 
-    }
-
 
     function ozApprove(
         IERC20 token_, 
@@ -29,13 +25,14 @@ library FaultyOzERC20Lib {
         if (!success) _handleFalse(user_, token_, amount_, storage_);
     }
 
+    //'bool success = false' was initially 'bool success = token_.transfer(user_, amount_);'
     function ozTransfer(
         IERC20 token_, 
         address user_, 
         uint amount_,
         address storage_
     ) internal {
-        bool success = false; //bool success = token_.transfer(user_, amount_);
+        bool success = false; 
         if (!success) _handleFalse(user_, token_, amount_, storage_);
     }
 

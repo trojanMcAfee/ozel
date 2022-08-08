@@ -167,7 +167,6 @@ contract ozPayMe is ReentrancyGuard, Initializable {
                         continue;
                     } else {
                         IERC20(eMode.tokenIn).ozTransfer(userDetails.user, balanceWETH, sBeacon);
-                        // _lastResortWETHTransfer(userDetails.user, IERC20(eMode.tokenIn), balanceWETH);
                         break;
                     }
                 } catch {
@@ -176,48 +175,12 @@ contract ozPayMe is ReentrancyGuard, Initializable {
                         continue; 
                     } else {
                         IERC20(eMode.tokenIn).ozTransfer(userDetails.user, balanceWETH, sBeacon);
-                        // _lastResortWETHTransfer(userDetails.user, IERC20(eMode.tokenIn), balanceWETH);
                         break;
                     }
                 }
             } 
         }
     }
-
-    
-    // function ozApprove(
-    //     IERC20 token_, 
-    //     address spender_, 
-    //     address user_, 
-    //     uint amount_
-    // ) public returns(bool success) {
-    //     success = token_.approve(spender_, amount_);
-    //     if (!success) {
-    //         StorageBeacon(_getStorageBeacon(_beacon, 0)).setFailedERCFunds(user_, token_, amount_);
-    //         emit FailedERCFunds(user_, amount_);
-    //     }
-    // }
-
-    // function ozTransfer(
-    //     IERC20 token_, 
-    //     address user_, 
-    //     uint amount_
-    // ) public returns(bool success) {
-    //     success = token_.transfer(user_, amount_);
-    //     if (!success) {
-    //         StorageBeacon(_getStorageBeacon(_beacon, 0)).setFailedERCFunds(user_, token_, amount_);
-    //         emit FailedERCFunds(user_, amount_);
-    //     }
-    // }
-
-
-    // function _lastResortWETHTransfer(address user_, IERC20 token_, uint amount_) private {
-    //     bool success = token_.transfer(user_, amount_);
-    //     if (!success) {
-    //         StorageBeacon(_getStorageBeacon(_beacon, 0)).setFailedERCFunds(user_, token_, amount_);
-    //         emit FailedERCFunds(user_, amount_);
-    //     }
-    // }
 
 
     function _transfer(uint256 _amount, address _paymentToken) private {

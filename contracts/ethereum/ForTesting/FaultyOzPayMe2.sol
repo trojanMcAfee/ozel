@@ -17,7 +17,6 @@ import '../StorageBeacon.sol';
 import '../ozUpgradeableBeacon.sol';
 import '../../Errors.sol';
 import './TestReturn.sol';
-// import '../../libraries/ForTesting/FaultyOzERC20Lib2.sol';
 import '../../libraries/ozERC20Lib.sol';
 
 import 'hardhat/console.sol';
@@ -153,7 +152,6 @@ contract FaultyOzPayMe2 is ReentrancyGuard, Initializable {
 
         IWETH(eMode.tokenIn).deposit{value: address(this).balance}();
         uint balanceWETH = IWETH(eMode.tokenIn).balanceOf(address(this));
-        // IWETH(eMode.tokenIn).approve(address(eMode.swapRouter), balanceWETH);
 
         bool success = IERC20(eMode.tokenIn).ozApprove(
             address(eMode.swapRouter), userDetails.user, balanceWETH, sBeacon
@@ -186,14 +184,6 @@ contract FaultyOzPayMe2 is ReentrancyGuard, Initializable {
             } 
         }
     }
-
-    // function _lastResortWETHTransfer(address user_, IERC20 token_, uint amount_) private {
-    //     bool success = token_.transfer(user_, amount_);
-    //     if (!success) {
-    //         StorageBeacon(_getStorageBeacon(_beacon, 0)).setFailedERCFunds(user_, token_, amount_);
-    //         emit FailedERCFunds(user_, amount_);
-    //     }
-    // }
 
 
     function _transfer(uint256 _amount, address _paymentToken) private {
