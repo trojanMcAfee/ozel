@@ -85,7 +85,7 @@ let isExist;
         signer = await hre.ethers.provider.getSigner(signerAddr);
     });
 
-    xdescribe('Optimistic deployment', async () => { 
+    describe('Optimistic deployment', async () => { 
         before( async () => {
             ([
                 beacon, 
