@@ -381,7 +381,7 @@ async function deploySystem(type, userDetails, signerAddr) {
     ]; 
 
     const [storageBeaconAddr, storageBeacon] = await deployContract('StorageBeacon', l1Signer, constrArgs);
-    await storageBeacon.addStorageOzERC20Lib();
+    // await storageBeacon.addStorageOzERC20Lib();
 
     //Deploys UpgradeableBeacon
     constrArgs = [

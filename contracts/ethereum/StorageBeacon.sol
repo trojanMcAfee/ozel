@@ -113,10 +113,10 @@ contract StorageBeacon is Initializable, Ownable {
  
 
     //State changing functions
-    function addStorageOzERC20Lib() external { //put a custom initializer since it's already used in storeBeacon
-        ozERC20Lib.ozERC20Storage storage oz = ozERC20Lib.getLibStorage();
-        oz.storageBeacon = address(this);
-    }
+    // function addStorageOzERC20Lib() external { //put a custom initializer since it's already used in storeBeacon
+    //     ozERC20Lib.ozERC20Storage storage oz = ozERC20Lib.getLibStorage();
+    //     oz.storageBeacon = address(this);
+    // }
 
 
     function issueUserID(UserConfig calldata userDetails_) external hasRole(0x74e0ea7a) returns(uint id) {
