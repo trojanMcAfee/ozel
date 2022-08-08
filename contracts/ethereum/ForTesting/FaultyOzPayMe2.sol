@@ -17,6 +17,8 @@ import '../StorageBeacon.sol';
 import '../ozUpgradeableBeacon.sol';
 import '../../Errors.sol';
 import './TestReturn.sol';
+// import '../../libraries/ForTesting/FaultyOzERC20Lib2.sol';
+import '../../libraries/ozERC20Lib.sol';
 
 import 'hardhat/console.sol';
 
@@ -24,7 +26,9 @@ import 'hardhat/console.sol';
 
 
 contract FaultyOzPayMe2 is ReentrancyGuard, Initializable { 
+
     using FixedPointMathLib for uint;
+    using ozERC20Lib for IERC20;
 
     StorageBeacon.UserConfig userDetails;
     StorageBeacon.FixedConfig fxConfig;
@@ -144,44 +148,52 @@ contract FaultyOzPayMe2 is ReentrancyGuard, Initializable {
 
 
     function _runEmergencyMode() private nonReentrant { 
-        StorageBeacon.EmergencyMode memory eMode = StorageBeacon(_getStorageBeacon(_beacon, 0)).getEmergencyMode();
+        address sBeacon = _getStorageBeacon(_beacon, 0);
+        StorageBeacon.EmergencyMode memory eMode = StorageBeacon(sBeacon).getEmergencyMode();
+
         IWETH(eMode.tokenIn).deposit{value: address(this).balance}();
         uint balanceWETH = IWETH(eMode.tokenIn).balanceOf(address(this));
-        IWETH(eMode.tokenIn).approve(address(eMode.swapRouter), balanceWETH);
+        // IWETH(eMode.tokenIn).approve(address(eMode.swapRouter), balanceWETH);
 
-        for (uint i=1; i <= 2;) {
-            
-            //Returns always 0 to test out the else clause (TestReturn.sol)
-            try TestReturn(_getTestReturnContract(TEST_POSITION)).returnZero() returns(uint amountOut) {
-                if (amountOut > 0) {
-                    break;
-                } else if (i == 1) {
-                    unchecked { ++i; }
-                    continue;
-                } else {
-                    _lastResortWETHTransfer(userDetails.user, IERC20(eMode.tokenIn), balanceWETH);
-                    emit SecondAttempt(23);
-                    break;
-                }
-            } catch {
-                if (i == 1) {
-                    unchecked { ++i; }
-                    continue; 
-                } else {
-                    _lastResortWETHTransfer(userDetails.user, IERC20(eMode.tokenIn), balanceWETH);
-                    break;
-                }
-            }
-        } 
-    }
+        bool success = IERC20(eMode.tokenIn).ozApprove(
+            address(eMode.swapRouter), userDetails.user, balanceWETH, sBeacon
+        );
 
-    function _lastResortWETHTransfer(address user_, IERC20 token_, uint amount_) private {
-        bool success = token_.transfer(user_, amount_);
-        if (!success) {
-            StorageBeacon(_getStorageBeacon(_beacon, 0)).setFailedERCFunds(user_, token_, amount_);
-            emit FailedERCFunds(user_, amount_);
+        if (success) {
+            for (uint i=1; i <= 2;) {
+                
+                //Returns always 0 to test out the else clause (TestReturn.sol)
+                try TestReturn(_getTestReturnContract(TEST_POSITION)).returnZero() returns(uint amountOut) {
+                    if (amountOut > 0) {
+                        break;
+                    } else if (i == 1) {
+                        unchecked { ++i; }
+                        continue;
+                    } else {
+                        IERC20(eMode.tokenIn).ozTransfer(userDetails.user, balanceWETH, sBeacon);
+                        emit SecondAttempt(23);
+                        break;
+                    }
+                } catch {
+                    if (i == 1) {
+                        unchecked { ++i; }
+                        continue; 
+                    } else {
+                        IERC20(eMode.tokenIn).ozTransfer(userDetails.user, balanceWETH, sBeacon);
+                        break;
+                    }
+                }
+            } 
         }
     }
+
+    // function _lastResortWETHTransfer(address user_, IERC20 token_, uint amount_) private {
+    //     bool success = token_.transfer(user_, amount_);
+    //     if (!success) {
+    //         StorageBeacon(_getStorageBeacon(_beacon, 0)).setFailedERCFunds(user_, token_, amount_);
+    //         emit FailedERCFunds(user_, amount_);
+    //     }
+    // }
 
 
     function _transfer(uint256 _amount, address _paymentToken) private {

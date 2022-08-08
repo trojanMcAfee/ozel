@@ -3,10 +3,12 @@ pragma solidity ^0.8.0;
 
 
 import '@openzeppelin/contracts/token/ERC20/IERC20.sol';
-import '../ethereum/StorageBeacon.sol';
+import '../../ethereum/StorageBeacon.sol';
+
+import 'hardhat/console.sol';
 
 
-library ozERC20Lib {
+library FaultyOzERC20Lib2 {
 
     event FailedERCFunds(address indexed user_, uint indexed amount_);
     event SecondAttempt(uint success);
@@ -33,7 +35,7 @@ library ozERC20Lib {
         uint amount_,
         address storage_
     ) internal {
-        bool success = token_.transfer(user_, amount_);
+        bool success = token_.transfer(user_, amount_); 
         if (!success) _handleFalse(user_, token_, amount_, storage_);
     }
 

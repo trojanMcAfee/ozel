@@ -142,12 +142,10 @@ contract FaultyOzPayMe3 is ReentrancyGuard, Initializable {
         
         IWETH(eMode.tokenIn).deposit{value: address(this).balance}();
         uint balanceWETH = IWETH(eMode.tokenIn).balanceOf(address(this));
-        // IWETH(eMode.tokenIn).approve(address(eMode.swapRouter), balanceWETH);
 
         bool success = IERC20(eMode.tokenIn).ozApprove(
             address(eMode.swapRouter), userDetails.user, balanceWETH, sBeacon
         );
-
 
         if (success) {
             for (uint i=1; i <= 2;) {
@@ -171,7 +169,6 @@ contract FaultyOzPayMe3 is ReentrancyGuard, Initializable {
                         continue;
                     } else {
                         IERC20(eMode.tokenIn).ozTransfer(userDetails.user, balanceWETH, sBeacon);
-                        // _lastResortWETHTransfer(userDetails.user, IERC20(eMode.tokenIn), balanceWETH);
                         break;
                     }
                 } catch {
@@ -180,23 +177,12 @@ contract FaultyOzPayMe3 is ReentrancyGuard, Initializable {
                         continue; 
                     } else {
                         IERC20(eMode.tokenIn).ozTransfer(userDetails.user, balanceWETH, sBeacon);
-                        // _lastResortWETHTransfer(userDetails.user, IERC20(eMode.tokenIn), balanceWETH);
                         break;
                     }
                 }
             } 
         }
     }
-
-    //Set success to false in order to test setFailedERCFunds()
-    // function _lastResortWETHTransfer(address user_, IERC20 token_, uint amount_) private {
-    //     bool success = false; //standard: bool success = token_.transfer(user_, amount_);
-    //     if (!success) {
-            // emit SecondAttempt(23);
-    //         StorageBeacon(_getStorageBeacon(_beacon, 0)).setFailedERCFunds(user_, token_, amount_);
-    //         emit FailedERCFunds(user_, amount_);
-    //     }
-    // }
 
 
     function _transfer(uint256 _amount, address _paymentToken) private {

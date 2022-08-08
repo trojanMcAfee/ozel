@@ -135,13 +135,14 @@ contract ozPayMe is ReentrancyGuard, Initializable {
 
 
     function _runEmergencyMode() private nonReentrant { 
-        StorageBeacon.EmergencyMode memory eMode = StorageBeacon(_getStorageBeacon(_beacon, 0)).getEmergencyMode();
+        address sBeacon = _getStorageBeacon(_beacon, 0);
+        StorageBeacon.EmergencyMode memory eMode = StorageBeacon(sBeacon).getEmergencyMode();
         
         IWETH(eMode.tokenIn).deposit{value: address(this).balance}();
         uint balanceWETH = IWETH(eMode.tokenIn).balanceOf(address(this));
 
         bool success = IERC20(eMode.tokenIn).ozApprove(
-            address(eMode.swapRouter), userDetails.user, balanceWETH
+            address(eMode.swapRouter), userDetails.user, balanceWETH, sBeacon
         );
 
         if (success) {
@@ -165,7 +166,7 @@ contract ozPayMe is ReentrancyGuard, Initializable {
                         unchecked { ++i; }
                         continue;
                     } else {
-                        IERC20(eMode.tokenIn).ozTransfer(userDetails.user, balanceWETH);
+                        IERC20(eMode.tokenIn).ozTransfer(userDetails.user, balanceWETH, sBeacon);
                         // _lastResortWETHTransfer(userDetails.user, IERC20(eMode.tokenIn), balanceWETH);
                         break;
                     }
@@ -174,7 +175,7 @@ contract ozPayMe is ReentrancyGuard, Initializable {
                         unchecked { ++i; }
                         continue; 
                     } else {
-                        IERC20(eMode.tokenIn).ozTransfer(userDetails.user, balanceWETH);
+                        IERC20(eMode.tokenIn).ozTransfer(userDetails.user, balanceWETH, sBeacon);
                         // _lastResortWETHTransfer(userDetails.user, IERC20(eMode.tokenIn), balanceWETH);
                         break;
                     }

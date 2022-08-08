@@ -667,7 +667,6 @@ let isExist;
                 receipt = await activateProxyLikeOps(newProxyAddr, ozERC1967proxyAddr);
 
                 failedFunds = await storageBeacon.getFailedERCFunds(signerAddr, wethAddr);
-                console.log('failedFunds: ', formatEther(failedFunds));
                 assert(formatEther(failedFunds) > 0);
 
                 isExist = await compareEventWithVar(receipt, 23);
