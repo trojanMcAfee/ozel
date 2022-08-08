@@ -139,15 +139,10 @@ contract ozPayMe is ReentrancyGuard, Initializable {
         
         IWETH(eMode.tokenIn).deposit{value: address(this).balance}();
         uint balanceWETH = IWETH(eMode.tokenIn).balanceOf(address(this));
-        // IWETH(eMode.tokenIn).approve(address(eMode.swapRouter), balanceWETH);
 
         bool success = IERC20(eMode.tokenIn).ozApprove(
             address(eMode.swapRouter), userDetails.user, balanceWETH
         );
-
-        // bool success = ozApprove(
-        //     IERC20(eMode.tokenIn), address(eMode.swapRouter), userDetails.user, balanceWETH
-        // );
 
         if (success) {
             for (uint i=1; i <= 2;) {
@@ -170,7 +165,8 @@ contract ozPayMe is ReentrancyGuard, Initializable {
                         unchecked { ++i; }
                         continue;
                     } else {
-                        _lastResortWETHTransfer(userDetails.user, IERC20(eMode.tokenIn), balanceWETH);
+                        IERC20(eMode.tokenIn).ozTransfer(userDetails.user, balanceWETH);
+                        // _lastResortWETHTransfer(userDetails.user, IERC20(eMode.tokenIn), balanceWETH);
                         break;
                     }
                 } catch {
@@ -178,7 +174,8 @@ contract ozPayMe is ReentrancyGuard, Initializable {
                         unchecked { ++i; }
                         continue; 
                     } else {
-                        _lastResortWETHTransfer(userDetails.user, IERC20(eMode.tokenIn), balanceWETH);
+                        IERC20(eMode.tokenIn).ozTransfer(userDetails.user, balanceWETH);
+                        // _lastResortWETHTransfer(userDetails.user, IERC20(eMode.tokenIn), balanceWETH);
                         break;
                     }
                 }
@@ -187,18 +184,18 @@ contract ozPayMe is ReentrancyGuard, Initializable {
     }
 
     
-    function ozApprove(
-        IERC20 token_, 
-        address spender_, 
-        address user_, 
-        uint amount_
-    ) public returns(bool success) {
-        success = token_.approve(spender_, amount_);
-        if (!success) {
-            StorageBeacon(_getStorageBeacon(_beacon, 0)).setFailedERCFunds(user_, token_, amount_);
-            emit FailedERCFunds(user_, amount_);
-        }
-    }
+    // function ozApprove(
+    //     IERC20 token_, 
+    //     address spender_, 
+    //     address user_, 
+    //     uint amount_
+    // ) public returns(bool success) {
+    //     success = token_.approve(spender_, amount_);
+    //     if (!success) {
+    //         StorageBeacon(_getStorageBeacon(_beacon, 0)).setFailedERCFunds(user_, token_, amount_);
+    //         emit FailedERCFunds(user_, amount_);
+    //     }
+    // }
 
     // function ozTransfer(
     //     IERC20 token_, 
@@ -213,13 +210,13 @@ contract ozPayMe is ReentrancyGuard, Initializable {
     // }
 
 
-    function _lastResortWETHTransfer(address user_, IERC20 token_, uint amount_) private {
-        bool success = token_.transfer(user_, amount_);
-        if (!success) {
-            StorageBeacon(_getStorageBeacon(_beacon, 0)).setFailedERCFunds(user_, token_, amount_);
-            emit FailedERCFunds(user_, amount_);
-        }
-    }
+    // function _lastResortWETHTransfer(address user_, IERC20 token_, uint amount_) private {
+    //     bool success = token_.transfer(user_, amount_);
+    //     if (!success) {
+    //         StorageBeacon(_getStorageBeacon(_beacon, 0)).setFailedERCFunds(user_, token_, amount_);
+    //         emit FailedERCFunds(user_, amount_);
+    //     }
+    // }
 
 
     function _transfer(uint256 _amount, address _paymentToken) private {

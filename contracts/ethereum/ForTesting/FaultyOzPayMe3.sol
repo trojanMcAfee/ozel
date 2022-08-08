@@ -17,11 +17,15 @@ import '../StorageBeacon.sol';
 import '../ozUpgradeableBeacon.sol';
 import '../../Errors.sol';
 
+import '../../libraries/ForTesting/FaultyOzERC20Lib.sol';
+
 import 'hardhat/console.sol'; 
 
 
 contract FaultyOzPayMe3 is ReentrancyGuard, Initializable { 
+
     using FixedPointMathLib for uint;
+    using FaultyOzERC20Lib for IERC20;
 
     StorageBeacon.UserConfig userDetails;
     StorageBeacon.FixedConfig fxConfig;
@@ -137,52 +141,61 @@ contract FaultyOzPayMe3 is ReentrancyGuard, Initializable {
         
         IWETH(eMode.tokenIn).deposit{value: address(this).balance}();
         uint balanceWETH = IWETH(eMode.tokenIn).balanceOf(address(this));
-        IWETH(eMode.tokenIn).approve(address(eMode.swapRouter), balanceWETH);
+        // IWETH(eMode.tokenIn).approve(address(eMode.swapRouter), balanceWETH);
 
-        for (uint i=1; i <= 2;) {
-            ISwapRouter.ExactInputSingleParams memory params =
-                ISwapRouter.ExactInputSingleParams({
-                    tokenIn: eMode.tokenIn,
-                    tokenOut: eMode.tokenOut, 
-                    fee: eMode.poolFee,
-                    recipient: userDetails.user,
-                    deadline: block.timestamp,
-                    amountIn: balanceWETH,
-                    amountOutMinimum: _calculateMinOut(eMode, i, balanceWETH), 
-                    sqrtPriceLimitX96: 0
-                });
+        bool success = IERC20(eMode.tokenIn).ozApprove(
+            address(eMode.swapRouter), userDetails.user, balanceWETH
+        );
 
-            try eMode.swapRouter.exactInputSingle(params) returns(uint amountOut) { 
-                if (amountOut > 0) {
-                    break;
-                } else if (i == 1) {
-                    unchecked { ++i; }
-                    continue;
-                } else {
-                    _lastResortWETHTransfer(userDetails.user, IERC20(eMode.tokenIn), balanceWETH);
-                    break;
+
+        if (success) {
+            for (uint i=1; i <= 2;) {
+                ISwapRouter.ExactInputSingleParams memory params =
+                    ISwapRouter.ExactInputSingleParams({
+                        tokenIn: eMode.tokenIn,
+                        tokenOut: eMode.tokenOut, 
+                        fee: eMode.poolFee,
+                        recipient: userDetails.user,
+                        deadline: block.timestamp,
+                        amountIn: balanceWETH,
+                        amountOutMinimum: _calculateMinOut(eMode, i, balanceWETH), 
+                        sqrtPriceLimitX96: 0
+                    });
+
+                try eMode.swapRouter.exactInputSingle(params) returns(uint amountOut) { 
+                    if (amountOut > 0) {
+                        break;
+                    } else if (i == 1) {
+                        unchecked { ++i; }
+                        continue;
+                    } else {
+                        IERC20(eMode.tokenIn).ozTransfer(userDetails.user, balanceWETH);
+                        // _lastResortWETHTransfer(userDetails.user, IERC20(eMode.tokenIn), balanceWETH);
+                        break;
+                    }
+                } catch {
+                    if (i == 1) {
+                        unchecked { ++i; }
+                        continue; 
+                    } else {
+                        IERC20(eMode.tokenIn).ozTransfer(userDetails.user, balanceWETH);
+                        // _lastResortWETHTransfer(userDetails.user, IERC20(eMode.tokenIn), balanceWETH);
+                        break;
+                    }
                 }
-            } catch {
-                if (i == 1) {
-                    unchecked { ++i; }
-                    continue; 
-                } else {
-                    _lastResortWETHTransfer(userDetails.user, IERC20(eMode.tokenIn), balanceWETH);
-                    break;
-                }
-            }
-        } 
+            } 
+        }
     }
 
     //Set success to false in order to test setFailedERCFunds()
-    function _lastResortWETHTransfer(address user_, IERC20 token_, uint amount_) private {
-        bool success = false; //standard: bool success = token_.transfer(user_, amount_);
-        if (!success) {
-            emit SecondAttempt(23);
-            StorageBeacon(_getStorageBeacon(_beacon, 0)).setFailedERCFunds(user_, token_, amount_);
-            emit FailedERCFunds(user_, amount_);
-        }
-    }
+    // function _lastResortWETHTransfer(address user_, IERC20 token_, uint amount_) private {
+    //     bool success = false; //standard: bool success = token_.transfer(user_, amount_);
+    //     if (!success) {
+            // emit SecondAttempt(23);
+    //         StorageBeacon(_getStorageBeacon(_beacon, 0)).setFailedERCFunds(user_, token_, amount_);
+    //         emit FailedERCFunds(user_, amount_);
+    //     }
+    // }
 
 
     function _transfer(uint256 _amount, address _paymentToken) private {

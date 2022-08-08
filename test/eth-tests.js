@@ -650,7 +650,7 @@ let isExist;
                 await WETH.transfer(deadAddr, postBalance);
             });
 
-            it("should store the user's WETH from a failed ERC20 transfer / FaultyOzPayMe3 -_lastResortWETHTransfer()", async () => {
+            it("should store the user's WETH from a failed ERC20 transfer / FaultyOzPayMe3 & FaultyOzERC20Lib -_lastResortWETHTransfer() & ozTransfer()", async () => {
                 const [ faultyOzPayMe3Addr ] = await deployContract('FaultyOzPayMe3', l1Signer);
                 await beacon.upgradeTo(faultyOzPayMe3Addr);
                 await sendTx({
@@ -667,6 +667,7 @@ let isExist;
                 receipt = await activateProxyLikeOps(newProxyAddr, ozERC1967proxyAddr);
 
                 failedFunds = await storageBeacon.getFailedERCFunds(signerAddr, wethAddr);
+                console.log('failedFunds: ', formatEther(failedFunds));
                 assert(formatEther(failedFunds) > 0);
 
                 isExist = await compareEventWithVar(receipt, 23);

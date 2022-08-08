@@ -10,8 +10,9 @@ import '@openzeppelin/contracts/access/Ownable.sol';
 import './ozUpgradeableBeacon.sol';
 
 import { ozERC20Lib } from '../libraries/ozERC20Lib.sol';
+// import { FaultyOzERC20Lib } from '../libraries/ForTesting/FaultyOzERC20Lib.sol';
 
-// import 'hardhat/console.sol';
+import 'hardhat/console.sol';
 
 
 contract StorageBeacon is Initializable, Ownable { 
@@ -114,7 +115,7 @@ contract StorageBeacon is Initializable, Ownable {
     //State changing functions
     function addStorageOzERC20Lib() external { //put a custom initializer since it's already used in storeBeacon
         ozERC20Lib.ozERC20Storage storage oz = ozERC20Lib.getLibStorage();
-        oz.storageBeacon = this;
+        oz.storageBeacon = address(this);
     }
 
 

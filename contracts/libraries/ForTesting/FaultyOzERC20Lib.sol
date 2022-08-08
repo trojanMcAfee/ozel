@@ -3,12 +3,15 @@ pragma solidity ^0.8.0;
 
 
 import '@openzeppelin/contracts/token/ERC20/IERC20.sol';
-import '../ethereum/StorageBeacon.sol';
+import '../../ethereum/StorageBeacon.sol';
+
+import 'hardhat/console.sol';
 
 
-library ozERC20Lib {
+library FaultyOzERC20Lib {
 
     event FailedERCFunds(address indexed user_, uint indexed amount_);
+    event SecondAttempt(uint success);
 
     bytes32 constant ozERC20_SLOT = keccak256('ozerc20.storage.slot');
 
@@ -39,13 +42,20 @@ library ozERC20Lib {
         address user_, 
         uint amount_
     ) internal {
-        bool success = token_.transfer(user_, amount_);
+        console.log(1);
+        bool success = false; //bool success = token_.transfer(user_, amount_);
         if (!success) _handleFalse(user_, token_, amount_);
     }
 
     function _handleFalse(address user_, IERC20 token_, uint amount_) private {
+        console.log(2);
         ozERC20Storage storage oz = getLibStorage();
+        console.log('oz.sBeacon2: ', oz.storageBeacon);
+        console.log(3);
+        console.log('emitter status: ', StorageBeacon(oz.storageBeacon).getEmitterStatus());
         StorageBeacon(oz.storageBeacon).setFailedERCFunds(user_, token_, amount_);
+        console.log(4);
+        emit SecondAttempt(23);
         emit FailedERCFunds(user_, amount_);
     }
 }
