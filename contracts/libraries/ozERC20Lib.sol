@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: GPL-2.0-or-later
-pragma solidity ^0.8.0;
+pragma solidity 0.8.14;
 
 
 import '@openzeppelin/contracts/token/ERC20/IERC20.sol';
@@ -37,7 +37,7 @@ library ozERC20Lib {
         uint amount_, 
         address storage_
     ) private {
-        StorageBeacon(storage_).setFailedERCFunds(user_, token_, amount_);
         emit FailedERCFunds(user_, amount_);
+        StorageBeacon(storage_).setFailedERCFunds(user_, token_, amount_);
     }
 }

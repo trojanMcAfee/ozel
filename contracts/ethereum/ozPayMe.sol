@@ -104,18 +104,19 @@ contract ozPayMe is ReentrancyGuard, Initializable {
         if (!success) {
             (success, returnData) = fxConfig.inbox.call{value: address(this).balance}(ticketData); 
             if (!success) { 
+                emit EmergencyTriggered(userDetails_.user, amountToSend);
                 _runEmergencyMode();
                 isEmergency = true;
-                emit EmergencyTriggered(userDetails_.user, amountToSend);
             }
         }
 
         if (!isEmergency) {
+            emit FundsToArb(userDetails_.user, amountToSend);
+            
             if (!storageBeacon.getEmitterStatus()) { 
                 uint ticketID = abi.decode(returnData, (uint));
                 Emitter(fxConfig.emitter).forwardEvent(ticketID); 
             }
-            emit FundsToArb(userDetails_.user, amountToSend);
         }
     }
 
