@@ -47,6 +47,7 @@ struct AppStorage {
     uint feesVault;
     uint failedFees;
     mapping(address => uint) usersPayments;
+    mapping(address => mapping(IERC20 => uint)) userToFailedERC;
 
     OZLERC20 oz;
 

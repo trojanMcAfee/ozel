@@ -6,41 +6,31 @@ pragma solidity ^0.8.0;
 import '@openzeppelin/contracts/token/ERC20/IERC20.sol';
 import '../../interfaces/ICrvLpToken.sol';
 import '../../interfaces/IWETH.sol';
-import './ExecutorFacet.sol';
-import './oz4626Facet.sol';
+import '../../arbitrum/facets/ExecutorFacet.sol';
+import '../../arbitrum/facets/oz4626Facet.sol';
 import '../../interfaces/IYtri.sol';
 import {ITri} from '../../interfaces/ICurve.sol';
 import { LibDiamond } from "../../libraries/LibDiamond.sol";
 import '@openzeppelin/contracts/utils/Address.sol';
 
-// import 'hardhat/console.sol';
 
-import '../AppStorage.sol';
+import '../../arbitrum/AppStorage.sol';
 import '../../libraries/SafeTransferLib.sol'; //use the @ from solmate
 // import '@rari-capital/solmate/src/utils/SafeTransferLib.sol';
 import '../../Errors.sol';
-import '../Modifiers.sol';
-import './RevenueFacet.sol';
-
-import '../../libraries/ozERC20Lib.sol';
+import '../../arbitrum/Modifiers.sol';
+import '../../arbitrum/facets/RevenueFacet.sol';
 
 
 
-contract OZLFacet is Modifiers { 
+contract OZLFacetTest is Modifiers { 
 
     using SafeTransferLib for IERC20;
-    using ozERC20Lib for IERC20;
     using Address for address;
 
     event NewUserToken(address userToken);
-
-    /**
-    WBTC: 1 / USDT: 0 / WETH: 2
-     */
-
-     /*******
-        State changing functions
-     ******/   
+    event DeadVariables(bool isRetry);
+ 
 
     function exchangeToUserToken(
         UserConfig calldata userDetails_
@@ -88,47 +78,15 @@ contract OZLFacet is Modifiers {
         uint baseTokenOut_, 
         UserConfig memory userDetails_
     ) private { 
-        IERC20(s.WETH).approve(s.tricrypto, amountIn_);
-        bool success = true;
+        IWETH(s.WETH).approve(s.tricrypto, amountIn_);
+        uint minOut = ITri(s.tricrypto).get_dy(2, baseTokenOut_, amountIn_);
+        uint slippage = ExecutorFacet(s.executor).calculateSlippage(minOut, userDetails_.userSlippage);
+        
+        ITri(s.tricrypto).exchange(2, baseTokenOut_, amountIn_, slippage, false);  
+        uint baseBalance = IERC20(baseTokenOut_ == 0 ? s.USDT : s.WBTC).balanceOf(address(this));
 
-        // bool success = IERC20(s.WETH).ozApprove(
-        //     s.tricrypto, userDetails_.user, amountIn_
-        // );
-
-        /**** 
-            Exchanges the amount between the user's slippage. 
-            If it fails, it doubles the slippage, divides the amount between two and tries again.
-            If none works, sends WETH back to the user.
-        ****/ 
-        if (success) {
-            for (uint i=1; i <= 2; i++) {
-                uint minOut = ITri(s.tricrypto).get_dy(2, baseTokenOut_, amountIn_ / i);
-                uint slippage = ExecutorFacet(s.executor).calculateSlippage(minOut, userDetails_.userSlippage * i);
-                
-                try ITri(s.tricrypto).exchange(2, baseTokenOut_, amountIn_ / i, slippage, false) {
-                    if (i == 2) {
-                        try ITri(s.tricrypto).exchange(2, baseTokenOut_, amountIn_ / i, slippage, false) {
-                            break;
-                        } catch {
-                            IWETH(s.WETH).transfer(userDetails_.user, amountIn_ / 2); 
-                            break;
-                        }
-                    }
-                    break;
-                } catch {
-                    if (i == 1) {
-                        continue;
-                    } else {
-                        IWETH(s.WETH).transfer(userDetails_.user, amountIn_); 
-                    }
-                }
-            }
-            
-            uint baseBalance = IERC20(baseTokenOut_ == 0 ? s.USDT : s.WBTC).balanceOf(address(this));
-
-            if ((userDetails_.userToken != s.USDT && userDetails_.userToken != s.WBTC) && baseBalance > 0) { 
-                _tradeWithExecutor(userDetails_); 
-            }
+        if ((userDetails_.userToken != s.USDT && userDetails_.userToken != s.WBTC) && baseBalance > 0) { 
+            _tradeWithExecutor(userDetails_); 
         }
     }
 
@@ -175,30 +133,23 @@ contract OZLFacet is Modifiers {
     
 
     function _depositFeesInDeFi(uint fee_, bool isRetry_) private { 
+        emit DeadVariables(isRetry_);
+
         //Deposit WETH in Curve Tricrypto pool
         (uint tokenAmountIn, uint[3] memory amounts) = _calculateTokenAmountCurve(fee_);
         IWETH(s.WETH).approve(s.tricrypto, tokenAmountIn);
 
-        for (uint i=1; i <= 2; i++) {
-            uint minAmount = ExecutorFacet(s.executor).calculateSlippage(tokenAmountIn, s.defaultSlippage * i);
+        uint minAmount = ExecutorFacet(s.executor).calculateSlippage(tokenAmountIn, s.defaultSlippage);
 
-            try ITri(s.tricrypto).add_liquidity(amounts, minAmount) {
-                //Deposit crvTricrypto in Yearn
-                IERC20(s.crvTricrypto).approve(s.yTriPool, IERC20(s.crvTricrypto).balanceOf(address(this)));
-                IYtri(s.yTriPool).deposit(IERC20(s.crvTricrypto).balanceOf(address(this)));
+        ITri(s.tricrypto).add_liquidity(amounts, minAmount);
+            
+        //Deposit crvTricrypto in Yearn
+        IERC20(s.crvTricrypto).approve(s.yTriPool, IERC20(s.crvTricrypto).balanceOf(address(this)));
+        IYtri(s.yTriPool).deposit(IERC20(s.crvTricrypto).balanceOf(address(this)));
 
-                //Internal fees accounting
-                if (s.failedFees > 0) s.failedFees = 0;
-                s.feesVault += fee_;
-                break;
-            } catch {
-                if (i == 1) {
-                    continue;
-                } else {
-                    if (!isRetry_) s.failedFees += fee_; 
-                }
-            }
-        }
+        //Internal fees accounting
+        if (s.failedFees > 0) s.failedFees = 0;
+        s.feesVault += fee_;
     }
 
 
