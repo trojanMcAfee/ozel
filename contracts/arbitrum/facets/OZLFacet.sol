@@ -107,8 +107,6 @@ contract OZLFacet is Modifiers {
                         try ITri(s.tricrypto).exchange(2, baseTokenOut_, amountIn_ / i, slippage, false) {
                             break;
                         } catch {
-                            // IWETH(s.WETH).transfer(userDetails_.user, amountIn_ / 2); 
-
                             IERC20(s.WETH).ozTransfer(userDetails_.user, amountIn_ / 2);
                             break;
                         }
@@ -118,7 +116,6 @@ contract OZLFacet is Modifiers {
                     if (i == 1) {
                         continue;
                     } else {
-                        // IWETH(s.WETH).transfer(userDetails_.user, amountIn_); 
                         IERC20(s.WETH).ozTransfer(userDetails_.user, amountIn_);
                     }
                 }
@@ -177,7 +174,6 @@ contract OZLFacet is Modifiers {
     function _depositFeesInDeFi(uint fee_, bool isRetry_, address user_) private { 
         //Deposit WETH in Curve Tricrypto pool
         (uint tokenAmountIn, uint[3] memory amounts) = _calculateTokenAmountCurve(fee_);
-        // IWETH(s.WETH).approve(s.tricrypto, tokenAmountIn);
 
         bool success = IERC20(s.WETH).ozApprove(
             s.tricrypto, user_, tokenAmountIn
@@ -188,10 +184,7 @@ contract OZLFacet is Modifiers {
                 uint minAmount = ExecutorFacet(s.executor).calculateSlippage(tokenAmountIn, s.defaultSlippage * i);
 
                 try ITri(s.tricrypto).add_liquidity(amounts, minAmount) {
-
                     //Deposit crvTricrypto in Yearn
-                    // IERC20(s.crvTricrypto).approve(s.yTriPool, IERC20(s.crvTricrypto).balanceOf(address(this)));
-
                     success = IERC20(s.crvTricrypto).ozApprove(
                         s.yTriPool, user_, IERC20(s.crvTricrypto).balanceOf(address(this))
                     );
