@@ -8,7 +8,7 @@ import '../../arbitrum/AppStorage.sol';
 import '../../interfaces/IYtri.sol';
 import {ITri} from '../../interfaces/ICurve.sol';
 import { LibDiamond } from "../../libraries/LibDiamond.sol";
-import '../../arbitrum/facets/ExecutorFacet.sol';
+import './ExecutorFacetTest.sol';
 // import '@rari-capital/solmate/src/utils/FixedPointMathLib.sol'; //<---- this one
 import '../../libraries/FixedPointMathLib.sol';
 
@@ -57,7 +57,7 @@ contract RevenueFacetTest {
         IYtri(s.yTriPool).withdraw(assetsToWithdraw);
 
         uint triAmountWithdraw = ITri(s.tricrypto).calc_withdraw_one_coin(assetsToWithdraw, 2); 
-        uint minOut = ExecutorFacet(s.executor).calculateSlippage(
+        uint minOut = ExecutorFacetTest(s.executor).calculateSlippage(
             triAmountWithdraw, s.defaultSlippage
         ); 
 

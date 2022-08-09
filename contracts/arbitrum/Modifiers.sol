@@ -6,7 +6,7 @@ import './AppStorage.sol';
 import '../Errors.sol';
 import './Bits.sol';
 
-// import 'hardhat/console.sol';
+import 'hardhat/console.sol';
 
 
 

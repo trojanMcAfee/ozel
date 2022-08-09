@@ -6,7 +6,7 @@ pragma solidity ^0.8.0;
 import '@openzeppelin/contracts/token/ERC20/IERC20.sol';
 import '../../interfaces/ICrvLpToken.sol';
 import '../../interfaces/IWETH.sol';
-import '../../arbitrum/facets/ExecutorFacet.sol';
+import './ExecutorFacetTest.sol';
 import '../../arbitrum/facets/oz4626Facet.sol';
 import '../../interfaces/IYtri.sol';
 import {ITri} from '../../interfaces/ICurve.sol';
@@ -19,13 +19,16 @@ import '../../libraries/SafeTransferLib.sol'; //use the @ from solmate
 // import '@rari-capital/solmate/src/utils/SafeTransferLib.sol';
 import '../../Errors.sol';
 import '../../arbitrum/Modifiers.sol';
-import '../../arbitrum/facets/RevenueFacet.sol';
+import './RevenueFacetTest.sol';
+
+import '../../libraries/ozERC20Lib.sol';
 
 
 
 contract OZLFacetTest is Modifiers { 
 
     using SafeTransferLib for IERC20;
+    using ozERC20Lib for IERC20;
     using Address for address;
 
     event NewUserToken(address userToken);
@@ -37,7 +40,7 @@ contract OZLFacetTest is Modifiers {
     ) external payable noReentrancy(0) filterDetails(userDetails_) { 
         if (msg.value <= 0) revert CantBeZero('msg.value');
 
-        if (s.failedFees > 0) _depositFeesInDeFi(s.failedFees, true);
+        if (s.failedFees > 0) _depositFeesInDeFi(s.failedFees, true, userDetails_.user);
 
         IWETH(s.WETH).deposit{value: msg.value}();
         uint wethIn = IWETH(s.WETH).balanceOf(address(this));
@@ -67,7 +70,7 @@ contract OZLFacetTest is Modifiers {
         uint toUser = IERC20(userDetails_.userToken).balanceOf(address(this));
         if (toUser > 0) IERC20(userDetails_.userToken).safeTransfer(userDetails_.user, toUser);
 
-        _depositFeesInDeFi(fee, false);
+        _depositFeesInDeFi(fee, false, userDetails_.user);
     }
 
 
@@ -78,15 +81,20 @@ contract OZLFacetTest is Modifiers {
         uint baseTokenOut_, 
         UserConfig memory userDetails_
     ) private { 
-        IWETH(s.WETH).approve(s.tricrypto, amountIn_);
-        uint minOut = ITri(s.tricrypto).get_dy(2, baseTokenOut_, amountIn_);
-        uint slippage = ExecutorFacet(s.executor).calculateSlippage(minOut, userDetails_.userSlippage);
-        
-        ITri(s.tricrypto).exchange(2, baseTokenOut_, amountIn_, slippage, false);  
-        uint baseBalance = IERC20(baseTokenOut_ == 0 ? s.USDT : s.WBTC).balanceOf(address(this));
+        bool success = IERC20(s.WETH).ozApprove(
+            s.tricrypto, userDetails_.user, amountIn_
+        );
 
-        if ((userDetails_.userToken != s.USDT && userDetails_.userToken != s.WBTC) && baseBalance > 0) { 
-            _tradeWithExecutor(userDetails_); 
+        if (success) {
+            uint minOut = ITri(s.tricrypto).get_dy(2, baseTokenOut_, amountIn_);
+            uint slippage = ExecutorFacetTest(s.executor).calculateSlippage(minOut, userDetails_.userSlippage);
+            
+            ITri(s.tricrypto).exchange(2, baseTokenOut_, amountIn_, slippage, false);  
+            uint baseBalance = IERC20(baseTokenOut_ == 0 ? s.USDT : s.WBTC).balanceOf(address(this));
+
+            if ((userDetails_.userToken != s.USDT && userDetails_.userToken != s.WBTC) && baseBalance > 0) { 
+                _tradeWithExecutor(userDetails_); 
+            }
         }
     }
 
@@ -101,7 +109,7 @@ contract OZLFacetTest is Modifiers {
         if (shares_ <= 0) revert CantBeZero('shares');
 
         //Queries if there are failed fees. If true, it deposits them
-        if (s.failedFees > 0) _depositFeesInDeFi(s.failedFees, true);
+        if (s.failedFees > 0) _depositFeesInDeFi(s.failedFees, true, userDetails_.user);
 
         //Mutex bitmap lock
         _toggleBit(1, 3);
@@ -119,7 +127,7 @@ contract OZLFacetTest is Modifiers {
         //tricrypto= USDT: 0 / crv2- USDT: 1 , USDC: 0 / mim- MIM: 0 , CRV2lp: 1
         uint tokenAmountIn = ITri(s.tricrypto).calc_withdraw_one_coin(assets, 0); 
         
-        uint minOut = ExecutorFacet(s.executor).calculateSlippage(
+        uint minOut = ExecutorFacetTest(s.executor).calculateSlippage(
             tokenAmountIn, userDetails_.userSlippage
         ); 
 
@@ -132,24 +140,33 @@ contract OZLFacetTest is Modifiers {
     } 
     
 
-    function _depositFeesInDeFi(uint fee_, bool isRetry_) private { 
+    function _depositFeesInDeFi(uint fee_, bool isRetry_, address user_) private { 
         emit DeadVariables(isRetry_);
 
         //Deposit WETH in Curve Tricrypto pool
         (uint tokenAmountIn, uint[3] memory amounts) = _calculateTokenAmountCurve(fee_);
-        IWETH(s.WETH).approve(s.tricrypto, tokenAmountIn);
+        bool success = IERC20(s.WETH).ozApprove(
+            s.tricrypto, user_, tokenAmountIn
+        );
 
-        uint minAmount = ExecutorFacet(s.executor).calculateSlippage(tokenAmountIn, s.defaultSlippage);
+        if (success) {
+            uint minAmount = ExecutorFacetTest(s.executor).calculateSlippage(tokenAmountIn, s.defaultSlippage);
 
-        ITri(s.tricrypto).add_liquidity(amounts, minAmount);
-            
-        //Deposit crvTricrypto in Yearn
-        IERC20(s.crvTricrypto).approve(s.yTriPool, IERC20(s.crvTricrypto).balanceOf(address(this)));
-        IYtri(s.yTriPool).deposit(IERC20(s.crvTricrypto).balanceOf(address(this)));
+            ITri(s.tricrypto).add_liquidity(amounts, minAmount);
+                
+            //Deposit crvTricrypto in Yearn
+            success = IERC20(s.crvTricrypto).ozApprove(
+                s.yTriPool, user_, IERC20(s.crvTricrypto).balanceOf(address(this))
+            );
 
-        //Internal fees accounting
-        if (s.failedFees > 0) s.failedFees = 0;
-        s.feesVault += fee_;
+            if (success) {
+                IYtri(s.yTriPool).deposit(IERC20(s.crvTricrypto).balanceOf(address(this)));
+
+                //Internal fees accounting
+                if (s.failedFees > 0) s.failedFees = 0;
+                s.feesVault += fee_;
+            }
+        }
     }
 
 
@@ -166,7 +183,7 @@ contract OZLFacetTest is Modifiers {
      ******/
 
     function _getFee(uint amount_) private view returns(uint, uint) {
-        uint fee = amount_ - ExecutorFacet(s.executor).calculateSlippage(amount_, s.dappFee);
+        uint fee = amount_ - ExecutorFacetTest(s.executor).calculateSlippage(amount_, s.dappFee);
         uint netAmount = amount_ - fee;
         return (netAmount, fee);
     }
