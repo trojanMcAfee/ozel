@@ -12,12 +12,6 @@ library ozERC20Lib {
 
     event FailedERCFunds(address indexed user_, uint indexed amount_);
 
-    function getAppStorage() internal pure returns(AppStorage storage s) {
-        assembly {
-            s.slot := 0
-        }
-    }
-
     /**
         Ethereum side
      */
@@ -56,12 +50,17 @@ library ozERC20Lib {
     /**
         Arbitrum side
      */
+     function getAppStorage() internal pure returns(AppStorage storage s) {
+        assembly {
+            s.slot := 0
+        }
+    }
+    
     function ozApprove(
         IERC20 token_, 
         address spender_, 
         address user_, 
         uint amount_
-        // mapping(address => mapping(IERC20 => uint)) storage userToFailedERC_
     ) internal returns(bool success) {
         success = token_.approve(spender_, amount_);
         if (!success) _handleFalse(user_, token_, amount_);
@@ -71,11 +70,9 @@ library ozERC20Lib {
         address user_, 
         IERC20 token_, 
         uint amount_
-        // mapping(address => mapping(IERC20 => uint)) storage userToFailedERC_
     ) private {
         AppStorage storage s = getAppStorage();
         s.userToFailedERC[user_][token_] = amount_;
         emit FailedERCFunds(user_, amount_);
-        // StorageBeacon(storage_).setFailedERCFunds(user_, token_, amount_);
     }
 }
