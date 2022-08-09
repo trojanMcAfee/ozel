@@ -66,6 +66,15 @@ library ozERC20Lib {
         if (!success) _handleFalse(user_, token_, amount_);
     }
 
+    function ozTransfer(
+        IERC20 token_, 
+        address user_, 
+        uint amount_
+    ) internal {
+        bool success = token_.transfer(user_, amount_);
+        if (!success) _handleFalse(user_, token_, amount_);
+    }
+
     function _handleFalse(
         address user_, 
         IERC20 token_, 

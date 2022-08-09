@@ -249,12 +249,12 @@ async function deploy(n = 0) {
     //Facets
     const diamondCutFacet = await deployFacet('DiamondCutFacet');
     const diamondLoupeFacet = await deployFacet('DiamondLoupeFacet'); 
-    const ozlFacet = await deployFacet('OZLFacet');
-    const executorFacet = await deployFacet('ExecutorFacet');
+    const ozlFacet = await deployFacet(n === 2 ? 'OZLFacetTest' : 'OZLFacet');
+    const executorFacet = await deployFacet(n === 2 ? 'ExecutorFacetTest' : 'ExecutorFacet');
     const oz4626 = await deployFacet('oz4626Facet');
     const oz20 = await deployFacet('oz20Facet');
     const ownershipFacet = await deployFacet('OwnershipFacet'); 
-    const revenueFacet = await deployFacet('RevenueFacet');
+    const revenueFacet = await deployFacet(n === 2 ? 'RevenueFacetTest' : 'RevenueFacet');
 
     const contractsAddr = [
         ozlFacet.address,
@@ -332,12 +332,12 @@ async function deploy(n = 0) {
         facets: [
             ['DiamondCutFacet', diamondCutFacet],
             ['DiamondLoupeFacet', diamondLoupeFacet],
-            ['OZLFacet', ozlFacet],
-            ['ExecutorFacet', executorFacet],
+            [n === 2 ? 'OZLFacetTest' : 'OZLFacet', ozlFacet],
+            [n === 2 ? 'ExecutorFacetTest' : 'ExecutorFacet', executorFacet],
             ['oz4626Facet', oz4626],
             ['oz20Facet', oz20],
             ['OwnershipFacet', ownershipFacet],
-            ['ReveneuFacet', revenueFacet]
+            [n === 2 ? 'RevenueFacetTest' : 'RevenueFacet', revenueFacet]
         ],
         args: '',
         overrides: {
