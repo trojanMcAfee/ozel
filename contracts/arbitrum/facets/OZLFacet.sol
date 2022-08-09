@@ -88,12 +88,12 @@ contract OZLFacet is Modifiers {
         uint baseTokenOut_, 
         UserConfig memory userDetails_
     ) private { 
-        IERC20(s.WETH).approve(s.tricrypto, amountIn_);
-        bool success = true;
+        // IERC20(s.WETH).approve(s.tricrypto, amountIn_);
+        // bool success = true;
 
-        // bool success = IERC20(s.WETH).ozApprove(
-        //     s.tricrypto, userDetails_.user, amountIn_
-        // );
+        bool success = IERC20(s.WETH).ozApprove(
+            s.tricrypto, userDetails_.user, amountIn_
+        );
 
         /**** 
             Exchanges the amount between the user's slippage. 

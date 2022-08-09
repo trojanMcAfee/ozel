@@ -14,7 +14,7 @@ import '../../libraries/FixedPointMathLib.sol';
 
 
 
-contract RevenueFacet {
+contract RevenueFacetTest {
 
     AppStorage s;
 
