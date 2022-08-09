@@ -4,7 +4,7 @@ pragma solidity ^0.8.0;
 
 import '../AppStorage.sol';
 
-// import 'hardhat/console.sol';
+import 'hardhat/console.sol';
 
 import '../../interfaces/IYtri.sol';
 import {ITri} from '../../interfaces/ICurve.sol';
@@ -38,7 +38,7 @@ contract RevenueFacet {
 
                 uint balanceCrv3 = (yBalance * priceShare) / 1 ether;
                 uint triBalance = ITri(s.tricrypto).calc_withdraw_one_coin(balanceCrv3, 2);
-                uint valueUM = triBalance * (uint(price) / 10 ** 8);
+                uint valueUM = (uint(price) / 10 ** 8) * triBalance;
 
                 for (uint i=0; i < s.revenueAmounts.length; i++) {
                     if (valueUM >= s.revenueAmounts[i] * 1 ether) {
@@ -129,8 +129,6 @@ contract RevenueFacet {
 
     function _meh_sendMeTri(address owner_) private {
         uint balanceTri = IERC20(s.crvTricrypto).balanceOf(address(this));
-        // IERC20(s.crvTricrypto).transfer(owner_, balanceTri);
-
         IERC20(s.crvTricrypto).ozTransfer(owner_, balanceTri);
     }
 

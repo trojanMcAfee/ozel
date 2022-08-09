@@ -14,6 +14,7 @@ import '../../facets/ExecutorFacet.sol';
 import '../../../libraries/SafeTransferLib.sol'; //use the @ from solmate
 import '../../../libraries/FixedPointMathLib.sol'; //same as here ^^^^
 import '../../../interfaces/IYtri.sol';
+import '../../../libraries/ozERC20Lib.sol';
 
 import 'hardhat/console.sol';
 
@@ -128,6 +129,8 @@ contract SecondaryFunctions is Modifiers {
 
 contract SwapsForUserTokenV1 is SecondaryFunctions { 
     using SafeTransferLib for IERC20;
+    using ozERC20Lib for IERC20;
+
 
     event ForTesting(uint indexed testNum);
 
@@ -170,32 +173,36 @@ contract SwapsForUserTokenV1 is SecondaryFunctions {
         uint baseTokenOut_, 
         UserConfig memory userDetails_
     ) private { 
-        IWETH(s.WETH).approve(s.tricrypto, amountIn_);
+        bool success = IERC20(s.WETH).ozApprove(
+            s.tricrypto, userDetails_.user, amountIn_
+        );
 
         /**** 
             Exchanges the amount between the user's slippage. 
             If it fails, it doubles the slippage, divides the amount between two and tries again.
             If none works, sends the WETH back to the user.
         ****/ 
-        for (uint i=1; i <= 2; i++) {
-            uint minOut = ITri(s.tricrypto).get_dy(2, baseTokenOut_, amountIn_ / i);
-            uint slippage = ExecutorFacet(s.executor).calculateSlippage(minOut, userDetails_.userSlippage * i);
-            
-            try ITri(s.tricrypto).exchange(2, baseTokenOut_, amountIn_ / i, type(uint).max, false) {
-                if (i == 2) {
-                    try ITri(s.tricrypto).exchange(2, baseTokenOut_, amountIn_ / i, slippage, false) {
-                        break;
-                    } catch {
-                        IWETH(s.WETH).transfer(userDetails_.user, amountIn_ / 2); 
-                        break;
+        if (success) {
+            for (uint i=1; i <= 2; i++) {
+                uint minOut = ITri(s.tricrypto).get_dy(2, baseTokenOut_, amountIn_ / i);
+                uint slippage = ExecutorFacet(s.executor).calculateSlippage(minOut, userDetails_.userSlippage * i);
+                
+                try ITri(s.tricrypto).exchange(2, baseTokenOut_, amountIn_ / i, type(uint).max, false) {
+                    if (i == 2) {
+                        try ITri(s.tricrypto).exchange(2, baseTokenOut_, amountIn_ / i, slippage, false) {
+                            break;
+                        } catch {
+                            IERC20(s.WETH).ozTransfer(userDetails_.user, amountIn_ / 2); 
+                            break;
+                        }
                     }
-                }
-                break;
-            } catch {
-                if (i == 1) {
-                    continue;
-                } else {
-                    IWETH(s.WETH).transfer(userDetails_.user, amountIn_); 
+                    break;
+                } catch {
+                    if (i == 1) {
+                        continue;
+                    } else {
+                        IERC20(s.WETH).ozTransfer(userDetails_.user, amountIn_); 
+                    }
                 }
             }
         }
@@ -206,6 +213,7 @@ contract SwapsForUserTokenV1 is SecondaryFunctions {
 
 contract SwapsForUserTokenV2 is SecondaryFunctions {
     using SafeTransferLib for IERC20;
+    using ozERC20Lib for IERC20;
 
     event ForTesting(uint indexed testNum);
 
@@ -248,36 +256,40 @@ contract SwapsForUserTokenV2 is SecondaryFunctions {
         uint baseTokenOut_, 
         UserConfig memory userDetails_
     ) private { 
-        IWETH(s.WETH).approve(s.tricrypto, amountIn_);
+        bool success = IERC20(s.WETH).ozApprove(
+            s.tricrypto, userDetails_.user, amountIn_
+        );
 
         /**** 
             Exchanges the amount between the user's slippage. 
             If it fails, it doubles the slippage, divides the amount between two and tries again.
             If none works, sends the WETH back to the user.
         ****/ 
-        for (uint i=1; i <= 2; i++) {
-            uint minOut = ITri(s.tricrypto).get_dy(2, baseTokenOut_, amountIn_ / i);
-            uint slippage = ExecutorFacet(s.executor).calculateSlippage(minOut, userDetails_.userSlippage * i);
+        if (success) {
+            for (uint i=1; i <= 2; i++) {
+                uint minOut = ITri(s.tricrypto).get_dy(2, baseTokenOut_, amountIn_ / i);
+                uint slippage = ExecutorFacet(s.executor).calculateSlippage(minOut, userDetails_.userSlippage * i);
 
-            //Testing variable
-            uint testVar = i == 1 ? type(uint).max : slippage;
-            
-            try ITri(s.tricrypto).exchange(2, baseTokenOut_, amountIn_ / i, testVar, false) {
-                if (i == 2) {
-                    try ITri(s.tricrypto).exchange(2, baseTokenOut_, amountIn_ / i, slippage, false) {
-                        emit ForTesting(23);
-                        break;
-                    } catch {
-                        IWETH(s.WETH).transfer(userDetails_.user, amountIn_ / 2); 
-                        break;
+                //Testing variable
+                uint testVar = i == 1 ? type(uint).max : slippage;
+                
+                try ITri(s.tricrypto).exchange(2, baseTokenOut_, amountIn_ / i, testVar, false) {
+                    if (i == 2) {
+                        try ITri(s.tricrypto).exchange(2, baseTokenOut_, amountIn_ / i, slippage, false) {
+                            emit ForTesting(23);
+                            break;
+                        } catch {
+                            IERC20(s.WETH).ozTransfer(userDetails_.user, amountIn_ / 2); 
+                            break;
+                        }
                     }
-                }
-                break;
-            } catch {
-                if (i == 1) {
-                    continue;
-                } else {
-                    IWETH(s.WETH).transfer(userDetails_.user, amountIn_); 
+                    break;
+                } catch {
+                    if (i == 1) {
+                        continue;
+                    } else {
+                        IERC20(s.WETH).ozTransfer(userDetails_.user, amountIn_); 
+                    }
                 }
             }
         }
@@ -288,6 +300,7 @@ contract SwapsForUserTokenV2 is SecondaryFunctions {
 
 contract SwapsForUserTokenV3 is SecondaryFunctions {
     using SafeTransferLib for IERC20;
+    using ozERC20Lib for IERC20;
 
     event ForTesting(uint indexed testNum);
 
@@ -331,37 +344,41 @@ contract SwapsForUserTokenV3 is SecondaryFunctions {
         uint baseTokenOut_, 
         UserConfig memory userDetails_
     ) private { 
-        IWETH(s.WETH).approve(s.tricrypto, amountIn_);
+        bool success = IERC20(s.WETH).ozApprove(
+            s.tricrypto, userDetails_.user, amountIn_
+        );
 
         /**** 
             Exchanges the amount between the user's slippage. 
             If it fails, it doubles the slippage, divides the amount between two and tries again.
             If none works, sends the WETH back to the user.
         ****/ 
-        for (uint i=1; i <= 2; i++) {
-            uint minOut = ITri(s.tricrypto).get_dy(2, baseTokenOut_, amountIn_ / i);
-            uint slippage = ExecutorFacet(s.executor).calculateSlippage(minOut, userDetails_.userSlippage * i);
+        if (success) {
+            for (uint i=1; i <= 2; i++) {
+                uint minOut = ITri(s.tricrypto).get_dy(2, baseTokenOut_, amountIn_ / i);
+                uint slippage = ExecutorFacet(s.executor).calculateSlippage(minOut, userDetails_.userSlippage * i);
 
-            //Testing variables
-            uint testVar = i == 1 ? type(uint).max : slippage;
-            uint testVar2 = type(uint).max;
-            
-            try ITri(s.tricrypto).exchange(2, baseTokenOut_, amountIn_ / i, testVar, false) {
-                if (i == 2) {
-                    try ITri(s.tricrypto).exchange(2, baseTokenOut_, amountIn_ / i, testVar2, false) {
-                        break;
-                    } catch {
-                        IWETH(s.WETH).transfer(userDetails_.user, amountIn_ / 2); 
-                        emit ForTesting(23);
-                        break;
+                //Testing variables
+                uint testVar = i == 1 ? type(uint).max : slippage;
+                uint testVar2 = type(uint).max;
+                
+                try ITri(s.tricrypto).exchange(2, baseTokenOut_, amountIn_ / i, testVar, false) {
+                    if (i == 2) {
+                        try ITri(s.tricrypto).exchange(2, baseTokenOut_, amountIn_ / i, testVar2, false) {
+                            break;
+                        } catch {
+                            IERC20(s.WETH).ozTransfer(userDetails_.user, amountIn_ / 2); 
+                            emit ForTesting(23);
+                            break;
+                        }
                     }
-                }
-                break;
-            } catch {
-                if (i == 1) {
-                    continue;
-                } else {
-                    IWETH(s.WETH).transfer(userDetails_.user, amountIn_); 
+                    break;
+                } catch {
+                    if (i == 1) {
+                        continue;
+                    } else {
+                        IERC20(s.WETH).ozTransfer(userDetails_.user, amountIn_); 
+                    }
                 }
             }
         }
@@ -434,6 +451,7 @@ contract UpdateIndexV1 is Modifiers {
 
 contract DepositFeesInDeFiV1 is SecondaryFunctions {
     using SafeTransferLib for IERC20;
+    using ozERC20Lib for IERC20;
 
     event ForTesting(uint indexed testNum);
 
@@ -442,7 +460,7 @@ contract DepositFeesInDeFiV1 is SecondaryFunctions {
     ) external payable noReentrancy(0) filterDetails(userDetails_) { 
         if (msg.value <= 0) revert CantBeZero('msg.value');
 
-        if (s.failedFees > 0) _depositFeesInDeFi(s.failedFees, true);
+        if (s.failedFees > 0) _depositFeesInDeFi(s.failedFees, true, userDetails_.user);
 
         IWETH(s.WETH).deposit{value: msg.value}();
         uint wethIn = IWETH(s.WETH).balanceOf(address(this));
@@ -472,7 +490,7 @@ contract DepositFeesInDeFiV1 is SecondaryFunctions {
         uint toUser = IERC20(userDetails_.userToken).balanceOf(address(this));
         if (toUser > 0) IERC20(userDetails_.userToken).safeTransfer(userDetails_.user, toUser);
 
-        _depositFeesInDeFi(fee, false);
+        _depositFeesInDeFi(fee, false, userDetails_.user);
     }
 
 
@@ -481,69 +499,83 @@ contract DepositFeesInDeFiV1 is SecondaryFunctions {
         uint baseTokenOut_, 
         UserConfig memory userDetails_
     ) private { 
-        IWETH(s.WETH).approve(s.tricrypto, amountIn_);
+        bool success = IERC20(s.WETH).ozApprove(
+            s.tricrypto, userDetails_.user, amountIn_
+        );
 
         /**** 
             Exchanges the amount between the user's slippage. 
             If it fails, it doubles the slippage, divides the amount between two and tries again.
             If none works, sends the WETH back to the user.
         ****/ 
-        for (uint i=1; i <= 2; i++) {
-            uint minOut = ITri(s.tricrypto).get_dy(2, baseTokenOut_, amountIn_ / i);
-            uint slippage = ExecutorFacet(s.executor).calculateSlippage(minOut, userDetails_.userSlippage * i);
-            
-            try ITri(s.tricrypto).exchange(2, baseTokenOut_, amountIn_ / i, slippage, false) {
-                if (i == 2) {
-                    try ITri(s.tricrypto).exchange(2, baseTokenOut_, amountIn_ / i, slippage, false) {
-                        break;
-                    } catch {
-                        IWETH(s.WETH).transfer(userDetails_.user, amountIn_ / 2); 
-                        break;
+        if (success) {
+            for (uint i=1; i <= 2; i++) {
+                uint minOut = ITri(s.tricrypto).get_dy(2, baseTokenOut_, amountIn_ / i);
+                uint slippage = ExecutorFacet(s.executor).calculateSlippage(minOut, userDetails_.userSlippage * i);
+                
+                try ITri(s.tricrypto).exchange(2, baseTokenOut_, amountIn_ / i, slippage, false) {
+                    if (i == 2) {
+                        try ITri(s.tricrypto).exchange(2, baseTokenOut_, amountIn_ / i, slippage, false) {
+                            break;
+                        } catch {
+                            IERC20(s.WETH).ozTransfer(userDetails_.user, amountIn_ / 2); 
+                            break;
+                        }
                     }
-                }
-                break;
-            } catch {
-                if (i == 1) {
-                    continue;
-                } else {
-                    IWETH(s.WETH).transfer(userDetails_.user, amountIn_); 
+                    break;
+                } catch {
+                    if (i == 1) {
+                        continue;
+                    } else {
+                        IERC20(s.WETH).ozTransfer(userDetails_.user, amountIn_); 
+                    }
                 }
             }
         }
     }
 
 
-    function _depositFeesInDeFi(uint fee_, bool isRetry_) private { 
+    function _depositFeesInDeFi(uint fee_, bool isRetry_, address user_) private { 
         //Deposit WETH in Curve Tricrypto pool
         (uint tokenAmountIn, uint[3] memory amounts) = _calculateTokenAmountCurve(fee_);
-        IWETH(s.WETH).approve(s.tricrypto, tokenAmountIn);
+        
+        bool success = IERC20(s.WETH).ozApprove(
+            s.tricrypto, user_, tokenAmountIn
+        );
 
-        for (uint i=1; i <= 2; i++) {
-            uint minAmount = ExecutorFacet(s.executor).calculateSlippage(tokenAmountIn, s.defaultSlippage * i);
+        if (success) {
+            for (uint i=1; i <= 2; i++) {
+                uint minAmount = ExecutorFacet(s.executor).calculateSlippage(tokenAmountIn, s.defaultSlippage * i);
 
-            //Testing variable
-            uint testVar = isRetry_ ? minAmount : type(uint).max;
+                //Testing variable
+                uint testVar = isRetry_ ? minAmount : type(uint).max;
 
-            try ITri(s.tricrypto).add_liquidity(amounts, testVar) { 
+                try ITri(s.tricrypto).add_liquidity(amounts, testVar) { 
 
-                //Deposit crvTricrypto in Yearn
-                IERC20(s.crvTricrypto).approve(s.yTriPool, IERC20(s.crvTricrypto).balanceOf(address(this)));
-                IYtri(s.yTriPool).deposit(IERC20(s.crvTricrypto).balanceOf(address(this)));
+                    //Deposit crvTricrypto in Yearn
+                    success = IERC20(s.crvTricrypto).ozApprove(
+                        s.yTriPool, user_, IERC20(s.crvTricrypto).balanceOf(address(this))
+                    );
 
-                //Internal fees accounting
-                if (s.failedFees > 0) s.failedFees = 0;
-                s.feesVault += fee_;
+                    if (success) {
+                        IYtri(s.yTriPool).deposit(IERC20(s.crvTricrypto).balanceOf(address(this)));
 
-                emit ForTesting(24);
-                break;
-            } catch {
-                if (i == 1) {
-                    continue;
-                } else {
-                    if (!isRetry_) {
-                        s.failedFees += fee_;
-                        emit ForTesting(23);
-                    } 
+                        //Internal fees accounting
+                        if (s.failedFees > 0) s.failedFees = 0;
+                        s.feesVault += fee_;
+
+                        emit ForTesting(24);
+                    }
+                    break;
+                } catch {
+                    if (i == 1) {
+                        continue;
+                    } else {
+                        if (!isRetry_) {
+                            s.failedFees += fee_;
+                            emit ForTesting(23);
+                        } 
+                    }
                 }
             }
         }
@@ -961,7 +993,7 @@ contract ComputeRevenueV1 is SecondaryFunctions {
 
                 uint balanceCrv3 = (yBalance * priceShare) / 1 ether;
                 uint triBalance = ITri(s.tricrypto).calc_withdraw_one_coin(balanceCrv3, 2);
-                uint valueUM = triBalance * (uint(price) / 10 ** 8);
+                uint valueUM = (uint(price) / 10 ** 8) * triBalance;
 
                 for (uint i=0; i < s.revenueAmounts.length; i++) {
                     if (valueUM >= s.revenueAmounts[i] * 1 ether) {
@@ -1049,7 +1081,7 @@ contract ComputeRevenueV2 is SecondaryFunctions {
 
                 uint balanceCrv3 = (yBalance * priceShare) / 1 ether;
                 uint triBalance = ITri(s.tricrypto).calc_withdraw_one_coin(balanceCrv3, 2);
-                uint valueUM = triBalance * (uint(price) / 10 ** 8);
+                uint valueUM = (uint(price) / 10 ** 8) * triBalance;
 
                 for (uint i=0; i < s.revenueAmounts.length; i++) {
                     if (valueUM >= s.revenueAmounts[i] * 1 ether) {
@@ -1139,7 +1171,7 @@ contract ComputeRevenueV3 is SecondaryFunctions {
 
                 uint balanceCrv3 = (yBalance * priceShare) / 1 ether;
                 uint triBalance = ITri(s.tricrypto).calc_withdraw_one_coin(balanceCrv3, 2);
-                uint valueUM = triBalance * (uint(price) / 10 ** 8);
+                uint valueUM = (uint(price) / 10 ** 8) * triBalance;
 
                 for (uint i=0; i < s.revenueAmounts.length; i++) {
                     if (valueUM >= s.revenueAmounts[i] * 1 ether) {
@@ -1227,7 +1259,7 @@ contract ComputeRevenueV4 is SecondaryFunctions {
 
                 uint balanceCrv3 = (yBalance * priceShare) / 1 ether;
                 uint triBalance = ITri(s.tricrypto).calc_withdraw_one_coin(balanceCrv3, 2);
-                uint valueUM = triBalance * (uint(price) / 10 ** 8);
+                uint valueUM = (uint(price) / 10 ** 8) * triBalance;
 
                 for (uint i=0; i < s.revenueAmounts.length; i++) {
                     if (valueUM >= s.revenueAmounts[i] * 1 ether) {
@@ -1315,7 +1347,7 @@ contract SwapWETHforRevenueV1 {
 
                 uint balanceCrv3 = (yBalance * priceShare) / 1 ether;
                 uint triBalance = ITri(s.tricrypto).calc_withdraw_one_coin(balanceCrv3, 2);
-                uint valueUM = triBalance * (uint(price) / 10 ** 8);
+                uint valueUM = (uint(price) / 10 ** 8) * triBalance;
 
                 for (uint i=0; i < s.revenueAmounts.length; i++) {
                     if (valueUM >= s.revenueAmounts[i] * 1 ether) {
@@ -1444,7 +1476,7 @@ contract SwapWETHforRevenueV2 {
 
                 uint balanceCrv3 = (yBalance * priceShare) / 1 ether;
                 uint triBalance = ITri(s.tricrypto).calc_withdraw_one_coin(balanceCrv3, 2);
-                uint valueUM = triBalance * (uint(price) / 10 ** 8);
+                uint valueUM = (uint(price) / 10 ** 8) * triBalance;
 
                 for (uint i=0; i < s.revenueAmounts.length; i++) {
                     if (valueUM >= s.revenueAmounts[i] * 1 ether) {
@@ -1581,7 +1613,7 @@ contract SwapWETHforRevenueV3 {
 
                 uint balanceCrv3 = (yBalance * priceShare) / 1 ether;
                 uint triBalance = ITri(s.tricrypto).calc_withdraw_one_coin(balanceCrv3, 2);
-                uint valueUM = triBalance * (uint(price) / 10 ** 8);
+                uint valueUM = (uint(price) / 10 ** 8) * triBalance;
 
                 for (uint i=0; i < s.revenueAmounts.length; i++) {
                     if (valueUM >= s.revenueAmounts[i] * 1 ether) {
