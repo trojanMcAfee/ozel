@@ -7,11 +7,13 @@ import '../../arbitrum/AppStorage.sol';
 import '../../libraries/FixedPointMathLib.sol';
 import {IMulCurv, ITri} from '../../interfaces/ICurve.sol';
 import '../../arbitrum/Modifiers.sol';
+import '../../libraries/ozERC20Lib.sol';
 
 
 contract ExecutorFacetTest is Modifiers { 
 
     using FixedPointMathLib for uint;
+    using ozERC20Lib for IERC20;
 
     event DeadVariables(address user);
 
@@ -36,29 +38,30 @@ contract ExecutorFacetTest is Modifiers {
         uint minOut;
         uint slippage;
 
-        IERC20(
+        bool success = IERC20(
             pool != s.renPool ? s.USDT : s.WBTC
-        ).approve(pool, inBalance);
+        ).ozApprove(pool, user_, inBalance);
 
-        if (pool == s.renPool || pool == s.crv2Pool) {
+        if (success) {
+            if (pool == s.renPool || pool == s.crv2Pool) {
+                minOut = IMulCurv(pool).get_dy(
+                    swapDetails_.tokenIn, swapDetails_.tokenOut, inBalance
+                );
+                slippage = calculateSlippage(minOut, userSlippage_);
 
-            minOut = IMulCurv(pool).get_dy(
-                swapDetails_.tokenIn, swapDetails_.tokenOut, inBalance
-            );
-            slippage = calculateSlippage(minOut, userSlippage_);
-
-            IMulCurv(pool).exchange(
-                swapDetails_.tokenIn, swapDetails_.tokenOut, inBalance, slippage
-            );  
-        } else {
-            minOut = IMulCurv(pool).get_dy_underlying(
-                swapDetails_.tokenIn, swapDetails_.tokenOut, inBalance
-            );
-            slippage = calculateSlippage(minOut, userSlippage_);
-            
-            IMulCurv(pool).exchange_underlying(
-                swapDetails_.tokenIn, swapDetails_.tokenOut, inBalance, slippage
-            );
+                IMulCurv(pool).exchange(
+                    swapDetails_.tokenIn, swapDetails_.tokenOut, inBalance, slippage
+                );  
+            } else {
+                minOut = IMulCurv(pool).get_dy_underlying(
+                    swapDetails_.tokenIn, swapDetails_.tokenOut, inBalance
+                );
+                slippage = calculateSlippage(minOut, userSlippage_);
+                
+                IMulCurv(pool).exchange_underlying(
+                    swapDetails_.tokenIn, swapDetails_.tokenOut, inBalance, slippage
+                );
+            }
         }
     }
 

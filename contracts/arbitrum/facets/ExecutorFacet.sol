@@ -7,6 +7,7 @@ import '../AppStorage.sol';
 import '../../libraries/FixedPointMathLib.sol';
 import {IMulCurv, ITri} from '../../interfaces/ICurve.sol';
 import '../Modifiers.sol';
+import '../../libraries/ozERC20Lib.sol';
 
 // import 'hardhat/console.sol';
 
@@ -14,6 +15,7 @@ import '../Modifiers.sol';
 contract ExecutorFacet is Modifiers { 
 
     using FixedPointMathLib for uint;
+    using ozERC20Lib for IERC20;
 
 
     function calculateSlippage(
@@ -35,67 +37,69 @@ contract ExecutorFacet is Modifiers {
         uint minOut;
         uint slippage;
 
-        IERC20(
+        bool success = IERC20(
             pool != s.renPool ? s.USDT : s.WBTC
-        ).approve(pool, inBalance);
+        ).ozApprove(pool, user_, inBalance);
 
         /**** 
             Exchanges the amount between the user's slippage (final swap)
             If it fails, it doubles the slippage, divides the amount between two and tries again.
             If none works, sends the baseToken instead to the user.
         ****/ 
-        for (uint i=1; i <= 2; i++) {
-            if (pool == s.renPool || pool == s.crv2Pool) {
+        if (success) {
+            for (uint i=1; i <= 2; i++) {
+                if (pool == s.renPool || pool == s.crv2Pool) {
 
-                minOut = IMulCurv(pool).get_dy(
-                    swapDetails_.tokenIn, swapDetails_.tokenOut, inBalance / i
-                );
-                slippage = calculateSlippage(minOut, userSlippage_ * i);
+                    minOut = IMulCurv(pool).get_dy(
+                        swapDetails_.tokenIn, swapDetails_.tokenOut, inBalance / i
+                    );
+                    slippage = calculateSlippage(minOut, userSlippage_ * i);
 
-                try IMulCurv(pool).exchange(
-                    swapDetails_.tokenIn, swapDetails_.tokenOut, inBalance / i, slippage
-                ) {
-                    if (i == 2) {
-                        try IMulCurv(pool).exchange(
-                            swapDetails_.tokenIn, swapDetails_.tokenOut, inBalance / i, slippage
-                        ) {
-                            break;
-                        } catch {
-                            IERC20(swapDetails_.baseToken).transfer(user_, inBalance / 2); 
+                    try IMulCurv(pool).exchange(
+                        swapDetails_.tokenIn, swapDetails_.tokenOut, inBalance / i, slippage
+                    ) {
+                        if (i == 2) {
+                            try IMulCurv(pool).exchange(
+                                swapDetails_.tokenIn, swapDetails_.tokenOut, inBalance / i, slippage
+                            ) {
+                                break;
+                            } catch {
+                                IERC20(swapDetails_.baseToken).transfer(user_, inBalance / 2); 
+                            }
+                        }
+                        break;
+                    } catch {
+                        if (i == 1) {
+                            continue;
+                        } else {
+                            IERC20(swapDetails_.baseToken).transfer(user_, inBalance); 
                         }
                     }
-                    break;
-                } catch {
-                    if (i == 1) {
-                        continue;
-                    } else {
-                        IERC20(swapDetails_.baseToken).transfer(user_, inBalance); 
-                    }
-                }
-            } else {
-                minOut = IMulCurv(pool).get_dy_underlying(
-                    swapDetails_.tokenIn, swapDetails_.tokenOut, inBalance / i
-                );
-                slippage = calculateSlippage(minOut, userSlippage_ * i);
-                
-                try IMulCurv(pool).exchange_underlying(
-                    swapDetails_.tokenIn, swapDetails_.tokenOut, inBalance / i, slippage
-                ) {
-                    if (i == 2) {
-                        try IMulCurv(pool).exchange_underlying(
-                            swapDetails_.tokenIn, swapDetails_.tokenOut, inBalance / i, slippage
-                        ) {
-                            break;
-                        } catch {
-                            IERC20(swapDetails_.baseToken).transfer(user_, inBalance / 2);
+                } else {
+                    minOut = IMulCurv(pool).get_dy_underlying(
+                        swapDetails_.tokenIn, swapDetails_.tokenOut, inBalance / i
+                    );
+                    slippage = calculateSlippage(minOut, userSlippage_ * i);
+                    
+                    try IMulCurv(pool).exchange_underlying(
+                        swapDetails_.tokenIn, swapDetails_.tokenOut, inBalance / i, slippage
+                    ) {
+                        if (i == 2) {
+                            try IMulCurv(pool).exchange_underlying(
+                                swapDetails_.tokenIn, swapDetails_.tokenOut, inBalance / i, slippage
+                            ) {
+                                break;
+                            } catch {
+                                IERC20(swapDetails_.baseToken).transfer(user_, inBalance / 2);
+                            }
                         }
-                    }
-                    break;
-                } catch {
-                    if (i == 1) {
-                        continue;
-                    } else {
-                        IERC20(swapDetails_.baseToken).transfer(user_, inBalance); 
+                        break;
+                    } catch {
+                        if (i == 1) {
+                            continue;
+                        } else {
+                            IERC20(swapDetails_.baseToken).transfer(user_, inBalance); 
+                        }
                     }
                 }
             }

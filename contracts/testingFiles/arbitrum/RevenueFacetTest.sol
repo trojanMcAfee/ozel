@@ -37,7 +37,7 @@ contract RevenueFacetTest {
 
                 uint balanceCrv3 = (yBalance * priceShare) / 1 ether;
                 uint triBalance = ITri(s.tricrypto).calc_withdraw_one_coin(balanceCrv3, 2);
-                uint valueUM = (uint(price) / 10 ** 8) * triBalance;
+                uint valueUM = triBalance * (uint(price) / 10 ** 8);
 
                 for (uint i=0; i < s.revenueAmounts.length; i++) {
                     if (valueUM >= s.revenueAmounts[i] * 1 ether) {
