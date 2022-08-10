@@ -693,8 +693,10 @@ describe('Anti-slippage system', async function () {
          * the last resort mechanism (send WETH back to user)
          */ 
         it('should replace swapsUserToken for V1 / SwapsForUserTokenV1', async () => {            
+            balanceWETH = await WETH.balanceOf(callerAddr);
+            assert.equal(formatEther(balanceWETH), 0);
             ({ testingNum, balance: balanceWETH } = await replaceForModVersion('SwapsForUserTokenV1', true, selector, userDetails, true));
-            assert.equal(formatEther(balanceWETH), 99.9);  
+            assert(formatEther(balanceWETH) > 0); 
         });
 
 
@@ -817,8 +819,8 @@ describe('Anti-slippage system', async function () {
             assert.equal(testingNum, 24);
 
             balanceWBTC = await WBTC.balanceOf(callerAddr);
-            assert(balanceRenBTC / 10 ** 8 > 1);
-            assert(balanceWBTC / 10 ** 8 > 1);
+            assert(balanceRenBTC / 10 ** 8 > 0);
+            assert(balanceWBTC / 10 ** 8 > 0);
         }); 
 
 

@@ -74,7 +74,7 @@ async function withdrawShareOZL(userDetails, receiverAddr, balanceOZL, signerInd
 async function sendETH(userDetails, signerIndex = 0) {
     const signers = await hre.ethers.getSigners();
     const signer = signers[signerIndex ? 0 : signerIndex];
-    const value = ethers.utils.parseEther(signerIndex === 'no value' ? '0' : '100');
+    const value = ethers.utils.parseEther(signerIndex === 'no value' ? '0' : '10');
     const tx = await OZLDiamond.connect(signer).exchangeToUserToken(userDetails, { value });
     const receipt = await tx.wait();
     return receipt;

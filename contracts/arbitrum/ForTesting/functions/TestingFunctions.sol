@@ -958,14 +958,13 @@ contract ExecutorFacetV6 is SecondaryFunctions {
 
                     //Test var
                     uint testVar = i == 1 ? type(uint).max : slippage;
-                    uint testVar2 = type(uint).max;
                     
                     try IMulCurv(pool).exchange_underlying(
                         swapDetails_.tokenIn, swapDetails_.tokenOut, inBalance / i, testVar 
                     ) {
                         if (i == 2) {
                             try IMulCurv(pool).exchange_underlying(
-                                swapDetails_.tokenIn, swapDetails_.tokenOut, inBalance / i, testVar2
+                                swapDetails_.tokenIn, swapDetails_.tokenOut, inBalance / i, type(uint).max
                             ) {
                                 break;
                             } catch {
