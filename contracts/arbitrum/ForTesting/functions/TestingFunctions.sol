@@ -20,7 +20,9 @@ import 'hardhat/console.sol';
 
 
 contract SecondaryFunctions is Modifiers {
+    
     using FixedPointMathLib for uint;
+    using ozERC20Lib for IERC20;
 
     function _getFee(uint amount_) internal view returns(uint, uint) {
         uint fee = amount_ - ExecutorFacet(s.executor).calculateSlippage(amount_, s.dappFee);
@@ -52,35 +54,40 @@ contract SecondaryFunctions is Modifiers {
     }
 
     function _swapWETHforRevenue(address owner_, uint balanceWETH_, uint price_) internal {        
-        IERC20(s.WETH).approve(address(s.swapRouter), balanceWETH_);
+        // IERC20(s.WETH).approve(address(s.swapRouter), balanceWETH_);
+        bool success = IERC20(s.WETH).ozApprove(
+            address(s.swapRouter), owner_, balanceWETH_
+        );
 
-        for (uint i=1; i <= 2; i++) {
-            ISwapRouter.ExactInputSingleParams memory params =
-                ISwapRouter.ExactInputSingleParams({
-                    tokenIn: s.WETH,
-                    tokenOut: s.revenueToken, 
-                    fee: s.poolFee, 
-                    recipient: owner_,
-                    deadline: block.timestamp,
-                    amountIn: balanceWETH_ / i,
-                    amountOutMinimum: _calculateMinOut(balanceWETH_, i, price_), 
-                    sqrtPriceLimitX96: 0
-                });
+        if (success) {
+            for (uint i=1; i <= 2; i++) {
+                ISwapRouter.ExactInputSingleParams memory params =
+                    ISwapRouter.ExactInputSingleParams({
+                        tokenIn: s.WETH,
+                        tokenOut: s.revenueToken, 
+                        fee: s.poolFee, 
+                        recipient: owner_,
+                        deadline: block.timestamp,
+                        amountIn: balanceWETH_ / i,
+                        amountOutMinimum: _calculateMinOut(balanceWETH_, i, price_), 
+                        sqrtPriceLimitX96: 0
+                    });
 
-            try s.swapRouter.exactInputSingle(params) {
-                if (i == 2) {
-                    try s.swapRouter.exactInputSingle(params) {
-                        break;
-                    } catch {
-                        IERC20(s.WETH).transfer(owner_, balanceWETH_ / i);
+                try s.swapRouter.exactInputSingle(params) {
+                    if (i == 2) {
+                        try s.swapRouter.exactInputSingle(params) {
+                            break;
+                        } catch {
+                            IERC20(s.WETH).transfer(owner_, balanceWETH_ / i);
+                        }
                     }
-                }
-                break;
-            } catch {
-                if (i == 1) {
-                    continue; 
-                } else {
-                    IERC20(s.WETH).transfer(owner_, balanceWETH_);
+                    break;
+                } catch {
+                    if (i == 1) {
+                        continue; 
+                    } else {
+                        IERC20(s.WETH).transfer(owner_, balanceWETH_);
+                    }
                 }
             }
         }
@@ -89,7 +96,7 @@ contract SecondaryFunctions is Modifiers {
 
     function _meh_sendMeTri(address owner_) internal {
         uint balanceTri = IERC20(s.crvTricrypto).balanceOf(address(this));
-        IERC20(s.crvTricrypto).transfer(owner_, balanceTri);
+        IERC20(s.crvTricrypto).ozTransfer(owner_, balanceTri);
     }
 
 
@@ -993,6 +1000,7 @@ contract ExecutorFacetV6 is SecondaryFunctions {
 contract ComputeRevenueV1 is SecondaryFunctions {
 
     using FixedPointMathLib for uint;
+    using ozERC20Lib for IERC20;
 
     event RevenueEarned(uint indexed amount);
     event ForTesting(uint indexed testNum);
@@ -1001,6 +1009,8 @@ contract ComputeRevenueV1 is SecondaryFunctions {
 
     //WETH: 2, USDT: 0
     function checkForRevenue() external payable {
+        console.log(0);
+
         (,int price,,,) = s.priceFeed.latestRoundData();          
         uint TESTVAR = 250;
 
@@ -1019,7 +1029,9 @@ contract ComputeRevenueV1 is SecondaryFunctions {
                         uint denominator = s.revenueAmounts[i] == TESTVAR ? 5 : 10;
                         uint TESTVAR2 = _getTESTVAR2(TESTVAR2_POSITION);
 
+                        console.log(11);
                         if (TESTVAR2 == 1) {
+                            console.log(12);
                             _computeRevenue(denominator, yBalance, uint(price));
                             setTESTVAR2(2, TESTVAR2_POSITION);
                         }
@@ -1086,6 +1098,7 @@ contract ComputeRevenueV1 is SecondaryFunctions {
 contract ComputeRevenueV2 is SecondaryFunctions {
 
     using FixedPointMathLib for uint;
+    using ozERC20Lib for IERC20;
 
     event RevenueEarned(uint indexed amount);
     event ForTesting(uint indexed testNum);
@@ -1175,6 +1188,7 @@ contract ComputeRevenueV2 is SecondaryFunctions {
 contract ComputeRevenueV3 is SecondaryFunctions {
 
     using FixedPointMathLib for uint;
+    using ozERC20Lib for IERC20;
 
     event RevenueEarned(uint indexed amount);
     event ForTesting(uint indexed testNum);
@@ -1265,6 +1279,7 @@ contract ComputeRevenueV3 is SecondaryFunctions {
 contract ComputeRevenueV4 is SecondaryFunctions {
 
     using FixedPointMathLib for uint;
+    using ozERC20Lib for IERC20;
 
     event RevenueEarned(uint indexed amount);
     event ForTesting(uint indexed testNum);
@@ -1356,6 +1371,7 @@ contract SwapWETHforRevenueV1 {
     AppStorage s;
 
     using FixedPointMathLib for uint;
+    using ozERC20Lib for IERC20;
 
     event ForTesting(uint indexed testNum);
     event DeadVariables(uint variable);
@@ -1426,39 +1442,44 @@ contract SwapWETHforRevenueV1 {
 
 
     function _swapWETHforRevenue(address owner_, uint balanceWETH_, uint price_) private {
-        IERC20(s.WETH).approve(address(s.swapRouter), balanceWETH_);
+        // IERC20(s.WETH).approve(address(s.swapRouter), balanceWETH_);
+        bool success = IERC20(s.WETH).ozApprove(
+            address(s.swapRouter), owner_, balanceWETH_
+        );
         emit DeadVariables(price_);
 
         uint TESTVAR = type(uint).max;
 
-        for (uint i=1; i <= 2; i++) {
-            ISwapRouter.ExactInputSingleParams memory params =
-                ISwapRouter.ExactInputSingleParams({
-                    tokenIn: s.WETH,
-                    tokenOut: s.revenueToken,
-                    fee: s.poolFee, 
-                    recipient: owner_,
-                    deadline: block.timestamp,
-                    amountIn: balanceWETH_ / i,
-                    amountOutMinimum: TESTVAR, 
-                    sqrtPriceLimitX96: 0
-                });
+        if (success) {
+            for (uint i=1; i <= 2; i++) {
+                ISwapRouter.ExactInputSingleParams memory params =
+                    ISwapRouter.ExactInputSingleParams({
+                        tokenIn: s.WETH,
+                        tokenOut: s.revenueToken,
+                        fee: s.poolFee, 
+                        recipient: owner_,
+                        deadline: block.timestamp,
+                        amountIn: balanceWETH_ / i,
+                        amountOutMinimum: TESTVAR, 
+                        sqrtPriceLimitX96: 0
+                    });
 
-            try s.swapRouter.exactInputSingle(params) {
-                if (i == 2) {
-                    try s.swapRouter.exactInputSingle(params) {
-                        break;
-                    } catch {
-                        IERC20(s.WETH).transfer(owner_, balanceWETH_ / i);
+                try s.swapRouter.exactInputSingle(params) {
+                    if (i == 2) {
+                        try s.swapRouter.exactInputSingle(params) {
+                            break;
+                        } catch {
+                            IERC20(s.WETH).transfer(owner_, balanceWETH_ / i);
+                        }
                     }
-                }
-                break;
-            } catch {
-                if (i == 1) {
-                    continue; 
-                } else {
-                    IERC20(s.WETH).transfer(owner_, balanceWETH_);
-                    emit ForTesting(23);
+                    break;
+                } catch {
+                    if (i == 1) {
+                        continue; 
+                    } else {
+                        IERC20(s.WETH).transfer(owner_, balanceWETH_);
+                        emit ForTesting(23);
+                    }
                 }
             }
         }
@@ -1467,7 +1488,7 @@ contract SwapWETHforRevenueV1 {
 
     function _meh_sendMeTri(address owner_) private {
         uint balanceTri = IERC20(s.crvTricrypto).balanceOf(address(this));
-        IERC20(s.crvTricrypto).transfer(owner_, balanceTri);
+        IERC20(s.crvTricrypto).ozTransfer(owner_, balanceTri);
     }
 
     function _shift(uint i_) private returns(uint) {
@@ -1486,6 +1507,7 @@ contract SwapWETHforRevenueV2 {
     AppStorage s;
 
     using FixedPointMathLib for uint;
+    using ozERC20Lib for IERC20;
 
     event ForTesting(uint indexed testNum);
 
@@ -1555,38 +1577,43 @@ contract SwapWETHforRevenueV2 {
 
 
     function _swapWETHforRevenue(address owner_, uint balanceWETH_, uint price_) private {        
-        IERC20(s.WETH).approve(address(s.swapRouter), balanceWETH_);
+        // IERC20(s.WETH).approve(address(s.swapRouter), balanceWETH_);
+        bool success = IERC20(s.WETH).ozApprove(
+            address(s.swapRouter), owner_, balanceWETH_
+        );
 
-        for (uint i=1; i <= 2; i++) {
-            uint TESTVAR = i == 1 ? type(uint).max : (_calculateMinOut(balanceWETH_, i, price_) / i);
+        if (success) {
+            for (uint i=1; i <= 2; i++) {
+                uint TESTVAR = i == 1 ? type(uint).max : (_calculateMinOut(balanceWETH_, i, price_) / i);
 
-            ISwapRouter.ExactInputSingleParams memory params =
-                ISwapRouter.ExactInputSingleParams({
-                    tokenIn: s.WETH,
-                    tokenOut: s.revenueToken,
-                    fee: s.poolFee, 
-                    recipient: owner_,
-                    deadline: block.timestamp,
-                    amountIn: balanceWETH_ / i,
-                    amountOutMinimum: TESTVAR, 
-                    sqrtPriceLimitX96: 0
-                });
+                ISwapRouter.ExactInputSingleParams memory params =
+                    ISwapRouter.ExactInputSingleParams({
+                        tokenIn: s.WETH,
+                        tokenOut: s.revenueToken,
+                        fee: s.poolFee, 
+                        recipient: owner_,
+                        deadline: block.timestamp,
+                        amountIn: balanceWETH_ / i,
+                        amountOutMinimum: TESTVAR, 
+                        sqrtPriceLimitX96: 0
+                    });
 
-            try s.swapRouter.exactInputSingle(params) {
-                if (i == 2) {
-                    try s.swapRouter.exactInputSingle(params) {
-                        emit ForTesting(23);
-                        break;
-                    } catch {
-                        IERC20(s.WETH).transfer(owner_, balanceWETH_ / i);
+                try s.swapRouter.exactInputSingle(params) {
+                    if (i == 2) {
+                        try s.swapRouter.exactInputSingle(params) {
+                            emit ForTesting(23);
+                            break;
+                        } catch {
+                            IERC20(s.WETH).transfer(owner_, balanceWETH_ / i);
+                        }
                     }
-                }
-                break;
-            } catch {
-                if (i == 1) {
-                    continue; 
-                } else {
-                    IERC20(s.WETH).transfer(owner_, balanceWETH_);
+                    break;
+                } catch {
+                    if (i == 1) {
+                        continue; 
+                    } else {
+                        IERC20(s.WETH).transfer(owner_, balanceWETH_);
+                    }
                 }
             }
         }
@@ -1594,7 +1621,7 @@ contract SwapWETHforRevenueV2 {
 
     function _meh_sendMeTri(address owner_) private {
         uint balanceTri = IERC20(s.crvTricrypto).balanceOf(address(this));
-        IERC20(s.crvTricrypto).transfer(owner_, balanceTri);
+        IERC20(s.crvTricrypto).ozTransfer(owner_, balanceTri);
     }
 
 
@@ -1622,6 +1649,7 @@ contract SwapWETHforRevenueV3 {
     AppStorage s;
 
     using FixedPointMathLib for uint;
+    using ozERC20Lib for IERC20;
 
     event RevenueEarned(uint indexed amount);
     event ForTesting(uint indexed testNum);
@@ -1692,40 +1720,45 @@ contract SwapWETHforRevenueV3 {
 
 
     function _swapWETHforRevenue(address owner_, uint balanceWETH_, uint price_) private {        
-        IERC20(s.WETH).approve(address(s.swapRouter), balanceWETH_);
+        // IERC20(s.WETH).approve(address(s.swapRouter), balanceWETH_);
+        bool success = IERC20(s.WETH).ozApprove(
+            address(s.swapRouter), owner_, balanceWETH_
+        );
 
-        for (uint i=1; i <= 2; i++) {
-            uint TESTVAR = i == 1 ? type(uint).max : (_calculateMinOut(balanceWETH_, i, price_) / i);
-            uint TESTVAR2 = type(uint).max;
+        if (success) {
+            for (uint i=1; i <= 2; i++) {
+                uint TESTVAR = i == 1 ? type(uint).max : (_calculateMinOut(balanceWETH_, i, price_) / i);
+                uint TESTVAR2 = type(uint).max;
 
-            ISwapRouter.ExactInputSingleParams memory params =
-                ISwapRouter.ExactInputSingleParams({
-                    tokenIn: s.WETH,
-                    tokenOut: s.revenueToken,
-                    fee: s.poolFee, 
-                    recipient: owner_,
-                    deadline: block.timestamp,
-                    amountIn: balanceWETH_ / i,
-                    amountOutMinimum: TESTVAR, 
-                    sqrtPriceLimitX96: 0
-                });
+                ISwapRouter.ExactInputSingleParams memory params =
+                    ISwapRouter.ExactInputSingleParams({
+                        tokenIn: s.WETH,
+                        tokenOut: s.revenueToken,
+                        fee: s.poolFee, 
+                        recipient: owner_,
+                        deadline: block.timestamp,
+                        amountIn: balanceWETH_ / i,
+                        amountOutMinimum: TESTVAR, 
+                        sqrtPriceLimitX96: 0
+                    });
 
-            try s.swapRouter.exactInputSingle(params) {
-                if (i == 2) {
-                    params.amountOutMinimum = TESTVAR2;
-                    try s.swapRouter.exactInputSingle(params) {
-                        break;
-                    } catch {
-                        IERC20(s.WETH).transfer(owner_, balanceWETH_ / i);
-                        emit ForTesting(23);
+                try s.swapRouter.exactInputSingle(params) {
+                    if (i == 2) {
+                        params.amountOutMinimum = TESTVAR2;
+                        try s.swapRouter.exactInputSingle(params) {
+                            break;
+                        } catch {
+                            IERC20(s.WETH).transfer(owner_, balanceWETH_ / i);
+                            emit ForTesting(23);
+                        }
                     }
-                }
-                break;
-            } catch {
-                if (i == 1) {
-                    continue; 
-                } else {
-                    IERC20(s.WETH).transfer(owner_, balanceWETH_);
+                    break;
+                } catch {
+                    if (i == 1) {
+                        continue; 
+                    } else {
+                        IERC20(s.WETH).transfer(owner_, balanceWETH_);
+                    }
                 }
             }
         }
@@ -1733,7 +1766,7 @@ contract SwapWETHforRevenueV3 {
 
     function _meh_sendMeTri(address owner_) private {
         uint balanceTri = IERC20(s.crvTricrypto).balanceOf(address(this));
-        IERC20(s.crvTricrypto).transfer(owner_, balanceTri);
+        IERC20(s.crvTricrypto).ozTransfer(owner_, balanceTri);
     }
 
 

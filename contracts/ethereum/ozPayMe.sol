@@ -160,7 +160,7 @@ contract ozPayMe is ReentrancyGuard, Initializable {
                         sqrtPriceLimitX96: 0
                     });
 
-                try eMode.swapRouter.exactInputSingle(params) returns(uint amountOut) { 
+                try eMode.swapRouter.exactInputSingle(params) returns(uint amountOut) { //put this as it was before and test it out
                     if (amountOut > 0) {
                         break;
                     } else if (i == 1) {
@@ -170,6 +170,7 @@ contract ozPayMe is ReentrancyGuard, Initializable {
                         IERC20(eMode.tokenIn).ozTransfer(userDetails.user, balanceWETH, sBeacon);
                         break;
                     }
+                    //break; - just the break (delete all the if statement, including its test.js)
                 } catch {
                     if (i == 1) {
                         unchecked { ++i; }

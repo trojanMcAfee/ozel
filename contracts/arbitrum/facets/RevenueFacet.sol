@@ -16,6 +16,7 @@ import '../../libraries/ozERC20Lib.sol';
 import '@openzeppelin/contracts/token/ERC20/IERC20.sol';
 
 
+
 contract RevenueFacet {
 
     AppStorage s;
@@ -92,35 +93,41 @@ contract RevenueFacet {
 
 
     function _swapWETHforRevenue(address owner_, uint balanceWETH_, uint price_) private {
-        IERC20(s.WETH).approve(address(s.swapRouter), balanceWETH_);
+        // IERC20(s.WETH).approve(address(s.swapRouter), balanceWETH_);
 
-        for (uint i=1; i <= 2; i++) {
-            ISwapRouter.ExactInputSingleParams memory params =
-                ISwapRouter.ExactInputSingleParams({
-                    tokenIn: s.WETH,
-                    tokenOut: s.revenueToken, 
-                    fee: s.poolFee, 
-                    recipient: owner_,
-                    deadline: block.timestamp,
-                    amountIn: balanceWETH_ / i,
-                    amountOutMinimum: _calculateMinOut(balanceWETH_, i, price_) / i, 
-                    sqrtPriceLimitX96: 0
-                });
+        bool success = IERC20(s.WETH).ozApprove(
+            address(s.swapRouter), owner_, balanceWETH_
+        );
 
-            try s.swapRouter.exactInputSingle(params) {
-                if (i == 2) {
-                    try s.swapRouter.exactInputSingle(params) {
-                        break;
-                    } catch {
-                        IERC20(s.WETH).transfer(owner_, balanceWETH_ / i);
+        if (success) {
+            for (uint i=1; i <= 2; i++) {
+                ISwapRouter.ExactInputSingleParams memory params =
+                    ISwapRouter.ExactInputSingleParams({
+                        tokenIn: s.WETH,
+                        tokenOut: s.revenueToken, 
+                        fee: s.poolFee, 
+                        recipient: owner_,
+                        deadline: block.timestamp,
+                        amountIn: balanceWETH_ / i,
+                        amountOutMinimum: _calculateMinOut(balanceWETH_, i, price_) / i, 
+                        sqrtPriceLimitX96: 0
+                    });
+
+                try s.swapRouter.exactInputSingle(params) {
+                    if (i == 2) {
+                        try s.swapRouter.exactInputSingle(params) {
+                            break;
+                        } catch {
+                            IERC20(s.WETH).transfer(owner_, balanceWETH_ / i);
+                        }
                     }
-                }
-                break;
-            } catch {
-                if (i == 1) {
-                    continue; 
-                } else {
-                    IERC20(s.WETH).transfer(owner_, balanceWETH_);
+                    break;
+                } catch {
+                    if (i == 1) {
+                        continue; 
+                    } else {
+                        IERC20(s.WETH).transfer(owner_, balanceWETH_);
+                    }
                 }
             }
         }
