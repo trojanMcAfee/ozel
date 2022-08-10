@@ -37,7 +37,7 @@ let testingNum;
  * 
  * It uses the functions from TestingFunctions.sol
  */
- describe('Anti-slippage system', async function () {
+describe('Anti-slippage system', async function () {
     this.timeout(1000000);
 
     before( async () => {
@@ -71,7 +71,7 @@ let testingNum;
         selector = iface.getSighash('exchangeToUserToken');
     });
 
-    xdescribe('Modified OZLFacet', async () => {
+    describe('Modified OZLFacet', async () => {
 
         /** 
          * Changed the first slippage for type(uint).max in _swapsForUserToken 
@@ -135,6 +135,7 @@ let testingNum;
          * It deposits -in DeFi- the failedFees that weren't deposited in the prior test.
          */
         it('should deposit any failed fees found in the failedFees variable / DepositFeesInDeFiV1', async () => {            
+            await replaceForModVersion('DepositFeesInDeFiV1', false, selector, userDetails);
             receipt = await sendETH(userDetails);
             assert.equal(getTestingNumber(receipt, true), 24);
 

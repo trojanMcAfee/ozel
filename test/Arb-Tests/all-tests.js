@@ -634,13 +634,10 @@ describe('Ozel Index', async function () {
             regulatorCounter = await getRegulatorCounter();
 
             assert(total <= 100 && total >= 99.85);
-            assert(ozelIndex > 0 && ozelIndex <= higherIndex);
+            assert(ozelIndex > 0 && Number(ozelIndex) <= Number(higherIndex));
             assert(regulatorCounter < 2 && regulatorCounter >= 0);
         }
     });
-
-
-
 });
 
 
@@ -696,7 +693,7 @@ describe('Anti-slippage system', async function () {
             balanceWETH = await WETH.balanceOf(callerAddr);
             assert.equal(formatEther(balanceWETH), 0);
             ({ testingNum, balance: balanceWETH } = await replaceForModVersion('SwapsForUserTokenV1', true, selector, userDetails, true));
-            assert(formatEther(balanceWETH) > 0); 
+            assert(formatEther(balanceWETH) > 0);  
         });
 
 
@@ -749,6 +746,7 @@ describe('Anti-slippage system', async function () {
          * It deposits -in DeFi- the failedFees that weren't deposited in the prior test.
          */
         it('should deposit any failed fees found in the failedFees variable / DepositFeesInDeFiV1', async () => {            
+            await replaceForModVersion('DepositFeesInDeFiV1', false, selector, userDetails);
             receipt = await sendETH(userDetails);
             assert.equal(getTestingNumber(receipt, true), 24);
 
@@ -1053,14 +1051,4 @@ describe('My Revenue', async function() {
         owner = await ozlDiamond.owner();
         assert.equal(owner, callerAddr);
     });
-
-
-
-
-
-    
-
-
-
-
 });

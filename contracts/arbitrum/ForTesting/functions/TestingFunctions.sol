@@ -1035,6 +1035,8 @@ contract ComputeRevenueV1 is SecondaryFunctions {
 
 
     function _computeRevenue(uint denominator_, uint balance_, uint price_) internal {        
+        console.log(1);
+        
         address owner;
         uint assetsToWithdraw = balance_ / denominator_;
         IYtri(s.yTriPool).withdraw(assetsToWithdraw);
@@ -1046,6 +1048,8 @@ contract ComputeRevenueV1 is SecondaryFunctions {
             ); 
 
             try ITri(s.tricrypto).remove_liquidity_one_coin(assetsToWithdraw / i, 2, minOut) {
+                console.log(2);
+                
                 uint balanceWETH = IERC20(s.WETH).balanceOf(address(this));
                 owner = LibDiamond.contractOwner();
 
@@ -1059,6 +1063,8 @@ contract ComputeRevenueV1 is SecondaryFunctions {
                             break;
                         }
                     }
+                    console.log(3);
+
                     _swapWETHforRevenue(owner, balanceWETH, price_);
                     emit ForTesting(23);
                     break;
