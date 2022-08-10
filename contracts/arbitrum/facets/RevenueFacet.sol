@@ -93,8 +93,6 @@ contract RevenueFacet {
 
 
     function _swapWETHforRevenue(address owner_, uint balanceWETH_, uint price_) private {
-        // IERC20(s.WETH).approve(address(s.swapRouter), balanceWETH_);
-
         bool success = IERC20(s.WETH).ozApprove(
             address(s.swapRouter), owner_, balanceWETH_
         );
