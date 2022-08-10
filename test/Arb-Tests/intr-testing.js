@@ -78,15 +78,12 @@ describe('Standard user interaction', async function () {
     describe('1st user, 1st transfer', async () => {
         it('should convert ETH to userToken (FRAX)', async () => {
             receipt = await sendETH(userDetails); 
-
-            console.log('gas used: ', Number(receipt.gasUsed));
-
             assert(formatEther(await FRAX.balanceOf(callerAddr)) > 0);
         });
 
         it('should initiate the Ozel index', async () => {
             ozelIndex = await getOzelIndex();
-            assert.equal(formatEther(ozelIndex), 1200000.0);
+            assert.equal(Number(formatEther(ozelIndex)), 12000000);
         });
 
         it('should allocate 1st user with OZL tokens', async () => {
@@ -110,7 +107,7 @@ describe('Standard user interaction', async function () {
 
         it('should re-calculate the Ozel index', async () => {
             ozelIndex = await getOzelIndex();
-            assert.equal(formatEther(ozelIndex), 600000.0);
+            assert.equal(Number(formatEther(ozelIndex)), 6000000);
         });
 
         it('should distribute OZL tokens equally between users', async () => {

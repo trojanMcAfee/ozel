@@ -4,7 +4,7 @@ pragma solidity ^0.8.0;
 
 import './AppStorage.sol';
 
-// import 'hardhat/console.sol';
+import 'hardhat/console.sol';
 
 
 abstract contract Bits {
@@ -17,6 +17,8 @@ abstract contract Bits {
     }
 
     function _toggleBit(uint bitmap_, uint index_) internal {
+        console.log(1);
         s.bitLocks[bitmap_] ^= (1 << index_);
+        console.log(2);
     }
 }

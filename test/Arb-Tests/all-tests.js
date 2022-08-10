@@ -105,7 +105,7 @@ describe('Integration testing', async function () {
 
         it('should initiate the Ozel index', async () => {
             ozelIndex = await getOzelIndex();
-            assert.equal(formatEther(ozelIndex), 1200000.0);
+            assert.equal(Number(formatEther(ozelIndex)), 12000000);
         });
 
         it('should allocate 1st user with OZL tokens', async () => {
@@ -129,7 +129,7 @@ describe('Integration testing', async function () {
 
         it('should re-calculate the Ozel index', async () => {
             ozelIndex = await getOzelIndex();
-            assert.equal(formatEther(ozelIndex), 600000.0);
+            assert.equal(Number(formatEther(ozelIndex)), 6000000);
         });
 
         it('should distribute OZL tokens equally between users', async () => {

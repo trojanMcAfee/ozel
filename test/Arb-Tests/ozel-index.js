@@ -134,7 +134,10 @@ describe('Ozel Index', async function () {
             regulatorCounter = await getRegulatorCounter();
 
             assert(total <= 100 && total >= 99.85);
-            assert(ozelIndex > 0 && ozelIndex <= higherIndex);
+            // console.log('ozelIndex: ', ozelIndex);
+            // console.log('higherIndex: ', higherIndex);
+            // console.log('is: ', Number(ozelIndex) <= Number(higherIndex));
+            assert(ozelIndex > 0 && Number(ozelIndex) <= Number(higherIndex));
             assert(regulatorCounter < 2 && regulatorCounter >= 0);
         }
     });
