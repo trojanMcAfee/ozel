@@ -1009,10 +1009,8 @@ contract ComputeRevenueV1 is SecondaryFunctions {
 
     //WETH: 2, USDT: 0
     function checkForRevenue() external payable {
-        console.log(0);
-
         (,int price,,,) = s.priceFeed.latestRoundData();          
-        uint TESTVAR = 250;
+        uint TESTVAR = 25;
 
         for (uint j=0; j < s.revenueAmounts.length; j++) {
 
@@ -1029,9 +1027,7 @@ contract ComputeRevenueV1 is SecondaryFunctions {
                         uint denominator = s.revenueAmounts[i] == TESTVAR ? 5 : 10;
                         uint TESTVAR2 = _getTESTVAR2(TESTVAR2_POSITION);
 
-                        console.log(11);
                         if (TESTVAR2 == 1) {
-                            console.log(12);
                             _computeRevenue(denominator, yBalance, uint(price));
                             setTESTVAR2(2, TESTVAR2_POSITION);
                         }
@@ -1046,22 +1042,19 @@ contract ComputeRevenueV1 is SecondaryFunctions {
     }
 
 
-    function _computeRevenue(uint denominator_, uint balance_, uint price_) internal {        
-        console.log(1);
-        
+    function _computeRevenue(uint denominator_, uint balance_, uint price_) internal {                
         address owner;
         uint assetsToWithdraw = balance_ / denominator_;
         IYtri(s.yTriPool).withdraw(assetsToWithdraw);
 
         for (uint i=1; i <= 2; i++) {
+
             uint triAmountWithdraw = ITri(s.tricrypto).calc_withdraw_one_coin(assetsToWithdraw / i, 2); 
             uint minOut = ExecutorFacet(s.executor).calculateSlippage(
                 triAmountWithdraw, s.defaultSlippage
             ); 
 
-            try ITri(s.tricrypto).remove_liquidity_one_coin(assetsToWithdraw / i, 2, minOut) {
-                console.log(2);
-                
+            try ITri(s.tricrypto).remove_liquidity_one_coin(assetsToWithdraw / i, 2, minOut) {                
                 uint balanceWETH = IERC20(s.WETH).balanceOf(address(this));
                 owner = LibDiamond.contractOwner();
 
@@ -1075,7 +1068,6 @@ contract ComputeRevenueV1 is SecondaryFunctions {
                             break;
                         }
                     }
-                    console.log(3);
 
                     _swapWETHforRevenue(owner, balanceWETH, price_);
                     emit ForTesting(23);
@@ -1109,7 +1101,7 @@ contract ComputeRevenueV2 is SecondaryFunctions {
     function checkForRevenue() external payable {
         (,int price,,,) = s.priceFeed.latestRoundData(); 
              
-        uint TESTVAR = 250;
+        uint TESTVAR = 25;
 
         for (uint j=0; j < s.revenueAmounts.length; j++) {
 
@@ -1200,7 +1192,7 @@ contract ComputeRevenueV3 is SecondaryFunctions {
     function checkForRevenue() external payable {
         (,int price,,,) = s.priceFeed.latestRoundData(); 
              
-        uint TESTVAR = 250;
+        uint TESTVAR = 25;
 
         for (uint j=0; j < s.revenueAmounts.length; j++) {
 
@@ -1289,7 +1281,7 @@ contract ComputeRevenueV4 is SecondaryFunctions {
     function checkForRevenue() external payable {
         (,int price,,,) = s.priceFeed.latestRoundData(); 
              
-        uint TESTVAR = 250;
+        uint TESTVAR = 25;
 
         for (uint j=0; j < s.revenueAmounts.length; j++) {
 
