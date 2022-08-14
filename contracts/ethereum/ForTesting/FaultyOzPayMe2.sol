@@ -18,19 +18,20 @@ import '../ozUpgradeableBeacon.sol';
 import '../../Errors.sol';
 import './TestReturn.sol';
 import '../../libraries/ozERC20Lib.sol';
+import { ModifiersETH } from '../../Modifiers.sol';
 
 import 'hardhat/console.sol';
 
 
 
 
-contract FaultyOzPayMe2 is ReentrancyGuard, Initializable { 
+contract FaultyOzPayMe2 is ModifiersETH, ReentrancyGuard, Initializable { 
 
     using FixedPointMathLib for uint;
     using ozERC20Lib for IERC20;
 
-    StorageBeacon.UserConfig userDetails;
-    StorageBeacon.FixedConfig fxConfig;
+    // StorageBeacon.UserConfig userDetails;
+    // StorageBeacon.FixedConfig fxConfig;
 
     address private _beacon;
 
@@ -46,15 +47,15 @@ contract FaultyOzPayMe2 is ReentrancyGuard, Initializable {
     event SecondAttempt(uint success);
 
 
-    modifier onlyOps() {
-        require(msg.sender == fxConfig.ops, 'ozPayMe: onlyOps');
-        _;
-    }
+    // modifier onlyOps() {
+    //     require(msg.sender == fxConfig.ops, 'ozPayMe: onlyOps');
+    //     _;
+    // }
 
-    modifier onlyUser() {
-        require(msg.sender == userDetails.user, 'ozPayMe: Not authorized');
-        _;
-    }
+    // modifier onlyUser() {
+    //     require(msg.sender == userDetails.user, 'ozPayMe: Not authorized');
+    //     _;
+    // }
 
     function initialize(
         uint userId_, 
@@ -79,6 +80,7 @@ contract FaultyOzPayMe2 is ReentrancyGuard, Initializable {
 
         if (userDetails_.user == address(0) || userDetails_.userToken == address(0)) revert CantBeZero('address');
         if (!storageBeacon.isUser(userDetails_.user)) revert NotFoundInDatabase('user');
+        if (!storageBeacon.queryTokenDatabase(userDetails_.userToken)) revert TokenNotInDatabase(userDetails_.userToken);
         if (userDetails_.userSlippage <= 0) revert CantBeZero('slippage');
         if (!(address(this).balance > 0)) revert CantBeZero('contract balance');
 

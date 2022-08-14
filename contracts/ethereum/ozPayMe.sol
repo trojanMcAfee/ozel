@@ -19,17 +19,18 @@ import './ozUpgradeableBeacon.sol';
 import '../Errors.sol';
 
 import '../libraries/ozERC20Lib.sol';
+import { ModifiersETH } from '../Modifiers.sol';
 
 import 'hardhat/console.sol'; 
 
 
-contract ozPayMe is ReentrancyGuard, Initializable { 
+contract ozPayMe is ModifiersETH, ReentrancyGuard, Initializable { 
 
     using FixedPointMathLib for uint;
     using ozERC20Lib for IERC20;
 
-    StorageBeacon.UserConfig userDetails;
-    StorageBeacon.FixedConfig fxConfig;
+    // StorageBeacon.UserConfig userDetails;
+    // StorageBeacon.FixedConfig fxConfig;
 
     address private _beacon;
 
@@ -40,15 +41,16 @@ contract ozPayMe is ReentrancyGuard, Initializable {
     event FailedERCFunds(address indexed user_, uint indexed amount_);
 
 
-    modifier onlyOps() {
-        require(msg.sender == fxConfig.ops, 'ozPayMe: onlyOps');
-        _;
-    }
+    // modifier onlyOps() {
+    //     if (msg.sender !== fxConfig.ops) revert NotAuthorized(msg.sender);
+    //     // require(msg.sender == fxConfig.ops, 'ozPayMe: onlyOps');
+    //     _;
+    // }
 
-    modifier onlyUser() {
-        if (msg.sender != userDetails.user) revert NotAuthorized();
-        _;
-    }
+    // modifier onlyUser() {
+    //     if (msg.sender != userDetails.user) revert NotAuthorized(msg.sender);
+    //     _;
+    // }
 
     function initialize(
         uint userId_, 
@@ -73,7 +75,7 @@ contract ozPayMe is ReentrancyGuard, Initializable {
 
         if (userDetails_.user == address(0) || userDetails_.userToken == address(0)) revert CantBeZero('address');
         if (!storageBeacon.isUser(userDetails_.user)) revert NotFoundInDatabase('user');
-        if (!storageBeacon.queryTokenDatabase(userDetails_.userToken)) revert NotFoundInDatabase('token');
+        if (!storageBeacon.queryTokenDatabase(userDetails_.userToken)) revert TokenNotInDatabase(userDetails_.userToken);
         if (userDetails_.userSlippage <= 0) revert CantBeZero('slippage');
         if (!(address(this).balance > 0)) revert CantBeZero('contract balance');
 
@@ -190,7 +192,7 @@ contract ozPayMe is ReentrancyGuard, Initializable {
         StorageBeacon storageBeacon = StorageBeacon(_getStorageBeacon(_beacon, 0)); 
 
         if (newUserToken_ == address(0)) revert CantBeZero('address');
-        if (!storageBeacon.queryTokenDatabase(newUserToken_)) revert NotFoundInDatabase('token');
+        if (!storageBeacon.queryTokenDatabase(newUserToken_)) revert TokenNotInDatabase(newUserToken_);
 
         userDetails.userToken = newUserToken_;
         emit NewUserToken(msg.sender, newUserToken_);
@@ -202,7 +204,6 @@ contract ozPayMe is ReentrancyGuard, Initializable {
         userDetails.userSlippage = newUserSlippage_;
         emit NewUserSlippage(msg.sender, newUserSlippage_);
     } 
-    
 }
 
 

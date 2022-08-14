@@ -17,19 +17,20 @@ import '../StorageBeacon.sol';
 import '../ozUpgradeableBeacon.sol';
 import '../../Errors.sol';
 import '../../libraries/ozERC20Lib.sol';
+import { ModifiersETH } from '../../Modifiers.sol';
 
 import 'hardhat/console.sol';
 
 
 
 
-contract FaultyOzPayMe is ReentrancyGuard, Initializable { 
+contract FaultyOzPayMe is ModifiersETH, ReentrancyGuard, Initializable { 
 
     using FixedPointMathLib for uint;
     using ozERC20Lib for IERC20;
 
-    StorageBeacon.UserConfig userDetails;
-    StorageBeacon.FixedConfig fxConfig;
+    // StorageBeacon.UserConfig userDetails;
+    // StorageBeacon.FixedConfig fxConfig;
 
     address private _beacon;
 
@@ -43,15 +44,15 @@ contract FaultyOzPayMe is ReentrancyGuard, Initializable {
     event SecondAttempt(uint success);
 
 
-    modifier onlyOps() {
-        require(msg.sender == fxConfig.ops, 'ozPayMe: onlyOps');
-        _;
-    }
+    // modifier onlyOps() {
+    //     require(msg.sender == fxConfig.ops, 'ozPayMe: onlyOps');
+    //     _;
+    // }
 
-    modifier onlyUser() {
-        require(msg.sender == userDetails.user, 'ozPayMe: Not authorized');
-        _;
-    }
+    // modifier onlyUser() {
+    //     require(msg.sender == userDetails.user, 'ozPayMe: Not authorized');
+    //     _;
+    // }
 
     function initialize(
         uint userId_, 

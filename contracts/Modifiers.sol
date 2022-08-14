@@ -5,6 +5,7 @@ pragma solidity 0.8.14;
 import './AppStorage.sol';
 import '../Errors.sol';
 import './Bits.sol';
+import './ethereum/StorageBeacon.sol';
 
 import 'hardhat/console.sol';
 
@@ -20,7 +21,7 @@ abstract contract Modifiers is Bits {
     }
 
     modifier isAuthorized(uint index_) {
-        if (_getBit(1, index_)) revert NotAuthorized();
+        if (_getBit(1, index_)) revert NotAuthorized(msg.sender);
         _;
         _toggleBit(1, index_);
     }
@@ -33,7 +34,25 @@ abstract contract Modifiers is Bits {
     modifier filterDetails(UserConfig memory userDetails_) {
         if (userDetails_.user == address(0) || userDetails_.userToken == address(0)) revert CantBeZero('address'); 
         if (userDetails_.userSlippage <= 0) revert CantBeZero('slippage');
-        if (!s.tokenDatabase[userDetails_.userToken]) revert NotFoundInDatabase('token');
+        if (!s.tokenDatabase[userDetails_.userToken]) revert TokenNotInDatabase(userDetails_.userToken);
         _;
     }
+}
+
+
+abstract contract ModifiersETH {
+
+    StorageBeacon.UserConfig userDetails;
+    StorageBeacon.FixedConfig fxConfig;
+
+    modifier onlyOps() {
+        if (msg.sender !== fxConfig.ops) revert NotAuthorized(msg.sender);
+        // require(msg.sender == fxConfig.ops, 'ozPayMe: onlyOps');
+        _;
+    }
+
+    modifier onlyUser() {
+        if (msg.sender != userDetails.user) revert NotAuthorized(msg.sender);
+        _;
+    }    
 }
