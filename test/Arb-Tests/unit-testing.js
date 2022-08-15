@@ -68,9 +68,10 @@ describe('Unit testing', async function () {
         ];
 
         ozlDiamond = await hre.ethers.getContractAt(diamondABI, deployedDiamond.address);
+        evilAmount = parseEther('1000');
     });
 
-    xdescribe('OZLFacet', async () => { 
+    describe('OZLFacet', async () => { 
         describe('exchangeToUserToken()', async () => {
             it('should fail with user as address(0)', async () => {
                 userDetails[0] = nullAddr;
@@ -78,7 +79,7 @@ describe('Unit testing', async function () {
                     await sendETH(userDetails);
                 }, {
                     name: 'Error',
-                    message: err().zeroAddress 
+                    message: (await err()).zeroAddress 
                 });
             });
     
@@ -89,7 +90,7 @@ describe('Unit testing', async function () {
                     await sendETH(userDetails);
                 }, {
                     name: 'Error',
-                    message: err().zeroAddress 
+                    message: (await err()).zeroAddress 
                 });
             });
     
@@ -100,7 +101,7 @@ describe('Unit testing', async function () {
                     await sendETH(userDetails);
                 }, {
                     name: 'Error',
-                    message: err().zeroSlippage 
+                    message: (await err()).zeroSlippage 
                 });
             });
     
@@ -111,7 +112,7 @@ describe('Unit testing', async function () {
                     await sendETH(userDetails);
                 }, {
                     name: 'Error',
-                    message: err(deadAddr).tokenNotFound 
+                    message: (await err(deadAddr)).tokenNotFound 
                 });
             });
     
@@ -121,7 +122,7 @@ describe('Unit testing', async function () {
                     await sendETH(userDetails, 'no value');
                 }, {
                     name: 'Error',
-                    message: err().zeroMsgValue 
+                    message: (await err()).zeroMsgValue 
                 });
             });
         });
@@ -134,7 +135,7 @@ describe('Unit testing', async function () {
                     await withdrawShareOZL(userDetails, callerAddr, parseEther((await balanceOfOZL(callerAddr)).toString()));
                 }, {
                     name: 'Error',
-                    message: err().zeroAddress 
+                    message: (await err()).zeroAddress 
                 });
             });
     
@@ -145,7 +146,7 @@ describe('Unit testing', async function () {
                     await withdrawShareOZL(userDetails, callerAddr, parseEther((await balanceOfOZL(callerAddr)).toString()));
                 }, {
                     name: 'Error',
-                    message: err().zeroAddress 
+                    message: (await err()).zeroAddress 
                 });
             });
     
@@ -156,7 +157,7 @@ describe('Unit testing', async function () {
                     await withdrawShareOZL(userDetails, callerAddr, parseEther((await balanceOfOZL(callerAddr)).toString()));
                 }, {
                     name: 'Error',
-                    message: err().zeroSlippage 
+                    message: (await err()).zeroSlippage 
                 });
             });
     
@@ -167,7 +168,7 @@ describe('Unit testing', async function () {
                     await withdrawShareOZL(userDetails, callerAddr, parseEther((await balanceOfOZL(callerAddr)).toString()));
                 }, {
                     name: 'Error',
-                    message: err(deadAddr).tokenNotFound 
+                    message: (await err(deadAddr)).tokenNotFound 
                 });
             });
 
@@ -177,7 +178,7 @@ describe('Unit testing', async function () {
                     await withdrawShareOZL(userDetails, nullAddr, parseEther((await balanceOfOZL(callerAddr)).toString()));
                 }, {
                     name: 'Error',
-                    message: err().zeroAddress 
+                    message: (await err()).zeroAddress 
                 });
             });
 
@@ -186,7 +187,7 @@ describe('Unit testing', async function () {
                     await withdrawShareOZL(userDetails, callerAddr, 0);
                 }, {
                     name: 'Error',
-                    message: err().zeroShares 
+                    message: (await err()).zeroShares 
                 });
             });
         });
@@ -222,7 +223,7 @@ describe('Unit testing', async function () {
                     await addTokenToDatabase(tokenSwap, 1);
                 }, {
                     name: 'Error',
-                    message: err(2).notAuthorized 
+                    message: (await err(2)).notAuthorized 
                 });
             });
         });
@@ -230,7 +231,6 @@ describe('Unit testing', async function () {
 
     describe('ExecutorFacet', async () => { 
         it('shout not allow an unauthorized user to run the function / updateExecutorState()', async () => {
-            evilAmount = parseEther('1000');
             await assert.rejects(async () => {
                 await ozlDiamond.updateExecutorState(evilAmount, deadAddr, 1);
             }, {
@@ -268,13 +268,13 @@ describe('Unit testing', async function () {
         });
     });
 
-    xdescribe('oz4626Facet', async () => { 
+    describe('oz4626Facet', async () => { 
         it('shout not allow an unauthorized user to run the function / deposit()', async () => {
             await assert.rejects(async () => {
                 await ozlDiamond.deposit(evilAmount, deadAddr, 0);
             }, {
                 name: 'Error',
-                message: err().notAuthorized 
+                message: (await err(callerAddr)).notAuthorized
             });
         });
 
@@ -283,7 +283,7 @@ describe('Unit testing', async function () {
                 await ozlDiamond.redeem(evilAmount, caller2Addr, caller2Addr, 3);
             }, {
                 name: 'Error',
-                message: err().notAuthorized 
+                message: (await err(callerAddr)).notAuthorized
             });
         });
 
@@ -291,13 +291,13 @@ describe('Unit testing', async function () {
 
     });
 
-    xdescribe('oz20Facet', async () => { 
+    describe('oz20Facet', async () => { 
         it('shout not allow an unauthorized user to run the function / burn()', async () => {
             await assert.rejects(async () => {
                 await ozlDiamond.burn(caller2Addr, evilAmount, 4);
             }, {
                 name: 'Error',
-                message: err().notAuthorized 
+                message: (await err(callerAddr)).notAuthorized
             });
         });
     });
