@@ -118,7 +118,7 @@ describe('Ozel Index', async function () {
             ozelIndex = formatEther(await getOzelIndex());
             if (i === 0) higherIndex = ozelIndex;
 
-            console.log('Ozel Index: ', ozelIndex);
+            console.log('Ozel Index: ', ozelIndex); 
 
             a = await balanceOfOZL(accounts[0]);
             console.log('OZL bal #0: ', a);
