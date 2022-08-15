@@ -7,14 +7,14 @@ import '@openzeppelin/contracts/token/ERC20/IERC20.sol';
 // import './ExecutorFacet.sol';
 import '../../libraries/FixedPointMathLib.sol';
 import '../../Errors.sol';
-import '../Modifiers.sol';
+import { ModifiersARB } from '../../Modifiers.sol';
 import { LibDiamond } from "../../libraries/LibDiamond.sol";
 import '@openzeppelin/contracts/utils/Address.sol';
 
 
 /// @notice Original source: Minimal ERC4626 tokenized Vault implementation.
 /// @author Original author: Solmate (https://github.com/Rari-Capital/solmate/blob/main/src/mixins/ERC4626.sol)
-contract oz4626Facet is Modifiers { 
+contract oz4626Facet is ModifiersARB { 
 
     using FixedPointMathLib for uint256;
     using Address for address;

@@ -19,14 +19,14 @@ import '../AppStorage.sol';
 import '../../libraries/SafeTransferLib.sol'; //use the @ from solmate
 // import '@rari-capital/solmate/src/utils/SafeTransferLib.sol';
 import '../../Errors.sol';
-import '../Modifiers.sol';
+import { ModifiersARB } from '../../Modifiers.sol';
 import './RevenueFacet.sol';
 
 import '../../libraries/ozERC20Lib.sol';
 
 
 
-contract OZLFacet is Modifiers { 
+contract OZLFacet is ModifiersARB { 
 
     using SafeTransferLib for IERC20;
     using ozERC20Lib for IERC20;

@@ -70,7 +70,7 @@ describe('Unit testing', async function () {
         ozlDiamond = await hre.ethers.getContractAt(diamondABI, deployedDiamond.address);
     });
 
-    describe('OZLFacet', async () => { 
+    xdescribe('OZLFacet', async () => { 
         describe('exchangeToUserToken()', async () => {
             it('should fail with user as address(0)', async () => {
                 userDetails[0] = nullAddr;
@@ -111,7 +111,7 @@ describe('Unit testing', async function () {
                     await sendETH(userDetails);
                 }, {
                     name: 'Error',
-                    message: err().tokenNotFound 
+                    message: err(deadAddr).tokenNotFound 
                 });
             });
     
@@ -167,7 +167,7 @@ describe('Unit testing', async function () {
                     await withdrawShareOZL(userDetails, callerAddr, parseEther((await balanceOfOZL(callerAddr)).toString()));
                 }, {
                     name: 'Error',
-                    message: err().tokenNotFound 
+                    message: err(deadAddr).tokenNotFound 
                 });
             });
 
@@ -235,7 +235,7 @@ describe('Unit testing', async function () {
                 await ozlDiamond.updateExecutorState(evilAmount, deadAddr, 1);
             }, {
                 name: 'Error',
-                message: err().notAuthorized 
+                message: (await err(callerAddr)).notAuthorized
             });
         });
 
@@ -245,7 +245,7 @@ describe('Unit testing', async function () {
                 await ozlDiamond.executeFinalTrade(evilSwapDetails, 0, deadAddr, 2);
             }, {
                 name: 'Error',
-                message: err().notAuthorized 
+                message: (await err(callerAddr)).notAuthorized
             });
         });
 
@@ -254,7 +254,7 @@ describe('Unit testing', async function () {
                 await ozlDiamond.modifyPaymentsAndVolumeExternally(caller2Addr, evilAmount, 5);
             }, {
                 name: 'Error',
-                message: err().notAuthorized 
+                message: (await err(callerAddr)).notAuthorized
             });
         });
 
@@ -263,12 +263,12 @@ describe('Unit testing', async function () {
                 await ozlDiamond.transferUserAllocation(deadAddr, deadAddr, evilAmount, evilAmount, 6);
             }, {
                 name: 'Error',
-                message: err().notAuthorized 
+                message: (await err(callerAddr)).notAuthorized
             });
         });
     });
 
-    describe('oz4626Facet', async () => { 
+    xdescribe('oz4626Facet', async () => { 
         it('shout not allow an unauthorized user to run the function / deposit()', async () => {
             await assert.rejects(async () => {
                 await ozlDiamond.deposit(evilAmount, deadAddr, 0);
@@ -291,7 +291,7 @@ describe('Unit testing', async function () {
 
     });
 
-    describe('oz20Facet', async () => { 
+    xdescribe('oz20Facet', async () => { 
         it('shout not allow an unauthorized user to run the function / burn()', async () => {
             await assert.rejects(async () => {
                 await ozlDiamond.burn(caller2Addr, evilAmount, 4);

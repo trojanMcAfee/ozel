@@ -3,23 +3,23 @@ pragma solidity ^0.8.0;
 
 
 // import '@openzeppelin/contracts/token/ERC20/IERC20.sol';
-import '../../AppStorage.sol';
-import '../../facets/ExecutorFacet.sol';
-import {ITri} from '../../../interfaces/ICurve.sol';
-import '../../../interfaces/IWETH.sol';
+import '../../arbitrum/AppStorage.sol';
+import '../../arbitrum/facets/ExecutorFacet.sol';
+import {ITri} from '../../interfaces/ICurve.sol';
+import '../../interfaces/IWETH.sol';
 import '@openzeppelin/contracts/token/ERC20/IERC20.sol';
-import '../../Modifiers.sol';
-import '../../facets/oz4626Facet.sol';
-import '../../facets/ExecutorFacet.sol';
-import '../../../libraries/SafeTransferLib.sol'; //use the @ from solmate
-import '../../../libraries/FixedPointMathLib.sol'; //same as here ^^^^
-import '../../../interfaces/IYtri.sol';
-import '../../../libraries/ozERC20Lib.sol';
+import { ModifiersARB } from '../../Modifiers.sol';
+import '../../arbitrum/facets/oz4626Facet.sol';
+import '../../arbitrum/facets/ExecutorFacet.sol';
+import '../../libraries/SafeTransferLib.sol'; //use the @ from solmate
+import '../../libraries/FixedPointMathLib.sol'; //same as here ^^^^
+import '../../interfaces/IYtri.sol';
+import '../../libraries/ozERC20Lib.sol';
 
 import 'hardhat/console.sol';
 
 
-contract SecondaryFunctions is Modifiers {
+contract SecondaryFunctions is ModifiersARB {
     
     using FixedPointMathLib for uint;
     using ozERC20Lib for IERC20;
@@ -396,7 +396,7 @@ contract SwapsForUserTokenV3 is SecondaryFunctions {
     UpdateIndex()
  */
 
-contract UpdateIndexV1 is Modifiers {
+contract UpdateIndexV1 is ModifiersARB {
     using FixedPointMathLib for uint;
 
     function updateExecutorState(

@@ -6,11 +6,11 @@ import '@openzeppelin/contracts/token/ERC20/IERC20.sol';
 import '../../arbitrum/AppStorage.sol';
 import '../../libraries/FixedPointMathLib.sol';
 import {IMulCurv, ITri} from '../../interfaces/ICurve.sol';
-import '../../arbitrum/Modifiers.sol';
+import { ModifiersARB } from '../../Modifiers.sol';
 import '../../libraries/ozERC20Lib.sol';
 
 
-contract ExecutorFacetTest is Modifiers { 
+contract ExecutorFacetTest is ModifiersARB { 
 
     using FixedPointMathLib for uint;
     using ozERC20Lib for IERC20;

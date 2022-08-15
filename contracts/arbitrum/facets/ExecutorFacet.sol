@@ -6,13 +6,13 @@ import '@openzeppelin/contracts/token/ERC20/IERC20.sol';
 import '../AppStorage.sol';
 import '../../libraries/FixedPointMathLib.sol';
 import {IMulCurv, ITri} from '../../interfaces/ICurve.sol';
-import '../Modifiers.sol';
+import { ModifiersARB } from '../../Modifiers.sol';
 import '../../libraries/ozERC20Lib.sol';
 
 // import 'hardhat/console.sol';
 
 
-contract ExecutorFacet is Modifiers { 
+contract ExecutorFacet is ModifiersARB { 
 
     using FixedPointMathLib for uint;
     using ozERC20Lib for IERC20;

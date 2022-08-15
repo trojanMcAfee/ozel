@@ -10,11 +10,11 @@ import '@uniswap/v3-periphery/contracts/interfaces/ISwapRouter.sol';
 import '../../libraries/FixedPointMathLib.sol';
 import '../../interfaces/DelayedInbox.sol';
 import '../../interfaces/IOps.sol';
-import '../FakeOZL.sol';
-import '../Emitter.sol';
-import '../StorageBeacon.sol';
+import '../../ethereum/FakeOZL.sol';
+import '../../ethereum/Emitter.sol';
+import '../../ethereum/StorageBeacon.sol';
 import './StorageBeaconMock.sol';
-import '../ozUpgradeableBeacon.sol';
+import '../../ethereum/ozUpgradeableBeacon.sol';
 import '../../Errors.sol';
 
 import 'hardhat/console.sol'; 
@@ -69,7 +69,7 @@ contract ImplementationMock is ReentrancyGuard, Initializable {
         StorageBeacon storageBeacon = StorageBeacon(_getStorageBeacon(_beacon, 0)); 
 
         if (userDetails_.user == address(0) || userDetails_.userToken == address(0)) revert CantBeZero('address');
-        if (!storageBeacon.isUser(userDetails_.user)) revert NotFoundInDatabase('user');
+        if (!storageBeacon.isUser(userDetails_.user)) revert UserNotInDatabase(userDetails_.user);
         if (!storageBeacon.queryTokenDatabase(userDetails_.userToken)) revert TokenNotInDatabase(userDetails_.userToken);
         if (userDetails_.userSlippage <= 0) revert CantBeZero('slippage');
         if (!(address(this).balance > 0)) revert CantBeZero('contract balance');

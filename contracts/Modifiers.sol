@@ -2,16 +2,16 @@
 pragma solidity 0.8.14;
 
 
-import './AppStorage.sol';
-import '../Errors.sol';
-import './Bits.sol';
+import './arbitrum/AppStorage.sol';
+import './Errors.sol';
+import './arbitrum/Bits.sol';
 import './ethereum/StorageBeacon.sol';
 
 import 'hardhat/console.sol';
 
 
 
-abstract contract Modifiers is Bits {
+abstract contract ModifiersARB is Bits {
 
     modifier noReentrancy(uint index_) { 
         if (!(_getBit(0, index_))) revert NoReentrance();
@@ -27,7 +27,8 @@ abstract contract Modifiers is Bits {
     }
 
     modifier onlyWhenEnabled() {
-        require(s.isEnabled, 'Operation not enabled');
+        if (!(s.isEnabled)) revert NotEnabled();
+        // require(s.isEnabled, 'Operation not enabled');
         _;
     }
 
@@ -46,7 +47,7 @@ abstract contract ModifiersETH {
     StorageBeacon.FixedConfig fxConfig;
 
     modifier onlyOps() {
-        if (msg.sender !== fxConfig.ops) revert NotAuthorized(msg.sender);
+        if (msg.sender != fxConfig.ops) revert NotAuthorized(msg.sender);
         // require(msg.sender == fxConfig.ops, 'ozPayMe: onlyOps');
         _;
     }

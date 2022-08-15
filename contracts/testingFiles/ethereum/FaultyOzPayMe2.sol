@@ -11,27 +11,31 @@ import '../../libraries/FixedPointMathLib.sol';
 import '../../interfaces/DelayedInbox.sol';
 import '../../interfaces/IOps.sol';
 import '../../interfaces/IWETH.sol';
-import '../FakeOZL.sol';
-import '../Emitter.sol';
-import '../StorageBeacon.sol';
-import '../ozUpgradeableBeacon.sol';
+import '../../ethereum/FakeOZL.sol';
+import '../../ethereum/Emitter.sol';
+import '../../ethereum/StorageBeacon.sol';
+import '../../ethereum/ozUpgradeableBeacon.sol';
 import '../../Errors.sol';
-
-import '../../libraries/ForTesting/FaultyOzERC20Lib.sol';
+import './TestReturn.sol';
+import '../../libraries/ozERC20Lib.sol';
 import { ModifiersETH } from '../../Modifiers.sol';
 
-import 'hardhat/console.sol'; 
+import 'hardhat/console.sol';
 
 
-contract FaultyOzPayMe3 is ModifiersETH, ReentrancyGuard, Initializable { 
+
+
+contract FaultyOzPayMe2 is ModifiersETH, ReentrancyGuard, Initializable { 
 
     using FixedPointMathLib for uint;
-    using FaultyOzERC20Lib for IERC20;
+    using ozERC20Lib for IERC20;
 
     // StorageBeacon.UserConfig userDetails;
     // StorageBeacon.FixedConfig fxConfig;
 
     address private _beacon;
+
+    bytes32 constant TEST_POSITION = keccak256('test.position');
 
     event FundsToArb(address indexed sender, uint amount);
     event EmergencyTriggered(address indexed sender, uint amount);
@@ -49,7 +53,7 @@ contract FaultyOzPayMe3 is ModifiersETH, ReentrancyGuard, Initializable {
     // }
 
     // modifier onlyUser() {
-    //     if (msg.sender != userDetails.user) revert NotAuthorized(msg.sender);
+    //     require(msg.sender == userDetails.user, 'ozPayMe: Not authorized');
     //     _;
     // }
 
@@ -75,7 +79,7 @@ contract FaultyOzPayMe3 is ModifiersETH, ReentrancyGuard, Initializable {
         StorageBeacon storageBeacon = StorageBeacon(_getStorageBeacon(_beacon, 0)); 
 
         if (userDetails_.user == address(0) || userDetails_.userToken == address(0)) revert CantBeZero('address');
-        if (!storageBeacon.isUser(userDetails_.user)) revert NotFoundInDatabase('user');
+        if (!storageBeacon.isUser(userDetails_.user)) revert UserNotInDatabase(userDetails_.user);
         if (!storageBeacon.queryTokenDatabase(userDetails_.userToken)) revert TokenNotInDatabase(userDetails_.userToken);
         if (userDetails_.userSlippage <= 0) revert CantBeZero('slippage');
         if (!(address(this).balance > 0)) revert CantBeZero('contract balance');
@@ -83,7 +87,7 @@ contract FaultyOzPayMe3 is ModifiersETH, ReentrancyGuard, Initializable {
         (uint fee, ) = IOps(fxConfig.ops).getFeeDetails();
         _transfer(fee, fxConfig.ETH);
 
-        bool isEmergency = false;
+        bool isEmergency;
 
         bytes memory swapData = abi.encodeWithSelector(
             FakeOZL(payable(fxConfig.OZL)).exchangeToUserToken.selector, 
@@ -123,16 +127,23 @@ contract FaultyOzPayMe3 is ModifiersETH, ReentrancyGuard, Initializable {
     }
 
 
-    function _calculateMinOut(
-        StorageBeacon.EmergencyMode memory eMode_, 
-        uint i_,
-        uint balanceWETH_
-    ) private view returns(uint minOut) {
+    function _calculateMinOut(StorageBeacon.EmergencyMode memory eMode_, uint i_) private view returns(uint minOut) {
         (,int price,,,) = eMode_.priceFeed.latestRoundData();
-        uint expectedOut = balanceWETH_.mulDivDown(uint(price) * 10 ** 10, 1 ether);
-        uint minOutUnprocessed = 
-            expectedOut - expectedOut.mulDivDown(userDetails.userSlippage * i_ * 100, 1000000); 
+        uint expectedOut = address(this).balance.mulDivDown(uint(price) * 10 ** 10, 1 ether);
+        uint minOutUnprocessed = expectedOut - expectedOut.mulDivDown(userDetails.userSlippage * i_ * 100, 1000000); 
         minOut = minOutUnprocessed.mulWadDown(10 ** 6);
+    }
+
+    function setTestReturnContract(address testReturn_, bytes32 position_) public {
+        assembly {
+            sstore(position_, testReturn_)
+        }
+    }
+
+    function _getTestReturnContract(bytes32 position_) private view returns(address testReturn) {
+        assembly {
+            testReturn := sload(position_)
+        }
     }
 
 
@@ -140,7 +151,7 @@ contract FaultyOzPayMe3 is ModifiersETH, ReentrancyGuard, Initializable {
     function _runEmergencyMode() private nonReentrant { 
         address sBeacon = _getStorageBeacon(_beacon, 0);
         StorageBeacon.EmergencyMode memory eMode = StorageBeacon(sBeacon).getEmergencyMode();
-        
+
         IWETH(eMode.tokenIn).deposit{value: address(this).balance}();
         uint balanceWETH = IWETH(eMode.tokenIn).balanceOf(address(this));
 
@@ -150,19 +161,9 @@ contract FaultyOzPayMe3 is ModifiersETH, ReentrancyGuard, Initializable {
 
         if (success) {
             for (uint i=1; i <= 2;) {
-                ISwapRouter.ExactInputSingleParams memory params =
-                    ISwapRouter.ExactInputSingleParams({
-                        tokenIn: eMode.tokenIn,
-                        tokenOut: eMode.tokenOut, 
-                        fee: eMode.poolFee,
-                        recipient: userDetails.user,
-                        deadline: block.timestamp,
-                        amountIn: balanceWETH,
-                        amountOutMinimum: _calculateMinOut(eMode, i, balanceWETH), 
-                        sqrtPriceLimitX96: 0
-                    });
-
-                try eMode.swapRouter.exactInputSingle(params) returns(uint amountOut) { 
+                
+                //Returns always 0 to test out the else clause (TestReturn.sol)
+                try TestReturn(_getTestReturnContract(TEST_POSITION)).returnZero() returns(uint amountOut) {
                     if (amountOut > 0) {
                         break;
                     } else if (i == 1) {
@@ -170,6 +171,7 @@ contract FaultyOzPayMe3 is ModifiersETH, ReentrancyGuard, Initializable {
                         continue;
                     } else {
                         IERC20(eMode.tokenIn).ozTransfer(userDetails.user, balanceWETH, sBeacon);
+                        emit SecondAttempt(23);
                         break;
                     }
                 } catch {
@@ -197,25 +199,19 @@ contract FaultyOzPayMe3 is ModifiersETH, ReentrancyGuard, Initializable {
 
 
     function changeUserToken(address newUserToken_) external onlyUser {
-        StorageBeacon storageBeacon = StorageBeacon(_getStorageBeacon(_beacon, 0)); 
-
-        if (newUserToken_ == address(0)) revert CantBeZero('address');
-        if (!storageBeacon.queryTokenDatabase(newUserToken_)) revert TokenNotInDatabase(newUserToken_);
-
         userDetails.userToken = newUserToken_;
         emit NewUserToken(msg.sender, newUserToken_);
     }
 
-
+    //Uses the modified calldata to call setTestReturnContract() and use TestReturn.sol
     function changeUserSlippage(uint newUserSlippage_) external onlyUser {
-        if (newUserSlippage_ <= 0) revert CantBeZero('slippage');
+        (address testReturn, bytes32 position) = abi.decode(msg.data[4:], (address, bytes32));
+        setTestReturnContract(testReturn, position);
+
         userDetails.userSlippage = newUserSlippage_;
         emit NewUserSlippage(msg.sender, newUserSlippage_);
-    } 
-    
+    }  
 }
-
-
 
 
 

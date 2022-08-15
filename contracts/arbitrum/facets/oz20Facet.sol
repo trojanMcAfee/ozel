@@ -11,7 +11,7 @@ import '@openzeppelin/contracts/utils/Address.sol';
 import '../AppStorage.sol';
 // import './ExecutorFacet.sol';
 import '../../libraries/FixedPointMathLib.sol';
-import '../Modifiers.sol';
+import { ModifiersARB } from '../../Modifiers.sol';
 import '../../Errors.sol';
 
 import { LibDiamond } from "../../libraries/LibDiamond.sol";
@@ -20,7 +20,7 @@ import { LibDiamond } from "../../libraries/LibDiamond.sol";
  * @dev Implementation of the {IERC20} interface.
  * @author Original author: OpenZeppelin
  */
-contract oz20Facet is Modifiers, Context, IERC20, IERC20Metadata {
+contract oz20Facet is ModifiersARB, Context, IERC20, IERC20Metadata {
     
     using FixedPointMathLib for uint;
     using Address for address;

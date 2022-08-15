@@ -18,14 +18,14 @@ import '../../arbitrum/AppStorage.sol';
 import '../../libraries/SafeTransferLib.sol'; //use the @ from solmate
 // import '@rari-capital/solmate/src/utils/SafeTransferLib.sol';
 import '../../Errors.sol';
-import '../../arbitrum/Modifiers.sol';
+import { ModifiersARB } from '../../Modifiers.sol';
 import './RevenueFacetTest.sol';
 
 import '../../libraries/ozERC20Lib.sol';
 
 
 
-contract OZLFacetTest is Modifiers { 
+contract OZLFacetTest is ModifiersARB { 
 
     using SafeTransferLib for IERC20;
     using ozERC20Lib for IERC20;
