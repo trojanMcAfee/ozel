@@ -75,7 +75,7 @@ contract OZLFacet is ModifiersARB {
         );
       
         uint toUser = IERC20(userDetails_.userToken).balanceOf(address(this));
-        if (toUser > 0) IERC20(userDetails_.userToken).safeTransfer(userDetails_.user, toUser);
+        if (toUser > 0) IERC20(userDetails_.userToken).ozSafeTransfer(userDetails_.user, toUser);
 
         _depositFeesInDeFi(fee, false, userDetails_.user);
     }
