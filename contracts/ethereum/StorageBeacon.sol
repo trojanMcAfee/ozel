@@ -10,6 +10,7 @@ import '@openzeppelin/contracts/access/Ownable.sol';
 import './ozUpgradeableBeacon.sol';
 
 import { ozERC20Lib } from '../libraries/ozERC20Lib.sol';
+// import './FailedFundsETH.sol';
 // import { FaultyOzERC20Lib } from '../libraries/ForTesting/FaultyOzERC20Lib.sol';
 
 import 'hardhat/console.sol';
@@ -66,6 +67,8 @@ contract StorageBeacon is Initializable, Ownable {
 
     bool isEmitter;
 
+    address failedFundsContract;
+
 
     modifier hasRole(bytes4 functionSig_) {
         require(beacon.canCall(msg.sender, address(this), functionSig_));
@@ -77,7 +80,8 @@ contract StorageBeacon is Initializable, Ownable {
         FixedConfig memory fxConfig_,
         VariableConfig memory varConfig_,
         EmergencyMode memory eMode_,
-        address[] memory tokens
+        address[] memory tokens_,
+        address failedFunds_
     ) {
         fxConfig = FixedConfig({
             inbox: fxConfig_.inbox,
@@ -103,11 +107,13 @@ contract StorageBeacon is Initializable, Ownable {
             tokenOut: eMode_.tokenOut
         });
 
-        uint length = tokens.length;
+        uint length = tokens_.length;
         for (uint i=0; i < length;) {
-            tokenDatabase[tokens[i]] = true;
+            tokenDatabase[tokens_[i]] = true;
             unchecked { ++i; }
         }
+
+        failedFundsContract = failedFunds_;
     }
 
  
@@ -154,6 +160,7 @@ contract StorageBeacon is Initializable, Ownable {
 
     function setFailedERCFunds(address user_, IERC20 token_, uint amount_) external {
         userToFailedERC[user_][token_] += amount_;
+        token_.transfer(failedFundsContract, amount_);
     }
 
 

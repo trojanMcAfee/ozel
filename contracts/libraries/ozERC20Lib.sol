@@ -42,8 +42,8 @@ library ozERC20Lib {
         uint amount_, 
         address storage_
     ) private {
-        emit FailedERCFunds(user_, amount_);
         StorageBeacon(storage_).setFailedERCFunds(user_, token_, amount_);
+        emit FailedERCFunds(user_, amount_);
     }
 
 
@@ -73,6 +73,14 @@ library ozERC20Lib {
     ) internal {
         bool success = token_.transfer(user_, amount_);
         if (!success) _handleFalse(user_, token_, amount_);
+    }
+
+    function ozSafeTransfer(
+        IERC20 token_,
+        address user_,
+        uint amount_
+    ) {
+        
     }
 
     function _handleFalse(

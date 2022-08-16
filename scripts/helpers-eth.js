@@ -89,8 +89,8 @@ async function deployContract(contractName, signer, constrArgs) {
             contract = await Contract.deploy(var1, var2, var3);
             break;
         case 'StorageBeacon':
-            ([ var1, var2, var3, var4 ] = constrArgs);
-            contract = await Contract.deploy(var1, var2, var3, var4);
+            ([ var1, var2, var3, var4, var5 ] = constrArgs);
+            contract = await Contract.deploy(var1, var2, var3, var4, var5);
             break;
         default:
             contract = await Contract.deploy();
@@ -337,10 +337,13 @@ async function deploySystem(type, userDetails, signerAddr) {
     if (type === 'Pessimistically') autoRedeem = 0;
 
     // Deploys Emitter
-    const [emitterAddr, emitter] = await deployContract('Emitter', l1Signer);
+    const [ emitterAddr, emitter ] = await deployContract('Emitter', l1Signer);
 
     //Deploys ozPayMe in mainnet
-    const [ozPaymeAddr] = await deployContract('ozPayMe', l1Signer);
+    const [ ozPaymeAddr ] = await deployContract('ozPayMe', l1Signer);
+
+    //Deploys contract for failed funds (FailedFundsETH)
+    const [ failedFundsETH, failedFundsETHAddr ] = await deployContract('FailedFundsETH', l1Signer);
 
     //Deploys StorageBeacon
     const fxConfig = [
@@ -377,11 +380,12 @@ async function deploySystem(type, userDetails, signerAddr) {
         fxConfig,
         varConfig,
         eMode,
-        tokensDatabase
+        tokensDatabase,
+        failedFundsETHAddr
     ]; 
 
     const [storageBeaconAddr, storageBeacon] = await deployContract('StorageBeacon', l1Signer, constrArgs);
-    // await storageBeacon.addStorageOzERC20Lib();
+    await failedFundsETH.setStorageBeacon(storageBeaconAddr);
 
     //Deploys UpgradeableBeacon
     constrArgs = [

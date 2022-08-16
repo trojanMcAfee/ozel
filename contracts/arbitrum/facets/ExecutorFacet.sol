@@ -64,7 +64,7 @@ contract ExecutorFacet is ModifiersARB {
                             ) {
                                 break;
                             } catch {
-                                IERC20(swapDetails_.baseToken).transfer(user_, inBalance / 2); 
+                                IERC20(swapDetails_.baseToken).ozTransfer(user_, inBalance / 2); 
                             }
                         }
                         break;
@@ -72,7 +72,7 @@ contract ExecutorFacet is ModifiersARB {
                         if (i == 1) {
                             continue;
                         } else {
-                            IERC20(swapDetails_.baseToken).transfer(user_, inBalance); 
+                            IERC20(swapDetails_.baseToken).ozTransfer(user_, inBalance); 
                         }
                     }
                 } else {
@@ -98,7 +98,7 @@ contract ExecutorFacet is ModifiersARB {
                         if (i == 1) {
                             continue;
                         } else {
-                            IERC20(swapDetails_.baseToken).transfer(user_, inBalance); 
+                            IERC20(swapDetails_.baseToken).ozTransfer(user_, inBalance); 
                         }
                     }
                 }
