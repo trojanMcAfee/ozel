@@ -113,14 +113,14 @@ describe('Ozel Index', async function () {
             if (j == 4) j = 0;
             userDetails[0] = await signers[j].getAddress();
 
-            await sendETH(userDetails, j); 
+            await sendETH(userDetails, j, 'ozel index test'); 
 
             ozelIndex = formatEther(await getOzelIndex());
             if (i === 0) higherIndex = ozelIndex;
 
             console.log('Ozel Index: ', ozelIndex); 
 
-            a = await balanceOfOZL(accounts[0]);
+            a = await balanceOfOZL(accounts[0]); 
             console.log('OZL bal #0: ', a);
             b = await balanceOfOZL(accounts[1]);
             console.log('OZL bal #1: ', b);
@@ -128,6 +128,7 @@ describe('Ozel Index', async function () {
             console.log('OZL bal #2: ', c);
             d = await balanceOfOZL(accounts[3]);
             console.log('OZL bal #3: ', d);
+            
             const total = a + b + c + d;
             console.log('TOTAL: ', total);
 
