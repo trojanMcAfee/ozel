@@ -28,9 +28,6 @@ contract FaultyOzPayMe3 is ModifiersETH, ReentrancyGuard, Initializable {
     using FixedPointMathLib for uint;
     using FaultyOzERC20Lib for IERC20;
 
-    // StorageBeacon.UserConfig userDetails;
-    // StorageBeacon.FixedConfig fxConfig;
-
     address private _beacon;
 
     event FundsToArb(address indexed sender, uint amount);
@@ -42,16 +39,6 @@ contract FaultyOzPayMe3 is ModifiersETH, ReentrancyGuard, Initializable {
     //Custom event that checks for the second attempt on EmergencyMode
     event SecondAttempt(uint success);
 
-
-    // modifier onlyOps() {
-    //     require(msg.sender == fxConfig.ops, 'ozPayMe: onlyOps');
-    //     _;
-    // }
-
-    // modifier onlyUser() {
-    //     if (msg.sender != userDetails.user) revert NotAuthorized(msg.sender);
-    //     _;
-    // }
 
     function initialize(
         uint userId_, 

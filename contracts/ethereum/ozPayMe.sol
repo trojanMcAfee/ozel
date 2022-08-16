@@ -29,9 +29,6 @@ contract ozPayMe is ModifiersETH, ReentrancyGuard, Initializable {
     using FixedPointMathLib for uint;
     using ozERC20Lib for IERC20;
 
-    // StorageBeacon.UserConfig userDetails;
-    // StorageBeacon.FixedConfig fxConfig;
-
     address private _beacon;
 
     event FundsToArb(address indexed sender, uint amount);
@@ -40,17 +37,6 @@ contract ozPayMe is ModifiersETH, ReentrancyGuard, Initializable {
     event NewUserSlippage(address indexed user, uint indexed newSlippage);
     event FailedERCFunds(address indexed user_, uint indexed amount_);
 
-
-    // modifier onlyOps() {
-    //     if (msg.sender !== fxConfig.ops) revert NotAuthorized(msg.sender);
-    //     // require(msg.sender == fxConfig.ops, 'ozPayMe: onlyOps');
-    //     _;
-    // }
-
-    // modifier onlyUser() {
-    //     if (msg.sender != userDetails.user) revert NotAuthorized(msg.sender);
-    //     _;
-    // }
 
     function initialize(
         uint userId_, 

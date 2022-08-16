@@ -16,17 +16,15 @@ import '../../ethereum/StorageBeacon.sol';
 import './StorageBeaconMock.sol';
 import '../../ethereum/ozUpgradeableBeacon.sol';
 import '../../Errors.sol';
+import { ModifiersETH } from '../../Modifiers.sol';
 
 import 'hardhat/console.sol'; 
 
 
 
 
-contract ImplementationMock is ReentrancyGuard, Initializable { 
+contract ImplementationMock is ModifiersETH, ReentrancyGuard, Initializable { 
     using FixedPointMathLib for uint;
-
-    StorageBeacon.UserConfig userDetails;
-    StorageBeacon.FixedConfig fxConfig;
 
     address private _beacon;
 
@@ -36,16 +34,6 @@ contract ImplementationMock is ReentrancyGuard, Initializable {
     event NewUserSlippage(address indexed user, uint indexed newSlippage);
     event MockCalled(uint mockVar);
 
-
-    modifier onlyOps() {
-        require(msg.sender == fxConfig.ops, 'ImplementationMock: onlyOps');
-        _;
-    }
-
-    modifier onlyUser() {
-        require(msg.sender == userDetails.user, 'ImplementationMock: Not authorized');
-        _;
-    }
 
     function initialize(
         uint userId_, 
