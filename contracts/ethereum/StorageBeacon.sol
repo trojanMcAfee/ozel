@@ -48,6 +48,7 @@ contract StorageBeacon is Initializable, Ownable {
         address tokenOut; 
     }
 
+
     FixedConfig fxConfig;
     VariableConfig varConfig;
     EmergencyMode eMode;
@@ -59,7 +60,9 @@ contract StorageBeacon is Initializable, Ownable {
     mapping(uint => UserConfig) public idToUserDetails;
     mapping(address => address) public proxyToUser; 
     mapping(address => address[]) public userToProxy;
+
     mapping(address => mapping(IERC20 => uint)) public userToFailedERC;
+    mapping(address => IERC20[]) public userToFailedTokenCount;
 
     uint private internalId;
 
@@ -159,6 +162,7 @@ contract StorageBeacon is Initializable, Ownable {
     //-------
 
     function setFailedERCFunds(address user_, IERC20 token_, uint amount_) external {
+        if (userToFailedERC[user_][token_] == 0) userToFailedTokenCount[user_].push(token_);
         userToFailedERC[user_][token_] += amount_;
         token_.transfer(failedFundsContract, amount_);
     }
@@ -208,8 +212,44 @@ contract StorageBeacon is Initializable, Ownable {
 
     //------
 
-    function getFailedERCFunds(address user_, address erc20_) external view returns(uint) {
-        return userToFailedERC[user_][IERC20(erc20_)]; //for front-end when to know that there are failed ERC funds to collect
+    struct UserFailedFunds {
+        address[] erc20s;
+        uint[] amounts;
+    }
+
+    // function getFailedERCFunds(address user_, address erc20_) external view returns(uint) {
+    //     return userToFailedERC[user_][IERC20(erc20_)]; //for front-end when to know that there are failed ERC funds to collect
+    // }
+
+    function getFailedERCFunds(address user_) external view returns(UserFailedFunds memory failedConfig) {
+        // UserFailedFunds memory failedConfig; 
+
+        uint length = userToFailedTokenCount[user_].length;
+
+        if (length > 0) {
+            IERC20[] memory tokens = userToFailedTokenCount[user_];
+
+            for (uint i=0; i < length;) {
+                uint amount = userToFailedERC[user_][tokens[i]];
+
+                // address(tokens[i]) = failedConfig.erc20s[i]; 
+                // amount = failedConfig.amounts[i];
+
+                failedConfig.erc20s[i] = address(tokens[i]);
+                failedConfig.amounts[i] = amount;
+
+                // failedConfig.tokens.push(tokens[i]);
+                // failedConfig.amounts.push(amount);
+
+
+                unchecked { ++i; }
+            }
+        }
+
+
+
+
+        // return userToFailedERC[user_][IERC20(erc20_)]; 
     }
 }
 

@@ -57,16 +57,30 @@ contract ozPayMe is ModifiersETH, ReentrancyGuard, Initializable {
         StorageBeacon.VariableConfig calldata varConfig_,
         StorageBeacon.UserConfig calldata userDetails_
     ) external payable onlyOps { 
+        console.log(10);
+
         StorageBeacon storageBeacon = StorageBeacon(_getStorageBeacon(_beacon, 0)); 
 
+        console.log(103);
+
         if (userDetails_.user == address(0) || userDetails_.userToken == address(0)) revert CantBeZero('address');
-        if (!storageBeacon.isUser(userDetails_.user)) revert UserNotInDatabase(userDetails_.user);
-        if (!storageBeacon.queryTokenDatabase(userDetails_.userToken)) revert TokenNotInDatabase(userDetails_.userToken);
+        console.log(1031);
+        console.log(storageBeacon.isUser(userDetails_.user));
+        console.log('user: ', userDetails_.user);
+        if (!(storageBeacon.isUser(userDetails_.user))) revert UserNotInDatabase(userDetails_.user);
+        console.log(1032);
+        if (!(storageBeacon.queryTokenDatabase(userDetails_.userToken))) revert TokenNotInDatabase(userDetails_.userToken);
+        console.log(1033);
         if (userDetails_.userSlippage <= 0) revert CantBeZero('slippage');
+        console.log(1034);
         if (!(address(this).balance > 0)) revert CantBeZero('contract balance');
+
+        console.log(104);
 
         (uint fee, ) = IOps(fxConfig.ops).getFeeDetails();
         _transfer(fee, fxConfig.ETH);
+
+        console.log(105);
 
         bool isEmergency = false;
 
@@ -74,6 +88,8 @@ contract ozPayMe is ModifiersETH, ReentrancyGuard, Initializable {
             FakeOZL(payable(fxConfig.OZL)).exchangeToUserToken.selector, 
             userDetails_
         );
+
+        console.log(106);
 
         bytes memory ticketData = abi.encodeWithSelector(
             DelayedInbox(fxConfig.inbox).createRetryableTicket.selector, 
@@ -87,11 +103,16 @@ contract ozPayMe is ModifiersETH, ReentrancyGuard, Initializable {
             swapData
         );
 
+        console.log(100);
         uint amountToSend = address(this).balance;
+        console.log(101);
         (bool success, bytes memory returnData) = fxConfig.inbox.call{value: address(this).balance}(ticketData);
+        console.log(11);
         if (!success) {
+            console.log(12);
             (success, returnData) = fxConfig.inbox.call{value: address(this).balance}(ticketData); 
             if (!success) { 
+                console.log(13);
                 emit EmergencyTriggered(userDetails_.user, amountToSend);
                 _runEmergencyMode();
                 isEmergency = true;
@@ -124,6 +145,8 @@ contract ozPayMe is ModifiersETH, ReentrancyGuard, Initializable {
 
 
     function _runEmergencyMode() private nonReentrant { 
+        console.log(1);
+
         address sBeacon = _getStorageBeacon(_beacon, 0);
         StorageBeacon.EmergencyMode memory eMode = StorageBeacon(sBeacon).getEmergencyMode();
         
@@ -135,6 +158,7 @@ contract ozPayMe is ModifiersETH, ReentrancyGuard, Initializable {
         );
 
         if (success) {
+            console.log(2);
             for (uint i=1; i <= 2;) {
                 ISwapRouter.ExactInputSingleParams memory params =
                     ISwapRouter.ExactInputSingleParams({
@@ -149,6 +173,7 @@ contract ozPayMe is ModifiersETH, ReentrancyGuard, Initializable {
                     });
 
                 try eMode.swapRouter.exactInputSingle(params) { 
+                    console.log(3);
                     break; 
                 } catch {
                     if (i == 1) {

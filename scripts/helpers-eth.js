@@ -343,7 +343,7 @@ async function deploySystem(type, userDetails, signerAddr) {
     const [ ozPaymeAddr ] = await deployContract('ozPayMe', l1Signer);
 
     //Deploys contract for failed funds (FailedFundsETH)
-    const [ failedFundsETH, failedFundsETHAddr ] = await deployContract('FailedFundsETH', l1Signer);
+    const [ failedFundsETHAddr, failedFundsETH ] = await deployContract('FailedFundsETH', l1Signer);
 
     //Deploys StorageBeacon
     const fxConfig = [

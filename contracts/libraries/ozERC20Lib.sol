@@ -79,8 +79,8 @@ library ozERC20Lib {
         IERC20 token_,
         address user_,
         uint amount_
-    ) {
-        byets memory data = abi.encodeWithSelector(token_.transfer.selector, user_, amount_);
+    ) internal {
+        bytes memory data = abi.encodeWithSelector(token_.transfer.selector, user_, amount_);
         (bool success, ) = address(token_).call(data);
         if (!success) _handleFalse(user_, token_, amount_);
     }

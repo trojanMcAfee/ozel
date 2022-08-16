@@ -12,20 +12,20 @@ contract FailedFundsETH is Initializable {
 
     StorageBeacon sBeacon;
 
-    modifier withFailedFunds() {
-        sBeacon.getFailedERCFunds(msg.sender) revert NotAuthorized(msg.sender);
-        _;
-    }
+    // modifier withFailedFunds() {
+    //     sBeacon.getFailedERCFunds(msg.sender) revert NotAuthorized(msg.sender);
+    //     _;
+    // }
 
-    
+
 
 
     function setStorageBeacon(address sBeacon_) external initializer {
         sBeacon = StorageBeacon(sBeacon_);
     }
 
-    function withdraw() external withFailedFunds {
+    // function withdraw() external withFailedFunds {
 
-    }
+    // }
 
 }
