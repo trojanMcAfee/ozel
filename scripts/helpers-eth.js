@@ -147,12 +147,12 @@ async function sendTx(params) {
         tx = await signer2.sendTransaction(txDetails);
     }
     const receipt = await tx.wait();
-    // console.log(`${method} with hash: `, receipt.transactionHash);
     return receipt;
 }
 
 
 async function createProxy(userDetails) {
+    console.log('user in createProxy: ', userDetails[0]);
     await sendTx({
         receiver: proxyFactory,
         method: 'createNewProxy',

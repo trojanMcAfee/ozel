@@ -53,6 +53,8 @@ contract ProxyFactory is ReentrancyGuard, Initializable {
 
         _startTask(address(newProxy));
 
+        console.log('user in createNewProxy: ', msg.sender);
+
         StorageBeacon(_getStorageBeacon(0)).saveUserProxy(msg.sender, address(newProxy));
     }
 

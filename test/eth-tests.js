@@ -69,7 +69,9 @@ let isExist;
 
 
 
- describe('Ethereum-side', async () => {
+ describe('Ethereum-side', async function () {
+    this.timeout(1000000);
+
     before( async () => {
         ([signerAddr, signerAddr2] = await hre.ethers.provider.listAccounts()); 
         console.log('signer address: ', signerAddr);
@@ -530,8 +532,6 @@ let isExist;
 
     //autoRedeem set to 0
     describe('Pesimistic deployment', async function () {
-        this.timeout(1000000);
-
         before( async () => {
             ([
                 beacon, 

@@ -28,7 +28,6 @@ abstract contract ModifiersARB is Bits {
 
     modifier onlyWhenEnabled() {
         if (!(s.isEnabled)) revert NotEnabled();
-        // require(s.isEnabled, 'Operation not enabled');
         _;
     }
 
@@ -48,7 +47,6 @@ abstract contract ModifiersETH {
 
     modifier onlyOps() {
         if (msg.sender != fxConfig.ops) revert NotAuthorized(msg.sender);
-        // require(msg.sender == fxConfig.ops, 'ozPayMe: onlyOps');
         _;
     }
 
