@@ -349,13 +349,13 @@ let isExist;
             }); 
         });
     
-        xdescribe('StorageBeacon', async () => {
+        describe('StorageBeacon', async () => {
             it('shoud not allow an user to issue an userID / issueUserID()', async () => {
                 await assert.rejects(async () => {
                     await storageBeacon.issueUserID(evilUserDetails);
                 }, {
                     name: 'Error',
-                    message: err(1).notAuthorized 
+                    message: (await err(1)).notAuthorized 
                 });
             });
 
@@ -364,7 +364,7 @@ let isExist;
                     await storageBeacon.saveUserProxy(signerAddr2, deadAddr);
                 }, {
                     name: 'Error',
-                    message: err(1).notAuthorized 
+                    message: (await err(1)).notAuthorized 
                 });
             });
 
@@ -373,7 +373,7 @@ let isExist;
                     await storageBeacon.saveTaskId(deadAddr, formatBytes32String('evil data'));
                 }, {
                     name: 'Error',
-                    message: err(1).notAuthorized 
+                    message: (await err(1)).notAuthorized 
                 });
             });
 
@@ -386,7 +386,7 @@ let isExist;
                     await storageBeacon.connect(signer2).changeVariableConfig(varConfig);
                 }, {
                     name: 'Error',
-                    message: err().notOwner 
+                    message: (await err()).notOwner 
                 });
             });
 
@@ -399,7 +399,7 @@ let isExist;
                     await storageBeacon.connect(signer2).addTokenToDatabase(deadAddr);
                 }, {
                     name: 'Error',
-                    message: err().notOwner 
+                    message: (await err()).notOwner 
                 });
             });
 
@@ -408,7 +408,7 @@ let isExist;
                     await storageBeacon.storeBeacon(deadAddr);
                 }, {
                     name: 'Error',
-                    message: err().alreadyInitialized 
+                    message: (await err(signerAddr)).alreadyInitialized 
                 });
             });
 
@@ -421,7 +421,7 @@ let isExist;
                     await storageBeacon.connect(signer2).changeEmergencyMode(eMode);
                 }, {
                     name: 'Error',
-                    message: err().notOwner 
+                    message: (await err()).notOwner 
                 });
             });
 
@@ -439,7 +439,7 @@ let isExist;
                     await storageBeacon.connect(signer2).changeEmitterStatus(true);
                 }, {
                     name: 'Error',
-                    message: err().notOwner 
+                    message: (await err()).notOwner 
                 });
             });
 
