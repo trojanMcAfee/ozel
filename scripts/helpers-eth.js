@@ -109,46 +109,7 @@ async function deployContract(contractName, signer, constrArgs) {
 
 
 
-async function sendTx(params) {
-    const [ signer, signer2 ] = await ethers.getSigners();
-    const txDetails = {to: params.receiver};
-    const abi = [];
-    const signatures = {
-        createNewProxy: 'function createNewProxy(tuple(address user, address userToken, uint256 userSlippage) userDetails_)',
-        sendToArb: `function sendToArb(${params.isEvil ? 'tuple(uint256 maxSubmissionCost, uint256 gasPriceBid, uint256 autoRedeem) varConfig_, tuple(address user, address userToken, uint256 userSlippage) userDetails_)' : ')'}`,
-        initialize: `function initialize(${params.args && params.args.length < 2 ? 'address beacon_' : 'uint256 userId_, address beacon_'})`,
-        changeUserToken: 'function changeUserToken(address newUserToken_)',
-        changeUserSlippage: 'function changeUserSlippage(uint256 newUserSlippage_)'
-    };
 
-
-    if (params.isAmount) txDetails.value = parseEther(params.value.toString()); 
-
-    if (params.method !== 'Sending ETH') {
-        for (let sign in signatures) {
-            if (sign === params.method) {
-                signature = signatures[sign];
-            }
-        }
-        abi.push(signature);
-        iface = new ethers.utils.Interface(abi);
-
-        if (params.args) {
-            data = iface.encodeFunctionData(params.method, params.args); 
-        } else {
-            data = iface.encodeFunctionData(params.method);
-        }
-        txDetails.data = data;
-    } 
-    
-    if (!params.isSigner2) {
-        tx = await signer.sendTransaction(txDetails);
-    } else {
-        tx = await signer2.sendTransaction(txDetails);
-    }
-    const receipt = await tx.wait();
-    return receipt;
-}
 
 
 async function getArbitrumParams(userDetails) {
@@ -165,13 +126,9 @@ async function getArbitrumParams(userDetails) {
 }
 
 
-async function activateOzBeaconProxy(proxy) {
-    await sendTx({
-        receiver: proxy, 
-        method: 'sendToArb',
-        isAmount: false,
-        args: false
-    });
+async function activateOzBeaconProxy(proxyAddr) {
+    const proxy = await hre.ethers.getContractAt(['function sendToArb()'], proxyAddr);
+    await proxy.sendToArb();
 }
 
 
