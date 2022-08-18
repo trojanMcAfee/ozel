@@ -29,7 +29,6 @@ const {
 
  const {
     deployContract,
-    sendTx,
     activateOzBeaconProxy,
     deploySystem,
     getEventParam,
@@ -515,12 +514,13 @@ let tx, receipt;
             storeVarsInHelpers(ozERC1967proxyAddr);
 
             proxyFactory = await hre.ethers.getContractAt(factoryABI, ozERC1967proxyAddr);
+            await proxyFactory.createNewProxy(userDetails);
+            newProxyAddr = (await storageBeacon.getProxyByUser(signerAddr))[0].toString(); 
+            newProxy = await hre.ethers.getContractAt(proxyABIeth, newProxyAddr);
         });
 
         describe('ozBeaconProxy / ozPayMe', async () => {
             it('should create a proxy successfully / createNewProxy()', async () => {
-                await proxyFactory.createNewProxy(userDetails);
-                newProxyAddr = (await storageBeacon.getProxyByUser(signerAddr))[0].toString(); 
                 assert.equal(newProxyAddr.length, 42);
             });
 
@@ -543,11 +543,7 @@ let tx, receipt;
             it("should send the ETH back to the user as last resort / _runEmergencyMode()", async () => {
                 //UserSlippage is change to 1 to produce a slippage error derived from priceMinOut calculation
                 await signers[0].sendTransaction({to: newProxyAddr, value: parseEther('100')});
-                await sendTx({
-                    receiver: newProxyAddr,
-                    method: 'changeUserSlippage',
-                    args: ['1']
-                });
+                await newProxy.changeUserSlippage(1);
 
                 preBalance = await WETH.balanceOf(signerAddr);
                 assert.equal(preBalance, 0);
@@ -562,11 +558,7 @@ let tx, receipt;
             it('should execute the USDC swap in the second attempt / FaultyOzPayMe - _runEmergencyMode()', async () => {
                 const [ faultyOzPayMeAddr ] = await deployContract('FaultyOzPayMe', l1Signer);
                 await beacon.upgradeTo(faultyOzPayMeAddr);
-                await sendTx({
-                    receiver: newProxyAddr,
-                    method: 'changeUserSlippage',
-                    args: [defaultSlippage.toString()]
-                });
+                await newProxy.changeUserSlippage(defaultSlippage);
                 
                 await signers[0].sendTransaction({to: newProxyAddr, value: parseEther('100')});
 
@@ -624,11 +616,7 @@ let tx, receipt;
             xit("should store the user's WETH from a failed ERC20 transfer / FaultyOzPayMe3 & FaultyOzERC20Lib - ozTransfer()", async () => {
                 const [ faultyOzPayMe3Addr ] = await deployContract('FaultyOzPayMe3', l1Signer);
                 await beacon.upgradeTo(faultyOzPayMe3Addr);
-                await sendTx({
-                    receiver: newProxyAddr,
-                    method: 'changeUserSlippage',
-                    args: ['1']
-                });
+                await newProxy.changeUserSlippage(1);
 
                 await signers[0].sendTransaction({to: newProxyAddr, value: parseEther('100')});
 

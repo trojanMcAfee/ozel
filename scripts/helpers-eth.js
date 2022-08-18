@@ -34,7 +34,8 @@ const {
     chainlinkAggregatorAddr,
     l1ProviderRinkeby,
     l2Provider, 
-    proxyABIeth
+    proxyABIeth,
+    factoryABI
 } = require('./state-vars.js');
 
 
@@ -150,18 +151,6 @@ async function sendTx(params) {
 }
 
 
-// async function createProxy(userDetails, signerIndex) {
-//     const tx = {
-//         receiver: proxyFactory,
-//         method: 'createNewProxy',
-//         args: [userDetails]
-//     };
-//     if (signerIndex) tx.isSigner2 = true;
-//     await sendTx(tx);
-
-// }
-
-
 async function getArbitrumParams(userDetails) {
     const { submissionPriceWei, gasPriceBid } = await getGasDetailsL2(userDetails);
     const maxGas = 3000000;
@@ -189,17 +178,6 @@ async function activateOzBeaconProxy(proxy) {
 function getEventParam(receipt) {
     return hexStripZeros(receipt.logs[0].topics[2]);
 }
-
-
-// async function sendETHv2(receiver, value) {
-//     await sendTx({
-//         receiver: receiver,
-//         isAmount: true,
-//         method: 'Sending ETH',
-//         value,
-//         args: false
-//     });
-// }
 
 
 async function activateProxyLikeOps(proxy, taskCreator, isEvil, evilParams) {
@@ -409,12 +387,8 @@ async function deploySystem(type, userDetails, signerAddr) {
     ];
 
     const [ozERC1967proxyAddr] = await deployContract('ozERC1967Proxy', l1Signer, constrArgs);
-    await sendTx({
-        receiver: ozERC1967proxyAddr,
-        method: 'initialize',
-        args: [beaconAddr],
-        isAmount: false
-    });
+    const proxyFactory = await hre.ethers.getContractAt(factoryABI, ozERC1967proxyAddr);
+    await proxyFactory.initialize(beaconAddr);
 
     //Deploys Auth
     constrArgs = [
@@ -458,7 +432,6 @@ async function storeVarsInHelpers(factory) {
 module.exports = {
     getGasDetailsL2,
     deployContract,
-    sendTx,
     getArbitrumParams,
     activateOzBeaconProxy,
     deploySystem,
