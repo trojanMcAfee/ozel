@@ -150,16 +150,16 @@ async function sendTx(params) {
 }
 
 
-async function createProxy(userDetails, signerIndex) {
-    const tx = {
-        receiver: proxyFactory,
-        method: 'createNewProxy',
-        args: [userDetails]
-    };
-    if (signerIndex) tx.isSigner2 = true;
-    await sendTx(tx);
+// async function createProxy(userDetails, signerIndex) {
+//     const tx = {
+//         receiver: proxyFactory,
+//         method: 'createNewProxy',
+//         args: [userDetails]
+//     };
+//     if (signerIndex) tx.isSigner2 = true;
+//     await sendTx(tx);
 
-}
+// }
 
 
 async function getArbitrumParams(userDetails) {
@@ -191,15 +191,15 @@ function getEventParam(receipt) {
 }
 
 
-async function sendETHv2(receiver, value) {
-    await sendTx({
-        receiver: receiver,
-        isAmount: true,
-        method: 'Sending ETH',
-        value,
-        args: false
-    });
-}
+// async function sendETHv2(receiver, value) {
+//     await sendTx({
+//         receiver: receiver,
+//         isAmount: true,
+//         method: 'Sending ETH',
+//         value,
+//         args: false
+//     });
+// }
 
 
 async function activateProxyLikeOps(proxy, taskCreator, isEvil, evilParams) {
@@ -463,11 +463,9 @@ module.exports = {
     activateOzBeaconProxy,
     deploySystem,
     getEventParam,
-    sendETHv2,
     activateProxyLikeOps,
     compareTopicWith,
     deployAnotherStorageBeacon,
-    createProxy,
     storeVarsInHelpers,
     compareEventWithVar
 };

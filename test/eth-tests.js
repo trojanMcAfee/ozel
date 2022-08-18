@@ -7,7 +7,8 @@ const {
     arrayify,
     formatBytes32String,
     keccak256,
-    toUtf8Bytes
+    toUtf8Bytes,
+    parseEther
 } = ethers.utils;
 
 
@@ -31,10 +32,8 @@ const {
     activateOzBeaconProxy,
     deploySystem,
     getEventParam,
-    sendETHv2,
     activateProxyLikeOps,
     compareTopicWith,
-    createProxy,
     storeVarsInHelpers,
     compareEventWithVar
  } = require('../scripts/helpers-eth');
@@ -106,7 +105,6 @@ let isExist, proxyFactory;
         describe('ProxyFactory', async () => {
             describe('Deploys one proxy', async () => {
                 it('should create a proxy successfully / createNewProxy()', async () => {
-                    // await createProxy(userDetails);
                     await proxyFactory.createNewProxy(userDetails);
                     newProxyAddr = (await storageBeacon.getProxyByUser(signerAddr))[0].toString(); 
                     assert.equal(newProxyAddr.length, 42);
@@ -115,7 +113,7 @@ let isExist, proxyFactory;
                 it('should not allow to create a proxy with the 0 address / createNewProxy()', async () => {
                     userDetails[1] = nullAddr;
                     await assert.rejects(async () => {
-                        await createProxy(userDetails);
+                        await proxyFactory.createNewProxy(userDetails);
                     }, {
                         name: 'Error',
                         message: (await err()).zeroAddress 
@@ -126,7 +124,7 @@ let isExist, proxyFactory;
                     userDetails[1] = usdtAddrArb;
                     userDetails[2] = 0;
                     await assert.rejects(async () => {
-                        await createProxy(userDetails);
+                        await proxyFactory.createNewProxy(userDetails);
                     }, {
                         name: 'Error',
                         message: (await err()).zeroSlippage
@@ -137,7 +135,7 @@ let isExist, proxyFactory;
                     userDetails[1] = deadAddr;
                     userDetails[2] = defaultSlippage;
                     await assert.rejects(async () => {
-                        await createProxy(userDetails);
+                        await proxyFactory.createNewProxy(userDetails);
                     }, {
                         name: 'Error',
                         message: (await err(deadAddr)).tokenNotFound
@@ -145,7 +143,7 @@ let isExist, proxyFactory;
                 })
     
                 it('should have an initial balance of 0.01 ETH', async () => {
-                    await sendETHv2(newProxyAddr, 0.01);
+                    await signer.sendTransaction({to: newProxyAddr, value: parseEther('0.01')});
                     balance = await hre.ethers.provider.getBalance(newProxyAddr);
                     assert.equal(formatEther(balance), '0.01');
                 });
@@ -158,11 +156,11 @@ let isExist, proxyFactory;
             });
 
 
-            xdescribe('Deploys 5 proxies', async () => {
+            describe('Deploys 5 proxies', async () => {
                 it('should create 5 proxies successfully / createNewProxy()', async () => {
                     userDetails[1] = usdcAddr;
                     for (let i=0; i < 5; i++) {
-                        await createProxy(userDetails);
+                        await proxyFactory.createNewProxy(userDetails);
                         newProxyAddr = (await storageBeacon.getProxyByUser(signerAddr))[i].toString(); 
                         usersProxies.push(newProxyAddr);
                         assert.equal(newProxyAddr.length, 42);
@@ -170,7 +168,7 @@ let isExist, proxyFactory;
                 });
     
                 it('should have the 5 proxies with an initial balance of 100 ETH each / createNewProxy()', async () => {
-                    await sendETHv2(newProxyAddr, 100);
+                    await signer.sendTransaction({to: newProxyAddr, value: parseEther('100')});
                     balance = await hre.ethers.provider.getBalance(newProxyAddr);
                     assert.equal(formatEther(balance), '100.0');
                 });
@@ -185,7 +183,7 @@ let isExist, proxyFactory;
             });
         });
 
-        xdescribe('ozBeaconProxy / ozPayMe', async () => {
+        describe('ozBeaconProxy / ozPayMe', async () => {
             describe('fallback()', async () => {
                 it('should not allow re-calling / initialize()', async () => {
                     await assert.rejects(async () => {
@@ -309,7 +307,8 @@ let isExist, proxyFactory;
                         ETH
                     );
 
-                    await sendETHv2(newProxyAddr, 0.01);
+                    await signer.sendTransaction({to: newProxyAddr, value: parseEther('0.01')});
+                    
                     const receipt = await activateProxyLikeOps(newProxyAddr, signerAddr2, true, [evilVarConfig, evilUserDetails]);
 
                     balance = await hre.ethers.provider.getBalance(newProxyAddr);
@@ -321,9 +320,9 @@ let isExist, proxyFactory;
             });
         });
 
-        xdescribe('Emitter', async () => {
+        describe('Emitter', async () => {
             it('should emit ticket ID / forwardEvent()', async () => {
-                await sendETHv2(newProxyAddr, 0.01);
+                await signer.sendTransaction({to: newProxyAddr, value: parseEther('0.01')});
                 receipt = await activateProxyLikeOps(newProxyAddr, ozERC1967proxyAddr);
                 showTicketSignature = '0xbca70dc8f665e75505547ec15f8c9d9372ac2b33c1746a7e01b805dae21f6696';
                 ticketIDtype = compareTopicWith('Signature', showTicketSignature, receipt);
@@ -427,7 +426,7 @@ let isExist, proxyFactory;
 
             it('should allow the owner to disable the Emitter / changeEmitterStatus()', async () => {
                 await storageBeacon.changeEmitterStatus(true);
-                await sendETHv2(newProxyAddr, 0.01);
+                await signer.sendTransaction({to: newProxyAddr, value: parseEther('0.01')});
                 receipt = await activateProxyLikeOps(newProxyAddr, ozERC1967proxyAddr);
                 const ticketIDtype = compareTopicWith('Signature', showTicketSignature, receipt);
                 assert.equal(ticketIDtype, false);
@@ -492,7 +491,7 @@ let isExist, proxyFactory;
             });
         });
 
-        xdescribe('ozUpgradeableBeacon', async () => {
+        describe('ozUpgradeableBeacon', async () => {
 
             it('should allow the owner to upgrade the Storage Beacon / upgradeStorageBeacon()', async () => {
                 [storageBeaconMockAddr , storageBeaconMock] = await deployContract('StorageBeaconMock', l1Signer);
@@ -514,7 +513,7 @@ let isExist, proxyFactory;
                 await beacon.upgradeTo(implMockAddr);
 
                 //execute a normal tx to proxy and read from the new variable placed on implMock
-                await sendETHv2(newProxyAddr, 1.5);
+                await signer.sendTransaction({to: newProxyAddr, value: parseEther('1.5')});
                 balance = await hre.ethers.provider.getBalance(newProxyAddr);
                 assert.equal(formatEther(balance), '1.5');
 
@@ -545,17 +544,19 @@ let isExist, proxyFactory;
             ] = await deploySystem('Pessimistically', userDetails, signerAddr));
 
             storeVarsInHelpers(ozERC1967proxyAddr);
+
+            proxyFactory = await hre.ethers.getContractAt(unifiedABIeth, ozERC1967proxyAddr);
         });
 
         describe('ozBeaconProxy / ozPayMe', async () => {
             it('should create a proxy successfully / createNewProxy()', async () => {
-                await createProxy(userDetails);
+                await proxyFactory.createNewProxy(userDetails);
                 newProxyAddr = (await storageBeacon.getProxyByUser(signerAddr))[0].toString(); 
                 assert.equal(newProxyAddr.length, 42);
             });
 
             it('should have an initial balance of 100 ETH', async () => {
-                await sendETHv2(newProxyAddr, 100);
+                await signer.sendTransaction({to: newProxyAddr, value: parseEther('100')});
                 balance = await hre.ethers.provider.getBalance(newProxyAddr);
                 assert.equal(formatEther(balance), '100.0');
             });
@@ -572,7 +573,7 @@ let isExist, proxyFactory;
 
             xit("should send the ETH back to the user as last resort / _runEmergencyMode()", async () => {
                 //UserSlippage is change to 1 to produce a slippage error derived from priceMinOut calculation
-                await sendETHv2(newProxyAddr, 100);
+                await signer.sendTransaction({to: newProxyAddr, value: parseEther('100')});
                 await sendTx({
                     receiver: newProxyAddr,
                     method: 'changeUserSlippage',
@@ -598,7 +599,7 @@ let isExist, proxyFactory;
                     args: [defaultSlippage.toString()]
                 });
                 
-                await sendETHv2(newProxyAddr, 100);
+                await signer.sendTransaction({to: newProxyAddr, value: parseEther('100')});
 
                 preBalance = await USDC.balanceOf(signerAddr);
                 receipt = await activateProxyLikeOps(newProxyAddr, ozERC1967proxyAddr); 
@@ -636,7 +637,7 @@ let isExist, proxyFactory;
                     data: changedData
                 });
 
-                await sendETHv2(newProxyAddr, 100);
+                await signer.sendTransaction({to: newProxyAddr, value: parseEther('100')});
 
                 preBalance = await WETH.balanceOf(signerAddr);
                 assert.equal(preBalance, 0);
@@ -660,7 +661,7 @@ let isExist, proxyFactory;
                     args: ['1']
                 });
 
-                await sendETHv2(newProxyAddr, 100); 
+                await signer.sendTransaction({to: newProxyAddr, value: parseEther('100')});
 
                 failedFunds = await storageBeacon.getFailedERCFunds(signerAddr, wethAddr);
                 assert.equal(formatEther(failedFunds), 0);
