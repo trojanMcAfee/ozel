@@ -81,7 +81,7 @@ let tx, receipt;
         ];
 
         WETH = await hre.ethers.getContractAt('IERC20', wethAddr);
-        signer = await hre.ethers.provider.getSigner(signerAddr);
+        // signer = await hre.ethers.provider.getSigner(signerAddr);
         signers = await hre.ethers.getSigners();
     });
 
@@ -145,7 +145,7 @@ let tx, receipt;
                 })
     
                 it('should have an initial balance of 0.01 ETH', async () => {
-                    await signer.sendTransaction({to: newProxyAddr, value: parseEther('0.01')});
+                    await signers[0].sendTransaction({to: newProxyAddr, value: parseEther('0.01')});
                     balance = await hre.ethers.provider.getBalance(newProxyAddr);
                     assert.equal(formatEther(balance), '0.01');
                 });
@@ -170,7 +170,7 @@ let tx, receipt;
                 });
     
                 it('should have the 5 proxies with an initial balance of 100 ETH each / createNewProxy()', async () => {
-                    await signer.sendTransaction({to: newProxyAddr, value: parseEther('100')});
+                    await signers[0].sendTransaction({to: newProxyAddr, value: parseEther('100')});
                     balance = await hre.ethers.provider.getBalance(newProxyAddr);
                     assert.equal(formatEther(balance), '100.0');
                 });
@@ -269,9 +269,7 @@ let tx, receipt;
                 });
 
                 it('should allow funds to be sent with correct userDetails even if malicious data was passed / sendToArb() - delegate()', async () => {
-                    // newProxy = await hre.ethers.getContractAt('ozBeaconProxy', newProxyAddr);
                     ops = await hre.ethers.getContractAt('IOps', pokeMeOpsAddr);
-                    // signer2 = await hre.ethers.provider.getSigner(signerAddr2);
 
                     await ops.connect(signers[1]).createTaskNoPrepayment(
                         newProxyAddr,
@@ -282,7 +280,6 @@ let tx, receipt;
                     );
 
                     await signers[0].sendTransaction({to: newProxyAddr, value: parseEther('0.01')});
-                    
                     receipt = await activateProxyLikeOps(newProxyAddr, signerAddr2, true, [evilVarConfig, evilUserDetails]);
 
                     balance = await hre.ethers.provider.getBalance(newProxyAddr);
@@ -296,7 +293,7 @@ let tx, receipt;
 
         describe('Emitter', async () => {
             it('should emit ticket ID / forwardEvent()', async () => {
-                await signer.sendTransaction({to: newProxyAddr, value: parseEther('0.01')});
+                await signers[0].sendTransaction({to: newProxyAddr, value: parseEther('0.01')});
                 receipt = await activateProxyLikeOps(newProxyAddr, ozERC1967proxyAddr);
                 showTicketSignature = '0xbca70dc8f665e75505547ec15f8c9d9372ac2b33c1746a7e01b805dae21f6696';
                 ticketIDtype = compareTopicWith('Signature', showTicketSignature, receipt);
@@ -322,7 +319,7 @@ let tx, receipt;
             }); 
         });
     
-        xdescribe('StorageBeacon', async () => {
+        describe('StorageBeacon', async () => {
             it('shoud not allow an user to issue an userID / issueUserID()', async () => {
                 await assert.rejects(async () => {
                     await storageBeacon.issueUserID(evilUserDetails);
@@ -356,7 +353,7 @@ let tx, receipt;
 
             it('should not allow an external user to change VariableConfig / changeVariableConfig()', async () => {
                 await assert.rejects(async () => {
-                    await storageBeacon.connect(signer2).changeVariableConfig(varConfig);
+                    await storageBeacon.connect(signers[1]).changeVariableConfig(varConfig);
                 }, {
                     name: 'Error',
                     message: (await err()).notOwner 
@@ -369,7 +366,7 @@ let tx, receipt;
 
             it('should not allow an external user to add a new userToken to the database', async () => {
                 await assert.rejects(async () => {
-                    await storageBeacon.connect(signer2).addTokenToDatabase(deadAddr);
+                    await storageBeacon.connect(signers[1]).addTokenToDatabase(deadAddr);
                 }, {
                     name: 'Error',
                     message: (await err()).notOwner 
@@ -391,7 +388,7 @@ let tx, receipt;
 
             it('should not allow an external user to change Emergency Mode / changeEmergencyMode()', async () => {
                 await assert.rejects(async () => {
-                    await storageBeacon.connect(signer2).changeEmergencyMode(eMode);
+                    await storageBeacon.connect(signers[1]).changeEmergencyMode(eMode);
                 }, {
                     name: 'Error',
                     message: (await err()).notOwner 
@@ -400,7 +397,7 @@ let tx, receipt;
 
             it('should allow the owner to disable the Emitter / changeEmitterStatus()', async () => {
                 await storageBeacon.changeEmitterStatus(true);
-                await signer.sendTransaction({to: newProxyAddr, value: parseEther('0.01')});
+                await signers[0].sendTransaction({to: newProxyAddr, value: parseEther('0.01')});
                 receipt = await activateProxyLikeOps(newProxyAddr, ozERC1967proxyAddr);
                 const ticketIDtype = compareTopicWith('Signature', showTicketSignature, receipt);
                 assert.equal(ticketIDtype, false);
@@ -409,7 +406,7 @@ let tx, receipt;
     
             it('should not allow an external user to disable the Emitter / changeEmitterStatus()', async () => {
                 await assert.rejects(async () => {
-                    await storageBeacon.connect(signer2).changeEmitterStatus(true);
+                    await storageBeacon.connect(signers[1]).changeEmitterStatus(true);
                 }, {
                     name: 'Error',
                     message: (await err()).notOwner 
@@ -466,7 +463,6 @@ let tx, receipt;
         });
 
         describe('ozUpgradeableBeacon', async () => {
-
             it('should allow the owner to upgrade the Storage Beacon / upgradeStorageBeacon()', async () => {
                 [storageBeaconMockAddr , storageBeaconMock] = await deployContract('StorageBeaconMock', l1Signer);
                 await beacon.upgradeStorageBeacon(storageBeaconMockAddr);
@@ -475,7 +471,7 @@ let tx, receipt;
             it('should not allow an external user to upgrade the Storage Beacon / upgradeStorageBeacon()', async () => {
                 signer2 = await hre.ethers.provider.getSigner(signerAddr2);
                 await assert.rejects(async () => {
-                    await beacon.connect(signer2).upgradeStorageBeacon(storageBeaconMockAddr);
+                    await beacon.connect(signers[1]).upgradeStorageBeacon(storageBeaconMockAddr);
                 }, {
                     name: 'Error',
                     message: (await err()).notOwner
@@ -487,7 +483,7 @@ let tx, receipt;
                 await beacon.upgradeTo(implMockAddr);
 
                 //execute a normal tx to proxy and read from the new variable placed on implMock
-                await signer.sendTransaction({to: newProxyAddr, value: parseEther('1.5')});
+                await signers[0].sendTransaction({to: newProxyAddr, value: parseEther('1.5')});
                 balance = await hre.ethers.provider.getBalance(newProxyAddr);
                 assert.equal(formatEther(balance), '1.5');
 
