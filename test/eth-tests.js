@@ -50,9 +50,8 @@ let newProxyAddr, newProxy;
 let balance;
 let newUserToken, newUserSlippage;
 let ops;
-let signer, signer2;
+let signer, signer2, signers;
 let showTicketSignature;
-let receipt;
 let ticketIDtype;
 let pulledUserDetails;
 let taskID;
@@ -63,6 +62,7 @@ let evilVarConfig = [0, 0, 0];
 let evilUserDetails = [deadAddr, deadAddr, 0];
 let preBalance, postBalance;
 let isExist, proxyFactory;
+let tx, receipt;
 
 
 
@@ -82,6 +82,7 @@ let isExist, proxyFactory;
 
         WETH = await hre.ethers.getContractAt('IERC20', wethAddr);
         signer = await hre.ethers.provider.getSigner(signerAddr);
+        signers = await hre.ethers.getSigners();
     });
 
     describe('Optimistic deployment', async function () { 
@@ -192,11 +193,6 @@ let isExist, proxyFactory;
             describe('fallback()', async () => {
                 it('should not allow re-calling / initialize()', async () => {
                     await assert.rejects(async () => {
-                        // await sendTx({
-                        //     receiver: newProxyAddr,
-                        //     method: 'initialize',
-                        //     args: [0, nullAddr]
-                        // });
                         await newProxy.initialize(0, nullAddr);
                     }, {
                         name: 'Error',
@@ -214,23 +210,15 @@ let isExist, proxyFactory;
                 });
 
                 it('should allow the user to change userToken / changeUserToken()', async () => {
-                    receipt = await sendTx({
-                        receiver: newProxyAddr,
-                        method: 'changeUserToken',
-                        args: [usdcAddr]
-                    });
+                    tx = await newProxy.changeUserToken(usdcAddr);
+                    receipt = await tx.wait();
                     newUserToken = getEventParam(receipt);
                     assert.equal(newUserToken, usdcAddr.toLowerCase());
                 });
 
                 it('should not allow an external user to change userToken / changeUserToken()', async () => {
                     await assert.rejects(async () => {
-                        await sendTx({
-                            receiver: newProxyAddr,
-                            method: 'changeUserToken',
-                            args: [usdcAddr],
-                            isSigner2: true
-                        });
+                        await newProxy.connect(signers[1]).changeUserToken(usdcAddr);
                     }, {
                         name: 'Error',
                         message: (await err(signerAddr2)).notAuthorized 
@@ -239,11 +227,12 @@ let isExist, proxyFactory;
 
                 it('shoud not allow to change userToken for the 0 address / changeUserToken()', async () => {
                     await assert.rejects(async () => {
-                        await sendTx({
-                            receiver: newProxyAddr,
-                            method: 'changeUserToken',
-                            args: [nullAddr]
-                        });
+                        // await sendTx({
+                        //     receiver: newProxyAddr,
+                        //     method: 'changeUserToken',
+                        //     args: [nullAddr]
+                        // });
+                        await newProxy.changeUserToken(nullAddr);
                     }, {
                         name: 'Error',
                         message: (await err()).zeroAddress
@@ -252,11 +241,12 @@ let isExist, proxyFactory;
 
                 it('shoud not allow to change userToken for a token not found in the database / changeUserToken()', async () => {
                     await assert.rejects(async () => {
-                        await sendTx({
-                            receiver: newProxyAddr,
-                            method: 'changeUserToken',
-                            args: [deadAddr]
-                        });
+                        // await sendTx({
+                        //     receiver: newProxyAddr,
+                        //     method: 'changeUserToken',
+                        //     args: [deadAddr]
+                        // });
+                        await newProxy.changeUserToken(deadAddr); 
                     }, {
                         name: 'Error',
                         message: (await err(deadAddr)).tokenNotFound
@@ -264,11 +254,13 @@ let isExist, proxyFactory;
                 });
 
                 it('should allow the user to change userSlippage / changeUserSlippage()', async () => {
-                    receipt = await sendTx({
-                        receiver: newProxyAddr,
-                        method: 'changeUserSlippage',
-                        args: ['200']
-                    });
+                    // receipt = await sendTx({
+                    //     receiver: newProxyAddr,
+                    //     method: 'changeUserSlippage',
+                    //     args: ['200']
+                    // });
+                    tx = await newProxy.changeUserSlippage(200);
+                    receipt = await tx.wait();
                     newUserSlippage = getEventParam(receipt);
                     assert.equal(arrayify(newUserSlippage), '200');
                 });
