@@ -42,9 +42,6 @@ const {
  const { err } = require('./errors.js');
 
 
- //pass the funcs in helpers-eth to new way of calling a proxy (implABI, proxtAddr)
-
-
 
 let signerAddr, signerAddr2;
 let ozERC1967proxyAddr, storageBeacon, emitter, emitterAddr, fakeOZLaddr;
@@ -65,7 +62,7 @@ let usersProxies = [];
 let evilVarConfig = [0, 0, 0];
 let evilUserDetails = [deadAddr, deadAddr, 0];
 let preBalance, postBalance;
-let isExist;
+let isExist, proxyFactory;
 
 
 
@@ -102,12 +99,15 @@ let isExist;
                 eMode
             ] = await deploySystem('Optimistically', userDetails, signerAddr));
             storeVarsInHelpers(ozERC1967proxyAddr);
+
+            proxyFactory = await hre.ethers.getContractAt(unifiedABIeth, ozERC1967proxyAddr);
         });
 
         describe('ProxyFactory', async () => {
             describe('Deploys one proxy', async () => {
                 it('should create a proxy successfully / createNewProxy()', async () => {
-                    await createProxy(userDetails);
+                    // await createProxy(userDetails);
+                    await proxyFactory.createNewProxy(userDetails);
                     newProxyAddr = (await storageBeacon.getProxyByUser(signerAddr))[0].toString(); 
                     assert.equal(newProxyAddr.length, 42);
                 });
@@ -158,7 +158,7 @@ let isExist;
             });
 
 
-            describe('Deploys 5 proxies', async () => {
+            xdescribe('Deploys 5 proxies', async () => {
                 it('should create 5 proxies successfully / createNewProxy()', async () => {
                     userDetails[1] = usdcAddr;
                     for (let i=0; i < 5; i++) {

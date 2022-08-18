@@ -33,7 +33,8 @@ const {
     nullAddr,
     chainlinkAggregatorAddr,
     l1ProviderRinkeby,
-    l2Provider
+    l2Provider, 
+    unifiedABIeth
 } = require('./state-vars.js');
 
 
@@ -113,10 +114,8 @@ async function sendTx(params) {
     const abi = [];
     const signatures = {
         createNewProxy: 'function createNewProxy(tuple(address user, address userToken, uint256 userSlippage) userDetails_)',
-        getTaskID: 'function getTaskID(address proxy_) returns (bytes32)',
         sendToArb: `function sendToArb(${params.isEvil ? 'tuple(uint256 maxSubmissionCost, uint256 gasPriceBid, uint256 autoRedeem) varConfig_, tuple(address user, address userToken, uint256 userSlippage) userDetails_)' : ')'}`,
         initialize: `function initialize(${params.args && params.args.length < 2 ? 'address beacon_' : 'uint256 userId_, address beacon_'})`,
-        _setBeacon: 'function _setBeacon(address beacon, bytes memory data)',
         changeUserToken: 'function changeUserToken(address newUserToken_)',
         changeUserSlippage: 'function changeUserSlippage(uint256 newUserSlippage_)'
     };

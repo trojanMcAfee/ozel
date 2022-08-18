@@ -71,8 +71,15 @@ const diamondABI = [
 
 const unifiedABIeth = [
     'function setTestReturnContract(address testReturn_, bytes32 position_) public',
-    'function changeUserSlippage(uint256 newUserSlippage_) external'
+    'function changeUserSlippage(uint256 newUserSlippage_) external',
+    'function createNewProxy(tuple(address user, address userToken, uint256 userSlippage) userDetails_)',
+    'function changeUserToken(address newUserToken_)',
+    'function sendToArb(tuple(uint256 maxSubmissionCost, uint256 gasPriceBid, uint256 autoRedeem) varConfig_, tuple(address user, address userToken, uint256 userSlippage) userDetails_)',
+    'function sendToArb()', //when it's evil - params.isEvil = false
+    'function initialize(address beacon_)', //params.args && params.args.length < 2 = true
+    'function initialize(uint256 userId_, address beacon_)'
 ];
+        
 
 
 
