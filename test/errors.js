@@ -5,7 +5,6 @@ async function err(n = 0) {
 
     return {
         alreadyInitialized: "VM Exception while processing transaction: reverted with reason string 'Initializable: contract is already initialized'",
-        onlyOps: "VM Exception while processing transaction: reverted with reason string 'ozPayMe: onlyOps'",
         notAuthorized: (function (m) {
             switch(m) {
                 case callerAddr:

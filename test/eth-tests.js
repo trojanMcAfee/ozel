@@ -106,13 +106,13 @@ let isExist;
 
         describe('ProxyFactory', async () => {
             describe('Deploys one proxy', async () => {
-                xit('should create a proxy successfully / createNewProxy()', async () => {
+                it('should create a proxy successfully / createNewProxy()', async () => {
                     await createProxy(userDetails);
                     newProxyAddr = (await storageBeacon.getProxyByUser(signerAddr))[0].toString(); 
                     assert.equal(newProxyAddr.length, 42);
                 });
 
-                xit('should not allow to create a proxy with the 0 address / createNewProxy()', async () => {
+                it('should not allow to create a proxy with the 0 address / createNewProxy()', async () => {
                     userDetails[1] = nullAddr;
                     await assert.rejects(async () => {
                         await createProxy(userDetails);
@@ -122,7 +122,7 @@ let isExist;
                     });
                 });
 
-                xit('should not allow to create a proxy with 0 slippage / createNewProxy()', async () => {
+                it('should not allow to create a proxy with 0 slippage / createNewProxy()', async () => {
                     userDetails[1] = usdtAddrArb;
                     userDetails[2] = 0;
                     await assert.rejects(async () => {
@@ -133,7 +133,7 @@ let isExist;
                     });
                 });
 
-                xit('should not allow to create a proxy with a userToken not found in the database / createNewProxy()', async () => {
+                it('should not allow to create a proxy with a userToken not found in the database / createNewProxy()', async () => {
                     userDetails[1] = deadAddr;
                     userDetails[2] = defaultSlippage;
                     await assert.rejects(async () => {
@@ -144,7 +144,7 @@ let isExist;
                     });
                 })
     
-                xit('should have an initial balance of 0.01 ETH', async () => {
+                it('should have an initial balance of 0.01 ETH', async () => {
                     await sendETHv2(newProxyAddr, 0.01);
                     balance = await hre.ethers.provider.getBalance(newProxyAddr);
                     assert.equal(formatEther(balance), '0.01');
@@ -158,6 +158,7 @@ let isExist;
     
                 it('should have a final balance of 0 ETH', async () => {
                     userDetails[0] = signerAddr2;
+                    userDetails[1] = usdtAddrArb;
                     await createProxy(userDetails, true);
 
                     const newProxyAddr = (await storageBeacon.getProxyByUser(signerAddr2))[0].toString();
@@ -172,7 +173,7 @@ let isExist;
             });
 
 
-            xdescribe('Deploys 5 proxies', async () => {
+            describe('Deploys 5 proxies', async () => {
                 it('should create 5 proxies successfully / createNewProxy()', async () => {
                     userDetails[1] = usdcAddr;
                     for (let i=0; i < 5; i++) {
@@ -199,7 +200,7 @@ let isExist;
             });
         });
 
-        xdescribe('ozBeaconProxy / ozPayMe', async () => {
+        describe('ozBeaconProxy / ozPayMe', async () => {
             describe('fallback()', async () => {
                 it('should not allow re-calling / initialize()', async () => {
                     await assert.rejects(async () => {
@@ -219,7 +220,7 @@ let isExist;
                         await activateOzBeaconProxy(newProxyAddr);
                     }, {
                         name: 'Error',
-                        message: (await err()).onlyOps 
+                        message: (await err(signerAddr)).notAuthorized 
                     });
                 });
 

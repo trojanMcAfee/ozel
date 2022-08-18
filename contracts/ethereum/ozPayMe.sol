@@ -89,12 +89,10 @@ contract ozPayMe is ModifiersETH, ReentrancyGuard, Initializable {
             userDetails_
         );
 
-        console.log('autoRedeem: ', varConfig_.autoRedeem);
-
         bytes memory ticketData = abi.encodeWithSelector(
             DelayedInbox(fxConfig.inbox).createRetryableTicket.selector, 
             fxConfig.OZL, 
-            address(this).balance - varConfig_.autoRedeem, // - varConfig_.autoRedeem
+            address(this).balance - varConfig_.autoRedeem, 
             varConfig_.maxSubmissionCost,   
             fxConfig.OZL, 
             fxConfig.OZL, 
