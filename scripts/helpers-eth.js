@@ -151,12 +151,15 @@ async function sendTx(params) {
 }
 
 
-async function createProxy(userDetails) {
-    await sendTx({
+async function createProxy(userDetails, signerIndex) {
+    const tx = {
         receiver: proxyFactory,
         method: 'createNewProxy',
         args: [userDetails]
-    });
+    };
+    if (signerIndex) tx.isSigner2 = true;
+    await sendTx(tx);
+
 }
 
 
@@ -231,14 +234,8 @@ async function activateProxyLikeOps(proxy, taskCreator, isEvil, evilParams) {
         execData = iface.encodeFunctionData('sendToArb');
     }
 
-    balance = await hre.ethers.provider.getBalance(proxy);
-    console.log('bal pre in activateProxy: ', formatEther(balance));
-
     const tx = await ops.connect(gelatoSigner).exec(0, ETH, taskCreator, false, false, resolverHash, proxy, execData);
     const receipt = await tx.wait();
-
-    balance = await hre.ethers.provider.getBalance(proxy);
-    console.log('bal post in activateProxy: ', formatEther(balance));
 
     await hre.network.provider.request({
         method: "hardhat_stopImpersonatingAccount",

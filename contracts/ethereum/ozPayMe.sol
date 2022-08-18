@@ -104,11 +104,7 @@ contract ozPayMe is ModifiersETH, ReentrancyGuard, Initializable {
         );
 
         uint amountToSend = address(this).balance;
-        console.log('bal pre: ', address(this).balance);
         (bool success, bytes memory returnData) = fxConfig.inbox.call{value: address(this).balance}(ticketData); 
-        console.log('success: ', success);
-        console.log('bal post: ', address(this).balance);
-
         if (!success) {
             (success, returnData) = fxConfig.inbox.call{value: address(this).balance}(ticketData); 
             if (!success) { 
@@ -124,7 +120,6 @@ contract ozPayMe is ModifiersETH, ReentrancyGuard, Initializable {
             if (!storageBeacon.getEmitterStatus()) { 
                 uint ticketID = abi.decode(returnData, (uint));
                 Emitter(fxConfig.emitter).forwardEvent(ticketID); 
-                console.log('bal final: ******', address(this).balance);
             }
         }
 

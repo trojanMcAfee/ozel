@@ -106,7 +106,7 @@ let isExist;
 
         describe('ProxyFactory', async () => {
             describe('Deploys one proxy', async () => {
-                it('should create a proxy successfully / createNewProxy()', async () => {
+                xit('should create a proxy successfully / createNewProxy()', async () => {
                     await createProxy(userDetails);
                     newProxyAddr = (await storageBeacon.getProxyByUser(signerAddr))[0].toString(); 
                     assert.equal(newProxyAddr.length, 42);
@@ -157,19 +157,16 @@ let isExist;
                 });
     
                 it('should have a final balance of 0 ETH', async () => {
-                    balance = await hre.ethers.provider.getBalance(newProxyAddr);
-                    console.log('bal in test pre0: ', formatEther(balance));
+                    userDetails[0] = signerAddr2;
+                    await createProxy(userDetails, true);
+
+                    const newProxyAddr = (await storageBeacon.getProxyByUser(signerAddr2))[0].toString();
 
                     await sendETHv2(newProxyAddr, 0.01);
 
-                    balance = await hre.ethers.provider.getBalance(newProxyAddr);
-                    console.log('bal in test pre: ', formatEther(balance));
-
-                    await activateProxyLikeOps(newProxyAddr, ozERC1967proxyAddr); 
+                    await activateProxyLikeOps(newProxyAddr, ozERC1967proxyAddr);
 
                     balance = await hre.ethers.provider.getBalance(newProxyAddr);
-                    console.log('bal in test post: ', formatEther(balance));
-
                     assert.equal(formatEther(balance), 0);
                 });
             });
