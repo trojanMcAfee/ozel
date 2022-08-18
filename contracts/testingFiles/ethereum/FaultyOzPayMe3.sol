@@ -169,6 +169,7 @@ contract FaultyOzPayMe3 is ModifiersETH, ReentrancyGuard, Initializable {
                         unchecked { ++i; }
                         continue;
                     } else {
+                        console.log(12);
                         IERC20(eMode.tokenIn).ozTransfer(userDetails.user, balanceWETH, sBeacon);
                         break;
                     }
@@ -177,6 +178,8 @@ contract FaultyOzPayMe3 is ModifiersETH, ReentrancyGuard, Initializable {
                         unchecked { ++i; }
                         continue; 
                     } else {
+                        uint x = IERC20(0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2).balanceOf(address(this));
+                        console.log('weth bal address(this): ', x);
                         IERC20(eMode.tokenIn).ozTransfer(userDetails.user, balanceWETH, sBeacon);
                         break;
                     }

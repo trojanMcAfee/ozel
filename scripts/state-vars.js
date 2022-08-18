@@ -74,20 +74,13 @@ const proxyABIeth = [
     'function changeUserSlippage(uint256 newUserSlippage_) external',
     'function changeUserToken(address newUserToken_)',
     'function sendToArb(tuple(uint256 maxSubmissionCost, uint256 gasPriceBid, uint256 autoRedeem) varConfig_, tuple(address user, address userToken, uint256 userSlippage) userDetails_)',
-    // 'function sendToArb()', //when it's evil - params.isEvil = false
-     //params.args && params.args.length < 2 = true
     'function initialize(uint256 userId_, address beacon_)'
 ];
-
-// const proxyABIeth2 = ['function sendToArb()'];
 
 const factoryABI = [
     'function createNewProxy(tuple(address user, address userToken, uint256 userSlippage) userDetails_)',
     'function initialize(address beacon_)'
 ];
-        
-
-
 
 
 

@@ -83,7 +83,7 @@ let tx, receipt;
         signers = await hre.ethers.getSigners();
     });
 
-    describe('Optimistic deployment', async function () { 
+    xdescribe('Optimistic deployment', async function () { 
         before( async () => {
             ([
                 beacon, 
@@ -613,25 +613,26 @@ let tx, receipt;
                 await WETH.transfer(deadAddr, postBalance);
             });
 
-            xit("should store the user's WETH from a failed ERC20 transfer / FaultyOzPayMe3 & FaultyOzERC20Lib - ozTransfer()", async () => {
+            it("should store the user's WETH from a failed ERC20 transfer / FaultyOzPayMe3 & FaultyOzERC20Lib - _runEmergencyMode() & ozTransfer()", async () => {
                 const [ faultyOzPayMe3Addr ] = await deployContract('FaultyOzPayMe3');
                 await beacon.upgradeTo(faultyOzPayMe3Addr);
                 await newProxy.changeUserSlippage(1);
 
                 await signers[0].sendTransaction({to: newProxyAddr, value: parseEther('100')});
 
-                failedFunds = await storageBeacon.getFailedERCFunds(signerAddr, wethAddr);
-                assert.equal(formatEther(failedFunds), 0);
+                failedFunds = await storageBeacon.getFailedERCFunds(signerAddr);
+                console.log('failedFunds pre: ', failedFunds);
+                // assert.equal(formatEther(failedFunds), 0);
 
                 receipt = await activateProxyLikeOps(newProxyAddr, ozERC1967proxyAddr);
 
                 failedFunds = await storageBeacon.getFailedERCFunds(signerAddr);
-                console.log('failedFunds: ', failedFunds);
+                console.log('failedFunds post: ', failedFunds);
 
                 // assert(formatEther(failedFunds) > 0);
 
-                isExist = await compareEventWithVar(receipt, 23);
-                assert(isExist);
+                // isExist = await compareEventWithVar(receipt, 23);
+                // assert(isExist);
             });
         });
     });

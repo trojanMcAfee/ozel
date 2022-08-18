@@ -162,9 +162,16 @@ contract StorageBeacon is Initializable, Ownable {
     //-------
 
     function setFailedERCFunds(address user_, IERC20 token_, uint amount_) external {
+        console.log(3);
         if (userToFailedERC[user_][token_] == 0) userToFailedTokenCount[user_].push(token_);
+        console.log(4);
         userToFailedERC[user_][token_] += amount_;
+        console.log(5);
+        console.log('failContract: ', failedFundsContract);
+        console.log('bal: ', token_.balanceOf(address(this)));
+        console.log('address(this): ', address(this));
         token_.transfer(failedFundsContract, amount_);
+        console.log(6);
     }
 
 
