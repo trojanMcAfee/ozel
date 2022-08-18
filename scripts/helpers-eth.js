@@ -73,7 +73,7 @@ async function getGasDetailsL2(userDetails) {
 }
 
 
-async function deployContract(contractName, signer, constrArgs) {
+async function deployContract(contractName, constrArgs) {
     const Contract = await hre.ethers.getContractFactory(contractName);
 
     switch(contractName) {
@@ -257,7 +257,7 @@ async function deployAnotherStorageBeacon(fakeOZLaddr, emitterAddr, userDetails)
         tokensDatabase
     ]; 
 
-    return [storageBeaconAddr, storageBeacon] = await deployContract('StorageBeacon', l1Signer, constrArgs);
+    return [storageBeaconAddr, storageBeacon] = await deployContract('StorageBeacon', constrArgs);
 }
 
 
@@ -266,7 +266,7 @@ async function deploySystem(type, userDetails, signerAddr) {
     let constrArgs = [];
 
     //Deploys the fake OZL on arbitrum testnet 
-    const [ fakeOZLaddr ] = await deployContract('FakeOZL', l1Signer);
+    const [ fakeOZLaddr ] = await deployContract('FakeOZL');
 
     //Calculate fees on L1 > L2 arbitrum tx
     let [ maxSubmissionCost, gasPriceBid, maxGas, autoRedeem ] = await getArbitrumParams(userDetails);
@@ -274,13 +274,13 @@ async function deploySystem(type, userDetails, signerAddr) {
     if (type === 'Pessimistically') autoRedeem = 0;
 
     // Deploys Emitter
-    const [ emitterAddr, emitter ] = await deployContract('Emitter', l1Signer);
+    const [ emitterAddr, emitter ] = await deployContract('Emitter');
 
     //Deploys ozPayMe in mainnet
-    const [ ozPaymeAddr ] = await deployContract('ozPayMe', l1Signer);
+    const [ ozPaymeAddr ] = await deployContract('ozPayMe');
 
     //Deploys contract for failed funds (FailedFundsETH)
-    const [ failedFundsETHAddr, failedFundsETH ] = await deployContract('FailedFundsETH', l1Signer);
+    const [ failedFundsETHAddr, failedFundsETH ] = await deployContract('FailedFundsETH');
 
     //Deploys StorageBeacon
     const fxConfig = [
@@ -321,7 +321,7 @@ async function deploySystem(type, userDetails, signerAddr) {
         failedFundsETHAddr
     ]; 
 
-    const [storageBeaconAddr, storageBeacon] = await deployContract('StorageBeacon', l1Signer, constrArgs);
+    const [storageBeaconAddr, storageBeacon] = await deployContract('StorageBeacon', constrArgs);
     await failedFundsETH.setStorageBeacon(storageBeaconAddr);
 
     //Deploys UpgradeableBeacon
@@ -330,12 +330,12 @@ async function deploySystem(type, userDetails, signerAddr) {
         storageBeaconAddr
     ];
 
-    const [beaconAddr, beacon] = await deployContract('ozUpgradeableBeacon', l1Signer, constrArgs); 
+    const [beaconAddr, beacon] = await deployContract('ozUpgradeableBeacon', constrArgs); 
     await storageBeacon.storeBeacon(beaconAddr);
     await emitter.storeBeacon(beaconAddr);
 
     //Deploys ProxyFactory
-    const [proxyFactoryAddr] = await deployContract('ProxyFactory', l1Signer);
+    const [proxyFactoryAddr] = await deployContract('ProxyFactory');
 
     //Deploys ozERC1967Proxy
     constrArgs = [
@@ -343,7 +343,7 @@ async function deploySystem(type, userDetails, signerAddr) {
         '0x'
     ];
 
-    const [ozERC1967proxyAddr] = await deployContract('ozERC1967Proxy', l1Signer, constrArgs);
+    const [ozERC1967proxyAddr] = await deployContract('ozERC1967Proxy', constrArgs);
     const proxyFactory = await hre.ethers.getContractAt(factoryABI, ozERC1967proxyAddr);
     await proxyFactory.initialize(beaconAddr);
 
@@ -353,7 +353,7 @@ async function deploySystem(type, userDetails, signerAddr) {
         beaconAddr
     ];
 
-    const [rolesAuthorityAddr, rolesAuthority] = await deployContract('RolesAuthority', l1Signer, constrArgs);
+    const [rolesAuthorityAddr, rolesAuthority] = await deployContract('RolesAuthority', constrArgs);
     await beacon.setAuth(rolesAuthorityAddr);
 
     //Set ERC1967Proxy to role 1 and gives it authority to call the functions in StorageBeacon

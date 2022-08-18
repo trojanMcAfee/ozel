@@ -462,7 +462,7 @@ let tx, receipt;
 
         describe('ozUpgradeableBeacon', async () => {
             it('should allow the owner to upgrade the Storage Beacon / upgradeStorageBeacon()', async () => {
-                [storageBeaconMockAddr , storageBeaconMock] = await deployContract('StorageBeaconMock', l1Signer);
+                [storageBeaconMockAddr , storageBeaconMock] = await deployContract('StorageBeaconMock');
                 await beacon.upgradeStorageBeacon(storageBeaconMockAddr);
             });
 
@@ -477,7 +477,7 @@ let tx, receipt;
             });
 
             it('should allow the owner to upgrade the implementation and use with the new version of storageBeacon / upgradeTo()', async () => {
-                const [ implMockAddr ] = await deployContract('ImplementationMock', l1Signer);
+                const [ implMockAddr ] = await deployContract('ImplementationMock');
                 await beacon.upgradeTo(implMockAddr);
 
                 //execute a normal tx to proxy and read from the new variable placed on implMock
@@ -556,7 +556,7 @@ let tx, receipt;
             });
 
             it('should execute the USDC swap in the second attempt / FaultyOzPayMe - _runEmergencyMode()', async () => {
-                const [ faultyOzPayMeAddr ] = await deployContract('FaultyOzPayMe', l1Signer);
+                const [ faultyOzPayMeAddr ] = await deployContract('FaultyOzPayMe');
                 await beacon.upgradeTo(faultyOzPayMeAddr);
                 await newProxy.changeUserSlippage(defaultSlippage);
                 
@@ -578,9 +578,9 @@ let tx, receipt;
              * Check changeUserSlippage() on FaultyOzPayMe2
              */
             it('should send ETH back to the user when the emergency swap returns 0 at the 2nd attempt / FaultyOzPayMe2 - _runEmergencyMode()', async () => {
-                const [ faultyOzPayMe2Addr ] = await deployContract('FaultyOzPayMe2', l1Signer);
+                const [ faultyOzPayMe2Addr ] = await deployContract('FaultyOzPayMe2');
                 await beacon.upgradeTo(faultyOzPayMe2Addr);       
-                const [ testReturnAddr ] = await deployContract('TestReturn', l1Signer);
+                const [ testReturnAddr ] = await deployContract('TestReturn');
 
                 iface = new ethers.utils.Interface(proxyABIeth);
                 selectorTest = iface.getSighash('setTestReturnContract');
@@ -614,7 +614,7 @@ let tx, receipt;
             });
 
             xit("should store the user's WETH from a failed ERC20 transfer / FaultyOzPayMe3 & FaultyOzERC20Lib - ozTransfer()", async () => {
-                const [ faultyOzPayMe3Addr ] = await deployContract('FaultyOzPayMe3', l1Signer);
+                const [ faultyOzPayMe3Addr ] = await deployContract('FaultyOzPayMe3');
                 await beacon.upgradeTo(faultyOzPayMe3Addr);
                 await newProxy.changeUserSlippage(1);
 
