@@ -148,25 +148,10 @@ let isExist;
                     await sendETHv2(newProxyAddr, 0.01);
                     balance = await hre.ethers.provider.getBalance(newProxyAddr);
                     assert.equal(formatEther(balance), '0.01');
-
-                    //Clean up
-                    await signer.sendTransaction({
-                        to: deadAddr,
-                        value: balance
-                    });
                 });
     
                 it('should have a final balance of 0 ETH', async () => {
-                    userDetails[0] = signerAddr2;
-                    userDetails[1] = usdtAddrArb;
-                    await createProxy(userDetails, true);
-
-                    const newProxyAddr = (await storageBeacon.getProxyByUser(signerAddr2))[0].toString();
-
-                    await sendETHv2(newProxyAddr, 0.01);
-
-                    await activateProxyLikeOps(newProxyAddr, ozERC1967proxyAddr);
-
+                    await activateProxyLikeOps(newProxyAddr, ozERC1967proxyAddr); 
                     balance = await hre.ethers.provider.getBalance(newProxyAddr);
                     assert.equal(formatEther(balance), 0);
                 });
@@ -244,7 +229,7 @@ let isExist;
                         });
                     }, {
                         name: 'Error',
-                        message: (await err()).notAuthorized
+                        message: (await err(signerAddr2)).notAuthorized 
                     });
                 });
 
@@ -270,7 +255,7 @@ let isExist;
                         });
                     }, {
                         name: 'Error',
-                        message: (await err()).tokenNotFound
+                        message: (await err(deadAddr)).tokenNotFound
                     });
                 });
 
@@ -307,7 +292,7 @@ let isExist;
                         });
                     }, {
                         name: 'Error',
-                        message: (await err()).notAuthorized
+                        message: (await err(signerAddr2)).notAuthorized
                     });
                 });
 
@@ -336,7 +321,7 @@ let isExist;
             });
         });
 
-        xdescribe('Emitter', async () => {
+        describe('Emitter', async () => {
             it('should emit ticket ID / forwardEvent()', async () => {
                 await sendETHv2(newProxyAddr, 0.01);
                 receipt = await activateProxyLikeOps(newProxyAddr, ozERC1967proxyAddr);
