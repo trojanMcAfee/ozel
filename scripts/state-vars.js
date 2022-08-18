@@ -69,7 +69,7 @@ const diamondABI = [
 ];
 
 
-const oz1967ProxyABI = [
+const unifiedABIeth = [
     'function setTestReturnContract(address testReturn_, bytes32 position_) public',
     'function changeUserSlippage(uint256 newUserSlippage_) external'
 ];
@@ -197,6 +197,6 @@ module.exports = {
     dForcePoolAddr,
     l1ProviderRinkeby,
     l2Provider,
-    oz1967ProxyABI
+    unifiedABIeth
 };
 

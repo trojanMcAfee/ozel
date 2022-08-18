@@ -22,7 +22,7 @@ const {
     ETH,
     nullAddr,
     deadAddr,
-    oz1967ProxyABI
+    unifiedABIeth
  } = require('../scripts/state-vars.js');
 
  const {
@@ -185,7 +185,7 @@ let isExist;
             });
         });
 
-        describe('ozBeaconProxy / ozPayMe', async () => {
+        xdescribe('ozBeaconProxy / ozPayMe', async () => {
             describe('fallback()', async () => {
                 it('should not allow re-calling / initialize()', async () => {
                     await assert.rejects(async () => {
@@ -321,7 +321,7 @@ let isExist;
             });
         });
 
-        describe('Emitter', async () => {
+        xdescribe('Emitter', async () => {
             it('should emit ticket ID / forwardEvent()', async () => {
                 await sendETHv2(newProxyAddr, 0.01);
                 receipt = await activateProxyLikeOps(newProxyAddr, ozERC1967proxyAddr);
@@ -349,7 +349,7 @@ let isExist;
             }); 
         });
     
-        describe('StorageBeacon', async () => {
+        xdescribe('StorageBeacon', async () => {
             it('shoud not allow an user to issue an userID / issueUserID()', async () => {
                 await assert.rejects(async () => {
                     await storageBeacon.issueUserID(evilUserDetails);
@@ -492,7 +492,7 @@ let isExist;
             });
         });
 
-        describe('ozUpgradeableBeacon', async () => {
+        xdescribe('ozUpgradeableBeacon', async () => {
 
             it('should allow the owner to upgrade the Storage Beacon / upgradeStorageBeacon()', async () => {
                 [storageBeaconMockAddr , storageBeaconMock] = await deployContract('StorageBeaconMock', l1Signer);
@@ -620,7 +620,7 @@ let isExist;
                 await beacon.upgradeTo(faultyOzPayMe2Addr);       
                 const [ testReturnAddr ] = await deployContract('TestReturn', l1Signer);
 
-                iface = new ethers.utils.Interface(oz1967ProxyABI);
+                iface = new ethers.utils.Interface(unifiedABIeth);
                 selectorTest = iface.getSighash('setTestReturnContract');
                 selectorSlipp = iface.getSighash('changeUserSlippage');
                 
