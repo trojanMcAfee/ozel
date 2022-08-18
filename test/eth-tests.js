@@ -269,11 +269,11 @@ let tx, receipt;
                 });
 
                 it('should allow funds to be sent with correct userDetails even if malicious data was passed / sendToArb() - delegate()', async () => {
-                    newProxy = await hre.ethers.getContractAt('ozBeaconProxy', newProxyAddr);
+                    // newProxy = await hre.ethers.getContractAt('ozBeaconProxy', newProxyAddr);
                     ops = await hre.ethers.getContractAt('IOps', pokeMeOpsAddr);
-                    signer2 = await hre.ethers.provider.getSigner(signerAddr2);
+                    // signer2 = await hre.ethers.provider.getSigner(signerAddr2);
 
-                    await ops.connect(signer2).createTaskNoPrepayment(
+                    await ops.connect(signers[1]).createTaskNoPrepayment(
                         newProxyAddr,
                         0xaa309254, //first 4 bytes of sendToArb(tuplex2)
                         newProxyAddr,
@@ -281,9 +281,9 @@ let tx, receipt;
                         ETH
                     );
 
-                    await signer.sendTransaction({to: newProxyAddr, value: parseEther('0.01')});
+                    await signers[0].sendTransaction({to: newProxyAddr, value: parseEther('0.01')});
                     
-                    const receipt = await activateProxyLikeOps(newProxyAddr, signerAddr2, true, [evilVarConfig, evilUserDetails]);
+                    receipt = await activateProxyLikeOps(newProxyAddr, signerAddr2, true, [evilVarConfig, evilUserDetails]);
 
                     balance = await hre.ethers.provider.getBalance(newProxyAddr);
                     assert.equal(balance.toString(), 0);
