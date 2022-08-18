@@ -227,11 +227,6 @@ let tx, receipt;
 
                 it('shoud not allow to change userToken for the 0 address / changeUserToken()', async () => {
                     await assert.rejects(async () => {
-                        // await sendTx({
-                        //     receiver: newProxyAddr,
-                        //     method: 'changeUserToken',
-                        //     args: [nullAddr]
-                        // });
                         await newProxy.changeUserToken(nullAddr);
                     }, {
                         name: 'Error',
@@ -241,11 +236,6 @@ let tx, receipt;
 
                 it('shoud not allow to change userToken for a token not found in the database / changeUserToken()', async () => {
                     await assert.rejects(async () => {
-                        // await sendTx({
-                        //     receiver: newProxyAddr,
-                        //     method: 'changeUserToken',
-                        //     args: [deadAddr]
-                        // });
                         await newProxy.changeUserToken(deadAddr); 
                     }, {
                         name: 'Error',
@@ -254,11 +244,6 @@ let tx, receipt;
                 });
 
                 it('should allow the user to change userSlippage / changeUserSlippage()', async () => {
-                    // receipt = await sendTx({
-                    //     receiver: newProxyAddr,
-                    //     method: 'changeUserSlippage',
-                    //     args: ['200']
-                    // });
                     tx = await newProxy.changeUserSlippage(200);
                     receipt = await tx.wait();
                     newUserSlippage = getEventParam(receipt);
@@ -267,11 +252,7 @@ let tx, receipt;
 
                 it('should not allow to change userSlippage to 0 / changeUserSlippage()', async () => {
                     await assert.rejects(async () => {
-                        await sendTx({
-                            receiver: newProxyAddr,
-                            method: 'changeUserSlippage',
-                            args: ['0']
-                        });
+                        await newProxy.changeUserSlippage(0);
                     }, {
                         name: 'Error',
                         message: (await err()).zeroSlippage
@@ -280,12 +261,7 @@ let tx, receipt;
 
                 it('should not allow an external user to change userSlippage / changeUserSlippage()', async () => {
                     await assert.rejects(async () => {
-                        await sendTx({
-                            receiver: newProxyAddr,
-                            method: 'changeUserSlippage',
-                            args: ['200'],
-                            isSigner2: true
-                        });
+                        await newProxy.connect(signers[1]).changeUserSlippage(200);
                     }, {
                         name: 'Error',
                         message: (await err(signerAddr2)).notAuthorized
