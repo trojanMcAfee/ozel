@@ -492,7 +492,7 @@ let isExist;
             });
         });
 
-        xdescribe('ozUpgradeableBeacon', async () => {
+        describe('ozUpgradeableBeacon', async () => {
 
             it('should allow the owner to upgrade the Storage Beacon / upgradeStorageBeacon()', async () => {
                 [storageBeaconMockAddr , storageBeaconMock] = await deployContract('StorageBeaconMock', l1Signer);
@@ -505,7 +505,7 @@ let isExist;
                     await beacon.connect(signer2).upgradeStorageBeacon(storageBeaconMockAddr);
                 }, {
                     name: 'Error',
-                    message: err().notOwner
+                    message: (await err()).notOwner
                 });
             });
 
