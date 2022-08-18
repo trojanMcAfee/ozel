@@ -34,7 +34,7 @@ const {
     chainlinkAggregatorAddr,
     l1ProviderRinkeby,
     l2Provider, 
-    unifiedABIeth
+    proxyABIeth
 } = require('./state-vars.js');
 
 

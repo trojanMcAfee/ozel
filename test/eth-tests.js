@@ -23,7 +23,8 @@ const {
     ETH,
     nullAddr,
     deadAddr,
-    unifiedABIeth
+    proxyABIeth,
+    factoryABI
  } = require('../scripts/state-vars.js');
 
  const {
@@ -99,7 +100,7 @@ let isExist, proxyFactory;
             ] = await deploySystem('Optimistically', userDetails, signerAddr));
             storeVarsInHelpers(ozERC1967proxyAddr);
 
-            proxyFactory = await hre.ethers.getContractAt(unifiedABIeth, ozERC1967proxyAddr);
+            proxyFactory = await hre.ethers.getContractAt(factoryABI, ozERC1967proxyAddr);
         });
 
         describe('ProxyFactory', async () => {
@@ -184,14 +185,19 @@ let isExist, proxyFactory;
         });
 
         describe('ozBeaconProxy / ozPayMe', async () => {
+            before(async () => {
+                newProxy = await hre.ethers.getContractAt(proxyABIeth, newProxyAddr);
+            });
+
             describe('fallback()', async () => {
                 it('should not allow re-calling / initialize()', async () => {
                     await assert.rejects(async () => {
-                        await sendTx({
-                            receiver: newProxyAddr,
-                            method: 'initialize',
-                            args: [0, nullAddr]
-                        });
+                        // await sendTx({
+                        //     receiver: newProxyAddr,
+                        //     method: 'initialize',
+                        //     args: [0, nullAddr]
+                        // });
+                        await newProxy.initialize(0, nullAddr);
                     }, {
                         name: 'Error',
                         message: (await err()).alreadyInitialized 
@@ -545,7 +551,7 @@ let isExist, proxyFactory;
 
             storeVarsInHelpers(ozERC1967proxyAddr);
 
-            proxyFactory = await hre.ethers.getContractAt(unifiedABIeth, ozERC1967proxyAddr);
+            proxyFactory = await hre.ethers.getContractAt(proxyABIeth, ozERC1967proxyAddr);
         });
 
         describe('ozBeaconProxy / ozPayMe', async () => {
@@ -621,7 +627,7 @@ let isExist, proxyFactory;
                 await beacon.upgradeTo(faultyOzPayMe2Addr);       
                 const [ testReturnAddr ] = await deployContract('TestReturn', l1Signer);
 
-                iface = new ethers.utils.Interface(unifiedABIeth);
+                iface = new ethers.utils.Interface(proxyABIeth);
                 selectorTest = iface.getSighash('setTestReturnContract');
                 selectorSlipp = iface.getSighash('changeUserSlippage');
                 
