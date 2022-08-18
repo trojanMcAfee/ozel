@@ -81,11 +81,10 @@ let tx, receipt;
         ];
 
         WETH = await hre.ethers.getContractAt('IERC20', wethAddr);
-        // signer = await hre.ethers.provider.getSigner(signerAddr);
         signers = await hre.ethers.getSigners();
     });
 
-    describe('Optimistic deployment', async function () { 
+    xdescribe('Optimistic deployment', async function () { 
         before( async () => {
             ([
                 beacon, 
@@ -499,7 +498,7 @@ let tx, receipt;
 
 
     //autoRedeem set to 0
-    xdescribe('Pesimistic deployment', async function () {
+    describe('Pesimistic deployment', async function () {
         before( async () => {
             ([
                 beacon, 
@@ -515,7 +514,7 @@ let tx, receipt;
 
             storeVarsInHelpers(ozERC1967proxyAddr);
 
-            proxyFactory = await hre.ethers.getContractAt(proxyABIeth, ozERC1967proxyAddr);
+            proxyFactory = await hre.ethers.getContractAt(factoryABI, ozERC1967proxyAddr);
         });
 
         describe('ozBeaconProxy / ozPayMe', async () => {
@@ -526,7 +525,7 @@ let tx, receipt;
             });
 
             it('should have an initial balance of 100 ETH', async () => {
-                await signer.sendTransaction({to: newProxyAddr, value: parseEther('100')});
+                await signers[0].sendTransaction({to: newProxyAddr, value: parseEther('100')});
                 balance = await hre.ethers.provider.getBalance(newProxyAddr);
                 assert.equal(formatEther(balance), '100.0');
             });
@@ -541,9 +540,9 @@ let tx, receipt;
                 assert(Number(balance) > 0);
             });
 
-            xit("should send the ETH back to the user as last resort / _runEmergencyMode()", async () => {
+            it("should send the ETH back to the user as last resort / _runEmergencyMode()", async () => {
                 //UserSlippage is change to 1 to produce a slippage error derived from priceMinOut calculation
-                await signer.sendTransaction({to: newProxyAddr, value: parseEther('100')});
+                await signers[0].sendTransaction({to: newProxyAddr, value: parseEther('100')});
                 await sendTx({
                     receiver: newProxyAddr,
                     method: 'changeUserSlippage',
@@ -560,7 +559,7 @@ let tx, receipt;
                 await WETH.transfer(deadAddr, postBalance);
             });
 
-            xit('should execute the USDC swap in the second attempt / FaultyOzPayMe - _runEmergencyMode()', async () => {
+            it('should execute the USDC swap in the second attempt / FaultyOzPayMe - _runEmergencyMode()', async () => {
                 const [ faultyOzPayMeAddr ] = await deployContract('FaultyOzPayMe', l1Signer);
                 await beacon.upgradeTo(faultyOzPayMeAddr);
                 await sendTx({
@@ -569,7 +568,7 @@ let tx, receipt;
                     args: [defaultSlippage.toString()]
                 });
                 
-                await signer.sendTransaction({to: newProxyAddr, value: parseEther('100')});
+                await signers[0].sendTransaction({to: newProxyAddr, value: parseEther('100')});
 
                 preBalance = await USDC.balanceOf(signerAddr);
                 receipt = await activateProxyLikeOps(newProxyAddr, ozERC1967proxyAddr); 
@@ -586,7 +585,7 @@ let tx, receipt;
              * 
              * Check changeUserSlippage() on FaultyOzPayMe2
              */
-            xit('should send ETH back to the user when the emergency swap returns 0 at the 2nd attempt / FaultyOzPayMe2 - _runEmergencyMode()', async () => {
+            it('should send ETH back to the user when the emergency swap returns 0 at the 2nd attempt / FaultyOzPayMe2 - _runEmergencyMode()', async () => {
                 const [ faultyOzPayMe2Addr ] = await deployContract('FaultyOzPayMe2', l1Signer);
                 await beacon.upgradeTo(faultyOzPayMe2Addr);       
                 const [ testReturnAddr ] = await deployContract('TestReturn', l1Signer);
@@ -602,12 +601,12 @@ let tx, receipt;
                 ]);
                 changedData = encodedData.replace(selectorTest, selectorSlipp);
                 
-                await signer.sendTransaction({
+                await signers[0].sendTransaction({
                     to: newProxyAddr,
                     data: changedData
                 });
 
-                await signer.sendTransaction({to: newProxyAddr, value: parseEther('100')});
+                await signers[0].sendTransaction({to: newProxyAddr, value: parseEther('100')});
 
                 preBalance = await WETH.balanceOf(signerAddr);
                 assert.equal(preBalance, 0);
@@ -631,7 +630,7 @@ let tx, receipt;
                     args: ['1']
                 });
 
-                await signer.sendTransaction({to: newProxyAddr, value: parseEther('100')});
+                await signers[0].sendTransaction({to: newProxyAddr, value: parseEther('100')});
 
                 failedFunds = await storageBeacon.getFailedERCFunds(signerAddr, wethAddr);
                 assert.equal(formatEther(failedFunds), 0);

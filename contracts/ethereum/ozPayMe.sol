@@ -139,8 +139,6 @@ contract ozPayMe is ModifiersETH, ReentrancyGuard, Initializable {
 
 
     function _runEmergencyMode() private nonReentrant { 
-        console.log(1);
-
         address sBeacon = _getStorageBeacon(_beacon, 0);
         StorageBeacon.EmergencyMode memory eMode = StorageBeacon(sBeacon).getEmergencyMode();
         
@@ -152,7 +150,6 @@ contract ozPayMe is ModifiersETH, ReentrancyGuard, Initializable {
         );
 
         if (success) {
-            console.log(2);
             for (uint i=1; i <= 2;) {
                 ISwapRouter.ExactInputSingleParams memory params =
                     ISwapRouter.ExactInputSingleParams({
@@ -167,7 +164,6 @@ contract ozPayMe is ModifiersETH, ReentrancyGuard, Initializable {
                     });
 
                 try eMode.swapRouter.exactInputSingle(params) { 
-                    console.log(3);
                     break; 
                 } catch {
                     if (i == 1) {
