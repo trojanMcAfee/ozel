@@ -132,7 +132,6 @@ contract StorageBeacon is Initializable, Ownable {
         userToProxy[user_].push(proxy_);
         proxyToUser[proxy_] = user_;
         proxyDatabase[proxy_] = true;
-        console.log('user in saveUserProxy: ', user_);
         userDatabase[user_] = true;
     }
 

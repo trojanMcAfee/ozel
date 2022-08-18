@@ -24,7 +24,11 @@ import 'hardhat/console.sol';
 
 
 contract ImplementationMock is ModifiersETH, ReentrancyGuard, Initializable { 
+
     using FixedPointMathLib for uint;
+
+    StorageBeacon.UserConfig userDetails;
+    StorageBeacon.FixedConfig fxConfig;
 
     address private _beacon;
 
@@ -33,6 +37,16 @@ contract ImplementationMock is ModifiersETH, ReentrancyGuard, Initializable {
     event NewUserToken(address indexed user, address indexed newToken);
     event NewUserSlippage(address indexed user, uint indexed newSlippage);
     event MockCalled(uint mockVar);
+
+    modifier onlyOps() {
+        if (msg.sender != fxConfig.ops) revert NotAuthorized(msg.sender);
+        _;
+    }
+
+    modifier onlyUser() {
+        if (msg.sender != userDetails.user) revert NotAuthorized(msg.sender);
+        _;
+    }
 
 
     function initialize(

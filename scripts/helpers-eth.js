@@ -1,7 +1,13 @@
 const { Bridge } = require('arb-ts');
 const { hexDataLength } = require('@ethersproject/bytes');
 const { L1ToL2MessageGasEstimator} = require('@arbitrum/sdk/dist/lib/message/L1ToL2MessageGasEstimator')
-
+const { ethers } = require('hardhat');
+const { 
+    hexStripZeros, 
+    parseEther,
+    defaultAbiCoder: abiCoder,
+    formatEther
+} = ethers.utils;
 
 const { 
     chainId,
@@ -29,13 +35,7 @@ const {
     l1ProviderRinkeby,
     l2Provider
 } = require('./state-vars.js');
-const { ethers } = require('hardhat');
 
-const { 
-    hexStripZeros, 
-    parseEther,
-    defaultAbiCoder: abiCoder
-} = ethers.utils;
 
 
 let proxyFactory;
@@ -152,7 +152,6 @@ async function sendTx(params) {
 
 
 async function createProxy(userDetails) {
-    console.log('user in createProxy: ', userDetails[0]);
     await sendTx({
         receiver: proxyFactory,
         method: 'createNewProxy',
@@ -231,8 +230,15 @@ async function activateProxyLikeOps(proxy, taskCreator, isEvil, evilParams) {
     } else {
         execData = iface.encodeFunctionData('sendToArb');
     }
+
+    balance = await hre.ethers.provider.getBalance(proxy);
+    console.log('bal pre in activateProxy: ', formatEther(balance));
+
     const tx = await ops.connect(gelatoSigner).exec(0, ETH, taskCreator, false, false, resolverHash, proxy, execData);
     const receipt = await tx.wait();
+
+    balance = await hre.ethers.provider.getBalance(proxy);
+    console.log('bal post in activateProxy: ', formatEther(balance));
 
     await hre.network.provider.request({
         method: "hardhat_stopImpersonatingAccount",

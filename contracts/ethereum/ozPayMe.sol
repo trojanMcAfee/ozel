@@ -29,6 +29,9 @@ contract ozPayMe is ModifiersETH, ReentrancyGuard, Initializable {
     using FixedPointMathLib for uint;
     using ozERC20Lib for IERC20;
 
+    StorageBeacon.UserConfig userDetails;
+    StorageBeacon.FixedConfig fxConfig;
+
     address private _beacon;
 
     event FundsToArb(address indexed sender, uint amount);
@@ -36,6 +39,17 @@ contract ozPayMe is ModifiersETH, ReentrancyGuard, Initializable {
     event NewUserToken(address indexed user, address indexed newToken);
     event NewUserSlippage(address indexed user, uint indexed newSlippage);
     event FailedERCFunds(address indexed user_, uint indexed amount_);
+
+
+    modifier onlyOps() {
+        if (msg.sender != fxConfig.ops) revert NotAuthorized(msg.sender);
+        _;
+    }
+
+    modifier onlyUser() {
+        if (msg.sender != userDetails.user) revert NotAuthorized(msg.sender);
+        _;
+    }
 
 
     function initialize(
@@ -57,30 +71,16 @@ contract ozPayMe is ModifiersETH, ReentrancyGuard, Initializable {
         StorageBeacon.VariableConfig calldata varConfig_,
         StorageBeacon.UserConfig calldata userDetails_
     ) external payable onlyOps { 
-        console.log(10);
-
         StorageBeacon storageBeacon = StorageBeacon(_getStorageBeacon(_beacon, 0)); 
 
-        console.log(103);
-
         if (userDetails_.user == address(0) || userDetails_.userToken == address(0)) revert CantBeZero('address');
-        console.log(1031);
-        console.log(storageBeacon.isUser(userDetails_.user));
-        console.log('user: ', userDetails_.user);
         if (!(storageBeacon.isUser(userDetails_.user))) revert UserNotInDatabase(userDetails_.user);
-        console.log(1032);
         if (!(storageBeacon.queryTokenDatabase(userDetails_.userToken))) revert TokenNotInDatabase(userDetails_.userToken);
-        console.log(1033);
         if (userDetails_.userSlippage <= 0) revert CantBeZero('slippage');
-        console.log(1034);
         if (!(address(this).balance > 0)) revert CantBeZero('contract balance');
-
-        console.log(104);
 
         (uint fee, ) = IOps(fxConfig.ops).getFeeDetails();
         _transfer(fee, fxConfig.ETH);
-
-        console.log(105);
 
         bool isEmergency = false;
 
@@ -89,13 +89,13 @@ contract ozPayMe is ModifiersETH, ReentrancyGuard, Initializable {
             userDetails_
         );
 
-        console.log(106);
+        console.log('autoRedeem: ', varConfig_.autoRedeem);
 
         bytes memory ticketData = abi.encodeWithSelector(
             DelayedInbox(fxConfig.inbox).createRetryableTicket.selector, 
             fxConfig.OZL, 
-            address(this).balance - varConfig_.autoRedeem,
-            varConfig_.maxSubmissionCost,  
+            address(this).balance - varConfig_.autoRedeem, // - varConfig_.autoRedeem
+            varConfig_.maxSubmissionCost,   
             fxConfig.OZL, 
             fxConfig.OZL, 
             fxConfig.maxGas,  
@@ -103,16 +103,15 @@ contract ozPayMe is ModifiersETH, ReentrancyGuard, Initializable {
             swapData
         );
 
-        console.log(100);
         uint amountToSend = address(this).balance;
-        console.log(101);
-        (bool success, bytes memory returnData) = fxConfig.inbox.call{value: address(this).balance}(ticketData);
-        console.log(11);
+        console.log('bal pre: ', address(this).balance);
+        (bool success, bytes memory returnData) = fxConfig.inbox.call{value: address(this).balance}(ticketData); 
+        console.log('success: ', success);
+        console.log('bal post: ', address(this).balance);
+
         if (!success) {
-            console.log(12);
             (success, returnData) = fxConfig.inbox.call{value: address(this).balance}(ticketData); 
             if (!success) { 
-                console.log(13);
                 emit EmergencyTriggered(userDetails_.user, amountToSend);
                 _runEmergencyMode();
                 isEmergency = true;
@@ -125,8 +124,10 @@ contract ozPayMe is ModifiersETH, ReentrancyGuard, Initializable {
             if (!storageBeacon.getEmitterStatus()) { 
                 uint ticketID = abi.decode(returnData, (uint));
                 Emitter(fxConfig.emitter).forwardEvent(ticketID); 
+                console.log('bal final: ******', address(this).balance);
             }
         }
+
     }
 
 

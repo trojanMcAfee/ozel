@@ -87,7 +87,7 @@ let isExist;
         signer = await hre.ethers.provider.getSigner(signerAddr);
     });
 
-    xdescribe('Optimistic deployment', async () => { 
+    describe('Optimistic deployment', async function () { 
         before( async () => {
             ([
                 beacon, 
@@ -105,7 +105,6 @@ let isExist;
         });
 
         describe('ProxyFactory', async () => {
-
             describe('Deploys one proxy', async () => {
                 it('should create a proxy successfully / createNewProxy()', async () => {
                     await createProxy(userDetails);
@@ -113,53 +112,70 @@ let isExist;
                     assert.equal(newProxyAddr.length, 42);
                 });
 
-                it('should not allow to create a proxy with the 0 address / createNewProxy()', async () => {
+                xit('should not allow to create a proxy with the 0 address / createNewProxy()', async () => {
                     userDetails[1] = nullAddr;
                     await assert.rejects(async () => {
                         await createProxy(userDetails);
                     }, {
                         name: 'Error',
-                        message: err().zeroAddress 
+                        message: (await err()).zeroAddress 
                     });
                 });
 
-                it('should not allow to create a proxy with 0 slippage / createNewProxy()', async () => {
+                xit('should not allow to create a proxy with 0 slippage / createNewProxy()', async () => {
                     userDetails[1] = usdtAddrArb;
                     userDetails[2] = 0;
                     await assert.rejects(async () => {
                         await createProxy(userDetails);
                     }, {
                         name: 'Error',
-                        message: err().zeroSlippage
+                        message: (await err()).zeroSlippage
                     });
                 });
 
-                it('should not allow to create a proxy with a userToken not found in the database / createNewProxy()', async () => {
+                xit('should not allow to create a proxy with a userToken not found in the database / createNewProxy()', async () => {
                     userDetails[1] = deadAddr;
                     userDetails[2] = defaultSlippage;
                     await assert.rejects(async () => {
                         await createProxy(userDetails);
                     }, {
                         name: 'Error',
-                        message: err().tokenNotFound
+                        message: (await err(deadAddr)).tokenNotFound
                     });
                 })
     
-                it('should have an initial balance of 0.01 ETH', async () => {
+                xit('should have an initial balance of 0.01 ETH', async () => {
                     await sendETHv2(newProxyAddr, 0.01);
                     balance = await hre.ethers.provider.getBalance(newProxyAddr);
                     assert.equal(formatEther(balance), '0.01');
+
+                    //Clean up
+                    await signer.sendTransaction({
+                        to: deadAddr,
+                        value: balance
+                    });
                 });
     
                 it('should have a final balance of 0 ETH', async () => {
-                    await activateProxyLikeOps(newProxyAddr, ozERC1967proxyAddr); 
                     balance = await hre.ethers.provider.getBalance(newProxyAddr);
+                    console.log('bal in test pre0: ', formatEther(balance));
+
+                    await sendETHv2(newProxyAddr, 0.01);
+
+                    balance = await hre.ethers.provider.getBalance(newProxyAddr);
+                    console.log('bal in test pre: ', formatEther(balance));
+
+                    await activateProxyLikeOps(newProxyAddr, ozERC1967proxyAddr); 
+
+                    balance = await hre.ethers.provider.getBalance(newProxyAddr);
+                    console.log('bal in test post: ', formatEther(balance));
+
                     assert.equal(formatEther(balance), 0);
                 });
             });
 
 
-            describe('Deploys 5 proxies', async () => {
+            xdescribe('Deploys 5 proxies', async () => {
                 it('should create 5 proxies successfully / createNewProxy()', async () => {
                     userDetails[1] = usdcAddr;
                     for (let i=0; i < 5; i++) {
@@ -186,7 +202,7 @@ let isExist;
             });
         });
 
-        describe('ozBeaconProxy / ozPayMe', async () => {
+        xdescribe('ozBeaconProxy / ozPayMe', async () => {
             describe('fallback()', async () => {
                 it('should not allow re-calling / initialize()', async () => {
                     await assert.rejects(async () => {
@@ -197,7 +213,7 @@ let isExist;
                         });
                     }, {
                         name: 'Error',
-                        message: err().alreadyInitialized 
+                        message: (await err()).alreadyInitialized 
                     });
                 });
 
@@ -206,7 +222,7 @@ let isExist;
                         await activateOzBeaconProxy(newProxyAddr);
                     }, {
                         name: 'Error',
-                        message: err().onlyOps 
+                        message: (await err()).onlyOps 
                     });
                 });
 
@@ -230,7 +246,7 @@ let isExist;
                         });
                     }, {
                         name: 'Error',
-                        message: err().notAuthorized
+                        message: (await err()).notAuthorized
                     });
                 });
 
@@ -243,7 +259,7 @@ let isExist;
                         });
                     }, {
                         name: 'Error',
-                        message: err().zeroAddress
+                        message: (await err()).zeroAddress
                     });
                 });
 
@@ -256,7 +272,7 @@ let isExist;
                         });
                     }, {
                         name: 'Error',
-                        message: err().tokenNotFound
+                        message: (await err()).tokenNotFound
                     });
                 });
 
@@ -279,7 +295,7 @@ let isExist;
                         });
                     }, {
                         name: 'Error',
-                        message: err().zeroSlippage
+                        message: (await err()).zeroSlippage
                     });
                 });
 
@@ -293,7 +309,7 @@ let isExist;
                         });
                     }, {
                         name: 'Error',
-                        message: err().notAuthorized
+                        message: (await err()).notAuthorized
                     });
                 });
 
@@ -322,7 +338,7 @@ let isExist;
             });
         });
 
-        describe('Emitter', async () => {
+        xdescribe('Emitter', async () => {
             it('should emit ticket ID / forwardEvent()', async () => {
                 await sendETHv2(newProxyAddr, 0.01);
                 receipt = await activateProxyLikeOps(newProxyAddr, ozERC1967proxyAddr);
@@ -336,7 +352,7 @@ let isExist;
                     await emitter.forwardEvent(000000);
                 }, {
                     name: 'Error',
-                    message: err().notProxy 
+                    message: (await err()).notProxy 
                 });
             });
     
@@ -345,12 +361,12 @@ let isExist;
                     await emitter.storeBeacon(nullAddr);
                 }, {
                     name: 'Error',
-                    message: err().alreadyInitialized 
+                    message: (await err()).alreadyInitialized 
                 });
             }); 
         });
     
-        describe('StorageBeacon', async () => {
+        xdescribe('StorageBeacon', async () => {
             it('shoud not allow an user to issue an userID / issueUserID()', async () => {
                 await assert.rejects(async () => {
                     await storageBeacon.issueUserID(evilUserDetails);
@@ -493,7 +509,7 @@ let isExist;
             });
         });
 
-        describe('ozUpgradeableBeacon', async () => {
+        xdescribe('ozUpgradeableBeacon', async () => {
 
             it('should allow the owner to upgrade the Storage Beacon / upgradeStorageBeacon()', async () => {
                 [storageBeaconMockAddr , storageBeaconMock] = await deployContract('StorageBeaconMock', l1Signer);
@@ -531,7 +547,7 @@ let isExist;
 
 
     //autoRedeem set to 0
-    describe('Pesimistic deployment', async function () {
+    xdescribe('Pesimistic deployment', async function () {
         before( async () => {
             ([
                 beacon, 

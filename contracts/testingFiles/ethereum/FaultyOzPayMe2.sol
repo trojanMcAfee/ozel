@@ -30,6 +30,9 @@ contract FaultyOzPayMe2 is ModifiersETH, ReentrancyGuard, Initializable {
     using FixedPointMathLib for uint;
     using ozERC20Lib for IERC20;
 
+    StorageBeacon.UserConfig userDetails;
+    StorageBeacon.FixedConfig fxConfig;
+
     address private _beacon;
 
     bytes32 constant TEST_POSITION = keccak256('test.position');
@@ -42,6 +45,16 @@ contract FaultyOzPayMe2 is ModifiersETH, ReentrancyGuard, Initializable {
 
     //Custom event that checks for the second attempt on EmergencyMode
     event SecondAttempt(uint success);
+
+    modifier onlyOps() {
+        if (msg.sender != fxConfig.ops) revert NotAuthorized(msg.sender);
+        _;
+    }
+
+    modifier onlyUser() {
+        if (msg.sender != userDetails.user) revert NotAuthorized(msg.sender);
+        _;
+    }
 
 
     function initialize(
