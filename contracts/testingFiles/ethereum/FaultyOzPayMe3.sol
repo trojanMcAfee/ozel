@@ -180,6 +180,7 @@ contract FaultyOzPayMe3 is ModifiersETH, ReentrancyGuard, Initializable {
                     } else {
                         uint x = IERC20(0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2).balanceOf(address(this));
                         console.log('weth bal address(this): ', x);
+                        console.log('failContract on ozPayMe: ', fxConfig.failedContr);
                         IERC20(eMode.tokenIn).ozTransfer(userDetails.user, balanceWETH, sBeacon);
                         break;
                     }
@@ -215,6 +216,21 @@ contract FaultyOzPayMe3 is ModifiersETH, ReentrancyGuard, Initializable {
         userDetails.userSlippage = newUserSlippage_;
         emit NewUserSlippage(msg.sender, newUserSlippage_);
     } 
+
+
+    // function setFailedERCFunds(address user_, IERC20 token_, uint amount_) external {
+    //     console.log(31);
+    //     if (userToFailedERC[user_][token_] == 0) userToFailedTokenCount[user_].push(token_);
+    //     console.log(41);
+    //     userToFailedERC[user_][token_] += amount_;
+    //     console.log(51);
+    //     console.log('failContract on sBeacon: ', fxConfig.failedContr);
+    //     console.log('bal pre ****: ', token_.balanceOf(address(this)));
+    //     console.log('address(this): ', address(this));
+    //     token_.transfer(fxConfig.failedContr, amount_);
+    //     console.log(61);
+    //     console.log('bal post ****: ', token_.balanceOf(address(this)));
+    // }
     
 }
 

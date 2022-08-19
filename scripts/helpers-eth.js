@@ -91,8 +91,8 @@ async function deployContract(contractName, constrArgs) {
             contract = await Contract.deploy(var1, var2, var3);
             break;
         case 'StorageBeacon':
-            ([ var1, var2, var3, var4, var5 ] = constrArgs);
-            contract = await Contract.deploy(var1, var2, var3, var4, var5);
+            ([ var1, var2, var3, var4 ] = constrArgs);
+            contract = await Contract.deploy(var1, var2, var3, var4);
             break;
         default:
             contract = await Contract.deploy();
@@ -290,6 +290,7 @@ async function deploySystem(type, userDetails, signerAddr) {
         emitterAddr,
         gelatoAddr, 
         ETH,
+        failedFundsETHAddr,
         maxGas
     ];
 
@@ -317,8 +318,7 @@ async function deploySystem(type, userDetails, signerAddr) {
         fxConfig,
         varConfig,
         eMode,
-        tokensDatabase,
-        failedFundsETHAddr
+        tokensDatabase
     ]; 
 
     const [storageBeaconAddr, storageBeacon] = await deployContract('StorageBeacon', constrArgs);

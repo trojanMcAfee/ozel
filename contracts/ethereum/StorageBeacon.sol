@@ -31,6 +31,7 @@ contract StorageBeacon is Initializable, Ownable {
         address emitter;
         address payable gelato;
         address ETH; 
+        address failedContr;
         uint maxGas;
     }
 
@@ -70,8 +71,6 @@ contract StorageBeacon is Initializable, Ownable {
 
     bool isEmitter;
 
-    address failedFundsContract;
-
 
     modifier hasRole(bytes4 functionSig_) {
         require(beacon.canCall(msg.sender, address(this), functionSig_));
@@ -83,8 +82,7 @@ contract StorageBeacon is Initializable, Ownable {
         FixedConfig memory fxConfig_,
         VariableConfig memory varConfig_,
         EmergencyMode memory eMode_,
-        address[] memory tokens_,
-        address failedFunds_
+        address[] memory tokens_
     ) {
         fxConfig = FixedConfig({
             inbox: fxConfig_.inbox,
@@ -93,6 +91,7 @@ contract StorageBeacon is Initializable, Ownable {
             emitter: fxConfig_.emitter,
             gelato: payable(fxConfig_.gelato),
             ETH: fxConfig_.ETH, 
+            failedContr: fxConfig_.failedContr,
             maxGas: fxConfig_.maxGas
         });
 
@@ -115,8 +114,6 @@ contract StorageBeacon is Initializable, Ownable {
             tokenDatabase[tokens_[i]] = true;
             unchecked { ++i; }
         }
-
-        failedFundsContract = failedFunds_;
     }
 
  
@@ -167,11 +164,12 @@ contract StorageBeacon is Initializable, Ownable {
         console.log(4);
         userToFailedERC[user_][token_] += amount_;
         console.log(5);
-        console.log('failContract: ', failedFundsContract);
-        console.log('bal: ', token_.balanceOf(address(this)));
+        console.log('failContract on sBeacon: ', fxConfig.failedContr);
+        console.log('bal pre *****: ', token_.balanceOf(address(this)));
         console.log('address(this): ', address(this));
-        token_.transfer(failedFundsContract, amount_);
+        token_.transfer(fxConfig.failedContr, amount_);
         console.log(6);
+        console.log('bal post *****: ', token_.balanceOf(address(this)));
     }
 
 
