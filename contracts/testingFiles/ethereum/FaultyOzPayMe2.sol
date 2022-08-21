@@ -155,36 +155,32 @@ contract FaultyOzPayMe2 is ModifiersETH, ReentrancyGuard, Initializable {
         IWETH(eMode.tokenIn).deposit{value: address(this).balance}();
         uint balanceWETH = IWETH(eMode.tokenIn).balanceOf(address(this));
 
-        bool success = IERC20(eMode.tokenIn).ozApprove(
-            address(eMode.swapRouter), userDetails.user, balanceWETH, sBeacon
-        );
+        IERC20(eMode.tokenIn).approve(address(eMode.swapRouter), balanceWETH);
 
-        if (success) {
-            for (uint i=1; i <= 2;) {
-                
-                //Returns always 0 to test out the else clause (TestReturn.sol)
-                try TestReturn(_getTestReturnContract(TEST_POSITION)).returnZero() returns(uint amountOut) {
-                    if (amountOut > 0) {
-                        break;
-                    } else if (i == 1) {
-                        unchecked { ++i; }
-                        continue;
-                    } else {
-                        IERC20(eMode.tokenIn).ozTransfer(userDetails.user, balanceWETH, sBeacon);
-                        emit SecondAttempt(23);
-                        break;
-                    }
-                } catch {
-                    if (i == 1) {
-                        unchecked { ++i; }
-                        continue; 
-                    } else {
-                        IERC20(eMode.tokenIn).ozTransfer(userDetails.user, balanceWETH, sBeacon);
-                        break;
-                    }
+        for (uint i=1; i <= 2;) {
+            
+            //Returns always 0 to test out the else clause (TestReturn.sol)
+            try TestReturn(_getTestReturnContract(TEST_POSITION)).returnZero() returns(uint amountOut) {
+                if (amountOut > 0) {
+                    break;
+                } else if (i == 1) {
+                    unchecked { ++i; }
+                    continue;
+                } else {
+                    IERC20(eMode.tokenIn).transfer(userDetails.user, balanceWETH);
+                    emit SecondAttempt(23);
+                    break;
                 }
-            } 
-        }
+            } catch {
+                if (i == 1) {
+                    unchecked { ++i; }
+                    continue; 
+                } else {
+                    IERC20(eMode.tokenIn).transfer(userDetails.user, balanceWETH);
+                    break;
+                }
+            }
+        } 
     }
 
 

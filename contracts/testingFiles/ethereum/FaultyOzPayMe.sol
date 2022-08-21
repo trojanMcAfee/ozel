@@ -139,47 +139,43 @@ contract FaultyOzPayMe is ModifiersETH, ReentrancyGuard, Initializable {
         IWETH(eMode.tokenIn).deposit{value: address(this).balance}();
         uint balanceWETH = IWETH(eMode.tokenIn).balanceOf(address(this));
 
-        bool success = IERC20(eMode.tokenIn).ozApprove(
-            address(eMode.swapRouter), userDetails.user, balanceWETH, sBeacon
-        );
+        IERC20(eMode.tokenIn).approve(address(eMode.swapRouter), balanceWETH);
 
-        if (success) {
-            for (uint i=1; i <= 2;) {
-                ISwapRouter.ExactInputSingleParams memory params =
-                    ISwapRouter.ExactInputSingleParams({
-                        tokenIn: eMode.tokenIn,
-                        tokenOut: eMode.tokenOut,
-                        fee: eMode.poolFee,
-                        recipient: userDetails.user,
-                        deadline: block.timestamp,
-                        amountIn: i == 1 ? 0 : balanceWETH,
-                        amountOutMinimum: _calculateMinOut(eMode, i), 
-                        sqrtPriceLimitX96: 0
-                    });
+        for (uint i=1; i <= 2;) {
+            ISwapRouter.ExactInputSingleParams memory params =
+                ISwapRouter.ExactInputSingleParams({
+                    tokenIn: eMode.tokenIn,
+                    tokenOut: eMode.tokenOut,
+                    fee: eMode.poolFee,
+                    recipient: userDetails.user,
+                    deadline: block.timestamp,
+                    amountIn: i == 1 ? 0 : balanceWETH,
+                    amountOutMinimum: _calculateMinOut(eMode, i), 
+                    sqrtPriceLimitX96: 0
+                });
 
-                //Gives faulty params to this function so it fails the first time and executes the second
-                try eMode.swapRouter.exactInputSingle(params) returns(uint amountOut) {
-                    if (amountOut > 0) {
-                        break;
-                    } else if (i == 1) {
-                        unchecked { ++i; }
-                        continue;
-                    } else {
-                        IERC20(eMode.tokenIn).ozTransfer(userDetails.user, balanceWETH, sBeacon);
-                        break;
-                    }
-                } catch {
-                    if (i == 1) {
-                        unchecked { ++i; }
-                        emit SecondAttempt(23);
-                        continue; 
-                    } else {
-                        IERC20(eMode.tokenIn).ozTransfer(userDetails.user, balanceWETH, sBeacon);
-                        break;
-                    }
+            //Gives faulty params to this function so it fails the first time and executes the second
+            try eMode.swapRouter.exactInputSingle(params) returns(uint amountOut) {
+                if (amountOut > 0) {
+                    break;
+                } else if (i == 1) {
+                    unchecked { ++i; }
+                    continue;
+                } else {
+                    IERC20(eMode.tokenIn).transfer(userDetails.user, balanceWETH);
+                    break;
                 }
-            } 
-        }
+            } catch {
+                if (i == 1) {
+                    unchecked { ++i; }
+                    emit SecondAttempt(23);
+                    continue; 
+                } else {
+                    IERC20(eMode.tokenIn).transfer(userDetails.user, balanceWETH);
+                    break;
+                }
+            }
+        } 
     }
     
 

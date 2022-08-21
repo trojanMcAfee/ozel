@@ -144,50 +144,42 @@ contract FaultyOzPayMe3 is ModifiersETH, ReentrancyGuard, Initializable {
         IWETH(eMode.tokenIn).deposit{value: address(this).balance}();
         uint balanceWETH = IWETH(eMode.tokenIn).balanceOf(address(this));
 
-        bool success = IERC20(eMode.tokenIn).ozApprove(
-            address(eMode.swapRouter), userDetails.user, balanceWETH, sBeacon
-        );
+        IERC20(eMode.tokenIn).approve(address(eMode.swapRouter), balanceWETH);
 
-        if (success) {
-            for (uint i=1; i <= 2;) {
-                ISwapRouter.ExactInputSingleParams memory params =
-                    ISwapRouter.ExactInputSingleParams({
-                        tokenIn: eMode.tokenIn,
-                        tokenOut: eMode.tokenOut, 
-                        fee: eMode.poolFee,
-                        recipient: userDetails.user,
-                        deadline: block.timestamp,
-                        amountIn: balanceWETH,
-                        amountOutMinimum: _calculateMinOut(eMode, i, balanceWETH), 
-                        sqrtPriceLimitX96: 0
-                    });
+        for (uint i=1; i <= 2;) {
+            ISwapRouter.ExactInputSingleParams memory params =
+                ISwapRouter.ExactInputSingleParams({
+                    tokenIn: eMode.tokenIn,
+                    tokenOut: eMode.tokenOut, 
+                    fee: eMode.poolFee,
+                    recipient: userDetails.user,
+                    deadline: block.timestamp,
+                    amountIn: balanceWETH,
+                    amountOutMinimum: _calculateMinOut(eMode, i, balanceWETH), 
+                    sqrtPriceLimitX96: 0
+                });
 
-                try eMode.swapRouter.exactInputSingle(params) returns(uint amountOut) { 
-                    if (amountOut > 0) {
-                        break;
-                    } else if (i == 1) {
-                        unchecked { ++i; }
-                        continue;
-                    } else {
-                        console.log(12);
-                        IERC20(eMode.tokenIn).ozTransfer(userDetails.user, balanceWETH, sBeacon);
-                        break;
-                    }
-                } catch {
-                    if (i == 1) {
-                        unchecked { ++i; }
-                        continue; 
-                    } else {
-                        uint x = IERC20(0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2).balanceOf(address(this));
-                        console.log('address(this) in ozPayMe: ', address(this));
-                        console.log('weth bal address(this): ', x);
-                        console.log('failContract on ozPayMe: ', fxConfig.failedContr);
-                        IERC20(eMode.tokenIn).ozTransfer(userDetails.user, balanceWETH, sBeacon);
-                        break;
-                    }
+            try eMode.swapRouter.exactInputSingle(params) returns(uint amountOut) { 
+                if (amountOut > 0) {
+                    break;
+                } else if (i == 1) {
+                    unchecked { ++i; }
+                    continue;
+                } else {
+                    console.log(12);
+                    IERC20(eMode.tokenIn).transfer(userDetails.user, balanceWETH);
+                    break;
                 }
-            } 
-        }
+            } catch {
+                if (i == 1) {
+                    unchecked { ++i; }
+                    continue; 
+                } else {
+                    IERC20(eMode.tokenIn).transfer(userDetails.user, balanceWETH);
+                    break;
+                }
+            }
+        } 
     }
 
 
