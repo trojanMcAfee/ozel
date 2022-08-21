@@ -70,27 +70,21 @@ contract RevenueFacetTest {
 
 
     function _swapWETHforRevenue(address owner_, uint balanceWETH_, uint price_) private {
-        bool success = IERC20(s.WETH).ozApprove(
-            address(s.swapRouter), owner_, balanceWETH_
-        );
-
         IERC20(s.WETH).approve(address(s.swapRouter), balanceWETH_);
 
-        if (success) {
-            ISwapRouter.ExactInputSingleParams memory params =
-                ISwapRouter.ExactInputSingleParams({
-                    tokenIn: s.WETH,
-                    tokenOut: s.revenueToken, 
-                    fee: s.poolFee, 
-                    recipient: owner_,
-                    deadline: block.timestamp,
-                    amountIn: balanceWETH_,
-                    amountOutMinimum: _calculateMinOut(balanceWETH_, 1, price_), 
-                    sqrtPriceLimitX96: 0
-                });
+        ISwapRouter.ExactInputSingleParams memory params =
+            ISwapRouter.ExactInputSingleParams({
+                tokenIn: s.WETH,
+                tokenOut: s.revenueToken, 
+                fee: s.poolFee, 
+                recipient: owner_,
+                deadline: block.timestamp,
+                amountIn: balanceWETH_,
+                amountOutMinimum: _calculateMinOut(balanceWETH_, 1, price_), 
+                sqrtPriceLimitX96: 0
+            });
 
-            s.swapRouter.exactInputSingle(params);
-        }
+        s.swapRouter.exactInputSingle(params);
     }
 
 
