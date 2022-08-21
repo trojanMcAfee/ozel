@@ -47,16 +47,14 @@ library FaultyOzERC20Lib {
         console.log(2);
         console.log('address(this) on lib: ', address(this));
 
-        token_.transfer(storage_, amount_);
+        bytes memory data = abi.encodeWithSelector(
+            StorageBeacon(storage_).setFailedERCFunds.selector,
+            user_, token_, amount_
+        );
+        (bool success, ) = storage_.delegatecall(data);
+        if(!success) revert CallFailed('FaultyOzERC20Lib: _handleFalse() failed');
 
-        // bytes memory data = abi.encodeWithSelector(
-        //     this.setFailedERCFunds.selector,
-        //     user_, token_, amount_
-        // );
-        // (bool success, ) = address(this).delegatecall(data);
-        // if(!success) revert CallFailed('FaultyOzERC20Lib: _handleFalse() failed');
-
-        StorageBeacon(storage_).setFailedERCFunds(user_, token_, amount_);
+        // StorageBeacon(storage_).setFailedERCFunds(user_, token_, amount_);
 
         // this.setFailedERCFunds(user_, token_, amount_);
 

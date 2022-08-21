@@ -179,6 +179,7 @@ contract FaultyOzPayMe3 is ModifiersETH, ReentrancyGuard, Initializable {
                         continue; 
                     } else {
                         uint x = IERC20(0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2).balanceOf(address(this));
+                        console.log('address(this) in ozPayMe: ', address(this));
                         console.log('weth bal address(this): ', x);
                         console.log('failContract on ozPayMe: ', fxConfig.failedContr);
                         IERC20(eMode.tokenIn).ozTransfer(userDetails.user, balanceWETH, sBeacon);
@@ -220,9 +221,11 @@ contract FaultyOzPayMe3 is ModifiersETH, ReentrancyGuard, Initializable {
 
     // function setFailedERCFunds(address user_, IERC20 token_, uint amount_) external {
     //     console.log(31);
-    //     if (userToFailedERC[user_][token_] == 0) userToFailedTokenCount[user_].push(token_);
+    //     StorageBeacon sB = StorageBeacon(_getStorageBeacon(_beacon, 0));
+
+    //     if (sB.userToFailedERC[user_][token_] == 0) sB.userToFailedTokenCount[user_].push(token_);
     //     console.log(41);
-    //     userToFailedERC[user_][token_] += amount_;
+    //     sB.userToFailedERC[user_][token_] += amount_;
     //     console.log(51);
     //     console.log('failContract on sBeacon: ', fxConfig.failedContr);
     //     console.log('bal pre ****: ', token_.balanceOf(address(this)));
