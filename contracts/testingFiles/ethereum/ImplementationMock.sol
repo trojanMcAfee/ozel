@@ -16,14 +16,13 @@ import '../../ethereum/StorageBeacon.sol';
 import './StorageBeaconMock.sol';
 import '../../ethereum/ozUpgradeableBeacon.sol';
 import '../../Errors.sol';
-import { ModifiersETH } from '../../Modifiers.sol';
 
 import 'hardhat/console.sol'; 
 
 
 
 
-contract ImplementationMock is ModifiersETH, ReentrancyGuard, Initializable { 
+contract ImplementationMock is ReentrancyGuard, Initializable { 
 
     using FixedPointMathLib for uint;
 

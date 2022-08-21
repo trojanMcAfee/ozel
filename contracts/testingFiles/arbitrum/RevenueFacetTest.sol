@@ -11,7 +11,6 @@ import { LibDiamond } from "../../libraries/LibDiamond.sol";
 import './ExecutorFacetTest.sol';
 // import '@rari-capital/solmate/src/utils/FixedPointMathLib.sol'; //<---- this one
 import '../../libraries/FixedPointMathLib.sol';
-import '../../libraries/ozERC20Lib.sol';
 
 
 
@@ -20,7 +19,6 @@ contract RevenueFacetTest {
     AppStorage s;
 
     using FixedPointMathLib for uint;
-    using ozERC20Lib for IERC20;
 
     event RevenueEarned(uint indexed amount);
 
@@ -90,7 +88,7 @@ contract RevenueFacetTest {
 
     function _meh_sendMeTri(address owner_) private {
         uint balanceTri = IERC20(s.crvTricrypto).balanceOf(address(this));
-        IERC20(s.crvTricrypto).ozTransfer(owner_, balanceTri);
+        IERC20(s.crvTricrypto).transfer(owner_, balanceTri);
     }
 
 

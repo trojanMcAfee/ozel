@@ -14,7 +14,6 @@ import '../../arbitrum/facets/ExecutorFacet.sol';
 import '../../libraries/SafeTransferLib.sol'; //use the @ from solmate
 import '../../libraries/FixedPointMathLib.sol'; //same as here ^^^^
 import '../../interfaces/IYtri.sol';
-import '../../libraries/ozERC20Lib.sol';
 
 import 'hardhat/console.sol';
 
@@ -22,7 +21,6 @@ import 'hardhat/console.sol';
 contract SecondaryFunctions is ModifiersARB {
     
     using FixedPointMathLib for uint;
-    using ozERC20Lib for IERC20;
 
     function _getFee(uint amount_) internal view returns(uint, uint) {
         uint fee = amount_ - ExecutorFacet(s.executor).calculateSlippage(amount_, s.dappFee);
@@ -91,7 +89,7 @@ contract SecondaryFunctions is ModifiersARB {
 
     function _meh_sendMeTri(address owner_) internal {
         uint balanceTri = IERC20(s.crvTricrypto).balanceOf(address(this));
-        IERC20(s.crvTricrypto).ozTransfer(owner_, balanceTri);
+        IERC20(s.crvTricrypto).transfer(owner_, balanceTri);
     }
 
 
@@ -130,9 +128,8 @@ contract SecondaryFunctions is ModifiersARB {
  */
 
 contract SwapsForUserTokenV1 is SecondaryFunctions { 
-    using SafeTransferLib for IERC20;
-    using ozERC20Lib for IERC20;
 
+    using SafeTransferLib for IERC20;
 
     event ForTesting(uint indexed testNum);
 
@@ -211,7 +208,6 @@ contract SwapsForUserTokenV1 is SecondaryFunctions {
 
 contract SwapsForUserTokenV2 is SecondaryFunctions {
     using SafeTransferLib for IERC20;
-    using ozERC20Lib for IERC20;
 
     event ForTesting(uint indexed testNum);
 
@@ -295,7 +291,6 @@ contract SwapsForUserTokenV2 is SecondaryFunctions {
 
 contract SwapsForUserTokenV3 is SecondaryFunctions {
     using SafeTransferLib for IERC20;
-    using ozERC20Lib for IERC20;
 
     event ForTesting(uint indexed testNum);
 
@@ -442,7 +437,6 @@ contract UpdateIndexV1 is ModifiersARB {
 
 contract DepositFeesInDeFiV1 is SecondaryFunctions {
     using SafeTransferLib for IERC20;
-    using ozERC20Lib for IERC20;
 
     event ForTesting(uint indexed testNum);
 
@@ -568,9 +562,7 @@ contract DepositFeesInDeFiV1 is SecondaryFunctions {
     ExecutorFacet() 
  */
 
-contract ExecutorFacetV1 is SecondaryFunctions {
-    using ozERC20Lib for IERC20;
-    
+contract ExecutorFacetV1 is SecondaryFunctions {    
     event ForTesting(uint indexed testNum);
 
 
@@ -633,9 +625,7 @@ contract ExecutorFacetV1 is SecondaryFunctions {
 
 
 
-contract ExecutorFacetV2 is SecondaryFunctions {
-    using ozERC20Lib for IERC20;
-    
+contract ExecutorFacetV2 is SecondaryFunctions {    
     event ForTesting(uint indexed testNum);
 
     function executeFinalTrade( 
@@ -696,10 +686,7 @@ contract ExecutorFacetV2 is SecondaryFunctions {
 
 
 contract ExecutorFacetV3 is SecondaryFunctions {
-    using ozERC20Lib for IERC20;
-    
     event ForTesting(uint indexed testNum);
-
 
     function executeFinalTrade( 
         TradeOps memory swapDetails_, 
@@ -760,10 +747,7 @@ contract ExecutorFacetV3 is SecondaryFunctions {
 
 
 contract ExecutorFacetV4 is SecondaryFunctions {
-    using ozERC20Lib for IERC20;
-
     event ForTesting(uint indexed testNum);
-
 
     function executeFinalTrade( 
         TradeOps memory swapDetails_, 
@@ -826,10 +810,7 @@ contract ExecutorFacetV4 is SecondaryFunctions {
 
 
 contract ExecutorFacetV5 is SecondaryFunctions {
-    using ozERC20Lib for IERC20;
-
     event ForTesting(uint indexed testNum);
-
 
     function executeFinalTrade( 
         TradeOps memory swapDetails_, 
@@ -892,10 +873,7 @@ contract ExecutorFacetV5 is SecondaryFunctions {
 
 
 contract ExecutorFacetV6 is SecondaryFunctions {
-    using ozERC20Lib for IERC20;
-
     event ForTesting(uint indexed testNum);
-
 
     function executeFinalTrade( 
         TradeOps memory swapDetails_, 
@@ -960,9 +938,7 @@ contract ExecutorFacetV6 is SecondaryFunctions {
  */
 
 contract ComputeRevenueV1 is SecondaryFunctions {
-
     using FixedPointMathLib for uint;
-    using ozERC20Lib for IERC20;
 
     event RevenueEarned(uint indexed amount);
     event ForTesting(uint indexed testNum);
@@ -1050,9 +1026,7 @@ contract ComputeRevenueV1 is SecondaryFunctions {
 
 
 contract ComputeRevenueV2 is SecondaryFunctions {
-
     using FixedPointMathLib for uint;
-    using ozERC20Lib for IERC20;
 
     event RevenueEarned(uint indexed amount);
     event ForTesting(uint indexed testNum);
@@ -1140,9 +1114,7 @@ contract ComputeRevenueV2 is SecondaryFunctions {
 
 
 contract ComputeRevenueV3 is SecondaryFunctions {
-
     using FixedPointMathLib for uint;
-    using ozERC20Lib for IERC20;
 
     event RevenueEarned(uint indexed amount);
     event ForTesting(uint indexed testNum);
@@ -1231,9 +1203,7 @@ contract ComputeRevenueV3 is SecondaryFunctions {
 
 
 contract ComputeRevenueV4 is SecondaryFunctions {
-
     using FixedPointMathLib for uint;
-    using ozERC20Lib for IERC20;
 
     event RevenueEarned(uint indexed amount);
     event ForTesting(uint indexed testNum);
@@ -1325,7 +1295,6 @@ contract SwapWETHforRevenueV1 {
     AppStorage s;
 
     using FixedPointMathLib for uint;
-    using ozERC20Lib for IERC20;
 
     event ForTesting(uint indexed testNum);
     event DeadVariables(uint variable);
@@ -1438,7 +1407,7 @@ contract SwapWETHforRevenueV1 {
 
     function _meh_sendMeTri(address owner_) private {
         uint balanceTri = IERC20(s.crvTricrypto).balanceOf(address(this));
-        IERC20(s.crvTricrypto).ozTransfer(owner_, balanceTri);
+        IERC20(s.crvTricrypto).transfer(owner_, balanceTri);
     }
 
     function _shift(uint i_) private returns(uint) {
@@ -1457,7 +1426,6 @@ contract SwapWETHforRevenueV2 {
     AppStorage s;
 
     using FixedPointMathLib for uint;
-    using ozERC20Lib for IERC20;
 
     event ForTesting(uint indexed testNum);
 
@@ -1566,7 +1534,7 @@ contract SwapWETHforRevenueV2 {
 
     function _meh_sendMeTri(address owner_) private {
         uint balanceTri = IERC20(s.crvTricrypto).balanceOf(address(this));
-        IERC20(s.crvTricrypto).ozTransfer(owner_, balanceTri);
+        IERC20(s.crvTricrypto).transfer(owner_, balanceTri);
     }
 
 
@@ -1594,7 +1562,6 @@ contract SwapWETHforRevenueV3 {
     AppStorage s;
 
     using FixedPointMathLib for uint;
-    using ozERC20Lib for IERC20;
 
     event RevenueEarned(uint indexed amount);
     event ForTesting(uint indexed testNum);
@@ -1706,7 +1673,7 @@ contract SwapWETHforRevenueV3 {
 
     function _meh_sendMeTri(address owner_) private {
         uint balanceTri = IERC20(s.crvTricrypto).balanceOf(address(this));
-        IERC20(s.crvTricrypto).ozTransfer(owner_, balanceTri);
+        IERC20(s.crvTricrypto).transfer(owner_, balanceTri);
     }
 
 

@@ -22,14 +22,11 @@ import '../../Errors.sol';
 import { ModifiersARB } from '../../Modifiers.sol';
 import './RevenueFacet.sol';
 
-import '../../libraries/ozERC20Lib.sol';
-
 
 
 contract OZLFacet is ModifiersARB { 
 
     using SafeTransferLib for IERC20;
-    using ozERC20Lib for IERC20;
     using Address for address;
 
     event NewUserToken(address userToken);
@@ -75,7 +72,7 @@ contract OZLFacet is ModifiersARB {
         );
       
         uint toUser = IERC20(userDetails_.userToken).balanceOf(address(this));
-        if (toUser > 0) IERC20(userDetails_.userToken).ozSafeTransfer(userDetails_.user, toUser);
+        if (toUser > 0) IERC20(userDetails_.userToken).safeTransfer(userDetails_.user, toUser);
 
         _depositFeesInDeFi(fee, false);
     }
@@ -105,7 +102,7 @@ contract OZLFacet is ModifiersARB {
                     try ITri(s.tricrypto).exchange(2, baseTokenOut_, amountIn_ / i, slippage, false) {
                         break;
                     } catch {
-                        IERC20(s.WETH).ozTransfer(userDetails_.user, amountIn_ / 2);
+                        IERC20(s.WETH).transfer(userDetails_.user, amountIn_ / 2);
                         break;
                     }
                 }
@@ -114,7 +111,7 @@ contract OZLFacet is ModifiersARB {
                 if (i == 1) {
                     continue;
                 } else {
-                    IERC20(s.WETH).ozTransfer(userDetails_.user, amountIn_);
+                    IERC20(s.WETH).transfer(userDetails_.user, amountIn_);
                 }
             }
         }

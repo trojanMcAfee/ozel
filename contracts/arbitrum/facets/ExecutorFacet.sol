@@ -7,7 +7,6 @@ import '../AppStorage.sol';
 import '../../libraries/FixedPointMathLib.sol';
 import {IMulCurv, ITri} from '../../interfaces/ICurve.sol';
 import { ModifiersARB } from '../../Modifiers.sol';
-import '../../libraries/ozERC20Lib.sol';
 
 // import 'hardhat/console.sol';
 
@@ -15,8 +14,6 @@ import '../../libraries/ozERC20Lib.sol';
 contract ExecutorFacet is ModifiersARB { 
 
     using FixedPointMathLib for uint;
-    using ozERC20Lib for IERC20;
-
 
     function calculateSlippage(
         uint amount_, 
@@ -63,7 +60,7 @@ contract ExecutorFacet is ModifiersARB {
                         ) {
                             break;
                         } catch {
-                            IERC20(swapDetails_.baseToken).ozTransfer(user_, inBalance / 2); 
+                            IERC20(swapDetails_.baseToken).transfer(user_, inBalance / 2); 
                         }
                     }
                     break;
@@ -71,7 +68,7 @@ contract ExecutorFacet is ModifiersARB {
                     if (i == 1) {
                         continue;
                     } else {
-                        IERC20(swapDetails_.baseToken).ozTransfer(user_, inBalance); 
+                        IERC20(swapDetails_.baseToken).transfer(user_, inBalance); 
                     }
                 }
             } else {
@@ -97,7 +94,7 @@ contract ExecutorFacet is ModifiersARB {
                     if (i == 1) {
                         continue;
                     } else {
-                        IERC20(swapDetails_.baseToken).ozTransfer(user_, inBalance); 
+                        IERC20(swapDetails_.baseToken).transfer(user_, inBalance); 
                     }
                 }
             }

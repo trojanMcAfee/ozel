@@ -7,13 +7,11 @@ import '../../arbitrum/AppStorage.sol';
 import '../../libraries/FixedPointMathLib.sol';
 import {IMulCurv, ITri} from '../../interfaces/ICurve.sol';
 import { ModifiersARB } from '../../Modifiers.sol';
-import '../../libraries/ozERC20Lib.sol';
 
 
 contract ExecutorFacetTest is ModifiersARB { 
 
     using FixedPointMathLib for uint;
-    using ozERC20Lib for IERC20;
 
     event DeadVariables(address user);
 

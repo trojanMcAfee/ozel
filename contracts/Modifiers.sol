@@ -38,20 +38,3 @@ abstract contract ModifiersARB is Bits {
         _;
     }
 }
-
-
-abstract contract ModifiersETH {
-
-    // StorageBeacon.UserConfig userDetails;
-    // StorageBeacon.FixedConfig fxConfig;
-
-    // modifier onlyOps() {
-    //     if (msg.sender != fxConfig.ops) revert NotAuthorized(msg.sender);
-    //     _;
-    // }
-
-    // modifier onlyUser() {
-    //     if (msg.sender != userDetails.user) revert NotAuthorized(msg.sender);
-    //     _;
-    // }    
-}

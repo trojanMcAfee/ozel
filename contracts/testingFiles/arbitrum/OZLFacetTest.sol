@@ -21,14 +21,11 @@ import '../../Errors.sol';
 import { ModifiersARB } from '../../Modifiers.sol';
 import './RevenueFacetTest.sol';
 
-import '../../libraries/ozERC20Lib.sol';
-
 
 
 contract OZLFacetTest is ModifiersARB { 
 
     using SafeTransferLib for IERC20;
-    using ozERC20Lib for IERC20;
     using Address for address;
 
     event NewUserToken(address userToken);

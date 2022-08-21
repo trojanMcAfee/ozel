@@ -17,18 +17,15 @@ import '../../ethereum/StorageBeacon.sol';
 import '../../ethereum/ozUpgradeableBeacon.sol';
 import '../../Errors.sol';
 import './TestReturn.sol';
-import '../../libraries/ozERC20Lib.sol';
-import { ModifiersETH } from '../../Modifiers.sol';
 
 import 'hardhat/console.sol';
 
 
 
 
-contract FaultyOzPayMe2 is ModifiersETH, ReentrancyGuard, Initializable { 
+contract FaultyOzPayMe2 is ReentrancyGuard, Initializable { 
 
     using FixedPointMathLib for uint;
-    using ozERC20Lib for IERC20;
 
     StorageBeacon.UserConfig userDetails;
     StorageBeacon.FixedConfig fxConfig;
