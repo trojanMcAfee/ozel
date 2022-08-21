@@ -38,31 +38,30 @@ contract ExecutorFacetTest is ModifiersARB {
         uint minOut;
         uint slippage;
 
-        bool success = IERC20(
+        IERC20(
             pool != s.renPool ? s.USDT : s.WBTC
-        ).ozApprove(pool, user_, inBalance);
+        ).approve(pool, inBalance);
 
-        if (success) {
-            if (pool == s.renPool || pool == s.crv2Pool) {
-                minOut = IMulCurv(pool).get_dy(
-                    swapDetails_.tokenIn, swapDetails_.tokenOut, inBalance
-                );
-                slippage = calculateSlippage(minOut, userSlippage_);
+        if (pool == s.renPool || pool == s.crv2Pool) {
+            minOut = IMulCurv(pool).get_dy(
+                swapDetails_.tokenIn, swapDetails_.tokenOut, inBalance
+            );
+            slippage = calculateSlippage(minOut, userSlippage_);
 
-                IMulCurv(pool).exchange(
-                    swapDetails_.tokenIn, swapDetails_.tokenOut, inBalance, slippage
-                );  
-            } else {
-                minOut = IMulCurv(pool).get_dy_underlying(
-                    swapDetails_.tokenIn, swapDetails_.tokenOut, inBalance
-                );
-                slippage = calculateSlippage(minOut, userSlippage_);
-                
-                IMulCurv(pool).exchange_underlying(
-                    swapDetails_.tokenIn, swapDetails_.tokenOut, inBalance, slippage
-                );
-            }
+            IMulCurv(pool).exchange(
+                swapDetails_.tokenIn, swapDetails_.tokenOut, inBalance, slippage
+            );  
+        } else {
+            minOut = IMulCurv(pool).get_dy_underlying(
+                swapDetails_.tokenIn, swapDetails_.tokenOut, inBalance
+            );
+            slippage = calculateSlippage(minOut, userSlippage_);
+            
+            IMulCurv(pool).exchange_underlying(
+                swapDetails_.tokenIn, swapDetails_.tokenOut, inBalance, slippage
+            );
         }
+        
     }
 
    

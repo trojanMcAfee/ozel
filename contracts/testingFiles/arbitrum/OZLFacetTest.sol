@@ -40,7 +40,7 @@ contract OZLFacetTest is ModifiersARB {
     ) external payable noReentrancy(0) filterDetails(userDetails_) { 
         if (msg.value <= 0) revert CantBeZero('msg.value');
 
-        if (s.failedFees > 0) _depositFeesInDeFi(s.failedFees, true, userDetails_.user);
+        if (s.failedFees > 0) _depositFeesInDeFi(s.failedFees, true);
 
         IWETH(s.WETH).deposit{value: msg.value}();
         uint wethIn = IWETH(s.WETH).balanceOf(address(this));
@@ -70,7 +70,7 @@ contract OZLFacetTest is ModifiersARB {
         uint toUser = IERC20(userDetails_.userToken).balanceOf(address(this));
         if (toUser > 0) IERC20(userDetails_.userToken).safeTransfer(userDetails_.user, toUser);
 
-        _depositFeesInDeFi(fee, false, userDetails_.user);
+        _depositFeesInDeFi(fee, false);
     }
 
 
@@ -81,20 +81,16 @@ contract OZLFacetTest is ModifiersARB {
         uint baseTokenOut_, 
         UserConfig memory userDetails_
     ) private { 
-        bool success = IERC20(s.WETH).ozApprove(
-            s.tricrypto, userDetails_.user, amountIn_
-        );
+        IERC20(s.WETH).approve(s.tricrypto, amountIn_);
 
-        if (success) {
-            uint minOut = ITri(s.tricrypto).get_dy(2, baseTokenOut_, amountIn_);
-            uint slippage = ExecutorFacetTest(s.executor).calculateSlippage(minOut, userDetails_.userSlippage);
-            
-            ITri(s.tricrypto).exchange(2, baseTokenOut_, amountIn_, slippage, false);  
-            uint baseBalance = IERC20(baseTokenOut_ == 0 ? s.USDT : s.WBTC).balanceOf(address(this));
+        uint minOut = ITri(s.tricrypto).get_dy(2, baseTokenOut_, amountIn_);
+        uint slippage = ExecutorFacetTest(s.executor).calculateSlippage(minOut, userDetails_.userSlippage);
+        
+        ITri(s.tricrypto).exchange(2, baseTokenOut_, amountIn_, slippage, false);  
+        uint baseBalance = IERC20(baseTokenOut_ == 0 ? s.USDT : s.WBTC).balanceOf(address(this));
 
-            if ((userDetails_.userToken != s.USDT && userDetails_.userToken != s.WBTC) && baseBalance > 0) { 
-                _tradeWithExecutor(userDetails_); 
-            }
+        if ((userDetails_.userToken != s.USDT && userDetails_.userToken != s.WBTC) && baseBalance > 0) { 
+            _tradeWithExecutor(userDetails_); 
         }
     }
 
@@ -109,7 +105,7 @@ contract OZLFacetTest is ModifiersARB {
         if (shares_ <= 0) revert CantBeZero('shares');
 
         //Queries if there are failed fees. If true, it deposits them
-        if (s.failedFees > 0) _depositFeesInDeFi(s.failedFees, true, userDetails_.user);
+        if (s.failedFees > 0) _depositFeesInDeFi(s.failedFees, true);
 
         //Mutex bitmap lock
         _toggleBit(1, 3);
@@ -140,33 +136,26 @@ contract OZLFacetTest is ModifiersARB {
     } 
     
 
-    function _depositFeesInDeFi(uint fee_, bool isRetry_, address user_) private { 
+    function _depositFeesInDeFi(uint fee_, bool isRetry_) private { 
         emit DeadVariables(isRetry_);
 
         //Deposit WETH in Curve Tricrypto pool
         (uint tokenAmountIn, uint[3] memory amounts) = _calculateTokenAmountCurve(fee_);
-        bool success = IERC20(s.WETH).ozApprove(
-            s.tricrypto, user_, tokenAmountIn
-        );
 
-        if (success) {
-            uint minAmount = ExecutorFacetTest(s.executor).calculateSlippage(tokenAmountIn, s.defaultSlippage);
+        IERC20(s.WETH).approve(s.tricrypto, tokenAmountIn);
 
-            ITri(s.tricrypto).add_liquidity(amounts, minAmount);
-                
-            //Deposit crvTricrypto in Yearn
-            success = IERC20(s.crvTricrypto).ozApprove(
-                s.yTriPool, user_, IERC20(s.crvTricrypto).balanceOf(address(this))
-            );
+        uint minAmount = ExecutorFacetTest(s.executor).calculateSlippage(tokenAmountIn, s.defaultSlippage);
 
-            if (success) {
-                IYtri(s.yTriPool).deposit(IERC20(s.crvTricrypto).balanceOf(address(this)));
+        ITri(s.tricrypto).add_liquidity(amounts, minAmount);
+            
+        //Deposit crvTricrypto in Yearn
+        IERC20(s.crvTricrypto).approve(s.yTriPool, IERC20(s.crvTricrypto).balanceOf(address(this)));        
 
-                //Internal fees accounting
-                if (s.failedFees > 0) s.failedFees = 0;
-                s.feesVault += fee_;
-            }
-        }
+        IYtri(s.yTriPool).deposit(IERC20(s.crvTricrypto).balanceOf(address(this)));
+
+        //Internal fees accounting
+        if (s.failedFees > 0) s.failedFees = 0;
+        s.feesVault += fee_;
     }
 
 

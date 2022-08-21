@@ -47,7 +47,7 @@ contract OZLFacet is ModifiersARB {
     ) external payable noReentrancy(0) filterDetails(userDetails_) { 
         if (msg.value <= 0) revert CantBeZero('msg.value');
 
-        if (s.failedFees > 0) _depositFeesInDeFi(s.failedFees, true);
+        if (s.failedFees > 0) _depositFeesInDeFi(s.failedFees, true); 
 
         IWETH(s.WETH).deposit{value: msg.value}();
         uint wethIn = IWETH(s.WETH).balanceOf(address(this));

@@ -74,6 +74,8 @@ contract RevenueFacetTest {
             address(s.swapRouter), owner_, balanceWETH_
         );
 
+        IERC20(s.WETH).approve(address(s.swapRouter), balanceWETH_);
+
         if (success) {
             ISwapRouter.ExactInputSingleParams memory params =
                 ISwapRouter.ExactInputSingleParams({
