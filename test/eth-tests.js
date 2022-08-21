@@ -613,7 +613,7 @@ let tx, receipt;
                 await WETH.transfer(deadAddr, postBalance);
             });
 
-            it("should store the user's WETH from a failed ERC20 transfer / FaultyOzPayMe3 & FaultyOzERC20Lib - _runEmergencyMode() & ozTransfer()", async () => {
+            xit("should store the user's WETH from a failed ERC20 transfer / FaultyOzPayMe3 & FaultyOzERC20Lib - _runEmergencyMode() & ozTransfer()", async () => {
                 const [ faultyOzPayMe3Addr ] = await deployContract('FaultyOzPayMe3');
                 await beacon.upgradeTo(faultyOzPayMe3Addr);
                 await newProxy.changeUserSlippage(1);

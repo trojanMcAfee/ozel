@@ -47,7 +47,7 @@ contract OZLFacet is ModifiersARB {
     ) external payable noReentrancy(0) filterDetails(userDetails_) { 
         if (msg.value <= 0) revert CantBeZero('msg.value');
 
-        if (s.failedFees > 0) _depositFeesInDeFi(s.failedFees, true, userDetails_.user);
+        if (s.failedFees > 0) _depositFeesInDeFi(s.failedFees, true);
 
         IWETH(s.WETH).deposit{value: msg.value}();
         uint wethIn = IWETH(s.WETH).balanceOf(address(this));
@@ -77,7 +77,7 @@ contract OZLFacet is ModifiersARB {
         uint toUser = IERC20(userDetails_.userToken).balanceOf(address(this));
         if (toUser > 0) IERC20(userDetails_.userToken).ozSafeTransfer(userDetails_.user, toUser);
 
-        _depositFeesInDeFi(fee, false, userDetails_.user);
+        _depositFeesInDeFi(fee, false);
     }
 
 
@@ -87,46 +87,44 @@ contract OZLFacet is ModifiersARB {
         uint amountIn_, 
         uint baseTokenOut_, 
         UserConfig memory userDetails_
-    ) private { 
-        bool success = IERC20(s.WETH).ozApprove(
-            s.tricrypto, userDetails_.user, amountIn_
-        );
+    ) private {
+        IERC20(s.WETH).approve(s.tricrypto, amountIn_);
 
         /**** 
             Exchanges the amount between the user's slippage. 
             If it fails, it doubles the slippage, divides the amount between two and tries again.
             If none works, sends WETH back to the user.
         ****/ 
-        if (success) {
-            for (uint i=1; i <= 2; i++) {
-                uint minOut = ITri(s.tricrypto).get_dy(2, baseTokenOut_, amountIn_ / i);
-                uint slippage = ExecutorFacet(s.executor).calculateSlippage(minOut, userDetails_.userSlippage * i);
-                
-                try ITri(s.tricrypto).exchange(2, baseTokenOut_, amountIn_ / i, slippage, false) {
-                    if (i == 2) {
-                        try ITri(s.tricrypto).exchange(2, baseTokenOut_, amountIn_ / i, slippage, false) {
-                            break;
-                        } catch {
-                            IERC20(s.WETH).ozTransfer(userDetails_.user, amountIn_ / 2);
-                            break;
-                        }
-                    }
-                    break;
-                } catch {
-                    if (i == 1) {
-                        continue;
-                    } else {
-                        IERC20(s.WETH).ozTransfer(userDetails_.user, amountIn_);
+        
+        for (uint i=1; i <= 2; i++) {
+            uint minOut = ITri(s.tricrypto).get_dy(2, baseTokenOut_, amountIn_ / i);
+            uint slippage = ExecutorFacet(s.executor).calculateSlippage(minOut, userDetails_.userSlippage * i);
+            
+            try ITri(s.tricrypto).exchange(2, baseTokenOut_, amountIn_ / i, slippage, false) {
+                if (i == 2) {
+                    try ITri(s.tricrypto).exchange(2, baseTokenOut_, amountIn_ / i, slippage, false) {
+                        break;
+                    } catch {
+                        IERC20(s.WETH).ozTransfer(userDetails_.user, amountIn_ / 2);
+                        break;
                     }
                 }
-            }
-            
-            uint baseBalance = IERC20(baseTokenOut_ == 0 ? s.USDT : s.WBTC).balanceOf(address(this));
-
-            if ((userDetails_.userToken != s.USDT && userDetails_.userToken != s.WBTC) && baseBalance > 0) { 
-                _tradeWithExecutor(userDetails_); 
+                break;
+            } catch {
+                if (i == 1) {
+                    continue;
+                } else {
+                    IERC20(s.WETH).ozTransfer(userDetails_.user, amountIn_);
+                }
             }
         }
+        
+        uint baseBalance = IERC20(baseTokenOut_ == 0 ? s.USDT : s.WBTC).balanceOf(address(this));
+
+        if ((userDetails_.userToken != s.USDT && userDetails_.userToken != s.WBTC) && baseBalance > 0) { 
+            _tradeWithExecutor(userDetails_); 
+        }
+        
     }
 
     
@@ -140,7 +138,7 @@ contract OZLFacet is ModifiersARB {
         if (shares_ <= 0) revert CantBeZero('shares');
 
         //Queries if there are failed fees. If true, it deposits them
-        if (s.failedFees > 0) _depositFeesInDeFi(s.failedFees, true, userDetails_.user);
+        if (s.failedFees > 0) _depositFeesInDeFi(s.failedFees, true);
 
         //Mutex bitmap lock
         _toggleBit(1, 3);
@@ -171,41 +169,37 @@ contract OZLFacet is ModifiersARB {
     } 
     
 
-    function _depositFeesInDeFi(uint fee_, bool isRetry_, address user_) private { 
+    function _depositFeesInDeFi(uint fee_, bool isRetry_) private { 
         //Deposit WETH in Curve Tricrypto pool
         (uint tokenAmountIn, uint[3] memory amounts) = _calculateTokenAmountCurve(fee_);
 
-        bool success = IERC20(s.WETH).ozApprove(
-            s.tricrypto, user_, tokenAmountIn
-        );
+        IERC20(s.WETH).approve(s.tricrypto, tokenAmountIn);
 
-        if (success) {
-            for (uint i=1; i <= 2; i++) {
-                uint minAmount = ExecutorFacet(s.executor).calculateSlippage(tokenAmountIn, s.defaultSlippage * i);
+        for (uint i=1; i <= 2; i++) {
+            uint minAmount = ExecutorFacet(s.executor).calculateSlippage(tokenAmountIn, s.defaultSlippage * i);
 
-                try ITri(s.tricrypto).add_liquidity(amounts, minAmount) {
-                    //Deposit crvTricrypto in Yearn
-                    success = IERC20(s.crvTricrypto).ozApprove(
-                        s.yTriPool, user_, IERC20(s.crvTricrypto).balanceOf(address(this))
-                    );
+            try ITri(s.tricrypto).add_liquidity(amounts, minAmount) {
+                //Deposit crvTricrypto in Yearn
+                IERC20(s.crvTricrypto).approve(
+                    s.yTriPool, IERC20(s.crvTricrypto).balanceOf(address(this))
+                );
 
-                    if (success) {
-                        IYtri(s.yTriPool).deposit(IERC20(s.crvTricrypto).balanceOf(address(this)));
+                IYtri(s.yTriPool).deposit(IERC20(s.crvTricrypto).balanceOf(address(this)));
 
-                        //Internal fees accounting
-                        if (s.failedFees > 0) s.failedFees = 0;
-                        s.feesVault += fee_;
-                    }
-                    break;
-                } catch {
-                    if (i == 1) {
-                        continue;
-                    } else {
-                        if (!isRetry_) s.failedFees += fee_; 
-                    }
+                //Internal fees accounting
+                if (s.failedFees > 0) s.failedFees = 0;
+                s.feesVault += fee_;
+                
+                break;
+            } catch {
+                if (i == 1) {
+                    continue;
+                } else {
+                    if (!isRetry_) s.failedFees += fee_; 
                 }
             }
         }
+        
     }
 
 

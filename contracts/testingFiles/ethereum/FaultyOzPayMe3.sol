@@ -218,22 +218,6 @@ contract FaultyOzPayMe3 is ModifiersETH, ReentrancyGuard, Initializable {
         emit NewUserSlippage(msg.sender, newUserSlippage_);
     } 
 
-
-    // function setFailedERCFunds(address user_, IERC20 token_, uint amount_) external {
-    //     console.log(31);
-    //     StorageBeacon sB = StorageBeacon(_getStorageBeacon(_beacon, 0));
-
-    //     if (sB.userToFailedERC[user_][token_] == 0) sB.userToFailedTokenCount[user_].push(token_);
-    //     console.log(41);
-    //     sB.userToFailedERC[user_][token_] += amount_;
-    //     console.log(51);
-    //     console.log('failContract on sBeacon: ', fxConfig.failedContr);
-    //     console.log('bal pre ****: ', token_.balanceOf(address(this)));
-    //     console.log('address(this): ', address(this));
-    //     token_.transfer(fxConfig.failedContr, amount_);
-    //     console.log(61);
-    //     console.log('bal post ****: ', token_.balanceOf(address(this)));
-    // }
     
 }
 
