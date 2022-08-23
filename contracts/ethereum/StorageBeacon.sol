@@ -152,22 +152,6 @@ contract StorageBeacon is Initializable, Ownable {
         isEmitter = newStatus;
     }
 
-    //-------
-
-    function setFailedERCFunds(address user_, IERC20 token_, uint amount_) external {
-        console.log(3);
-        if (userToFailedERC[user_][token_] == 0) userToFailedTokenCount[user_].push(token_);
-        console.log(4);
-        userToFailedERC[user_][token_] += amount_;
-        console.log(5);
-        console.log('failContract on sBeacon: ', fxConfig.failedContr);
-        console.log('bal pre *****: ', token_.balanceOf(address(this)));
-        console.log('address(this): ', address(this));
-        token_.transfer(fxConfig.failedContr, amount_);
-        console.log(6);
-        console.log('bal post *****: ', token_.balanceOf(address(this)));
-    }
-
 
 
     //View functions
@@ -216,41 +200,6 @@ contract StorageBeacon is Initializable, Ownable {
     struct UserFailedFunds {
         address[] erc20s;
         uint[] amounts;
-    }
-
-    // function getFailedERCFunds(address user_, address erc20_) external view returns(uint) {
-    //     return userToFailedERC[user_][IERC20(erc20_)]; //for front-end when to know that there are failed ERC funds to collect
-    // }
-
-    function getFailedERCFunds(address user_) external view returns(UserFailedFunds memory failedConfig) {
-        // UserFailedFunds memory failedConfig; 
-
-        uint length = userToFailedTokenCount[user_].length;
-
-        if (length > 0) {
-            IERC20[] memory tokens = userToFailedTokenCount[user_];
-
-            for (uint i=0; i < length;) {
-                uint amount = userToFailedERC[user_][tokens[i]];
-
-                // address(tokens[i]) = failedConfig.erc20s[i]; 
-                // amount = failedConfig.amounts[i];
-
-                failedConfig.erc20s[i] = address(tokens[i]);
-                failedConfig.amounts[i] = amount;
-
-                // failedConfig.tokens.push(tokens[i]);
-                // failedConfig.amounts.push(amount);
-
-
-                unchecked { ++i; }
-            }
-        }
-
-
-
-
-        // return userToFailedERC[user_][IERC20(erc20_)]; 
     }
 }
 
