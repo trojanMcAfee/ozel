@@ -195,12 +195,6 @@ contract StorageBeacon is Initializable, Ownable {
         return isEmitter;
     }
 
-    //------
-
-    struct UserFailedFunds {
-        address[] erc20s;
-        uint[] amounts;
-    }
 }
 
 
