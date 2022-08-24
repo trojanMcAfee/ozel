@@ -1,0 +1,12 @@
+testLimit: 50000
+testMode: assertion
+
+cryticArgs: 
+  [
+    "--solc-remaps",
+    "@openzeppelin=node_modules/@openzeppelin/ 
+    @rari-capital=node_modules/@rari-capital 
+    @uniswap=node_modules/@uniswap 
+    @chainlink=node_modules/@chainlink 
+    hardhat=node_modules/hardhat"
+  ]

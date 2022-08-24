@@ -38,10 +38,10 @@ pragma solidity 0.8.14;
 // }
 
 
-import '../../arbitrum/facets/ExecutorFacet.sol';
+import '../arbitrum/ExecutorFacetTest.sol';
 
 
-contract OzelIndexTest is ExecutorFacet {
+contract OzelIndex is ExecutorFacetTest {
 
     // IExecutorFacet executor;
 
@@ -66,6 +66,10 @@ contract OzelIndexTest is ExecutorFacet {
         );
         assert(success);
     }
+
+    // function echidna_checkk() public view returns(bool) {
+    //     return false;
+    // }
     
 
 
