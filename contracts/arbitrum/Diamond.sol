@@ -15,7 +15,7 @@ import { IERC173 } from "../interfaces/IERC173.sol";
 import './AppStorage.sol';
 import '../Errors.sol';
 
-// import 'hardhat/console.sol';
+import 'hardhat/console.sol';
 
 
 
@@ -31,6 +31,10 @@ contract Diamond {
         address _init,
         address[] memory nonRevenueFacets_ 
     ) payable {        
+        for (uint i=0; i < _diamondCut.length; i++) {
+            console.log('facetAddress: ', _diamondCut[i].facetAddress);
+        }
+
         LibDiamond.diamondCut(_diamondCut, _init, _functionCall);
         LibDiamond.setContractOwner(_contractOwner);
         LibDiamond.setNonRevenueFacets(nonRevenueFacets_);

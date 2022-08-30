@@ -229,7 +229,9 @@ async function deployFacet(facetName) {
 
 //Deploys contracts in Arbitrum
 async function deploy(n = 0) { 
+    console.log(1);
     const [callerAddr, caller2Addr] = await hre.ethers.provider.listAccounts();
+    console.log(2);
     console.log('--');
     console.log('Caller 1: ', callerAddr);
     console.log('Caller 2: ', caller2Addr);
@@ -328,7 +330,7 @@ async function deploy(n = 0) {
     const functionCall = diamondInit.interface.encodeFunctionData('init', [VarsAndAddrStruct]);
 
     //Deploys diamond
-    const deployedDiamond = await diamond.deploy({
+    const deployedDiamond = await diamond.deploy({ // <----- check if the n === 2 needs to be removed (not used anywhere)
         diamondName: 'Diamond',
         facets: [
             ['DiamondCutFacet', diamondCutFacet],
