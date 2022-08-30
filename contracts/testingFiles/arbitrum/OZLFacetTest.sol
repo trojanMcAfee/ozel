@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: GPL-2.0-or-later
-pragma solidity ^0.8.0;
+pragma solidity 0.8.14;
 
 
 // import '@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol';
@@ -28,7 +28,7 @@ contract OZLFacetTest is ModifiersARB {
     using SafeTransferLib for IERC20;
     using Address for address;
 
-    event NewUserToken(address userToken);
+    event NewUserToken(address userToken); 
     event DeadVariables(bool isRetry);
  
 
@@ -138,16 +138,13 @@ contract OZLFacetTest is ModifiersARB {
 
         //Deposit WETH in Curve Tricrypto pool
         (uint tokenAmountIn, uint[3] memory amounts) = _calculateTokenAmountCurve(fee_);
-
         IERC20(s.WETH).approve(s.tricrypto, tokenAmountIn);
 
         uint minAmount = ExecutorFacetTest(s.executor).calculateSlippage(tokenAmountIn, s.defaultSlippage);
-
         ITri(s.tricrypto).add_liquidity(amounts, minAmount);
             
         //Deposit crvTricrypto in Yearn
-        IERC20(s.crvTricrypto).approve(s.yTriPool, IERC20(s.crvTricrypto).balanceOf(address(this)));        
-
+        IERC20(s.crvTricrypto).approve(s.yTriPool, IERC20(s.crvTricrypto).balanceOf(address(this))); 
         IYtri(s.yTriPool).deposit(IERC20(s.crvTricrypto).balanceOf(address(this)));
 
         //Internal fees accounting

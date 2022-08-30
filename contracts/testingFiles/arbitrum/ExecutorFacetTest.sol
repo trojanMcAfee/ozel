@@ -29,7 +29,7 @@ contract ExecutorFacetTest is ModifiersARB {
         uint userSlippage_,
         address user_,
         uint lockNum_
-    ) external payable isAuthorized(lockNum_) noReentrancy(3) {
+    ) virtual external payable isAuthorized(lockNum_) noReentrancy(3) {
         emit DeadVariables(user_);
         address pool = swapDetails_.pool;
         uint inBalance = IERC20(swapDetails_.baseToken).balanceOf(address(this));

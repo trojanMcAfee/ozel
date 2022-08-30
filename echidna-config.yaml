@@ -1,4 +1,4 @@
-testLimit: 50000
+testLimit: 500
 testMode: assertion
 
 cryticArgs: 
