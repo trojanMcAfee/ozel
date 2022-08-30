@@ -5,12 +5,16 @@ pragma solidity 0.8.14;
 contract TestEch {
 
     uint x;
+    
+    constructor(uint num2_) {
+        x = num2_;
+    }
 
     function testing(uint num_) public {
-        require(num_ == 23);
+        // require(num_ == 23);
 
-        x = num_;   
-        // assert(true);
+        if (x == 23 && num_ == 23) assert(false);   
+        
     }
 
 
