@@ -31,9 +31,9 @@ contract Diamond {
         address _init,
         address[] memory nonRevenueFacets_ 
     ) payable {        
-        for (uint i=0; i < _diamondCut.length; i++) {
-            console.log('facetAddress: ', _diamondCut[i].facetAddress);
-        }
+        console.log('owner: ', _contractOwner);
+        console.logBytes(_functionCall);
+        console.log('init: ', _init);
 
         LibDiamond.diamondCut(_diamondCut, _init, _functionCall);
         LibDiamond.setContractOwner(_contractOwner);

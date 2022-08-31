@@ -17,5 +17,9 @@ contract TestEch {
         
     }
 
+    function setNums() public returns(uint, uint) {
+        return (1, 3);
+    }
+
 
 }

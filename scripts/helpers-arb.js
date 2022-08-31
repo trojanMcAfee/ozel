@@ -328,7 +328,7 @@ async function deploy(n = 0) {
     const functionCall = diamondInit.interface.encodeFunctionData('init', [VarsAndAddrStruct]);
 
     //Deploys diamond
-    const deployedDiamond = await diamond.deploy({ // <----- check if the n === 2 needs to be removed (not used anywhere)
+    const deployedDiamond = await diamond.deploy({ 
         diamondName: 'Diamond',
         facets: [
             ['DiamondCutFacet', diamondCutFacet],
