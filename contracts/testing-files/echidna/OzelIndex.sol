@@ -16,40 +16,10 @@ pragma solidity 0.8.14;
 // import '../../Errors.sol';
 import './TestEch.sol';
 
-// import '../../arbitrum/Diamond.sol';
-// import { IDiamondCut } from "../../../interfaces/IDiamondCut.sol";
 
 
 
-// contract ExchangeUserToken_Echidna is Diamond {
 
-//     enum FacetCutAction {Add, Replace, Remove}
-//     // Add=0, Replace=1, Remove=2
-
-//     struct FacetCut {
-//         address facetAddress;
-//         FacetCutAction action;
-//         bytes4[] functionSelectors;
-//     }
-
-//     //an array of this with all facets and selectors
-
-//     IDiamondCut.FacetCut[] diamondCut = _setDiamondCut();
-
-
-//     constructor() Diamond(
-//         diamondCut
-//     ) {
-
-//     }
-
-
-//     function _setDiamondCut() private returns(IDiamondCut.FacetCut[] storage) {
-
-//     }
-
-
-// }
 
 contract ExchangeUserToken_Echidna is TestEch { //is OZLFacetTest 
 
