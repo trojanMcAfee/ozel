@@ -107,6 +107,7 @@ contract Diamond {
             if (!success) revert CallFailed('OZLDiamond: _filterRevenueCheck() failed');
         }
     }
+
 }
 
 

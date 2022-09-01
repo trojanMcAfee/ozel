@@ -1,5 +1,6 @@
 testLimit: 500
 testMode: assertion
+sender: ["0x00000000000000000000000000000000deadbeef"]
 
 cryticArgs: 
   [

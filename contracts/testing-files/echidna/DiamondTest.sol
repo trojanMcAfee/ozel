@@ -15,31 +15,32 @@ import '../arbitrum/RevenueFacetTest.sol';
 import '../../arbitrum/facets/oz20Facet.sol';
 import '../../arbitrum/facets/oz4626Facet.sol';
 
+import 'hardhat/console.sol';
+
 
 contract DiamondTest is Diamond {
 
-    IDiamondCut.FacetCut[] diamondCut = setDiamondCut();
+    // IDiamondCut.FacetCut[] diamondCut;
     // mapping(uint => IDiamondCut.FacetCut[]) diamondCut;
-    IDiamondCut.FacetCut[][] intArray;
+    // IDiamondCut.FacetCut[][] intArray;
 
-    address owner = address(this);
-    address init = setInit();
+    address owner = address(this); //0x00000000000000000000000000000000DeaDBeef
     address[] nonRevenueFacets;
 
     //Hardcoded from 'functionCall' const from helpers-arb.js for simplicity
     bytes functionCall = hex'c126953d000000000000000000000000000000000000000000000000000000000000002000000000000000000000000000000000000000000000000000000000000000e000000000000000000000000000000000000000000000000000000000000002c000000000000000000000000000000000000000000000000000000000000003c000000000000000000000000000000000000000000000000000000000000004a00000000000000000000000000000000000000000000000000000000000000520000000000000000000000000eeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee0000000000000000000000000000000000000000000000000000000000000600000000000000000000000000000000000000000000000000000000000000000e0000000000000000000000002279b7a0a67db372996a5fab50d91eaa73d2ebe6000000000000000000000000960ea3e3c7fb317332d990873d354e18d76455900000000000000000000000008e0b8c8bb9db49a46697f3a5bb8a308e744821d20000000000000000000000003e01dd8a5e1fb3481f0f589056b428fc308af0fb00000000000000000000000030df229cefa463e991e29d42db0bae2e122b2ac70000000000000000000000007f90122bf0700f9e7e1f688fe926940e8839f353000000000000000000000000239e14a19dff93a17339dcc444f74406c17f8e67000000000000000000000000f07d553b195080f84f582e88ecdd54baa122b2790000000000000000000000008a791620dd6260079bf849dc5567adc3f2fdc318000000000000000000000000610178da211fef7d417bc0e6fed39f05609ad788000000000000000000000000b7f8bc63bbcad18155201308c8f3540b07f84f5e000000000000000000000000639fe6ab55c921f74e7fac1ee960c0b6293ba612000000000000000000000000e592427a0aece92de3edee1f18e0157c058615640000000000000000000000000dcd1bf9a1b36ce34237eeafef220932846bcd820000000000000000000000000000000000000000000000000000000000000007000000000000000000000000fd086bc7cd5c481dcc9c85ebe478a1c0b69fcbb90000000000000000000000002f2a2543b76a4166549f7aab2e75bef0aefc5b0f000000000000000000000000dbf31df14b66535af65aac99c32e9ea844e14501000000000000000000000000ff970a61a04b1ca14834a43f5de4533ebddb5cc8000000000000000000000000fea7a6a0b346362bf88a9e4a88416b77a57d6c2a00000000000000000000000082af49447d8a07e3bd95bd0d56f35241523fbab100000000000000000000000017fc002b466eec40dae837fc4be5c67993ddbd6f0000000000000000000000000000000000000000000000000000000000000006000000000000000000000000fd086bc7cd5c481dcc9c85ebe478a1c0b69fcbb9000000000000000000000000ff970a61a04b1ca14834a43f5de4533ebddb5cc800000000000000000000000017fc002b466eec40dae837fc4be5c67993ddbd6f0000000000000000000000002f2a2543b76a4166549f7aab2e75bef0aefc5b0f000000000000000000000000fea7a6a0b346362bf88a9e4a88416b77a57d6c2a000000000000000000000000dbf31df14b66535af65aac99c32e9ea844e145010000000000000000000000000000000000000000000000000000000000000003000000000000000000000000000000000000000000000000000000000000000a000000000000000000000000000000000000000000000000000000000000006400000000000000000000000000000000000000000000000000000000000001f400000000000000000000000000000000000000000000000000000000000000020000000000000000000000000000000000000000000000000000000000000040000000000000000000000000000000000000000000000000000000000000008000000000000000000000000000000000000000000000000000000000000000044f7a656c0000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000034f5a4c0000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000700000000000000000000000000000000000000000000000000000000009896800000000000000000000000000000000000000000000000000000000002faf0800000000000000000000000000000000000000000000000000000000005f5e100000000000000000000000000000000000000000000000000000000001dcd6500000000000000000000000000000000000000000000000000000000003b9aca00000000000000000000000000000000000000000000000000000000012a05f20000000000000000000000000000000000000000000000000000000002540be400';
 
     constructor() Diamond(
-        diamondCut,
-        owner,
+        setDiamondCut(),
+        address(this),
         functionCall,
-        init,
+        setInit(),
         nonRevenueFacets
     ) {}
 
 
 
-    function setNonRevenueFacets() public returns(address[] memory facets) {
+    function setNonRevenueFacets() public returns(address[] memory facets) { //works
         facets = new address[](4);
 
         DiamondCutFacet diamondCutF = new DiamondCutFacet();
@@ -76,6 +77,7 @@ contract DiamondTest is Diamond {
             functionSelectors: cutSelectors
         });
         diamondCutInt[0] = cut;
+        // diamondCut.push(cut);
 
         bytes4[] memory loupeSelectors = new bytes4[](8);
         loupeSelectors[0] = DiamondLoupeFacet(nonRevenueFacets[1]).facets.selector;
@@ -92,6 +94,7 @@ contract DiamondTest is Diamond {
             functionSelectors: loupeSelectors
         });
         diamondCutInt[1] = cut;
+        // diamondCut.push(cut);
 
         ExecutorFacetTest executorTestF = new ExecutorFacetTest();
         bytes4[] memory executorSelectors = new bytes4[](5);
@@ -106,6 +109,7 @@ contract DiamondTest is Diamond {
             functionSelectors: executorSelectors
         });
         diamondCutInt[2] = cut;
+        // diamondCut.push(cut);
 
         bytes4[] memory ownershipSelectors = new bytes4[](2);
         ownershipSelectors[0] = OwnershipFacet(nonRevenueFacets[2]).transferOwnership.selector;
@@ -116,6 +120,7 @@ contract DiamondTest is Diamond {
             functionSelectors: ownershipSelectors
         });
         diamondCutInt[3] = cut;
+        // diamondCut.push(cut);
 
         oz20Facet oz20F = new oz20Facet();
         bytes4[] memory oz20Selectors = new bytes4[](12);
@@ -137,6 +142,7 @@ contract DiamondTest is Diamond {
             functionSelectors: oz20Selectors
         });
         diamondCutInt[4] = cut;
+        // diamondCut.push(cut);
 
         oz4626Facet oz4626F = new oz4626Facet();
         bytes4[] memory oz4626Selectors = new bytes4[](10);
@@ -156,6 +162,7 @@ contract DiamondTest is Diamond {
             functionSelectors: oz4626Selectors
         });
         diamondCutInt[5] = cut;
+        // diamondCut.push(cut);
 
         OZLFacetTest ozlTestF = new OZLFacetTest();
         bytes4[] memory ozlSelectors = new bytes4[](3);
@@ -168,6 +175,7 @@ contract DiamondTest is Diamond {
             functionSelectors: ozlSelectors
         });
         diamondCutInt[6] = cut;
+        // diamondCut.push(cut);
 
         bytes4[] memory revenueSelectors = new bytes4[](1);
         revenueSelectors[0] = RevenueFacetTest(nonRevenueFacets[3]).checkForRevenue.selector;
@@ -177,7 +185,29 @@ contract DiamondTest is Diamond {
             functionSelectors: revenueSelectors
         });
         diamondCutInt[7] = cut;
+        // diamondCut.push(cut);
+
+        // diamondCut = diamondCutInt;
 
         return diamondCutInt;
     }
+
+    function ownership_dont_revert() public {
+
+        assert(true);
+
+    }
 }
+
+
+// contract DiamondTest2 {
+
+//     address payable diamond = payable(0x0B306BF915C4d645ff596e518fAf3F9669b97016);
+
+//     function testDiamond() public {
+//         address owner = Diamond(diamond).getNum();
+//         assert(true);
+
+//     }
+
+// }
