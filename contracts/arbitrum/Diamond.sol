@@ -35,7 +35,7 @@ contract Diamond {
         // console.logBytes(_functionCall);
         // console.log('init: ', _init);
 
-        // LibDiamond.diamondCut(_diamondCut, _init, _functionCall);
+        LibDiamond.diamondCut(_diamondCut, _init, _functionCall);
         LibDiamond.setContractOwner(_contractOwner);
         LibDiamond.setNonRevenueFacets(nonRevenueFacets_);
     }
