@@ -32,7 +32,7 @@ contract DiamondTest is Diamond {
 
     constructor() Diamond(
         setDiamondCut(),
-        address(this),
+        owner,
         functionCall,
         setInit(),
         nonRevenueFacets
@@ -192,10 +192,16 @@ contract DiamondTest is Diamond {
         return diamondCutInt;
     }
 
+
+    function constructCalldata() public returns(bytes memory) {
+
+
+        
+    }
+
+
     function ownership_dont_revert() public {
-
         assert(true);
-
     }
 }
 
