@@ -60,7 +60,7 @@ contract DiamondTest is Diamond {
 
     
     function setDiamondCut() public returns(IDiamondCut.FacetCut[] memory diamondCutInt) {
-        diamondCutInt = new IDiamondCut.FacetCut[](4);
+        diamondCutInt = new IDiamondCut.FacetCut[](5);
         IDiamondCut.FacetCut memory cut;
 
         ExecutorFacetTest executorTestF = new ExecutorFacetTest();
@@ -129,14 +129,6 @@ contract DiamondTest is Diamond {
         });
         diamondCutInt[3] = cut;
 
-    }
-
-
-
-    function setDiamondCut2() public returns(IDiamondCut.FacetCut[] memory diamondCutInt) {
-        diamondCutInt = new IDiamondCut.FacetCut[](8);
-        IDiamondCut.FacetCut memory cut;
-
         nonRevenueFacets = setNonRevenueFacets();
 
         bytes4[] memory cutSelectors = new bytes4[](6);
@@ -151,7 +143,33 @@ contract DiamondTest is Diamond {
             action: IDiamondCut.FacetCutAction.Add,
             functionSelectors: cutSelectors
         });
-        diamondCutInt[0] = cut;
+        diamondCutInt[4] = cut;       
+
+        
+
+    }
+
+
+
+    function setDiamondCut2() public returns(IDiamondCut.FacetCut[] memory diamondCutInt) {
+        diamondCutInt = new IDiamondCut.FacetCut[](8);
+        IDiamondCut.FacetCut memory cut;
+
+        // nonRevenueFacets = setNonRevenueFacets();
+
+        // bytes4[] memory cutSelectors = new bytes4[](6);
+        // cutSelectors[0] = DiamondCutFacet(nonRevenueFacets[0]).diamondCut.selector;
+        // cutSelectors[1] = DiamondCutFacet(nonRevenueFacets[0]).changeDappFee.selector;
+        // cutSelectors[2] = DiamondCutFacet(nonRevenueFacets[0]).changeDefaultSlippage.selector;
+        // cutSelectors[3] = DiamondCutFacet(nonRevenueFacets[0]).enableWithdrawals.selector;
+        // cutSelectors[4] = DiamondCutFacet(nonRevenueFacets[0]).changeRevenueToken.selector;
+        // cutSelectors[5] = DiamondCutFacet(nonRevenueFacets[0]).changeUniPoolFee.selector;
+        // cut = IDiamondCut.FacetCut({
+        //     facetAddress: nonRevenueFacets[0],
+        //     action: IDiamondCut.FacetCutAction.Add,
+        //     functionSelectors: cutSelectors
+        // });
+        // diamondCutInt[0] = cut;
         // diamondCut.push(cut);
 
         bytes4[] memory loupeSelectors = new bytes4[](8);
@@ -236,17 +254,17 @@ contract DiamondTest is Diamond {
         // });
         // diamondCutInt[5] = cut;
 
-        OZLFacetTest ozlTestF = new OZLFacetTest();
-        bytes4[] memory ozlSelectors = new bytes4[](3);
-        ozlSelectors[0] = ozlTestF.exchangeToUserToken.selector;
-        ozlSelectors[1] = ozlTestF.withdrawUserShare.selector;
-        ozlSelectors[2] = ozlTestF.addTokenToDatabase.selector;
-        cut = IDiamondCut.FacetCut({
-            facetAddress: address(ozlTestF),
-            action: IDiamondCut.FacetCutAction.Add,
-            functionSelectors: ozlSelectors
-        });
-        diamondCutInt[6] = cut;
+        // OZLFacetTest ozlTestF = new OZLFacetTest();
+        // bytes4[] memory ozlSelectors = new bytes4[](3);
+        // ozlSelectors[0] = ozlTestF.exchangeToUserToken.selector;
+        // ozlSelectors[1] = ozlTestF.withdrawUserShare.selector;
+        // ozlSelectors[2] = ozlTestF.addTokenToDatabase.selector;
+        // cut = IDiamondCut.FacetCut({
+        //     facetAddress: address(ozlTestF),
+        //     action: IDiamondCut.FacetCutAction.Add,
+        //     functionSelectors: ozlSelectors
+        // });
+        // diamondCutInt[6] = cut;
 
         bytes4[] memory revenueSelectors = new bytes4[](1);
         revenueSelectors[0] = RevenueFacetTest(nonRevenueFacets[3]).checkForRevenue.selector;
