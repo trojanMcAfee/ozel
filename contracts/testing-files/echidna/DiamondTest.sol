@@ -58,7 +58,29 @@ contract DiamondTest is Diamond {
         return address(initContract);
     }
 
+    
     function setDiamondCut() public returns(IDiamondCut.FacetCut[] memory diamondCutInt) {
+        diamondCutInt = new IDiamondCut.FacetCut[](1);
+        IDiamondCut.FacetCut memory cut;
+
+        ExecutorFacetTest executorTestF = new ExecutorFacetTest();
+        bytes4[] memory executorSelectors = new bytes4[](5);
+        executorSelectors[0] = executorTestF.calculateSlippage.selector;
+        executorSelectors[1] = executorTestF.executeFinalTrade.selector;
+        executorSelectors[2] = executorTestF.updateExecutorState.selector;
+        executorSelectors[3] = executorTestF.modifyPaymentsAndVolumeExternally.selector;
+        executorSelectors[4] = executorTestF.transferUserAllocation.selector;
+        cut = IDiamondCut.FacetCut({
+            facetAddress: address(executorTestF),
+            action: IDiamondCut.FacetCutAction.Add,
+            functionSelectors: executorSelectors
+        });
+        diamondCutInt[0] = cut;
+    }
+
+
+
+    function setDiamondCut2() public returns(IDiamondCut.FacetCut[] memory diamondCutInt) {
         diamondCutInt = new IDiamondCut.FacetCut[](8);
         IDiamondCut.FacetCut memory cut;
 
