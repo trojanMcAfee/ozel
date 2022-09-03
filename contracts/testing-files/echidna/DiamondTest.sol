@@ -15,14 +15,12 @@ import '../arbitrum/RevenueFacetTest.sol';
 import '../../arbitrum/facets/oz20Facet.sol';
 import '../../arbitrum/facets/oz4626Facet.sol';
 
+import '../';
+
 // import 'hardhat/console.sol';
 
 
 contract DiamondTest is Diamond {
-
-    // IDiamondCut.FacetCut[] diamondCut;
-    // mapping(uint => IDiamondCut.FacetCut[]) diamondCut;
-    // IDiamondCut.FacetCut[][] intArray;
 
     address owner = address(this); //0x00000000000000000000000000000000DeaDBeef
     address[] nonRevenueFacets;
@@ -40,7 +38,7 @@ contract DiamondTest is Diamond {
 
 
 
-    function setNonRevenueFacets() public returns(address[] memory facets) { //works
+    function setNonRevenueFacets() public returns(address[] memory facets) { 
         facets = new address[](4);
 
         DiamondCutFacet diamondCutF = new DiamondCutFacet();
@@ -181,24 +179,10 @@ contract DiamondTest is Diamond {
         diamondCutInt[7] = cut;   
     }
 
+    //******* TESTS *******
 
-
-
-
-    // function ownership_dont_revert() public {
-    //     assert(true);
-    // }
+    function ownership_dont_revert() public {
+        assert(false);
+    }
 }
 
-
-// contract DiamondTest2 {
-
-//     address payable diamond = payable(0x0B306BF915C4d645ff596e518fAf3F9669b97016);
-
-//     function testDiamond() public {
-//         address owner = Diamond(diamond).getNum();
-//         assert(true);
-
-//     }
-
-// }

@@ -31,10 +31,6 @@ contract Diamond {
         address _init,
         address[] memory nonRevenueFacets_ 
     ) payable {        
-        // console.log('owner: ', _contractOwner);
-        // console.logBytes(_functionCall);
-        // console.log('init: ', _init);
-
         LibDiamond.diamondCut(_diamondCut, _init, _functionCall);
         LibDiamond.setContractOwner(_contractOwner);
         LibDiamond.setNonRevenueFacets(nonRevenueFacets_);
