@@ -60,7 +60,7 @@ contract DiamondTest is Diamond {
 
     
     function setDiamondCut() public returns(IDiamondCut.FacetCut[] memory diamondCutInt) {
-        diamondCutInt = new IDiamondCut.FacetCut[](3);
+        diamondCutInt = new IDiamondCut.FacetCut[](4);
         IDiamondCut.FacetCut memory cut;
 
         ExecutorFacetTest executorTestF = new ExecutorFacetTest();
@@ -98,7 +98,6 @@ contract DiamondTest is Diamond {
         });
         diamondCutInt[1] = cut;
 
-
         oz4626Facet oz4626F = new oz4626Facet();
         bytes4[] memory oz4626Selectors = new bytes4[](10);
         oz4626Selectors[0] = oz4626F.deposit.selector;
@@ -117,6 +116,18 @@ contract DiamondTest is Diamond {
             functionSelectors: oz4626Selectors
         });
         diamondCutInt[2] = cut;
+
+        OZLFacetTest ozlTestF = new OZLFacetTest();
+        bytes4[] memory ozlSelectors = new bytes4[](3);
+        ozlSelectors[0] = ozlTestF.exchangeToUserToken.selector;
+        ozlSelectors[1] = ozlTestF.withdrawUserShare.selector;
+        ozlSelectors[2] = ozlTestF.addTokenToDatabase.selector;
+        cut = IDiamondCut.FacetCut({
+            facetAddress: address(ozlTestF),
+            action: IDiamondCut.FacetCutAction.Add,
+            functionSelectors: ozlSelectors
+        });
+        diamondCutInt[3] = cut;
 
     }
 
@@ -206,25 +217,24 @@ contract DiamondTest is Diamond {
         // });
         // diamondCutInt[4] = cut;
 
-        oz4626Facet oz4626F = new oz4626Facet();
-        bytes4[] memory oz4626Selectors = new bytes4[](10);
-        oz4626Selectors[0] = oz4626F.deposit.selector;
-        oz4626Selectors[1] = oz4626F.redeem.selector;
-        oz4626Selectors[2] = oz4626F.convertToShares.selector;
-        oz4626Selectors[3] = oz4626F.convertToAssets.selector;
-        oz4626Selectors[4] = oz4626F.previewDeposit.selector;
-        oz4626Selectors[5] = oz4626F.previewRedeem.selector;
-        oz4626Selectors[6] = oz4626F.maxDeposit.selector;
-        oz4626Selectors[7] = oz4626F.maxMint.selector;
-        oz4626Selectors[8] = oz4626F.maxWithdraw.selector;
-        oz4626Selectors[9] = oz4626F.maxRedeem.selector;
-        cut = IDiamondCut.FacetCut({
-            facetAddress: address(oz4626F),
-            action: IDiamondCut.FacetCutAction.Add,
-            functionSelectors: oz4626Selectors
-        });
-        diamondCutInt[5] = cut;
-        // diamondCut.push(cut);
+        // oz4626Facet oz4626F = new oz4626Facet();
+        // bytes4[] memory oz4626Selectors = new bytes4[](10);
+        // oz4626Selectors[0] = oz4626F.deposit.selector;
+        // oz4626Selectors[1] = oz4626F.redeem.selector;
+        // oz4626Selectors[2] = oz4626F.convertToShares.selector;
+        // oz4626Selectors[3] = oz4626F.convertToAssets.selector;
+        // oz4626Selectors[4] = oz4626F.previewDeposit.selector;
+        // oz4626Selectors[5] = oz4626F.previewRedeem.selector;
+        // oz4626Selectors[6] = oz4626F.maxDeposit.selector;
+        // oz4626Selectors[7] = oz4626F.maxMint.selector;
+        // oz4626Selectors[8] = oz4626F.maxWithdraw.selector;
+        // oz4626Selectors[9] = oz4626F.maxRedeem.selector;
+        // cut = IDiamondCut.FacetCut({
+        //     facetAddress: address(oz4626F),
+        //     action: IDiamondCut.FacetCutAction.Add,
+        //     functionSelectors: oz4626Selectors
+        // });
+        // diamondCutInt[5] = cut;
 
         OZLFacetTest ozlTestF = new OZLFacetTest();
         bytes4[] memory ozlSelectors = new bytes4[](3);
@@ -237,7 +247,6 @@ contract DiamondTest is Diamond {
             functionSelectors: ozlSelectors
         });
         diamondCutInt[6] = cut;
-        // diamondCut.push(cut);
 
         bytes4[] memory revenueSelectors = new bytes4[](1);
         revenueSelectors[0] = RevenueFacetTest(nonRevenueFacets[3]).checkForRevenue.selector;
