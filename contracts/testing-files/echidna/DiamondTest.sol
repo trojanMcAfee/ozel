@@ -60,7 +60,7 @@ contract DiamondTest is Diamond {
 
     
     function setDiamondCut() public returns(IDiamondCut.FacetCut[] memory diamondCutInt) {
-        diamondCutInt = new IDiamondCut.FacetCut[](1);
+        diamondCutInt = new IDiamondCut.FacetCut[](2);
         IDiamondCut.FacetCut memory cut;
 
         ExecutorFacetTest executorTestF = new ExecutorFacetTest();
@@ -76,6 +76,31 @@ contract DiamondTest is Diamond {
             functionSelectors: executorSelectors
         });
         diamondCutInt[0] = cut;
+
+        oz20Facet oz20F = new oz20Facet();
+        bytes4[] memory oz20Selectors = new bytes4[](12);
+        oz20Selectors[0] = oz20F.name.selector;
+        oz20Selectors[1] = oz20F.symbol.selector;
+        oz20Selectors[2] = oz20F.decimals.selector;
+        oz20Selectors[3] = oz20F.totalSupply.selector;
+        oz20Selectors[4] = oz20F.balanceOf.selector;
+        oz20Selectors[5] = oz20F.transfer.selector;
+        oz20Selectors[6] = oz20F.allowance.selector;
+        oz20Selectors[7] = oz20F.approve.selector;
+        oz20Selectors[8] = oz20F.transferFrom.selector;
+        oz20Selectors[9] = oz20F.increaseAllowance.selector;
+        oz20Selectors[10] = oz20F.decreaseAllowance.selector;
+        oz20Selectors[11] = oz20F.burn.selector;
+        cut = IDiamondCut.FacetCut({
+            facetAddress: address(oz20F),
+            action: IDiamondCut.FacetCutAction.Add,
+            functionSelectors: oz20Selectors
+        });
+        diamondCutInt[1] = cut;
+
+
+
+
     }
 
 
@@ -118,20 +143,19 @@ contract DiamondTest is Diamond {
         diamondCutInt[1] = cut;
         // diamondCut.push(cut);
 
-        ExecutorFacetTest executorTestF = new ExecutorFacetTest();
-        bytes4[] memory executorSelectors = new bytes4[](5);
-        executorSelectors[0] = executorTestF.calculateSlippage.selector;
-        executorSelectors[1] = executorTestF.executeFinalTrade.selector;
-        executorSelectors[2] = executorTestF.updateExecutorState.selector;
-        executorSelectors[3] = executorTestF.modifyPaymentsAndVolumeExternally.selector;
-        executorSelectors[4] = executorTestF.transferUserAllocation.selector;
-        cut = IDiamondCut.FacetCut({
-            facetAddress: address(executorTestF),
-            action: IDiamondCut.FacetCutAction.Add,
-            functionSelectors: executorSelectors
-        });
-        diamondCutInt[2] = cut;
-        // diamondCut.push(cut);
+        // ExecutorFacetTest executorTestF = new ExecutorFacetTest();
+        // bytes4[] memory executorSelectors = new bytes4[](5);
+        // executorSelectors[0] = executorTestF.calculateSlippage.selector;
+        // executorSelectors[1] = executorTestF.executeFinalTrade.selector;
+        // executorSelectors[2] = executorTestF.updateExecutorState.selector;
+        // executorSelectors[3] = executorTestF.modifyPaymentsAndVolumeExternally.selector;
+        // executorSelectors[4] = executorTestF.transferUserAllocation.selector;
+        // cut = IDiamondCut.FacetCut({
+        //     facetAddress: address(executorTestF),
+        //     action: IDiamondCut.FacetCutAction.Add,
+        //     functionSelectors: executorSelectors
+        // });
+        // diamondCutInt[2] = cut;
 
         bytes4[] memory ownershipSelectors = new bytes4[](2);
         ownershipSelectors[0] = OwnershipFacet(nonRevenueFacets[2]).transferOwnership.selector;
@@ -144,27 +168,26 @@ contract DiamondTest is Diamond {
         diamondCutInt[3] = cut;
         // diamondCut.push(cut);
 
-        oz20Facet oz20F = new oz20Facet();
-        bytes4[] memory oz20Selectors = new bytes4[](12);
-        oz20Selectors[0] = oz20F.name.selector;
-        oz20Selectors[1] = oz20F.symbol.selector;
-        oz20Selectors[2] = oz20F.decimals.selector;
-        oz20Selectors[3] = oz20F.totalSupply.selector;
-        oz20Selectors[4] = oz20F.balanceOf.selector;
-        oz20Selectors[5] = oz20F.transfer.selector;
-        oz20Selectors[6] = oz20F.allowance.selector;
-        oz20Selectors[7] = oz20F.approve.selector;
-        oz20Selectors[8] = oz20F.transferFrom.selector;
-        oz20Selectors[9] = oz20F.increaseAllowance.selector;
-        oz20Selectors[10] = oz20F.decreaseAllowance.selector;
-        oz20Selectors[11] = oz20F.burn.selector;
-        cut = IDiamondCut.FacetCut({
-            facetAddress: address(oz20F),
-            action: IDiamondCut.FacetCutAction.Add,
-            functionSelectors: oz20Selectors
-        });
-        diamondCutInt[4] = cut;
-        // diamondCut.push(cut);
+        // oz20Facet oz20F = new oz20Facet();
+        // bytes4[] memory oz20Selectors = new bytes4[](12);
+        // oz20Selectors[0] = oz20F.name.selector;
+        // oz20Selectors[1] = oz20F.symbol.selector;
+        // oz20Selectors[2] = oz20F.decimals.selector;
+        // oz20Selectors[3] = oz20F.totalSupply.selector;
+        // oz20Selectors[4] = oz20F.balanceOf.selector;
+        // oz20Selectors[5] = oz20F.transfer.selector;
+        // oz20Selectors[6] = oz20F.allowance.selector;
+        // oz20Selectors[7] = oz20F.approve.selector;
+        // oz20Selectors[8] = oz20F.transferFrom.selector;
+        // oz20Selectors[9] = oz20F.increaseAllowance.selector;
+        // oz20Selectors[10] = oz20F.decreaseAllowance.selector;
+        // oz20Selectors[11] = oz20F.burn.selector;
+        // cut = IDiamondCut.FacetCut({
+        //     facetAddress: address(oz20F),
+        //     action: IDiamondCut.FacetCutAction.Add,
+        //     functionSelectors: oz20Selectors
+        // });
+        // diamondCutInt[4] = cut;
 
         oz4626Facet oz4626F = new oz4626Facet();
         bytes4[] memory oz4626Selectors = new bytes4[](10);
