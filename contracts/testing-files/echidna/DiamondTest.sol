@@ -60,7 +60,7 @@ contract DiamondTest is Diamond {
 
     
     function setDiamondCut() public returns(IDiamondCut.FacetCut[] memory diamondCutInt) {
-        diamondCutInt = new IDiamondCut.FacetCut[](7);
+        diamondCutInt = new IDiamondCut.FacetCut[](8);
         IDiamondCut.FacetCut memory cut;
 
         ExecutorFacetTest executorTestF = new ExecutorFacetTest();
@@ -164,23 +164,21 @@ contract DiamondTest is Diamond {
         });
         diamondCutInt[6] = cut;
 
-
-
-        // bytes4[] memory loupeSelectors = new bytes4[](8); //<------ error
-        // loupeSelectors[0] = DiamondLoupeFacet(nonRevenueFacets[1]).facets.selector;
-        // loupeSelectors[1] = DiamondLoupeFacet(nonRevenueFacets[1]).facetFunctionSelectors.selector;
-        // loupeSelectors[2] = DiamondLoupeFacet(nonRevenueFacets[1]).facetAddresses.selector;
-        // loupeSelectors[3] = DiamondLoupeFacet(nonRevenueFacets[1]).facetAddress.selector;
-        // loupeSelectors[4] = DiamondLoupeFacet(nonRevenueFacets[1]).supportsInterface.selector;
-        // loupeSelectors[5] = DiamondLoupeFacet(nonRevenueFacets[1]).queryTokenDatabase.selector;
-        // loupeSelectors[6] = DiamondLoupeFacet(nonRevenueFacets[1]).queryTokenDatabase.selector;
-        // loupeSelectors[7] = DiamondLoupeFacet(nonRevenueFacets[1]).queryTokenDatabase.selector;
-        // cut = IDiamondCut.FacetCut({
-        //     facetAddress: nonRevenueFacets[1],
-        //     action: IDiamondCut.FacetCutAction.Add,
-        //     functionSelectors: loupeSelectors
-        // });
-        // diamondCutInt[5] = cut;   
+        bytes4[] memory loupeSelectors = new bytes4[](8); //<------ error
+        loupeSelectors[0] = DiamondLoupeFacet(nonRevenueFacets[3]).facets.selector;
+        loupeSelectors[1] = DiamondLoupeFacet(nonRevenueFacets[3]).facetFunctionSelectors.selector;
+        loupeSelectors[2] = DiamondLoupeFacet(nonRevenueFacets[3]).facetAddresses.selector;
+        loupeSelectors[3] = DiamondLoupeFacet(nonRevenueFacets[3]).facetAddress.selector;
+        loupeSelectors[4] = DiamondLoupeFacet(nonRevenueFacets[3]).supportsInterface.selector;
+        loupeSelectors[5] = DiamondLoupeFacet(nonRevenueFacets[3]).queryTokenDatabase.selector;
+        loupeSelectors[6] = DiamondLoupeFacet(nonRevenueFacets[3]).getOzelIndex.selector;
+        loupeSelectors[7] = DiamondLoupeFacet(nonRevenueFacets[3]).getRegulatorCounter.selector;
+        cut = IDiamondCut.FacetCut({
+            facetAddress: nonRevenueFacets[3],
+            action: IDiamondCut.FacetCutAction.Add,
+            functionSelectors: loupeSelectors
+        });
+        diamondCutInt[7] = cut;   
 
         
 
