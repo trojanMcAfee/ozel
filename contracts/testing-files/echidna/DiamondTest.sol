@@ -45,10 +45,10 @@ contract DiamondTest is Diamond {
 
         DiamondCutFacet diamondCutF = new DiamondCutFacet();
         facets[0] = address(diamondCutF);
-        DiamondLoupeFacet diamondLoupeF = new DiamondLoupeFacet();
-        facets[1] = address(diamondLoupeF);
         OwnershipFacet ownershipF = new OwnershipFacet();
         facets[2] = address(ownershipF);
+        DiamondLoupeFacet diamondLoupeF = new DiamondLoupeFacet();
+        facets[1] = address(diamondLoupeF);
         RevenueFacetTest revenueTestF = new RevenueFacetTest();
         facets[3] = address(revenueTestF);
     }
@@ -60,7 +60,7 @@ contract DiamondTest is Diamond {
 
     
     function setDiamondCut() public returns(IDiamondCut.FacetCut[] memory diamondCutInt) {
-        diamondCutInt = new IDiamondCut.FacetCut[](5);
+        diamondCutInt = new IDiamondCut.FacetCut[](6);
         IDiamondCut.FacetCut memory cut;
 
         ExecutorFacetTest executorTestF = new ExecutorFacetTest();
@@ -143,7 +143,35 @@ contract DiamondTest is Diamond {
             action: IDiamondCut.FacetCutAction.Add,
             functionSelectors: cutSelectors
         });
-        diamondCutInt[4] = cut;       
+        diamondCutInt[4] = cut;    
+
+        bytes4[] memory ownershipSelectors = new bytes4[](2);
+        ownershipSelectors[0] = OwnershipFacet(nonRevenueFacets[2]).transferOwnership.selector;
+        ownershipSelectors[1] = OwnershipFacet(nonRevenueFacets[2]).owner.selector;
+        cut = IDiamondCut.FacetCut({
+            facetAddress: nonRevenueFacets[2],
+            action: IDiamondCut.FacetCutAction.Add,
+            functionSelectors: ownershipSelectors
+        });
+        diamondCutInt[5] = cut;
+
+
+
+        // bytes4[] memory loupeSelectors = new bytes4[](8); //<------ error
+        // loupeSelectors[0] = DiamondLoupeFacet(nonRevenueFacets[1]).facets.selector;
+        // loupeSelectors[1] = DiamondLoupeFacet(nonRevenueFacets[1]).facetFunctionSelectors.selector;
+        // loupeSelectors[2] = DiamondLoupeFacet(nonRevenueFacets[1]).facetAddresses.selector;
+        // loupeSelectors[3] = DiamondLoupeFacet(nonRevenueFacets[1]).facetAddress.selector;
+        // loupeSelectors[4] = DiamondLoupeFacet(nonRevenueFacets[1]).supportsInterface.selector;
+        // loupeSelectors[5] = DiamondLoupeFacet(nonRevenueFacets[1]).queryTokenDatabase.selector;
+        // loupeSelectors[6] = DiamondLoupeFacet(nonRevenueFacets[1]).queryTokenDatabase.selector;
+        // loupeSelectors[7] = DiamondLoupeFacet(nonRevenueFacets[1]).queryTokenDatabase.selector;
+        // cut = IDiamondCut.FacetCut({
+        //     facetAddress: nonRevenueFacets[1],
+        //     action: IDiamondCut.FacetCutAction.Add,
+        //     functionSelectors: loupeSelectors
+        // });
+        // diamondCutInt[5] = cut;   
 
         
 
