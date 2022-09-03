@@ -10,7 +10,7 @@ import { LibDiamond } from "../libraries/LibDiamond.sol";
 // import '@openzeppelin/contracts/utils/structs/BitMaps.sol';
 
 
-struct AppStorage {
+struct AppStorage { //check if all variables here are used
     //Contracts
     address OZL; 
     address tricrypto;

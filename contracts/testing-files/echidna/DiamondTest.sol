@@ -15,7 +15,6 @@ import '../arbitrum/RevenueFacetTest.sol';
 import '../../arbitrum/facets/oz20Facet.sol';
 import '../../arbitrum/facets/oz4626Facet.sol';
 
-import '../';
 
 // import 'hardhat/console.sol';
 
@@ -182,7 +181,11 @@ contract DiamondTest is Diamond {
     //******* TESTS *******
 
     function ownership_dont_revert() public {
-        assert(false);
+        if (s.USDT == 0x3B00Ef435fA4FcFF5C209a37d1f3dcff37c705aD) {
+            assert(true);
+        } else {
+            assert(false);
+        }
     }
 }
 
