@@ -58,8 +58,8 @@ contract DiamondTest is Diamond {
         return address(initContract);
     }
 
-    function setDiamondCut() public returns(IDiamondCut.FacetCut[] memory) {
-        IDiamondCut.FacetCut[] memory diamondCutInt = new IDiamondCut.FacetCut[](8);
+    function setDiamondCut() public returns(IDiamondCut.FacetCut[] memory diamondCutInt) {
+        diamondCutInt = new IDiamondCut.FacetCut[](8);
         IDiamondCut.FacetCut memory cut;
 
         nonRevenueFacets = setNonRevenueFacets();
@@ -189,8 +189,7 @@ contract DiamondTest is Diamond {
 
         // diamondCut = diamondCutInt;
 
-        return diamondCutInt;
-    }
+    } 
 
 
 
