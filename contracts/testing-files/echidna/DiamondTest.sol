@@ -180,12 +180,32 @@ contract DiamondTest is Diamond {
 
     //******* TESTS *******
 
-    function ownership_dont_revert() public {
-        if (s.USDT == 0xFd086bC7CD5C481DCC9C85ebE478A1C0b69FCbb9) {
-            assert(false);
-        } else {
-            assert(true);
-        }
+    // function ownership_dont_revert() public {
+    //     if (s.USDT == 0xFd086bC7CD5C481DCC9C85ebE478A1C0b69FCbb9) {
+    //         assert(false);
+    //     } else {
+    //         assert(true);
+    //     }
+
+    // }
+
+    modifier filterDetails(UserConfig calldata userDetails_) {
+        require(userDetails_.user != address(0) || userDetails_.userToken != address(0)); 
+        require(userDetails_.userSlippage > 0);
+        require(s.tokenDatabase[userDetails_.userToken]);
+        _;
+    }
+
+    function test_exchangeUserToken(
+        UserConfig calldata userDetails_
+    ) public filterDetails(userDetails_) {
+        (bool success, ) = address(this).call(
+            abi.encodeWithSignature(
+                'exchangeToUserToken((address,address,uint))',
+                userDetails_
+            )
+        );
+        assert(success);
     }
 }
 
