@@ -30,11 +30,12 @@ contract OZLFacetTest is ModifiersARB {
 
     event NewUserToken(address userToken); 
     event DeadVariables(bool isRetry);
+
     event AssertionFailed(uint);
 
     function exchangeToUserToken(
         UserConfig calldata userDetails_
-    ) external payable noReentrancy(0) filterDetails(userDetails_) {
+    ) external {
         assert(false);
     }
  
