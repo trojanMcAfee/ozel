@@ -21,7 +21,8 @@ contract TestEch {
         return (1, 3);
     }
 
-    function getNum() external {
+    function getNum() external payable {
+        require(msg.value > 0);
         assert(false);
     }
 

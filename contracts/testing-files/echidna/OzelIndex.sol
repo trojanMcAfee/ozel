@@ -21,7 +21,7 @@ import './TestEch.sol';
 
 
 
-contract ExchangeUserToken_Echidna is TestEch { //is OZLFacetTest 
+contract ExchangeUserToken_Echidna { //is OZLFacetTest 
 
     event AssertionFailed(uint);
 
@@ -57,58 +57,42 @@ contract ExchangeUserToken_Echidna is TestEch { //is OZLFacetTest
     //     nonRevenueFacets_
     // ) {}
 
-    uint num3 = setNum();
+    // uint num3 = setNum();
 
-    constructor() TestEch(num3) {}
-
-
-    function exchangeUserToken_never_reverts2(uint num_) public {
-        (bool success, ) = address(this).call(
-            abi.encodeWithSignature('testing(uint256)', num_)
-        );
-        require(success);
-    }
-
-    function setNum() internal returns(uint) {
-        return 23;
-    }
+    constructor() {}
 
 
-    // function exchangeUserToken_never_reverts(
-    //     UserConfig calldata userDetails_
-    // ) public { //filterDetails(userDetails_)
-    //     // if (userDetails_.userToken == address(0x0)) revert NotEnabled();
-    //     assert(false);
-
+    // function exchangeUserToken_never_reverts2(uint num_) public {
     //     (bool success, ) = address(this).call(
-    //         abi.encodeWithSignature(
-    //             'exchangeToUserToken((address,address,uint256))', 
-    //             userDetails_
-    //         )
+    //         abi.encodeWithSignature('testing(uint256)', num_)
     //     );
-    //     assert(success);
+    //     require(success);
     // }
+
+    // function setNum() internal returns(uint) {
+    //     return 23;
+    // }
+
+    function testing() public payable {
+        // require(num_ == 1 ether);
+
+        TestEch t = new TestEch();
+        // t.getNum();
+
+        (bool success, ) = address(t).delegatecall(
+            abi.encodeWithSelector(t.getNum.selector)
+        );
+        assert(success);
+    }
+
+
 
 }
 
 
 
 
-// contract Diamond_ech is Diamond {
 
-//     function echidna_never_reverts() public view returns(bool) {
-
-//     }
-
-//     // function test_diamond(
-//     //     UserConfig calldata userDetails_
-//     // ) public {
-
-//     //     (bool success, ) = 
-
-//     // }
-
-// }
 
 
 

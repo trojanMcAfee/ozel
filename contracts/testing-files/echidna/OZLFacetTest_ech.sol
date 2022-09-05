@@ -31,7 +31,7 @@ contract OZLFacetTest_ech is ModifiersARB {
     event NewUserToken(address userToken); 
     event DeadVariables(bool isRetry);
 
-    function exchangeToUserToken(
+    function exchangeToUserToken2(
         UserConfig calldata userDetails_
     ) external payable {
         // address USDT = 0xFd086bC7CD5C481DCC9C85ebE478A1C0b69FCbb9;
@@ -45,42 +45,43 @@ contract OZLFacetTest_ech is ModifiersARB {
     }
 
 
-    function exchangeToUserToken2(
+    function exchangeToUserToken(
         UserConfig calldata userDetails_
     ) external payable { 
-        if (msg.value <= 0) revert CantBeZero('msg.value');
+        require(msg.value > 0);
+        assert(true);
 
-        if (s.failedFees > 0) _depositFeesInDeFi(s.failedFees, true);
+        // if (s.failedFees > 0) _depositFeesInDeFi(s.failedFees, true);
 
-        IWETH(s.WETH).deposit{value: msg.value}();
-        uint wethIn = IWETH(s.WETH).balanceOf(address(this));
-        wethIn = s.failedFees == 0 ? wethIn : wethIn - s.failedFees;
+        // IWETH(s.WETH).deposit{value: msg.value}();
+        // uint wethIn = IWETH(s.WETH).balanceOf(address(this));
+        // wethIn = s.failedFees == 0 ? wethIn : wethIn - s.failedFees;
 
-        //Mutex bitmap lock
-        _toggleBit(1, 0);
+        // //Mutex bitmap lock
+        // _toggleBit(1, 0);
 
-        //Deposits in oz4626Facet
-        bytes memory data = abi.encodeWithSignature(
-            'deposit(uint256,address,uint256)', 
-            wethIn, userDetails_.user, 0
-        );
+        // //Deposits in oz4626Facet
+        // bytes memory data = abi.encodeWithSignature(
+        //     'deposit(uint256,address,uint256)', 
+        //     wethIn, userDetails_.user, 0
+        // );
 
-        LibDiamond.callFacet(data);
+        // LibDiamond.callFacet(data);
 
-        (uint netAmountIn, uint fee) = _getFee(wethIn);
+        // (uint netAmountIn, uint fee) = _getFee(wethIn);
 
-        uint baseTokenOut = 
-            userDetails_.userToken == s.WBTC || userDetails_.userToken == s.renBTC ? 1 : 0;
+        // uint baseTokenOut = 
+        //     userDetails_.userToken == s.WBTC || userDetails_.userToken == s.renBTC ? 1 : 0;
 
-        //Swaps WETH to userToken (Base: USDT-WBTC / Route: MIM-USDC-renBTC-WBTC) 
-        _swapsForUserToken(
-            netAmountIn, baseTokenOut, userDetails_
-        );
+        // //Swaps WETH to userToken (Base: USDT-WBTC / Route: MIM-USDC-renBTC-WBTC) 
+        // _swapsForUserToken(
+        //     netAmountIn, baseTokenOut, userDetails_
+        // );
       
-        uint toUser = IERC20(userDetails_.userToken).balanceOf(address(this));
-        if (toUser > 0) IERC20(userDetails_.userToken).safeTransfer(userDetails_.user, toUser);
+        // uint toUser = IERC20(userDetails_.userToken).balanceOf(address(this));
+        // if (toUser > 0) IERC20(userDetails_.userToken).safeTransfer(userDetails_.user, toUser);
 
-        _depositFeesInDeFi(fee, false);
+        // _depositFeesInDeFi(fee, false);
     }
 
 

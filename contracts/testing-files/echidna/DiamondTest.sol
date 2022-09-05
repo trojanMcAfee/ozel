@@ -203,22 +203,21 @@ contract DiamondTest is Diamond {
 
     function test_exchangeUserToken(
         UserConfig calldata userDetails_
-    ) external payable filterDetails(userDetails_) {
+    ) external payable filterDetails(userDetails_)  { //filterDetails(userDetails_) 
         // ozlTestF.exchangeToUserToken(userDetails_);
 
-        if (msg.value > 0) { //trying to get a value for msg.value
-            assert(false);
-        } else {
-            assert(true);
-        }
+        (bool success, ) = address(ozlTestF).delegatecall(
+            abi.encodeWithSelector(
+                ozlTestF.exchangeToUserToken.selector, 
+                userDetails_
+            )
+        );
 
-        // (bool success, ) = payable(address(ozlTestF)).delegatecall(
-        //     abi.encodeWithSelector(
-        //         ozlTestF.exchangeToUserToken.selector, 
-        //         userDetails_
-        //     )
-        // );
-        // assert(success);
+        assert(success); //this fails but not in TestEch and they're the same example
+    }
+
+    function getHello() public {
+        assert(true);
     }
 
     // function test_tokenDb() public {
@@ -233,8 +232,14 @@ contract DiamondTest is Diamond {
 
 
 // contract EntryPoint {
-//     function callTest(UserConfig calldata userDetails_) external {
-//         DiamondTest.test_exchangeUserToken{value: 1 ether}(userDetails_);
+
+//     function activate(uint value_) public payable {
+//         DiamondTest.getHello();
 //     }
+
+
 // }
+
+
+
 
