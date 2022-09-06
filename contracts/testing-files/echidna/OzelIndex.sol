@@ -59,7 +59,7 @@ contract ExchangeUserToken_Echidna { //is OZLFacetTest
 
     // uint num3 = setNum();
 
-    constructor() {}
+    // constructor() {}
 
 
     // function exchangeUserToken_never_reverts2(uint num_) public {
@@ -86,8 +86,64 @@ contract ExchangeUserToken_Echidna { //is OZLFacetTest
     }
 
 
+}
+
+
+contract C {
+
+    mapping(address => bool) tokenDatabase;
+
+    constructor(address usdt) {
+        tokenDatabase[usdt] = true;
+    }
 
 }
+
+
+contract A is C {
+
+    address USDT = 0xFd086bC7CD5C481DCC9C85ebE478A1C0b69FCbb9;
+
+   struct UserConfig { 
+      address user;
+      address userToken;
+      uint userSlippage; 
+   }
+   
+   constructor() C(USDT) {}
+
+   modifier filterDetails(UserConfig calldata userDetails_) {
+        require(userDetails_.user != address(0)); 
+        require(userDetails_.userToken != address(0));
+        require(userDetails_.userSlippage > 0);
+        require(tokenDatabase[userDetails_.userToken]); // <---- commenting this out makes test() from below fails (expected)
+        _;
+    }
+
+   function test(UserConfig calldata userDetails_) public filterDetails(userDetails_) {
+        B b = new B();
+        b.testContractB(userDetails_); // <----- passes (it should fail)
+    }
+
+   function test_tokenDb() public { // <------- fails in echidna (expected - proves that s.tokenDatabase was configured properly)
+        // address USDT = 0xFd086bC7CD5C481DCC9C85ebE478A1C0b69FCbb9;
+        if (tokenDatabase[USDT]) {
+            assert(false);
+        } else {
+            assert(true);
+        }
+    }
+}
+
+contract B {
+   function testContractB(
+        A.UserConfig calldata userDetails_
+    ) external {
+        assert(false);
+    }
+}
+
+
 
 
 

@@ -1,4 +1,4 @@
-testLimit: 500
+testLimit: 5000
 testMode: assertion
 sender: ["0x30000"] 
 

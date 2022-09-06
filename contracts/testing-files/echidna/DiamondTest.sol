@@ -192,7 +192,7 @@ contract DiamondTest is Diamond {
         require(userDetails_.user != address(0)); 
         require(userDetails_.userToken != address(0));
         require(userDetails_.userSlippage > 0);
-        // require(s.tokenDatabase[userDetails_.userToken]);
+        require(s.tokenDatabase[userDetails_.userToken]);
         _;
     }
 
@@ -213,12 +213,12 @@ contract DiamondTest is Diamond {
             )
         );
 
-        assert(success); //this fails but not in TestEch and they're the same example
+        assert(success); 
     }
 
-    function getHello() public {
-        assert(true);
-    }
+    // function getHello() public {
+    //     assert(true);
+    // }
 
     // function test_tokenDb() public {
     //     address USDT = 0xFd086bC7CD5C481DCC9C85ebE478A1C0b69FCbb9;
