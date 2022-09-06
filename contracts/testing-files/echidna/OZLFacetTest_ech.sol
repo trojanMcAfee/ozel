@@ -20,6 +20,8 @@ import '../../Errors.sol';
 import { ModifiersARB } from '../../Modifiers.sol';
 import '../arbitrum/RevenueFacetTest.sol';
 
+import './DiamondTest.sol';
+
 
 
 
@@ -31,25 +33,25 @@ contract OZLFacetTest_ech is ModifiersARB {
     event NewUserToken(address userToken); 
     event DeadVariables(bool isRetry);
 
-    function exchangeToUserToken2(
-        UserConfig calldata userDetails_
-    ) external payable {
-        // address USDT = 0xFd086bC7CD5C481DCC9C85ebE478A1C0b69FCbb9;
+    // function exchangeToUserToken2(
+    //     UserConfig calldata userDetails_
+    // ) external payable {
+    //     // address USDT = 0xFd086bC7CD5C481DCC9C85ebE478A1C0b69FCbb9;
 
-        if (msg.value > 0) {
-            assert(false);
-        } else {
-            assert(true);
-        }
-        // assert(false);
-    }
+    //     if (msg.value > 0) {
+    //         assert(false);
+    //     } else {
+    //         assert(true);
+    //     }
+    //     // assert(false);
+    // }
 
 
     function exchangeToUserToken(
         UserConfig calldata userDetails_
     ) external payable { 
         // require(msg.value > 0);
-        assert(false);
+        assert(true);
 
         // if (s.failedFees > 0) _depositFeesInDeFi(s.failedFees, true);
 
