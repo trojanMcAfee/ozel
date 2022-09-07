@@ -1,6 +1,7 @@
 testLimit: 5000
 testMode: assertion
 sender: ["0x30000"] 
+# balanceAddr: 10000000000000000000
 
 cryticArgs: 
   [

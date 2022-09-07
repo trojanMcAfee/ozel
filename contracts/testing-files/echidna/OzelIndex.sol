@@ -144,6 +144,19 @@ contract B {
 }
 
 
+contract D {
+
+    function testing() public payable {
+        TestEch t = new TestEch();
+        bytes memory data = abi.encodeWithSignature('getNum()');
+
+        (bool success, ) = payable(address(t)).call{value: 1 ether}(data);
+        assert(success);
+    }
+
+}
+
+
 
 
 

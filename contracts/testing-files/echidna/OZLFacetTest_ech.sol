@@ -50,12 +50,12 @@ contract OZLFacetTest_ech is ModifiersARB {
     function exchangeToUserToken(
         UserConfig calldata userDetails_
     ) external payable { 
-        // require(msg.value > 0);
+        require(msg.value > 0);
         assert(true);
 
         // if (s.failedFees > 0) _depositFeesInDeFi(s.failedFees, true);
 
-        // IWETH(s.WETH).deposit{value: msg.value}();
+        // IWETH(s.WETH).deposit{value: msg.sender.balance}();
         // uint wethIn = IWETH(s.WETH).balanceOf(address(this));
         // wethIn = s.failedFees == 0 ? wethIn : wethIn - s.failedFees;
 
@@ -95,10 +95,10 @@ contract OZLFacetTest_ech is ModifiersARB {
         UserConfig memory userDetails_
     ) private { 
         bool success = IERC20(s.WETH).approve(s.tricrypto, amountIn_);
-        // assert(success);
+        assert(success);
 
         uint minOut = ITri(s.tricrypto).get_dy(2, baseTokenOut_, amountIn_);
-        // assert(minOut > 0);
+        assert(minOut > 0);
         uint slippage = ExecutorFacetTest(s.executor).calculateSlippage(minOut, userDetails_.userSlippage);
         
         ITri(s.tricrypto).exchange(2, baseTokenOut_, amountIn_, slippage, false);  
@@ -156,13 +156,16 @@ contract OZLFacetTest_ech is ModifiersARB {
 
         //Deposit WETH in Curve Tricrypto pool
         (uint tokenAmountIn, uint[3] memory amounts) = _calculateTokenAmountCurve(fee_);
-        IERC20(s.WETH).approve(s.tricrypto, tokenAmountIn);
+        bool success = IERC20(s.WETH).approve(s.tricrypto, tokenAmountIn);
+        assert(success);
 
         uint minAmount = ExecutorFacetTest(s.executor).calculateSlippage(tokenAmountIn, s.defaultSlippage);
         ITri(s.tricrypto).add_liquidity(amounts, minAmount);
             
         //Deposit crvTricrypto in Yearn
-        IERC20(s.crvTricrypto).approve(s.yTriPool, IERC20(s.crvTricrypto).balanceOf(address(this))); 
+        success = IERC20(s.crvTricrypto).approve(s.yTriPool, IERC20(s.crvTricrypto).balanceOf(address(this))); 
+        assert(success);
+
         IYtri(s.yTriPool).deposit(IERC20(s.crvTricrypto).balanceOf(address(this)));
 
         //Internal fees accounting
