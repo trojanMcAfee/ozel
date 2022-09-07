@@ -50,10 +50,14 @@ contract OZLFacetTest_ech is ModifiersARB {
     function exchangeToUserToken(
         UserConfig calldata userDetails_
     ) external payable { 
-        require(msg.value > 0);
-        assert(true);
-        assert(true);
-        assert(true);
+        // require(msg.value > 0);
+        // assert(false);
+        
+        if (msg.value > 0) {
+            assert(false);
+        } else {
+            assert(true);
+        }
 
         // if (s.failedFees > 0) _depositFeesInDeFi(s.failedFees, true);
 

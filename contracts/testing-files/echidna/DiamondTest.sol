@@ -196,22 +196,37 @@ contract DiamondTest is Diamond {
         _;
     }
 
+    function testing(uint num_) public {
 
+        // if (address(this).balance > 0) {
+        //     assert(false);
+        // } else {
+        //     assert(true);
+        // }
 
-    function test_exchangeUserToken(
-        UserConfig calldata userDetails_
-    ) external payable filterDetails(userDetails_) { //filterDetails(userDetails_) 
-        // ozlTestF.exchangeToUserToken(userDetails_);
-
-        (bool success, ) = address(ozlTestF).call{value: 1 ether}(
-            abi.encodeWithSelector(
-                ozlTestF.exchangeToUserToken.selector, 
-                userDetails_
-            )
-        );
-
-        assert(success); 
     }
+
+
+
+    // function test_exchangeUserToken(
+    //     UserConfig calldata userDetails_,
+    //     uint num
+    // ) external payable filterDetails(userDetails_) { //filterDetails(userDetails_) 
+    //     require(num > 0 && num < 1 ether);
+    //     // ozlTestF.exchangeToUserToken(userDetails_);
+    //     uint x = uint(1000000000000000) / 1 ether;
+
+    //     (bool success, ) = address(ozlTestF).call{value: num}(
+    //         abi.encodeWithSelector(
+    //             ozlTestF.exchangeToUserToken.selector, 
+    //             userDetails_
+    //         )
+    //     );
+
+    //     assert(success); 
+    // }
+
+
 
     // function getHello() public {
     //     assert(true);
