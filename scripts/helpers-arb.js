@@ -161,15 +161,12 @@ async function replaceForModVersion(contractName, checkUSDTbalance, selector, us
     const USDC = await hre.ethers.getContractAt('IERC20', usdcAddr);
 
     modContract = typeof contractName === 'string' ? await deployFacet(contractName) : contractName;
-
-    console.log(11);
        
     if (contractName === 'ComputeRevenueV1' || contractName === 'ComputeRevenueV2' || contractName === 'ComputeRevenueV3') {
         const iface = new ethers.utils.Interface(diamondABI);
         const selectorTESTVAR = iface.getSighash('setTESTVAR2');
         let flag = false;
 
-        console.log(12);
 
         // if (contractName === 'ComputeRevenueV1') {
         //     await OZLDiamond.diamondCut(
@@ -190,9 +187,6 @@ async function replaceForModVersion(contractName, checkUSDTbalance, selector, us
             flag = true;
         }
         if (!flag) continueComputing();
-
-
-        console.log(13);
         
         async function continueComputing() {
             if (contractName === 'ComputeRevenueV1') {
@@ -203,13 +197,8 @@ async function replaceForModVersion(contractName, checkUSDTbalance, selector, us
                 stringToHash = 'testvar2.third.position';
             }
 
-            console.log(14);
-
             let position = keccak256(toUtf8Bytes(stringToHash)); 
-            console.log(15);
             await OZLDiamond.setTESTVAR2(1, position);
-
-            console.log(16);
         }
     }
     
@@ -221,8 +210,6 @@ async function replaceForModVersion(contractName, checkUSDTbalance, selector, us
     };
 
     await OZLDiamond.diamondCut(faceCutArgs, nullAddr, '0x');
-
-    console.log(14);
 
     if (!isIndex) {
         receipt = await sendETH(userDetails); 

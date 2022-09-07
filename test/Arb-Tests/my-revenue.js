@@ -78,6 +78,8 @@ let ozlDiamond, owner, feesVaultFlag;
         await WETH.transfer(deadAddr, balanceWETH);
     });
 
+    afterEach(() => feesVaultFlag = true);
+
 
     xit('should send the accrued revenue to the deployer in USDC / ComputeRevenueV1', async () => {
         balanceUSDC = await USDC.balanceOf(callerAddr) / 10 ** 6;
@@ -92,38 +94,26 @@ let ozlDiamond, owner, feesVaultFlag;
         balanceUSDC = await USDC.balanceOf(callerAddr);
         assert(balanceUSDC / 10 ** 6 > 0);
 
-        //Cleans up
+        //Clean up
         await USDC.transfer(deadAddr, balanceUSDC); 
-        feesVaultFlag = true;
-
     }); 
 
     it('should send the accrued revenue to the deployer in tricrypto / ComputeRevenueV2', async () => {
-        console.log(1);
         balanceTri = formatEther(await tricryptoCrv.balanceOf(callerAddr));
         assert.equal(balanceTri, 0);
-        console.log(2);
 
         await replaceForModVersion('ComputeRevenueV2', false, selector, userDetails, false, true);
-        console.log(3);
        
         if (!feesVaultFlag) await sendETH(userDetails);
         receipt = await sendETH(userDetails);
-        console.log(4);
         testingNum = getTestingNumber(receipt);
-        console.log(5);
         assert.equal(testingNum, 23);
 
-        console.log(6);
         balanceTri = await tricryptoCrv.balanceOf(callerAddr);
-        console.log(7);
         assert(formatEther(balanceTri) > 0);
-        console.log(8);
 
         //Clean up
         await tricryptoCrv.transfer(deadAddr, balanceTri);
-        console.log(9);
-
     });
 
     xit('should send the accrued revenue to the deployer in USDC in two txs / ComputeRevenueV3', async () => {
