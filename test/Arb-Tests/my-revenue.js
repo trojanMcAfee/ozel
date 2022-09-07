@@ -27,7 +27,7 @@ let deployedDiamond, receipt;
 let iface, abi;
 let selector, balanceWETH;
 let testingNum, balanceUSDC, balanceTri;
-let ozlDiamond, owner;
+let ozlDiamond, owner, feesVaultFlag;
 
 
 
@@ -66,7 +66,6 @@ let ozlDiamond, owner;
         abi = ['function checkForRevenue() external payable'];
         iface = new ethers.utils.Interface(abi);
         selector = iface.getSighash('checkForRevenue');
-
         tricryptoCrv = await hre.ethers.getContractAt('IERC20', crvTricrypto);
 
         //Clean up from past tests
@@ -75,13 +74,12 @@ let ozlDiamond, owner;
 
         ozlDiamond = await hre.ethers.getContractAt(diamondABI, deployedDiamond.address);
 
-        //Clean up from past tests
         balanceWETH = await WETH.balanceOf(callerAddr);
         await WETH.transfer(deadAddr, balanceWETH);
     });
 
 
-    it('should send the accrued revenue to the deployer in USDC / ComputeRevenueV1', async () => {
+    xit('should send the accrued revenue to the deployer in USDC / ComputeRevenueV1', async () => {
         balanceUSDC = await USDC.balanceOf(callerAddr) / 10 ** 6;
         assert.equal(balanceUSDC, 0);
 
@@ -96,28 +94,39 @@ let ozlDiamond, owner;
 
         //Cleans up
         await USDC.transfer(deadAddr, balanceUSDC); 
+        feesVaultFlag = true;
 
     }); 
 
     it('should send the accrued revenue to the deployer in tricrypto / ComputeRevenueV2', async () => {
+        console.log(1);
         balanceTri = formatEther(await tricryptoCrv.balanceOf(callerAddr));
         assert.equal(balanceTri, 0);
+        console.log(2);
 
         await replaceForModVersion('ComputeRevenueV2', false, selector, userDetails, false, true);
+        console.log(3);
        
+        if (!feesVaultFlag) await sendETH(userDetails);
         receipt = await sendETH(userDetails);
+        console.log(4);
         testingNum = getTestingNumber(receipt);
+        console.log(5);
         assert.equal(testingNum, 23);
 
+        console.log(6);
         balanceTri = await tricryptoCrv.balanceOf(callerAddr);
+        console.log(7);
         assert(formatEther(balanceTri) > 0);
+        console.log(8);
 
         //Clean up
         await tricryptoCrv.transfer(deadAddr, balanceTri);
+        console.log(9);
 
     });
 
-    it('should send the accrued revenue to the deployer in USDC in two txs / ComputeRevenueV3', async () => {
+    xit('should send the accrued revenue to the deployer in USDC in two txs / ComputeRevenueV3', async () => {
         balanceUSDC = await USDC.balanceOf(callerAddr) / 10 ** 6;
         assert.equal(balanceUSDC, 0);
 
@@ -134,7 +143,7 @@ let ozlDiamond, owner;
         await USDC.transfer(deadAddr, balanceUSDC);
     });
 
-    it('should send the accrued revenue to the deployer in tricrypto and WETH / ComputeRevenueV4', async () => {
+    xit('should send the accrued revenue to the deployer in tricrypto and WETH / ComputeRevenueV4', async () => {
         balanceWETH = await WETH.balanceOf(callerAddr);
         assert.equal(formatEther(balanceWETH), 0);
         balanceTri = await tricryptoCrv.balanceOf(callerAddr);
@@ -155,7 +164,7 @@ let ozlDiamond, owner;
         await WETH.transfer(deadAddr, balanceWETH);
     });
 
-    it('should send the accrued revenue to deployer in WETH / SwapWETHforRevenueV1', async () => {
+    xit('should send the accrued revenue to deployer in WETH / SwapWETHforRevenueV1', async () => {
         balanceWETH = await WETH.balanceOf(callerAddr);
         assert.equal(formatEther(balanceWETH), 0); 
 
@@ -169,7 +178,7 @@ let ozlDiamond, owner;
         await WETH.transfer(deadAddr, balanceWETH);
     });
 
-    it('should send the accrued revenue to deployer in revenueToken (USDC) at the 2nd attempt / SwapWETHforRevenueV2', async () => {
+    xit('should send the accrued revenue to deployer in revenueToken (USDC) at the 2nd attempt / SwapWETHforRevenueV2', async () => {
         balanceUSDC = await USDC.balanceOf(callerAddr);
         assert.equal(balanceUSDC / 10 ** 6, 0);
 
@@ -185,7 +194,7 @@ let ozlDiamond, owner;
         await USDC.transfer(deadAddr, balanceUSDC);
     });
 
-    it('should send the accrued revenue to deployer in both USDC and WETH / SwapWETHforRevenueV3', async () => {
+    xit('should send the accrued revenue to deployer in both USDC and WETH / SwapWETHforRevenueV3', async () => {
         balanceUSDC = await USDC.balanceOf(callerAddr);
         assert.equal(balanceUSDC / 10 ** 6, 0);
 
@@ -202,7 +211,7 @@ let ozlDiamond, owner;
         assert(formatEther(balanceWETH) > 0);
     });
 
-    it('should not call filterRevenueCheck / _filterRevenueCheck()', async () => {
+    xit('should not call filterRevenueCheck / _filterRevenueCheck()', async () => {
         await replaceForModVersion('FilterRevenueCheckV1', false, selector, userDetails, false, true);
         owner = await ozlDiamond.owner();
         assert.equal(owner, callerAddr);

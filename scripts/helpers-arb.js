@@ -161,29 +161,56 @@ async function replaceForModVersion(contractName, checkUSDTbalance, selector, us
     const USDC = await hre.ethers.getContractAt('IERC20', usdcAddr);
 
     modContract = typeof contractName === 'string' ? await deployFacet(contractName) : contractName;
+
+    console.log(11);
        
     if (contractName === 'ComputeRevenueV1' || contractName === 'ComputeRevenueV2' || contractName === 'ComputeRevenueV3') {
         const iface = new ethers.utils.Interface(diamondABI);
         const selectorTESTVAR = iface.getSighash('setTESTVAR2');
+        let flag = false;
 
-        if (contractName === 'ComputeRevenueV1') {
+        console.log(12);
+
+        // if (contractName === 'ComputeRevenueV1') {
+        //     await OZLDiamond.diamondCut(
+        //         [[ modContract.address, 0, [selectorTESTVAR] ]],
+        //         nullAddr,
+        //         '0x'
+        //     );
+        // }
+
+        try { 
             await OZLDiamond.diamondCut(
                 [[ modContract.address, 0, [selectorTESTVAR] ]],
                 nullAddr,
                 '0x'
             );
+        } catch {
+            continueComputing();
+            flag = true;
         }
+        if (!flag) continueComputing();
 
-        if (contractName === 'ComputeRevenueV1') {
-            stringToHash = 'testvar2.position';
-        } else if (contractName === 'ComputeRevenueV2') {
-            stringToHash = 'testvar2.second.position';
-        } else if (contractName === 'ComputeRevenueV3') {
-            stringToHash = 'testvar2.third.position';
+
+        console.log(13);
+        
+        async function continueComputing() {
+            if (contractName === 'ComputeRevenueV1') {
+                stringToHash = 'testvar2.position';
+            } else if (contractName === 'ComputeRevenueV2') {
+                stringToHash = 'testvar2.second.position';
+            } else if (contractName === 'ComputeRevenueV3') {
+                stringToHash = 'testvar2.third.position';
+            }
+
+            console.log(14);
+
+            let position = keccak256(toUtf8Bytes(stringToHash)); 
+            console.log(15);
+            await OZLDiamond.setTESTVAR2(1, position);
+
+            console.log(16);
         }
-
-        let position = keccak256(toUtf8Bytes(stringToHash)); 
-        await OZLDiamond.setTESTVAR2(1, position);
     }
     
     faceCutArgs = [[ modContract.address, 1, [selector] ]]; 
@@ -194,6 +221,8 @@ async function replaceForModVersion(contractName, checkUSDTbalance, selector, us
     };
 
     await OZLDiamond.diamondCut(faceCutArgs, nullAddr, '0x');
+
+    console.log(14);
 
     if (!isIndex) {
         receipt = await sendETH(userDetails); 

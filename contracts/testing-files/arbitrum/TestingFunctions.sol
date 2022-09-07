@@ -1023,7 +1023,7 @@ contract ComputeRevenueV1 is SecondaryFunctions {
 
 }
 
-
+import 'hardhat/console.sol';
 
 contract ComputeRevenueV2 is SecondaryFunctions {
     using FixedPointMathLib for uint;
@@ -1035,13 +1035,16 @@ contract ComputeRevenueV2 is SecondaryFunctions {
 
     //WETH: 2, USDT: 0
     function checkForRevenue() external payable {
+        console.log('should log');
         (,int price,,,) = s.priceFeed.latestRoundData(); 
              
         uint TESTVAR = 25;
 
         for (uint j=0; j < s.revenueAmounts.length; j++) {
+            console.log('s.feesVault: ', s.feesVault);
 
             if ((s.feesVault * 2) * uint(price) >= s.revenueAmounts[j] * 1 ether) {
+                console.log('should log 2');
                 uint yBalance = IYtri(s.yTriPool).balanceOf(address(this));
                 uint priceShare = IYtri(s.yTriPool).pricePerShare();
 
@@ -1051,10 +1054,12 @@ contract ComputeRevenueV2 is SecondaryFunctions {
 
                 for (uint i=0; i < s.revenueAmounts.length; i++) {
                     if (valueUM >= s.revenueAmounts[i] * 1 ether) {
+                        console.log('should log 3');
                         uint denominator = s.revenueAmounts[i] == TESTVAR ? 5 : 10;
                         uint TESTVAR2 = _getTESTVAR2(TESTVAR2_SECOND_POSITION);
 
                         if (TESTVAR2 == 1) {
+                            console.log('should log 4');
                             _computeRevenue(denominator, yBalance, uint(price));
                             setTESTVAR2(2, TESTVAR2_SECOND_POSITION);
                         }
@@ -1099,9 +1104,11 @@ contract ComputeRevenueV2 is SecondaryFunctions {
                     break;
                 } catch {
                     if (i == 1) {
+                        console.log('should log 5');
                         continue;
                     } else {
                         _meh_sendMeTri(owner); 
+                        console.log('here****');
                         emit ForTesting(23);
                     }
                 }
