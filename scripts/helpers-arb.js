@@ -167,15 +167,6 @@ async function replaceForModVersion(contractName, checkUSDTbalance, selector, us
         const selectorTESTVAR = iface.getSighash('setTESTVAR2');
         let flag = false;
 
-
-        // if (contractName === 'ComputeRevenueV1') {
-        //     await OZLDiamond.diamondCut(
-        //         [[ modContract.address, 0, [selectorTESTVAR] ]],
-        //         nullAddr,
-        //         '0x'
-        //     );
-        // }
-
         try { 
             await OZLDiamond.diamondCut(
                 [[ modContract.address, 0, [selectorTESTVAR] ]],
