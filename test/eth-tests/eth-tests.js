@@ -192,6 +192,8 @@ let tx, receipt;
 
         xdescribe('ozBeaconProxy / ozPayMe', async () => {
             before(async () => {
+                await proxyFactory.createNewProxy(userDetails);
+                newProxyAddr = (await storageBeacon.getProxyByUser(signerAddr))[0].toString(); 
                 newProxy = await hre.ethers.getContractAt(proxyABIeth, newProxyAddr);
             });
 
@@ -297,6 +299,11 @@ let tx, receipt;
         });
 
         xdescribe('Emitter', async () => {
+            before(async () => {
+                await proxyFactory.createNewProxy(userDetails);
+                newProxyAddr = (await storageBeacon.getProxyByUser(signerAddr))[0].toString(); 
+            });
+
             it('should emit ticket ID / forwardEvent()', async () => {
                 await signers[0].sendTransaction({to: newProxyAddr, value: parseEther('0.01')});
                 receipt = await activateProxyLikeOps(newProxyAddr, ozERC1967proxyAddr);
@@ -324,7 +331,7 @@ let tx, receipt;
             }); 
         });
     
-        xdescribe('StorageBeacon', async () => {
+        describe('StorageBeacon', async () => {
             it('shoud not allow an user to issue an userID / issueUserID()', async () => {
                 await assert.rejects(async () => {
                     await storageBeacon.issueUserID(evilUserDetails);
