@@ -202,6 +202,8 @@ contract OZLFacet is ModifiersARB {
 
     function addTokenToDatabase(TradeOps memory newSwap_) external { 
         LibDiamond.enforceIsContractOwner();
+        if (s.tokenDatabase[newSwap_.userToken]) revert TokenAlreadyInDatabase(newSwap_.userToken);
+        
         s.tokenDatabase[newSwap_.userToken] = true;
         s.swaps.push(newSwap_);
         emit NewUserToken(newSwap_.userToken);

@@ -35,6 +35,7 @@ let callerAddr, caller2Addr;
 let deployedDiamond, ozlDiamond;
 let evilAmount, evilSwapDetails;
 let tokenSwap;
+let addFlag;
 
 
 describe('Unit testing', async function () {
@@ -128,8 +129,9 @@ describe('Unit testing', async function () {
         });
 
         describe('withdrawUserShare()', async () => {
+            beforeEach(async () => await enableWithdrawals(true));
+
             it('should fail with user as address(0)', async () => {
-                await enableWithdrawals(true);
                 userDetails[0] = nullAddr;
                 await assert.rejects(async () => {
                     await withdrawShareOZL(userDetails, callerAddr, parseEther((await balanceOfOZL(callerAddr)).toString()));
@@ -193,7 +195,7 @@ describe('Unit testing', async function () {
         });
 
         describe('addTokenToDatabase()', async () => {
-            it('should allow the owner to add a new userToken (USX) to database', async () => {
+            beforeEach(async () => {
                 //dForcePool --> USX: 0 / USDT: 2 / USDC: 1
                 tokenSwap = [
                     2,
@@ -202,8 +204,12 @@ describe('Unit testing', async function () {
                     usxAddr,
                     dForcePoolAddr
                 ];
-                await addTokenToDatabase(tokenSwap);
-        
+                if (!addFlag) await addTokenToDatabase(tokenSwap);
+            });
+
+            afterEach(() => addFlag = true);
+
+            it('should allow the owner to add a new userToken (USX) to database', async () => {
                 balanceUSX = await USX.balanceOf(callerAddr);
                 assert.equal(formatEther(balanceUSX), 0);
                 
@@ -286,9 +292,6 @@ describe('Unit testing', async function () {
                 message: (await err(callerAddr)).notAuthorized
             });
         });
-
-
-
     });
 
     describe('oz20Facet', async () => { 
