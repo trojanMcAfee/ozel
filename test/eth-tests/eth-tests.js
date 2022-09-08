@@ -25,7 +25,7 @@ const {
     deadAddr,
     proxyABIeth,
     factoryABI
- } = require('../scripts/state-vars.js');
+ } = require('../../scripts/state-vars.js');
 
  const {
     deployContract,
@@ -36,9 +36,9 @@ const {
     compareTopicWith,
     storeVarsInHelpers,
     compareEventWithVar
- } = require('../scripts/helpers-eth');
+ } = require('../../scripts/helpers-eth');
 
- const { err } = require('./errors.js');
+ const { err } = require('../errors.js');
 
 
 
@@ -102,7 +102,7 @@ let tx, receipt;
             proxyFactory = await hre.ethers.getContractAt(factoryABI, ozERC1967proxyAddr);
         });
 
-        describe('ProxyFactory', async () => {
+        xdescribe('ProxyFactory', async () => {
             describe('Deploys one proxy', async () => {
                 it('should create a proxy successfully / createNewProxy()', async () => {
                     await proxyFactory.createNewProxy(userDetails);
@@ -143,12 +143,19 @@ let tx, receipt;
                 })
     
                 it('should have an initial balance of 0.01 ETH', async () => {
+                    userDetails[1] = usdtAddrArb;
+                    await proxyFactory.createNewProxy(userDetails);
+                    newProxyAddr = (await storageBeacon.getProxyByUser(signerAddr))[0].toString();
+
                     await signers[0].sendTransaction({to: newProxyAddr, value: parseEther('0.01')});
                     balance = await hre.ethers.provider.getBalance(newProxyAddr);
                     assert.equal(formatEther(balance), '0.01');
                 });
     
                 it('should have a final balance of 0 ETH', async () => {
+                    await proxyFactory.createNewProxy(userDetails);
+                    newProxyAddr = (await storageBeacon.getProxyByUser(signerAddr))[0].toString();
+
                     await activateProxyLikeOps(newProxyAddr, ozERC1967proxyAddr); 
                     balance = await hre.ethers.provider.getBalance(newProxyAddr);
                     assert.equal(formatEther(balance), 0);
@@ -156,7 +163,7 @@ let tx, receipt;
             });
 
 
-            describe('Deploys 5 proxies', async () => {
+            xdescribe('Deploys 5 proxies', async () => {
                 it('should create 5 proxies successfully / createNewProxy()', async () => {
                     userDetails[1] = usdcAddr;
                     for (let i=0; i < 5; i++) {
@@ -183,7 +190,7 @@ let tx, receipt;
             });
         });
 
-        describe('ozBeaconProxy / ozPayMe', async () => {
+        xdescribe('ozBeaconProxy / ozPayMe', async () => {
             before(async () => {
                 newProxy = await hre.ethers.getContractAt(proxyABIeth, newProxyAddr);
             });
@@ -289,7 +296,7 @@ let tx, receipt;
             });
         });
 
-        describe('Emitter', async () => {
+        xdescribe('Emitter', async () => {
             it('should emit ticket ID / forwardEvent()', async () => {
                 await signers[0].sendTransaction({to: newProxyAddr, value: parseEther('0.01')});
                 receipt = await activateProxyLikeOps(newProxyAddr, ozERC1967proxyAddr);
@@ -317,7 +324,7 @@ let tx, receipt;
             }); 
         });
     
-        describe('StorageBeacon', async () => {
+        xdescribe('StorageBeacon', async () => {
             it('shoud not allow an user to issue an userID / issueUserID()', async () => {
                 await assert.rejects(async () => {
                     await storageBeacon.issueUserID(evilUserDetails);
@@ -460,7 +467,7 @@ let tx, receipt;
             });
         });
 
-        describe('ozUpgradeableBeacon', async () => {
+        xdescribe('ozUpgradeableBeacon', async () => {
             it('should allow the owner to upgrade the Storage Beacon / upgradeStorageBeacon()', async () => {
                 [storageBeaconMockAddr , storageBeaconMock] = await deployContract('StorageBeaconMock');
                 await beacon.upgradeStorageBeacon(storageBeaconMockAddr);
@@ -497,7 +504,7 @@ let tx, receipt;
 
 
     //autoRedeem set to 0
-    describe('Pesimistic deployment', async function () {
+    xdescribe('Pesimistic deployment', async function () {
         before( async () => {
             ([
                 beacon, 
