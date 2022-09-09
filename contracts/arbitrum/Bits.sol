@@ -15,6 +15,7 @@ abstract contract Bits {
     }
 
     function _toggleBit(uint bitmap_, uint index_) internal {
+        console.log('');
         s.bitLocks[bitmap_] ^= (1 << index_);
     }
 }
