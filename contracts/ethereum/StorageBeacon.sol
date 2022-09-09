@@ -27,7 +27,6 @@ contract StorageBeacon is Initializable, Ownable {
         address emitter;
         address payable gelato;
         address ETH; 
-        // address failedContr;
         uint maxGas;
     }
 
@@ -87,7 +86,6 @@ contract StorageBeacon is Initializable, Ownable {
             emitter: fxConfig_.emitter,
             gelato: payable(fxConfig_.gelato),
             ETH: fxConfig_.ETH, 
-            // failedContr: fxConfig_.failedContr,
             maxGas: fxConfig_.maxGas
         });
 
