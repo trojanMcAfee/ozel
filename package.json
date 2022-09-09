@@ -19,6 +19,7 @@
     "@uniswap/v3-periphery": "^1.4.1",
     "arb-shared-dependencies": "^1.0.0",
     "arb-ts": "^1.0.2",
+    "axios": "^0.27.2",
     "bn.js": "^5.2.0",
     "diamond-util": "^1.1.1",
     "dotenv": "^10.0.0",

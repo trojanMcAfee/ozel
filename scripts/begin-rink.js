@@ -426,9 +426,11 @@ async function sendArb() { //mainnet
     const filter = {
         address: emitterAddr,
         topics: [
-            ethers.utils.id("ShowTicket(uint256)")
+            ethers.utils.id("ShowTicket(address,uint256)")
         ]
     };
+
+    await hre.ethers.provider.on(filter);
 
 
     // await hre.ethers.provider.on(filter, async (encodedData) => {
