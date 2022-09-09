@@ -280,7 +280,7 @@ async function deploySystem(type, userDetails, signerAddr) {
     const [ ozPaymeAddr ] = await deployContract('ozPayMe');
 
     //Deploys contract for failed funds (FailedFundsETH)
-    const [ failedFundsETHAddr, failedFundsETH ] = await deployContract('FailedFundsETH');
+    // const [ failedFundsETHAddr, failedFundsETH ] = await deployContract('FailedFundsETH');
 
     //Deploys StorageBeacon
     const fxConfig = [
@@ -290,7 +290,7 @@ async function deploySystem(type, userDetails, signerAddr) {
         emitterAddr,
         gelatoAddr, 
         ETH,
-        failedFundsETHAddr,
+        // failedFundsETHAddr,
         maxGas
     ];
 
@@ -322,7 +322,7 @@ async function deploySystem(type, userDetails, signerAddr) {
     ]; 
 
     const [storageBeaconAddr, storageBeacon] = await deployContract('StorageBeacon', constrArgs);
-    await failedFundsETH.setStorageBeacon(storageBeaconAddr);
+    // await failedFundsETH.setStorageBeacon(storageBeaconAddr);
 
     //Deploys UpgradeableBeacon
     constrArgs = [

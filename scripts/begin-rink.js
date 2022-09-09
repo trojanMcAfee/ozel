@@ -16,6 +16,8 @@ const {
     getCalldata2
 } = require('./helpers-arb.js');
 
+const { getArbitrumParams } = require('./helpers-eth.js');
+
 const { 
     chainId,
     pokeMeOpsAddr,
@@ -311,19 +313,21 @@ async function sendArb() { //mainnet
     // const fakeOZLaddr = '0x8cE038796243813805593E16211C8Def67a81454'; //old: 0xCF383dD43481703a6ebe84DC4137Ae388cD7214b
    
     //Calculate fees on L1 > L2 arbitrum tx
-    const { submissionPriceWei, gasPriceBid } = await getGasDetailsL2(userDetails);
-    const maxGas = 3000000;
-    const autoRedeem = submissionPriceWei.add(gasPriceBid.mul(maxGas));
-    const maxSubmissionCost = submissionPriceWei;
+    let [ maxSubmissionCost, gasPriceBid, maxGas, autoRedeem ] = await getArbitrumParams(userDetails);
+
+    // const { submissionPriceWei } = await getGasDetailsL2(userDetails);
+    // const maxGas = 3000000;
+    // const autoRedeem = submissionPriceWei.add(gasPriceBid.mul(maxGas));
+    // const maxSubmissionCost = submissionPriceWei;
     console.log('autoRedeem: ', autoRedeem.toString());
 
 
     //Deploys Emitter
-    const [emitterAddr, emitter] = await deployContract('Emitter', l1Signer);
+    const [ emitterAddr, emitter ] = await deployContract('Emitter', l1Signer);
     // const emitterAddr = '0xeD64c50c0412DC24B52aC432A3b723e16E18776B';
 
     //Deploys ozPayMe in mainnet
-    const [ozPaymeAddr] = await deployContract('ozPayMe', l1Signer);
+    const [ ozPaymeAddr ] = await deployContract('ozPayMe', l1Signer);
 
     //Deploys StorageBeacon
     const fxConfig = [
