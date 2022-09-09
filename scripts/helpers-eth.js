@@ -317,7 +317,7 @@ async function deploySystem(type, userDetails, signerAddr) {
         tokensDatabase
     ]; 
 
-    const [storageBeaconAddr, storageBeacon] = await deployContract('StorageBeacon', constrArgs);
+    const [ storageBeaconAddr, storageBeacon ] = await deployContract('StorageBeacon', constrArgs);
 
     //Deploys UpgradeableBeacon
     constrArgs = [
@@ -325,12 +325,12 @@ async function deploySystem(type, userDetails, signerAddr) {
         storageBeaconAddr
     ];
 
-    const [beaconAddr, beacon] = await deployContract('ozUpgradeableBeacon', constrArgs); 
+    const [ beaconAddr, beacon ] = await deployContract('ozUpgradeableBeacon', constrArgs); 
     await storageBeacon.storeBeacon(beaconAddr);
     await emitter.storeBeacon(beaconAddr);
 
     //Deploys ProxyFactory
-    const [proxyFactoryAddr] = await deployContract('ProxyFactory');
+    const [ proxyFactoryAddr ] = await deployContract('ProxyFactory');
 
     //Deploys ozERC1967Proxy
     constrArgs = [
@@ -338,7 +338,7 @@ async function deploySystem(type, userDetails, signerAddr) {
         '0x'
     ];
 
-    const [ozERC1967proxyAddr] = await deployContract('ozERC1967Proxy', constrArgs);
+    const [ ozERC1967proxyAddr ] = await deployContract('ozERC1967Proxy', constrArgs);
     const proxyFactory = await hre.ethers.getContractAt(factoryABI, ozERC1967proxyAddr);
     await proxyFactory.initialize(beaconAddr);
 
@@ -348,7 +348,7 @@ async function deploySystem(type, userDetails, signerAddr) {
         beaconAddr
     ];
 
-    const [rolesAuthorityAddr, rolesAuthority] = await deployContract('RolesAuthority', constrArgs);
+    const [ rolesAuthorityAddr, rolesAuthority ] = await deployContract('RolesAuthority', constrArgs);
     await beacon.setAuth(rolesAuthorityAddr);
 
     //Set ERC1967Proxy to role 1 and gives it authority to call the functions in StorageBeacon

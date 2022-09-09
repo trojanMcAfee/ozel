@@ -312,14 +312,14 @@ async function sendArb() { //mainnet
     const [fakeOZLaddr] = await deployContract('FakeOZL', l2Signer); //fake OZL address in arbitrum
     // const fakeOZLaddr = '0x8cE038796243813805593E16211C8Def67a81454'; //old: 0xCF383dD43481703a6ebe84DC4137Ae388cD7214b
    
-    //Calculate fees on L1 > L2 arbitrum tx
+    //Calculate fees on L1 > L2 arbitrum tx //<--- waiting for the Gelato dudes
     let [ maxSubmissionCost, gasPriceBid, maxGas, autoRedeem ] = await getArbitrumParams(userDetails);
 
-    // const { submissionPriceWei } = await getGasDetailsL2(userDetails);
+    // const { submissionPriceWei, gasPriceBid } = await getGasDetailsL2(userDetails);
     // const maxGas = 3000000;
     // const autoRedeem = submissionPriceWei.add(gasPriceBid.mul(maxGas));
     // const maxSubmissionCost = submissionPriceWei;
-    console.log('autoRedeem: ', autoRedeem.toString());
+    // console.log('autoRedeem: ', autoRedeem.toString());
 
 
     //Deploys Emitter
@@ -366,7 +366,7 @@ async function sendArb() { //mainnet
         tokensDatabase
     ]; 
 
-    const [storageBeaconAddr, storageBeacon] = await deployContract('StorageBeacon', l1Signer, constrArgs);
+    const [ storageBeaconAddr, storageBeacon ] = await deployContract('StorageBeacon', l1Signer, constrArgs);
 
     //Deploys UpgradeableBeacon
     constrArgs = [
@@ -374,7 +374,7 @@ async function sendArb() { //mainnet
         storageBeaconAddr
     ];
 
-    const [beaconAddr, beacon] = await deployContract('ozUpgradeableBeacon', l1Signer, constrArgs); 
+    const [ beaconAddr, beacon ] = await deployContract('ozUpgradeableBeacon', l1Signer, constrArgs); 
     await storageBeacon.storeBeacon(beaconAddr);
     await emitter.storeBeacon(beaconAddr);
 
@@ -387,7 +387,7 @@ async function sendArb() { //mainnet
         '0x'
     ];
 
-    const [ozERC1967proxyAddr] = await deployContract('ozERC1967Proxy', l1Signer, constrArgs);
+    const [ ozERC1967proxyAddr ] = await deployContract('ozERC1967Proxy', l1Signer, constrArgs);
     await sendTx(ozERC1967proxyAddr, false, 'initialize', [beaconAddr]);
 
     //Deploys Auth
@@ -396,7 +396,7 @@ async function sendArb() { //mainnet
         beaconAddr
     ];
 
-    const [rolesAuthorityAddr, rolesAuthority] = await deployContract('RolesAuthority', l1Signer, constrArgs);
+    const [ rolesAuthorityAddr, rolesAuthority ] = await deployContract('RolesAuthority', l1Signer, constrArgs);
     const ops = {
         gasLimit: ethers.BigNumber.from('5000000'),
         gasPrice: ethers.BigNumber.from('40134698068')
