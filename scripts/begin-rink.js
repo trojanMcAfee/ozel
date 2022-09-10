@@ -524,8 +524,6 @@ async function justEvent() {
 
 
 
-
-
 async function getCount() {
     const signerAddr = await signerX.getAddress();
 
@@ -537,7 +535,18 @@ async function getCount() {
 // getCount();
 
 
+async function getTask() {
 
+    const storageBeaconAddr = '0xa6aA583E1Ab33F9E7ED99560e1dfD211332F7FbB';
+    const storageBeacon = await hre.ethers.getContractAt('StorageBeacon', storageBeaconAddr);
+    const proxy = '0xdF102a7cE11B1Da5e89Ae29230742c50A559Bcbe';
+
+    const task = await storageBeacon.getTaskID(proxy);
+    console.log('task: ', task);
+
+}
+
+getTask();
 
 
 
@@ -553,7 +562,7 @@ async function getCount() {
 // tryGelatoRopsten();
 
 
-sendArb();
+// sendArb();
 
 // tryPrecompile();
 
