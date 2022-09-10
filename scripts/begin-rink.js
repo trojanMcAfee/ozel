@@ -423,14 +423,12 @@ async function sendArb() { //mainnet
     const taskId = await storageBeacon.getTaskID(newProxyAddr, ops);
     console.log('task id: ', taskId.toString());
 
-    const filter = {
-        address: emitterAddr,
-        topics: [
-            ethers.utils.id("ShowTicket(address,uint256)")
-        ]
-    };
-
-    await hre.ethers.provider.on(filter);
+    // const filter = {
+    //     address: emitterAddr,
+    //     topics: [
+    //         ethers.utils.id("ShowTicket(address,uint256)")
+    //     ]
+    // };
 
 
     // await hre.ethers.provider.on(filter, async (encodedData) => {

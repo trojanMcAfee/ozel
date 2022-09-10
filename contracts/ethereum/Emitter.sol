@@ -13,7 +13,7 @@ import '../Errors.sol';
 contract Emitter is Initializable, Ownable {
     address private _beacon;
 
-    event ShowTicket(uint indexed ticketID);
+    event ShowTicket(address indexed proxy);
 
 
     function storeBeacon(address beacon_) external initializer {
@@ -24,9 +24,9 @@ contract Emitter is Initializable, Ownable {
         return StorageBeacon(ozUpgradeableBeacon(_beacon).storageBeacon(0));
     }
 
-    function forwardEvent(uint ticketID_) external { 
+    function forwardEvent() external { 
         if (!_getStorageBeacon().proxyDatabase(msg.sender)) revert NotProxy();
-        emit ShowTicket(ticketID_);
+        emit ShowTicket(msg.sender);
     }
 }
 
