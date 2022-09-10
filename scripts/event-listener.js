@@ -9,14 +9,12 @@ async function main() {
         return {
             query: `
                 {
-                    executions{
-                        tasks(where: {id: ${taskId}}) {
+                    tasks(where: {id: "${taskId}"}) {
                         id
                         taskExecutions {
                             id,
                             executedAt
                             success
-                        }
                         }
                     }
                 }
@@ -36,20 +34,12 @@ async function main() {
 
     console.log('listening...');
     await hre.ethers.provider.on(filter, async (encodedData) => {
-        console.log('encodedData: ', encodedData);
-
         let codedProxy = encodedData.topics[1];
         let [ proxy ] = abiCoder.decode(['address'], codedProxy);
-
-        console.log('proxy in listener: ', proxy);
-
         const taskId = await storageBeacon.getTaskID(proxy);
-        console.log('taskId: ', taskId);
-        console.log('');
-        // console.log('URL: ', query(taskId));
 
         const result = await axios.post(URL, query(taskId));
-        console.log('result: ', result);
+        console.log('result: ', result.data.data);
     });
 
 }
