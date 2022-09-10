@@ -291,14 +291,10 @@ async function getTheTask() {
 
 //Deploys ozPayMe in mainnet and routes ETH to Manager (OZL) in Arbitrum
 async function sendArb() { //mainnet
-    // const bridge = await Bridge.init(l1Signer, l2Signer);
     const signerAddr = await signerX.getAddress();
     // const [signerAddr, addr2] = await hre.ethers.provider.listAccounts(); 
     console.log('signer address: ', signerAddr);
 
-    // console.log('addr2: ', addr2);
-    // let bal2 = await hre.ethers.provider.getBalance(addr2);
-    // console.log('bal2 pre *******: ', bal2.toString());
 
     const userDetails = [
         signerAddr,
@@ -310,17 +306,10 @@ async function sendArb() { //mainnet
     
     //Deploys the fake OZL on arbitrum testnet 
     const [fakeOZLaddr] = await deployContract('FakeOZL', l2Signer); //fake OZL address in arbitrum
-    // const fakeOZLaddr = '0x8cE038796243813805593E16211C8Def67a81454'; //old: 0xCF383dD43481703a6ebe84DC4137Ae388cD7214b
+    // const fakeOZLaddr = '0x8cE038796243813805593E16211C8Def67a81454';
    
     //Calculate fees on L1 > L2 arbitrum tx //<--- waiting for the Gelato dudes
     let [ maxSubmissionCost, gasPriceBid, maxGas, autoRedeem ] = await getArbitrumParams(userDetails);
-
-    // const { submissionPriceWei, gasPriceBid } = await getGasDetailsL2(userDetails);
-    // const maxGas = 3000000;
-    // const autoRedeem = submissionPriceWei.add(gasPriceBid.mul(maxGas));
-    // const maxSubmissionCost = submissionPriceWei;
-    // console.log('autoRedeem: ', autoRedeem.toString());
-
 
     //Deploys Emitter
     const [ emitterAddr, emitter ] = await deployContract('Emitter', l1Signer);
