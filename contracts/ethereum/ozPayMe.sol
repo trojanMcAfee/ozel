@@ -78,8 +78,6 @@ contract ozPayMe is ReentrancyGuard, Initializable {
         (uint fee, ) = IOps(fxConfig.ops).getFeeDetails();
         _transfer(fee, fxConfig.ETH);
 
-        // bool isEmergency = false;
-
         bytes memory swapData = abi.encodeWithSelector(
             FakeOZL(payable(fxConfig.OZL)).exchangeToUserToken.selector, 
             userDetails_
@@ -104,20 +102,12 @@ contract ozPayMe is ReentrancyGuard, Initializable {
             if (!success) { 
                 emit EmergencyTriggered(userDetails_.user, amountToSend);
                 _runEmergencyMode();
-                // isEmergency = true;
-            } 
+            } else {
+                emit FundsToArb(address(this), userDetails_.user, amountToSend);
+            }
         } else {
             emit FundsToArb(address(this), userDetails_.user, amountToSend);
         }
-
-        // if (!isEmergency) { //comment out all of this and remove from sBeacon and tests
-        //     if (!storageBeacon.getEmitterStatus()) { 
-        //         // uint ticketID = abi.decode(returnData, (uint)); //if it works, remove returnData from above
-        //         // Emitter(fxConfig.emitter).forwardEvent(); 
-        //         emit FundsToArb(address(this), userDetails_.user, amountToSend);
-        //     }
-        // }
-
     }
 
 

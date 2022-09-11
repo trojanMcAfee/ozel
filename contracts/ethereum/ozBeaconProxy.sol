@@ -18,6 +18,8 @@ contract ozBeaconProxy is ReentrancyGuard, Initializable, BeaconProxy {
     StorageBeacon.FixedConfig fxConfig;
 
     address private beacon; 
+
+    event FundsToArb(address indexed proxy, address indexed sender, uint amount);
     
     constructor(
         address beacon_,
