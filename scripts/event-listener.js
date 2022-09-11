@@ -3,7 +3,6 @@ const { defaultAbiCoder: abiCoder } = ethers.utils;
 const axios = require('axios').default;
 
 async function main() {
-    // const URL = (taskId) => `https://api.thegraph.com/subgraphs/name/gelatodigital/poke-me-rinkeby/graphql?query=+query+executions%7B%0A++++++++tasks%28where%3A+%7Bid%3A+%22${taskId}%22%7D%29+%7B%0A++++++++++id%0A++++++++++taskExecutions+%7B%0A%09%09%09%09%09%09id%2C%0A++++++++++++executedAt%0A++++++++++++success%0A++++++++++%7D%0A++++++++%7D%0A++++++%7D`;
     const URL = 'https://api.thegraph.com/subgraphs/name/gelatodigital/poke-me-rinkeby';
     const query = (taskId) => {
         return {
@@ -21,14 +20,15 @@ async function main() {
             `
         }
     };
-    const storageBeaconAddr = '0xa6aA583E1Ab33F9E7ED99560e1dfD211332F7FbB';
-    const emitterAddr = '0xC06D6180e0387804bbcd36372F80D63B05144073';
+    const storageBeaconAddr = '0x3CE5a7a6DcC47e45c03764C12B346f2BccF1C97C'; //0xa6aA583E1Ab33F9E7ED99560e1dfD211332F7FbB
+    // const emitterAddr = '0xC06D6180e0387804bbcd36372F80D63B05144073';
     const storageBeacon = await hre.ethers.getContractAt('StorageBeacon', storageBeaconAddr);
+    const ozPayMeAddr = '0x410AE3E0306F16d120A4e8430244bcB17A52A593';
 
     const filter = {
-        address: emitterAddr,
+        address: ozPayMeAddr, //emitterAddr
         topics: [
-            ethers.utils.id("ShowTicket(address)") 
+            ethers.utils.id("FundsToArb(address,address,uint256)") 
         ]
     };
 

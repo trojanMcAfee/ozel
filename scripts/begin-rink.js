@@ -546,7 +546,7 @@ async function getTask() {
 
 }
 
-getTask();
+// getTask();
 
 
 
@@ -562,7 +562,7 @@ getTask();
 // tryGelatoRopsten();
 
 
-// sendArb();
+sendArb();
 
 // tryPrecompile();
 
