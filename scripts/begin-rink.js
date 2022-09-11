@@ -311,10 +311,6 @@ async function sendArb() { //mainnet
     //Calculate fees on L1 > L2 arbitrum tx //<--- waiting for the Gelato dudes
     let [ maxSubmissionCost, gasPriceBid, maxGas, autoRedeem ] = await getArbitrumParams(userDetails);
 
-    //Deploys Emitter
-    // const [ emitterAddr, emitter ] = await deployContract('Emitter', l1Signer);
-    // const emitterAddr = '0xeD64c50c0412DC24B52aC432A3b723e16E18776B';
-
     //Deploys ozPayMe in mainnet
     const [ ozPaymeAddr ] = await deployContract('ozPayMe', l1Signer);
 
@@ -323,7 +319,6 @@ async function sendArb() { //mainnet
         inbox, 
         pokeMeOpsAddr,
         fakeOZLaddr,
-        // emitterAddr,
         gelatoAddr, 
         ETH,
         maxGas
@@ -365,7 +360,6 @@ async function sendArb() { //mainnet
 
     const [ beaconAddr, beacon ] = await deployContract('ozUpgradeableBeacon', l1Signer, constrArgs); 
     await storageBeacon.storeBeacon(beaconAddr);
-    // await emitter.storeBeacon(beaconAddr);
 
     //Deploys ProxyFactory
     const [proxyFactoryAddr] = await deployContract('ProxyFactory', l1Signer);
@@ -411,31 +405,6 @@ async function sendArb() { //mainnet
     //Gets user's task id
     const taskId = await storageBeacon.getTaskID(newProxyAddr, ops);
     console.log('task id: ', taskId.toString());
-
-    // const filter = {
-    //     address: emitterAddr,
-    //     topics: [
-    //         ethers.utils.id("ShowTicket(address,uint256)")
-    //     ]
-    // };
-
-
-    // await hre.ethers.provider.on(filter, async (encodedData) => {
-    //     const topic = encodedData.topics[1];
-    //     const ourMessagesSequenceNum = ethers.utils.defaultAbiCoder.decode(['uint'], topic);
-
-    //     console.log('inboxSeqNums: ', ourMessagesSequenceNum.toString());
-    //     const retryableTxnHash = await bridge.calculateL2RetryableTransactionHash(
-    //         ourMessagesSequenceNum[0]
-    //     );
-    //     console.log('retryableTxnHash: ', retryableTxnHash);
-    //     console.log(
-    //         `waiting for L2 tx 🕐... (should take < 10 minutes, current time: ${new Date().toTimeString()}`
-    //     );
-    //     const retryRec = await l2Provider.waitForTransaction(retryableTxnHash)
-    //     console.log(`L2 retryable txn executed 🥳 ${retryRec.transactionHash} at ${new Date().toTimeString()}`);
-    // });
-
 
     //**** TRIGGER for Gelato *******/
     await sendTx(newProxyAddr, true, 'Sending ETH');
@@ -493,7 +462,7 @@ async function justEvent() {
     const newProxyAddr = '0x658a1496aa79B8e9f9B717aaa4c0958EF418A5eb';
 
     const filter = {
-        address: '0xfF88d96CE1079F27ef2A18A176A2E6482553F7F8', //emitterAddr
+        address: '0xfF88d96CE1079F27ef2A18A176A2E6482553F7F8', 
         topics: [
             ethers.utils.id("ShowTicket(uint256)")
         ]

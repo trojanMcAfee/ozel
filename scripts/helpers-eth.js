@@ -218,7 +218,6 @@ async function deployAnotherStorageBeacon(fakeOZLaddr, userDetails) {
         inbox, 
         pokeMeOpsAddr,
         fakeOZLaddr,
-        // emitterAddr,
         gelatoAddr, 
         ETH,
         maxGas
@@ -266,9 +265,6 @@ async function deploySystem(type, userDetails, signerAddr) {
 
     if (type === 'Pessimistically') autoRedeem = 0;
 
-    // Deploys Emitter
-    // const [ emitterAddr, emitter ] = await deployContract('Emitter');
-
     //Deploys ozPayMe in mainnet
     const [ ozPaymeAddr ] = await deployContract('ozPayMe');
 
@@ -277,7 +273,6 @@ async function deploySystem(type, userDetails, signerAddr) {
         inbox, 
         pokeMeOpsAddr,
         fakeOZLaddr,
-        // emitterAddr,
         gelatoAddr, 
         ETH,
         maxGas
@@ -320,7 +315,6 @@ async function deploySystem(type, userDetails, signerAddr) {
 
     const [ beaconAddr, beacon ] = await deployContract('ozUpgradeableBeacon', constrArgs); 
     await storageBeacon.storeBeacon(beaconAddr);
-    // await emitter.storeBeacon(beaconAddr);
 
     //Deploys ProxyFactory
     const [ proxyFactoryAddr ] = await deployContract('ProxyFactory');
@@ -358,8 +352,6 @@ async function deploySystem(type, userDetails, signerAddr) {
         ozERC1967proxyAddr, 
         storageBeacon,
         storageBeaconAddr,
-        // emitter,
-        // emitterAddr,
         fakeOZLaddr,
         varConfig,
         eMode
