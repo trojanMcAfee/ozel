@@ -24,7 +24,7 @@ contract StorageBeacon is Initializable, Ownable {
         address inbox;
         address ops;
         address OZL;
-        address emitter;
+        // address emitter;
         address payable gelato;
         address ETH; 
         uint maxGas;
@@ -64,7 +64,7 @@ contract StorageBeacon is Initializable, Ownable {
 
     ozUpgradeableBeacon beacon;
 
-    bool isEmitter;
+    // bool isEmitter;
 
 
     modifier hasRole(bytes4 functionSig_) {
@@ -83,7 +83,7 @@ contract StorageBeacon is Initializable, Ownable {
             inbox: fxConfig_.inbox,
             ops: fxConfig_.ops,
             OZL: fxConfig_.OZL,
-            emitter: fxConfig_.emitter,
+            // emitter: fxConfig_.emitter,
             gelato: payable(fxConfig_.gelato),
             ETH: fxConfig_.ETH, 
             maxGas: fxConfig_.maxGas
@@ -146,9 +146,9 @@ contract StorageBeacon is Initializable, Ownable {
         eMode = newEmode_;
     }
 
-    function changeEmitterStatus(bool newStatus) external onlyOwner {
-        isEmitter = newStatus;
-    }
+    // function changeEmitterStatus(bool newStatus) external onlyOwner {
+    //     isEmitter = newStatus;
+    // }
 
 
 
@@ -189,9 +189,9 @@ contract StorageBeacon is Initializable, Ownable {
         return userDatabase[user_];
     }
 
-    function getEmitterStatus() external view returns(bool) {
-        return isEmitter;
-    }
+    // function getEmitterStatus() external view returns(bool) {
+    //     return isEmitter;
+    // }
 
 }
 

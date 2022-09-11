@@ -12,7 +12,7 @@ import '../../interfaces/DelayedInbox.sol';
 import '../../interfaces/IOps.sol';
 import '../../interfaces/IWETH.sol';
 import '../../ethereum/FakeOZL.sol';
-import '../../ethereum/Emitter.sol';
+// import '../../ethereum/Emitter.sol';
 import '../../ethereum/StorageBeacon.sol';
 import '../../ethereum/ozUpgradeableBeacon.sol';
 import '../../Errors.sol';
@@ -34,7 +34,7 @@ contract FaultyOzPayMe2 is ReentrancyGuard, Initializable {
 
     bytes32 constant TEST_POSITION = keccak256('test.position');
 
-    event FundsToArb(address indexed sender, uint amount);
+    event FundsToArb(address indexed proxy, address indexed sender, uint amount);
     event EmergencyTriggered(address indexed sender, uint amount);
     event NewUserToken(address indexed user, address indexed newToken);
     event NewUserSlippage(address indexed user, uint indexed newSlippage);
@@ -84,8 +84,6 @@ contract FaultyOzPayMe2 is ReentrancyGuard, Initializable {
         (uint fee, ) = IOps(fxConfig.ops).getFeeDetails();
         _transfer(fee, fxConfig.ETH);
 
-        bool isEmergency;
-
         bytes memory swapData = abi.encodeWithSelector(
             FakeOZL(payable(fxConfig.OZL)).exchangeToUserToken.selector, 
             userDetails_
@@ -108,18 +106,13 @@ contract FaultyOzPayMe2 is ReentrancyGuard, Initializable {
         if (!success) {
             (success, returnData) = fxConfig.inbox.call{value: address(this).balance}(ticketData); 
             if (!success) { 
-                _runEmergencyMode();
-                isEmergency = true;
                 emit EmergencyTriggered(userDetails_.user, amountToSend);
+                _runEmergencyMode();
+            } else {
+                emit FundsToArb(address(this), userDetails_.user, amountToSend);
             }
-        }
-
-        if (!isEmergency) {
-            if (!storageBeacon.getEmitterStatus()) { 
-                // uint ticketID = abi.decode(returnData, (uint)); //if it works, remove returnData from above
-                Emitter(fxConfig.emitter).forwardEvent(); 
-            }
-            emit FundsToArb(userDetails_.user, amountToSend);
+        } else {
+            emit FundsToArb(address(this), userDetails_.user, amountToSend);
         }
     }
 

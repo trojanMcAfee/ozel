@@ -312,7 +312,7 @@ async function sendArb() { //mainnet
     let [ maxSubmissionCost, gasPriceBid, maxGas, autoRedeem ] = await getArbitrumParams(userDetails);
 
     //Deploys Emitter
-    const [ emitterAddr, emitter ] = await deployContract('Emitter', l1Signer);
+    // const [ emitterAddr, emitter ] = await deployContract('Emitter', l1Signer);
     // const emitterAddr = '0xeD64c50c0412DC24B52aC432A3b723e16E18776B';
 
     //Deploys ozPayMe in mainnet
@@ -323,7 +323,7 @@ async function sendArb() { //mainnet
         inbox, 
         pokeMeOpsAddr,
         fakeOZLaddr,
-        emitterAddr,
+        // emitterAddr,
         gelatoAddr, 
         ETH,
         maxGas
@@ -365,7 +365,7 @@ async function sendArb() { //mainnet
 
     const [ beaconAddr, beacon ] = await deployContract('ozUpgradeableBeacon', l1Signer, constrArgs); 
     await storageBeacon.storeBeacon(beaconAddr);
-    await emitter.storeBeacon(beaconAddr);
+    // await emitter.storeBeacon(beaconAddr);
 
     //Deploys ProxyFactory
     const [proxyFactoryAddr] = await deployContract('ProxyFactory', l1Signer);

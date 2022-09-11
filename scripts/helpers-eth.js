@@ -179,19 +179,12 @@ async function activateProxyLikeOps(proxy, taskCreator, isEvil, evilParams) {
     return receipt;
 }
 
-function compareTopicWith(type , value, receipt) {
+function compareTopicWith(value, receipt) { 
     if (receipt.events) {
         for (let i=0; i < receipt.events.length; i++) {
             for (let j=0; j < receipt.events[i].topics.length; j++) {
                 let topic = hexStripZeros(receipt.events[i].topics[j]);
-                if (parseInt(topic) === parseInt(value)) { 
-                    if (type === 'Signer') {
-                        return true;
-                    } else if (type === 'Signature') {
-                        const ticketID = receipt.events[i].topics[1];
-                        return ticketID;
-                    }
-                }
+                if (parseInt(topic) === parseInt(value)) return true;
             }
         }
         return false;
@@ -218,14 +211,14 @@ async function compareEventWithVar(receipt, variable) {
 }
 
 
-async function deployAnotherStorageBeacon(fakeOZLaddr, emitterAddr, userDetails) { 
+async function deployAnotherStorageBeacon(fakeOZLaddr, userDetails) { 
     const [ maxSubmissionCost, gasPriceBid, maxGas, autoRedeem ] = await getArbitrumParams(userDetails);
 
     const fxConfig = [
         inbox, 
         pokeMeOpsAddr,
         fakeOZLaddr,
-        emitterAddr,
+        // emitterAddr,
         gelatoAddr, 
         ETH,
         maxGas
@@ -274,7 +267,7 @@ async function deploySystem(type, userDetails, signerAddr) {
     if (type === 'Pessimistically') autoRedeem = 0;
 
     // Deploys Emitter
-    const [ emitterAddr, emitter ] = await deployContract('Emitter');
+    // const [ emitterAddr, emitter ] = await deployContract('Emitter');
 
     //Deploys ozPayMe in mainnet
     const [ ozPaymeAddr ] = await deployContract('ozPayMe');
@@ -284,7 +277,7 @@ async function deploySystem(type, userDetails, signerAddr) {
         inbox, 
         pokeMeOpsAddr,
         fakeOZLaddr,
-        emitterAddr,
+        // emitterAddr,
         gelatoAddr, 
         ETH,
         maxGas
@@ -327,7 +320,7 @@ async function deploySystem(type, userDetails, signerAddr) {
 
     const [ beaconAddr, beacon ] = await deployContract('ozUpgradeableBeacon', constrArgs); 
     await storageBeacon.storeBeacon(beaconAddr);
-    await emitter.storeBeacon(beaconAddr);
+    // await emitter.storeBeacon(beaconAddr);
 
     //Deploys ProxyFactory
     const [ proxyFactoryAddr ] = await deployContract('ProxyFactory');
@@ -365,8 +358,8 @@ async function deploySystem(type, userDetails, signerAddr) {
         ozERC1967proxyAddr, 
         storageBeacon,
         storageBeaconAddr,
-        emitter,
-        emitterAddr,
+        // emitter,
+        // emitterAddr,
         fakeOZLaddr,
         varConfig,
         eMode

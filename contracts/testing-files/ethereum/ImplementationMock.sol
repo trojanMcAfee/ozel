@@ -11,7 +11,7 @@ import '../../libraries/FixedPointMathLib.sol';
 import '../../interfaces/DelayedInbox.sol';
 import '../../interfaces/IOps.sol';
 import '../../ethereum/FakeOZL.sol';
-import '../../ethereum/Emitter.sol';
+// import '../../ethereum/Emitter.sol';
 import '../../ethereum/StorageBeacon.sol';
 import './StorageBeaconMock.sol';
 import '../../ethereum/ozUpgradeableBeacon.sol';
@@ -31,7 +31,7 @@ contract ImplementationMock is ReentrancyGuard, Initializable {
 
     address private _beacon;
 
-    event FundsToArb(address indexed sender, uint amount);
+    event FundsToArb(address indexed proxy, address indexed sender, uint amount);
     event EmergencyTriggered(address indexed sender, uint amount);
     event NewUserToken(address indexed user, address indexed newToken);
     event NewUserSlippage(address indexed user, uint indexed newSlippage);
@@ -78,8 +78,6 @@ contract ImplementationMock is ReentrancyGuard, Initializable {
         (uint fee, ) = IOps(fxConfig.ops).getFeeDetails();
         _transfer(fee, fxConfig.ETH);
 
-        bool isEmergency;
-
         bytes memory swapData = abi.encodeWithSelector(
             FakeOZL(payable(fxConfig.OZL)).exchangeToUserToken.selector, 
             userDetails_
@@ -102,20 +100,15 @@ contract ImplementationMock is ReentrancyGuard, Initializable {
         if (!success) {
             (success, returnData) = fxConfig.inbox.call{value: address(this).balance}(ticketData); 
             if (!success) { 
-                _runEmergencyMode();
-                isEmergency = true;
                 emit EmergencyTriggered(userDetails_.user, amountToSend);
+                _runEmergencyMode();
+            } else {
+                emit FundsToArb(address(this), userDetails_.user, amountToSend);
             }
+        } else {
+            emit FundsToArb(address(this), userDetails_.user, amountToSend);
         }
-
-        if (!isEmergency) {
-            if (!storageBeacon.getEmitterStatus()) { 
-                // uint ticketID = abi.decode(returnData, (uint)); //if it works, remove returnData from above
-                Emitter(fxConfig.emitter).forwardEvent(); 
-            }
-            emit FundsToArb(userDetails_.user, amountToSend);
-            _callStorageBeaconMock();
-        }
+        _callStorageBeaconMock();
     }
 
 
