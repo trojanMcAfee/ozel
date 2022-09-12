@@ -1,4 +1,4 @@
-const { ethers } = require("ethers");
+const { ethers, providers, Wallet } = require("ethers");
 const { parseEther, formatEther, defaultAbiCoder: abiCoder, keccak256 } = ethers.utils;
 const { deploy } = require('./deploy.js');
 const { Bridge } = require('arb-ts');
@@ -284,6 +284,23 @@ async function getTheTask() {
 // getTheTask();
 
 
+async function manualRedeem() {
+    const txHash = '0x173f02ba4571fd500b7a9f25f10f5932f920e62e921d14f4ae18c453ac0cb6c8';
+    const l1Provider = new providers.JsonRpcProvider(process.env.RINKEBY);
+    const l2Provider = new providers.JsonRpcProvider(process.env.ARB_TESTNET);
+    const l2Wallet = new Wallet(process.env.PK, l2Provider);
+
+    const receipt = await l1Provider.getTransactionReceipt(txHash);
+    const l1Receipt = new L1TransactionReceipt(receipt);
+    const message = await l1Receipt.getL1ToL2Message(l2Wallet);
+
+    const status = (await message.waitForStatus()).status;
+    console.log('status: ', status);
+}
+
+manualRedeem();
+
+
 
 
 
@@ -312,7 +329,7 @@ async function sendArb() { //mainnet
     let [ maxSubmissionCost, gasPriceBid, maxGas, autoRedeem ] = await getArbitrumParams(userDetails);
 
     //Comment this out if doing automatic redeem (not manual redeem)
-    // autoRedeem = 0;
+    // gasPriceBid = 0;
 
     //Deploys ozPayMe in mainnet
     const [ ozPaymeAddr ] = await deployContract('ozPayMe', l1Signer);
@@ -521,6 +538,20 @@ async function getTask() {
 // getTask();
 
 
+async function callSendToArb() {
+    const abi = ['function sendToArb() external payable'];
+    const proxyAddr = '0x9Af884C0b76E7A260a6938dc0791e5C1d3034156';
+    const proxy = await hre.ethers.getContractAt(abi, proxyAddr);
+
+    const tx = await proxy.sendToArb();
+    const receipt = await tx.wait();
+    console.log('hash: ', receipt.transactionHash);
+
+}
+
+// callSendToArb();
+
+
 
 
 
@@ -534,7 +565,7 @@ async function getTask() {
 // tryGelatoRopsten();
 
 
-sendArb();
+// sendArb();
 
 // tryPrecompile();
 
