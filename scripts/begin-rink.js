@@ -308,8 +308,11 @@ async function sendArb() { //mainnet
     const [fakeOZLaddr] = await deployContract('FakeOZL', l2Signer); //fake OZL address in arbitrum
     // const fakeOZLaddr = '0x8cE038796243813805593E16211C8Def67a81454';
    
-    //Calculate fees on L1 > L2 arbitrum tx //<--- waiting for the Gelato dudes
+    //Calculate fees on L1 > L2 arbitrum tx 
     let [ maxSubmissionCost, gasPriceBid, maxGas, autoRedeem ] = await getArbitrumParams(userDetails);
+
+    //Comment this out if doing automatic redeem (not manual redeem)
+    // autoRedeem = 0;
 
     //Deploys ozPayMe in mainnet
     const [ ozPaymeAddr ] = await deployContract('ozPayMe', l1Signer);
