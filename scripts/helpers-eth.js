@@ -112,9 +112,9 @@ async function deployContract(contractName, constrArgs) {
 
 
 
-async function getArbitrumParams(userDetails) {
+async function getArbitrumParams(userDetails, manualRedeem = false) {
     const { submissionPriceWei, gasPriceBid } = await getGasDetailsL2(userDetails);
-    const maxGas = 3000000;
+    const maxGas = !manualRedeem ? 3000000 : 10;
     const autoRedeem = submissionPriceWei.add(gasPriceBid.mul(maxGas));
 
     return [

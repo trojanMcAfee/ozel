@@ -2,7 +2,7 @@ const { ethers, providers, Wallet } = require("ethers");
 const { parseEther, formatEther, defaultAbiCoder: abiCoder, keccak256 } = ethers.utils;
 const { deploy } = require('./deploy.js');
 const { Bridge } = require('arb-ts');
-const { L1TransactionReceipt, L1ToL2MessageStatus } = require('@arbitrum/sdk')
+const { L1TransactionReceipt, L1ToL2MessageStatus } = require('@arbitrum/sdk');
 const { hexDataLength } = require('@ethersproject/bytes');
 require('dotenv').config();
 
@@ -285,7 +285,7 @@ async function getTheTask() {
 
 
 async function manualRedeem() {
-    const txHash = '0x173f02ba4571fd500b7a9f25f10f5932f920e62e921d14f4ae18c453ac0cb6c8';
+    const txHash = '0xb1805a9c3144db16c67e9be6e88d461eb122f8c899ce3e890be917fa24b94ca1';
     const l1Provider = new providers.JsonRpcProvider(process.env.RINKEBY);
     const l2Provider = new providers.JsonRpcProvider(process.env.ARB_TESTNET);
     const l2Wallet = new Wallet(process.env.PK, l2Provider);
@@ -293,9 +293,27 @@ async function manualRedeem() {
     const receipt = await l1Provider.getTransactionReceipt(txHash);
     const l1Receipt = new L1TransactionReceipt(receipt);
     const message = await l1Receipt.getL1ToL2Message(l2Wallet);
-
     const status = (await message.waitForStatus()).status;
-    console.log('status: ', status);
+
+    if (status === L1ToL2MessageStatus.REDEEMED) {
+        console.log(`L2 retryable txn is already executed 🥳 ${message.l2TxHash}`)
+        return
+      } else {
+        console.log(
+          `L2 retryable txn failed with status ${L1ToL2MessageStatus[status]}`
+        )
+
+        await message.redeem({
+            gasLimit: ethers.BigNumber.from('5000000'),
+            gasPrice: ethers.BigNumber.from('40134698068')
+        });
+
+        console.log(
+            'The L2 side of your transaction is now execeuted 🥳 :',
+            message.l2TxHash
+          )
+      }
+
 }
 
 manualRedeem();
@@ -325,11 +343,8 @@ async function sendArb() { //mainnet
     const [fakeOZLaddr] = await deployContract('FakeOZL', l2Signer); //fake OZL address in arbitrum
     // const fakeOZLaddr = '0x8cE038796243813805593E16211C8Def67a81454';
    
-    //Calculate fees on L1 > L2 arbitrum tx 
+    //Calculate fees on L1 > L2 arbitrum tx - **** (add TRUE as 2nd param for manual redeem) ****
     let [ maxSubmissionCost, gasPriceBid, maxGas, autoRedeem ] = await getArbitrumParams(userDetails);
-
-    //Comment this out if doing automatic redeem (not manual redeem)
-    // gasPriceBid = 0;
 
     //Deploys ozPayMe in mainnet
     const [ ozPaymeAddr ] = await deployContract('ozPayMe', l1Signer);
