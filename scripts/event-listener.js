@@ -19,9 +19,9 @@ async function main() {
             `
         }
     };
-    const storageBeaconAddr = '0x4e35355c5028FB1ba2229C310dd9c4Ff5286F91a'; //good: 0xbAa31ba0aBFad51199e899900ea6E0b08Bd15304 / gasPriceBid = 0 - 0x8dDb2f87a8dE0d651CE662CBCf5d626f85B766B6 
+    const storageBeaconAddr = '0xab1701BD39070B2a714B844b319f0815EF88b6e4'; //good: 0xbAa31ba0aBFad51199e899900ea6E0b08Bd15304 / manualRedeem: 0x4e35355c5028FB1ba2229C310dd9c4Ff5286F91a 
     const storageBeacon = await hre.ethers.getContractAt('StorageBeacon', storageBeaconAddr);
-    const proxy = '0xc42e2E3B2F54D61c2BA2FcdF71497549941F5cc0'; //good: 0xAEa934d83F62d07BdAE032ecD1C3D7fA6C55fA04 / gasPriceBid = 0 - 0x2d0d5FEA1E54baB9a7574E2d7fC8E19afBA93540
+    const proxy = '0x20f7F1032797da7C2A9054c859DE479885A0786D'; //good: 0xAEa934d83F62d07BdAE032ecD1C3D7fA6C55fA04 / manualRedeem: 0xc42e2E3B2F54D61c2BA2FcdF71497549941F5cc0
     const failedHashes = [];
 
     const filter = {
@@ -37,9 +37,8 @@ async function main() {
         let [ proxy ] = abiCoder.decode(['address'], codedProxy);
         const taskId = await storageBeacon.getTaskID(proxy);
 
-        const result = (await axios.post(URL, query(taskId))).data.data;
-        console.log('result: ', result);
-        const executions =  result.tasks[0].taskExecutions;
+        const result = await axios.post(URL, query(taskId));
+        const executions =  result.data.data.tasks[0].taskExecutions;
         console.log('executions: ', executions);
 
         for (let i=0; i < executions.length; i++) {

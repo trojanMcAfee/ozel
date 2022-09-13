@@ -285,7 +285,7 @@ async function getTheTask() {
 
 
 async function manualRedeem() {
-    const txHash = '0xb1805a9c3144db16c67e9be6e88d461eb122f8c899ce3e890be917fa24b94ca1';
+    const txHash = '0xa5feb8901205b12c4a586ceec36b39356fb6b50f99d01de1d18ab3835dd359bb';
     const l1Provider = new providers.JsonRpcProvider(process.env.RINKEBY);
     const l2Provider = new providers.JsonRpcProvider(process.env.ARB_TESTNET);
     const l2Wallet = new Wallet(process.env.PK, l2Provider);
@@ -316,7 +316,9 @@ async function manualRedeem() {
 
 }
 
-manualRedeem();
+// manualRedeem();
+
+
 
 
 
@@ -442,7 +444,7 @@ async function sendArb() { //mainnet
     console.log('task id: ', taskId.toString());
 
     //**** TRIGGER for Gelato *******/
-    await sendTx(newProxyAddr, true, 'Sending ETH');
+    // await sendTx(newProxyAddr, true, 'Sending ETH');
 
     //Comment out this part when trying it out with Gelato
     // let ethBalance = await hre.ethers.provider.getBalance(newProxyAddr);
@@ -580,7 +582,7 @@ async function callSendToArb() {
 // tryGelatoRopsten();
 
 
-// sendArb();
+sendArb();
 
 // tryPrecompile();
 
