@@ -3,6 +3,7 @@ const { defaultAbiCoder: abiCoder } = ethers.utils;
 const axios = require('axios').default;
 const { L1TransactionReceipt, L1ToL2MessageStatus } = require('@arbitrum/sdk');
 
+
 const l1Provider = new providers.JsonRpcProvider(process.env.RINKEBY);
 const l2Provider = new providers.JsonRpcProvider(process.env.ARB_TESTNET);
 const l2Wallet = new Wallet(process.env.PK, l2Provider);
@@ -26,9 +27,9 @@ const query = (taskId) => {
 
 const storageBeaconAddr = '0xab1701BD39070B2a714B844b319f0815EF88b6e4'; //manualRedeem: 0x4e35355c5028FB1ba2229C310dd9c4Ff5286F91a 
 const proxy = '0x20f7F1032797da7C2A9054c859DE479885A0786D'; //manualRedeem: 0xc42e2E3B2F54D61c2BA2FcdF71497549941F5cc0
-const tasks = {};
 //taskId (good one): 0xc5ca4e141d2134e32ef3b779374fde598c354168ff4aa04ebf933dfd07363f21 - manualRedeem: 0xb6fd8625541b1f084582b7af4cb549cfcc712b291ea73b0699313644ed92bf14
 
+const tasks = {};
 
 async function main() {
     const storageBeacon = await hre.ethers.getContractAt('StorageBeacon', storageBeaconAddr);
