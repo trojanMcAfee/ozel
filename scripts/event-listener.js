@@ -27,6 +27,7 @@ const query = (taskId) => {
 
 const storageBeaconAddr = '0xab1701BD39070B2a714B844b319f0815EF88b6e4'; //manualRedeem: 0x4e35355c5028FB1ba2229C310dd9c4Ff5286F91a 
 const proxy = '0x20f7F1032797da7C2A9054c859DE479885A0786D'; //manualRedeem: 0xc42e2E3B2F54D61c2BA2FcdF71497549941F5cc0
+const redeemedHashesAddr = '';
 //taskId (good one): 0xc5ca4e141d2134e32ef3b779374fde598c354168ff4aa04ebf933dfd07363f21 - manualRedeem: 0xb6fd8625541b1f084582b7af4cb549cfcc712b291ea73b0699313644ed92bf14
 
 const tasks = {};
@@ -90,6 +91,8 @@ async function main() {
 
 async function redeemHash(hash, taskId) {
     console.log('here3');
+    const redeemedHashes = await hre.ethers.getContractAt('RedeemedHashes', redeemedHashesAddr);
+
     let receipt = await l1Provider.getTransactionReceipt(hash);
     let l1Receipt = new L1TransactionReceipt(receipt);
     let message = await l1Receipt.getL1ToL2Message(l2Wallet);
@@ -108,7 +111,8 @@ async function redeemHash(hash, taskId) {
         });
         console.log('redeemed');
 
-        tasks[taskId].redeemedHashes.push(hash);
+        const tx = await redeemedHashes.storeRedemption(taskId, hash);
+        await tx.wait();
         tasks[taskId].alreadyCheckedHashes.push(hash);
     }
 
@@ -123,5 +127,5 @@ async function redeemHash(hash, taskId) {
 main();
 
 
-// module.exports = {getTasks};
+// module.exports = tasks;
 // exports.tasks = tasks;

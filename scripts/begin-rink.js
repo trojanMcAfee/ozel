@@ -319,6 +319,19 @@ async function manualRedeem() {
 // manualRedeem();
 
 
+async function redeemHashes() {
+    const l2Provider = new providers.JsonRpcProvider(process.env.ARB_TESTNET);
+    const l2Wallet = new Wallet(process.env.PK, l2Provider);
+
+    const RedeemedHashes = await hre.ethers.getContractFactory('RedeemedHashes');
+    const redeemedHashes = await RedeemedHashes.connect(l2Wallet).deploy();
+    await redeemedHashes.deployed();
+    console.log('redeemedHashes deployed to: ', redeemedHashes.address);
+}
+
+redeemHashes();
+
+
 
 
 

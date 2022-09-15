@@ -1,24 +1,24 @@
-// const tasks = require('./event-listener');
+const tasks = require('./event-listener');
 
-let myTasks;
+// let myTasks;
 
 
-function fill(task) {
+// function fill(task) {
 
-    console.log('taskstt: ', task);
+//     console.log('taskstt: ', task);
 
-    myTasks = task;
+//     myTasks = task;
 
-    console.log('myTasks: ', myTasks);
+//     console.log('myTasks: ', myTasks);
 
-}
-
-// function run() {
-//     console.log('my: ', myTasks);
 // }
 
-// run();
+function run() {
+    console.log('my: ', tasks);
+}
+
+run();
 
 
-module.exports = {fill};
+// module.exports = {fill};
 
