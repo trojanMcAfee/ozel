@@ -8,13 +8,13 @@ error InvalidTask(bytes32 taskId);
 contract RedeemedHashes {
 
     bytes32[] totalRedemptions;
-    mapping(bytes32 => bytes32[]) taskIdToHashes;
+    mapping(bytes32 => bytes32[]) taskIdToHashes; 
 
     function getRedeemsPerTask(bytes32 taskId_) external view returns(bytes32[] memory) {
         return taskIdToHashes[taskId_];
     }
 
-    function storeRedemption(bytes32 taskId_, bytes32 hash_) external {
+    function storeRedemption(bytes32 taskId_, bytes32 hash_) external { //add an only modifier
         totalRedemptions.push(hash_);
         taskIdToHashes[taskId_].push(hash_);
     }

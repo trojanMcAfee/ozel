@@ -25,12 +25,12 @@ const query = (taskId) => {
     }
 };
 
-const storageBeaconAddr = '0xab1701BD39070B2a714B844b319f0815EF88b6e4'; //manualRedeem: 0x4e35355c5028FB1ba2229C310dd9c4Ff5286F91a 
-const proxy = '0x20f7F1032797da7C2A9054c859DE479885A0786D'; //manualRedeem: 0xc42e2E3B2F54D61c2BA2FcdF71497549941F5cc0
-const redeemedHashesAddr = '';
+const storageBeaconAddr = '0x4e35355c5028FB1ba2229C310dd9c4Ff5286F91a'; //manualRedeem: 0x4e35355c5028FB1ba2229C310dd9c4Ff5286F91a - good: 0xab1701BD39070B2a714B844b319f0815EF88b6e4
+const proxy = '0xc42e2E3B2F54D61c2BA2FcdF71497549941F5cc0'; //manualRedeem: 0xc42e2E3B2F54D61c2BA2FcdF71497549941F5cc0 - good: 0x20f7F1032797da7C2A9054c859DE479885A0786D
+const redeemedHashesAddr = '0xaf77634552BB61d593448D035fcFeae5a73Ab021';
 //taskId (good one): 0xc5ca4e141d2134e32ef3b779374fde598c354168ff4aa04ebf933dfd07363f21 - manualRedeem: 0xb6fd8625541b1f084582b7af4cb549cfcc712b291ea73b0699313644ed92bf14
 
-const tasks = {};
+const tasks = {}; 
 
 async function main() {
     const storageBeacon = await hre.ethers.getContractAt('StorageBeacon', storageBeaconAddr);
@@ -79,7 +79,7 @@ async function main() {
                     0 : 
                     tasks[taskId].alreadyCheckedHashes.length - 1
                 ) {
-                    if (i === executions.length - 1) console.log('tasks2: ', tasks);
+                    // if (i === executions.length - 1) console.log('tasks2: ', tasks);
                     console.log('here2');
                     redeemHash(hash, taskId);
                 }
@@ -98,13 +98,17 @@ async function redeemHash(hash, taskId) {
     let message = await l1Receipt.getL1ToL2Message(l2Wallet);
     let status = (await message.waitForStatus()).status;
 
+    console.log('redeemed status is: ', L1ToL2MessageStatus.REDEEMED);
+    console.log(`hash: ${hash} with status: ${status}`);
+
     if (status === L1ToL2MessageStatus.REDEEMED) {
         console.log('here4');
         if (tasks[taskId].alreadyCheckedHashes.indexOf(hash) === -1) tasks[taskId].alreadyCheckedHashes.push(hash); 
-        console.log('tasks in redeemHash: ', tasks);
+        // console.log('tasks in redeemHash: ', tasks);
         console.log('length: ', tasks[taskId].alreadyCheckedHashes.length);
     } else {
-        console.log('here5');
+        console.log('here5 ^^^');
+        console.log('pending for redeemed status is: ', status);
         await message.redeem({
             gasLimit: ethers.BigNumber.from('5000000'),
             gasPrice: ethers.BigNumber.from('40134698068')

@@ -329,7 +329,7 @@ async function redeemHashes() {
     console.log('redeemedHashes deployed to: ', redeemedHashes.address);
 }
 
-redeemHashes();
+// redeemHashes();
 
 
 
@@ -595,7 +595,7 @@ async function callSendToArb() {
 // tryGelatoRopsten();
 
 
-sendArb();
+// sendArb();
 
 // tryPrecompile();
 
