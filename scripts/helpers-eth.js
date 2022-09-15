@@ -21,7 +21,7 @@ const {
     fraxAddr,
     inbox,
     signerX,
-    l2ProviderRinkeby,
+    l2ProviderTestnet,
     l2Signer,
     l1Signer,
     wethAddr,
@@ -32,7 +32,7 @@ const {
     poolFeeUni,
     nullAddr,
     chainlinkAggregatorAddr,
-    l1ProviderRinkeby,
+    l1ProviderTestnet,
     l2Provider, 
     proxyABIeth,
     factoryABI
@@ -45,9 +45,8 @@ let proxyFactory;
 
 
 async function getGasDetailsL2(userDetails) {
-    const nitroInboxRinkeby = '0x578BAde599406A8fE3d24Fd7f7211c0911F5B29e';
     const abi = ['function calculateRetryableSubmissionFee(uint256 dataLength, uint256 baseFee) public view returns (uint256)']; 
-    const delayedInbox = await hre.ethers.getContractAt(abi, nitroInboxRinkeby);
+    const delayedInbox = await hre.ethers.getContractAt(abi, inbox);
 
     const sendToArbBytes = ethers.utils.defaultAbiCoder.encode(
         ['tuple(address, address, uint256)'],
@@ -63,7 +62,7 @@ async function getGasDetailsL2(userDetails) {
     let submissionPriceWei = _submissionPriceWei.mul(5);
     submissionPriceWei = ethers.BigNumber.from(submissionPriceWei).mul(100)
 
-    let gasPriceBid = await l2ProviderRinkeby.getGasPrice();
+    let gasPriceBid = await l2ProviderTestnet.getGasPrice();
     gasPriceBid = gasPriceBid.add(ethers.BigNumber.from(gasPriceBid).div(2));
 
     return {

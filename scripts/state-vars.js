@@ -88,12 +88,13 @@ const factoryABI = [
 const signerX = new ethers.Wallet(process.env.PK);
 const l1Provider = new ethers.providers.JsonRpcProvider(process.env.ALCHEMY_ETH);
 const l2Provider = new ethers.providers.JsonRpcProvider(process.env.ARBITRUM);
-const l2ProviderRinkeby = new ethers.providers.JsonRpcProvider(process.env.ARB_TESTNET);
-const l1ProviderRinkeby = new ethers.providers.JsonRpcProvider(process.env.RINKEBY);
-const l2Signer = signerX.connect(l2ProviderRinkeby);
-const l1Signer = signerX.connect(l1ProviderRinkeby);
+// const l2ProviderRinkeby = new ethers.providers.JsonRpcProvider(process.env.ARB_TESTNET);
+// const l1ProviderRinkeby = new ethers.providers.JsonRpcProvider(process.env.RINKEBY);
+// const l2Signer = signerX.connect(l2ProviderRinkeby);
+// const l1Signer = signerX.connect(l1ProviderRinkeby);
 
-
+let l1Signer, l2Signer;
+let l1ProviderTestnet, l2ProviderTestnet;
 
 let network = 'rinkeby';
 switch(network) {
@@ -108,6 +109,11 @@ switch(network) {
         chainlinkAggregatorAddr = nullAddr;
         wethAddr = '0xB4FBF271143F4FBf7B91A5ded31805e42b2208d6';
         usdcAddr = '0xd35CCeEAD182dcee0F148EbaC9447DA2c4D449c4';
+        //---------
+        l1ProviderTestnet = new ethers.providers.JsonRpcProvider(process.env.GOERLI);
+        l1Signer = signerX.connect(l1ProviderTestnet);
+        l2ProviderTestnet = new ethers.providers.JsonRpcProvider(process.env.ARB_GOERLI);
+        l2Signer = signerX.connect(l2ProviderTestnet);
         break;
     case 'rinkeby':
         chainId = 421611;
@@ -120,6 +126,11 @@ switch(network) {
         chainlinkAggregatorAddr = nullAddr;
         wethAddr = '0xc778417E063141139Fce010982780140Aa0cD5Ab';
         usdcAddr = '0xeb8f08a975Ab53E34D8a0330E0D34de942C95926';
+        //---------
+        l1ProviderTestnet = new ethers.providers.JsonRpcProvider(process.env.RINKEBY);
+        l1Signer = signerX.connect(l1ProviderTestnet);
+        l2ProviderTestnet = new ethers.providers.JsonRpcProvider(process.env.ARB_TESTNET);
+        l2Signer = signerX.connect(l2ProviderTestnet);
         break;
     case 'mainnet': 
         chainId = 42161;
@@ -200,7 +211,7 @@ module.exports = {
     usdtAddrArb,
     inbox,
     signerX,
-    l2ProviderRinkeby,
+    l2ProviderTestnet,
     l2Signer,
     l1Signer,
     gelatoAddr,
@@ -213,7 +224,7 @@ module.exports = {
     diamondABI,
     usxAddr,
     dForcePoolAddr,
-    l1ProviderRinkeby,
+    l1ProviderTestnet,
     l2Provider,
     proxyABIeth,
     factoryABI

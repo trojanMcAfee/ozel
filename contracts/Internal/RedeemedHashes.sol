@@ -17,7 +17,7 @@ contract RedeemedHashes is Ownable {
         return taskIdToHashes[taskId_];
     }
 
-    function storeRedemption(bytes32 taskId_, bytes32 hash_) external onlyOwner { //add an only modifier
+    function storeRedemption(bytes32 taskId_, bytes32 hash_) external onlyOwner {
         totalRedemptions.push(hash_);
         taskIdToHashes[taskId_].push(hash_);
     }

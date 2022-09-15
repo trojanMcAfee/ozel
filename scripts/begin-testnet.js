@@ -41,7 +41,7 @@ const {
     poolFeeUni,
     nullAddr,
     chainlinkAggregatorAddr,
-    l2ProviderRinkeby
+    l2ProviderTestnet
  } = require('./state-vars.js');
 
 
@@ -143,7 +143,7 @@ async function getGasDetailsL2(userDetails) {
     let submissionPriceWei = _submissionPriceWei.mul(5);
     submissionPriceWei = ethers.BigNumber.from(submissionPriceWei).mul(100)
 
-    let gasPriceBid = await l2ProviderRinkeby.getGasPrice();
+    let gasPriceBid = await l2ProviderTestnet.getGasPrice();
     gasPriceBid = gasPriceBid.add(ethers.BigNumber.from(gasPriceBid).div(2));
 
     return {
@@ -155,73 +155,8 @@ async function getGasDetailsL2(userDetails) {
 
 
 
-async function tryPrecompile() {
-    const bridge = await Bridge.init(l1Signer, l2Signer);
-    const arbRetryableAddr = '0x000000000000000000000000000000000000006E';
-    const arbRetryable = await hre.ethers.getContractAt('ArbRetryableTx', arbRetryableAddr);
-    const req = 213702;
-
-    // const txId = keccak256(abiCoder.encode(['uint'], [req]), 0); //abiCoder.encode(['uint'], [req]), 0
-    // console.log('txId: ', txId); //req, 0
-
-    // const beneficiary = await arbRetryable.getBeneficiary(txId, {
-    //     gasLimit: ethers.BigNumber.from('10000000')
-    // });
-    // console.log('beneficiary: ', beneficiary);
-    
-    // const hashes = [];
-    // const x = '0x17de80e4ed05eefc31e6d2827232e6f620876f11c8fa0651eb722d943459d22c';
-    // hashes.push(x);
-
-
-    // const timeOut = await arbRetryable.getTimeout('0xaa756e9028ebe9d3b21c4dcc656a98a907e73be218353c5141b00e389180e333', {
-    //     gasLimit: ethers.BigNumber.from('10000000')
-    // });
-    // console.log('timeOut: ', timeOut.toString());
-
-    await arbRetryable.redeem('0xaa756e9028ebe9d3b21c4dcc656a98a907e73be218353c5141b00e389180e333');
-    console.log('redeemed');
-
-    // await arbRetryable.redeem('0x51cdb4f34b799bbe96b4750627dd5e714194adf4ebfc9cfa378083e7aa5fd810');
-    // console.log('redeemed');
-
-    // const lifetime = await arbRetryable.getLifetime();
-    // console.log('lifetime: ', lifetime.toString()); 
-
-
-    // const ticketId = await bridge.calculateL2TransactionHash(ethers.BigNumber.from(req), l2Provider);
-
-    // const x = await arbRetryable.getTimeout(ticketId);
-    // console.log('x: ', x.toString());
-
-    //---------------
-
-    // const withPacked = '0x44Df79cAfB43967664ACbDB4A53F3881204B976C';
-    // const withoutPacked = '0x04122568bDb8265714d03E9436FAe47c96DCcf17';
-
-    // // const arbRetryable = await hre.ethers.getContractAt('Test', withPacked);
-    // const ArbRetryable = await hre.ethers.getContractFactory('Test');
-    // const arbRetryable = await ArbRetryable.deploy();
-    // await arbRetryable.deployed();
-
-    // console.log('arbRetryable deployed to: ', arbRetryable.address);
-
-    // const y = await arbRetryable.getTO(req);
-    // console.log('y: ', y);    
-
-
-}
-
-// tryPrecompile();
-
-
-
-
 
 async function deployContract(contractName, signer, constrArgs) {
-    // const Contract = await (
-    //     await hre.ethers.getContractFactory(contractName)
-    // ).connect(signer); 
     const Contract = await hre.ethers.getContractFactory(contractName);
 
     const ops = {
@@ -320,8 +255,7 @@ async function manualRedeem() {
 
 
 async function redeemHashes() {
-    const l2Provider = new providers.JsonRpcProvider(process.env.ARB_TESTNET);
-    const l2Wallet = new Wallet(process.env.PK, l2Provider);
+    const l2Wallet = new Wallet(process.env.PK, l2ProviderTestnet);
 
     const RedeemedHashes = await hre.ethers.getContractFactory('RedeemedHashes');
     const redeemedHashes = await RedeemedHashes.connect(l2Wallet).deploy();
@@ -329,7 +263,7 @@ async function redeemHashes() {
     console.log('redeemedHashes deployed to: ', redeemedHashes.address);
 }
 
-// redeemHashes();
+redeemHashes();
 
 
 
@@ -342,9 +276,7 @@ async function redeemHashes() {
 //Deploys ozPayMe in mainnet and routes ETH to Manager (OZL) in Arbitrum
 async function sendArb() { //mainnet
     const signerAddr = await signerX.getAddress();
-    // const [signerAddr, addr2] = await hre.ethers.provider.listAccounts(); 
     console.log('signer address: ', signerAddr);
-
 
     const userDetails = [
         signerAddr,
@@ -355,7 +287,7 @@ async function sendArb() { //mainnet
     let constrArgs = [];
     
     //Deploys the fake OZL on arbitrum testnet 
-    const [fakeOZLaddr] = await deployContract('FakeOZL', l2Signer); //fake OZL address in arbitrum
+    const [ fakeOZLaddr ] = await deployContract('FakeOZL', l2Signer); //fake OZL address in arbitrum
     // const fakeOZLaddr = '0x8cE038796243813805593E16211C8Def67a81454';
    
     //Calculate fees on L1 > L2 arbitrum tx - **** (add TRUE as 2nd param for manual redeem) ****
@@ -505,40 +437,6 @@ async function testBeacon() {
 
 // testBeacon(); 
 
-
-
-async function justEvent() {
-    const bridge = await Bridge.init(l1Signer, l2Signer);
-    const newProxyAddr = '0x658a1496aa79B8e9f9B717aaa4c0958EF418A5eb';
-
-    const filter = {
-        address: '0xfF88d96CE1079F27ef2A18A176A2E6482553F7F8', 
-        topics: [
-            ethers.utils.id("ShowTicket(uint256)")
-        ]
-    };
-
-    await hre.ethers.provider.on(filter, async (encodedData) => {
-        const topic = encodedData.topics[1];
-        const ourMessagesSequenceNum = ethers.utils.defaultAbiCoder.decode(['uint'], topic); //data
-
-        console.log('inboxSeqNums: ', ourMessagesSequenceNum.toString());
-        const retryableTxnHash = await bridge.calculateL2RetryableTransactionHash(
-            ourMessagesSequenceNum[0]
-        );
-        console.log('retryableTxnHash: ', retryableTxnHash);
-        console.log(
-            `waiting for L2 tx 🕐... (should take < 10 minutes, current time: ${new Date().toTimeString()}`
-        );
-        const retryRec = await l2Provider.waitForTransaction(retryableTxnHash)
-        console.log(`L2 retryable txn executed 🥳 ${retryRec.transactionHash} at ${new Date().toTimeString()}`);
-    });
-
-    await sendTx(newProxyAddr, true, 'Sending ETH');
-}
-
-
-// justEvent();
 
 
 
