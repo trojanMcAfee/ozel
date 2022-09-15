@@ -29,4 +29,8 @@ contract RedeemedHashes {
         }
         return false;
     }
+
+    function getTotalRedemptions() external view returns(bytes32[] memory) {
+        return totalRedemptions;
+    }
 }
