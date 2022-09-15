@@ -109,15 +109,22 @@ async function redeemHash(hash, taskId) {
     } else {
         console.log('here5 ^^^');
         console.log('pending for redeemed status is: ', status);
-        await message.redeem({
+        let tx = await message.redeem({
             gasLimit: ethers.BigNumber.from('5000000'),
             gasPrice: ethers.BigNumber.from('40134698068')
         });
+        await tx.wait();
         console.log('redeemed');
 
-        const tx = await redeemedHashes.storeRedemption(taskId, hash);
+        tx = await redeemedHashes.connect(l2Wallet).storeRedemption(taskId, hash);
         await tx.wait();
         tasks[taskId].alreadyCheckedHashes.push(hash);
+
+        //----------
+        const redemptions = await redeemedHashes.connect(l2Wallet).getTotalRedemptions();
+        console.log('redemptions: ', redemptions);
+
+        console.log('checked hashes: ', tasks[taskId].alreadyCheckedHashes);
     }
 
 }

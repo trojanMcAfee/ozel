@@ -1,11 +1,14 @@
 // SPDX-License-Identifier: GPL-2.0-or-later
 pragma solidity 0.8.14;
 
+import '@openzeppelin/contracts/access/Ownable.sol';
+
+import 'hardhat/console.sol';
 
 error InvalidTask(bytes32 taskId);
 
 
-contract RedeemedHashes {
+contract RedeemedHashes is Ownable {
 
     bytes32[] totalRedemptions;
     mapping(bytes32 => bytes32[]) taskIdToHashes; 
@@ -14,7 +17,7 @@ contract RedeemedHashes {
         return taskIdToHashes[taskId_];
     }
 
-    function storeRedemption(bytes32 taskId_, bytes32 hash_) external { //add an only modifier
+    function storeRedemption(bytes32 taskId_, bytes32 hash_) external onlyOwner { //add an only modifier
         totalRedemptions.push(hash_);
         taskIdToHashes[taskId_].push(hash_);
     }
