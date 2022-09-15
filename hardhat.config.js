@@ -44,6 +44,14 @@ module.exports = {
     arb: {
       url: process.env.ARB_TESTNET,
       accounts: [process.env.PK]
+    },
+    goerli: {
+      url: process.env.GOERLI,
+      accounts: [process.env.PK]
+    },
+    arb_goerli: {
+      url: process.env.ARB_GOERLI,
+      accounts: [process.env.PK]
     }
   }
 };
