@@ -1,5 +1,5 @@
-
-
+const axios = require('axios').default;
+const { network } = require('./state-vars.js');
 
 async function queryRedeemedContract() {
     const taskId = '0x9679f8a03a29464759b316c3f4d2c95e9c20fbdfdfa6e2f58d27c66b726d0b63';
@@ -36,3 +36,30 @@ async function main() {
 }
 
 // main();
+
+
+async function testQuery() {
+    const taskId = '0x9679f8a03a29464759b316c3f4d2c95e9c20fbdfdfa6e2f58d27c66b726d0b63';
+    const URL = `https://api.thegraph.com/subgraphs/name/gelatodigital/poke-me-${network}`;
+    const query = (taskId) => {
+        return {
+            query: `
+                {
+                    tasks(where: {id: "${taskId}"}) {
+                        id
+                        taskExecutions {
+                            id,
+                            success
+                        }
+                    }
+                }
+            `
+        }
+    };
+
+    let result = await axios.post(URL, query(taskId));
+    let executions =  result.data.data.tasks[0].taskExecutions;
+    console.log('executions: ', executions);
+}
+
+// testQuery();
