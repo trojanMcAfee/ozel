@@ -2,14 +2,14 @@
 
 
 async function queryRedeemedContract() {
-    const taskId = '0x7fa59a409e86fe2ed7bed15b2dd577c864dea384d629c91082ecc5554c80202c';
-    const redeemedHashesAddr = '0xd7A008bE42F747281B76b5ceEADC8960Ac9df0e6';
+    const taskId = '0x9679f8a03a29464759b316c3f4d2c95e9c20fbdfdfa6e2f58d27c66b726d0b63';
+    const redeemedHashesAddr = '0x7F5be070110cec511369a7879DC14cECf46b20d4';
     const redeemedHashes = await hre.ethers.getContractAt('RedeemedHashes', redeemedHashesAddr);
 
     const total = await redeemedHashes.getTotalRedemptions();
     console.log('total redemptions: ', total);
 
-    const hash = '0x7d2775123fe9e37ba9541654c0d6c4cf7c5ddb8a013c3cd1014d59ac1953b03c';
+    const hash = '0x7c010eef2ad85d5d43d7f689dac2350289dde186ce8066133c9e900dfd4d45b0';
     const redeemed = await redeemedHashes.wasRedeemed(taskId, hash);
     console.log('was redemeed: ', redeemed);
 

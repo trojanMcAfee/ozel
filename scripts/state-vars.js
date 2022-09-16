@@ -96,7 +96,7 @@ const l2Provider = new ethers.providers.JsonRpcProvider(process.env.ARBITRUM);
 let l1Signer, l2Signer;
 let l1ProviderTestnet, l2ProviderTestnet;
 
-let network = 'rinkeby';
+let network = 'goerli';
 switch(network) {
     case 'goerli':
         chainId = 421611;
@@ -227,6 +227,7 @@ module.exports = {
     l1ProviderTestnet,
     l2Provider,
     proxyABIeth,
-    factoryABI
+    factoryABI,
+    network
 };
 
