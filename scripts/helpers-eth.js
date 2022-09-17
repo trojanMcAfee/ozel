@@ -1,6 +1,8 @@
-const { Bridge } = require('arb-ts');
+// const { Bridge } = require('arb-ts');
 const { hexDataLength } = require('@ethersproject/bytes');
-const { L1ToL2MessageGasEstimator} = require('@arbitrum/sdk/dist/lib/message/L1ToL2MessageGasEstimator')
+const {
+    L1ToL2MessageGasEstimator,
+} = require('@arbitrum/sdk/dist/lib/message/L1ToL2MessageGasEstimator')
 const { ethers, Wallet } = require('ethers');
 const { 
     hexStripZeros, 
@@ -48,6 +50,7 @@ async function getGasDetailsL2(userDetails) {
     // const abi = ['function calculateRetryableSubmissionFee(uint256 dataLength, uint256 baseFee) public view returns (uint256)']; 
     // const delayedInbox = await hre.ethers.getContractAt(abi, inbox);
     const l1Wallet = new Wallet(process.env.PK, l1ProviderTestnet);
+    
 
     const sendToArbBytes = ethers.utils.defaultAbiCoder.encode(
         ['tuple(address, address, uint256)'],
@@ -71,6 +74,9 @@ async function getGasDetailsL2(userDetails) {
         await l1ProviderTestnet.getGasPrice(),
         sendToArbBytesLength
     );
+
+    console.log('yes');
+    return;
 
     console.log('submissionPriceWei pre-multiplier: ', Number(submissionPriceWei));
     let submissionPriceWei = _submissionPriceWei.mul(5);

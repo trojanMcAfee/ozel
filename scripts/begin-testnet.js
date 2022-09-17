@@ -1,7 +1,7 @@
 const { ethers, providers, Wallet } = require("ethers");
 const { parseEther, formatEther, defaultAbiCoder: abiCoder, keccak256 } = ethers.utils;
 const { deploy } = require('./deploy.js');
-const { Bridge } = require('arb-ts');
+// const { Bridge } = require('arb-ts');
 const { L1TransactionReceipt, L1ToL2MessageStatus } = require('@arbitrum/sdk');
 const { hexDataLength } = require('@ethersproject/bytes');
 require('dotenv').config();

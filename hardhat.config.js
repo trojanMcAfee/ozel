@@ -25,18 +25,6 @@ module.exports = {
       //   blockNumber: 7880962      //2227440
       // }
     },
-    ropsten: {
-      url: process.env.ROPSTEN_URL,
-      accounts: [process.env.PK]
-    },
-    matic: {
-      url: process.env.POLYGON,
-      accounts: [process.env.PK]
-    },
-    kovan: {
-      url: process.env.KOVAN,
-      accounts: [process.env.PK]
-    },
     rinkeby: {
       url: process.env.RINKEBY,
       accounts: [process.env.PK]
