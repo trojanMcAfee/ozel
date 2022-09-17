@@ -7,8 +7,8 @@ const {
 require('dotenv').config();
 
 
-const l1Provider = new providers.JsonRpcProvider(process.env.RINKEBY)
-const l2Provider = new providers.JsonRpcProvider(process.env.ARB_TESTNET)
+const l1Provider = new providers.JsonRpcProvider('https://rinkeby.infura.io/v3/ead605dd65704007ae941fffb7c1d1a7')
+const l2Provider = new providers.JsonRpcProvider('https://arb-rinkeby.g.alchemy.com/v2/bnhYB2M32OLEj2rJs1oSE4--olVPMPU9')
 
 
 const main = async () => {
@@ -22,7 +22,7 @@ const main = async () => {
         defaultSlippage
     ];
 
-    const newGreeting = 'Greeting from far, far away'
+    // const newGreeting = 'Greeting from far, far away'
     const sendToArbBytes = ethers.utils.defaultAbiCoder.encode(
         ['tuple(address, address, uint256)'],
         [userDetails]
