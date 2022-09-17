@@ -1,5 +1,12 @@
+const { ethers, Wallet } = require("ethers");
 const axios = require('axios').default;
-const { network } = require('./state-vars.js');
+const { L1TransactionReceipt, L1ToL2MessageStatus } = require('@arbitrum/sdk');
+
+const {
+    l1ProviderTestnet,
+    l2ProviderTestnet,
+    network
+} = require('./state-vars.js');
 
 async function queryRedeemedContract() {
     const taskId = '0x7fa59a409e86fe2ed7bed15b2dd577c864dea384d629c91082ecc5554c80202c';
@@ -17,7 +24,7 @@ async function queryRedeemedContract() {
     console.log('per task: ', redeemsPerTask); 
 }
 
-queryRedeemedContract();
+// queryRedeemedContract();
 
 
 async function main() {
@@ -38,28 +45,19 @@ async function main() {
 // main();
 
 
-async function testQuery() {
-    const taskId = '0x9679f8a03a29464759b316c3f4d2c95e9c20fbdfdfa6e2f58d27c66b726d0b63';
-    const URL = `https://api.thegraph.com/subgraphs/name/gelatodigital/poke-me-${network}`;
-    const query = (taskId) => {
-        return {
-            query: `
-                {
-                    tasks(where: {id: "${taskId}"}) {
-                        id
-                        taskExecutions {
-                            id,
-                            success
-                        }
-                    }
-                }
-            `
-        }
-    };
+async function checkTicketStatus() {
+    const hash = '0xcf3019f063eeb49c471e39f125e030134e7a1dc9e7e6c131d3bc17031258c711';
+    const l2Wallet = new Wallet(process.env.PK, l2ProviderTestnet);
 
-    let result = await axios.post(URL, query(taskId));
-    let executions =  result.data.data.tasks[0].taskExecutions;
-    console.log('executions: ', executions);
+    let receipt = await l1ProviderTestnet.getTransactionReceipt(hash);
+    let l1Receipt = new L1TransactionReceipt(receipt);
+    let message = await l1Receipt.getL1ToL2Message(l2Wallet);
+    let status = (await message.waitForStatus()).status;
+
+    console.log('status: ', status);
 }
 
-// testQuery();
+checkTicketStatus();
+
+
+

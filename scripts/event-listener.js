@@ -98,21 +98,35 @@ async function main() {
                 let [ hash ] = executions[i].id.split(':');
                 console.log('hash: ', hash);
 
-                for (let j=0; j < tasks[taskId].alreadyCheckedHashes.length || j == 0; j++) {
-                    let checkedHash = 
-                        !tasks[taskId].alreadyCheckedHashes[j] ? 0: tasks[taskId].alreadyCheckedHashes[j];
+                let notInCheckedArray = tasks[taskId].alreadyCheckedHashes.indexOf(hash) === -1;
+                if (!notInCheckedArray) continue parent;
+
+                let [ message, wasRedeemed ] = await checkHash(hash);
+
+                wasRedeemed ? tasks[taskId].alreadyCheckedHashes.push(hash) : redeemHash2(message, hash, taskId);
+
+                // if (wasRedeemed) {
+                //     tasks[taskId].alreadyCheckedHashes.push(hash);
+                // } else if (!wasRedeemed) {
+                //     redeemHash2(message, hash, taskId);
+                // }
+
+
+                // for (let j=0; j < tasks[taskId].alreadyCheckedHashes.length || j == 0; j++) {
+                //     let checkedHash = 
+                //         !tasks[taskId].alreadyCheckedHashes[j] ? 0: tasks[taskId].alreadyCheckedHashes[j];
                     
-                    if (hash === checkedHash) {
-                        console.log('here ***');
-                        continue parent;
-                    } else if ( 
-                        j === tasks[taskId].alreadyCheckedHashes.length - 1 < 0 ?
-                        0 : 
-                        tasks[taskId].alreadyCheckedHashes.length - 1
-                    ) {
-                        redeemHash(hash, taskId);
-                    }
-                }
+                //     if (hash === checkedHash) {
+                //         console.log('here ***');
+                //         continue parent;
+                //     } else if ( 
+                //         j === tasks[taskId].alreadyCheckedHashes.length - 1 < 0 ?
+                //         0 : 
+                //         tasks[taskId].alreadyCheckedHashes.length - 1
+                //     ) {
+                //         redeemHash(hash, taskId);
+                //     }
+                // }
             }
 
             //----------
@@ -124,6 +138,35 @@ async function main() {
     });
 }
 
+
+async function checkHash(hash) { //getting stuck here for some reason - do console.log(1,2,3)
+    const receipt = await l1ProviderTestnet.getTransactionReceipt(hash);
+    const l1Receipt = new L1TransactionReceipt(receipt);
+    const message = await l1Receipt.getL1ToL2Message(l2Wallet);
+    const status = (await message.waitForStatus()).status; //change this to two vars
+    const wasRedeemed = status === L1ToL2MessageStatus.REDEEMED ? true : false;
+
+    return [
+        message,
+        wasRedeemed
+    ];
+}
+
+async function redeemHash2(message, hash, taskId) {
+    let tx = await message.redeem();
+    await tx.wait();
+    console.log(`hash: ${hash} redemeed ^^^^^`);
+    tasks[taskId].alreadyCheckedHashes.push(hash);
+    
+    const redeemedHashes = await hre.ethers.getContractAt('RedeemedHashes', redeemedHashesAddr);
+    tx = await redeemedHashes.connect(l2Wallet).storeRedemption(taskId, hash);
+    await tx.wait();
+}
+
+
+
+
+//--------
 
 async function redeemHash(hash, taskId) {
     console.log('here');

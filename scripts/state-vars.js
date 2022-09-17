@@ -88,10 +88,6 @@ const factoryABI = [
 const signerX = new ethers.Wallet(process.env.PK);
 const l1Provider = new ethers.providers.JsonRpcProvider(process.env.ALCHEMY_ETH);
 const l2Provider = new ethers.providers.JsonRpcProvider(process.env.ARBITRUM);
-// const l2ProviderRinkeby = new ethers.providers.JsonRpcProvider(process.env.ARB_TESTNET);
-// const l1ProviderRinkeby = new ethers.providers.JsonRpcProvider(process.env.RINKEBY);
-// const l2Signer = signerX.connect(l2ProviderRinkeby);
-// const l1Signer = signerX.connect(l1ProviderRinkeby);
 
 let l1Signer, l2Signer;
 let l1ProviderTestnet, l2ProviderTestnet;
