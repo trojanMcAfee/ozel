@@ -1,7 +1,7 @@
 const { Bridge } = require('arb-ts');
 const { hexDataLength } = require('@ethersproject/bytes');
 const { L1ToL2MessageGasEstimator} = require('@arbitrum/sdk/dist/lib/message/L1ToL2MessageGasEstimator')
-const { ethers } = require('hardhat');
+const { ethers, Wallet } = require('ethers');
 const { 
     hexStripZeros, 
     parseEther,
@@ -45,8 +45,9 @@ let proxyFactory;
 
 
 async function getGasDetailsL2(userDetails) {
-    const abi = ['function calculateRetryableSubmissionFee(uint256 dataLength, uint256 baseFee) public view returns (uint256)']; 
-    const delayedInbox = await hre.ethers.getContractAt(abi, inbox);
+    // const abi = ['function calculateRetryableSubmissionFee(uint256 dataLength, uint256 baseFee) public view returns (uint256)']; 
+    // const delayedInbox = await hre.ethers.getContractAt(abi, inbox);
+    const l1Wallet = new Wallet(process.env.PK, l1ProviderTestnet);
 
     const sendToArbBytes = ethers.utils.defaultAbiCoder.encode(
         ['tuple(address, address, uint256)'],
@@ -54,16 +55,32 @@ async function getGasDetailsL2(userDetails) {
     );
     const sendToArbBytesLength = hexDataLength(sendToArbBytes) + 4;
 
-    const _submissionPriceWei = await delayedInbox.connect(l1Signer).calculateRetryableSubmissionFee(
-        sendToArbBytesLength,
-        0
-    );
+    // const _submissionPriceWei = await delayedInbox.connect(l1Signer).calculateRetryableSubmissionFee(
+    //     sendToArbBytesLength,
+    //     0
+    // );
   
-    let submissionPriceWei = _submissionPriceWei.mul(5);
-    submissionPriceWei = ethers.BigNumber.from(submissionPriceWei).mul(100)
+    const l1ToL2MessageGasEstimate = new L1ToL2MessageGasEstimator(l2ProviderTestnet);
+    // let l1GasPrice = await l1ProviderTestnet.getGasPrice();
+    // console.log('l1 gas price pre-multiplier: ', Number(l1GasPrice));
+    // l1GasPrice = l1GasPrice.mul(100);
+    // console.log('l1 gas price post-multiplier: ', Number(l1GasPrice));
 
+    const _submissionPriceWei = await l1ToL2MessageGasEstimate.estimateSubmissionFee(
+        l1ProviderTestnet,
+        await l1ProviderTestnet.getGasPrice(),
+        sendToArbBytesLength
+    );
+
+    console.log('submissionPriceWei pre-multiplier: ', Number(submissionPriceWei));
+    let submissionPriceWei = _submissionPriceWei.mul(5);
+    submissionPriceWei = ethers.BigNumber.from(submissionPriceWei).mul(100);
+    console.log('submissionPriceWei post-multiplier: ', Number(submissionPriceWei));
+
+    console.log('gasPriceBid pre-multiplier: ', Number(gasPriceBid));
     let gasPriceBid = await l2ProviderTestnet.getGasPrice();
     gasPriceBid = gasPriceBid.add(ethers.BigNumber.from(gasPriceBid).div(2));
+    console.log('gasPriceBid post-multiplier: ', Number(gasPriceBid));
 
     return {
         submissionPriceWei,
