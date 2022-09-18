@@ -263,7 +263,7 @@ async function redeemHashes() {
     console.log('redeemedHashes deployed to: ', redeemedHashes.address);
 }
 
-redeemHashes();
+// redeemHashes();
 
 
 
@@ -292,7 +292,7 @@ async function sendArb() { //mainnet
     // console.log('fakeOZL deployed to: ', fakeOZLaddr);
    
     //Calculate fees on L1 > L2 arbitrum tx - **** (add TRUE as 2nd param for manual redeem) ****
-    let [ maxSubmissionCost, gasPriceBid, maxGas, autoRedeem ] = await getArbitrumParams(userDetails);
+    let [ maxSubmissionCost, gasPriceBid, maxGas, autoRedeem ] = await getArbitrumParams(userDetails, true);
 
     //Deploys ozPayMe in mainnet
     const [ ozPaymeAddr ] = await deployContract('ozPayMe', l1Signer);
@@ -494,7 +494,7 @@ async function callSendToArb() {
 // tryGelatoRopsten();
 
 
-// sendArb();
+sendArb();
 
 // tryPrecompile();
 

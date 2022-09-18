@@ -57,8 +57,8 @@ const query = (taskId) => {
  * ManualRedeem2: 0x846D5bb895CBE573d674F426Cff278D9881456AD
  */
 
-const storageBeaconAddr = '0x2041E024802fA69644Ac3E71CE2A22eAb845fd78'; 
-const proxy = '0x936150Bd9D22c90A61355c16Bf2C3977d5E903ed'; 
+const storageBeaconAddr = '0xfD3286C77A76c7E23d1805de66Da697df8561AEB'; 
+const proxy = '0x73848e0E716679F3D09aA90Bc8927B12269d35f7'; 
 const redeemedHashesAddr = '0x756bA4FF2914Df0ad724D6f0Cf2a4a6c03067E71'; 
 
 const tasks = {}; 
@@ -130,16 +130,16 @@ async function main() {
             }
 
             //----------
-            const redeemedHashes = await hre.ethers.getContractAt('RedeemedHashes', redeemedHashesAddr);
-            const redemptions = await redeemedHashes.connect(l2Wallet).getTotalRedemptions();
-            console.log('redemptions: ', redemptions);
-            console.log('checked hashes: ', tasks[taskId].alreadyCheckedHashes);
+            // const redeemedHashes = await hre.ethers.getContractAt('RedeemedHashes', redeemedHashesAddr);
+            // const redemptions = await redeemedHashes.connect(l2Wallet).getTotalRedemptions();
+            // console.log('redemptions: ', redemptions);
+            // console.log('checked hashes: ', tasks[taskId].alreadyCheckedHashes);
         }
     });
 }
 
 
-async function checkHash(hash) { //getting stuck here for some reason - do console.log(1,2,3)
+async function checkHash(hash) { 
     const receipt = await l1ProviderTestnet.getTransactionReceipt(hash);
     const l1Receipt = new L1TransactionReceipt(receipt);
     const message = await l1Receipt.getL1ToL2Message(l2Wallet);
@@ -161,6 +161,11 @@ async function redeemHash2(message, hash, taskId) {
     const redeemedHashes = await hre.ethers.getContractAt('RedeemedHashes', redeemedHashesAddr);
     tx = await redeemedHashes.connect(l2Wallet).storeRedemption(taskId, hash);
     await tx.wait();
+
+    //---------
+    const redemptions = await redeemedHashes.connect(l2Wallet).getTotalRedemptions();
+    console.log('redemptions: ', redemptions);
+    console.log('checked hashes: ', tasks[taskId].alreadyCheckedHashes);
 }
 
 

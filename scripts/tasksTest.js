@@ -9,22 +9,22 @@ const {
 } = require('./state-vars.js');
 
 async function queryRedeemedContract() {
-    const taskId = '0x7fa59a409e86fe2ed7bed15b2dd577c864dea384d629c91082ecc5554c80202c';
-    const redeemedHashesAddr = '0xd7A008bE42F747281B76b5ceEADC8960Ac9df0e6';
+    const taskId = '0x294a598f7d2e4bdb314414316cb462a7a00604070ef30d8f0c890a15f47ab4d7';
+    const redeemedHashesAddr = '0x756bA4FF2914Df0ad724D6f0Cf2a4a6c03067E71';
     const redeemedHashes = await hre.ethers.getContractAt('RedeemedHashes', redeemedHashesAddr);
 
     const total = await redeemedHashes.getTotalRedemptions();
     console.log('total redemptions: ', total);
 
-    const hash = '0x4450487edc3bdeb2cbc976343f474c3978cf4e60adca4f99b1be3d51247cfe5c';
-    const redeemed = await redeemedHashes.wasRedeemed(taskId, hash);
-    console.log('was redemeed: ', redeemed);
+    // const hash = '0x4450487edc3bdeb2cbc976343f474c3978cf4e60adca4f99b1be3d51247cfe5c';
+    // const redeemed = await redeemedHashes.wasRedeemed(taskId, hash);
+    // console.log('was redemeed: ', redeemed);
 
     const redeemsPerTask = await redeemedHashes.getRedeemsPerTask(taskId);
     console.log('per task: ', redeemsPerTask); 
 }
 
-// queryRedeemedContract();
+queryRedeemedContract();
 
 
 async function main() {
@@ -57,7 +57,7 @@ async function checkTicketStatus() {
     console.log('status: ', status);
 }
 
-checkTicketStatus();
+// checkTicketStatus();
 
 
 
