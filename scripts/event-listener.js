@@ -57,7 +57,7 @@ const query = (taskId) => {
  * ManualRedeem2: 0x846D5bb895CBE573d674F426Cff278D9881456AD
  */
 
-const storageBeaconAddr = '0xfD3286C77A76c7E23d1805de66Da697df8561AEB'; 
+const storageBeaconAddr = '0xfD3286C77A76c7E23d1805de66Da697df8561AEB'; //rinkeby
 const proxy = '0x73848e0E716679F3D09aA90Bc8927B12269d35f7'; 
 const redeemedHashesAddr = '0x756bA4FF2914Df0ad724D6f0Cf2a4a6c03067E71'; 
 
