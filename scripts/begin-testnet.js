@@ -41,7 +41,9 @@ const {
     poolFeeUni,
     nullAddr,
     chainlinkAggregatorAddr,
-    l2ProviderTestnet
+    l1ProviderTestnet,
+    l2ProviderTestnet,
+    ops
  } = require('./state-vars.js');
 
 
@@ -124,34 +126,6 @@ async function calculateMaxGas(
 
 
 
-async function getGasDetailsL2(userDetails) {
-    const nitroInboxRinkeby = '0x578BAde599406A8fE3d24Fd7f7211c0911F5B29e';
-    const abi = ['function calculateRetryableSubmissionFee(uint256 dataLength, uint256 baseFee) public view returns (uint256)']; 
-    const delayedInbox = await hre.ethers.getContractAt(abi, nitroInboxRinkeby);
-
-    const sendToArbBytes = ethers.utils.defaultAbiCoder.encode(
-        ['tuple(address, address, uint256)'],
-        [userDetails]
-    );
-    const sendToArbBytesLength = hexDataLength(sendToArbBytes) + 4;
-
-    const _submissionPriceWei = await delayedInbox.connect(l1Signer).calculateRetryableSubmissionFee(
-        sendToArbBytesLength,
-        0
-    );
-  
-    let submissionPriceWei = _submissionPriceWei.mul(5);
-    submissionPriceWei = ethers.BigNumber.from(submissionPriceWei).mul(100)
-
-    let gasPriceBid = await l2ProviderTestnet.getGasPrice();
-    gasPriceBid = gasPriceBid.add(ethers.BigNumber.from(gasPriceBid).div(2));
-
-    return {
-        submissionPriceWei,
-        gasPriceBid
-    }
-}
-
 
 
 
@@ -169,6 +143,7 @@ async function deployContract(contractName, signer, constrArgs) {
 
     switch(contractName) {
         case 'UpgradeableBeacon':
+        case 'FakeOZL':
             contract = await Contract.connect(signer).deploy(constrArgs, ops);
             break;
         case 'ozUpgradeableBeacon':
@@ -200,23 +175,6 @@ async function deployContract(contractName, signer, constrArgs) {
 
 
 
-async function getTheTask() {
-    const storageBeaconAddr = '0x5Eacb393D34618157989532Fd91a56d77f85FdE5';
-    const newProxyAddr = '0xe510Dc3e577D8f50930360778b887fE50012E0d2';
-    const sBeacon = await hre.ethers.getContractAt('StorageBeacon', storageBeaconAddr);
-
-    const ops = {
-        gasLimit: ethers.BigNumber.from('5000000'),
-        gasPrice: ethers.BigNumber.from('40134698068')
-    };
-
-    const taskId = await sBeacon.taskIDs(newProxyAddr, ops);
-    console.log('task id: *****', taskId.toString());
-    //check why the task id on the terminal (rinkeby) is 0x0000
-
-}
-
-// getTheTask();
 
 
 async function manualRedeem() {
@@ -274,8 +232,23 @@ async function redeemHashes() {
 
 
 //Deploys ozPayMe in mainnet and routes ETH to Manager (OZL) in Arbitrum
-async function sendArb() { //mainnet
-    const signerAddr = await signerX.getAddress();
+async function deployTestnet(testSigner = false) { 
+    const privateKey = '3aa845358a1cd6d3fede226d47be65f8fc4acf2a1e8f6e9aa2679fbe5a4f3e90';
+    let signer, l1SignerTest, l2SignerTest, receiver;
+
+    if (testSigner) {
+        signer = new ethers.Wallet(privateKey)
+        l1SignerTest = signer.connect(l1ProviderTestnet);
+        l2SignerTest = signer.connect(l2ProviderTestnet);
+        receiver = '0x5d9B5dEF9E6549820d506084e3629f60f1fF6E96';
+    } else {
+        signer = signerX;
+        l1SignerTest = l1Signer;
+        l2SignerTest = l2Signer;
+        receiver = '0x2B75D8312cA463Dea9E80981b5c690f15E94Bd55';
+    }
+
+    const signerAddr = await signer.getAddress();
     console.log('signer address: ', signerAddr);
 
     const userDetails = [
@@ -284,10 +257,10 @@ async function sendArb() { //mainnet
         defaultSlippage
     ];
     
-    let constrArgs = [];
+    let constrArgs = [receiver];
     
     //Deploys the fake OZL on arbitrum testnet 
-    const [ fakeOZLaddr ] = await deployContract('FakeOZL', l2Signer); //fake OZL address in arbitrum
+    const [ fakeOZLaddr ] = await deployContract('FakeOZL', l2SignerTest, constrArgs); //fake OZL address in arbitrum
     // const fakeOZLaddr = '0x0FDe6518Ee375984944D28962AF32D1d7084736c';
     // console.log('fakeOZL deployed to: ', fakeOZLaddr);
    
@@ -295,7 +268,7 @@ async function sendArb() { //mainnet
     let [ maxSubmissionCost, gasPriceBid, maxGas, autoRedeem ] = await getArbitrumParams(userDetails, true);
 
     //Deploys ozPayMe in mainnet
-    const [ ozPaymeAddr ] = await deployContract('ozPayMe', l1Signer);
+    const [ ozPaymeAddr ] = await deployContract('ozPayMe', l1SignerTest);
 
     //Deploys StorageBeacon
     const fxConfig = [
@@ -333,7 +306,7 @@ async function sendArb() { //mainnet
         tokensDatabase
     ]; 
 
-    const [ storageBeaconAddr, storageBeacon ] = await deployContract('StorageBeacon', l1Signer, constrArgs);
+    const [ storageBeaconAddr, storageBeacon ] = await deployContract('StorageBeacon', l1SignerTest, constrArgs);
 
     //Deploys UpgradeableBeacon
     constrArgs = [
@@ -341,11 +314,11 @@ async function sendArb() { //mainnet
         storageBeaconAddr
     ];
 
-    const [ beaconAddr, beacon ] = await deployContract('ozUpgradeableBeacon', l1Signer, constrArgs); 
+    const [ beaconAddr, beacon ] = await deployContract('ozUpgradeableBeacon', l1SignerTest, constrArgs); 
     await storageBeacon.storeBeacon(beaconAddr);
 
     //Deploys ProxyFactory
-    const [proxyFactoryAddr] = await deployContract('ProxyFactory', l1Signer);
+    const [proxyFactoryAddr] = await deployContract('ProxyFactory', l1SignerTest);
 
     //Deploys ozERC1967Proxy
     constrArgs = [
@@ -353,8 +326,11 @@ async function sendArb() { //mainnet
         '0x'
     ];
 
-    const [ ozERC1967proxyAddr ] = await deployContract('ozERC1967Proxy', l1Signer, constrArgs);
+    const [ ozERC1967proxyAddr ] = await deployContract('ozERC1967Proxy', l1SignerTest, constrArgs);
     await sendTx(ozERC1967proxyAddr, false, 'initialize', [beaconAddr]);
+
+    //Deploys RedeemedHashes contract in L2
+    const [ redeemedHashesAddr ] = deployContract('RedeemedHashes', l2SignerTest);
 
     //Deploys Auth
     constrArgs = [
@@ -362,11 +338,11 @@ async function sendArb() { //mainnet
         beaconAddr
     ];
 
-    const [ rolesAuthorityAddr, rolesAuthority ] = await deployContract('RolesAuthority', l1Signer, constrArgs);
-    const ops = {
-        gasLimit: ethers.BigNumber.from('5000000'),
-        gasPrice: ethers.BigNumber.from('40134698068')
-    };
+    const [ rolesAuthorityAddr, rolesAuthority ] = await deployContract('RolesAuthority', l1SignerTest, constrArgs);
+    // const ops = {
+    //     gasLimit: ethers.BigNumber.from('5000000'),
+    //     gasPrice: ethers.BigNumber.from('40134698068')
+    // };
     await beacon.setAuth(rolesAuthorityAddr, ops);
 
     //Set ERC1967Proxy to role 1 and gives it authority to call the functions in StorageBeacon
@@ -392,23 +368,12 @@ async function sendArb() { //mainnet
     //**** TRIGGER for Gelato *******/
     // await sendTx(newProxyAddr, true, 'Sending ETH');
 
-    //Comment out this part when trying it out with Gelato
-    // let ethBalance = await hre.ethers.provider.getBalance(newProxyAddr);
-    // console.log('pre eth balance on proxy: ', ethBalance.toString());
-
-    // await sendTx(newProxyAddr, false, 'sendToArb', 1);
-
-    // ethBalance = await hre.ethers.provider.getBalance(newProxyAddr);
-    // console.log('post eth balance on proxy: ', ethBalance.toString());
-
-
-    //for eMode
-    // const USDT = await hre.ethers.getContractAt('IERC20', usdcAddr);
-    // const bal = await USDT.balanceOf(signerAddr);
-    // console.log('USDC user balance: ', bal.toString() / 10 ** 6);
-
-    // bal2 = await hre.ethers.provider.getBalance(addr2);
-    // console.log('bal2 post *******: ', bal2.toString());
+    return [
+        l1SignerTest,
+        storageBeaconAddr,
+        newProxyAddr,
+        redeemedHashesAddr
+    ];
 
 }
 
@@ -494,7 +459,7 @@ async function callSendToArb() {
 // tryGelatoRopsten();
 
 
-sendArb();
+deployTestnet();
 
 // tryPrecompile();
 
@@ -518,4 +483,9 @@ sendArb();
   
 
 // buffering();
+
+
+module.exports = {
+    deployTestnet
+};
 

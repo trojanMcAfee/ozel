@@ -2,16 +2,17 @@ const { ethers, Wallet } = require("ethers");
 const { defaultAbiCoder: abiCoder } = ethers.utils;
 const axios = require('axios').default;
 const { L1TransactionReceipt, L1ToL2MessageStatus } = require('@arbitrum/sdk');
+const { assert } = require('console');
 
 const {
     l1ProviderTestnet,
     l2ProviderTestnet,
     network
-} = require('./state-vars.js');
+} = require('../../scripts/state-vars.js');
 
 
 const l2Wallet = new Wallet(process.env.PK, l2ProviderTestnet);
-
+const tasks = {};
 const URL = `https://api.thegraph.com/subgraphs/name/gelatodigital/poke-me-${network}`;
 const query = (taskId) => {
     return {
@@ -29,41 +30,9 @@ const query = (taskId) => {
     }
 };
 
-/***** RINKEBY *****
- * -- storageBeaconAddr --
- * Good: 0x057305B668f7b1a1C4901D023c3fb844801EAb96
- * ManualRedeem: 0x25D8e872Efa7499BD5e063eA8C6730AEFFE767fc
- * 
- * -- proxy --
- * Good: 0x24c3Caf6e39885A87C4B1e726B32c80E9B6e445D
- * ManualRedeem: 0x21352573f419Bf7c090d03c9CFB1B866086F2097
- * 
- * -- redeemedHashesAddr --
- * Good: 0xd7A008bE42F747281B76b5ceEADC8960Ac9df0e6
- * 
- * ***** GOERLI ******
- * -- storageBeaconAddr --
- * Good:
- * ManualRedeem (for Gelato): 0x29ebf24cc0E8c1337fA953331e28D3572508F4CC
- * ManualRedeem2: 0x3468Eb72D0216A3160fdB53ca4D79Bf0B9fD2f5C
- * 
- * -- proxy --
- * Good:
- * ManualRedeem (for Gelato): 0x78ec03E47571A8B5B75a6429a4C8881B3C8B0797
- * ManualRedeem2: 0x8751064bc5851630c4ebabbf2F1c7F424E322314
- * 
- * -- redeemedHashesAddr --
- * ManualRedeem: 0x7F5be070110cec511369a7879DC14cECf46b20d4
- * ManualRedeem2: 0x846D5bb895CBE573d674F426Cff278D9881456AD
- */
+ 
 
-const storageBeaconAddr = '0xfD3286C77A76c7E23d1805de66Da697df8561AEB'; //rinkeby
-const proxy = '0x73848e0E716679F3D09aA90Bc8927B12269d35f7'; 
-const redeemedHashesAddr = '0x756bA4FF2914Df0ad724D6f0Cf2a4a6c03067E71'; 
-
-const tasks = {}; 
-
-async function main() {
+async function startListening(storageBeaconAddr, proxy, redeemedHashesAddr) {
     const storageBeacon = await hre.ethers.getContractAt('StorageBeacon', storageBeaconAddr);
 
     const filter = {
@@ -75,7 +44,12 @@ async function main() {
 
     console.log('listening...');
 
-    await hre.ethers.provider.on(filter, async (encodedData) => {
+    await hre.ethers.provider.once(filter, async (encodedData) => {
+        //ETH has been sent out from the proxy by the Gelato call
+        const balance = await hre.ethers.provider.getBalance(proxy);
+        assert(balance === 0);
+        console.log('balance post (should be 0): ***** ', Number(balance));
+
         let codedProxy = encodedData.topics[1];
         let [ proxy ] = abiCoder.decode(['address'], codedProxy);
         let taskId = await storageBeacon.getTaskID(proxy);
@@ -85,6 +59,7 @@ async function main() {
             tasks[taskId].alreadyCheckedHashes = [];
         }
 
+        //Waits to query Gelato's subgraph for the tx hashes
         setTimeout(continueExecution, 120000);
         console.log('setTimeout rolling...');
 
@@ -103,7 +78,8 @@ async function main() {
 
                 let [ message, wasRedeemed ] = await checkHash(hash);
 
-                wasRedeemed ? tasks[taskId].alreadyCheckedHashes.push(hash) : redeemHash(message, hash, taskId);
+                wasRedeemed ? tasks[taskId].alreadyCheckedHashes.push(hash) : redeemHash(message, hash, taskId, redeemedHashesAddr);
+                console.log('alreadyCheckedHashes ******: ', tasks[taskId].alreadyCheckedHashes);
             }
 
             //----------
@@ -111,6 +87,14 @@ async function main() {
             // const redemptions = await redeemedHashes.connect(l2Wallet).getTotalRedemptions();
             // console.log('redemptions: ', redemptions);
             // console.log('checked hashes: ', tasks[taskId].alreadyCheckedHashes);
+        }
+
+        setTimeout(waitingForFunds, 600000);
+        console.log(`Waiting for funds in L2 (takes < 10 minutes; current time: ${new Date().toTimeString()})`);
+
+        async function waitingForFunds() { //check how to see the balance of the L2 funds receiver (perhaps signer.getBalance)
+            const balance = await hre.ethers.provider.getBalance(proxy);
+            console.log('balance post (should be 0): ***** ', Number(balance));
         }
     });
 }
@@ -120,7 +104,7 @@ async function checkHash(hash) {
     const receipt = await l1ProviderTestnet.getTransactionReceipt(hash);
     const l1Receipt = new L1TransactionReceipt(receipt);
     const message = await l1Receipt.getL1ToL2Message(l2Wallet);
-    const status = (await message.waitForStatus()).status; //change this to two vars
+    const status = (await message.waitForStatus()).status; 
     const wasRedeemed = status === L1ToL2MessageStatus.REDEEMED ? true : false;
 
     return [
@@ -129,7 +113,7 @@ async function checkHash(hash) {
     ];
 }
 
-async function redeemHash(message, hash, taskId) {
+async function redeemHash(message, hash, taskId, redeemedHashesAddr) {
     let tx = await message.redeem();
     await tx.wait();
     console.log(`hash: ${hash} redemeed ^^^^^`);
@@ -146,6 +130,9 @@ async function redeemHash(message, hash, taskId) {
 }
 
 
-main();
+
+module.exports = {
+    startListening
+};
 
 

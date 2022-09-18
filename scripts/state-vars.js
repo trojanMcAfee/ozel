@@ -82,8 +82,10 @@ const factoryABI = [
     'function initialize(address beacon_)'
 ];
 
-
-
+const ops = {
+    gasLimit: ethers.BigNumber.from('5000000'),
+    gasPrice: ethers.BigNumber.from('40134698068')
+};
 
 const signerX = new ethers.Wallet(process.env.PK);
 const l1Provider = new ethers.providers.JsonRpcProvider(process.env.ALCHEMY_ETH);
@@ -224,6 +226,7 @@ module.exports = {
     l2Provider,
     proxyABIeth,
     factoryABI,
-    network
+    network,
+    ops
 };
 
