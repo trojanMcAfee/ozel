@@ -104,29 +104,6 @@ async function main() {
                 let [ message, wasRedeemed ] = await checkHash(hash);
 
                 wasRedeemed ? tasks[taskId].alreadyCheckedHashes.push(hash) : redeemHash2(message, hash, taskId);
-
-                // if (wasRedeemed) {
-                //     tasks[taskId].alreadyCheckedHashes.push(hash);
-                // } else if (!wasRedeemed) {
-                //     redeemHash2(message, hash, taskId);
-                // }
-
-
-                // for (let j=0; j < tasks[taskId].alreadyCheckedHashes.length || j == 0; j++) {
-                //     let checkedHash = 
-                //         !tasks[taskId].alreadyCheckedHashes[j] ? 0: tasks[taskId].alreadyCheckedHashes[j];
-                    
-                //     if (hash === checkedHash) {
-                //         console.log('here ***');
-                //         continue parent;
-                //     } else if ( 
-                //         j === tasks[taskId].alreadyCheckedHashes.length - 1 < 0 ?
-                //         0 : 
-                //         tasks[taskId].alreadyCheckedHashes.length - 1
-                //     ) {
-                //         redeemHash(hash, taskId);
-                //     }
-                // }
             }
 
             //----------
