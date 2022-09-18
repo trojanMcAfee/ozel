@@ -57,9 +57,9 @@ const query = (taskId) => {
  * ManualRedeem2: 0x846D5bb895CBE573d674F426Cff278D9881456AD
  */
 
-const storageBeaconAddr = '0x25D8e872Efa7499BD5e063eA8C6730AEFFE767fc'; 
-const proxy = '0x21352573f419Bf7c090d03c9CFB1B866086F2097'; 
-const redeemedHashesAddr = '0xd7A008bE42F747281B76b5ceEADC8960Ac9df0e6'; 
+const storageBeaconAddr = '0x2041E024802fA69644Ac3E71CE2A22eAb845fd78'; 
+const proxy = '0x936150Bd9D22c90A61355c16Bf2C3977d5E903ed'; 
+const redeemedHashesAddr = '0x756bA4FF2914Df0ad724D6f0Cf2a4a6c03067E71'; 
 
 const tasks = {}; 
 

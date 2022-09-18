@@ -49,7 +49,7 @@ let proxyFactory;
 async function getGasDetailsL2(userDetails) {
     // const abi = ['function calculateRetryableSubmissionFee(uint256 dataLength, uint256 baseFee) public view returns (uint256)']; 
     // const delayedInbox = await hre.ethers.getContractAt(abi, inbox);
-    const l1Wallet = new Wallet(process.env.PK, l1ProviderTestnet);
+    // const l1Wallet = new Wallet(process.env.PK, l1ProviderTestnet);
     
 
     const sendToArbBytes = ethers.utils.defaultAbiCoder.encode(
@@ -75,16 +75,13 @@ async function getGasDetailsL2(userDetails) {
         sendToArbBytesLength
     );
 
-    console.log('yes');
-    return;
-
-    console.log('submissionPriceWei pre-multiplier: ', Number(submissionPriceWei));
+    console.log('submissionPriceWei pre-multiplier: ', Number(_submissionPriceWei));
     let submissionPriceWei = _submissionPriceWei.mul(5);
     submissionPriceWei = ethers.BigNumber.from(submissionPriceWei).mul(100);
     console.log('submissionPriceWei post-multiplier: ', Number(submissionPriceWei));
 
-    console.log('gasPriceBid pre-multiplier: ', Number(gasPriceBid));
     let gasPriceBid = await l2ProviderTestnet.getGasPrice();
+    console.log('gasPriceBid pre-multiplier: ', Number(gasPriceBid));
     gasPriceBid = gasPriceBid.add(ethers.BigNumber.from(gasPriceBid).div(2));
     console.log('gasPriceBid post-multiplier: ', Number(gasPriceBid));
 
