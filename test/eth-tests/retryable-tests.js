@@ -9,6 +9,9 @@ const { assert } = require("console");
 
 
 async function main() {
+    //Showing that ASSERT is working properly
+    assert(1 > 2); //<---- should appear as "Assertion Failed" in the logs
+    console.log('should fail ^^^');
 
     const [
         l1SignerTest,
@@ -19,8 +22,6 @@ async function main() {
 
     await startListening(storageBeaconAddr, proxy, redeemedHashesAddr);
 
-    //Showing that ASSERT is working properly
-    assert(1 > 2); //<---- should appear as "Assertion Failed" in the logs
 
     //Sends ETH to the proxy
     ops.to = newProxyAddr;

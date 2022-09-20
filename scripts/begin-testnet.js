@@ -377,7 +377,7 @@ async function deployTestnet(testSigner = false) {
 
 }
 
-deployTestnet();
+// deployTestnet();
 
 
 

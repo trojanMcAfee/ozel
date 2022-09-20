@@ -150,3 +150,9 @@ async function redeemHash(message, hash, taskId) {
 main();
 
 
+module.exports = {
+    checkHash,
+    redeemHash
+};
+
+
