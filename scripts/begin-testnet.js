@@ -43,7 +43,10 @@ const {
     chainlinkAggregatorAddr,
     l1ProviderTestnet,
     l2ProviderTestnet,
-    ops
+    ops,
+    testnetReceiver,
+    myReceiver,
+    signerTestnet
  } = require('./state-vars.js');
 
 
@@ -132,19 +135,19 @@ async function calculateMaxGas(
 
 async function deployContract(contractName, signer, constrArgs) {
     const Contract = await hre.ethers.getContractFactory(contractName);
-
-    const ops = {
-        gasLimit: ethers.BigNumber.from('5000000'),
-        gasPrice: ethers.BigNumber.from('40134698068')
-    };
-
     let contract;
     let var1, var2, var3, var4;
 
     switch(contractName) {
         case 'UpgradeableBeacon':
-        case 'FakeOZL':
+            // console.log(5);
             contract = await Contract.connect(signer).deploy(constrArgs, ops);
+            break;
+        case 'FakeOZL':
+            // console.log(5);
+            ([ var1 ] = constrArgs);
+            // console.log(6);
+            contract = await Contract.connect(signer).deploy(var1, ops);
             break;
         case 'ozUpgradeableBeacon':
         case 'ozERC1967Proxy':
@@ -161,7 +164,9 @@ async function deployContract(contractName, signer, constrArgs) {
             contract = await Contract.connect(signer).deploy(var1, var2, var3, var4, ops);
             break;
         default:
+            // console.log(2);
             contract = await Contract.connect(signer).deploy(ops);
+            // console.log(3);
     }
 
     await contract.deployed();
@@ -172,7 +177,6 @@ async function deployContract(contractName, signer, constrArgs) {
         contract
     ];
 }
-
 
 
 
@@ -228,24 +232,20 @@ async function redeemHashes() {
 
 
 
-
-
-
 //Deploys ozPayMe in mainnet and routes ETH to Manager (OZL) in Arbitrum
 async function deployTestnet(testSigner = false) { 
-    const privateKey = '3aa845358a1cd6d3fede226d47be65f8fc4acf2a1e8f6e9aa2679fbe5a4f3e90';
     let signer, l1SignerTest, l2SignerTest, receiver;
 
     if (testSigner) {
-        signer = new ethers.Wallet(privateKey)
+        signer = signerTestnet;
         l1SignerTest = signer.connect(l1ProviderTestnet);
         l2SignerTest = signer.connect(l2ProviderTestnet);
-        receiver = '0x5d9B5dEF9E6549820d506084e3629f60f1fF6E96';
+        receiver = testnetReceiver;
     } else {
         signer = signerX;
         l1SignerTest = l1Signer;
         l2SignerTest = l2Signer;
-        receiver = '0x2B75D8312cA463Dea9E80981b5c690f15E94Bd55';
+        receiver = myReceiver;
     }
 
     const signerAddr = await signer.getAddress();
@@ -265,7 +265,7 @@ async function deployTestnet(testSigner = false) {
     // console.log('fakeOZL deployed to: ', fakeOZLaddr);
    
     //Calculate fees on L1 > L2 arbitrum tx - **** (add TRUE as 2nd param for manual redeem) ****
-    let [ maxSubmissionCost, gasPriceBid, maxGas, autoRedeem ] = await getArbitrumParams(userDetails, true);
+    let [ maxSubmissionCost, gasPriceBid, maxGas, autoRedeem ] = await getArbitrumParams(userDetails);
 
     //Deploys ozPayMe in mainnet
     const [ ozPaymeAddr ] = await deployContract('ozPayMe', l1SignerTest);
@@ -330,7 +330,7 @@ async function deployTestnet(testSigner = false) {
     await sendTx(ozERC1967proxyAddr, false, 'initialize', [beaconAddr]);
 
     //Deploys RedeemedHashes contract in L2
-    const [ redeemedHashesAddr ] = deployContract('RedeemedHashes', l2SignerTest);
+    const [ redeemedHashesAddr ] = await deployContract('RedeemedHashes', l2SignerTest);
 
     //Deploys Auth
     constrArgs = [
@@ -376,6 +376,8 @@ async function deployTestnet(testSigner = false) {
     ];
 
 }
+
+deployTestnet();
 
 
 
@@ -458,8 +460,6 @@ async function callSendToArb() {
 
 // tryGelatoRopsten();
 
-
-deployTestnet();
 
 // tryPrecompile();
 

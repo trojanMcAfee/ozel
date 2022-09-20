@@ -6,7 +6,8 @@ const { L1TransactionReceipt, L1ToL2MessageStatus } = require('@arbitrum/sdk');
 const {
     l1ProviderTestnet,
     l2ProviderTestnet,
-    network
+    network,
+    ops
 } = require('./state-vars.js');
 
 
@@ -57,9 +58,9 @@ const query = (taskId) => {
  * ManualRedeem2: 0x846D5bb895CBE573d674F426Cff278D9881456AD
  */
 
-const storageBeaconAddr = '0xfD3286C77A76c7E23d1805de66Da697df8561AEB'; //rinkeby
-const proxy = '0x73848e0E716679F3D09aA90Bc8927B12269d35f7'; 
-const redeemedHashesAddr = '0x756bA4FF2914Df0ad724D6f0Cf2a4a6c03067E71'; 
+const storageBeaconAddr = '0x8d111Dd9F9719EBfFed62A92edE70f8d6c3321fB'; //rinkeby
+const proxy = '0xF62b116fFBCA075141805E3E1cd2676124F3D7DD'; 
+const redeemedHashesAddr = '0x64447c4BefF8e4BAA318dE1F82627D0bC78843A6'; 
 
 const tasks = {}; 
 
@@ -107,10 +108,10 @@ async function main() {
             }
 
             //----------
-            // const redeemedHashes = await hre.ethers.getContractAt('RedeemedHashes', redeemedHashesAddr);
-            // const redemptions = await redeemedHashes.connect(l2Wallet).getTotalRedemptions();
-            // console.log('redemptions: ', redemptions);
-            // console.log('checked hashes: ', tasks[taskId].alreadyCheckedHashes);
+            const redeemedHashes = await hre.ethers.getContractAt('RedeemedHashes', redeemedHashesAddr);
+            const redemptions = await redeemedHashes.connect(l2Wallet).getTotalRedemptions();
+            console.log('redemptions: ', redemptions);
+            console.log('checked hashes: ', tasks[taskId].alreadyCheckedHashes);
         }
     });
 }
@@ -120,7 +121,7 @@ async function checkHash(hash) {
     const receipt = await l1ProviderTestnet.getTransactionReceipt(hash);
     const l1Receipt = new L1TransactionReceipt(receipt);
     const message = await l1Receipt.getL1ToL2Message(l2Wallet);
-    const status = (await message.waitForStatus()).status; //change this to two vars
+    const status = (await message.waitForStatus()).status;
     const wasRedeemed = status === L1ToL2MessageStatus.REDEEMED ? true : false;
 
     return [
@@ -130,7 +131,7 @@ async function checkHash(hash) {
 }
 
 async function redeemHash(message, hash, taskId) {
-    let tx = await message.redeem();
+    let tx = await message.redeem(ops);
     await tx.wait();
     console.log(`hash: ${hash} redemeed ^^^^^`);
     tasks[taskId].alreadyCheckedHashes.push(hash);
@@ -140,9 +141,9 @@ async function redeemHash(message, hash, taskId) {
     await tx.wait();
 
     //---------
-    const redemptions = await redeemedHashes.connect(l2Wallet).getTotalRedemptions();
-    console.log('redemptions: ', redemptions);
-    console.log('checked hashes: ', tasks[taskId].alreadyCheckedHashes);
+    // const redemptions = await redeemedHashes.connect(l2Wallet).getTotalRedemptions();
+    // console.log('redemptions: ', redemptions);
+    // console.log('checked hashes: ', tasks[taskId].alreadyCheckedHashes);
 }
 
 
