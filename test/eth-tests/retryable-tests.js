@@ -9,9 +9,8 @@ const { assert } = require("console");
 
 
 async function main() {
-    //Showing that ASSERT is working properly
-    assert(1 > 2); //<---- should appear as "Assertion Failed" in the logs
-    console.log('should be the only failed assertion ^^^');
+    assert(1 > 2); 
+    console.log('Only failed assertion to prove it was configured properly ^^^');
 
     // const [
     //     storageBeaconAddr,
@@ -34,9 +33,9 @@ async function main() {
     await tx.wait();
 
     let balance = await hre.ethers.provider.getBalance(newProxyAddr);
-    assert(formatEther(balance) == (0.01).toString());
+    assert(formatEther(balance) == 0.01);
     // console.log('balance should be 0.01: ', formatEther(balance));
-    console.log('ETH successfully received (pre-bridge)');
+    console.log('ETH successfully received in proxy (pre-bridge)');
 }
 
 main();

@@ -45,7 +45,7 @@ async function startListening(storageBeaconAddr, newProxyAddr, redeemedHashesAdd
         ]
     };
 
-    console.log('listening for the bridge transaction from mainnet to arbitrum...');
+    console.log('Listening for the bridge transaction from Mainnet to Arbitrum...');
 
     await hre.ethers.provider.once(filter, async (encodedData) => {
         let codedProxy = encodedData.topics[1];
@@ -55,7 +55,7 @@ async function startListening(storageBeaconAddr, newProxyAddr, redeemedHashesAdd
         //ETH has been sent out from the proxy by the Gelato call
         const balance = await hre.ethers.provider.getBalance(proxy);
         assert(Number(balance) === 0);
-        console.log('balance post (should be 0): ***** ', Number(balance));
+        console.log('ETH left Mainnet contract (aka proxy)');
 
         if (!tasks[taskId]) {
             tasks[taskId] = {};
@@ -64,17 +64,17 @@ async function startListening(storageBeaconAddr, newProxyAddr, redeemedHashesAdd
 
         //Waits to query Gelato's subgraph for the tx hashes
         setTimeout(continueExecution, 120000);
-        console.log('setTimeout rolling...');
+        console.log('Wait 2 minutes to query Gelato subgraph for L1 transaction hashes...');
 
         async function continueExecution() {
             let result = await axios.post(URL, query(taskId));
             let executions =  result.data.data.tasks[0].taskExecutions;
-            console.log('executions: ', executions);
+            console.log('Executions: ', executions);
 
             parent:
             for (let i=0; i < executions.length; i++) {
                 let [ hash ] = executions[i].id.split(':');
-                console.log('hash: ', hash);
+                // console.log('Hash from L1 execution: ', hash);
 
                 let notInCheckedArray = tasks[taskId].alreadyCheckedHashes.indexOf(hash) === -1;
                 if (!notInCheckedArray) continue parent;
@@ -82,13 +82,13 @@ async function startListening(storageBeaconAddr, newProxyAddr, redeemedHashesAdd
                 let [ message, wasRedeemed ] = await checkHash(hash);
 
                 wasRedeemed ? tasks[taskId].alreadyCheckedHashes.push(hash) : redeemHash(message, hash, taskId, redeemedHashesAddr);
-                // console.log('alreadyCheckedHashes ******: ', tasks[taskId].alreadyCheckedHashes);
             }
 
             //----------
             const redeemedHashes = await hre.ethers.getContractAt('RedeemedHashes', redeemedHashesAddr);
             const redemptions = await redeemedHashes.connect(l2Wallet).getTotalRedemptions();
-            console.log('redemptions: ', redemptions);
+            // console.log('redemptions: ', redemptions);
+            assert(tasks[taskId].alreadyCheckedHashes.length === executions.length);
             console.log('checked hashes: ', tasks[taskId].alreadyCheckedHashes);
             //--------
 
@@ -98,7 +98,7 @@ async function startListening(storageBeaconAddr, newProxyAddr, redeemedHashesAdd
             async function waitingForFunds() { 
                 const balance = await l2ProviderTestnet.getBalance(testnetReceiver);
                 assert(Number(balance) > 0);
-                console.log('balance post (should be more than 0): ***** ', Number(balance));
+                console.log('Contract in L2 received the ETH');
             }
         }
     });
