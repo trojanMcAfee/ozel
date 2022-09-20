@@ -45,7 +45,7 @@ async function startListening(storageBeaconAddr, newProxyAddr, redeemedHashesAdd
         ]
     };
 
-    console.log('listening...');
+    console.log('listening for the bridge transaction from mainnet to arbitrum...');
 
     await hre.ethers.provider.once(filter, async (encodedData) => {
         let codedProxy = encodedData.topics[1];
@@ -90,15 +90,16 @@ async function startListening(storageBeaconAddr, newProxyAddr, redeemedHashesAdd
             const redemptions = await redeemedHashes.connect(l2Wallet).getTotalRedemptions();
             console.log('redemptions: ', redemptions);
             console.log('checked hashes: ', tasks[taskId].alreadyCheckedHashes);
-        }
+            //--------
 
-        setTimeout(waitingForFunds, 600000);
-        console.log(`Waiting for funds in L2 (takes 10 minutes; current time: ${new Date().toTimeString()})`);
+            setTimeout(waitingForFunds, 600000);
+            console.log(`Waiting for funds in L2 (takes 10 minutes; current time: ${new Date().toTimeString()})`);
 
-        async function waitingForFunds() { 
-            const balance = await l2ProviderTestnet.getBalance(testnetReceiver);
-            assert(Number(balance) > 0);
-            console.log('balance post (should be more than 0): ***** ', Number(balance));
+            async function waitingForFunds() { 
+                const balance = await l2ProviderTestnet.getBalance(testnetReceiver);
+                assert(Number(balance) > 0);
+                console.log('balance post (should be more than 0): ***** ', Number(balance));
+            }
         }
     });
 }
