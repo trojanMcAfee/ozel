@@ -5,7 +5,8 @@ const { L1TransactionReceipt, L1ToL2MessageStatus } = require('@arbitrum/sdk');
 const {
     l1ProviderTestnet,
     l2ProviderTestnet,
-    network
+    network,
+    signerTestnet
 } = require('./state-vars.js');
 
 async function queryRedeemedContract() {
@@ -24,7 +25,7 @@ async function queryRedeemedContract() {
     console.log('per task: ', redeemsPerTask); 
 }
 
-queryRedeemedContract();
+// queryRedeemedContract();
 
 
 async function main() {
@@ -58,6 +59,20 @@ async function checkTicketStatus() {
 }
 
 // checkTicketStatus();
+
+
+async function check() {
+    const sBeaconAddr = '0x2a3EFe472B287e5Dc60cE3Db063f053ad73eBCC6';
+    const sBeacon = await hre.ethers.getContractAt('StorageBeacon', sBeaconAddr);
+    const signerAddr = await signerTestnet.getAddress();
+    console.log('signer address: ', signerAddr);
+
+    const proxy = await sBeacon.getProxyByUser(signerAddr);
+    console.log('proxy: ', proxy);
+
+}
+
+check();
 
 
 

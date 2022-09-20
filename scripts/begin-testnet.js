@@ -46,89 +46,11 @@ const {
     ops,
     testnetReceiver,
     myReceiver,
-    signerTestnet
+    signerTestnet,
+    factoryABI,
+    l1SignerTestnet,
+    l2SignerTestnet
  } = require('./state-vars.js');
-
-
-
-
-//-----------------------------------------
-
-
-async function sendTx(receiver, isAmount, method, args) {
-    const signer = await hre.ethers.provider.getSigner(0);
-    const txDetails = {
-        to: receiver,
-        gasLimit: ethers.BigNumber.from('5000000'),
-        gasPrice: ethers.BigNumber.from('40134698068')
-    };
-    const signatures = {
-        createNewProxy: 'function createNewProxy(tuple(address user, address userToken, uint256 userSlippage) userDetails_)',
-        getTaskID: 'function getTaskID(address proxy_) returns (bytes32)',
-        sendToArb: 'function sendToArb()',
-        initialize: 'function initialize(address beacon_)',
-        _setBeacon: 'function _setBeacon(address beacon, bytes memory data)' 
-    };
-
-    if (isAmount) txDetails.value = ethers.utils.parseEther('0.01'); //0.01 - 9800 (fails with curreny slippage)
-    if (args) {
-        const abi = [];
-        let signature; 
-        let data;
-
-        for (let sign in signatures) {
-            if (sign === method) {
-                signature = signatures[sign];
-            }
-        }
-        abi.push(signature);
-        const iface = new ethers.utils.Interface(abi);
-        if (args === 1) {
-            data = iface.encodeFunctionData(method);     
-        } else {
-            data = iface.encodeFunctionData(method, args); 
-        }
-        txDetails.data = data;
-    }
-
-    const tx = await signer.sendTransaction(txDetails);
-    const receipt = await tx.wait();
-    console.log(`${method} with hash: `, receipt.transactionHash);
-}
-
-
-
-
-async function calculateMaxGas(
-    userDetails, managerAddr, value, maxSubmissionCost, gasPriceBid
-) {
-    const data = getCalldata('exchangeToUserToken', [userDetails]);
-    const depositAmount = parseEther('0.1');
-    const nodeAddr = '0x00000000000000000000000000000000000000C8';
-    const nodeInterface = await (
-        await hre.ethers.getContractAt('NodeInterface', nodeAddr)
-    ).connect(l2Signer);
-
-    let [maxGas]  = await nodeInterface.estimateRetryableTicket(
-        userDetails[0],
-        depositAmount,
-        managerAddr,
-        value,
-        maxSubmissionCost,
-        managerAddr,
-        managerAddr,
-        3000000,
-        gasPriceBid,
-        data
-    );
-    maxGas = maxGas.toString();
-    console.log('maxGas: ', maxGas);
-
-    return maxGas; 
-}
-
-
-
 
 
 
@@ -140,13 +62,10 @@ async function deployContract(contractName, signer, constrArgs) {
 
     switch(contractName) {
         case 'UpgradeableBeacon':
-            // console.log(5);
             contract = await Contract.connect(signer).deploy(constrArgs, ops);
             break;
         case 'FakeOZL':
-            // console.log(5);
             ([ var1 ] = constrArgs);
-            // console.log(6);
             contract = await Contract.connect(signer).deploy(var1, ops);
             break;
         case 'ozUpgradeableBeacon':
@@ -155,18 +74,12 @@ async function deployContract(contractName, signer, constrArgs) {
             ([ var1, var2 ] = constrArgs);
             contract = await Contract.connect(signer).deploy(var1, var2, ops);
             break;
-        case 'ozERC1967Proxy':
-            ([ var1, var2, var3 ] = constrArgs);
-            contract = await Contract.connect(signer).deploy(var1, var2, var3, ops);
-            break;
         case 'StorageBeacon':
             ([ var1, var2, var3, var4 ] = constrArgs);
             contract = await Contract.connect(signer).deploy(var1, var2, var3, var4, ops);
             break;
         default:
-            // console.log(2);
             contract = await Contract.connect(signer).deploy(ops);
-            // console.log(3);
     }
 
     await contract.deployed();
@@ -238,8 +151,8 @@ async function deployTestnet(testSigner = false) {
 
     if (testSigner) {
         signer = signerTestnet;
-        l1SignerTest = signer.connect(l1ProviderTestnet);
-        l2SignerTest = signer.connect(l2ProviderTestnet);
+        l1SignerTest = l1SignerTestnet;
+        l2SignerTest = l2SignerTestnet;
         receiver = testnetReceiver;
     } else {
         signer = signerX;
@@ -327,7 +240,11 @@ async function deployTestnet(testSigner = false) {
     ];
 
     const [ ozERC1967proxyAddr ] = await deployContract('ozERC1967Proxy', l1SignerTest, constrArgs);
-    await sendTx(ozERC1967proxyAddr, false, 'initialize', [beaconAddr]);
+
+    const proxyFactory = await hre.ethers.getContractAt(factoryABI, ozERC1967proxyAddr);
+    let tx = await proxyFactory.connect(l1SignerTest).initialize(beaconAddr);
+    let receipt = await tx.wait();
+    console.log('initialize with hash: ', receipt.transactionHash);
 
     //Deploys RedeemedHashes contract in L2
     const [ redeemedHashesAddr ] = await deployContract('RedeemedHashes', l2SignerTest);
@@ -339,10 +256,6 @@ async function deployTestnet(testSigner = false) {
     ];
 
     const [ rolesAuthorityAddr, rolesAuthority ] = await deployContract('RolesAuthority', l1SignerTest, constrArgs);
-    // const ops = {
-    //     gasLimit: ethers.BigNumber.from('5000000'),
-    //     gasPrice: ethers.BigNumber.from('40134698068')
-    // };
     await beacon.setAuth(rolesAuthorityAddr, ops);
 
     //Set ERC1967Proxy to role 1 and gives it authority to call the functions in StorageBeacon
@@ -353,13 +266,11 @@ async function deployTestnet(testSigner = false) {
     await rolesAuthority.setRoleCapability(1, storageBeaconAddr, '0xf2034a69', true, ops); //saveTaskId(address proxy_, bytes32 id_)
 
     //Creates 1st proxy
-    await sendTx(ozERC1967proxyAddr, false, 'createNewProxy', [userDetails]);
+    tx = await proxyFactory.connect(l1SignerTest).createNewProxy(userDetails, ops);
+    receipt = await tx.wait();
+    console.log('createNewProxy with has: ', receipt.transactionHash);
     const newProxyAddr = (await storageBeacon.getProxyByUser(signerAddr))[0].toString(); 
     console.log('proxy 1: ', newProxyAddr);
-
-    //Set signerAddr to role 0 for calling disableEmitter() on ozPayMe
-    await rolesAuthority.setUserRole(signerAddr, 0, true, ops);
-    await rolesAuthority.setRoleCapability(0, newProxyAddr, '0xa2d4d48b', true, ops); //disableEmitter()
 
     //Gets user's task id
     const taskId = await storageBeacon.getTaskID(newProxyAddr, ops);
@@ -369,7 +280,6 @@ async function deployTestnet(testSigner = false) {
     // await sendTx(newProxyAddr, true, 'Sending ETH');
 
     return [
-        l1SignerTest,
         storageBeaconAddr,
         newProxyAddr,
         redeemedHashesAddr
@@ -380,100 +290,19 @@ async function deployTestnet(testSigner = false) {
 // deployTestnet();
 
 
+async function simulateDeployment() {
+    const storageBeaconAddr = '0x92E4E46b9d9faC0FA20E661e352E9613Ccf61319';
+    const newProxyAddr = '0x2ABE0e7CdBd2f7B2bf9F5C4d31D2d0FCC8571d63';
+    const redeemedHashesAddr = '0x92E4E46b9d9faC0FA20E661e352E9613Ccf61319';
 
-
-async function testBeacon() {
-    // const beaconAddr = '0xE0ab317b5D7AD571872B025aB6eAE9E60d082467';
-    // const beacon = await hre.ethers.getContractAt('UpgradeableBeacon', beaconAddr);
-    // const impl = await beacon.implementation();
-    // console.log('impl: ', impl.toString());
-
-
-    // const factoryAddr = '0x98b4CCF3CC16932cEe79b73F412Bb40c1A186CFc';
-    // const factory = await hre.ethers.getContractAt('ProxyFactory', factoryAddr);
-    // const num = await factory.num();
-    // console.log('num: ', num.toString());
-
-
-    const paymeAddr = '0x231046D81d9B4d28511a9Cb8035d63C1BA3A38a8';
-    const payme = await hre.ethers.getContractAt('BeaconProxy', paymeAddr);
-    const num = await payme.n();
-    console.log('num2: ', num.toString());
-
-
+    return [
+        storageBeaconAddr,
+        newProxyAddr,
+        redeemedHashesAddr
+    ];
 }
 
-// testBeacon(); 
 
-
-
-
-
-async function getCount() {
-    const signerAddr = await signerX.getAddress();
-
-    const latest = await hre.ethers.provider.getTransactionCount(signerAddr,'pending');
-    console.log('x: ', latest);
-
-}
-
-// getCount();
-
-
-async function getTask() {
-
-    const storageBeaconAddr = '0xa6aA583E1Ab33F9E7ED99560e1dfD211332F7FbB';
-    const storageBeacon = await hre.ethers.getContractAt('StorageBeacon', storageBeaconAddr);
-    const proxy = '0xdF102a7cE11B1Da5e89Ae29230742c50A559Bcbe';
-
-    const task = await storageBeacon.getTaskID(proxy);
-    console.log('task: ', task);
-
-}
-
-// getTask();
-
-
-async function callSendToArb() {
-    const abi = ['function sendToArb() external payable'];
-    const proxyAddr = '0x9Af884C0b76E7A260a6938dc0791e5C1d3034156';
-    const proxy = await hre.ethers.getContractAt(abi, proxyAddr);
-
-    const tx = await proxy.sendToArb();
-    const receipt = await tx.wait();
-    console.log('hash: ', receipt.transactionHash);
-
-}
-
-// callSendToArb();
-
-
-
-
-
-
-
-
-
-
-// createTask();
-
-// tryGelatoRopsten();
-
-
-// tryPrecompile();
-
-// sendTx('0x8A63AcA6622B6B32ea76c378f38fd5D6182ADD18');
-// sendTx('0xcDFfcc5DE7ee15d46080a813509aB237CC62cDB9');
-// sendTx('0xfb3744F7dcd34EC11d262A3925a1E6ea6412d751');
-// sendTx('0xf9FE99ddBAbb08f4332e9AC9F256C006231EeC8F');
-
-
-
-//new with emitter and maxGas: 0xBb8FDbD6D27b39B62A55e38974B3CFA7430A1fb9
-//new with emitter and 10 instead of maxGas: 0xAd467bbB7c72B04EAbCBC9CEBdc27e5A3029e308
-
-// impersonateTx();
 
 // .then(() => process.exit(0))
 //   .catch((error) => {
@@ -482,10 +311,10 @@ async function callSendToArb() {
 //   });
   
 
-// buffering();
 
 
 module.exports = {
-    deployTestnet
+    deployTestnet,
+    simulateDeployment
 };
 
