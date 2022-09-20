@@ -146,7 +146,7 @@ async function redeemHashes() {
 
 
 //Deploys ozPayMe in mainnet and routes ETH to Manager (OZL) in Arbitrum
-async function deployTestnet(testSigner = false) { 
+async function deployTestnet(testSigner = false, manualRedeem = false) { 
     let signer, l1SignerTest, l2SignerTest, receiver;
 
     if (testSigner) {
@@ -178,7 +178,7 @@ async function deployTestnet(testSigner = false) {
     // console.log('fakeOZL deployed to: ', fakeOZLaddr);
    
     //Calculate fees on L1 > L2 arbitrum tx - **** (add TRUE as 2nd param for manual redeem) ****
-    let [ maxSubmissionCost, gasPriceBid, maxGas, autoRedeem ] = await getArbitrumParams(userDetails);
+    let [ maxSubmissionCost, gasPriceBid, maxGas, autoRedeem ] = await getArbitrumParams(userDetails, manualRedeem);
 
     //Deploys ozPayMe in mainnet
     const [ ozPaymeAddr ] = await deployContract('ozPayMe', l1SignerTest);

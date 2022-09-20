@@ -9,7 +9,8 @@ const {
     l2ProviderTestnet,
     network,
     signerTestnet,
-    testnetReceiver
+    testnetReceiver,
+    ops
 } = require('../../scripts/state-vars.js');
 
 
@@ -35,7 +36,7 @@ const query = (taskId) => {
 
  
 
-async function startListening(storageBeaconAddr, newProxyAddr, redeemedHashesAddr) {
+async function startListening(storageBeaconAddr, newProxyAddr, redeemedHashesAddr, manualRedeem = false) {
     const storageBeacon = await hre.ethers.getContractAt('StorageBeacon', storageBeaconAddr);
 
     const filter = {
@@ -74,23 +75,21 @@ async function startListening(storageBeaconAddr, newProxyAddr, redeemedHashesAdd
             parent:
             for (let i=0; i < executions.length; i++) {
                 let [ hash ] = executions[i].id.split(':');
-                // console.log('Hash from L1 execution: ', hash);
-
                 let notInCheckedArray = tasks[taskId].alreadyCheckedHashes.indexOf(hash) === -1;
                 if (!notInCheckedArray) continue parent;
 
                 let [ message, wasRedeemed ] = await checkHash(hash);
 
-                wasRedeemed ? tasks[taskId].alreadyCheckedHashes.push(hash) : redeemHash(message, hash, taskId, redeemedHashesAddr);
+                wasRedeemed ? tasks[taskId].alreadyCheckedHashes.push(hash) : redeemHash(message, hash, taskId, redeemedHashesAddr, executions);
             }
 
-            //----------
-            const redeemedHashes = await hre.ethers.getContractAt('RedeemedHashes', redeemedHashesAddr);
-            const redemptions = await redeemedHashes.connect(l2Wallet).getTotalRedemptions();
-            // console.log('redemptions: ', redemptions);
-            assert(tasks[taskId].alreadyCheckedHashes.length === executions.length);
-            console.log('checked hashes: ', tasks[taskId].alreadyCheckedHashes);
-            //--------
+            if (!manualRedeem) {
+                // const redeemedHashes = await hre.ethers.getContractAt('RedeemedHashes', redeemedHashesAddr);
+                // const redemptions = await redeemedHashes.connect(l2Wallet).getTotalRedemptions();
+                // console.log('redemptions: ', redemptions);
+                assert(tasks[taskId].alreadyCheckedHashes.length === executions.length);
+                console.log('checked hashes: ', tasks[taskId].alreadyCheckedHashes);
+            }
 
             setTimeout(waitingForFunds, 600000);
             console.log(`Waiting for funds in L2 (takes 10 minutes; current time: ${new Date().toTimeString()})`);
@@ -118,10 +117,13 @@ async function checkHash(hash) {
     ];
 }
 
-async function redeemHash(message, hash, taskId) {
+async function redeemHash(message, hash, taskId, redeemedHashesAddr, executions) { 
     let tx = await message.redeem(ops);
     await tx.wait();
-    console.log(`hash: ${hash} redemeed ^^^^^`);
+
+    const status = (await message.waitForStatus()).status;
+    assert(L1ToL2MessageStatus.REDEEMED == status);
+    console.log(`hash: ${hash} redemeed`);
     tasks[taskId].alreadyCheckedHashes.push(hash);
     
     const redeemedHashes = await hre.ethers.getContractAt('RedeemedHashes', redeemedHashesAddr);
@@ -129,8 +131,9 @@ async function redeemHash(message, hash, taskId) {
     await tx.wait();
 
     //---------
-    // const redemptions = await redeemedHashes.connect(l2Wallet).getTotalRedemptions();
-    // console.log('redemptions: ', redemptions);
+    const redemptions = await redeemedHashes.connect(l2Wallet).getTotalRedemptions();
+    assert(executions.length === redemptions.length);
+    console.log('redemptions: ', redemptions);
     // console.log('checked hashes: ', tasks[taskId].alreadyCheckedHashes);
 }
 
