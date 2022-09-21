@@ -30,7 +30,7 @@ async function autoRedeem() {
 
     //Sends ETH to the proxy
     ops.to = newProxyAddr;
-    ops.value = parseEther('0.01');
+    ops.value = parseEther('0.1');
     const tx = await l1SignerTestnet.sendTransaction(ops);
     await tx.wait();
 

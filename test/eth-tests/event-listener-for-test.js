@@ -78,9 +78,10 @@ async function startListening(storageBeaconAddr, newProxyAddr, redeemedHashesAdd
                 let notInCheckedArray = tasks[taskId].alreadyCheckedHashes.indexOf(hash) === -1;
                 if (!notInCheckedArray) continue parent;
 
+                console.log(1);
                 let [ message, wasRedeemed ] = await checkHash(hash);
 
-                console.log(1);
+                console.log(2);
                 wasRedeemed ? tasks[taskId].alreadyCheckedHashes.push(hash) : await redeemHash(message, hash, taskId, redeemedHashesAddr, executions);
             }
 
