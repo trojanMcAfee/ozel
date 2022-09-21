@@ -35,8 +35,7 @@ async function autoRedeem() {
     await tx.wait();
 
     let balance = await hre.ethers.provider.getBalance(newProxyAddr);
-    assert(formatEther(balance) == 0.01);
-    // console.log('balance should be 0.01: ', formatEther(balance));
+    assert(formatEther(balance) == 0.1);
     console.log('ETH successfully received in proxy (pre-bridge)');
 }
 
@@ -46,6 +45,7 @@ async function manualRedeem() {
     console.log('^^^ Only failed assertion to prove it was configured properly');
     console.log('');
 
+    console.log('--------------------- Contract addresses ---------------------');
     // const [
     //     storageBeaconAddr,
     //     newProxyAddr,
@@ -63,20 +63,19 @@ async function manualRedeem() {
 
     //Sends ETH to the proxy
     ops.to = newProxyAddr;
-    ops.value = parseEther('0.01');
+    ops.value = parseEther('0.1');
     const tx = await l1SignerTestnet.sendTransaction(ops);
     await tx.wait();
 
     let balance = await hre.ethers.provider.getBalance(newProxyAddr);
-    assert(formatEther(balance) == 0.01);
-    // console.log('balance should be 0.01: ', formatEther(balance));
+    assert(formatEther(balance) == 0.1);
     console.log('ETH successfully received in proxy (pre-bridge)');
 }
 
 
 
-autoRedeem();
-// manualRedeem(); //try it out as it is - and then multiple taskIds on event-listener.js
+// autoRedeem();
+manualRedeem(); //try it out as it is - and then multiple taskIds on event-listener.js
 
 
 

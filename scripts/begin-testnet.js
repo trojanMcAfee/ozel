@@ -268,7 +268,7 @@ async function deployTestnet(testSigner = false, manualRedeem = false) {
     //Creates 1st proxy
     tx = await proxyFactory.connect(l1SignerTest).createNewProxy(userDetails, ops);
     receipt = await tx.wait();
-    console.log('createNewProxy with has: ', receipt.transactionHash);
+    console.log('createNewProxy with hash: ', receipt.transactionHash);
     const newProxyAddr = (await storageBeacon.getProxyByUser(signerAddr))[0].toString(); 
     console.log('proxy 1: ', newProxyAddr);
 
@@ -291,9 +291,9 @@ async function deployTestnet(testSigner = false, manualRedeem = false) {
 
 
 async function simulateDeployment() {
-    const storageBeaconAddr = '0x92E4E46b9d9faC0FA20E661e352E9613Ccf61319';
-    const newProxyAddr = '0x2ABE0e7CdBd2f7B2bf9F5C4d31D2d0FCC8571d63';
-    const redeemedHashesAddr = '0x92E4E46b9d9faC0FA20E661e352E9613Ccf61319';
+    const storageBeaconAddr = '0xaF05BC01645d87Ea822C5ebD397CB3BEBe900502';
+    const newProxyAddr = '0x0b2f0a7655E3a48D4CFfe09e65123B2A90bAd0CB';
+    const redeemedHashesAddr = '0x87619bEb967f96534C616Cc3147dD3d1907c1C74';
 
     return [
         storageBeaconAddr,

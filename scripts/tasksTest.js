@@ -6,7 +6,8 @@ const {
     l1ProviderTestnet,
     l2ProviderTestnet,
     network,
-    signerTestnet
+    signerTestnet,
+    ops
 } = require('./state-vars.js');
 
 async function queryRedeemedContract() {
@@ -72,7 +73,38 @@ async function check() {
 
 }
 
-check();
+// check();
 
+
+async function checkHash(hash) { 
+    const l2Wallet = new Wallet(process.env.PK_TESTNET, l2ProviderTestnet);
+
+    const receipt = await l1ProviderTestnet.getTransactionReceipt(hash);
+    const l1Receipt = new L1TransactionReceipt(receipt);
+    const message = await l1Receipt.getL1ToL2Message(l2Wallet);
+    const status = (await message.waitForStatus()).status;
+    const wasRedeemed = status === L1ToL2MessageStatus.REDEEMED ? true : false;
+    console.log('was: ', wasRedeemed);
+
+    return [
+        message,
+        wasRedeemed
+    ];
+}
+
+checkHash('0x2e629883f2863b972a1e58e161e1b9935ea8af925546b7502289a3ee1f4cffde');
+
+async function redeemHash() { 
+    const hash = '0x39e0ab8e991cc2582ffee4d40079ec50cbfa1eeccce5f24b808e898d027e675a';
+    const [ message ] = await checkHash(hash);
+
+    console.log(2.1);
+    let tx = await message.redeem(ops);
+    console.log(3);
+    await tx.wait();
+    console.log(4);
+}
+
+// redeemHash();
 
 
