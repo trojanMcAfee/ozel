@@ -37,7 +37,9 @@ const {
     l1ProviderTestnet,
     l2Provider, 
     proxyABIeth,
-    factoryABI
+    factoryABI,
+    myReceiver,
+    ops
 } = require('./state-vars.js');
 
 
@@ -62,7 +64,7 @@ async function getGasDetailsL2(userDetails) {
 
     let submissionPriceWei = _submissionPriceWei.mul(5);
     submissionPriceWei = ethers.BigNumber.from(submissionPriceWei).mul(100);
-    
+
     let gasPriceBid = await l2ProviderTestnet.getGasPrice();
     gasPriceBid = gasPriceBid.add(ethers.BigNumber.from(gasPriceBid).div(2));
 
@@ -79,6 +81,10 @@ async function deployContract(contractName, constrArgs) {
     switch(contractName) {
         case 'UpgradeableBeacon':
             contract = await Contract.deploy(constrArgs);
+            break;
+        case 'FakeOZL':
+            ([ var1 ] = constrArgs);
+            contract = await Contract.deploy(var1);
             break;
         case 'ozUpgradeableBeacon':
         case 'ozERC1967Proxy':
@@ -146,13 +152,20 @@ async function activateProxyLikeOps(proxy, taskCreator, isEvil, evilParams) {
     const opsSigner = await hre.ethers.provider.getSigner(pokeMeOpsAddr);
     let iface = new ethers.utils.Interface(['function checker()']);
     const resolverData = iface.encodeFunctionData('checker');
-    const ops = await hre.ethers.getContractAt('IOps', pokeMeOpsAddr);
-    const resolverHash = await ops.connect(opsSigner).getResolverHash(proxy, resolverData);
+    const opsContract = await hre.ethers.getContractAt('IOps', pokeMeOpsAddr);
+    const resolverHash = await opsContract.connect(opsSigner).getResolverHash(proxy, resolverData);
 
     await hre.network.provider.request({
         method: "hardhat_stopImpersonatingAccount",
         params: [pokeMeOpsAddr],
     });
+
+
+    ops.value = parseEther('1');
+    ops.to = gelatoAddr;
+    console.log('g: ', gelatoAddr);
+    const [ signer ] = await hre.ethers.getSigners();
+    await signer.sendTransaction(ops);
 
     await hre.network.provider.request({
         method: "hardhat_impersonateAccount",
@@ -160,6 +173,7 @@ async function activateProxyLikeOps(proxy, taskCreator, isEvil, evilParams) {
     });
 
     const gelatoSigner = await hre.ethers.provider.getSigner(gelatoAddr); 
+    console.log('gelato signer: ', await gelatoSigner.getAddress());
     iface = new ethers.utils.Interface([`function sendToArb(${isEvil ? 'tuple(uint256 maxSubmissionCost, uint256 gasPriceBid, uint256 autoRedeem) varConfig_, tuple(address user, address userToken, uint256 userSlippage) userDetails_)' : ')'}`]); 
     let execData;
     if (isEvil) {
@@ -168,7 +182,12 @@ async function activateProxyLikeOps(proxy, taskCreator, isEvil, evilParams) {
         execData = iface.encodeFunctionData('sendToArb');
     }
 
-    const tx = await ops.connect(gelatoSigner).exec(0, ETH, taskCreator, false, false, resolverHash, proxy, execData);
+    console.log(13);
+    balance = await hre.ethers.provider.getBalance(gelatoAddr);
+    console.log('b: ', balance);
+    console.log('gelato: ', gelatoAddr);
+    const tx = await opsContract.connect(gelatoSigner).exec(0, ETH, taskCreator, false, false, resolverHash, proxy, execData);
+    console.log(14);
     const receipt = await tx.wait();
 
     await hre.network.provider.request({
@@ -211,59 +230,63 @@ async function compareEventWithVar(receipt, variable) {
 }
 
 
-async function deployAnotherStorageBeacon(fakeOZLaddr, userDetails) { 
-    const [ maxSubmissionCost, gasPriceBid, maxGas, autoRedeem ] = await getArbitrumParams(userDetails);
+// async function deployAnotherStorageBeacon(fakeOZLaddr, emitterAddr, userDetails) { 
+//     const [ maxSubmissionCost, gasPriceBid, maxGas, autoRedeem ] = await getArbitrumParams(userDetails);
 
-    const fxConfig = [
-        inbox, 
-        pokeMeOpsAddr,
-        fakeOZLaddr,
-        gelatoAddr, 
-        ETH,
-        maxGas
-    ];
+//     const fxConfig = [
+//         inbox, 
+//         pokeMeOpsAddr,
+//         fakeOZLaddr,
+//         emitterAddr,
+//         gelatoAddr, 
+//         ETH,
+//         maxGas
+//     ];
 
-    const varConfig = [
-        maxSubmissionCost,
-        gasPriceBid,
-        autoRedeem
-    ];
+//     const varConfig = [
+//         maxSubmissionCost,
+//         gasPriceBid,
+//         autoRedeem
+//     ];
 
-    const eMode = [
-        swapRouterUniAddr,
-        chainlinkAggregatorAddr,
-        poolFeeUni,
-        wethAddr,
-        usdcAddr
-    ];
+//     const eMode = [
+//         swapRouterUniAddr,
+//         chainlinkAggregatorAddr,
+//         poolFeeUni,
+//         wethAddr,
+//         usdcAddr
+//     ];
 
 
-    const tokensDatabase = [
-        usdtAddrArb
-    ];
+//     const tokensDatabase = [
+//         usdtAddrArb
+//     ];
 
-    constrArgs = [
-        fxConfig,
-        varConfig,
-        eMode,
-        tokensDatabase
-    ]; 
+//     constrArgs = [
+//         fxConfig,
+//         varConfig,
+//         eMode,
+//         tokensDatabase
+//     ]; 
 
-    return [storageBeaconAddr, storageBeacon] = await deployContract('StorageBeacon', constrArgs);
-}
+//     return [storageBeaconAddr, storageBeacon] = await deployContract('StorageBeacon', constrArgs);
+// }
 
 
 
 async function deploySystem(type, userDetails, signerAddr) {
-    let constrArgs = [];
+    let constrArgs = [myReceiver];
 
     //Deploys the fake OZL on arbitrum testnet 
-    const [ fakeOZLaddr ] = await deployContract('FakeOZL');
+    const [ fakeOZLaddr ] = await deployContract('FakeOZL', constrArgs);
 
     //Calculate fees on L1 > L2 arbitrum tx
     let [ maxSubmissionCost, gasPriceBid, maxGas, autoRedeem ] = await getArbitrumParams(userDetails);
 
     if (type === 'Pessimistically') autoRedeem = 0;
+
+    // Deploys Emitter
+    const [ emitterAddr, emitter ] = await deployContract('Emitter');
 
     //Deploys ozPayMe in mainnet
     const [ ozPaymeAddr ] = await deployContract('ozPayMe');
@@ -273,6 +296,7 @@ async function deploySystem(type, userDetails, signerAddr) {
         inbox, 
         pokeMeOpsAddr,
         fakeOZLaddr,
+        emitterAddr,
         gelatoAddr, 
         ETH,
         maxGas
@@ -315,6 +339,7 @@ async function deploySystem(type, userDetails, signerAddr) {
 
     const [ beaconAddr, beacon ] = await deployContract('ozUpgradeableBeacon', constrArgs); 
     await storageBeacon.storeBeacon(beaconAddr);
+    await emitter.storeBeacon(beaconAddr);
 
     //Deploys ProxyFactory
     const [ proxyFactoryAddr ] = await deployContract('ProxyFactory');
@@ -352,6 +377,8 @@ async function deploySystem(type, userDetails, signerAddr) {
         ozERC1967proxyAddr, 
         storageBeacon,
         storageBeaconAddr,
+        emitter,
+        emitterAddr,
         fakeOZLaddr,
         varConfig,
         eMode
@@ -375,7 +402,7 @@ module.exports = {
     getEventParam,
     activateProxyLikeOps,
     compareTopicWith,
-    deployAnotherStorageBeacon,
+    // deployAnotherStorageBeacon,
     storeVarsInHelpers,
     compareEventWithVar
 };

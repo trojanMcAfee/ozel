@@ -92,7 +92,7 @@ async function checkHash(hash) {
     ];
 }
 
-checkHash('0x2e629883f2863b972a1e58e161e1b9935ea8af925546b7502289a3ee1f4cffde');
+// checkHash('0x2e629883f2863b972a1e58e161e1b9935ea8af925546b7502289a3ee1f4cffde');
 
 async function redeemHash() { 
     const hash = '0x39e0ab8e991cc2582ffee4d40079ec50cbfa1eeccce5f24b808e898d027e675a';
@@ -106,5 +106,14 @@ async function redeemHash() {
 }
 
 // redeemHash();
+
+
+async function tryProvider() {
+    const provider = hre.ethers.provider;
+    const x = await provider.getGasPrice();
+    console.log('x3: ', Number(x));
+}
+
+tryProvider();
 
 

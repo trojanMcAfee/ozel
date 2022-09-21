@@ -13,7 +13,7 @@ import '../interfaces/DelayedInbox.sol';
 import '../interfaces/IWETH.sol';
 import '../interfaces/IOps.sol';
 import './FakeOZL.sol';
-// import './Emitter.sol';
+import './Emitter.sol';
 import './StorageBeacon.sol';
 import './ozUpgradeableBeacon.sol';
 import '../Errors.sol';
@@ -30,7 +30,7 @@ contract ozPayMe is ReentrancyGuard, Initializable {
 
     address private _beacon;
 
-    event FundsToArb(address indexed proxy, address indexed sender, uint amount);
+    event FundsToArb(address indexed sender, uint amount);
     event EmergencyTriggered(address indexed sender, uint amount);
     event NewUserToken(address indexed user, address indexed newToken);
     event NewUserSlippage(address indexed user, uint indexed newSlippage);
@@ -78,6 +78,8 @@ contract ozPayMe is ReentrancyGuard, Initializable {
         (uint fee, ) = IOps(fxConfig.ops).getFeeDetails();
         _transfer(fee, fxConfig.ETH);
 
+        bool isEmergency = false;
+
         bytes memory swapData = abi.encodeWithSelector(
             FakeOZL(payable(fxConfig.OZL)).exchangeToUserToken.selector, 
             userDetails_
@@ -95,18 +97,23 @@ contract ozPayMe is ReentrancyGuard, Initializable {
             swapData
         );
 
-        uint amountToSend = address(this).balance; 
+        uint amountToSend = address(this).balance;
         (bool success, bytes memory returnData) = fxConfig.inbox.call{value: address(this).balance}(ticketData); 
         if (!success) {
             (success, returnData) = fxConfig.inbox.call{value: address(this).balance}(ticketData); 
             if (!success) { 
                 emit EmergencyTriggered(userDetails_.user, amountToSend);
                 _runEmergencyMode();
-            } else {
-                emit FundsToArb(address(this), userDetails_.user, amountToSend);
+                isEmergency = true;
             }
-        } else {
-            emit FundsToArb(address(this), userDetails_.user, amountToSend);
+        }
+
+        if (!isEmergency) {
+            if (!storageBeacon.getEmitterStatus()) { 
+                // uint ticketID = abi.decode(returnData, (uint)); //if it works, remove returnData from above
+                Emitter(fxConfig.emitter).forwardEvent(); 
+            }
+            emit FundsToArb(userDetails_.user, amountToSend);
         }
     }
 

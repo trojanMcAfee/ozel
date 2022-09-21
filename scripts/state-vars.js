@@ -97,7 +97,7 @@ const l2Provider = new ethers.providers.JsonRpcProvider(process.env.ARBITRUM);
 let l1Signer, l2Signer, l1SignerTestnet, l2SignerTestnet;
 let l1ProviderTestnet, l2ProviderTestnet;
 
-let network = 'rinkeby';
+let network = 'mainnet';
 switch(network) {
     case 'goerli':
         chainId = 421611;
@@ -162,6 +162,9 @@ switch(network) {
         chainlinkAggregatorAddr = '0x5f4eC3Df9cbd43714FE2740f5E3616155c5b8419';
         fraxAddr = '0x853d955aCEf822Db058eb8505911ED77F175b99e'; 
         deadAddr = '0x000000000000000000000000000000000000dEaD';
+
+        l1ProviderTestnet = new ethers.providers.JsonRpcProvider(process.env.GOERLI);
+        l2ProviderTestnet = new ethers.providers.JsonRpcProvider(process.env.ARB_GOERLI);
         break; 
     case 'arbitrum':
         pokeMeOpsAddr = '0xB3f5503f93d5Ef84b06993a1975B9D21B962892F'; 

@@ -24,7 +24,8 @@ const {
     nullAddr,
     deadAddr,
     proxyABIeth,
-    factoryABI
+    factoryABI,
+    ops
  } = require('../../scripts/state-vars.js');
 
  const {
@@ -43,12 +44,12 @@ const {
 
 
 let signerAddr, signerAddr2;
-let ozERC1967proxyAddr, storageBeacon, fakeOZLaddr;
+let ozERC1967proxyAddr, storageBeacon, emitter, emitterAddr, fakeOZLaddr;
 let userDetails;
 let newProxyAddr, newProxy;
 let balance;
 let newUserToken, newUserSlippage;
-let ops;
+let opsContract;
 let signer, signer2, signers;
 let showTicketSignature;
 let ticketIDtype;
@@ -91,6 +92,8 @@ let tx, receipt;
                 ozERC1967proxyAddr, 
                 storageBeacon, 
                 storageBeaconAddr, 
+                emitter, 
+                emitterAddr, 
                 fakeOZLaddr, 
                 varConfig, 
                 eMode
@@ -111,7 +114,7 @@ let tx, receipt;
                 it('should not allow to create a proxy with the 0 address / createNewProxy()', async () => {
                     userDetails[1] = nullAddr;
                     await assert.rejects(async () => {
-                        await proxyFactory.createNewProxy(userDetails);
+                        await proxyFactory.createNewProxy(userDetails, ops);
                     }, {
                         name: 'Error',
                         message: (await err()).zeroAddress 
@@ -122,7 +125,7 @@ let tx, receipt;
                     userDetails[1] = usdtAddrArb;
                     userDetails[2] = 0;
                     await assert.rejects(async () => {
-                        await proxyFactory.createNewProxy(userDetails);
+                        await proxyFactory.createNewProxy(userDetails, ops);
                     }, {
                         name: 'Error',
                         message: (await err()).zeroSlippage
@@ -133,7 +136,7 @@ let tx, receipt;
                     userDetails[1] = deadAddr;
                     userDetails[2] = defaultSlippage;
                     await assert.rejects(async () => {
-                        await proxyFactory.createNewProxy(userDetails);
+                        await proxyFactory.createNewProxy(userDetails, ops);
                     }, {
                         name: 'Error',
                         message: (await err(deadAddr)).tokenNotFound
@@ -151,17 +154,21 @@ let tx, receipt;
                 });
     
                 it('should have a final balance of 0 ETH', async () => {
+                    console.log(1);
                     await proxyFactory.createNewProxy(userDetails);
+                    console.log(2);
                     newProxyAddr = (await storageBeacon.getProxyByUser(signerAddr))[0].toString();
+                    console.log(3);
 
                     await activateProxyLikeOps(newProxyAddr, ozERC1967proxyAddr); 
+                    console.log(5);
                     balance = await hre.ethers.provider.getBalance(newProxyAddr);
                     assert.equal(formatEther(balance), 0);
                 });
             });
 
 
-            describe('Deploys 5 proxies', async () => { 
+            xdescribe('Deploys 5 proxies', async () => { 
                 before(async () => {
                     userDetails[1] = usdcAddr;
                     for (let i=0; i < 5; i++) {
@@ -191,7 +198,7 @@ let tx, receipt;
             });
         });
 
-        describe('ozBeaconProxy / ozPayMe', async () => {
+        xdescribe('ozBeaconProxy / ozPayMe', async () => {
             before(async () => {
                 await proxyFactory.createNewProxy(userDetails);
                 newProxyAddr = (await storageBeacon.getProxyByUser(signerAddr))[0].toString(); 
@@ -277,9 +284,9 @@ let tx, receipt;
                 });
 
                 it('should allow funds to be sent with correct userDetails even if malicious data was passed / sendToArb() - delegate()', async () => {
-                    ops = await hre.ethers.getContractAt('IOps', pokeMeOpsAddr);
+                    opsContract = await hre.ethers.getContractAt('IOps', pokeMeOpsAddr);
 
-                    await ops.connect(signers[1]).createTaskNoPrepayment(
+                    await opsContract.connect(signers[1]).createTaskNoPrepayment(
                         newProxyAddr,
                         0xaa309254, //first 4 bytes of sendToArb(tuplex2)
                         newProxyAddr,
@@ -297,17 +304,50 @@ let tx, receipt;
                     assert(areEqual);
                 });
 
-                it('should emit the FundsToArb event with the proxy / sendToArb() - event FundsToArb()', async () => {
-                    await signers[0].sendTransaction({to: newProxyAddr, value: parseEther('0.01')});
-                    receipt = await activateProxyLikeOps(newProxyAddr, ozERC1967proxyAddr);
-                    fundsToArbSignature = keccak256(toUtf8Bytes('FundsToArb(address,address,uint256)'));
-                    isSign = compareTopicWith(fundsToArbSignature, receipt);
-                    assert(isSign);
-                });
+                // it('should emit the FundsToArb event with the proxy / sendToArb() - event FundsToArb()', async () => {
+                //     await signers[0].sendTransaction({to: newProxyAddr, value: parseEther('0.01')});
+                //     receipt = await activateProxyLikeOps(newProxyAddr, ozERC1967proxyAddr);
+                //     fundsToArbSignature = keccak256(toUtf8Bytes('FundsToArb(address,address,uint256)'));
+                //     isSign = compareTopicWith(fundsToArbSignature, receipt);
+                //     assert(isSign);
+                // });
             });
         });
+
+        xdescribe('Emitter', async () => {
+            before(async () => {
+                await proxyFactory.createNewProxy(userDetails);
+                newProxyAddr = (await storageBeacon.getProxyByUser(signerAddr))[0].toString(); 
+            });
+
+            it('should emit ticket ID / forwardEvent()', async () => {
+                await signers[0].sendTransaction({to: newProxyAddr, value: parseEther('0.01')});
+                receipt = await activateProxyLikeOps(newProxyAddr, ozERC1967proxyAddr);
+                showTicketSignature = '0xbca70dc8f665e75505547ec15f8c9d9372ac2b33c1746a7e01b805dae21f6696';
+                ticketIDtype = compareTopicWith('Signature', showTicketSignature, receipt);
+                assert(ticketIDtype, 'number');
+            });
     
-        describe('StorageBeacon', async () => {
+            it('should not allow an unauhtorized user to emit ticketID / forwardEvent()', async () => {
+                await assert.rejects(async () => {
+                    await emitter.forwardEvent(000000);
+                }, {
+                    name: 'Error',
+                    message: (await err()).notProxy 
+                });
+            });
+    
+            it('should not allow to set a new Beacon / storeBeacon()', async () => {
+                await assert.rejects(async () => {
+                    await emitter.storeBeacon(nullAddr);
+                }, {
+                    name: 'Error',
+                    message: (await err()).alreadyInitialized 
+                });
+            }); 
+        });
+    
+        xdescribe('StorageBeacon', async () => {
             it('shoud not allow an user to issue an userID / issueUserID()', async () => {
                 await assert.rejects(async () => {
                     await storageBeacon.issueUserID(evilUserDetails);
@@ -383,6 +423,27 @@ let tx, receipt;
                 });
             });
 
+            it('should allow the owner to disable the Emitter / changeEmitterStatus()', async () => {
+                await proxyFactory.createNewProxy(userDetails);
+                newProxyAddr = (await storageBeacon.getProxyByUser(signerAddr))[0].toString();
+
+                await storageBeacon.changeEmitterStatus(true);
+                await signers[0].sendTransaction({to: newProxyAddr, value: parseEther('0.01')});
+                receipt = await activateProxyLikeOps(newProxyAddr, ozERC1967proxyAddr);
+                const ticketIDtype = compareTopicWith('Signature', showTicketSignature, receipt);
+                assert.equal(ticketIDtype, false);
+                await storageBeacon.changeEmitterStatus(false);
+            });
+    
+            it('should not allow an external user to disable the Emitter / changeEmitterStatus()', async () => {
+                await assert.rejects(async () => {
+                    await storageBeacon.connect(signers[1]).changeEmitterStatus(true);
+                }, {
+                    name: 'Error',
+                    message: (await err()).notOwner 
+                });
+            });
+
             it('should return the userDetails / getUserDetailsById()', async () => {
                 await proxyFactory.createNewProxy(userDetails);
                 userDetails[1] = usdtAddrArb;
@@ -431,9 +492,13 @@ let tx, receipt;
                 assert(!(await storageBeacon.isUser(deadAddr)));
             });
 
+            it('should get the Emitter status / getEmitterStatus()', async () => {
+                assert(!(await storageBeacon.getEmitterStatus()));
+            });
+
         });
 
-        describe('ozUpgradeableBeacon', async () => {
+        xdescribe('ozUpgradeableBeacon', async () => {
             it('should allow the owner to upgrade the Storage Beacon / upgradeStorageBeacon()', async () => {
                 [storageBeaconMockAddr , storageBeaconMock] = await deployContract('StorageBeaconMock');
                 await beacon.upgradeStorageBeacon(storageBeaconMockAddr);
@@ -477,7 +542,7 @@ let tx, receipt;
 
 
     //autoRedeem set to 0
-    describe('Pesimistic deployment', async function () {
+    xdescribe('Pesimistic deployment', async function () {
         before( async () => {
             ([
                 beacon, 
@@ -485,6 +550,8 @@ let tx, receipt;
                 ozERC1967proxyAddr, 
                 storageBeacon, 
                 storageBeaconAddr, 
+                emitter, 
+                emitterAddr, 
                 fakeOZLaddr, 
                 varConfig, 
                 eMode

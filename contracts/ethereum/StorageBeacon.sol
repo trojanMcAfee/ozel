@@ -24,6 +24,7 @@ contract StorageBeacon is Initializable, Ownable {
         address inbox;
         address ops;
         address OZL;
+        address emitter;
         address payable gelato;
         address ETH; 
         uint maxGas;
@@ -63,6 +64,8 @@ contract StorageBeacon is Initializable, Ownable {
 
     ozUpgradeableBeacon beacon;
 
+    bool isEmitter;
+
     modifier hasRole(bytes4 functionSig_) {
         require(beacon.canCall(msg.sender, address(this), functionSig_));
         _;
@@ -79,6 +82,7 @@ contract StorageBeacon is Initializable, Ownable {
             inbox: fxConfig_.inbox,
             ops: fxConfig_.ops,
             OZL: fxConfig_.OZL,
+            emitter: fxConfig_.emitter,
             gelato: payable(fxConfig_.gelato),
             ETH: fxConfig_.ETH, 
             maxGas: fxConfig_.maxGas
@@ -141,6 +145,10 @@ contract StorageBeacon is Initializable, Ownable {
         eMode = newEmode_;
     }
 
+    function changeEmitterStatus(bool newStatus) external onlyOwner {
+        isEmitter = newStatus;
+    }
+
 
     //View functions
     function getUserDetailsById(uint userId_) external view returns(UserConfig memory) {
@@ -177,6 +185,10 @@ contract StorageBeacon is Initializable, Ownable {
 
     function isUser(address user_) external view returns(bool) {
         return userDatabase[user_];
+    }
+
+    function getEmitterStatus() external view returns(bool) {
+        return isEmitter;
     }
 }
 

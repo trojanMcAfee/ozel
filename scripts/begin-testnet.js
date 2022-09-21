@@ -205,6 +205,9 @@ async function deployTestnet(testSigner = false, manualRedeem = false) {
     //Calculate fees on L1 > L2 arbitrum tx - **** (add TRUE as 2nd param for manual redeem) ****
     let [ maxSubmissionCost, gasPriceBid, maxGas, autoRedeem ] = await getArbitrumParams(userDetails, manualRedeem);
 
+    //Deploys Emitter
+    const [ emitterAddr, emitter ] = await deployContract('Emitter', l1SignerTest);
+
     //Deploys ozPayMe in mainnet
     const [ ozPaymeAddr ] = await deployContract('ozPayMe', l1SignerTest);
 
@@ -213,6 +216,7 @@ async function deployTestnet(testSigner = false, manualRedeem = false) {
         inbox, 
         pokeMeOpsAddr,
         fakeOZLaddr,
+        emitterAddr,
         gelatoAddr, 
         ETH,
         maxGas
@@ -254,6 +258,7 @@ async function deployTestnet(testSigner = false, manualRedeem = false) {
 
     const [ beaconAddr, beacon ] = await deployContract('ozUpgradeableBeacon', l1SignerTest, constrArgs); 
     await storageBeacon.storeBeacon(beaconAddr);
+    await emitter.storeBeacon(beaconAddr);
 
     //Deploys ProxyFactory
     const [proxyFactoryAddr] = await deployContract('ProxyFactory', l1SignerTest);
