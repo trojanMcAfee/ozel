@@ -10,20 +10,22 @@ const { assert } = require("console");
 
 async function autoRedeem() {
     assert(1 > 2); 
-    console.log('Only failed assertion to prove it was configured properly ^^^');
-
-    const [
-        storageBeaconAddr,
-        newProxyAddr,
-        redeemedHashesAddr
-    ] = await deployTestnet(true);
+    console.log('^^^ Only failed assertion to prove it was configured properly');
+    console.log('');
 
     // const [
     //     storageBeaconAddr,
     //     newProxyAddr,
     //     redeemedHashesAddr
-    // ] = await simulateDeployment();
+    // ] = await deployTestnet(true);
 
+    const [
+        storageBeaconAddr,
+        newProxyAddr,
+        redeemedHashesAddr
+    ] = await simulateDeployment();
+
+    console.log('');
     await startListening(storageBeaconAddr, newProxyAddr, redeemedHashesAddr);
 
     //Sends ETH to the proxy
@@ -41,20 +43,22 @@ async function autoRedeem() {
 
 async function manualRedeem() {
     assert(1 > 2); 
-    console.log('Only failed assertion to prove it was configured properly ^^^');
-
-    const [
-        storageBeaconAddr,
-        newProxyAddr,
-        redeemedHashesAddr
-    ] = await deployTestnet(true, true);
+    console.log('^^^ Only failed assertion to prove it was configured properly');
+    console.log('');
 
     // const [
     //     storageBeaconAddr,
     //     newProxyAddr,
     //     redeemedHashesAddr
-    // ] = await simulateDeployment();
+    // ] = await deployTestnet(true, true);
 
+    const [
+        storageBeaconAddr,
+        newProxyAddr,
+        redeemedHashesAddr
+    ] = await simulateDeployment();
+
+    console.log('');
     await startListening(storageBeaconAddr, newProxyAddr, redeemedHashesAddr, true);
 
     //Sends ETH to the proxy
@@ -71,8 +75,8 @@ async function manualRedeem() {
 
 
 
-// autoRedeem();
-manualRedeem(); //try it out as it is - and then multiple taskIds on event-listener.js
+autoRedeem();
+// manualRedeem(); //try it out as it is - and then multiple taskIds on event-listener.js
 
 
 

@@ -104,7 +104,7 @@ async function main() {
 
                 let [ message, wasRedeemed ] = await checkHash(hash);
 
-                wasRedeemed ? tasks[taskId].alreadyCheckedHashes.push(hash) : redeemHash(message, hash, taskId);
+                wasRedeemed ? tasks[taskId].alreadyCheckedHashes.push(hash) : await redeemHash(message, hash, taskId);
             }
 
             //----------

@@ -56,7 +56,7 @@ async function startListening(storageBeaconAddr, newProxyAddr, redeemedHashesAdd
         //ETH has been sent out from the proxy by the Gelato call
         const balance = await hre.ethers.provider.getBalance(proxy);
         assert(Number(balance) === 0);
-        console.log('ETH left Mainnet contract (aka proxy)');
+        console.log('ETH left Mainnet contract (aka proxy) to Arbitrum');
 
         if (!tasks[taskId]) {
             tasks[taskId] = {};
@@ -80,7 +80,8 @@ async function startListening(storageBeaconAddr, newProxyAddr, redeemedHashesAdd
 
                 let [ message, wasRedeemed ] = await checkHash(hash);
 
-                wasRedeemed ? tasks[taskId].alreadyCheckedHashes.push(hash) : redeemHash(message, hash, taskId, redeemedHashesAddr, executions);
+                console.log(1);
+                wasRedeemed ? tasks[taskId].alreadyCheckedHashes.push(hash) : await redeemHash(message, hash, taskId, redeemedHashesAddr, executions);
             }
 
             if (!manualRedeem) {
@@ -93,6 +94,7 @@ async function startListening(storageBeaconAddr, newProxyAddr, redeemedHashesAdd
 
             setTimeout(waitingForFunds, 600000);
             console.log(`Waiting for funds in L2 (takes 10 minutes; current time: ${new Date().toTimeString()})`);
+            console.log('');
 
             async function waitingForFunds() { 
                 const balance = await l2ProviderTestnet.getBalance(testnetReceiver);
@@ -118,10 +120,14 @@ async function checkHash(hash) {
 }
 
 async function redeemHash(message, hash, taskId, redeemedHashesAddr, executions) { 
+    console.log(2);
     let tx = await message.redeem(ops);
+    console.log(3);
     await tx.wait();
+    console.log(4);
 
     const status = (await message.waitForStatus()).status;
+    console.log(4);
     assert(L1ToL2MessageStatus.REDEEMED == status);
     console.log(`hash: ${hash} redemeed`);
     tasks[taskId].alreadyCheckedHashes.push(hash);
