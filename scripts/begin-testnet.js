@@ -141,7 +141,32 @@ async function redeemHashes() {
 // redeemHashes();
 
 
+async function createProxys() {
+    const signerAddr = await signerX.getAddress();
+    console.log('signer address: ', signerAddr);
 
+    const userDetails = [
+        signerAddr,
+        usdtAddrArb,
+        defaultSlippage
+    ];
+    const ozERC1967proxyAddr = '0xfFC6fA60fC22f593Bc0eB9b08bdd36c062f3dA0E';
+    const storageBeaconAddr = '0x6A919AF1d607d294205c1EAd607ED0B0ce8079fd';
+    const proxyFactory = await hre.ethers.getContractAt(factoryABI, ozERC1967proxyAddr);
+    const storageBeacon = await hre.ethers.getContractAt('StorageBeacon', storageBeaconAddr);
+
+    for (let j=0; j < 3; j++) {
+        tx = await proxyFactory.createNewProxy(userDetails, ops);
+        await tx.wait();
+    }
+
+    const proxies = await storageBeacon.getProxyByUser(signerAddr); 
+    for (let i=0; i < proxies.length; i++) {
+        console.log(`proxy #${i+1}: `, proxies[i]);
+    }
+}
+
+createProxys();
 
 
 

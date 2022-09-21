@@ -30,34 +30,6 @@ const query = (taskId) => {
     }
 };
 
-/***** RINKEBY *****
- * -- storageBeaconAddr --
- * Good: 0x057305B668f7b1a1C4901D023c3fb844801EAb96
- * ManualRedeem: 0x25D8e872Efa7499BD5e063eA8C6730AEFFE767fc
- * 
- * -- proxy --
- * Good: 0x24c3Caf6e39885A87C4B1e726B32c80E9B6e445D
- * ManualRedeem: 0x21352573f419Bf7c090d03c9CFB1B866086F2097
- * 
- * -- redeemedHashesAddr --
- * Good: 0xd7A008bE42F747281B76b5ceEADC8960Ac9df0e6
- * 
- * ***** GOERLI ******
- * -- storageBeaconAddr --
- * Good:
- * ManualRedeem (for Gelato): 0x29ebf24cc0E8c1337fA953331e28D3572508F4CC
- * ManualRedeem2: 0x3468Eb72D0216A3160fdB53ca4D79Bf0B9fD2f5C
- * 
- * -- proxy --
- * Good:
- * ManualRedeem (for Gelato): 0x78ec03E47571A8B5B75a6429a4C8881B3C8B0797
- * ManualRedeem2: 0x8751064bc5851630c4ebabbf2F1c7F424E322314
- * 
- * -- redeemedHashesAddr --
- * ManualRedeem: 0x7F5be070110cec511369a7879DC14cECf46b20d4
- * ManualRedeem2: 0x846D5bb895CBE573d674F426Cff278D9881456AD
- */
-
 const storageBeaconAddr = '0x8d111Dd9F9719EBfFed62A92edE70f8d6c3321fB'; //rinkeby
 const proxy = '0xF62b116fFBCA075141805E3E1cd2676124F3D7DD'; 
 const redeemedHashesAddr = '0x64447c4BefF8e4BAA318dE1F82627D0bC78843A6'; 
