@@ -86,9 +86,6 @@ async function startListening(storageBeaconAddr, newProxyAddr, redeemedHashesAdd
             }
 
             if (!manualRedeem) {
-                // const redeemedHashes = await hre.ethers.getContractAt('RedeemedHashes', redeemedHashesAddr);
-                // const redemptions = await redeemedHashes.connect(l2Wallet).getTotalRedemptions();
-                // console.log('redemptions: ', redemptions);
                 assert(tasks[taskId].alreadyCheckedHashes.length === executions.length);
                 console.log('checked hashes: ', tasks[taskId].alreadyCheckedHashes);
             }
