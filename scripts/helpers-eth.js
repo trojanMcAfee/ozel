@@ -46,6 +46,37 @@ const {
 
 let proxyFactory;
 
+async function getGasDetailsL22(userDetails) {
+    const nitroInboxRinkeby = '0x6BEbC4925716945D46F0Ec336D5C2564F419682C';
+    const abi = ['function calculateRetryableSubmissionFee(uint256 dataLength, uint256 baseFee) public view returns (uint256)']; 
+    const delayedInbox = await hre.ethers.getContractAt(abi, nitroInboxRinkeby);
+
+    const l1ProviderTestnet = new ethers.providers.JsonRpcProvider(process.env.GOERLI); 
+    const l1Signer = signerX.connect(l1ProviderTestnet);
+
+    const sendToArbBytes = ethers.utils.defaultAbiCoder.encode(
+        ['tuple(address, address, uint256)'],
+        [userDetails]
+    );
+    const sendToArbBytesLength = hexDataLength(sendToArbBytes) + 4;
+
+    const _submissionPriceWei = await delayedInbox.connect(l1Signer).calculateRetryableSubmissionFee(
+        sendToArbBytesLength,
+        0
+    );
+  
+    let submissionPriceWei = _submissionPriceWei.mul(5);
+    submissionPriceWei = ethers.BigNumber.from(submissionPriceWei).mul(100);
+
+    let gasPriceBid = await l1ProviderTestnet.getGasPrice();
+    gasPriceBid = gasPriceBid.add(ethers.BigNumber.from(gasPriceBid).div(2));
+
+    return {
+        submissionPriceWei,
+        gasPriceBid
+    }
+}
+
 
 
 async function getGasDetailsL2(userDetails) {
@@ -119,7 +150,7 @@ async function deployContract(contractName, constrArgs) {
 
 
 async function getArbitrumParams(userDetails, manualRedeem = false) {
-    const { submissionPriceWei, gasPriceBid } = await getGasDetailsL2(userDetails);
+    const { submissionPriceWei, gasPriceBid } = await getGasDetailsL22(userDetails);
     const maxGas = !manualRedeem ? 3000000 : 10;
     const autoRedeem = submissionPriceWei.add(gasPriceBid.mul(maxGas));
 
@@ -160,6 +191,14 @@ async function activateProxyLikeOps(proxy, taskCreator, isEvil, evilParams) {
         params: [pokeMeOpsAddr],
     });
 
+    //------
+    const [signer] = await hre.ethers.getSigners();
+    await signer.sendTransaction({
+        to: gelatoAddr,
+        value: ethers.utils.parseEther('1')
+    });
+    //------
+
     await hre.network.provider.request({
         method: "hardhat_impersonateAccount",
         params: [gelatoAddr],
@@ -173,6 +212,14 @@ async function activateProxyLikeOps(proxy, taskCreator, isEvil, evilParams) {
     } else {
         execData = iface.encodeFunctionData('sendToArb');
     }
+
+    console.log('ops: ', ops.address);
+    console.log('gelato: ', await gelatoSigner.getAddress());
+    console.log('ETH: ', ETH);
+    console.log('taskCreator: ', taskCreator);
+    console.log('resolverHash: ', resolverHash);
+    console.log('proxy: ', proxy);
+    console.log('execData:', execData);
 
     const tx = await ops.connect(gelatoSigner).exec(0, ETH, taskCreator, false, false, resolverHash, proxy, execData);
     const receipt = await tx.wait();

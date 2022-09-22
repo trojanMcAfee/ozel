@@ -165,6 +165,9 @@ switch(network) {
 
         l1ProviderTestnet = new ethers.providers.JsonRpcProvider(process.env.GOERLI);
         l2ProviderTestnet = new ethers.providers.JsonRpcProvider(process.env.ARB_GOERLI);
+
+        // l1ProviderTestnet = new ethers.providers.JsonRpcProvider(process.env.RINKEBY);
+        // l2ProviderTestnet = new ethers.providers.JsonRpcProvider(process.env.ARB_TESTNET);
         break; 
     case 'arbitrum':
         pokeMeOpsAddr = '0xB3f5503f93d5Ef84b06993a1975B9D21B962892F'; 
