@@ -12,6 +12,7 @@
   "dependencies": {
     "@arbitrum/sdk": "^2.0.18",
     "@chainlink/contracts": "^0.4.1",
+    "@ethersproject/experimental": "^5.7.0",
     "@openzeppelin/contracts": "^4.3.2",
     "@rari-capital/solmate": "^6.4.0",
     "@uniswap/v2-periphery": "^1.1.0-beta.0",
