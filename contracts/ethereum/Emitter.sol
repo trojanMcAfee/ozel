@@ -7,7 +7,7 @@ import '@openzeppelin/contracts/access/Ownable.sol';
 import './StorageBeacon.sol';
 import '../Errors.sol';
 
-// import 'hardhat/console.sol';
+import 'hardhat/console.sol';
 
 
 contract Emitter is Initializable, Ownable {
@@ -26,6 +26,7 @@ contract Emitter is Initializable, Ownable {
 
     function forwardEvent() external { 
         if (!_getStorageBeacon().proxyDatabase(msg.sender)) revert NotProxy();
+        console.log('msg.sender (proxy): ', msg.sender);
         emit ShowTicket(msg.sender);
     }
 }

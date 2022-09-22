@@ -309,7 +309,7 @@ let tx, receipt;
             });
         });
 
-        xdescribe('Emitter', async () => {
+        describe('Emitter', async () => {
             before(async () => {
                 await proxyFactory.createNewProxy(userDetails);
                 newProxyAddr = (await storageBeacon.getProxyByUser(signerAddr))[0].toString(); 
@@ -319,7 +319,11 @@ let tx, receipt;
                 await signers[0].sendTransaction({to: newProxyAddr, value: parseEther('0.01')});
                 receipt = await activateProxyLikeOps(newProxyAddr, ozERC1967proxyAddr);
                 showTicketSignature = '0xbca70dc8f665e75505547ec15f8c9d9372ac2b33c1746a7e01b805dae21f6696';
-                ticketIDtype = compareTopicWith('Signature', showTicketSignature, receipt);
+                console.log('start');
+                // ticketIDtype = compareTopicWith('Signature', showTicketSignature, receipt);
+                ticketIDtype = compareTopicWith(newProxyAddr, receipt);
+
+                console.log('ticketIDtype: ', ticketIDtype);
                 assert(ticketIDtype, 'number');
             });
     
