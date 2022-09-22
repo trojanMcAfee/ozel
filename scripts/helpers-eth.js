@@ -174,7 +174,7 @@ function getEventParam(receipt) {
 }
 
 
-async function activateProxyLikeOps(proxy, taskCreator, isEvil, evilParams) {
+async function activateProxyLikeOps(proxy, taskCreator, isEvil, evilParams) { 
     await hre.network.provider.request({
         method: "hardhat_impersonateAccount",
         params: [pokeMeOpsAddr],
