@@ -7,7 +7,8 @@ const {
     l2ProviderTestnet,
     network,
     signerTestnet,
-    ops
+    ops,
+    pokeMeOpsAddr
 } = require('./state-vars.js');
 
 async function queryRedeemedContract() {
@@ -114,6 +115,63 @@ async function tryProvider() {
     console.log('x3: ', Number(x));
 }
 
-tryProvider();
+// tryProvider();
+
+
+async function tryImpersonating() { 
+    let proxy = '0xaf4181d7208912b151d1BA11d22EA4e24FF500ce';
+    let taskCreator = '0xd9140951d8aE6E5F625a02F5908535e16e3af964';
+    let isEvil = false;
+    let evilParams = '';
+    
+
+    await hre.network.provider.request({
+        method: "hardhat_impersonateAccount",
+        params: [pokeMeOpsAddr],
+    });
+
+    const opsSigner = await hre.ethers.provider.getSigner(pokeMeOpsAddr);
+    let iface = new ethers.utils.Interface(['function checker()']);
+    const resolverData = iface.encodeFunctionData('checker');
+    const ops = await hre.ethers.getContractAt('IOps', pokeMeOpsAddr);
+    const resolverHash = await ops.connect(opsSigner).getResolverHash(proxy, resolverData);
+
+    await hre.network.provider.request({
+        method: "hardhat_stopImpersonatingAccount",
+        params: [pokeMeOpsAddr],
+    });
+
+    //------
+    const [signer] = await hre.ethers.getSigners();
+    await signer.sendTransaction({
+        to: gelatoAddr,
+        value: ethers.utils.parseEther('1')
+    });
+    //------
+
+    await hre.network.provider.request({
+        method: "hardhat_impersonateAccount",
+        params: [gelatoAddr],
+    });
+
+    const gelatoSigner = await hre.ethers.provider.getSigner(gelatoAddr); 
+    iface = new ethers.utils.Interface([`function sendToArb(${isEvil ? 'tuple(uint256 maxSubmissionCost, uint256 gasPriceBid, uint256 autoRedeem) varConfig_, tuple(address user, address userToken, uint256 userSlippage) userDetails_)' : ')'}`]); 
+    let execData;
+    if (isEvil) {
+        execData = iface.encodeFunctionData('sendToArb', evilParams);
+    } else {
+        execData = iface.encodeFunctionData('sendToArb');
+    }
+
+    const tx = await ops.connect(gelatoSigner).exec(0, ETH, taskCreator, false, false, resolverHash, proxy, execData);
+    const receipt = await tx.wait();
+
+    await hre.network.provider.request({
+        method: "hardhat_stopImpersonatingAccount",
+        params: [gelatoAddr],
+    });
+
+    return receipt;
+}
 
 

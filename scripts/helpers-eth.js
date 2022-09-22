@@ -213,14 +213,6 @@ async function activateProxyLikeOps(proxy, taskCreator, isEvil, evilParams) {
         execData = iface.encodeFunctionData('sendToArb');
     }
 
-    console.log('ops: ', ops.address);
-    console.log('gelato: ', await gelatoSigner.getAddress());
-    console.log('ETH: ', ETH);
-    console.log('taskCreator: ', taskCreator);
-    console.log('resolverHash: ', resolverHash);
-    console.log('proxy: ', proxy);
-    console.log('execData:', execData);
-
     const tx = await ops.connect(gelatoSigner).exec(0, ETH, taskCreator, false, false, resolverHash, proxy, execData);
     const receipt = await tx.wait();
 
