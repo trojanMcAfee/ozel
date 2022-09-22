@@ -230,6 +230,22 @@ function compareTopicWith(value, receipt) {
     }
 }
 
+function compareTopicWith2(signature, value, receipt) { 
+    if (receipt.logs) {
+        for (let i=0; i < receipt.logs.length; i++) {
+            for (let j=0; j < receipt.logs[i].topics.length; j++) {
+                if (receipt.logs[i].topics[j] === signature) {
+                    let topic = hexStripZeros(receipt.logs[i].topics[j + 1]);
+                    if (parseInt(topic) === parseInt(value)) return true;
+                }
+            }
+        }
+        return false;
+    } else {
+        return false;
+    }
+}
+
 
 async function compareEventWithVar(receipt, variable) {
     for (let i=0; i < receipt.events.length;) {
@@ -422,5 +438,6 @@ module.exports = {
     compareTopicWith,
     // deployAnotherStorageBeacon,
     storeVarsInHelpers,
-    compareEventWithVar
+    compareEventWithVar,
+    compareTopicWith2
 };

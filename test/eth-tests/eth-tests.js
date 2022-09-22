@@ -36,7 +36,8 @@ const {
     activateProxyLikeOps,
     compareTopicWith,
     storeVarsInHelpers,
-    compareEventWithVar
+    compareEventWithVar,
+    compareTopicWith2
  } = require('../../scripts/helpers-eth');
 
  const { err } = require('../errors.js');
@@ -103,7 +104,7 @@ let tx, receipt;
             proxyFactory = await hre.ethers.getContractAt(factoryABI, ozERC1967proxyAddr);
         });
 
-        describe('ProxyFactory', async () => {
+        xdescribe('ProxyFactory', async () => {
             describe('Deploys one proxy', async () => {
                 it('should create a proxy successfully / createNewProxy()', async () => {
                     await proxyFactory.createNewProxy(userDetails);
@@ -193,7 +194,7 @@ let tx, receipt;
             });
         });
 
-        describe('ozBeaconProxy / ozPayMe', async () => {
+        xdescribe('ozBeaconProxy / ozPayMe', async () => {
             before(async () => {
                 await proxyFactory.createNewProxy(userDetails);
                 newProxyAddr = (await storageBeacon.getProxyByUser(signerAddr))[0].toString(); 
@@ -315,11 +316,28 @@ let tx, receipt;
                 newProxyAddr = (await storageBeacon.getProxyByUser(signerAddr))[0].toString(); 
             });
 
-            it('should emit ticket ID / forwardEvent()', async () => {
+            it('should emit msg.sender (proxy) / forwardEvent()', async () => {
+                // await signers[0].sendTransaction({to: newProxyAddr, value: parseEther('0.01')});
+                // receipt = await activateProxyLikeOps(newProxyAddr, ozERC1967proxyAddr);
+                // wasSuccessful = compareTopicWith(newProxyAddr, receipt);
+                // assert(wasSuccessful);
+                //------
+
                 await signers[0].sendTransaction({to: newProxyAddr, value: parseEther('0.01')});
                 receipt = await activateProxyLikeOps(newProxyAddr, ozERC1967proxyAddr);
-                wasSuccessful = compareTopicWith(newProxyAddr, receipt);
-                assert(wasSuccessful);
+                showTicketSignature = '0x6901520c999a000bb546b2316af0525bc22cc86be859f5dac839762f3d40e0aa';
+                console.log('start')
+                is = compareTopicWith2(showTicketSignature, newProxyAddr, receipt);
+                // ticketIDtype = compareTopicWith('Signature', showTicketSignature, receipt);
+
+                console.log('proxy: ', newProxyAddr);
+                // console.log('receipt: ', receipt.logs);
+                // for (let i=0; i < receipt.logs.length; i++) {
+                //     forreceipt.logs[i].topics
+                // }
+
+                console.log('ticketIDtype: ', is);
+                assert(is);
             });
     
             it('should not allow an unauhtorized user to emit ticketID / forwardEvent()', async () => {
@@ -341,7 +359,7 @@ let tx, receipt;
             }); 
         });
     
-        xdescribe('StorageBeacon', async () => {
+        describe('StorageBeacon', async () => {
             it('shoud not allow an user to issue an userID / issueUserID()', async () => {
                 await assert.rejects(async () => {
                     await storageBeacon.issueUserID(evilUserDetails);
@@ -424,7 +442,9 @@ let tx, receipt;
                 await storageBeacon.changeEmitterStatus(true);
                 await signers[0].sendTransaction({to: newProxyAddr, value: parseEther('0.01')});
                 receipt = await activateProxyLikeOps(newProxyAddr, ozERC1967proxyAddr);
+                showTicketSignature = '0x6901520c999a000bb546b2316af0525bc22cc86be859f5dac839762f3d40e0aa';
                 const ticketIDtype = compareTopicWith('Signature', showTicketSignature, receipt);
+                
                 assert.equal(ticketIDtype, false);
                 await storageBeacon.changeEmitterStatus(false);
             });
@@ -492,7 +512,7 @@ let tx, receipt;
 
         });
 
-        xdescribe('ozUpgradeableBeacon', async () => {
+        describe('ozUpgradeableBeacon', async () => {
             it('should allow the owner to upgrade the Storage Beacon / upgradeStorageBeacon()', async () => {
                 [storageBeaconMockAddr , storageBeaconMock] = await deployContract('StorageBeaconMock');
                 await beacon.upgradeStorageBeacon(storageBeaconMockAddr);
