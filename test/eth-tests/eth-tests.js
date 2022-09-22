@@ -318,18 +318,13 @@ let tx, receipt;
             it('should emit ticket ID / forwardEvent()', async () => {
                 await signers[0].sendTransaction({to: newProxyAddr, value: parseEther('0.01')});
                 receipt = await activateProxyLikeOps(newProxyAddr, ozERC1967proxyAddr);
-                showTicketSignature = '0xbca70dc8f665e75505547ec15f8c9d9372ac2b33c1746a7e01b805dae21f6696';
-                console.log('start');
-                // ticketIDtype = compareTopicWith('Signature', showTicketSignature, receipt);
-                ticketIDtype = compareTopicWith(newProxyAddr, receipt);
-
-                console.log('ticketIDtype: ', ticketIDtype);
-                assert(ticketIDtype, 'number');
+                wasSuccessful = compareTopicWith(newProxyAddr, receipt);
+                assert(wasSuccessful);
             });
     
             it('should not allow an unauhtorized user to emit ticketID / forwardEvent()', async () => {
                 await assert.rejects(async () => {
-                    await emitter.forwardEvent(000000);
+                    await emitter.forwardEvent();
                 }, {
                     name: 'Error',
                     message: (await err()).notProxy 
