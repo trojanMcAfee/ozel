@@ -160,13 +160,6 @@ async function activateProxyLikeOps(proxy, taskCreator, isEvil, evilParams) {
         params: [pokeMeOpsAddr],
     });
 
-
-    ops.value = parseEther('1');
-    ops.to = gelatoAddr;
-    console.log('g: ', gelatoAddr);
-    const [ signer ] = await hre.ethers.getSigners();
-    await signer.sendTransaction(ops);
-
     await hre.network.provider.request({
         method: "hardhat_impersonateAccount",
         params: [gelatoAddr],
