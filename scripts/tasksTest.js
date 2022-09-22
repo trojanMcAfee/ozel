@@ -8,7 +8,9 @@ const {
     network,
     signerTestnet,
     ops,
-    pokeMeOpsAddr
+    pokeMeOpsAddr,
+    gelatoAddr,
+    ETH
 } = require('./state-vars.js');
 
 async function queryRedeemedContract() {
@@ -173,5 +175,7 @@ async function tryImpersonating() {
 
     return receipt;
 }
+
+tryImpersonating();
 
 
