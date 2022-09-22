@@ -165,7 +165,7 @@ async function getArbitrumParams(userDetails, manualRedeem = false) {
 
 async function activateOzBeaconProxy(proxyAddr) {
     const proxy = await hre.ethers.getContractAt(['function sendToArb()'], proxyAddr);
-    await proxy.sendToArb();
+    await proxy.sendToArb(ops);
 }
 
 
