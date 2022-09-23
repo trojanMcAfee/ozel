@@ -310,7 +310,7 @@ let tx, receipt;
             });
         });
 
-        describe('Emitter', async () => {
+        xdescribe('Emitter', async () => {
             before(async () => {
                 await proxyFactory.createNewProxy(userDetails);
                 newProxyAddr = (await storageBeacon.getProxyByUser(signerAddr))[0].toString(); 
@@ -343,7 +343,7 @@ let tx, receipt;
             }); 
         });
     
-        describe('StorageBeacon', async () => {
+        xdescribe('StorageBeacon', async () => {
             it('shoud not allow an user to issue an userID / issueUserID()', async () => {
                 await assert.rejects(async () => {
                     await storageBeacon.issueUserID(evilUserDetails);
@@ -384,11 +384,11 @@ let tx, receipt;
                 });
             });
 
-            it('should allow the owner to add a new userToken to the database', async () => {
+            it('should allow the owner to add a new userToken to the database / addTokenToDatabase()', async () => {
                 await storageBeacon.addTokenToDatabase(fraxAddr);
             });
 
-            it('should not allow an external user to add a new userToken to the database', async () => {
+            it('should not allow an external user to add a new userToken to the database / addTokenToDatabase()', async () => {
                 await assert.rejects(async () => {
                     await storageBeacon.connect(signers[1]).addTokenToDatabase(deadAddr);
                 }, {
