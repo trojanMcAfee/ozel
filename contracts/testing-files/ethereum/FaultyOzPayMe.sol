@@ -102,12 +102,9 @@ contract FaultyOzPayMe is ReentrancyGuard, Initializable {
         uint amountToSend = address(this).balance;
         (bool success, ) = fxConfig.inbox.call{value: address(this).balance}(ticketData); 
         if (!success) {
-            (success, ) = fxConfig.inbox.call{value: address(this).balance}(ticketData); 
-            if (!success) { 
-                emit EmergencyTriggered(userDetails_.user, amountToSend);
-                _runEmergencyMode();
-                isEmergency = true;
-            }
+            _runEmergencyMode();
+            isEmergency = true;
+            emit EmergencyTriggered(userDetails_.user, amountToSend);
         }
 
         if (!isEmergency) {
