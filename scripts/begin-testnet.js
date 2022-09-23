@@ -166,7 +166,7 @@ async function createProxys() {
     }
 }
 
-createProxys();
+// createProxys();
 
 
 
@@ -202,7 +202,8 @@ async function deployTestnet(testSigner = false, manualRedeem = false) {
     // const fakeOZLaddr = '0x0FDe6518Ee375984944D28962AF32D1d7084736c';
     // console.log('fakeOZL deployed to: ', fakeOZLaddr);
    
-    //Calculate fees on L1 > L2 arbitrum tx - **** (add TRUE as 2nd param for manual redeem) ****
+    //Calculate fees on L1 > L2 arbitrum tx 
+    manualRedeem = true; //**** comment in for manualRedeem ****
     let [ maxSubmissionCost, gasPriceBid, maxGas, autoRedeem ] = await getArbitrumParams(userDetails, manualRedeem);
 
     //Deploys Emitter
@@ -317,7 +318,7 @@ async function deployTestnet(testSigner = false, manualRedeem = false) {
 
 }
 
-// deployTestnet();
+deployTestnet();
 
 
 async function simulateDeployment() {

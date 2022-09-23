@@ -30,9 +30,9 @@ const query = (taskId) => {
     }
 };
 
-const storageBeaconAddr = '0x8d111Dd9F9719EBfFed62A92edE70f8d6c3321fB'; //rinkeby
-const proxy = '0xF62b116fFBCA075141805E3E1cd2676124F3D7DD'; 
-const redeemedHashesAddr = '0x64447c4BefF8e4BAA318dE1F82627D0bC78843A6'; 
+const storageBeaconAddr = '0x28bd721c9A9eC6C35aD4832528DA94001EB5Ca39'; //rinkeby
+const emitterAddr = '0xE7BCf7F8939b5Fb270D57b342e92837957c8f660'; 
+const redeemedHashesAddr = '0x543d90ef4A62aB51E8e184C00DB735572879C0ce'; 
 
 const tasks = {}; 
 
@@ -40,9 +40,9 @@ async function main() {
     const storageBeacon = await hre.ethers.getContractAt('StorageBeacon', storageBeaconAddr);
 
     const filter = {
-        address: proxy, 
+        address: emitterAddr, 
         topics: [
-            ethers.utils.id("FundsToArb(address,address,uint256)") 
+            ethers.utils.id("ShowTicket(address)") 
         ]
     };
 
@@ -80,10 +80,10 @@ async function main() {
             }
 
             //----------
-            const redeemedHashes = await hre.ethers.getContractAt('RedeemedHashes', redeemedHashesAddr);
-            const redemptions = await redeemedHashes.connect(l2Wallet).getTotalRedemptions();
-            console.log('redemptions: ', redemptions);
-            console.log('checked hashes: ', tasks[taskId].alreadyCheckedHashes);
+            // const redeemedHashes = await hre.ethers.getContractAt('RedeemedHashes', redeemedHashesAddr);
+            // const redemptions = await redeemedHashes.connect(l2Wallet).getTotalRedemptions();
+            // console.log('redemptions: ', redemptions);
+            // console.log('checked hashes: ', tasks[taskId].alreadyCheckedHashes);
         }
     });
 }
@@ -113,9 +113,9 @@ async function redeemHash(message, hash, taskId) {
     await tx.wait();
 
     //---------
-    // const redemptions = await redeemedHashes.connect(l2Wallet).getTotalRedemptions();
-    // console.log('redemptions: ', redemptions);
-    // console.log('checked hashes: ', tasks[taskId].alreadyCheckedHashes);
+    const redemptions = await redeemedHashes.connect(l2Wallet).getTotalRedemptions();
+    console.log('redemptions: ', redemptions);
+    console.log('checked hashes: ', tasks[taskId].alreadyCheckedHashes);
 }
 
 
