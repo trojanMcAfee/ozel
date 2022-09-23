@@ -32,17 +32,15 @@ const query = (taskId) => {
         `
     }
 };
-// let newProxyAddr;
 
- 
 
-async function startListening(storageBeaconAddr, newProxyAddr, redeemedHashesAddr, manualRedeem = false) {
-    const storageBeacon = await hre.ethers.getContractAt('StorageBeacon', storageBeaconAddr);
+async function startListening(storageBeacon, emitterAddr, redeemedHashes, manualRedeem = false) {
+    // const storageBeacon = await hre.ethers.getContractAt('StorageBeacon', storageBeaconAddr);
 
     const filter = {
-        address: newProxyAddr, 
+        address: emitterAddr, 
         topics: [
-            ethers.utils.id("FundsToArb(address,address,uint256)") 
+            ethers.utils.id("ShowTicket(address)") 
         ]
     };
 
@@ -82,7 +80,7 @@ async function startListening(storageBeaconAddr, newProxyAddr, redeemedHashesAdd
 
                 let [ message, wasRedeemed ] = await checkHash(hash);
 
-                wasRedeemed ? tasks[taskId].alreadyCheckedHashes.push(hash) : await redeemHash(message, hash, taskId, redeemedHashesAddr, executions);
+                wasRedeemed ? tasks[taskId].alreadyCheckedHashes.push(hash) : await redeemHash(message, hash, taskId, redeemedHashes, executions);
             }
 
             if (!manualRedeem) {
@@ -116,7 +114,7 @@ async function checkHash(hash) {
     ];
 }
 
-async function redeemHash(message, hash, taskId, redeemedHashesAddr, executions) { 
+async function redeemHash(message, hash, taskId, redeemedHashes, executions) { 
     let tx = await message.redeem();
     await tx.wait();
 
@@ -125,11 +123,10 @@ async function redeemHash(message, hash, taskId, redeemedHashesAddr, executions)
     console.log(`hash: ${hash} redemeed`);
     tasks[taskId].alreadyCheckedHashes.push(hash);
     
-    const redeemedHashes = await hre.ethers.getContractAt('RedeemedHashes', redeemedHashesAddr);
+    // const redeemedHashes = await hre.ethers.getContractAt('RedeemedHashes', redeemedHashesAddr);
     tx = await redeemedHashes.connect(l2Wallet).storeRedemption(taskId, hash);
     await tx.wait();
 
-    //---------
     const redemptions = await redeemedHashes.connect(l2Wallet).getTotalRedemptions();
     assert(executions.length === redemptions.length);
     console.log('redemptions: ', redemptions);

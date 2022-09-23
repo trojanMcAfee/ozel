@@ -203,7 +203,8 @@ async function deployTestnet(testSigner = false, manualRedeem = false) {
     // console.log('fakeOZL deployed to: ', fakeOZLaddr);
    
     //Calculate fees on L1 > L2 arbitrum tx 
-    manualRedeem = true; //**** comment in for manualRedeem ****
+    // manualRedeem = true; //**** comment in for manualRedeem ****
+    console.log('manualRedeem (false): ', manualRedeem);
     let [ maxSubmissionCost, gasPriceBid, maxGas, autoRedeem ] = await getArbitrumParams(userDetails, manualRedeem);
 
     //Deploys Emitter
@@ -278,7 +279,7 @@ async function deployTestnet(testSigner = false, manualRedeem = false) {
     console.log('initialize with hash: ', receipt.transactionHash);
 
     //Deploys RedeemedHashes contract in L2
-    const [ redeemedHashesAddr ] = await deployContract('RedeemedHashes', l2SignerTest);
+    const [ redeemedHashesAddr, redeemedHashes ] = await deployContract('RedeemedHashes', l2SignerTest);
 
     //Deploys Auth
     constrArgs = [
@@ -311,14 +312,16 @@ async function deployTestnet(testSigner = false, manualRedeem = false) {
     // await sendTx(newProxyAddr, true, 'Sending ETH');
 
     return [
-        storageBeaconAddr,
+        storageBeacon,
+        emitterAddr,
         newProxyAddr,
-        redeemedHashesAddr
+        redeemedHashes,
+        proxyFactory
     ];
 
 }
 
-deployTestnet();
+// deployTestnet();
 
 
 async function simulateDeployment() {
