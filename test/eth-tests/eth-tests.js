@@ -104,7 +104,7 @@ let tx, receipt;
             proxyFactory = await hre.ethers.getContractAt(factoryABI, ozERC1967proxyAddr);
         });
 
-        xdescribe('ProxyFactory', async () => {
+        describe('ProxyFactory', async () => {
             describe('Deploys one proxy', async () => {
                 it('should create a proxy successfully / createNewProxy()', async () => {
                     await proxyFactory.createNewProxy(userDetails);
@@ -194,7 +194,7 @@ let tx, receipt;
             });
         });
 
-        xdescribe('ozBeaconProxy / ozPayMe', async () => {
+        describe('ozBeaconProxy / ozPayMe', async () => {
             before(async () => {
                 await proxyFactory.createNewProxy(userDetails);
                 newProxyAddr = (await storageBeacon.getProxyByUser(signerAddr))[0].toString(); 
@@ -299,18 +299,10 @@ let tx, receipt;
                     const areEqual = compareTopicWith(signerAddr, receipt);
                     assert(areEqual);
                 });
-
-                // it('should emit the FundsToArb event with the proxy / sendToArb() - event FundsToArb()', async () => {
-                //     await signers[0].sendTransaction({to: newProxyAddr, value: parseEther('0.01')});
-                //     receipt = await activateProxyLikeOps(newProxyAddr, ozERC1967proxyAddr);
-                //     fundsToArbSignature = keccak256(toUtf8Bytes('FundsToArb(address,address,uint256)'));
-                //     isSign = compareTopicWith(fundsToArbSignature, receipt);
-                //     assert(isSign);
-                // });
             });
         });
 
-        xdescribe('Emitter', async () => {
+        describe('Emitter', async () => {
             before(async () => {
                 await proxyFactory.createNewProxy(userDetails);
                 newProxyAddr = (await storageBeacon.getProxyByUser(signerAddr))[0].toString(); 
@@ -343,7 +335,7 @@ let tx, receipt;
             }); 
         });
     
-        xdescribe('StorageBeacon', async () => {
+        describe('StorageBeacon', async () => {
             it('shoud not allow an user to issue an userID / issueUserID()', async () => {
                 await assert.rejects(async () => {
                     await storageBeacon.issueUserID(evilUserDetails);
@@ -539,7 +531,7 @@ let tx, receipt;
 
 
     //autoRedeem set to 0
-    xdescribe('Pesimistic deployment', async function () {
+    describe('Pesimistic deployment', async function () {
         before( async () => {
             ([
                 beacon, 

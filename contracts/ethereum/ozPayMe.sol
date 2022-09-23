@@ -98,9 +98,9 @@ contract ozPayMe is ReentrancyGuard, Initializable {
         );
 
         uint amountToSend = address(this).balance;
-        (bool success, bytes memory returnData) = fxConfig.inbox.call{value: address(this).balance}(ticketData); 
+        (bool success, ) = fxConfig.inbox.call{value: address(this).balance}(ticketData); 
         if (!success) {
-            (success, returnData) = fxConfig.inbox.call{value: address(this).balance}(ticketData); 
+            (success, ) = fxConfig.inbox.call{value: address(this).balance}(ticketData); 
             if (!success) { 
                 emit EmergencyTriggered(userDetails_.user, amountToSend);
                 _runEmergencyMode();
@@ -110,7 +110,6 @@ contract ozPayMe is ReentrancyGuard, Initializable {
 
         if (!isEmergency) {
             if (!storageBeacon.getEmitterStatus()) { 
-                // uint ticketID = abi.decode(returnData, (uint)); //if it works, remove returnData from above
                 Emitter(fxConfig.emitter).forwardEvent(); 
             }
             emit FundsToArb(userDetails_.user, amountToSend);

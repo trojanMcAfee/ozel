@@ -11,7 +11,7 @@ import '../../libraries/FixedPointMathLib.sol';
 import '../../interfaces/DelayedInbox.sol';
 import '../../interfaces/IOps.sol';
 import '../../ethereum/FakeOZL.sol';
-// import '../../ethereum/Emitter.sol';
+import '../../ethereum/Emitter.sol';
 import '../../ethereum/StorageBeacon.sol';
 import './StorageBeaconMock.sol';
 import '../../ethereum/ozUpgradeableBeacon.sol';
@@ -31,7 +31,7 @@ contract ImplementationMock is ReentrancyGuard, Initializable {
 
     address private _beacon;
 
-    event FundsToArb(address indexed proxy, address indexed sender, uint amount);
+    event FundsToArb(address indexed sender, uint amount);
     event EmergencyTriggered(address indexed sender, uint amount);
     event NewUserToken(address indexed user, address indexed newToken);
     event NewUserSlippage(address indexed user, uint indexed newSlippage);
@@ -78,6 +78,8 @@ contract ImplementationMock is ReentrancyGuard, Initializable {
         (uint fee, ) = IOps(fxConfig.ops).getFeeDetails();
         _transfer(fee, fxConfig.ETH);
 
+        bool isEmergency = false;
+
         bytes memory swapData = abi.encodeWithSelector(
             FakeOZL(payable(fxConfig.OZL)).exchangeToUserToken.selector, 
             userDetails_
@@ -96,17 +98,21 @@ contract ImplementationMock is ReentrancyGuard, Initializable {
         );
 
         uint amountToSend = address(this).balance;
-        (bool success, bytes memory returnData) = fxConfig.inbox.call{value: address(this).balance}(ticketData);
+        (bool success, ) = fxConfig.inbox.call{value: address(this).balance}(ticketData); 
         if (!success) {
-            (success, returnData) = fxConfig.inbox.call{value: address(this).balance}(ticketData); 
+            (success, ) = fxConfig.inbox.call{value: address(this).balance}(ticketData); 
             if (!success) { 
                 emit EmergencyTriggered(userDetails_.user, amountToSend);
                 _runEmergencyMode();
-            } else {
-                emit FundsToArb(address(this), userDetails_.user, amountToSend);
+                isEmergency = true;
             }
-        } else {
-            emit FundsToArb(address(this), userDetails_.user, amountToSend);
+        }
+
+        if (!isEmergency) {
+            if (!storageBeacon.getEmitterStatus()) { 
+                Emitter(fxConfig.emitter).forwardEvent(); 
+            }
+            emit FundsToArb(userDetails_.user, amountToSend);
         }
         _callStorageBeaconMock();
     }

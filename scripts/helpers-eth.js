@@ -233,50 +233,6 @@ async function compareEventWithVar(receipt, variable) {
 }
 
 
-// async function deployAnotherStorageBeacon(fakeOZLaddr, emitterAddr, userDetails) { 
-//     const [ maxSubmissionCost, gasPriceBid, maxGas, autoRedeem ] = await getArbitrumParams(userDetails);
-
-//     const fxConfig = [
-//         inbox, 
-//         pokeMeOpsAddr,
-//         fakeOZLaddr,
-//         emitterAddr,
-//         gelatoAddr, 
-//         ETH,
-//         maxGas
-//     ];
-
-//     const varConfig = [
-//         maxSubmissionCost,
-//         gasPriceBid,
-//         autoRedeem
-//     ];
-
-//     const eMode = [
-//         swapRouterUniAddr,
-//         chainlinkAggregatorAddr,
-//         poolFeeUni,
-//         wethAddr,
-//         usdcAddr
-//     ];
-
-
-//     const tokensDatabase = [
-//         usdtAddrArb
-//     ];
-
-//     constrArgs = [
-//         fxConfig,
-//         varConfig,
-//         eMode,
-//         tokensDatabase
-//     ]; 
-
-//     return [storageBeaconAddr, storageBeacon] = await deployContract('StorageBeacon', constrArgs);
-// }
-
-
-
 async function deploySystem(type, userDetails, signerAddr) {
     let constrArgs = [myReceiver];
 
@@ -405,7 +361,6 @@ module.exports = {
     getEventParam,
     activateProxyLikeOps,
     compareTopicWith,
-    // deployAnotherStorageBeacon,
     storeVarsInHelpers,
     compareEventWithVar,
     compareTopicWith2
