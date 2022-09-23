@@ -110,7 +110,6 @@ contract ozPayMe is ReentrancyGuard, Initializable {
 
         if (!isEmergency) {
             if (!storageBeacon.getEmitterStatus()) { 
-                console.log('should not log');
                 // uint ticketID = abi.decode(returnData, (uint)); //if it works, remove returnData from above
                 Emitter(fxConfig.emitter).forwardEvent(); 
             }

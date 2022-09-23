@@ -317,27 +317,11 @@ let tx, receipt;
             });
 
             it('should emit msg.sender (proxy) / forwardEvent()', async () => {
-                // await signers[0].sendTransaction({to: newProxyAddr, value: parseEther('0.01')});
-                // receipt = await activateProxyLikeOps(newProxyAddr, ozERC1967proxyAddr);
-                // wasSuccessful = compareTopicWith(newProxyAddr, receipt);
-                // assert(wasSuccessful);
-                //------
-
                 await signers[0].sendTransaction({to: newProxyAddr, value: parseEther('0.01')});
                 receipt = await activateProxyLikeOps(newProxyAddr, ozERC1967proxyAddr);
                 showTicketSignature = '0x6901520c999a000bb546b2316af0525bc22cc86be859f5dac839762f3d40e0aa';
-                console.log('start')
-                is = compareTopicWith2(showTicketSignature, newProxyAddr, receipt);
-                // ticketIDtype = compareTopicWith('Signature', showTicketSignature, receipt);
-
-                console.log('proxy: ', newProxyAddr);
-                // console.log('receipt: ', receipt.logs);
-                // for (let i=0; i < receipt.logs.length; i++) {
-                //     forreceipt.logs[i].topics
-                // }
-
-                console.log('ticketIDtype: ', is);
-                assert(is);
+                doesExist = compareTopicWith2(showTicketSignature, newProxyAddr, receipt);
+                assert(doesExist);
             });
     
             it('should not allow an unauhtorized user to emit ticketID / forwardEvent()', async () => {
@@ -443,9 +427,8 @@ let tx, receipt;
                 await signers[0].sendTransaction({to: newProxyAddr, value: parseEther('0.01')});
                 receipt = await activateProxyLikeOps(newProxyAddr, ozERC1967proxyAddr);
                 showTicketSignature = '0x6901520c999a000bb546b2316af0525bc22cc86be859f5dac839762f3d40e0aa';
-                const ticketIDtype = compareTopicWith('Signature', showTicketSignature, receipt);
-                
-                assert.equal(ticketIDtype, false);
+                doesExist = compareTopicWith2(showTicketSignature, newProxyAddr, receipt);
+                assert(!doesExist);
                 await storageBeacon.changeEmitterStatus(false);
             });
     
