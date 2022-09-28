@@ -50,16 +50,6 @@ async function autoRedeem() {
 
     //Sends ETH to the proxy
     await sendETHandAssert(newProxyAddr);
-
-    // const value = 0.1;
-    // ops.to = newProxyAddr;
-    // ops.value = parseEther('0.1');
-    // const tx = await l1SignerTestnet.sendTransaction(ops);
-    // await tx.wait();
-
-    // let balance = await hre.ethers.provider.getBalance(newProxyAddr);
-    // assert(formatEther(balance) == 0.1);
-    // console.log('ETH successfully received in proxy (pre-bridge)');
 }
 
 
@@ -87,15 +77,6 @@ async function manualRedeem() {
 
     //Sends ETH to the proxy
     await sendETHandAssert(newProxyAddr);
-
-    // ops.to = newProxyAddr;
-    // ops.value = parseEther('0.1');
-    // const tx = await l1SignerTestnet.sendTransaction(ops);
-    // await tx.wait();
-
-    // let balance = await hre.ethers.provider.getBalance(newProxyAddr);
-    // assert(formatEther(balance) == 0.1);
-    // console.log('ETH successfully received in proxy (pre-bridge)');
 }
 
 
@@ -106,16 +87,32 @@ async function multipleRedeems() {
         storageBeacon,
         emitterAddr,
         newProxyAddr,
-        redeemedHashes
+        redeemedHashes,
+        proxyFactory,
+        userDetails
     ] = await deployTestnet(true);
+
+    for (let j=0; j < 3; j++) {
+        tx = await proxyFactory.createNewProxy(userDetails, ops);
+        await tx.wait();
+    }
+
+    const proxies = await storageBeacon.getProxyByUser(userDetails[0]); 
+    for (let i=0; i < proxies.length; i++) {
+        console.log(`proxy #${i+1}: `, proxies[i]);
+
+        await sendETHandAssert(proxies[i]);
+    }
+
+
 
 
 }
 
 
 
-autoRedeem();
-// manualRedeem(); //try it out as it is - and then multiple taskIds on event-listener.js
+await autoRedeem();
+// await manualRedeem();
 
 
 

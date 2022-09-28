@@ -204,7 +204,6 @@ async function deployTestnet(testSigner = false, manualRedeem = false) {
    
     //Calculate fees on L1 > L2 arbitrum tx 
     // manualRedeem = true; //**** comment in for manualRedeem ****
-    console.log('manualRedeem (false): ', manualRedeem);
     let [ maxSubmissionCost, gasPriceBid, maxGas, autoRedeem ] = await getArbitrumParams(userDetails, manualRedeem);
 
     //Deploys Emitter
@@ -316,12 +315,13 @@ async function deployTestnet(testSigner = false, manualRedeem = false) {
         emitterAddr,
         newProxyAddr,
         redeemedHashes,
-        proxyFactory
+        proxyFactory,
+        userDetails
     ];
 
 }
 
-// deployTestnet();
+deployTestnet();
 
 
 async function simulateDeployment() {
