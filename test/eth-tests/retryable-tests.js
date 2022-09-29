@@ -3,7 +3,7 @@ const { parseEther, formatEther } = ethers.utils;
 const { deployTestnet, simulateDeployment } = require('../../scripts/begin-testnet.js');
 const { startListening } = require('./event-listener-for-test.js');
 
-const { ops, l1SignerTestnet } = require('../../scripts/state-vars.js');
+const { ops, l1SignerTestnet, usdtAddrArb, defaultSlippage, factoryABI } = require('../../scripts/state-vars.js');
 const { assert } = require("console");
 
 
@@ -80,39 +80,10 @@ async function manualRedeem() {
 }
 
 
-async function multipleRedeems() {
-    assertProof();
 
-    const [
-        storageBeacon,
-        emitterAddr,
-        newProxyAddr,
-        redeemedHashes,
-        proxyFactory,
-        userDetails
-    ] = await deployTestnet(true);
+(async () => await autoRedeem())();
+(async () => await manualRedeem())();
 
-    for (let j=0; j < 3; j++) {
-        tx = await proxyFactory.createNewProxy(userDetails, ops);
-        await tx.wait();
-    }
-
-    const proxies = await storageBeacon.getProxyByUser(userDetails[0]); 
-    for (let i=0; i < proxies.length; i++) {
-        console.log(`proxy #${i+1}: `, proxies[i]);
-
-        await sendETHandAssert(proxies[i]);
-    }
-
-
-
-
-}
-
-
-
-await autoRedeem();
-// await manualRedeem();
 
 
 

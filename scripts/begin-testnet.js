@@ -321,10 +321,10 @@ async function deployTestnet(testSigner = false, manualRedeem = false) {
 
 }
 
-deployTestnet();
+// deployTestnet();
 
 
-async function simulateDeployment() {
+async function simulateDeployment2() {
     const storageBeaconAddr = '0xaF05BC01645d87Ea822C5ebD397CB3BEBe900502';
     const newProxyAddr = '0x0b2f0a7655E3a48D4CFfe09e65123B2A90bAd0CB';
     const redeemedHashesAddr = '0x87619bEb967f96534C616Cc3147dD3d1907c1C74';
@@ -334,6 +334,21 @@ async function simulateDeployment() {
         newProxyAddr,
         redeemedHashesAddr
     ];
+}
+
+async function simulateDeployment() {
+    const storageBeaconAddr = '0xF15423Bce9704Fc6E3199c685B46C03b67AF4217';
+    const emitterAddr = '0xBDf7Acf088814912329aC12c6895c0b9FE690c93';
+    const redeemedHashesAddr = '0xFf3DaB28E5dEf3416a68B26A022cf557499F856a';
+    const proxyFactoryAddr = '0xFa2EA7C79190956B6f8F95e191533E36F68EB7d1';
+
+    return [
+        storageBeaconAddr,
+        emitterAddr,
+        redeemedHashesAddr,
+        proxyFactoryAddr
+    ];
+
 }
 
 

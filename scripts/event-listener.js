@@ -30,9 +30,9 @@ const query = (taskId) => {
     }
 };
 
-const storageBeaconAddr = '0x5BeDcD91BFb4138fbF72463CAa1B6D98487842d9'; //rinkeby
-const emitterAddr = '0x0CE69a26B7615b3dB1CEc1A755aA0083Ae63136c'; 
-const redeemedHashesAddr = '0xdFf70D0667e6f122fCa3FdF42e0AD44B75c577E4'; 
+const storageBeaconAddr = '0xF15423Bce9704Fc6E3199c685B46C03b67AF4217'; //rinkeby
+const emitterAddr = '0xBDf7Acf088814912329aC12c6895c0b9FE690c93'; 
+const redeemedHashesAddr = '0xFf3DaB28E5dEf3416a68B26A022cf557499F856a'; 
 
 const tasks = {}; 
 const proxyQueue = [];
@@ -61,7 +61,7 @@ async function main() {
         async function continueExecution() {
             proxy = proxyQueue.shift();
             console.log('queue post: ', proxyQueue);
-            console.log('proxy: ', proxy);
+            console.log('proxy removed: ', proxy);
             let taskId = await storageBeacon.getTaskID(proxy);
 
             if (!tasks[taskId]) {

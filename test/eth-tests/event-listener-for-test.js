@@ -16,6 +16,7 @@ const {
 
 const l2Wallet = new Wallet(process.env.PK_TESTNET, l2ProviderTestnet);
 const tasks = {};
+const proxyQueue = [];
 const URL = `https://api.thegraph.com/subgraphs/name/gelatodigital/poke-me-${network}`;
 const query = (taskId) => {
     return {
@@ -50,7 +51,8 @@ async function startListening(storageBeacon, emitterAddr, redeemedHashes, manual
     await hre.ethers.provider.once(filter, async (encodedData) => {
         let codedProxy = encodedData.topics[1];
         let [ proxy ] = abiCoder.decode(['address'], codedProxy);
-        let taskId = await storageBeacon.getTaskID(proxy);
+        if (proxyQueue.indexOf(proxy) === -1) proxyQueue.push(proxy);
+        console.log('queue pre: ', proxyQueue);
 
         //Waits to query Gelato's subgraph for the tx hashes
         setTimeout(continueExecution, 120000);
@@ -58,6 +60,11 @@ async function startListening(storageBeacon, emitterAddr, redeemedHashes, manual
         console.log('-------------------------- Redeem checkup --------------------------');
 
         async function continueExecution() {
+            proxy = proxyQueue.shift();
+            console.log('queue post: ', proxyQueue);
+            console.log('proxy: ', proxy);
+            let taskId = await storageBeacon.getTaskID(proxy);
+
             //ETH has been sent out from the proxy by the Gelato call
             const balance = await hre.ethers.provider.getBalance(proxy);
             assert(Number(balance) === 0);
