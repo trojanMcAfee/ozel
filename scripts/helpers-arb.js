@@ -1,8 +1,9 @@
-const diamond = require('diamond-util');
+const diamond = require('diamond-util'); 
 const assert = require('assert');
 const { getSelectors } = require('./libraries/diamond.js');
 const { defaultAbiCoder: abiCoder, formatEther, keccak256, toUtf8Bytes } = ethers.utils;
 const { MaxUint256 } = ethers.constants;
+const myDiamondUtil = require('./myDiamondUtil.js');
 
 const {
     wethAddr,
@@ -335,7 +336,7 @@ async function deploy(n = 0) {
     const functionCall = diamondInit.interface.encodeFunctionData('init', [VarsAndAddrStruct]);
 
     //Deploys diamond
-    const deployedDiamond = await diamond.deploy({ 
+    const deployedDiamond = await myDiamondUtil.deploy({ 
         diamondName: 'Diamond',
         facets: [
             ['DiamondCutFacet', diamondCutFacet],
@@ -347,6 +348,7 @@ async function deploy(n = 0) {
             ['OwnershipFacet', ownershipFacet],
             ['RevenueFacet', revenueFacet]
         ],
+        // args: [callerAddr, functionCall, diamondInit.address, nonRevenueFacets],
         args: '',
         overrides: {
             callerAddr, functionCall, diamondInit: diamondInit.address, nonRevenueFacets

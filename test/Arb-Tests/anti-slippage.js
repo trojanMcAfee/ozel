@@ -78,7 +78,7 @@ describe('Anti-slippage system', async function () {
          * in order to provoke all trades to fail (due to slippage) and invoke
          * the last resort mechanism (send WETH back to user)
          */ 
-        xit('should replace swapsUserToken for V1 / SwapsForUserTokenV1', async () => {            
+        it('should replace swapsUserToken for V1 / SwapsForUserTokenV1', async () => {            
             ({ testingNum, balance: balanceWETH } = await replaceForModVersion('SwapsForUserTokenV1', true, selector, userDetails, true));
             assert(formatEther(balanceWETH) > 0);  
         });
@@ -88,7 +88,7 @@ describe('Anti-slippage system', async function () {
          * Added a condition so it failes the first attempt due to slippage
          * but makes the trade in the second.
          */
-        xit('should replace swapsUserToken for V2 / SwapsForUserTokenV2', async () => {            
+        it('should replace swapsUserToken for V2 / SwapsForUserTokenV2', async () => {            
             ({ testingNum, balance: balanceUSDT } = await replaceForModVersion('SwapsForUserTokenV2', true, selector, userDetails));
             assert.equal(testingNum, 23);
             assert(balanceUSDT / 10 ** 6 > 0);
@@ -100,7 +100,7 @@ describe('Anti-slippage system', async function () {
          * swap exchanged half of amountIn to userToken, and due to the failure on
          * the 3rd swap, the other half of amountIn was sent as WETH back to the user.
          */
-        xit('should replace swapsUserToken for V3 / SwapsForUserTokenV3', async () => {            
+        it('should replace swapsUserToken for V3 / SwapsForUserTokenV3', async () => {            
             balanceUSDTpre = (await USDT.balanceOf(callerAddr)) / 10 ** 6;
             balanceWETHpre = formatEther(await WETH.balanceOf(callerAddr));
 
@@ -130,7 +130,7 @@ describe('Anti-slippage system', async function () {
          * are attempted to be deposited once again through any main action from
          * the app (deposit - withdraw).
          */
-        xit('should add failed fees to its own variable / DepositFeesInDeFiV1', async () => {            
+        it('should add failed fees to its own variable / DepositFeesInDeFiV1', async () => {            
             ({ testingNum } = await replaceForModVersion('DepositFeesInDeFiV1', false, selector, userDetails));
             assert.equal(testingNum, 23);
         });
@@ -138,7 +138,7 @@ describe('Anti-slippage system', async function () {
         /**
          * It deposits -in DeFi- the failedFees that weren't deposited in the prior test.
          */
-        xit('should deposit any failed fees found in the failedFees variable / DepositFeesInDeFiV1', async () => {            
+        it('should deposit any failed fees found in the failedFees variable / DepositFeesInDeFiV1', async () => {            
             await replaceForModVersion('DepositFeesInDeFiV1', false, selector, userDetails);
             receipt = await sendETH(userDetails);
             assert.equal(getTestingNumber(receipt, true), 24);
