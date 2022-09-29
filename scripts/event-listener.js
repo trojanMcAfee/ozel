@@ -53,15 +53,12 @@ async function main() {
         let codedProxy = encodedData.topics[1];
         let [ proxy ] = abiCoder.decode(['address'], codedProxy);
         if (proxyQueue.indexOf(proxy) === -1) proxyQueue.push(proxy);
-        console.log('queue pre: ', proxyQueue);
 
         setTimeout(continueExecution, 120000);
         console.log('setTimeout rolling...');
 
         async function continueExecution() {
             proxy = proxyQueue.shift();
-            console.log('queue post: ', proxyQueue);
-            console.log('proxy removed: ', proxy);
             let taskId = await storageBeacon.getTaskID(proxy);
 
             if (!tasks[taskId]) {

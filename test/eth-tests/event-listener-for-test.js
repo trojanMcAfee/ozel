@@ -52,7 +52,6 @@ async function startListening(storageBeacon, emitterAddr, redeemedHashes, manual
         let codedProxy = encodedData.topics[1];
         let [ proxy ] = abiCoder.decode(['address'], codedProxy);
         if (proxyQueue.indexOf(proxy) === -1) proxyQueue.push(proxy);
-        console.log('queue pre: ', proxyQueue);
 
         //Waits to query Gelato's subgraph for the tx hashes
         setTimeout(continueExecution, 120000);
@@ -61,8 +60,6 @@ async function startListening(storageBeacon, emitterAddr, redeemedHashes, manual
 
         async function continueExecution() {
             proxy = proxyQueue.shift();
-            console.log('queue post: ', proxyQueue);
-            console.log('proxy: ', proxy);
             let taskId = await storageBeacon.getTaskID(proxy);
 
             //ETH has been sent out from the proxy by the Gelato call

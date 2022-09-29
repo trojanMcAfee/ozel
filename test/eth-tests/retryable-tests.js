@@ -80,7 +80,6 @@ async function manualRedeem() {
 }
 
 
-
 (async () => await autoRedeem())();
 (async () => await manualRedeem())();
 
