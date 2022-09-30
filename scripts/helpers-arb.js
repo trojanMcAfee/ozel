@@ -31,7 +31,8 @@ const {
     poolFeeUni,
     revenueAmounts,
     diamondABI,
-    usxAddr
+    usxAddr,
+    ops
 } = require('./state-vars.js');
 
 
@@ -67,7 +68,7 @@ async function transferOZL(recipient, amount, signerIndex = 0) {
 async function withdrawShareOZL(userDetails, receiverAddr, balanceOZL, signerIndex = 0) {  
     const signers = await hre.ethers.getSigners();
     const signer = signers[signerIndex ? 0 : signerIndex];
-    await OZLDiamond.connect(signer).withdrawUserShare(userDetails, receiverAddr, balanceOZL);
+    await OZLDiamond.connect(signer).withdrawUserShare(userDetails, receiverAddr, balanceOZL, ops);
 } 
 
 
@@ -77,7 +78,11 @@ async function sendETH(userDetails, signerIndex = 0, ozelIndex) {
     const signer = signers[signerIndex ? 0 : signerIndex];
     let value = ethers.utils.parseEther(signerIndex === 'no value' ? '0' : '10');
     value = ozelIndex === 'ozel index test' ? ethers.utils.parseEther('100') : value;
-    const tx = await OZLDiamond.connect(signer).exchangeToUserToken(userDetails, { value });
+    const tx = await OZLDiamond.connect(signer).exchangeToUserToken(userDetails, {
+        value,
+        gasLimit: ethers.BigNumber.from('5000000'),
+        gasPrice: ethers.BigNumber.from('40134698068')
+    });
     const receipt = await tx.wait();
     return receipt;
 }
@@ -94,7 +99,7 @@ async function getOzelIndex() {
 async function addTokenToDatabase(tokenSwap, signerIndex = 0) {
     const signers = await hre.ethers.getSigners();
     const signer = signers[signerIndex];
-    await OZLDiamond.connect(signer).addTokenToDatabase(tokenSwap);
+    await OZLDiamond.connect(signer).addTokenToDatabase(tokenSwap, ops);
 }
 
 
@@ -219,7 +224,7 @@ async function replaceForModVersion(contractName, checkUSDTbalance, selector, us
 
 
 async function queryTokenDatabase(token) {
-    return await OZLDiamond.queryTokenDatabase(token);
+    return await OZLDiamond.queryTokenDatabase(token, ops);
 }
 
 

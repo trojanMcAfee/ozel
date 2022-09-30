@@ -25,7 +25,8 @@ const {
     deadAddr,
     diamondABI,
     usxAddr,
-    dForcePoolAddr
+    dForcePoolAddr,
+    ops
 } = require('../../scripts/state-vars.js');
 
 
@@ -238,7 +239,7 @@ describe('Unit testing', async function () {
     describe('ExecutorFacet', async () => { 
         it('shout not allow an unauthorized user to run the function / updateExecutorState()', async () => {
             await assert.rejects(async () => {
-                await ozlDiamond.updateExecutorState(evilAmount, deadAddr, 1);
+                await ozlDiamond.updateExecutorState(evilAmount, deadAddr, 1, ops);
             }, {
                 name: 'Error',
                 message: (await err(callerAddr)).notAuthorized
@@ -248,7 +249,7 @@ describe('Unit testing', async function () {
         it('shout not allow an unauthorized user to run the function / executeFinalTrade()', async () => {
             evilSwapDetails = [0, 0, deadAddr, deadAddr, deadAddr];
             await assert.rejects(async () => {
-                await ozlDiamond.executeFinalTrade(evilSwapDetails, 0, deadAddr, 2);
+                await ozlDiamond.executeFinalTrade(evilSwapDetails, 0, deadAddr, 2, ops);
             }, {
                 name: 'Error',
                 message: (await err(callerAddr)).notAuthorized
@@ -257,7 +258,7 @@ describe('Unit testing', async function () {
 
         it('shout not allow an unauthorized user to run the function / modifyPaymentsAndVolumeExternally()', async () => {
             await assert.rejects(async () => {
-                await ozlDiamond.modifyPaymentsAndVolumeExternally(caller2Addr, evilAmount, 5);
+                await ozlDiamond.modifyPaymentsAndVolumeExternally(caller2Addr, evilAmount, 5, ops);
             }, {
                 name: 'Error',
                 message: (await err(callerAddr)).notAuthorized
@@ -266,7 +267,7 @@ describe('Unit testing', async function () {
 
         it('shout not allow an unauthorized user to run the function / transferUserAllocation()', async () => {
             await assert.rejects(async () => {
-                await ozlDiamond.transferUserAllocation(deadAddr, deadAddr, evilAmount, evilAmount, 6);
+                await ozlDiamond.transferUserAllocation(deadAddr, deadAddr, evilAmount, evilAmount, 6, ops);
             }, {
                 name: 'Error',
                 message: (await err(callerAddr)).notAuthorized
@@ -277,7 +278,7 @@ describe('Unit testing', async function () {
     describe('oz4626Facet', async () => { 
         it('shout not allow an unauthorized user to run the function / deposit()', async () => {
             await assert.rejects(async () => {
-                await ozlDiamond.deposit(evilAmount, deadAddr, 0);
+                await ozlDiamond.deposit(evilAmount, deadAddr, 0, ops);
             }, {
                 name: 'Error',
                 message: (await err(callerAddr)).notAuthorized
@@ -286,7 +287,7 @@ describe('Unit testing', async function () {
 
         it('shout not allow an unauthorized user to run the function / redeem()', async () => {
             await assert.rejects(async () => {
-                await ozlDiamond.redeem(evilAmount, caller2Addr, caller2Addr, 3);
+                await ozlDiamond.redeem(evilAmount, caller2Addr, caller2Addr, 3, ops);
             }, {
                 name: 'Error',
                 message: (await err(callerAddr)).notAuthorized
@@ -297,7 +298,7 @@ describe('Unit testing', async function () {
     describe('oz20Facet', async () => { 
         it('shout not allow an unauthorized user to run the function / burn()', async () => {
             await assert.rejects(async () => {
-                await ozlDiamond.burn(caller2Addr, evilAmount, 4);
+                await ozlDiamond.burn(caller2Addr, evilAmount, 4, ops);
             }, {
                 name: 'Error',
                 message: (await err(callerAddr)).notAuthorized
