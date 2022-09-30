@@ -5,7 +5,7 @@ require('dotenv').config();
 
 const { err } = require('../errors.js'); 
 
-const {
+const { 
     balanceOfOZL, 
     transferOZL, 
     withdrawShareOZL, 
@@ -34,7 +34,8 @@ const {
     crvTricrypto,
     diamondABI,
     usxAddr,
-    dForcePoolAddr
+    dForcePoolAddr,
+    ops
 } = require('../../scripts/state-vars.js');
 
 
@@ -54,9 +55,10 @@ let iface, abi;
 let selector, balanceRenBTC, balanceWETH, balanceUSDT, balanceWBTC, balanceMIM;
 let yvCrvTri, testingNum, balanceUSDC, balanceTri;
 let ozlDiamond, owner;
+let addFlag, tokenSwap;
 
 /**
- * DURATION of all tests: 13:45 mins
+ * DURATION of all tests: 2:47 mins
  */
 
 
@@ -96,10 +98,18 @@ describe('Integration testing', async function () {
         ];
     });
 
+    
+    /**
+     * Since Curve doesn't have testnets, sendETH() sends ETH directly to
+     * exchangeToUserToken() which would simulate an Arbitrum L1 > L2 tx where
+     * sendToArb() in L1 in ozPayMe would send the ETH to OZLFacet in L2,
+     * 
+     * Meant to be run as one test.
+    */
 
     describe('1st user, 1st transfer', async () => {
         it('should convert ETH to userToken (FRAX)', async () => {
-            await sendETH(userDetails); 
+            receipt = await sendETH(userDetails); 
             assert(formatEther(await FRAX.balanceOf(callerAddr)) > 0);
         });
 
@@ -180,7 +190,7 @@ describe('Integration testing', async function () {
 
     describe("1st user's transfer of OZL tokens", async () => {
         it('should transfer half of OZL tokens to 2nd user', async () => {
-            await transferOZL(caller2Addr, parseEther((OZLbalanceFirstUser / 2).toString()));
+            await transferOZL(caller2Addr, parseEther((OZLbalanceFirstUser / 2).toString()));            
             OZLbalanceFirstUser = await balanceOfOZL(callerAddr);
             OZLbalanceSecondUser = await balanceOfOZL(caller2Addr);
             assert(OZLbalanceSecondUser > OZLbalanceFirstUser);
@@ -258,7 +268,6 @@ describe('Integration testing', async function () {
             assert(currYvCrvBalance < preYvCrvBalance);
         });
     });
-    
 });
 
 
@@ -293,6 +302,7 @@ describe('Unit testing', async function () {
         ];
 
         ozlDiamond = await hre.ethers.getContractAt(diamondABI, deployedDiamond.address);
+        evilAmount = parseEther('1000');
     });
 
     describe('OZLFacet', async () => { 
@@ -303,7 +313,7 @@ describe('Unit testing', async function () {
                     await sendETH(userDetails);
                 }, {
                     name: 'Error',
-                    message: err().zeroAddress 
+                    message: (await err()).zeroAddress 
                 });
             });
     
@@ -314,7 +324,7 @@ describe('Unit testing', async function () {
                     await sendETH(userDetails);
                 }, {
                     name: 'Error',
-                    message: err().zeroAddress 
+                    message: (await err()).zeroAddress 
                 });
             });
     
@@ -325,7 +335,7 @@ describe('Unit testing', async function () {
                     await sendETH(userDetails);
                 }, {
                     name: 'Error',
-                    message: err().zeroSlippage 
+                    message: (await err()).zeroSlippage 
                 });
             });
     
@@ -336,7 +346,7 @@ describe('Unit testing', async function () {
                     await sendETH(userDetails);
                 }, {
                     name: 'Error',
-                    message: err().tokenNotFound 
+                    message: (await err(deadAddr)).tokenNotFound 
                 });
             });
     
@@ -346,20 +356,21 @@ describe('Unit testing', async function () {
                     await sendETH(userDetails, 'no value');
                 }, {
                     name: 'Error',
-                    message: err().zeroMsgValue 
+                    message: (await err()).zeroMsgValue 
                 });
             });
         });
 
         describe('withdrawUserShare()', async () => {
+            beforeEach(async () => await enableWithdrawals(true));
+
             it('should fail with user as address(0)', async () => {
-                await enableWithdrawals(true);
                 userDetails[0] = nullAddr;
                 await assert.rejects(async () => {
                     await withdrawShareOZL(userDetails, callerAddr, parseEther((await balanceOfOZL(callerAddr)).toString()));
                 }, {
                     name: 'Error',
-                    message: err().zeroAddress 
+                    message: (await err()).zeroAddress 
                 });
             });
     
@@ -370,7 +381,7 @@ describe('Unit testing', async function () {
                     await withdrawShareOZL(userDetails, callerAddr, parseEther((await balanceOfOZL(callerAddr)).toString()));
                 }, {
                     name: 'Error',
-                    message: err().zeroAddress 
+                    message: (await err()).zeroAddress 
                 });
             });
     
@@ -381,7 +392,7 @@ describe('Unit testing', async function () {
                     await withdrawShareOZL(userDetails, callerAddr, parseEther((await balanceOfOZL(callerAddr)).toString()));
                 }, {
                     name: 'Error',
-                    message: err().zeroSlippage 
+                    message: (await err()).zeroSlippage 
                 });
             });
     
@@ -392,7 +403,7 @@ describe('Unit testing', async function () {
                     await withdrawShareOZL(userDetails, callerAddr, parseEther((await balanceOfOZL(callerAddr)).toString()));
                 }, {
                     name: 'Error',
-                    message: err().tokenNotFound 
+                    message: (await err(deadAddr)).tokenNotFound 
                 });
             });
 
@@ -402,7 +413,7 @@ describe('Unit testing', async function () {
                     await withdrawShareOZL(userDetails, nullAddr, parseEther((await balanceOfOZL(callerAddr)).toString()));
                 }, {
                     name: 'Error',
-                    message: err().zeroAddress 
+                    message: (await err()).zeroAddress 
                 });
             });
 
@@ -411,13 +422,13 @@ describe('Unit testing', async function () {
                     await withdrawShareOZL(userDetails, callerAddr, 0);
                 }, {
                     name: 'Error',
-                    message: err().zeroShares 
+                    message: (await err()).zeroShares 
                 });
             });
         });
 
         describe('addTokenToDatabase()', async () => {
-            it('should allow the owner to add a new userToken (USX) to database', async () => {
+            beforeEach(async () => {
                 //dForcePool --> USX: 0 / USDT: 2 / USDC: 1
                 tokenSwap = [
                     2,
@@ -426,8 +437,12 @@ describe('Unit testing', async function () {
                     usxAddr,
                     dForcePoolAddr
                 ];
-                await addTokenToDatabase(tokenSwap);
-        
+                if (!addFlag) await addTokenToDatabase(tokenSwap);
+            });
+
+            afterEach(() => addFlag = true);
+
+            it('should allow the owner to add a new userToken (USX) to database', async () => {
                 balanceUSX = await USX.balanceOf(callerAddr);
                 assert.equal(formatEther(balanceUSX), 0);
                 
@@ -447,7 +462,7 @@ describe('Unit testing', async function () {
                     await addTokenToDatabase(tokenSwap, 1);
                 }, {
                     name: 'Error',
-                    message: err(2).notAuthorized 
+                    message: (await err(2)).notAuthorized 
                 });
             });
         });
@@ -455,40 +470,39 @@ describe('Unit testing', async function () {
 
     describe('ExecutorFacet', async () => { 
         it('shout not allow an unauthorized user to run the function / updateExecutorState()', async () => {
-            evilAmount = parseEther('1000');
             await assert.rejects(async () => {
-                await ozlDiamond.updateExecutorState(evilAmount, deadAddr, 1);
+                await ozlDiamond.updateExecutorState(evilAmount, deadAddr, 1, ops);
             }, {
                 name: 'Error',
-                message: err().notAuthorized 
+                message: (await err(callerAddr)).notAuthorized
             });
         });
 
         it('shout not allow an unauthorized user to run the function / executeFinalTrade()', async () => {
             evilSwapDetails = [0, 0, deadAddr, deadAddr, deadAddr];
             await assert.rejects(async () => {
-                await ozlDiamond.executeFinalTrade(evilSwapDetails, 0, deadAddr, 2);
+                await ozlDiamond.executeFinalTrade(evilSwapDetails, 0, deadAddr, 2, ops);
             }, {
                 name: 'Error',
-                message: err().notAuthorized 
+                message: (await err(callerAddr)).notAuthorized
             });
         });
 
         it('shout not allow an unauthorized user to run the function / modifyPaymentsAndVolumeExternally()', async () => {
             await assert.rejects(async () => {
-                await ozlDiamond.modifyPaymentsAndVolumeExternally(caller2Addr, evilAmount, 5);
+                await ozlDiamond.modifyPaymentsAndVolumeExternally(caller2Addr, evilAmount, 5, ops);
             }, {
                 name: 'Error',
-                message: err().notAuthorized 
+                message: (await err(callerAddr)).notAuthorized
             });
         });
 
         it('shout not allow an unauthorized user to run the function / transferUserAllocation()', async () => {
             await assert.rejects(async () => {
-                await ozlDiamond.transferUserAllocation(deadAddr, deadAddr, evilAmount, evilAmount, 6);
+                await ozlDiamond.transferUserAllocation(deadAddr, deadAddr, evilAmount, evilAmount, 6, ops);
             }, {
                 name: 'Error',
-                message: err().notAuthorized 
+                message: (await err(callerAddr)).notAuthorized
             });
         });
     });
@@ -496,33 +510,30 @@ describe('Unit testing', async function () {
     describe('oz4626Facet', async () => { 
         it('shout not allow an unauthorized user to run the function / deposit()', async () => {
             await assert.rejects(async () => {
-                await ozlDiamond.deposit(evilAmount, deadAddr, 0);
+                await ozlDiamond.deposit(evilAmount, deadAddr, 0, ops);
             }, {
                 name: 'Error',
-                message: err().notAuthorized 
+                message: (await err(callerAddr)).notAuthorized
             });
         });
 
         it('shout not allow an unauthorized user to run the function / redeem()', async () => {
             await assert.rejects(async () => {
-                await ozlDiamond.redeem(evilAmount, caller2Addr, caller2Addr, 3);
+                await ozlDiamond.redeem(evilAmount, caller2Addr, caller2Addr, 3, ops);
             }, {
                 name: 'Error',
-                message: err().notAuthorized 
+                message: (await err(callerAddr)).notAuthorized
             });
         });
-
-
-
     });
 
     describe('oz20Facet', async () => { 
         it('shout not allow an unauthorized user to run the function / burn()', async () => {
             await assert.rejects(async () => {
-                await ozlDiamond.burn(caller2Addr, evilAmount, 4);
+                await ozlDiamond.burn(caller2Addr, evilAmount, 4, ops);
             }, {
                 name: 'Error',
-                message: err().notAuthorized 
+                message: (await err(callerAddr)).notAuthorized
             });
         });
     });
@@ -613,14 +624,14 @@ describe('Ozel Index', async function () {
             if (j == 4) j = 0;
             userDetails[0] = await signers[j].getAddress();
 
-            await sendETH(userDetails, j); 
+            await sendETH(userDetails, j, 'ozel index test'); 
 
             ozelIndex = formatEther(await getOzelIndex());
             if (i === 0) higherIndex = ozelIndex;
 
-            console.log('Ozel Index: ', ozelIndex);
+            console.log('Ozel Index: ', ozelIndex); 
 
-            a = await balanceOfOZL(accounts[0]);
+            a = await balanceOfOZL(accounts[0]); 
             console.log('OZL bal #0: ', a);
             b = await balanceOfOZL(accounts[1]);
             console.log('OZL bal #1: ', b);
@@ -628,6 +639,7 @@ describe('Ozel Index', async function () {
             console.log('OZL bal #2: ', c);
             d = await balanceOfOZL(accounts[3]);
             console.log('OZL bal #3: ', d);
+            
             const total = a + b + c + d;
             console.log('TOTAL: ', total);
 
@@ -639,7 +651,6 @@ describe('Ozel Index', async function () {
         }
     });
 });
-
 
 
 /**
@@ -690,8 +701,6 @@ describe('Anti-slippage system', async function () {
          * the last resort mechanism (send WETH back to user)
          */ 
         it('should replace swapsUserToken for V1 / SwapsForUserTokenV1', async () => {            
-            balanceWETH = await WETH.balanceOf(callerAddr);
-            assert.equal(formatEther(balanceWETH), 0);
             ({ testingNum, balance: balanceWETH } = await replaceForModVersion('SwapsForUserTokenV1', true, selector, userDetails, true));
             assert(formatEther(balanceWETH) > 0);  
         });
@@ -722,12 +731,18 @@ describe('Anti-slippage system', async function () {
             halfInitialTransferInUSDT = 255000 / 2;
             halfInitialTransferInWETH = 100 / 2;
 
+            halfInitialTransferInUSDTWithSlippage = halfInitialTransferInUSDT + (halfInitialTransferInUSDT / defaultSlippage);
+
             balanceUSDTpost = (await USDT.balanceOf(callerAddr)) / 10 ** 6;
             balanceUSDTdiff = balanceUSDTpost - balanceUSDTpre;
             balanceWETHdiff = balanceWETH - balanceWETHpre;
 
             assert.equal(testingNum, 23);
-            assert(balanceUSDTdiff > 0 && balanceUSDTdiff < halfInitialTransferInUSDT);
+            assert(
+                balanceUSDTdiff > 0 && 
+                ( balanceUSDTdiff < halfInitialTransferInUSDT || 
+                    balanceUSDTdiff > halfInitialTransferInUSDT && balanceUSDTdiff < halfInitialTransferInUSDTWithSlippage )
+            );
             assert(balanceWETHdiff > 0 && balanceWETHdiff < halfInitialTransferInWETH);
         });
 
@@ -910,7 +925,6 @@ describe('My Revenue', async function() {
         abi = ['function checkForRevenue() external payable'];
         iface = new ethers.utils.Interface(abi);
         selector = iface.getSighash('checkForRevenue');
-
         tricryptoCrv = await hre.ethers.getContractAt('IERC20', crvTricrypto);
 
         //Clean up from past tests
@@ -919,10 +933,11 @@ describe('My Revenue', async function() {
 
         ozlDiamond = await hre.ethers.getContractAt(diamondABI, deployedDiamond.address);
 
-        //Clean up from past tests
         balanceWETH = await WETH.balanceOf(callerAddr);
         await WETH.transfer(deadAddr, balanceWETH);
     });
+
+    afterEach(() => feesVaultFlag = true);
 
 
     it('should send the accrued revenue to the deployer in USDC / ComputeRevenueV1', async () => {
@@ -938,9 +953,8 @@ describe('My Revenue', async function() {
         balanceUSDC = await USDC.balanceOf(callerAddr);
         assert(balanceUSDC / 10 ** 6 > 0);
 
-        //Cleans up
+        //Clean up
         await USDC.transfer(deadAddr, balanceUSDC); 
-
     }); 
 
     it('should send the accrued revenue to the deployer in tricrypto / ComputeRevenueV2', async () => {
@@ -949,6 +963,7 @@ describe('My Revenue', async function() {
 
         await replaceForModVersion('ComputeRevenueV2', false, selector, userDetails, false, true);
        
+        if (!feesVaultFlag) await sendETH(userDetails);
         receipt = await sendETH(userDetails);
         testingNum = getTestingNumber(receipt);
         assert.equal(testingNum, 23);
@@ -958,7 +973,6 @@ describe('My Revenue', async function() {
 
         //Clean up
         await tricryptoCrv.transfer(deadAddr, balanceTri);
-
     });
 
     it('should send the accrued revenue to the deployer in USDC in two txs / ComputeRevenueV3', async () => {
@@ -967,6 +981,7 @@ describe('My Revenue', async function() {
 
         await replaceForModVersion('ComputeRevenueV3', false, selector, userDetails, false, true);
         
+        if (!feesVaultFlag) await sendETH(userDetails);
         receipt = await sendETH(userDetails);
         testingNum = getTestingNumber(receipt);
         assert.equal(testingNum, 23);
@@ -985,8 +1000,9 @@ describe('My Revenue', async function() {
         assert.equal(formatEther(balanceTri), 0);
 
         await replaceForModVersion('ComputeRevenueV4', false, selector, userDetails);
+        
+        if (!feesVaultFlag) await sendETH(userDetails);
         receipt = await sendETH(userDetails);
-
         testingNum = getTestingNumber(receipt);
         assert.equal(testingNum, 23);
 
@@ -1003,6 +1019,7 @@ describe('My Revenue', async function() {
         balanceWETH = await WETH.balanceOf(callerAddr);
         assert.equal(formatEther(balanceWETH), 0); 
 
+        if (!feesVaultFlag) await sendETH(userDetails);
         ({ a, testingNum } = await replaceForModVersion('SwapWETHforRevenueV1', false, selector, userDetails));
         assert.equal(testingNum, 23);
 
@@ -1017,6 +1034,7 @@ describe('My Revenue', async function() {
         balanceUSDC = await USDC.balanceOf(callerAddr);
         assert.equal(balanceUSDC / 10 ** 6, 0);
 
+        if (!feesVaultFlag) await sendETH(userDetails);
         await replaceForModVersion('SwapWETHforRevenueV2', false, selector, userDetails);
         receipt = await sendETH(userDetails);
         testingNum = getTestingNumber(receipt);
@@ -1036,6 +1054,7 @@ describe('My Revenue', async function() {
         balanceWETH = await WETH.balanceOf(callerAddr);
         assert.equal(formatEther(balanceWETH), 0); 
 
+        if (!feesVaultFlag) await sendETH(userDetails);
         ({ testingNum } = await replaceForModVersion('SwapWETHforRevenueV3', false, selector, userDetails));
         assert.equal(testingNum, 23);
 

@@ -34,7 +34,7 @@ let ozlDiamond, owner, feesVaultFlag;
 /**
  * Tests the anti-slippage system used in RevenueFacet.sol
  */
- describe('My Revenue', async function() {
+describe('My Revenue', async function() {
     this.timeout(1000000);
 
     before( async () => {

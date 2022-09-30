@@ -97,7 +97,7 @@ const l2Provider = new ethers.providers.JsonRpcProvider(process.env.ARBITRUM);
 let l1Signer, l2Signer, l1SignerTestnet, l2SignerTestnet;
 let l1ProviderTestnet, l2ProviderTestnet;
 
-let network = 'mainnet';
+let network = 'arbitrum';
 switch(network) {
     case 'goerli':
         chainId = 421611;
