@@ -1,36 +1,12 @@
-const { ethers, providers, Wallet } = require("ethers");
-const { parseEther, formatEther, defaultAbiCoder: abiCoder, keccak256 } = ethers.utils;
-const { deploy } = require('./deploy.js');
-// const { Bridge } = require('arb-ts');
-const { L1TransactionReceipt, L1ToL2MessageStatus } = require('@arbitrum/sdk');
-const { hexDataLength } = require('@ethersproject/bytes');
-require('dotenv').config();
-
-const {
-    balanceOfOZL, 
-    transferOZL, 
-    withdrawShareOZL, 
-    getVarsForHelpers,
-    sendETH,
-    getCalldata,
-    getCalldata2
-} = require('./helpers-arb.js');
 
 const { getArbitrumParams } = require('./helpers-eth.js');
 
 const { 
-    chainId,
     pokeMeOpsAddr,
-    hopBridge,
     usdtAddrArb,
-    wbtcAddr,
-    renBtcAddr,
     usdcAddr,
-    mimAddr,
-    fraxAddr,
     inbox,
     signerX,
-    l2Provider,
     l2Signer,
     l1Signer,
     wethAddr,
@@ -39,10 +15,7 @@ const {
     ETH,
     swapRouterUniAddr,
     poolFeeUni,
-    nullAddr,
     chainlinkAggregatorAddr,
-    l1ProviderTestnet,
-    l2ProviderTestnet,
     ops,
     testnetReceiver,
     myReceiver,
@@ -90,84 +63,6 @@ async function deployContract(contractName, signer, constrArgs) {
         contract
     ];
 }
-
-
-
-
-async function manualRedeem() {
-    const txHash = '0xa5feb8901205b12c4a586ceec36b39356fb6b50f99d01de1d18ab3835dd359bb';
-    const l1Provider = new providers.JsonRpcProvider(process.env.RINKEBY);
-    const l2Provider = new providers.JsonRpcProvider(process.env.ARB_TESTNET);
-    const l2Wallet = new Wallet(process.env.PK, l2Provider);
-
-    const receipt = await l1Provider.getTransactionReceipt(txHash);
-    const l1Receipt = new L1TransactionReceipt(receipt);
-    const message = await l1Receipt.getL1ToL2Message(l2Wallet);
-    const status = (await message.waitForStatus()).status;
-
-    if (status === L1ToL2MessageStatus.REDEEMED) {
-        console.log(`L2 retryable txn is already executed 🥳 ${message.l2TxHash}`)
-        return
-      } else {
-        console.log(
-          `L2 retryable txn failed with status ${L1ToL2MessageStatus[status]}`
-        )
-
-        await message.redeem({
-            gasLimit: ethers.BigNumber.from('5000000'),
-            gasPrice: ethers.BigNumber.from('40134698068')
-        });
-
-        console.log(
-            'The L2 side of your transaction is now execeuted 🥳 :',
-            message.l2TxHash
-          )
-      }
-
-}
-
-// manualRedeem();
-
-
-async function redeemHashes() {
-    const l2Wallet = new Wallet(process.env.PK, l2ProviderTestnet);
-
-    const RedeemedHashes = await hre.ethers.getContractFactory('RedeemedHashes');
-    const redeemedHashes = await RedeemedHashes.connect(l2Wallet).deploy();
-    await redeemedHashes.deployed();
-    console.log('redeemedHashes deployed to: ', redeemedHashes.address);
-}
-
-// redeemHashes();
-
-
-async function createProxys() {
-    const signerAddr = await signerX.getAddress();
-    console.log('signer address: ', signerAddr);
-
-    const userDetails = [
-        signerAddr,
-        usdtAddrArb,
-        defaultSlippage
-    ];
-    const ozERC1967proxyAddr = '0xfFC6fA60fC22f593Bc0eB9b08bdd36c062f3dA0E';
-    const storageBeaconAddr = '0x6A919AF1d607d294205c1EAd607ED0B0ce8079fd';
-    const proxyFactory = await hre.ethers.getContractAt(factoryABI, ozERC1967proxyAddr);
-    const storageBeacon = await hre.ethers.getContractAt('StorageBeacon', storageBeaconAddr);
-
-    for (let j=0; j < 3; j++) {
-        tx = await proxyFactory.createNewProxy(userDetails, ops);
-        await tx.wait();
-    }
-
-    const proxies = await storageBeacon.getProxyByUser(signerAddr); 
-    for (let i=0; i < proxies.length; i++) {
-        console.log(`proxy #${i+1}: `, proxies[i]);
-    }
-}
-
-// createProxys();
-
 
 
 //Deploys ozPayMe in mainnet and routes ETH to Manager (OZL) in Arbitrum
@@ -321,49 +216,12 @@ async function deployTestnet(testSigner = false, manualRedeem = false) {
 
 }
 
-// deployTestnet();
-
-
-async function simulateDeployment2() {
-    const storageBeaconAddr = '0xaF05BC01645d87Ea822C5ebD397CB3BEBe900502';
-    const newProxyAddr = '0x0b2f0a7655E3a48D4CFfe09e65123B2A90bAd0CB';
-    const redeemedHashesAddr = '0x87619bEb967f96534C616Cc3147dD3d1907c1C74';
-
-    return [
-        storageBeaconAddr,
-        newProxyAddr,
-        redeemedHashesAddr
-    ];
-}
-
-async function simulateDeployment() {
-    const storageBeaconAddr = '0xF15423Bce9704Fc6E3199c685B46C03b67AF4217';
-    const emitterAddr = '0xBDf7Acf088814912329aC12c6895c0b9FE690c93';
-    const redeemedHashesAddr = '0xFf3DaB28E5dEf3416a68B26A022cf557499F856a';
-    const proxyFactoryAddr = '0xFa2EA7C79190956B6f8F95e191533E36F68EB7d1';
-
-    return [
-        storageBeaconAddr,
-        emitterAddr,
-        redeemedHashesAddr,
-        proxyFactoryAddr
-    ];
-
-}
+deployTestnet();
 
 
 
-// .then(() => process.exit(0))
-//   .catch((error) => {
-//     console.error(error);
-//     process.exit(1);
-//   });
-  
-
-
-
+ 
 module.exports = {
-    deployTestnet,
-    simulateDeployment
+    deployTestnet
 };
 

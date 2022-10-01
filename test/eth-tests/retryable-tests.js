@@ -1,6 +1,6 @@
 const { ethers } = require('ethers');
 const { parseEther, formatEther } = ethers.utils;
-const { deployTestnet, simulateDeployment } = require('../../scripts/begin-testnet.js');
+const { deployTestnet } = require('../../scripts/begin-testnet.js');
 const { startListening } = require('./event-listener-for-test.js');
 
 const { ops, l1SignerTestnet, usdtAddrArb, defaultSlippage, factoryABI } = require('../../scripts/state-vars.js');
@@ -77,6 +77,21 @@ async function manualRedeem() {
 
     //Sends ETH to the proxy
     await sendETHandAssert(newProxyAddr);
+}
+
+async function simulateDeployment() {
+    const storageBeaconAddr = '0xF15423Bce9704Fc6E3199c685B46C03b67AF4217';
+    const emitterAddr = '0xBDf7Acf088814912329aC12c6895c0b9FE690c93';
+    const redeemedHashesAddr = '0xFf3DaB28E5dEf3416a68B26A022cf557499F856a';
+    const proxyFactoryAddr = '0xFa2EA7C79190956B6f8F95e191533E36F68EB7d1';
+
+    return [
+        storageBeaconAddr,
+        emitterAddr,
+        redeemedHashesAddr,
+        proxyFactoryAddr
+    ];
+
 }
 
 
