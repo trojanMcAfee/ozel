@@ -1,6 +1,4 @@
-// const { BigNumber } = require("@ethersproject/bignumber");
 const { ethers } = require("ethers");
-const { toBn } = require('evm-bn');
 
 let usdtAddrArb;
 let wbtcAddr;
@@ -21,11 +19,9 @@ let chainlinkAggregatorAddr;
 let deadAddr;
 let usxAddr;
 let dForcePoolAddr;
-//------
-let chainId; //arbitrum
-let pokeMeOpsAddr; //gelato
+let pokeMeOpsAddr; 
 let hopBridge;
-let inbox; //arbitrum rinkeby
+let inbox; 
 let gelatoAddr;
 const ETH = '0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE';
 const nullAddr = '0x0000000000000000000000000000000000000000';
@@ -35,7 +31,7 @@ const dappFee = 10; //prev: 10 -> 0.1% / 100-1 / 1000-10 / 10000 - 100%
 const poolFeeUni = 500; //0.05%
 const defaultSlippage = 100; //5 -> 0.05%; / 100 -> 1%
 const revenueAmounts = [
-    10000000, //250 instead of 10000000
+    10000000, 
     50000000,
     100000000,
     500000000,
@@ -91,7 +87,6 @@ const ops = {
 
 const signerX = new ethers.Wallet(process.env.PK);
 const signerTestnet = new ethers.Wallet(process.env.PK_TESTNET);
-const l1Provider = new ethers.providers.JsonRpcProvider(process.env.ALCHEMY_ETH);
 const l2Provider = new ethers.providers.JsonRpcProvider(process.env.ARBITRUM);
 
 let l1Signer, l2Signer, l1SignerTestnet, l2SignerTestnet;
@@ -100,7 +95,6 @@ let l1ProviderTestnet, l2ProviderTestnet;
 let network = 'arbitrum';
 switch(network) {
     case 'goerli':
-        chainId = 421611;
         pokeMeOpsAddr = '0xc1C6805B857Bef1f412519C4A842522431aFed39'; 
         hopBridge = '0xb8901acB165ed027E32754E0FFe830802919727f'; //no testnet
         usdtAddrArb = '0xe583769738b6dd4E7CAF8451050d1948BE717679';
@@ -120,7 +114,6 @@ switch(network) {
         l2SignerTestnet = signerTestnet.connect(l2ProviderTestnet);
         break;
     case 'rinkeby':
-        chainId = 421611;
         pokeMeOpsAddr = '0x8c089073A9594a4FB03Fa99feee3effF0e2Bc58a';
         hopBridge = '0xb8901acB165ed027E32754E0FFe830802919727f'; //no testnet
         usdtAddrArb = '0x3B00Ef435fA4FcFF5C209a37d1f3dcff37c705aD';
@@ -140,7 +133,6 @@ switch(network) {
         l2SignerTestnet = signerTestnet.connect(l2ProviderTestnet);
         break;
     case 'mainnet': 
-        chainId = 42161;
         pokeMeOpsAddr = '0xB3f5503f93d5Ef84b06993a1975B9D21B962892F'; 
         hopBridge = '0xb8901acB165ed027E32754E0FFe830802919727f'; 
         usdtAddrArb = '0xdAC17F958D2ee523a2206206994597C13D831ec7'; 
@@ -154,8 +146,8 @@ switch(network) {
         renPoolAddr = '0x93054188d876f558f4a66B2EF1d97d16eDf0895B';
         usdcAddr = '0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48';
         mimAddr = '0x99D8a9C45b2ecA8864373A26D1459e3Dff1e17F3';
-        mimPoolAddr = '0x5a6A4D54456819380173272A5E8E9B9904BdF41B'; //it differs from arb as 3crv to 2crv
-        crv2PoolAddr = '0xbEbc44782C7dB0a1A60Cb6fe97d0b483032FF1C7'; //crv3
+        mimPoolAddr = '0x5a6A4D54456819380173272A5E8E9B9904BdF41B'; 
+        crv2PoolAddr = '0xbEbc44782C7dB0a1A60Cb6fe97d0b483032FF1C7'; 
         yTricryptoPoolAddr = '';
         gelatoAddr = '0x3caca7b48d0573d793d3b0279b5f0029180e83b6';
         swapRouterUniAddr = '0xE592427A0AEce92De3Edee1F18E0157C05861564';
@@ -166,8 +158,6 @@ switch(network) {
         l1ProviderTestnet = new ethers.providers.JsonRpcProvider(process.env.GOERLI);
         l2ProviderTestnet = new ethers.providers.JsonRpcProvider(process.env.ARB_GOERLI);
 
-        // l1ProviderTestnet = new ethers.providers.JsonRpcProvider(process.env.RINKEBY);
-        // l2ProviderTestnet = new ethers.providers.JsonRpcProvider(process.env.ARB_TESTNET);
         break; 
     case 'arbitrum':
         pokeMeOpsAddr = '0xB3f5503f93d5Ef84b06993a1975B9D21B962892F'; 
@@ -218,7 +208,6 @@ module.exports = {
     tokenName,
     tokenSymbol,
     defaultSlippage,
-    chainId,
     pokeMeOpsAddr,
     hopBridge,
     usdtAddrArb,

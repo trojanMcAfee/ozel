@@ -1,50 +1,31 @@
-// const { Bridge } = require('arb-ts');
 const { hexDataLength } = require('@ethersproject/bytes');
 const {
     L1ToL2MessageGasEstimator,
 } = require('@arbitrum/sdk/dist/lib/message/L1ToL2MessageGasEstimator')
-const { ethers, Wallet } = require('ethers');
+const { ethers } = require('ethers');
 const { 
     hexStripZeros, 
-    parseEther,
     defaultAbiCoder: abiCoder,
-    formatEther
 } = ethers.utils;
 
 const { 
-    chainId,
     pokeMeOpsAddr,
-    hopBridge,
     usdtAddrArb,
-    wbtcAddr,
-    renBtcAddr,
     usdcAddr,
-    mimAddr,
-    fraxAddr,
     inbox,
-    signerX,
     l2ProviderTestnet,
-    l2Signer,
-    l1Signer,
     wethAddr,
-    defaultSlippage,
     gelatoAddr,
     ETH,
     swapRouterUniAddr,
     poolFeeUni,
-    nullAddr,
     chainlinkAggregatorAddr,
     l1ProviderTestnet,
-    l2Provider, 
-    proxyABIeth,
     factoryABI,
     myReceiver,
     ops
 } = require('./state-vars.js');
 
-
-
-let proxyFactory;
 
 
 
