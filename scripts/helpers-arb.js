@@ -1,9 +1,6 @@
-const diamond = require('diamond-util'); 
-const assert = require('assert');
-const { getSelectors } = require('./libraries/diamond.js');
-const { defaultAbiCoder: abiCoder, formatEther, keccak256, toUtf8Bytes } = ethers.utils;
-const { MaxUint256 } = ethers.constants;
 const myDiamondUtil = require('./myDiamondUtil.js');
+const assert = require('assert');
+const { defaultAbiCoder: abiCoder, formatEther, keccak256, toUtf8Bytes } = ethers.utils;
 
 const {
     wethAddr,
@@ -103,18 +100,6 @@ async function addTokenToDatabase(tokenSwap, signerIndex = 0) {
 }
 
 
-async function getCalldata(method, params) {
-    const signatures = {
-        exchangeToUserToken: 'function exchangeToUserToken(tuple(address user, address userToken, uint userSlippage) userDetails_)',
-        sendToArb: 'function sendToArb(tuple(address user, address userToken, uint userSlippage) userDetails_, uint256 _callvalue) returns (uint256)'
-    };
-    const abi = [];
-    abi.push(signatures[method]);
-    const iface = new ethers.utils.Interface(abi);
-    const data = iface.encodeFunctionData(method, params);
-    return data;
-} 
-
 async function getRegulatorCounter() {
     const tx = await OZLDiamond.getRegulatorCounter();
     const receipt = await tx.wait();
@@ -163,8 +148,6 @@ async function replaceForModVersion(contractName, checkUSDTbalance, selector, us
     const FRAX = await hre.ethers.getContractAt('IERC20', fraxAddr);
     const [callerAddr] = await hre.ethers.provider.listAccounts();
     let stringToHash;
-
-    const USDC = await hre.ethers.getContractAt('IERC20', usdcAddr);
 
     modContract = typeof contractName === 'string' ? await deployFacet(contractName) : contractName;
        
@@ -227,8 +210,6 @@ async function queryTokenDatabase(token) {
     return await OZLDiamond.queryTokenDatabase(token, ops);
 }
 
-
-//------ From deploy.js ---------
 
 async function deployFacet(facetName) { 
     const Contract = await hre.ethers.getContractFactory(facetName);
@@ -353,7 +334,6 @@ async function deploy(n = 0) {
             ['OwnershipFacet', ownershipFacet],
             ['RevenueFacet', revenueFacet]
         ],
-        // args: [callerAddr, functionCall, diamondInit.address, nonRevenueFacets],
         args: '',
         overrides: {
             callerAddr, functionCall, diamondInit: diamondInit.address, nonRevenueFacets
@@ -389,7 +369,6 @@ module.exports = {
     withdrawShareOZL,
     getVarsForHelpers,
     sendETH,
-    getCalldata,
     enableWithdrawals,
     deploy,
     getOzelIndex,

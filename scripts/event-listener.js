@@ -122,9 +122,6 @@ async function redeemHash(message, hash, taskId) {
     // console.log('checked hashes: ', tasks[taskId].alreadyCheckedHashes);
 }
 
-function removeFromQueue() {
-
-}
 
 
 main();
