@@ -8,9 +8,7 @@ const {
     l1ProviderTestnet,
     l2ProviderTestnet,
     network,
-    signerTestnet,
     testnetReceiver,
-    ops
 } = require('../../scripts/state-vars.js');
 
 
@@ -36,8 +34,6 @@ const query = (taskId) => {
 
 
 async function startListening(storageBeacon, emitterAddr, redeemedHashes, manualRedeem = false) {
-    // const storageBeacon = await hre.ethers.getContractAt('StorageBeacon', storageBeaconAddr);
-
     const filter = {
         address: emitterAddr, 
         topics: [
@@ -127,7 +123,6 @@ async function redeemHash(message, hash, taskId, redeemedHashes, executions) {
     console.log(`hash: ${hash} redemeed`);
     tasks[taskId].alreadyCheckedHashes.push(hash);
     
-    // const redeemedHashes = await hre.ethers.getContractAt('RedeemedHashes', redeemedHashesAddr);
     tx = await redeemedHashes.connect(l2Wallet).storeRedemption(taskId, hash);
     await tx.wait();
 

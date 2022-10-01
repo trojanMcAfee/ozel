@@ -3,7 +3,7 @@ const { parseEther, formatEther } = ethers.utils;
 const { deployTestnet } = require('../../scripts/begin-testnet.js');
 const { startListening } = require('./event-listener-for-test.js');
 
-const { ops, l1SignerTestnet, usdtAddrArb, defaultSlippage, factoryABI } = require('../../scripts/state-vars.js');
+const { ops, l1SignerTestnet } = require('../../scripts/state-vars.js');
 const { assert } = require("console");
 
 
@@ -26,8 +26,6 @@ function assertProof() {
     console.log('^^^ Only failed assertion to prove that it was configured properly');
     console.log('');
 }
-
-//-------
 
 async function autoRedeem() {
     assertProof();
