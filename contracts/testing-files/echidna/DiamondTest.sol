@@ -203,18 +203,18 @@ contract DiamondTest is Diamond {
     function test_exchangeUserToken(
         UserConfig calldata userDetails_
     ) external payable filterDetails(userDetails_) { //filterDetails(userDetails_) 
-        require(msg.value > 0);
+        // require(msg.value > 0);
         // ozlTestF.exchangeToUserToken(userDetails_);
         uint x = uint(1000000000000000) / 1 ether;
 
-        (bool success, ) = address(ozlTestF).call{value: msg.value}(
+        (bool success, ) = address(ozlTestF).call{value: 1 ether}(
             abi.encodeWithSelector(
                 ozlTestF.exchangeToUserToken.selector, 
                 userDetails_
             )
         );
 
-        payable(msg.sender).transfer(msg.value);
+        payable(msg.sender).transfer(1 ether);
 
         require(success); 
     }

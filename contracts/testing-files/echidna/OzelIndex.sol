@@ -89,6 +89,19 @@ contract ExchangeUserToken_Echidna { //is OZLFacetTest
 }
 
 
+contract CallTest {
+
+    function callIt() external payable {
+        ExchangeUserToken_Echidna cont = new ExchangeUserToken_Echidna();
+        cont.testing();
+    }
+}
+
+
+
+
+//----------------
+
 contract C {
 
     mapping(address => bool) tokenDatabase;
