@@ -17,7 +17,6 @@ import '../../arbitrum/facets/oz4626Facet.sol';
 
 import './OZLFacetTest_ech.sol';
 
-// import './TestEch.sol';
 
 
 // import 'hardhat/console.sol';
@@ -25,10 +24,9 @@ import './OZLFacetTest_ech.sol';
 
 contract DiamondTest is Diamond {
 
-    address owner = address(this); //0x00000000000000000000000000000000DeaDBeef
+    address owner = address(this); 
     address[] nonRevenueFacets;
 
-    // OZLFacetTest ozlTestF;
     OZLFacetTest_ech ozlTestF;
 
     //Hardcoded from 'functionCall' const from helpers-arb.js for simplicity
@@ -185,28 +183,20 @@ contract DiamondTest is Diamond {
         diamondCutInt[7] = cut;   
     }
 
-    //******* TESTS *******
 
+    //******* TESTS *******
 
     modifier filterDetails(UserConfig calldata userDetails_) {
         require(userDetails_.user != address(0)); 
         require(userDetails_.userToken != address(0));
         require(userDetails_.userSlippage > 0);
-        // require(s.tokenDatabase[userDetails_.userToken]);
         _;
     }
-
-   
-
 
 
     function test_exchangeUserToken(
         UserConfig calldata userDetails_
-    ) external payable filterDetails(userDetails_) { //filterDetails(userDetails_) 
-        // require(msg.value > 0);
-        // ozlTestF.exchangeToUserToken(userDetails_);
-        uint x = uint(1000000000000000) / 1 ether;
-
+    ) external payable filterDetails(userDetails_) { 
         (bool success, ) = address(ozlTestF).call{value: 1 ether}(
             abi.encodeWithSelector(
                 ozlTestF.exchangeToUserToken.selector, 
@@ -215,35 +205,12 @@ contract DiamondTest is Diamond {
         );
 
         payable(msg.sender).transfer(1 ether);
-
         require(success); 
     }
-
-
-
-    // function getHello() public {
-    //     assert(true);
-    // }
-
-    // function test_tokenDb() public {
-    //     address USDT = 0xFd086bC7CD5C481DCC9C85ebE478A1C0b69FCbb9;
-    //     if (s.tokenDatabase[USDT]) {
-    //         assert(false);
-    //     } else {
-    //         assert(true);
-    //     }
-    // }
 }
 
 
-// contract EntryPoint {
 
-//     function activate(uint value_) public payable {
-//         DiamondTest.getHello();
-//     }
-
-
-// }
 
 
 
