@@ -15,7 +15,7 @@ import '../../libraries/SafeTransferLib.sol'; //use the @ from solmate
 import '../../libraries/FixedPointMathLib.sol'; //same as here ^^^^
 import '../../interfaces/IYtri.sol';
 
-import 'hardhat/console.sol';
+// import 'hardhat/console.sol';
 
 
 contract SecondaryFunctions is ModifiersARB {
@@ -1023,7 +1023,6 @@ contract ComputeRevenueV1 is SecondaryFunctions {
 
 }
 
-import 'hardhat/console.sol';
 
 contract ComputeRevenueV2 is SecondaryFunctions {
     using FixedPointMathLib for uint;
