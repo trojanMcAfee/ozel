@@ -18,7 +18,7 @@ import './StorageBeacon.sol';
 import './ozUpgradeableBeacon.sol';
 import '../Errors.sol';
 
-import 'hardhat/console.sol'; 
+// import 'hardhat/console.sol'; 
 
 
 contract ozPayMe is ReentrancyGuard, Initializable { 
