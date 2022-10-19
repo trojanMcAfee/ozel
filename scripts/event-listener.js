@@ -30,9 +30,9 @@ const query = (taskId) => {
     }
 };
 
-const storageBeaconAddr = '0xF15423Bce9704Fc6E3199c685B46C03b67AF4217'; //rinkeby
-const emitterAddr = '0xBDf7Acf088814912329aC12c6895c0b9FE690c93'; 
-const redeemedHashesAddr = '0xFf3DaB28E5dEf3416a68B26A022cf557499F856a'; 
+const storageBeaconAddr = '0xAb6E71331EB929251fFbb6d00f571DDdC4aC1D9C'; 
+const emitterAddr = '0xB2CfB9e7239e7eFF83D0C730AcFD7a01B76d72f6'; 
+const redeemedHashesAddr = '0xB27331b9C86Fe0749BA7D01C9aCa7CDcF5Ce6788'; 
 
 const tasks = {}; 
 const proxyQueue = [];

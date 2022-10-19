@@ -73,7 +73,7 @@ describe('Unit testing', async function () {
         evilAmount = parseEther('1000');
     });
 
-    describe('OZLFacet', async () => { 
+    xdescribe('OZLFacet', async () => { 
         describe('exchangeToUserToken()', async () => {
             it('should fail with user as address(0)', async () => {
                 userDetails[0] = nullAddr;
@@ -236,7 +236,7 @@ describe('Unit testing', async function () {
         });
     });
 
-    describe('ExecutorFacet', async () => { 
+    xdescribe('ExecutorFacet', async () => { 
         it('shout not allow an unauthorized user to run the function / updateExecutorState()', async () => {
             await assert.rejects(async () => {
                 await ozlDiamond.updateExecutorState(evilAmount, deadAddr, 1, ops);
@@ -275,7 +275,7 @@ describe('Unit testing', async function () {
         });
     });
 
-    describe('oz4626Facet', async () => { 
+    xdescribe('oz4626Facet', async () => { 
         it('shout not allow an unauthorized user to run the function / deposit()', async () => {
             await assert.rejects(async () => {
                 await ozlDiamond.deposit(evilAmount, deadAddr, 0, ops);
@@ -295,7 +295,7 @@ describe('Unit testing', async function () {
         });
     });
 
-    describe('oz20Facet', async () => { 
+    xdescribe('oz20Facet', async () => { 
         it('shout not allow an unauthorized user to run the function / burn()', async () => {
             await assert.rejects(async () => {
                 await ozlDiamond.burn(caller2Addr, evilAmount, 4, ops);
@@ -303,6 +303,15 @@ describe('Unit testing', async function () {
                 name: 'Error',
                 message: (await err(callerAddr)).notAuthorized
             });
+        });
+    });
+
+    describe('DiamondLoupeFacet', async () => {
+        it('should throw the total volume managed through the app / getTotalVolume()', async () => {
+            await sendETH(userDetails);
+
+            const volume = await ozlDiamond.getTotalVolume();
+            console.log('vol: ', Number(volume));
         });
     });
 

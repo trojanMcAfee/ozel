@@ -63,7 +63,8 @@ const diamondABI = [
     'function addTokenToDatabase(tuple(int128 tokenIn, int128 tokenOut, address baseToken, address userToken, address pool) newSwap_) external',
     'function transferUserAllocation(address sender_, address receiver_, uint256 amount_, uint256 senderBalance_, uint256 lockNum_) external',
     'function owner() external view returns (address owner_)',
-    'function queryTokenDatabase(address token_) external view returns (bool)'
+    'function queryTokenDatabase(address token_) external view returns (bool)',
+    'function getTotalVolume() external view returns (uint)'
 ];
 
 
