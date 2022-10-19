@@ -65,7 +65,7 @@ const diamondABI = [
     'function owner() external view returns (address owner_)',
     'function queryTokenDatabase(address token_) external view returns (bool)',
     'function getTotalVolume() external view returns (uint)',
-    'function getAUM() external returns (uint)'
+    'function getAUM() external view returns (uint)'
 ];
 
 
