@@ -10,6 +10,11 @@ import { IDiamondLoupe } from "../../interfaces/IDiamondLoupe.sol";
 import { IERC165 } from "../../interfaces/IERC165.sol";
 import '../AppStorage.sol';
 
+import '../../interfaces/IYtri.sol';
+import {ITri} from '../../interfaces/ICurve.sol';
+
+import 'hardhat/console.sol';
+
 contract DiamondLoupeFacet is IDiamondLoupe, IERC165 { 
 
     AppStorage s;
@@ -81,5 +86,16 @@ contract DiamondLoupeFacet is IDiamondLoupe, IERC165 {
 
     function getTotalVolume() external view returns(uint) {
         return s.totalVolume;
+    }
+
+    function getAUM() external view returns(uint) { 
+        // (,int price,,,) = s.priceFeed.latestRoundData();
+        uint yBalance = IYtri(s.yTriPool).balanceOf(address(this));
+        // uint priceShare = IYtri(s.yTriPool).pricePerShare();
+
+        // uint balanceCrv3 = (yBalance * priceShare) / 1 ether;
+        // uint triBalance = ITri(s.tricrypto).calc_withdraw_one_coin(balanceCrv3, 2);
+        // uint valueUM = triBalance * (uint(price) / 10 ** 8);
+        return yBalance;
     }
 }

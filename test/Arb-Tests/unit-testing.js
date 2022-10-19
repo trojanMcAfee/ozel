@@ -310,8 +310,9 @@ describe('Unit testing', async function () {
         it('should throw the total volume managed through the app / getTotalVolume()', async () => {
             await sendETH(userDetails);
 
-            const volume = await ozlDiamond.getTotalVolume();
-            console.log('vol: ', Number(volume));
+            // await ozlDiamond.getAUM();
+            const volume = await ozlDiamond.getAUM();
+            console.log('vol: ', volume);
         });
     });
 
