@@ -73,7 +73,7 @@ describe('Unit testing', async function () {
         evilAmount = parseEther('1000');
     });
 
-    xdescribe('OZLFacet', async () => { 
+    describe('OZLFacet', async () => { 
         describe('exchangeToUserToken()', async () => {
             it('should fail with user as address(0)', async () => {
                 userDetails[0] = nullAddr;
@@ -236,7 +236,7 @@ describe('Unit testing', async function () {
         });
     });
 
-    xdescribe('ExecutorFacet', async () => { 
+    describe('ExecutorFacet', async () => { 
         it('shout not allow an unauthorized user to run the function / updateExecutorState()', async () => {
             await assert.rejects(async () => {
                 await ozlDiamond.updateExecutorState(evilAmount, deadAddr, 1, ops);
@@ -275,7 +275,7 @@ describe('Unit testing', async function () {
         });
     });
 
-    xdescribe('oz4626Facet', async () => { 
+    describe('oz4626Facet', async () => { 
         it('shout not allow an unauthorized user to run the function / deposit()', async () => {
             await assert.rejects(async () => {
                 await ozlDiamond.deposit(evilAmount, deadAddr, 0, ops);
@@ -295,7 +295,7 @@ describe('Unit testing', async function () {
         });
     });
 
-    xdescribe('oz20Facet', async () => { 
+    describe('oz20Facet', async () => { 
         it('shout not allow an unauthorized user to run the function / burn()', async () => {
             await assert.rejects(async () => {
                 await ozlDiamond.burn(caller2Addr, evilAmount, 4, ops);
@@ -307,8 +307,10 @@ describe('Unit testing', async function () {
     });
 
     describe('DiamondLoupeFacet', async () => {
-        it('should throw the amount in USD of Assets Under Management / getTotalVolume()', async () => {
-            await sendETH(userDetails);
+        it('should throw the amount in USD of Assets Under Management / getAUM()', async () => {
+            console.log('a');
+            await sendETH(userDetails, ops);
+            console.log('b');
             const AUM = await ozlDiamond.getAUM();
             assert(formatEther(AUM) > 20);
         });

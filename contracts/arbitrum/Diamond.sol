@@ -15,7 +15,7 @@ import { IERC173 } from "../interfaces/IERC173.sol";
 import './AppStorage.sol';
 import '../Errors.sol';
 
-// import 'hardhat/console.sol';
+import 'hardhat/console.sol';
 
 
 
@@ -99,6 +99,7 @@ contract Diamond {
         }
 
         if (!callFlag) {
+            console.log('hello');
             (bool success, ) = revenueFacet_.delegatecall(data); 
             if (!success) revert CallFailed('OZLDiamond: _filterRevenueCheck() failed');
         }

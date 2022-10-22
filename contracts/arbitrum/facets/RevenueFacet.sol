@@ -4,7 +4,7 @@ pragma solidity ^0.8.0;
 
 import '../AppStorage.sol';
 
-// import 'hardhat/console.sol';
+import 'hardhat/console.sol';
 
 import '../../interfaces/IYtri.sol';
 import {ITri} from '../../interfaces/ICurve.sol';
@@ -15,6 +15,7 @@ import '../../libraries/FixedPointMathLib.sol';
 import '@openzeppelin/contracts/token/ERC20/IERC20.sol';
 
 import '@openzeppelin/contracts/utils/Address.sol';
+import '../Diamond.sol';
 
 
 
@@ -35,10 +36,31 @@ contract RevenueFacet {
 
         for (uint j=0; j < s.revenueAmounts.length; j++) {
 
+            console.log('is: ', (s.feesVault * 2) * uint(price) >= s.revenueAmounts[j] * 1 ether);
             if ((s.feesVault * 2) * uint(price) >= s.revenueAmounts[j] * 1 ether) {
-                bytes memory data = abi.encodeWithSignature('getAUM(int256)', price);
+                console.log(1);
+                bytes memory data = abi.encodeWithSelector('getAUM(int256)', price);
+                console.log(2);
+                console.logBytes(data);
+                console.log('address(this): ', address(this));
+                console.log('price: ', uint(price));
+
+                // byets memory xdata = abi.encodeWithSignature(signatureString, arg);
+                // bytes memory x = address(this).functionDelegateCall(xdata);
+
                 bytes memory returnData = address(this).functionDelegateCall(data);
+
+                console.log(3);
                 (uint yBalance, uint valueUM) = abi.decode(returnData, (uint, uint));
+                console.log(4);
+
+                //-------
+                // uint yBalance = IYtri(s.yTriPool).balanceOf(address(this));
+                // uint priceShare = IYtri(s.yTriPool).pricePerShare();
+
+                // uint balanceCrv3 = (yBalance * priceShare) / 1 ether;
+                // uint triBalance = ITri(s.tricrypto).calc_withdraw_one_coin(balanceCrv3, 2);
+                // uint valueUM = triBalance * (uint(price) / 10 ** 8);
 
                 for (uint i=0; i < s.revenueAmounts.length; i++) {
                     if (valueUM >= s.revenueAmounts[i] * 1 ether) {
@@ -55,6 +77,7 @@ contract RevenueFacet {
 
 
     function _computeRevenue(uint denominator_, uint balance_, uint price_) private {        
+
         address owner = LibDiamond.contractOwner(); 
         uint assetsToWithdraw = balance_ / denominator_;
         IYtri(s.yTriPool).withdraw(assetsToWithdraw);
