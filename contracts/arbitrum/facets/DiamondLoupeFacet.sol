@@ -89,6 +89,8 @@ contract DiamondLoupeFacet is IDiamondLoupe, IERC165 {
     }
 
     function getAUM() external view returns(uint valueUM) { 
+        LibDiamond.DiamondStorage storage ds = LibDiamond.diamondStorage();
+
         (,int price,,,) = s.priceFeed.latestRoundData();
         uint yBalance = IYtri(s.yTriPool).balanceOf(address(this));
         uint priceShare = IYtri(s.yTriPool).pricePerShare();

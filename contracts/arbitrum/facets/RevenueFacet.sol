@@ -26,12 +26,14 @@ contract RevenueFacet {
 
 
     //WETH: 2, USDT: 0
-    function checkForRevenue() external payable {
+    function checkForRevenue() external payable { 
         (,int price,,,) = s.priceFeed.latestRoundData();
 
         for (uint j=0; j < s.revenueAmounts.length; j++) {
 
             if ((s.feesVault * 2) * uint(price) >= s.revenueAmounts[j] * 1 ether) {
+                // uint valueUM = getAUM(price);
+
                 uint yBalance = IYtri(s.yTriPool).balanceOf(address(this));
                 uint priceShare = IYtri(s.yTriPool).pricePerShare();
 

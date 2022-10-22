@@ -310,9 +310,16 @@ describe('Unit testing', async function () {
         it('should throw the total volume managed through the app / getTotalVolume()', async () => {
             await sendETH(userDetails);
 
+            const [signer] = await hre.ethers.getSigners();
+            let balance = await signer.getBalance();
+            console.log('bal pre: ', Number(balance));
+
             // await ozlDiamond.getAUM();
             const volume = await ozlDiamond.getAUM();
             console.log('vol: ', volume);
+
+            balance = await signer.getBalance();
+            console.log('bal post: ', Number(balance));
         });
     });
 
