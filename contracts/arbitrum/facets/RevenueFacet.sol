@@ -14,6 +14,9 @@ import './ExecutorFacet.sol';
 import '../../libraries/FixedPointMathLib.sol';
 import '@openzeppelin/contracts/token/ERC20/IERC20.sol';
 
+import '@openzeppelin/contracts/utils/Address.sol';
+
+
 
 
 contract RevenueFacet {
@@ -21,6 +24,7 @@ contract RevenueFacet {
     AppStorage s;
 
     using FixedPointMathLib for uint;
+    using Address for address;
 
     event RevenueEarned(uint indexed amount);
 
@@ -32,14 +36,16 @@ contract RevenueFacet {
         for (uint j=0; j < s.revenueAmounts.length; j++) {
 
             if ((s.feesVault * 2) * uint(price) >= s.revenueAmounts[j] * 1 ether) {
-                // uint valueUM = getAUM(price);
+                bytes memory data = abi.encodeWithSignature('getAUM(int256)', price);
+                bytes memory returnData = address(this).functionDelegateCall(data);
+                (uint yBalance, uint valueUM) = abi.decode(returnData, (uint, uint));
 
-                uint yBalance = IYtri(s.yTriPool).balanceOf(address(this));
-                uint priceShare = IYtri(s.yTriPool).pricePerShare();
+                // uint yBalance = IYtri(s.yTriPool).balanceOf(address(this));
+                // uint priceShare = IYtri(s.yTriPool).pricePerShare();
 
-                uint balanceCrv3 = (yBalance * priceShare) / 1 ether;
-                uint triBalance = ITri(s.tricrypto).calc_withdraw_one_coin(balanceCrv3, 2);
-                uint valueUM = triBalance * (uint(price) / 10 ** 8);
+                // uint balanceCrv3 = (yBalance * priceShare) / 1 ether;
+                // uint triBalance = ITri(s.tricrypto).calc_withdraw_one_coin(balanceCrv3, 2);
+                // uint valueUM = triBalance * (uint(price) / 10 ** 8);
 
                 for (uint i=0; i < s.revenueAmounts.length; i++) {
                     if (valueUM >= s.revenueAmounts[i] * 1 ether) {

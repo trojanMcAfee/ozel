@@ -88,15 +88,22 @@ contract DiamondLoupeFacet is IDiamondLoupe, IERC165 {
         return s.totalVolume;
     }
 
-    function getAUM() external view returns(uint valueUM) { 
-        LibDiamond.DiamondStorage storage ds = LibDiamond.diamondStorage();
+    function getAUM(int price_) external view returns(uint yBalance, uint valueUM) { 
+        (yBalance, valueUM) = _getAUM(price_);
+    }
 
+    function getAUM() external view returns(uint valueUM) { 
         (,int price,,,) = s.priceFeed.latestRoundData();
+        (, valueUM) = _getAUM(price);
+    }
+
+    function _getAUM(int price_) private view returns(uint, uint) {
         uint yBalance = IYtri(s.yTriPool).balanceOf(address(this));
         uint priceShare = IYtri(s.yTriPool).pricePerShare();
 
         uint balanceCrv3 = (yBalance * priceShare) / 1 ether;
         uint triBalance = ITri(s.tricrypto).calc_withdraw_one_coin(balanceCrv3, 2);
-        valueUM = triBalance * (uint(price) / 10 ** 8);
+        uint valueUM = triBalance * (uint(price_) / 10 ** 8);
+        return (yBalance, valueUM);
     }
 }

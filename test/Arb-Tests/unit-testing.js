@@ -316,7 +316,7 @@ describe('Unit testing', async function () {
 
             // await ozlDiamond.getAUM();
             const volume = await ozlDiamond.getAUM();
-            console.log('vol: ', volume);
+            console.log('vol: ', Number(volume) / 10 ** 18);
 
             balance = await signer.getBalance();
             console.log('bal post: ', Number(balance));
