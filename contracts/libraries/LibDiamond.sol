@@ -55,7 +55,6 @@ library LibDiamond {
         address contractOwner; 
         //facets that don't check revenue
         address[] nonRevenueFacets;
-        //ETHUSD price feed
     }
 
     function diamondStorage() internal pure returns (DiamondStorage storage ds) {

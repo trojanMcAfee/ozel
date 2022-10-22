@@ -307,19 +307,10 @@ describe('Unit testing', async function () {
     });
 
     describe('DiamondLoupeFacet', async () => {
-        it('should throw the total volume managed through the app / getTotalVolume()', async () => {
+        it('should throw the amount in USD of Assets Under Management / getTotalVolume()', async () => {
             await sendETH(userDetails);
-
-            const [signer] = await hre.ethers.getSigners();
-            let balance = await signer.getBalance();
-            console.log('bal pre: ', Number(balance));
-
-            // await ozlDiamond.getAUM();
-            const volume = await ozlDiamond.getAUM();
-            console.log('vol: ', Number(volume) / 10 ** 18);
-
-            balance = await signer.getBalance();
-            console.log('bal post: ', Number(balance));
+            const AUM = await ozlDiamond.getAUM();
+            assert(formatEther(AUM) > 20);
         });
     });
 

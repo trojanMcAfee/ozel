@@ -40,13 +40,6 @@ contract RevenueFacet {
                 bytes memory returnData = address(this).functionDelegateCall(data);
                 (uint yBalance, uint valueUM) = abi.decode(returnData, (uint, uint));
 
-                // uint yBalance = IYtri(s.yTriPool).balanceOf(address(this));
-                // uint priceShare = IYtri(s.yTriPool).pricePerShare();
-
-                // uint balanceCrv3 = (yBalance * priceShare) / 1 ether;
-                // uint triBalance = ITri(s.tricrypto).calc_withdraw_one_coin(balanceCrv3, 2);
-                // uint valueUM = triBalance * (uint(price) / 10 ** 8);
-
                 for (uint i=0; i < s.revenueAmounts.length; i++) {
                     if (valueUM >= s.revenueAmounts[i] * 1 ether) {
                         uint denominator = s.revenueAmounts[i] == 10000000 ? 5 : 10; 
