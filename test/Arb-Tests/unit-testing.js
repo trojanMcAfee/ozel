@@ -36,7 +36,7 @@ let callerAddr, caller2Addr;
 let deployedDiamond, ozlDiamond;
 let evilAmount, evilSwapDetails;
 let tokenSwap;
-let addFlag;
+let addFlag, totalVolume;
 
 
 describe('Unit testing', async function () {
@@ -307,10 +307,22 @@ describe('Unit testing', async function () {
     });
 
     describe('DiamondLoupeFacet', async () => {
-        it('should throw the amount in USD of Assets Under Management / getAUM()', async () => {
+        it('should get the amount in USD of Assets Under Management / getAUM()', async () => {
             await sendETH(userDetails);
             const AUM = await ozlDiamond.getAUM();
             assert(formatEther(AUM) > 20);
+        });
+
+        it('should get the total volume in ETH / getTotalVolumeInETH()', async () => {
+            await sendETH(userDetails);
+            totalVolume = await ozlDiamond.getTotalVolumeInETH();
+            assert(formatEther(totalVolume) > 0);
+        });
+
+        it('should get the total volume in USD / getTotalVolumeInUSD()', async () => {
+            await sendETH(userDetails);
+            totalVolume = await ozlDiamond.getTotalVolumeInUSD();
+            assert(formatEther(totalVolume) > 0);
         });
     });
 

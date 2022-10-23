@@ -64,8 +64,9 @@ const diamondABI = [
     'function transferUserAllocation(address sender_, address receiver_, uint256 amount_, uint256 senderBalance_, uint256 lockNum_) external',
     'function owner() external view returns (address owner_)',
     'function queryTokenDatabase(address token_) external view returns (bool)',
-    'function getTotalVolume() external view returns (uint)',
-    'function getAUM() external view returns (uint)'
+    'function getAUM() external view returns (uint)',
+    'function getTotalVolumeInETH() external view returns(uint)',
+    'function getTotalVolumeInUSD() external view returns(uint)'
 ];
 
 

@@ -84,8 +84,13 @@ contract DiamondLoupeFacet is IDiamondLoupe, IERC165 {
         return s.regulatorCounter;
     }
 
-    function getTotalVolume() external view returns(uint) {
+    function getTotalVolumeInETH() external view returns(uint) {
         return s.totalVolume;
+    }
+
+    function getTotalVolumeInUSD() external view returns(uint) {
+        (,int price,,,) = s.priceFeed.latestRoundData();
+        return (s.totalVolume * uint(price)) / 10 ** 8;
     }
 
     function getAUM(int price_) external view returns(uint yBalance, uint valueUM) { 
@@ -103,7 +108,7 @@ contract DiamondLoupeFacet is IDiamondLoupe, IERC165 {
 
         uint balanceCrv3 = (yBalance * priceShare) / 1 ether;
         uint wethBalance = ITri(s.tricrypto).calc_withdraw_one_coin(balanceCrv3, 2);
-        uint valueUM = wethBalance * (uint(price_) / 10 ** 8);
+        uint valueUM = (wethBalance * uint(price_)) / 10 ** 8;
         return (yBalance, wethBalance, valueUM);
     }
 }
