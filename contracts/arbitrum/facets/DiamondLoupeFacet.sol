@@ -12,12 +12,17 @@ import '../AppStorage.sol';
 
 import '../../interfaces/IYtri.sol';
 import {ITri} from '../../interfaces/ICurve.sol';
+import "../../libraries/FixedPointMathLib.sol";
+import '@openzeppelin/contracts/utils/Address.sol';
 
 import 'hardhat/console.sol';
 
 contract DiamondLoupeFacet is IDiamondLoupe, IERC165 { 
 
     AppStorage s;
+
+    using FixedPointMathLib for uint;
+    using Address for address;
 
     // Diamond Loupe Functions
     ////////////////////////////////////////////////////////////////////
@@ -97,9 +102,21 @@ contract DiamondLoupeFacet is IDiamondLoupe, IERC165 {
         (yBalance, ,valueUM) = _getAUM(price_);
     }
 
-    function getAUM() external view returns(uint valueUM) { 
+    function getAUM() public view returns(uint wethBalance, uint valueUM) { 
         (,int price,,,) = s.priceFeed.latestRoundData();
-        (, , valueUM) = _getAUM(price);
+        (, wethBalance, valueUM) = _getAUM(price);
+    }
+
+    function getOzelBalances(address user_) external view returns(uint, uint) { //***** */        
+        (uint wethBalance, uint valueUM) = getAUM();
+
+        bytes memory data = abi.encodeWithSignature('balanceOf(address)', user_);
+        bytes memory returnData = address(this).functionCall(data); // error
+        uint ozlBalance = abi.decode(returnData, (uint));
+
+        uint wethShare = ozlBalance.mulDivDown(wethBalance, 100);
+        uint usdShare = ozlBalance.mulDivDown(valueUM, 100);
+        return (wethShare, usdShare);
     }
 
     function _getAUM(int price_) private view returns(uint, uint, uint) {
