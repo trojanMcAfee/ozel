@@ -46,13 +46,7 @@ contract RevenueFacet {
                 // console.log('address(this): ', address(this));
                 // console.log('price: ', uint(price));
 
-                bytes memory data2 = abi.encodeWithSignature('getAUM2()');
-                console.log('2.1');
-                address diamond = address(this);
-                address(this).functionDelegateCall(data2);
-                console.log('getAUM2 good');
-
-                bytes memory returnData = address(this).functionDelegateCall(data);
+                bytes memory returnData = address(this).functionCall(data);
 
                 console.log(3);
                 (uint yBalance, uint valueUM) = abi.decode(returnData, (uint, uint));
