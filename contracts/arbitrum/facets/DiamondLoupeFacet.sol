@@ -94,6 +94,10 @@ contract DiamondLoupeFacet is IDiamondLoupe, IERC165 {
         console.log(28);
     }
 
+    function getAUM2() external view { 
+        console.log('logs good: ');
+    }
+
     function getAUM() external view returns(uint valueUM) { 
         (,int price,,,) = s.priceFeed.latestRoundData();
         (, , valueUM) = _getAUM(price);
