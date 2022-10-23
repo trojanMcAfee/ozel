@@ -99,7 +99,6 @@ contract Diamond {
         }
 
         if (!callFlag) {
-            console.log('hello');
             (bool success, ) = revenueFacet_.delegatecall(data); 
             if (!success) revert CallFailed('OZLDiamond: _filterRevenueCheck() failed');
         }

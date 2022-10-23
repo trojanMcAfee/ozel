@@ -308,9 +308,7 @@ describe('Unit testing', async function () {
 
     describe('DiamondLoupeFacet', async () => {
         it('should throw the amount in USD of Assets Under Management / getAUM()', async () => {
-            console.log('a');
             await sendETH(userDetails);
-            console.log('b');
             const AUM = await ozlDiamond.getAUM();
             assert(formatEther(AUM) > 20);
         });

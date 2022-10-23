@@ -35,30 +35,11 @@ contract RevenueFacet {
         (,int price,,,) = s.priceFeed.latestRoundData();
 
         for (uint j=0; j < s.revenueAmounts.length; j++) {
-
-            // console.log('is: ', (s.feesVault * 2) * uint(price) >= s.revenueAmounts[j] * 1 ether);
             if ((s.feesVault * 2) * uint(price) >= s.revenueAmounts[j] * 1 ether) {
-                console.log(1);
-
+                
                 bytes memory data = abi.encodeWithSignature('getAUM(int256)', price);
-                console.log(2);
-                // console.logBytes(data);
-                // console.log('address(this): ', address(this));
-                // console.log('price: ', uint(price));
-
                 bytes memory returnData = address(this).functionCall(data);
-
-                console.log(3);
                 (uint yBalance, uint valueUM) = abi.decode(returnData, (uint, uint));
-                console.log(4);
-
-                //-------
-                // uint yBalance = IYtri(s.yTriPool).balanceOf(address(this));
-                // uint priceShare = IYtri(s.yTriPool).pricePerShare();
-
-                // uint balanceCrv3 = (yBalance * priceShare) / 1 ether;
-                // uint triBalance = ITri(s.tricrypto).calc_withdraw_one_coin(balanceCrv3, 2);
-                // uint valueUM = triBalance * (uint(price) / 10 ** 8);
 
                 for (uint i=0; i < s.revenueAmounts.length; i++) {
                     if (valueUM >= s.revenueAmounts[i] * 1 ether) {
