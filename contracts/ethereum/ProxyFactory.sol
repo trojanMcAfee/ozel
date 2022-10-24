@@ -25,7 +25,7 @@ contract ProxyFactory is ReentrancyGuard, Initializable {
 
     function createNewProxy(
         StorageBeacon.UserConfig calldata userDetails_
-    ) external nonReentrant {
+    ) external nonReentrant returns(address) {
         if (userDetails_.user == address(0) || userDetails_.userToken == address(0)) revert CantBeZero('address');
         if (userDetails_.userSlippage <= 0) revert CantBeZero('slippage');
         if (!StorageBeacon(_getStorageBeacon(0)).queryTokenDatabase(userDetails_.userToken)) revert TokenNotInDatabase(userDetails_.userToken);
@@ -52,8 +52,9 @@ contract ProxyFactory is ReentrancyGuard, Initializable {
         if (!success) revert CallFailed('ProxyFactory: init failed');
 
         _startTask(address(newProxy));
-
         StorageBeacon(_getStorageBeacon(0)).saveUserProxy(msg.sender, address(newProxy));
+
+        return address(newProxy);
     }
 
 
