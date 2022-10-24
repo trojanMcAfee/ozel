@@ -105,13 +105,13 @@ let tx, receipt;
 
         describe('ProxyFactory', async () => {
             describe('Deploys one proxy', async () => {
-                it('should create a proxy successfully / createNewProxy()', async () => {
+                xit('should create a proxy successfully / createNewProxy()', async () => {
                     await proxyFactory.createNewProxy(userDetails);
                     newProxyAddr = (await storageBeacon.getProxyByUser(signerAddr))[0].toString(); 
                     assert.equal(newProxyAddr.length, 42);
                 });
 
-                it('should not allow to create a proxy with the 0 address / createNewProxy()', async () => {
+                xit('should not allow to create a proxy with the 0 address / createNewProxy()', async () => {
                     userDetails[1] = nullAddr;
                     await assert.rejects(async () => {
                         await proxyFactory.createNewProxy(userDetails, ops);
@@ -121,7 +121,7 @@ let tx, receipt;
                     });
                 });
 
-                it('should not allow to create a proxy with 0 slippage / createNewProxy()', async () => {
+                xit('should not allow to create a proxy with 0 slippage / createNewProxy()', async () => {
                     userDetails[1] = usdtAddrArb;
                     userDetails[2] = 0;
                     await assert.rejects(async () => {
@@ -132,7 +132,7 @@ let tx, receipt;
                     });
                 });
 
-                it('should not allow to create a proxy with a userToken not found in the database / createNewProxy()', async () => {
+                xit('should not allow to create a proxy with a userToken not found in the database / createNewProxy()', async () => {
                     userDetails[1] = deadAddr;
                     userDetails[2] = defaultSlippage;
                     await assert.rejects(async () => {
@@ -143,7 +143,7 @@ let tx, receipt;
                     });
                 })
     
-                it('should have an initial balance of 0.01 ETH', async () => {
+                xit('should have an initial balance of 0.01 ETH', async () => {
                     userDetails[1] = usdtAddrArb;
                     await proxyFactory.createNewProxy(userDetails);
                     newProxyAddr = (await storageBeacon.getProxyByUser(signerAddr))[0].toString();
@@ -166,7 +166,7 @@ let tx, receipt;
             });
 
 
-            describe('Deploys 5 proxies', async () => { 
+            xdescribe('Deploys 5 proxies', async () => { 
                 before(async () => {
                     userDetails[1] = usdcAddr;
                     for (let i=0; i < 5; i++) {
@@ -196,7 +196,7 @@ let tx, receipt;
             });
         });
 
-        describe('ozBeaconProxy / ozPayMe', async () => {
+        xdescribe('ozBeaconProxy / ozPayMe', async () => {
             before(async () => {
                 await proxyFactory.createNewProxy(userDetails);
                 newProxyAddr = (await storageBeacon.getProxyByUser(signerAddr))[0].toString(); 
@@ -304,7 +304,7 @@ let tx, receipt;
             });
         });
 
-        describe('Emitter', async () => {
+        xdescribe('Emitter', async () => {
             before(async () => {
                 await proxyFactory.createNewProxy(userDetails);
                 newProxyAddr = (await storageBeacon.getProxyByUser(signerAddr))[0].toString(); 
@@ -337,7 +337,7 @@ let tx, receipt;
             }); 
         });
     
-        describe('StorageBeacon', async () => {
+        xdescribe('StorageBeacon', async () => {
             it('shoud not allow an user to issue an userID / issueUserID()', async () => {
                 await assert.rejects(async () => {
                     await storageBeacon.issueUserID(evilUserDetails);
@@ -493,7 +493,7 @@ let tx, receipt;
             });
         });
 
-        describe('ozUpgradeableBeacon', async () => {
+        xdescribe('ozUpgradeableBeacon', async () => {
             it('should allow the owner to upgrade the Storage Beacon / upgradeStorageBeacon()', async () => {
                 [storageBeaconMockAddr , storageBeaconMock] = await deployContract('StorageBeaconMock');
                 await beacon.upgradeStorageBeacon(storageBeaconMockAddr);
@@ -537,7 +537,7 @@ let tx, receipt;
 
 
     //autoRedeem set to 0
-    describe('Pesimistic deployment', async function () {
+    xdescribe('Pesimistic deployment', async function () {
         before( async () => {
             ([
                 beacon, 
