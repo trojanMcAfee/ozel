@@ -17,6 +17,7 @@ import '@openzeppelin/contracts/utils/Address.sol';
 
 import 'hardhat/console.sol';
 
+
 contract DiamondLoupeFacet is IDiamondLoupe, IERC165 { 
 
     AppStorage s;
@@ -102,21 +103,21 @@ contract DiamondLoupeFacet is IDiamondLoupe, IERC165 {
         (yBalance, ,valueUM) = _getAUM(price_);
     }
 
-    function getAUM() public view returns(uint wethBalance, uint valueUM) { 
+    function getAUM() public view returns(uint wethUM, uint valueUM) { 
         (,int price,,,) = s.priceFeed.latestRoundData();
-        (, wethBalance, valueUM) = _getAUM(price);
+        (, wethUM, valueUM) = _getAUM(price);
     }
 
-    function getOzelBalances(address user_) external view returns(uint, uint) { //***** */        
-        (uint wethBalance, uint valueUM) = getAUM();
+    function getOzelBalances(address user_) external view returns(uint, uint) {       
+        (uint wethUM, uint valueUM) = getAUM();
 
         bytes memory data = abi.encodeWithSignature('balanceOf(address)', user_);
-        bytes memory returnData = address(this).functionCall(data); // error
-        uint ozlBalance = abi.decode(returnData, (uint));
+        bytes memory returnData = address(this).functionStaticCall(data); 
+        uint userOzlBalance = abi.decode(returnData, (uint));
 
-        uint wethShare = ozlBalance.mulDivDown(wethBalance, 100);
-        uint usdShare = ozlBalance.mulDivDown(valueUM, 100);
-        return (wethShare, usdShare);
+        uint wethUserShare = userOzlBalance.mulDivDown(wethUM, 100 * 1 ether);
+        uint usdUserShare = userOzlBalance.mulDivDown(valueUM, 100 * 1 ether);
+        return (wethUserShare, usdUserShare);
     }
 
     function _getAUM(int price_) private view returns(uint, uint, uint) {
@@ -124,8 +125,8 @@ contract DiamondLoupeFacet is IDiamondLoupe, IERC165 {
         uint priceShare = IYtri(s.yTriPool).pricePerShare();
 
         uint balanceCrv3 = (yBalance * priceShare) / 1 ether;
-        uint wethBalance = ITri(s.tricrypto).calc_withdraw_one_coin(balanceCrv3, 2);
-        uint valueUM = (wethBalance * uint(price_)) / 10 ** 8;
-        return (yBalance, wethBalance, valueUM);
+        uint wethUM = ITri(s.tricrypto).calc_withdraw_one_coin(balanceCrv3, 2);
+        uint valueUM = (wethUM * uint(price_)) / 10 ** 8;
+        return (yBalance, wethUM, valueUM);
     }
 }

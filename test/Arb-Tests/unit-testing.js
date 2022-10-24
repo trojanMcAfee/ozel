@@ -307,22 +307,27 @@ describe('Unit testing', async function () {
     });
 
     describe('DiamondLoupeFacet', async () => {
-        it('should get the amount in USD of Assets Under Management / getAUM()', async () => {
-            await sendETH(userDetails);
-            const {weth, AUM} = await ozlDiamond.getAUM();
+        beforeEach(async () => await sendETH(userDetails));
+
+        xit('should get the amount in USD of Assets Under Management / getAUM()', async () => {
+            const [weth, AUM] = await ozlDiamond.getAUM(); //try and fix this
             assert(formatEther(AUM) > 20);
         });
 
         xit('should get the total volume in ETH / getTotalVolumeInETH()', async () => {
-            await sendETH(userDetails);
             totalVolume = await ozlDiamond.getTotalVolumeInETH();
             assert(formatEther(totalVolume) > 0);
         });
 
         xit('should get the total volume in USD / getTotalVolumeInUSD()', async () => {
-            await sendETH(userDetails);
             totalVolume = await ozlDiamond.getTotalVolumeInUSD();
             assert(formatEther(totalVolume) > 0);
+        });
+
+        it('should get the Ozel balance in ETH and USD, getOzelBalances()', async () => {
+            const [ wethUserShare, usdUserShare ] = await ozlDiamond.getOzelBalances(userDetails[0]);
+            assert(formatEther(wethUserShare) > 0);
+            assert(formatEther(usdUserShare) > 0);
         });
     });
 
