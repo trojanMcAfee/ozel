@@ -103,7 +103,7 @@ let tx, receipt;
             proxyFactory = await hre.ethers.getContractAt(factoryABI, ozERC1967proxyAddr);
         });
 
-        describe('ProxyFactory', async () => {
+        xdescribe('ProxyFactory', async () => {
             describe('Deploys one proxy', async () => {
                 it('should create a proxy successfully / createNewProxy()', async () => {
                     await proxyFactory.createNewProxy(userDetails);
@@ -196,7 +196,7 @@ let tx, receipt;
             });
         });
 
-        describe('ozBeaconProxy / ozPayMe', async () => {
+        xdescribe('ozBeaconProxy / ozPayMe', async () => {
             before(async () => {
                 await proxyFactory.createNewProxy(userDetails);
                 newProxyAddr = (await storageBeacon.getProxyByUser(signerAddr))[0].toString(); 
@@ -304,7 +304,7 @@ let tx, receipt;
             });
         });
 
-        describe('Emitter', async () => {
+        xdescribe('Emitter', async () => {
             before(async () => {
                 await proxyFactory.createNewProxy(userDetails);
                 newProxyAddr = (await storageBeacon.getProxyByUser(signerAddr))[0].toString(); 
@@ -487,9 +487,13 @@ let tx, receipt;
                 assert(!(await storageBeacon.getEmitterStatus()));
             });
 
+            it('should return the full token database / getTokenDatabase()', async () => {
+                const tokenDb = await storageBeacon.getTokenDatabase();
+                assert(tokenDb.length > 0);
+            });
         });
 
-        describe('ozUpgradeableBeacon', async () => {
+        xdescribe('ozUpgradeableBeacon', async () => {
             it('should allow the owner to upgrade the Storage Beacon / upgradeStorageBeacon()', async () => {
                 [storageBeaconMockAddr , storageBeaconMock] = await deployContract('StorageBeaconMock');
                 await beacon.upgradeStorageBeacon(storageBeaconMockAddr);
@@ -533,7 +537,7 @@ let tx, receipt;
 
 
     //autoRedeem set to 0
-    describe('Pesimistic deployment', async function () {
+    xdescribe('Pesimistic deployment', async function () {
         before( async () => {
             ([
                 beacon, 

@@ -189,7 +189,7 @@ contract OZLFacetTest is ModifiersARB {
         }
     }
 
-    function _calculateTokenAmountCurve(uint wethAmountIn_) private returns(uint, uint[3] memory) {
+    function _calculateTokenAmountCurve(uint wethAmountIn_) private view returns(uint, uint[3] memory) {
         uint[3] memory amounts;
         amounts[0] = 0;
         amounts[1] = 0;

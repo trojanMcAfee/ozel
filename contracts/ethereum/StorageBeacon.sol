@@ -56,9 +56,10 @@ contract StorageBeacon is Initializable, Ownable {
     mapping(uint => UserConfig) public idToUserDetails;
     mapping(address => address) public proxyToUser; 
     mapping(address => address[]) public userToProxy;
-
     mapping(address => mapping(IERC20 => uint)) public userToFailedERC;
     mapping(address => IERC20[]) public userToFailedTokenCount;
+
+    address[] public tokenDatabaseArray;
 
     uint private internalId;
 
@@ -105,6 +106,7 @@ contract StorageBeacon is Initializable, Ownable {
         uint length = tokens_.length;
         for (uint i=0; i < length;) {
             tokenDatabase[tokens_[i]] = true;
+            tokenDatabaseArray.push(tokens_[i]);
             unchecked { ++i; }
         }
     }
@@ -135,6 +137,7 @@ contract StorageBeacon is Initializable, Ownable {
 
     function addTokenToDatabase(address newToken_) external onlyOwner {
         tokenDatabase[newToken_] = true;
+        tokenDatabaseArray.push(newToken_);
     }
 
     function storeBeacon(address beacon_) external initializer { 
@@ -189,6 +192,10 @@ contract StorageBeacon is Initializable, Ownable {
 
     function getEmitterStatus() external view returns(bool) {
         return isEmitter;
+    }
+
+    function getTokenDatabase() external view returns(address[] memory) {
+        return tokenDatabaseArray;
     }
 }
 

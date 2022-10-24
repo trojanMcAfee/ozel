@@ -28,7 +28,7 @@ contract SecondaryFunctions is ModifiersARB {
         return (netAmount, fee);
     }
 
-    function _calculateTokenAmountCurve(uint wethAmountIn_) internal returns(uint, uint[3] memory) {
+    function _calculateTokenAmountCurve(uint wethAmountIn_) internal view returns(uint, uint[3] memory) {
         uint[3] memory amounts;
         amounts[0] = 0;
         amounts[1] = 0;
