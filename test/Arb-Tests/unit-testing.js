@@ -73,7 +73,7 @@ describe('Unit testing', async function () {
         evilAmount = parseEther('1000');
     });
 
-    xdescribe('OZLFacet', async () => { 
+    describe('OZLFacet', async () => { 
         describe('exchangeToUserToken()', async () => {
             it('should fail with user as address(0)', async () => {
                 userDetails[0] = nullAddr;
@@ -236,7 +236,7 @@ describe('Unit testing', async function () {
         });
     });
 
-    xdescribe('ExecutorFacet', async () => { 
+    describe('ExecutorFacet', async () => { 
         it('shout not allow an unauthorized user to run the function / updateExecutorState()', async () => {
             await assert.rejects(async () => {
                 await ozlDiamond.updateExecutorState(evilAmount, deadAddr, 1, ops);
@@ -275,7 +275,7 @@ describe('Unit testing', async function () {
         });
     });
 
-    xdescribe('oz4626Facet', async () => { 
+    describe('oz4626Facet', async () => { 
         it('shout not allow an unauthorized user to run the function / deposit()', async () => {
             await assert.rejects(async () => {
                 await ozlDiamond.deposit(evilAmount, deadAddr, 0, ops);
@@ -295,7 +295,7 @@ describe('Unit testing', async function () {
         });
     });
 
-    xdescribe('oz20Facet', async () => { 
+    describe('oz20Facet', async () => { 
         it('shout not allow an unauthorized user to run the function / burn()', async () => {
             await assert.rejects(async () => {
                 await ozlDiamond.burn(caller2Addr, evilAmount, 4, ops);
@@ -309,17 +309,17 @@ describe('Unit testing', async function () {
     describe('DiamondLoupeFacet', async () => {
         beforeEach(async () => await sendETH(userDetails));
 
-        xit('should get the amount in USD of Assets Under Management / getAUM()', async () => {
-            const [weth, AUM] = await ozlDiamond.getAUM(); //try and fix this
-            assert(formatEther(AUM) > 20);
+        it('should get the amount in USD of Assets Under Management / getAUM()', async () => {
+            const [ wethUM, valueUM]  = await ozlDiamond.getAUM(); 
+            assert(formatEther(valueUM) > 20);
         });
 
-        xit('should get the total volume in ETH / getTotalVolumeInETH()', async () => {
+        it('should get the total volume in ETH / getTotalVolumeInETH()', async () => {
             totalVolume = await ozlDiamond.getTotalVolumeInETH();
             assert(formatEther(totalVolume) > 0);
         });
 
-        xit('should get the total volume in USD / getTotalVolumeInUSD()', async () => {
+        it('should get the total volume in USD / getTotalVolumeInUSD()', async () => {
             totalVolume = await ozlDiamond.getTotalVolumeInUSD();
             assert(formatEther(totalVolume) > 0);
         });
