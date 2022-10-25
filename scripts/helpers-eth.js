@@ -6,6 +6,7 @@ const { ethers } = require('ethers');
 const { 
     hexStripZeros, 
     defaultAbiCoder: abiCoder,
+    formatEther
 } = ethers.utils;
 
 const { 
@@ -157,8 +158,14 @@ async function activateProxyLikeOps(proxy, taskCreator, isEvil, evilParams) {
         execData = iface.encodeFunctionData('sendToArb');
     }
 
+    // balance = await hre.ethers.provider.getBalance(proxy);
+    // console.log('bal pre: ', formatEther(balance));
+
     const tx = await ops.connect(gelatoSigner).exec(0, ETH, taskCreator, false, false, resolverHash, proxy, execData);
     const receipt = await tx.wait();
+
+    // balance = await hre.ethers.provider.getBalance(proxy);
+    // console.log('bal post: ', formatEther(balance));
 
     await hre.network.provider.request({
         method: "hardhat_stopImpersonatingAccount",

@@ -105,13 +105,13 @@ let tx, receipt;
 
         describe('ProxyFactory', async () => {
             describe('Deploys one proxy', async () => {
-                xit('should create a proxy successfully / createNewProxy()', async () => {
+                it('should create a proxy successfully / createNewProxy()', async () => {
                     await proxyFactory.createNewProxy(userDetails);
                     newProxyAddr = (await storageBeacon.getProxyByUser(signerAddr))[0].toString(); 
                     assert.equal(newProxyAddr.length, 42);
                 });
 
-                xit('should not allow to create a proxy with the 0 address / createNewProxy()', async () => {
+                it('should not allow to create a proxy with the 0 address / createNewProxy()', async () => {
                     userDetails[1] = nullAddr;
                     await assert.rejects(async () => {
                         await proxyFactory.createNewProxy(userDetails, ops);
@@ -121,7 +121,7 @@ let tx, receipt;
                     });
                 });
 
-                xit('should not allow to create a proxy with 0 slippage / createNewProxy()', async () => {
+                it('should not allow to create a proxy with 0 slippage / createNewProxy()', async () => {
                     userDetails[1] = usdtAddrArb;
                     userDetails[2] = 0;
                     await assert.rejects(async () => {
@@ -132,7 +132,7 @@ let tx, receipt;
                     });
                 });
 
-                xit('should not allow to create a proxy with a userToken not found in the database / createNewProxy()', async () => {
+                it('should not allow to create a proxy with a userToken not found in the database / createNewProxy()', async () => {
                     userDetails[1] = deadAddr;
                     userDetails[2] = defaultSlippage;
                     await assert.rejects(async () => {
@@ -143,7 +143,7 @@ let tx, receipt;
                     });
                 })
     
-                xit('should have an initial balance of 0.01 ETH', async () => {
+                it('should have an initial balance of 0.01 ETH', async () => {
                     userDetails[1] = usdtAddrArb;
                     await proxyFactory.createNewProxy(userDetails);
                     newProxyAddr = (await storageBeacon.getProxyByUser(signerAddr))[0].toString();
@@ -153,7 +153,7 @@ let tx, receipt;
                     assert.equal(formatEther(balance), '0.01');
                 });
     
-                xit('should have a final balance of 0 ETH', async () => {
+                it('should have a final balance of 0 ETH', async () => {
                     console.log(11);
                     const tx = await proxyFactory.createNewProxy(userDetails);
                     console.log(12);
@@ -175,7 +175,7 @@ let tx, receipt;
                     assert.equal(formatEther(balance), 0);
                 });
 
-                it('test', async () => {
+                xit('test', async () => {
                     await proxyFactory.createNewProxy(userDetails);
                     newProxyAddr = (await storageBeacon.getProxyByUser(signerAddr))[0].toString();
                     console.log('newProxyAddr1: ', newProxyAddr);
@@ -186,7 +186,11 @@ let tx, receipt;
                     balance = await hre.ethers.provider.getBalance(newProxyAddr);
                     console.log('bal: ', formatEther(balance));
 
-                    //--------------------
+                    //-------------------
+                    // await signers[0].sendTransaction({to: ozERC1967proxyAddr, value: parseEther('0.01')});
+                    // balance = await hre.ethers.provider.getBalance(ozERC1967proxyAddr);
+                    // console.log('bal proxyfactory proxy: ', formatEther(balance));
+
                     await hre.network.provider.request({
                         method: "hardhat_impersonateAccount",
                         params: [pokeMeOpsAddr],
@@ -195,12 +199,13 @@ let tx, receipt;
                     console.log('pokeMeAddr: ', pokeMeOpsAddr);
                 
                     const opsSigner = await hre.ethers.provider.getSigner(pokeMeOpsAddr);
-                    let iface = new ethers.utils.Interface(['function checker()']);
+                    let iface = new ethers.utils.Interface(['function checker() external view returns(bool,bytes)']);
                     const resolverData = iface.encodeFunctionData('checker');
                     const ops = await hre.ethers.getContractAt('IOps', pokeMeOpsAddr);
 
-                    const gelato = await ops.connect(opsSigner).gelato();
-                    console.log('gelato: ', gelato);
+                    // const gelatoAddr = await ops.connect(opsSigner).gelato();
+                    // console.log('gelato: ', gelatoAddr);
+                    const gelatoAddr = '0x73023e67da4d8a0705fa434fc8553837c1fba03f';
 
                     const resolverHash = await ops.connect(opsSigner).getResolverHash(newProxyAddr, resolverData);
                 
@@ -211,14 +216,27 @@ let tx, receipt;
 
                     await hre.network.provider.request({
                         method: "hardhat_impersonateAccount",
-                        params: [gelato],
+                        params: [gelatoAddr],
                     });
 
-                    const gelatoSigner = await hre.ethers.provider.getSigner(gelato); 
+                    const gelatoSigner = await hre.ethers.provider.getSigner(gelatoAddr); 
                     iface = new ethers.utils.Interface([`function sendToArb()`]); 
                     let execData = iface.encodeFunctionData('sendToArb');
 
                     console.log('ozERC1967proxyAddr: ', ozERC1967proxyAddr);
+
+                    // iface = new ethers.utils.Interface(['function exec(uint256 txFee, address feeToken, address taskCreator, bool userTaskTreasuryFunds, bool revertOnFailure, bytes32 resolverHash, address execAddress, bytes execData) external']);
+                    // const data = iface.encodeFunctionData('exec', [
+                    //     0, ETH, ozERC1967proxyAddr, false, false,
+                    //    resolverHash, newProxyAddr, execData 
+                    // ]);
+                    // console.log('data: ', data);
+
+                    // const gelatoABI = ['function exec(address service, bytes data, address creditToken) external returns(uint256,uint256,uint256,uint256)'];
+                    // const gelato = await hre.ethers.getContractAt(gelatoABI, gelatoAddr);
+                    // await gelato.exec(pokeMeOpsAddr, data, ETH);
+
+
 
                     const tx = await ops.connect(gelatoSigner).exec(0, ETH, ozERC1967proxyAddr, false, false, resolverHash, newProxyAddr, execData);
                     const receipt = await tx.wait();
@@ -237,7 +255,7 @@ let tx, receipt;
             });
 
 
-            xdescribe('Deploys 5 proxies', async () => { 
+            describe('Deploys 5 proxies', async () => { 
                 before(async () => {
                     userDetails[1] = usdcAddr;
                     for (let i=0; i < 5; i++) {
@@ -267,7 +285,7 @@ let tx, receipt;
             });
         });
 
-        xdescribe('ozBeaconProxy / ozPayMe', async () => {
+        describe('ozBeaconProxy / ozPayMe', async () => {
             before(async () => {
                 await proxyFactory.createNewProxy(userDetails);
                 newProxyAddr = (await storageBeacon.getProxyByUser(signerAddr))[0].toString(); 
@@ -375,7 +393,7 @@ let tx, receipt;
             });
         });
 
-        xdescribe('Emitter', async () => {
+        describe('Emitter', async () => {
             before(async () => {
                 await proxyFactory.createNewProxy(userDetails);
                 newProxyAddr = (await storageBeacon.getProxyByUser(signerAddr))[0].toString(); 
@@ -408,7 +426,7 @@ let tx, receipt;
             }); 
         });
     
-        xdescribe('StorageBeacon', async () => {
+        describe('StorageBeacon', async () => {
             it('shoud not allow an user to issue an userID / issueUserID()', async () => {
                 await assert.rejects(async () => {
                     await storageBeacon.issueUserID(evilUserDetails);
@@ -564,7 +582,7 @@ let tx, receipt;
             });
         });
 
-        xdescribe('ozUpgradeableBeacon', async () => {
+        describe('ozUpgradeableBeacon', async () => {
             it('should allow the owner to upgrade the Storage Beacon / upgradeStorageBeacon()', async () => {
                 [storageBeaconMockAddr , storageBeaconMock] = await deployContract('StorageBeaconMock');
                 await beacon.upgradeStorageBeacon(storageBeaconMockAddr);
@@ -608,7 +626,7 @@ let tx, receipt;
 
 
     //autoRedeem set to 0
-    xdescribe('Pesimistic deployment', async function () {
+    describe('Pesimistic deployment', async function () {
         before( async () => {
             ([
                 beacon, 
