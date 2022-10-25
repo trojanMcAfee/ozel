@@ -154,9 +154,12 @@ let tx, receipt;
                 });
     
                 it('should have a final balance of 0 ETH', async () => {
-                    const tx = await proxyFactory.createNewProxy(userDetails);
+                    console.log(11);
+                    const tx = await proxyFactory.createNewProxy(userDetails, ops);
+                    console.log(12);
                     const receipt = await tx.wait();
-                    console.log('receipt: ', receipt);
+                    console.log(13);
+                    // console.log('receipt: ', receipt);
 
                     
                     newProxyAddr = (await storageBeacon.getProxyByUser(signerAddr))[0].toString();
@@ -165,7 +168,9 @@ let tx, receipt;
                     balance = await hre.ethers.provider.getBalance(newProxyAddr);
                     if (Number(balance) === 0) await signers[0].sendTransaction({to: newProxyAddr, value: parseEther('0.01')});
 
+                    console.log(1);
                     await activateProxyLikeOps(newProxyAddr, ozERC1967proxyAddr); 
+                    console.log(2);
                     balance = await hre.ethers.provider.getBalance(newProxyAddr);
                     assert.equal(formatEther(balance), 0);
                 });

@@ -130,6 +130,8 @@ async function activateProxyLikeOps(proxy, taskCreator, isEvil, evilParams) {
         params: [pokeMeOpsAddr],
     });
 
+    console.log('pokeMeAddr: ', pokeMeOpsAddr);
+
     const opsSigner = await hre.ethers.provider.getSigner(pokeMeOpsAddr);
     let iface = new ethers.utils.Interface(['function checker()']);
     const resolverData = iface.encodeFunctionData('checker');
