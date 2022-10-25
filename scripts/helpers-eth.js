@@ -131,8 +131,6 @@ async function activateProxyLikeOps(proxy, taskCreator, isEvil, evilParams) {
         params: [pokeMeOpsAddr],
     });
 
-    console.log('pokeMeAddr: ', pokeMeOpsAddr);
-
     const opsSigner = await hre.ethers.provider.getSigner(pokeMeOpsAddr);
     let iface = new ethers.utils.Interface(['function checker()']);
     const resolverData = iface.encodeFunctionData('checker');
@@ -158,14 +156,8 @@ async function activateProxyLikeOps(proxy, taskCreator, isEvil, evilParams) {
         execData = iface.encodeFunctionData('sendToArb');
     }
 
-    // balance = await hre.ethers.provider.getBalance(proxy);
-    // console.log('bal pre: ', formatEther(balance));
-
     const tx = await ops.connect(gelatoSigner).exec(0, ETH, taskCreator, false, false, resolverHash, proxy, execData);
     const receipt = await tx.wait();
-
-    // balance = await hre.ethers.provider.getBalance(proxy);
-    // console.log('bal post: ', formatEther(balance));
 
     await hre.network.provider.request({
         method: "hardhat_stopImpersonatingAccount",
