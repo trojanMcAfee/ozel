@@ -153,9 +153,9 @@ let tx, receipt;
                     assert.equal(formatEther(balance), '0.01');
                 });
     
-                it('should have a final balance of 0 ETH', async () => {
+                xit('should have a final balance of 0 ETH', async () => {
                     console.log(11);
-                    const tx = await proxyFactory.createNewProxy(userDetails, ops);
+                    const tx = await proxyFactory.createNewProxy(userDetails);
                     console.log(12);
                     const receipt = await tx.wait();
                     console.log(13);
@@ -173,6 +173,66 @@ let tx, receipt;
                     console.log(2);
                     balance = await hre.ethers.provider.getBalance(newProxyAddr);
                     assert.equal(formatEther(balance), 0);
+                });
+
+                it('test', async () => {
+                    await proxyFactory.createNewProxy(userDetails);
+                    newProxyAddr = (await storageBeacon.getProxyByUser(signerAddr))[0].toString();
+                    console.log('newProxyAddr1: ', newProxyAddr);
+
+                    balance = await hre.ethers.provider.getBalance(newProxyAddr);
+                    if (Number(balance) === 0) await signers[0].sendTransaction({to: newProxyAddr, value: parseEther('0.01')});
+
+                    balance = await hre.ethers.provider.getBalance(newProxyAddr);
+                    console.log('bal: ', formatEther(balance));
+
+                    //--------------------
+                    await hre.network.provider.request({
+                        method: "hardhat_impersonateAccount",
+                        params: [pokeMeOpsAddr],
+                    });
+                
+                    console.log('pokeMeAddr: ', pokeMeOpsAddr);
+                
+                    const opsSigner = await hre.ethers.provider.getSigner(pokeMeOpsAddr);
+                    let iface = new ethers.utils.Interface(['function checker()']);
+                    const resolverData = iface.encodeFunctionData('checker');
+                    const ops = await hre.ethers.getContractAt('IOps', pokeMeOpsAddr);
+
+                    const gelato = await ops.connect(opsSigner).gelato();
+                    console.log('gelato: ', gelato);
+
+                    const resolverHash = await ops.connect(opsSigner).getResolverHash(newProxyAddr, resolverData);
+                
+                    await hre.network.provider.request({
+                        method: "hardhat_stopImpersonatingAccount",
+                        params: [pokeMeOpsAddr],
+                    });
+
+                    await hre.network.provider.request({
+                        method: "hardhat_impersonateAccount",
+                        params: [gelato],
+                    });
+
+                    const gelatoSigner = await hre.ethers.provider.getSigner(gelato); 
+                    iface = new ethers.utils.Interface([`function sendToArb()`]); 
+                    let execData = iface.encodeFunctionData('sendToArb');
+
+                    console.log('ozERC1967proxyAddr: ', ozERC1967proxyAddr);
+
+                    const tx = await ops.connect(gelatoSigner).exec(0, ETH, ozERC1967proxyAddr, false, false, resolverHash, newProxyAddr, execData);
+                    const receipt = await tx.wait();
+
+                    await hre.network.provider.request({
+                        method: "hardhat_stopImpersonatingAccount",
+                        params: [gelato],
+                    });
+
+                    balance = await hre.ethers.provider.getBalance(newProxyAddr);
+                    console.log('bal post *******: ', formatEther(balance));
+
+
+
                 });
             });
 
