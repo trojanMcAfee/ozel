@@ -8,8 +8,9 @@ import "@openzeppelin/contracts/proxy/utils/Initializable.sol";
 import '@openzeppelin/contracts/token/ERC20/IERC20.sol';
 import '@openzeppelin/contracts/access/Ownable.sol';
 import './ozUpgradeableBeacon.sol';
+import '../Errors.sol';
 
-// import 'hardhat/console.sol';
+import 'hardhat/console.sol';
 
 
 contract StorageBeacon is Initializable, Ownable { 
@@ -58,6 +59,7 @@ contract StorageBeacon is Initializable, Ownable {
     mapping(address => address[]) public userToProxy;
     mapping(address => mapping(IERC20 => uint)) public userToFailedERC;
     mapping(address => IERC20[]) public userToFailedTokenCount;
+    mapping(address => uint) public proxyToPayments;
 
     address[] public tokenDatabaseArray;
 
@@ -69,6 +71,11 @@ contract StorageBeacon is Initializable, Ownable {
 
     modifier hasRole(bytes4 functionSig_) {
         require(beacon.canCall(msg.sender, address(this), functionSig_));
+        _;
+    }
+
+    modifier onlyProxy() {
+        if (!proxyDatabase[msg.sender]) revert NotProxy();
         _;
     }
 
@@ -152,6 +159,10 @@ contract StorageBeacon is Initializable, Ownable {
         isEmitter = newStatus;
     }
 
+    function storeProxyPayment(address proxy_, uint payment_) external onlyProxy {
+        proxyToPayments[proxy_] += payment_;
+    }
+
 
     //View functions
     function getUserDetailsById(uint userId_) external view returns(UserConfig memory) {
@@ -196,6 +207,10 @@ contract StorageBeacon is Initializable, Ownable {
 
     function getTokenDatabase() external view returns(address[] memory) {
         return tokenDatabaseArray;
+    }
+
+    function getProxyPayments(address proxy_) external view returns(uint) {
+        return proxyToPayments[proxy_];
     }
 }
 

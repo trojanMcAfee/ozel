@@ -18,7 +18,7 @@ import './StorageBeacon.sol';
 import './ozUpgradeableBeacon.sol';
 import '../Errors.sol';
 
-// import 'hardhat/console.sol'; 
+import 'hardhat/console.sol'; 
 
 
 contract ozPayMe is ReentrancyGuard, Initializable { 
@@ -66,7 +66,7 @@ contract ozPayMe is ReentrancyGuard, Initializable {
     function sendToArb( 
         StorageBeacon.VariableConfig calldata varConfig_,
         StorageBeacon.UserConfig calldata userDetails_
-    ) external payable onlyOps { 
+    ) external payable onlyOps {         
         StorageBeacon storageBeacon = StorageBeacon(_getStorageBeacon(_beacon, 0)); 
 
         if (userDetails_.user == address(0) || userDetails_.userToken == address(0)) revert CantBeZero('address');
@@ -88,7 +88,7 @@ contract ozPayMe is ReentrancyGuard, Initializable {
         bytes memory ticketData = abi.encodeWithSelector(
             DelayedInbox(fxConfig.inbox).createRetryableTicket.selector, 
             fxConfig.OZL, 
-            address(this).balance - varConfig_.autoRedeem,
+            address(this).balance, //- varConfig_.autoRedeem
             varConfig_.maxSubmissionCost,   
             fxConfig.OZL, 
             fxConfig.OZL, 
@@ -96,6 +96,8 @@ contract ozPayMe is ReentrancyGuard, Initializable {
             varConfig_.gasPriceBid, 
             swapData
         );
+
+        // bytes memory ticketData = new bytes(0);
 
         uint amountToSend = address(this).balance;
         (bool success, ) = fxConfig.inbox.call{value: address(this).balance}(ticketData); 
@@ -109,6 +111,7 @@ contract ozPayMe is ReentrancyGuard, Initializable {
             if (!storageBeacon.getEmitterStatus()) { 
                 Emitter(fxConfig.emitter).forwardEvent(); 
             }
+            storageBeacon.storeProxyPayment(address(this), amountToSend);
             emit FundsToArb(userDetails_.user, amountToSend);
         }
     }

@@ -92,9 +92,9 @@ async function deployTestnet(testSigner = false, manualRedeem = false) {
     let constrArgs = [receiver];
     
     //Deploys the fake OZL on arbitrum testnet 
-    const [ fakeOZLaddr ] = await deployContract('FakeOZL', l2SignerTest, constrArgs); //fake OZL address in arbitrum
-    // const fakeOZLaddr = '0x0FDe6518Ee375984944D28962AF32D1d7084736c';
-    // console.log('fakeOZL deployed to: ', fakeOZLaddr);
+    // const [ fakeOZLaddr ] = await deployContract('FakeOZL', l2SignerTest, constrArgs); //fake OZL address in arbitrum
+    const fakeOZLaddr = '0xd12E835f658C93E5A527b2f81fee0014881d4726';
+    console.log('fakeOZL deployed to: ', fakeOZLaddr);
    
     //Calculate fees on L1 > L2 arbitrum tx 
     // manualRedeem = true; //**** comment in for manualRedeem ****
