@@ -80,12 +80,12 @@ const proxyABIeth = [
 ];
 
 const factoryABI = [
-    'function createNewProxy(tuple(address user, address userToken, uint256 userSlippage) userDetails_)',
+    'function createNewProxy(tuple(address user, address userToken, uint256 userSlippage) userDetails_) external returns(address)',
     'function initialize(address beacon_)'
 ];
 
 const ops = {
-    gasLimit: ethers.BigNumber.from('5000000'),
+    gasLimit: ethers.BigNumber.from('20000000'),
     gasPrice: ethers.BigNumber.from('40134698068')
 };
 
@@ -96,7 +96,7 @@ const l2Provider = new ethers.providers.JsonRpcProvider(process.env.ARBITRUM);
 let l1Signer, l2Signer, l1SignerTestnet, l2SignerTestnet;
 let l1ProviderTestnet, l2ProviderTestnet;
 
-let network = 'goerli';
+let network = 'mainnet';
 switch(network) {
     case 'goerli':
         pokeMeOpsAddr = '0xc1C6805B857Bef1f412519C4A842522431aFed39'; 

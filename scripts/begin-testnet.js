@@ -92,9 +92,9 @@ async function deployTestnet(testSigner = false, manualRedeem = false) {
     let constrArgs = [receiver];
     
     //Deploys the fake OZL on arbitrum testnet 
-    // const [ fakeOZLaddr ] = await deployContract('FakeOZL', l2SignerTest, constrArgs); //fake OZL address in arbitrum
-    const fakeOZLaddr = '0xd12E835f658C93E5A527b2f81fee0014881d4726';
-    console.log('fakeOZL deployed to: ', fakeOZLaddr);
+    const [ fakeOZLaddr ] = await deployContract('FakeOZL', l2SignerTest, constrArgs); //fake OZL address in arbitrum
+    // const fakeOZLaddr = '0xd12E835f658C93E5A527b2f81fee0014881d4726';
+    // console.log('fakeOZL deployed to: ', fakeOZLaddr);
    
     //Calculate fees on L1 > L2 arbitrum tx 
     // manualRedeem = true; //**** comment in for manualRedeem ****
@@ -175,7 +175,7 @@ async function deployTestnet(testSigner = false, manualRedeem = false) {
     const [ redeemedHashesAddr, redeemedHashes ] = await deployContract('RedeemedHashes', l2SignerTest);
 
     //Deploys Auth
-    constrArgs = [
+    constrArgs = [ 
         signerAddr,
         beaconAddr
     ];
@@ -200,9 +200,6 @@ async function deployTestnet(testSigner = false, manualRedeem = false) {
     //Gets user's task id
     const taskId = await storageBeacon.getTaskID(newProxyAddr, ops);
     console.log('task id: ', taskId.toString());
-
-    //**** TRIGGER for Gelato *******/
-    // await sendTx(newProxyAddr, true, 'Sending ETH');
 
     return [
         storageBeacon,

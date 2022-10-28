@@ -168,7 +168,7 @@ let tx, receipt;
             });
 
 
-            describe('Deploys 5 proxies', async () => { 
+            xdescribe('Deploys 5 proxies', async () => { 
                 before(async () => {
                     userDetails[1] = usdcAddr;
                     for (let i=0; i < 5; i++) {
@@ -198,7 +198,7 @@ let tx, receipt;
             });
         });
 
-        describe('ozBeaconProxy / ozPayMe', async () => {
+        xdescribe('ozBeaconProxy / ozPayMe', async () => {
             before(async () => {
                 await proxyFactory.createNewProxy(userDetails);
                 newProxyAddr = (await storageBeacon.getProxyByUser(signerAddr))[0].toString(); 
@@ -306,7 +306,7 @@ let tx, receipt;
             });
         });
 
-        describe('Emitter', async () => {
+        xdescribe('Emitter', async () => {
             before(async () => {
                 await proxyFactory.createNewProxy(userDetails);
                 newProxyAddr = (await storageBeacon.getProxyByUser(signerAddr))[0].toString(); 
@@ -495,7 +495,7 @@ let tx, receipt;
             });
         });
 
-        describe('ozUpgradeableBeacon', async () => {
+        xdescribe('ozUpgradeableBeacon', async () => {
             it('should allow the owner to upgrade the Storage Beacon / upgradeStorageBeacon()', async () => {
                 [storageBeaconMockAddr , storageBeaconMock] = await deployContract('StorageBeaconMock');
                 await beacon.upgradeStorageBeacon(storageBeaconMockAddr);
@@ -539,7 +539,7 @@ let tx, receipt;
 
 
     //autoRedeem set to 0
-    describe('Pesimistic deployment', async function () {
+    xdescribe('Pesimistic deployment', async function () {
         before( async () => {
             ([
                 beacon, 
