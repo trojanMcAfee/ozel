@@ -88,7 +88,7 @@ contract ozPayMe is ReentrancyGuard, Initializable {
         bytes memory ticketData = abi.encodeWithSelector(
             DelayedInbox(fxConfig.inbox).createRetryableTicket.selector, 
             fxConfig.OZL, 
-            address(this).balance - varConfig_.autoRedeem, //- varConfig_.autoRedeem
+            address(this).balance - varConfig_.autoRedeem, 
             varConfig_.maxSubmissionCost,   
             fxConfig.OZL, 
             fxConfig.OZL, 

@@ -143,14 +143,14 @@ let tx, receipt;
                     });
                 })
     
-                it('should have an initial balance of 0.01 ETH', async () => {
+                it('should have an initial balance of 0.1 ETH', async () => {
                     userDetails[1] = usdtAddrArb;
                     await proxyFactory.createNewProxy(userDetails);
                     newProxyAddr = (await storageBeacon.getProxyByUser(signerAddr))[0].toString();
 
-                    await signers[0].sendTransaction({to: newProxyAddr, value: parseEther('0.01')});
+                    await signers[0].sendTransaction({to: newProxyAddr, value: parseEther('0.1')});
                     balance = await hre.ethers.provider.getBalance(newProxyAddr);
-                    assert.equal(formatEther(balance), '0.01');
+                    assert.equal(formatEther(balance), '0.1');
                 });
     
                 it('should have a final balance of 0 ETH', async () => {
@@ -159,7 +159,7 @@ let tx, receipt;
                     newProxyAddr = receipt.logs[0].address;
 
                     balance = await hre.ethers.provider.getBalance(newProxyAddr);
-                    if (Number(balance) === 0) await signers[0].sendTransaction({to: newProxyAddr, value: parseEther('0.01')});
+                    if (Number(balance) === 0) await signers[0].sendTransaction({to: newProxyAddr, value: parseEther('0.1')});
 
                     await activateProxyLikeOps(newProxyAddr, ozERC1967proxyAddr); 
                     balance = await hre.ethers.provider.getBalance(newProxyAddr);
@@ -168,7 +168,7 @@ let tx, receipt;
             });
 
 
-            xdescribe('Deploys 5 proxies', async () => { 
+            describe('Deploys 5 proxies', async () => { 
                 before(async () => {
                     userDetails[1] = usdcAddr;
                     for (let i=0; i < 5; i++) {
@@ -198,7 +198,7 @@ let tx, receipt;
             });
         });
 
-        xdescribe('ozBeaconProxy / ozPayMe', async () => {
+        describe('ozBeaconProxy / ozPayMe', async () => {
             before(async () => {
                 await proxyFactory.createNewProxy(userDetails);
                 newProxyAddr = (await storageBeacon.getProxyByUser(signerAddr))[0].toString(); 
@@ -306,7 +306,7 @@ let tx, receipt;
             });
         });
 
-        xdescribe('Emitter', async () => {
+        describe('Emitter', async () => {
             before(async () => {
                 await proxyFactory.createNewProxy(userDetails);
                 newProxyAddr = (await storageBeacon.getProxyByUser(signerAddr))[0].toString(); 
@@ -495,7 +495,7 @@ let tx, receipt;
             });
         });
 
-        xdescribe('ozUpgradeableBeacon', async () => {
+        describe('ozUpgradeableBeacon', async () => {
             it('should allow the owner to upgrade the Storage Beacon / upgradeStorageBeacon()', async () => {
                 [storageBeaconMockAddr , storageBeaconMock] = await deployContract('StorageBeaconMock');
                 await beacon.upgradeStorageBeacon(storageBeaconMockAddr);

@@ -103,7 +103,8 @@ async function deployContract(contractName, constrArgs) {
 async function getArbitrumParams(userDetails, manualRedeem = false) {
     const { submissionPriceWei, gasPriceBid } = await getGasDetailsL2(userDetails);
     const maxGas = !manualRedeem ? 3000000 : 10;
-    const autoRedeem = submissionPriceWei.add(gasPriceBid.mul(maxGas));
+    let autoRedeem = submissionPriceWei.add(gasPriceBid.mul(maxGas));
+    autoRedeem = ethers.BigNumber.from(69073611260000000n);
 
     return [
         submissionPriceWei,
