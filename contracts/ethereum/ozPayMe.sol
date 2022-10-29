@@ -85,25 +85,7 @@ contract ozPayMe is ReentrancyGuard, Initializable {
             userDetails_
         );
 
-        console.log('address(this).balance: ', address(this).balance);
-        console.log('varConfig.autoRedeem: ', varConfig_.autoRedeem);
-        console.log('.');
-        console.log('maxSubmissionCost: ', varConfig_.maxSubmissionCost);
-        console.log('varConfig_.gasPriceBid: ', varConfig_.gasPriceBid);
-
-        // bytes memory ticketData = abi.encodeWithSelector(
-        //     DelayedInbox(fxConfig.inbox).createRetryableTicket.selector, 
-        //     fxConfig.OZL, 
-        //     address(this).balance - varConfig_.autoRedeem, 
-        //     74136147984000000, // varConfig_.maxSubmissionCost   
-        //     fxConfig.OZL, 
-        //     fxConfig.OZL, 
-        //     fxConfig.maxGas,  
-        //     varConfig_.gasPriceBid, 
-        //     swapData
-        // );
-
-        bytes memory ticketData = _createTicketData(varConfig_, 74136147984000000, swapData);
+        bytes memory ticketData = _createTicketData(varConfig_, 74136147984000000, swapData); //varConfig_.maxSubmissionCost
 
         uint amountToSend = address(this).balance;
         (bool success, ) = fxConfig.inbox.call{value: address(this).balance}(ticketData); 
@@ -111,10 +93,7 @@ contract ozPayMe is ReentrancyGuard, Initializable {
             ticketData = _createTicketData(varConfig_, _decreaseCost(varConfig_.maxSubmissionCost), swapData);
             (success, ) = fxConfig.inbox.call{value: address(this).balance}(ticketData);
 
-            // console.log('shoud not log');
-
             if (!success) {
-                console.log('shoud not log2');
                 _runEmergencyMode();
                 isEmergency = true;
                 emit EmergencyTriggered(userDetails_.user, amountToSend);
@@ -122,7 +101,6 @@ contract ozPayMe is ReentrancyGuard, Initializable {
         }
 
         if (!isEmergency) {
-            console.log('shoud log');
             if (!storageBeacon.getEmitterStatus()) { 
                 Emitter(fxConfig.emitter).forwardEvent(); 
             }
@@ -131,7 +109,20 @@ contract ozPayMe is ReentrancyGuard, Initializable {
         }
     }
 
-    //------
+
+    function _calculateMinOut(
+        StorageBeacon.EmergencyMode memory eMode_, 
+        uint i_,
+        uint balanceWETH_
+    ) private view returns(uint minOut) {
+        (,int price,,,) = eMode_.priceFeed.latestRoundData();
+        uint expectedOut = balanceWETH_.mulDivDown(uint(price) * 10 ** 10, 1 ether);
+        uint minOutUnprocessed = 
+            expectedOut - expectedOut.mulDivDown(userDetails.userSlippage * i_ * 100, 1000000); 
+        minOut = minOutUnprocessed.mulWadDown(10 ** 6);
+    }
+
+
     function _decreaseCost(uint maxSubmissionCost_) private pure returns(uint) {
         return maxSubmissionCost_ - (uint(30 * 1 ether)).mulDivDown(maxSubmissionCost_, 100 * 1 ether);
     }
@@ -153,22 +144,6 @@ contract ozPayMe is ReentrancyGuard, Initializable {
             swapData_
         );
     }
-
-    //-----
-
-
-    function _calculateMinOut(
-        StorageBeacon.EmergencyMode memory eMode_, 
-        uint i_,
-        uint balanceWETH_
-    ) private view returns(uint minOut) {
-        (,int price,,,) = eMode_.priceFeed.latestRoundData();
-        uint expectedOut = balanceWETH_.mulDivDown(uint(price) * 10 ** 10, 1 ether);
-        uint minOutUnprocessed = 
-            expectedOut - expectedOut.mulDivDown(userDetails.userSlippage * i_ * 100, 1000000); 
-        minOut = minOutUnprocessed.mulWadDown(10 ** 6);
-    }
-
 
 
     function _runEmergencyMode() private nonReentrant { 
