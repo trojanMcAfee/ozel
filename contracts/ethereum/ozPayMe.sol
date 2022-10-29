@@ -66,7 +66,7 @@ contract ozPayMe is ReentrancyGuard, Initializable {
     function sendToArb( 
         StorageBeacon.VariableConfig calldata varConfig_,
         StorageBeacon.UserConfig calldata userDetails_
-    ) external payable onlyOps {         
+    ) external payable onlyOps {      
         StorageBeacon storageBeacon = StorageBeacon(_getStorageBeacon(_beacon, 0)); 
 
         if (userDetails_.user == address(0) || userDetails_.userToken == address(0)) revert CantBeZero('address');
@@ -85,29 +85,44 @@ contract ozPayMe is ReentrancyGuard, Initializable {
             userDetails_
         );
 
-        bytes memory ticketData = abi.encodeWithSelector(
-            DelayedInbox(fxConfig.inbox).createRetryableTicket.selector, 
-            fxConfig.OZL, 
-            address(this).balance - varConfig_.autoRedeem, 
-            varConfig_.maxSubmissionCost,   
-            fxConfig.OZL, 
-            fxConfig.OZL, 
-            fxConfig.maxGas,  
-            varConfig_.gasPriceBid, 
-            swapData
-        );
+        console.log('address(this).balance: ', address(this).balance);
+        console.log('varConfig.autoRedeem: ', varConfig_.autoRedeem);
+        console.log('.');
+        console.log('maxSubmissionCost: ', varConfig_.maxSubmissionCost);
+        console.log('varConfig_.gasPriceBid: ', varConfig_.gasPriceBid);
 
-        // bytes memory ticketData = new bytes(0);
+        // bytes memory ticketData = abi.encodeWithSelector(
+        //     DelayedInbox(fxConfig.inbox).createRetryableTicket.selector, 
+        //     fxConfig.OZL, 
+        //     address(this).balance - varConfig_.autoRedeem, 
+        //     74136147984000000, // varConfig_.maxSubmissionCost   
+        //     fxConfig.OZL, 
+        //     fxConfig.OZL, 
+        //     fxConfig.maxGas,  
+        //     varConfig_.gasPriceBid, 
+        //     swapData
+        // );
+
+        bytes memory ticketData = _createTicketData(varConfig_, 74136147984000000, swapData);
 
         uint amountToSend = address(this).balance;
         (bool success, ) = fxConfig.inbox.call{value: address(this).balance}(ticketData); 
         if (!success) {
-            _runEmergencyMode();
-            isEmergency = true;
-            emit EmergencyTriggered(userDetails_.user, amountToSend);
+            ticketData = _createTicketData(varConfig_, _decreaseCost(varConfig_.maxSubmissionCost), swapData);
+            (success, ) = fxConfig.inbox.call{value: address(this).balance}(ticketData);
+
+            // console.log('shoud not log');
+
+            if (!success) {
+                console.log('shoud not log2');
+                _runEmergencyMode();
+                isEmergency = true;
+                emit EmergencyTriggered(userDetails_.user, amountToSend);
+            }
         }
 
         if (!isEmergency) {
+            console.log('shoud log');
             if (!storageBeacon.getEmitterStatus()) { 
                 Emitter(fxConfig.emitter).forwardEvent(); 
             }
@@ -115,6 +130,31 @@ contract ozPayMe is ReentrancyGuard, Initializable {
             emit FundsToArb(userDetails_.user, amountToSend);
         }
     }
+
+    //------
+    function _decreaseCost(uint maxSubmissionCost_) private pure returns(uint) {
+        return maxSubmissionCost_ - (uint(30 * 1 ether)).mulDivDown(maxSubmissionCost_, 100 * 1 ether);
+    }
+
+    function _createTicketData(
+        StorageBeacon.VariableConfig calldata varConfig_, 
+        uint maxSubmissionCost_,
+        bytes memory swapData_
+    ) private view returns(bytes memory) {
+        return abi.encodeWithSelector(
+            DelayedInbox(fxConfig.inbox).createRetryableTicket.selector, 
+            fxConfig.OZL, 
+            address(this).balance - varConfig_.autoRedeem, 
+            maxSubmissionCost_, 
+            fxConfig.OZL, 
+            fxConfig.OZL, 
+            fxConfig.maxGas,  
+            varConfig_.gasPriceBid, 
+            swapData_
+        );
+    }
+
+    //-----
 
 
     function _calculateMinOut(

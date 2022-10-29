@@ -160,6 +160,7 @@ contract StorageBeacon is Initializable, Ownable {
     }
 
     function storeProxyPayment(address proxy_, uint payment_) external onlyProxy {
+        console.log('payment in storage: *****', payment_);
         proxyToPayments[proxy_] += payment_;
     }
 
