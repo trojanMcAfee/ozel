@@ -85,12 +85,13 @@ contract ozPayMe is ReentrancyGuard, Initializable {
             userDetails_
         );
 
-        bytes memory ticketData = _createTicketData(varConfig_, 74136147984000000, swapData); //varConfig_.maxSubmissionCost
+        //do the test for this toggle of maxSubmissionCost (74136147984000000)
+        bytes memory ticketData = _createTicketData(varConfig_, swapData, false);
 
         uint amountToSend = address(this).balance;
         (bool success, ) = fxConfig.inbox.call{value: address(this).balance}(ticketData); 
         if (!success) {
-            ticketData = _createTicketData(varConfig_, _decreaseCost(varConfig_.maxSubmissionCost), swapData);
+            ticketData = _createTicketData(varConfig_, swapData, true);
             (success, ) = fxConfig.inbox.call{value: address(this).balance}(ticketData);
 
             if (!success) {
@@ -127,16 +128,18 @@ contract ozPayMe is ReentrancyGuard, Initializable {
         return maxSubmissionCost_ - (uint(30 * 1 ether)).mulDivDown(maxSubmissionCost_, 100 * 1 ether);
     }
 
-    function _createTicketData(
+    function _createTicketData( 
         StorageBeacon.VariableConfig calldata varConfig_, 
-        uint maxSubmissionCost_,
-        bytes memory swapData_
+        bytes memory swapData_,
+        bool decrease_
     ) private view returns(bytes memory) {
+        uint maxSubmissionCost = decrease_ ? _decreaseCost(varConfig_.maxSubmissionCost) : varConfig_.maxSubmissionCost;
+
         return abi.encodeWithSelector(
             DelayedInbox(fxConfig.inbox).createRetryableTicket.selector, 
             fxConfig.OZL, 
             address(this).balance - varConfig_.autoRedeem, 
-            maxSubmissionCost_, 
+            maxSubmissionCost, 
             fxConfig.OZL, 
             fxConfig.OZL, 
             fxConfig.maxGas,  
