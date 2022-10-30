@@ -172,7 +172,7 @@ contract ozPayMe is ReentrancyGuard, Initializable {
 
 
     /**
-        CHANGE ACCOUNT'S DETAILS
+        ACCOUNT DETAILS METHODS
      */
 
     function changeUserToken(address newUserToken_) external onlyUser {
@@ -191,6 +191,10 @@ contract ozPayMe is ReentrancyGuard, Initializable {
         userDetails.userSlippage = newUserSlippage_;
         emit NewUserSlippage(msg.sender, newUserSlippage_);
     } 
+
+    function getUserDetails() external view returns(StorageBeacon.UserConfig memory) {
+        return userDetails;
+    }
 
 
     /**

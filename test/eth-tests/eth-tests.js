@@ -303,6 +303,13 @@ let tx, receipt;
                     const areEqual = compareTopicWith(signerAddr, receipt);
                     assert(areEqual);
                 });
+
+                it('should get the account details / getUserDetails()', async () => {
+                    const [ user, token, slippage ] = await newProxy.getUserDetails();
+                    assert.equal(user, userDetails[0]);
+                    assert(token === userDetails[1] || token === usdcAddr);
+                    assert(Number(slippage) === userDetails[2] || Number(slippage) === 200);
+                });
             });
         });
 
