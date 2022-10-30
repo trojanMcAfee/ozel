@@ -124,31 +124,6 @@ contract ozPayMe is ReentrancyGuard, Initializable {
     }
 
 
-    function _decreaseCost(uint maxSubmissionCost_) private pure returns(uint) {
-        return maxSubmissionCost_ - (uint(30 * 1 ether)).mulDivDown(maxSubmissionCost_, 100 * 1 ether);
-    }
-
-    function _createTicketData( 
-        StorageBeacon.VariableConfig calldata varConfig_, 
-        bytes memory swapData_,
-        bool decrease_
-    ) private view returns(bytes memory) {
-        uint maxSubmissionCost = decrease_ ? _decreaseCost(varConfig_.maxSubmissionCost) : varConfig_.maxSubmissionCost;
-
-        return abi.encodeWithSelector(
-            DelayedInbox(fxConfig.inbox).createRetryableTicket.selector, 
-            fxConfig.OZL, 
-            address(this).balance - varConfig_.autoRedeem, 
-            maxSubmissionCost, 
-            fxConfig.OZL, 
-            fxConfig.OZL, 
-            fxConfig.maxGas,  
-            varConfig_.gasPriceBid, 
-            swapData_
-        );
-    }
-
-
     function _runEmergencyMode() private nonReentrant { 
         address sBeacon = _getStorageBeacon(_beacon, 0);
         StorageBeacon.EmergencyMode memory eMode = StorageBeacon(sBeacon).getEmergencyMode();
@@ -196,6 +171,10 @@ contract ozPayMe is ReentrancyGuard, Initializable {
     }
 
 
+    /**
+        CHANGE ACCOUNT'S DETAILS
+     */
+
     function changeUserToken(address newUserToken_) external onlyUser {
         StorageBeacon storageBeacon = StorageBeacon(_getStorageBeacon(_beacon, 0)); 
 
@@ -212,6 +191,35 @@ contract ozPayMe is ReentrancyGuard, Initializable {
         userDetails.userSlippage = newUserSlippage_;
         emit NewUserSlippage(msg.sender, newUserSlippage_);
     } 
+
+
+    /**
+        ARB'S HELPERS
+     */
+
+     function _decreaseCost(uint maxSubmissionCost_) private pure returns(uint) {
+        return maxSubmissionCost_ - (uint(30 * 1 ether)).mulDivDown(maxSubmissionCost_, 100 * 1 ether);
+    }
+
+    function _createTicketData( 
+        StorageBeacon.VariableConfig calldata varConfig_, 
+        bytes memory swapData_,
+        bool decrease_
+    ) private view returns(bytes memory) {
+        uint maxSubmissionCost = decrease_ ? _decreaseCost(varConfig_.maxSubmissionCost) : varConfig_.maxSubmissionCost;
+
+        return abi.encodeWithSelector(
+            DelayedInbox(fxConfig.inbox).createRetryableTicket.selector, 
+            fxConfig.OZL, 
+            address(this).balance - varConfig_.autoRedeem, 
+            maxSubmissionCost, 
+            fxConfig.OZL, 
+            fxConfig.OZL, 
+            fxConfig.maxGas,  
+            varConfig_.gasPriceBid, 
+            swapData_
+        );
+    }
 }
 
 

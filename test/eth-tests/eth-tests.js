@@ -502,7 +502,7 @@ let tx, receipt;
                 await signers[0].sendTransaction({to: newProxyAddr, value: parseEther('0.1')});
                 await activateProxyLikeOps(newProxyAddr, ozERC1967proxyAddr); 
                 payments = await storageBeacon.getProxyPayments(newProxyAddr);
-                console.log('pay: ', formatEther(payments));
+                assert.equal(formatEther(payments), 0.1);
             });
         });
 
