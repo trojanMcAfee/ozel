@@ -504,6 +504,15 @@ let tx, receipt;
                 payments = await storageBeacon.getProxyPayments(newProxyAddr);
                 assert.equal(formatEther(payments), 0.1);
             });
+
+            it('should not let an external user to store a proxy payment / storeProxyPayment()', async () => {                
+                await assert.rejects(async () => {
+                    await storageBeacon.storeProxyPayment(deadAddr, 1000);
+                }, {
+                    name: 'Error',
+                    message: (await err()).notProxy
+                });
+            });
         });
 
         describe('ozUpgradeableBeacon', async () => {
