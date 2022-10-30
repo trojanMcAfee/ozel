@@ -103,7 +103,7 @@ let tx, receipt;
             proxyFactory = await hre.ethers.getContractAt(factoryABI, ozERC1967proxyAddr);
         });
 
-        xdescribe('ProxyFactory', async () => {
+        describe('ProxyFactory', async () => {
             describe('Deploys one proxy', async () => {
                 it('should create a proxy successfully / createNewProxy()', async () => {
                     await proxyFactory.createNewProxy(userDetails);
@@ -198,7 +198,7 @@ let tx, receipt;
             });
         });
 
-        xdescribe('ozBeaconProxy / ozPayMe', async () => {
+        describe('ozBeaconProxy / ozPayMe', async () => {
             before(async () => {
                 await proxyFactory.createNewProxy(userDetails);
                 newProxyAddr = (await storageBeacon.getProxyByUser(signerAddr))[0].toString(); 
@@ -306,7 +306,7 @@ let tx, receipt;
             });
         });
 
-        xdescribe('Emitter', async () => {
+        describe('Emitter', async () => {
             before(async () => {
                 await proxyFactory.createNewProxy(userDetails);
                 newProxyAddr = (await storageBeacon.getProxyByUser(signerAddr))[0].toString(); 
@@ -340,7 +340,7 @@ let tx, receipt;
         });
     
         describe('StorageBeacon', async () => {
-            xit('shoud not allow an user to issue an userID / issueUserID()', async () => {
+            it('shoud not allow an user to issue an userID / issueUserID()', async () => {
                 await assert.rejects(async () => {
                     await storageBeacon.issueUserID(evilUserDetails);
                 }, {
@@ -349,7 +349,7 @@ let tx, receipt;
                 });
             });
 
-            xit('should not allow an user to save a proxy / saveUserProxy()', async () => {
+            it('should not allow an user to save a proxy / saveUserProxy()', async () => {
                 await assert.rejects(async () => {
                     await storageBeacon.saveUserProxy(signerAddr2, deadAddr);
                 }, {
@@ -358,7 +358,7 @@ let tx, receipt;
                 });
             });
 
-            xit('should not allow an user to save a taskId / saveTaskId()', async () => {
+            it('should not allow an user to save a taskId / saveTaskId()', async () => {
                 await assert.rejects(async () => {
                     await storageBeacon.saveTaskId(deadAddr, formatBytes32String('evil data'));
                 }, {
@@ -367,11 +367,11 @@ let tx, receipt;
                 });
             });
 
-            xit('should allow the owner to change VariableConfig / changeVariableConfig()', async () => {
+            it('should allow the owner to change VariableConfig / changeVariableConfig()', async () => {
                 await storageBeacon.changeVariableConfig(varConfig);
             });
 
-            xit('should not allow an external user to change VariableConfig / changeVariableConfig()', async () => {
+            it('should not allow an external user to change VariableConfig / changeVariableConfig()', async () => {
                 await assert.rejects(async () => {
                     await storageBeacon.connect(signers[1]).changeVariableConfig(varConfig);
                 }, {
@@ -380,11 +380,11 @@ let tx, receipt;
                 });
             });
 
-            xit('should allow the owner to add a new userToken to the database / addTokenToDatabase()', async () => {
+            it('should allow the owner to add a new userToken to the database / addTokenToDatabase()', async () => {
                 await storageBeacon.addTokenToDatabase(fraxAddr);
             });
 
-            xit('should not allow an external user to add a new userToken to the database / addTokenToDatabase()', async () => {
+            it('should not allow an external user to add a new userToken to the database / addTokenToDatabase()', async () => {
                 await assert.rejects(async () => {
                     await storageBeacon.connect(signers[1]).addTokenToDatabase(deadAddr);
                 }, {
@@ -393,7 +393,7 @@ let tx, receipt;
                 });
             });
 
-            xit('should not allow re-calling / storeBeacon()', async () => {
+            it('should not allow re-calling / storeBeacon()', async () => {
                 await assert.rejects(async () => {
                     await storageBeacon.storeBeacon(deadAddr);
                 }, {
@@ -402,11 +402,11 @@ let tx, receipt;
                 });
             });
 
-            xit('should allow the onwer to change Emergency Mode / changeEmergencyMode()', async () => {
+            it('should allow the onwer to change Emergency Mode / changeEmergencyMode()', async () => {
                 await storageBeacon.changeEmergencyMode(eMode);
             });
 
-            xit('should not allow an external user to change Emergency Mode / changeEmergencyMode()', async () => {
+            it('should not allow an external user to change Emergency Mode / changeEmergencyMode()', async () => {
                 await assert.rejects(async () => {
                     await storageBeacon.connect(signers[1]).changeEmergencyMode(eMode);
                 }, {
@@ -415,7 +415,7 @@ let tx, receipt;
                 });
             });
 
-            xit('should allow the owner to disable the Emitter / changeEmitterStatus()', async () => {
+            it('should allow the owner to disable the Emitter / changeEmitterStatus()', async () => {
                 await proxyFactory.createNewProxy(userDetails);
                 newProxyAddr = (await storageBeacon.getProxyByUser(signerAddr))[0].toString();
 
@@ -428,7 +428,7 @@ let tx, receipt;
                 await storageBeacon.changeEmitterStatus(false);
             });
     
-            xit('should not allow an external user to disable the Emitter / changeEmitterStatus()', async () => {
+            it('should not allow an external user to disable the Emitter / changeEmitterStatus()', async () => {
                 await assert.rejects(async () => {
                     await storageBeacon.connect(signers[1]).changeEmitterStatus(true);
                 }, {
@@ -437,7 +437,7 @@ let tx, receipt;
                 });
             });
 
-            xit('should return the userDetails / getUserDetailsById()', async () => {
+            it('should return the userDetails / getUserDetailsById()', async () => {
                 await proxyFactory.createNewProxy(userDetails);
                 userDetails[1] = usdtAddrArb;
                 pulledUserDetails = await storageBeacon.getUserDetailsById(0);
@@ -446,50 +446,50 @@ let tx, receipt;
                 assert.equal(pulledUserDetails[2], userDetails[2]);
             });
 
-            xit('should return zero values when querying with a non-user / getUserDetailsById()', async () => {
+            it('should return zero values when querying with a non-user / getUserDetailsById()', async () => {
                 pulledUserDetails = await storageBeacon.getUserDetailsById(100);
                 assert.equal(pulledUserDetails[0], nullAddr);
                 assert.equal(pulledUserDetails[1], nullAddr);
                 assert.equal(pulledUserDetails[2], 0);
             });
 
-            xit('should return the proxies an user has / getProxyByUser()', async () => {
+            it('should return the proxies an user has / getProxyByUser()', async () => {
                 await proxyFactory.createNewProxy(userDetails);
                 userProxies = await storageBeacon.getProxyByUser(signerAddr);
                 assert(userProxies.length > 0);
             });
 
-            xit('should return an empty array when querying with a non-user / getProxyByUser()', async () => {
+            it('should return an empty array when querying with a non-user / getProxyByUser()', async () => {
                 userProxies = await storageBeacon.getProxyByUser(deadAddr);
                 assert(userProxies.length === 0);
             });
 
-            xit("should get an user's taskID / getTaskID()", async () => {
+            it("should get an user's taskID / getTaskID()", async () => {
                 await proxyFactory.createNewProxy(userDetails);
                 userProxies = await storageBeacon.getProxyByUser(signerAddr);
                 taskID = (await storageBeacon.getTaskID(userProxies[0])).toString();
                 assert(taskID.length > 0);
             });
 
-            xit("should return a zero taskID when querying with a non-user / getTaskID()", async () => {
+            it("should return a zero taskID when querying with a non-user / getTaskID()", async () => {
                 taskID = (await storageBeacon.getTaskID(deadAddr)).toString();
                 assert.equal(taskID, formatBytes32String(0));
             });
 
-            xit('should return true for an user / isUser()', async () => {
+            it('should return true for an user / isUser()', async () => {
                 await proxyFactory.createNewProxy(userDetails);
                 assert(await storageBeacon.isUser(signerAddr));
             });
 
-            xit('should return false for a non-user / isUser()', async () => {
+            it('should return false for a non-user / isUser()', async () => {
                 assert(!(await storageBeacon.isUser(deadAddr)));
             });
 
-            xit('should get the Emitter status / getEmitterStatus()', async () => {
+            it('should get the Emitter status / getEmitterStatus()', async () => {
                 assert(!(await storageBeacon.getEmitterStatus()));
             });
 
-            xit('should return the full token database / getTokenDatabase()', async () => {
+            it('should return the full token database / getTokenDatabase()', async () => {
                 const tokenDb = await storageBeacon.getTokenDatabase();
                 assert(tokenDb.length > 0);
             });
@@ -506,7 +506,7 @@ let tx, receipt;
             });
         });
 
-        xdescribe('ozUpgradeableBeacon', async () => {
+        describe('ozUpgradeableBeacon', async () => {
             it('should allow the owner to upgrade the Storage Beacon / upgradeStorageBeacon()', async () => {
                 [storageBeaconMockAddr , storageBeaconMock] = await deployContract('StorageBeaconMock');
                 await beacon.upgradeStorageBeacon(storageBeaconMockAddr);
@@ -550,7 +550,7 @@ let tx, receipt;
 
 
     //autoRedeem set to 0
-    xdescribe('Pesimistic deployment', async function () {
+    describe('Pesimistic deployment', async function () {
         before( async () => {
             ([
                 beacon, 

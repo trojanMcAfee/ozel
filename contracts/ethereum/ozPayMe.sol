@@ -48,21 +48,6 @@ contract ozPayMe is ReentrancyGuard, Initializable {
     }
 
 
-    function initialize(
-        uint userId_, 
-        address beacon_
-    ) external initializer {
-        userDetails = StorageBeacon(_getStorageBeacon(beacon_, 0)).getUserDetailsById(userId_);  
-        fxConfig = StorageBeacon(_getStorageBeacon(beacon_, 0)).getFixedConfig();
-        _beacon = beacon_;
-    }
-
-
-    function _getStorageBeacon(address beacon_, uint version_) private view returns(address) { 
-        return ozUpgradeableBeacon(beacon_).storageBeacon(version_);
-    }
-
-
     function sendToArb( 
         StorageBeacon.VariableConfig calldata varConfig_,
         StorageBeacon.UserConfig calldata userDetails_
@@ -85,7 +70,6 @@ contract ozPayMe is ReentrancyGuard, Initializable {
             userDetails_
         );
 
-        //do the test for this toggle of maxSubmissionCost (74136147984000000)
         bytes memory ticketData = _createTicketData(varConfig_, swapData, false);
 
         uint amountToSend = address(this).balance;
@@ -108,19 +92,6 @@ contract ozPayMe is ReentrancyGuard, Initializable {
             storageBeacon.storeProxyPayment(address(this), amountToSend);
             emit FundsToArb(userDetails_.user, amountToSend);
         }
-    }
-
-
-    function _calculateMinOut(
-        StorageBeacon.EmergencyMode memory eMode_, 
-        uint i_,
-        uint balanceWETH_
-    ) private view returns(uint minOut) {
-        (,int price,,,) = eMode_.priceFeed.latestRoundData();
-        uint expectedOut = balanceWETH_.mulDivDown(uint(price) * 10 ** 10, 1 ether);
-        uint minOutUnprocessed = 
-            expectedOut - expectedOut.mulDivDown(userDetails.userSlippage * i_ * 100, 1000000); 
-        minOut = minOutUnprocessed.mulWadDown(10 ** 6);
     }
 
 
@@ -160,6 +131,9 @@ contract ozPayMe is ReentrancyGuard, Initializable {
         } 
     }
 
+    /**
+        CONTRACT HELPERS
+     */
 
     function _transfer(uint256 _amount, address _paymentToken) private {
         if (_paymentToken == fxConfig.ETH) {
@@ -168,6 +142,32 @@ contract ozPayMe is ReentrancyGuard, Initializable {
         } else {
             SafeTransferLib.safeTransfer(ERC20(_paymentToken), fxConfig.gelato, _amount); 
         }
+    }
+
+    function _calculateMinOut(
+        StorageBeacon.EmergencyMode memory eMode_, 
+        uint i_,
+        uint balanceWETH_
+    ) private view returns(uint minOut) {
+        (,int price,,,) = eMode_.priceFeed.latestRoundData();
+        uint expectedOut = balanceWETH_.mulDivDown(uint(price) * 10 ** 10, 1 ether);
+        uint minOutUnprocessed = 
+            expectedOut - expectedOut.mulDivDown(userDetails.userSlippage * i_ * 100, 1000000); 
+        minOut = minOutUnprocessed.mulWadDown(10 ** 6);
+    }
+
+    function initialize(
+        uint userId_, 
+        address beacon_
+    ) external initializer {
+        userDetails = StorageBeacon(_getStorageBeacon(beacon_, 0)).getUserDetailsById(userId_);  
+        fxConfig = StorageBeacon(_getStorageBeacon(beacon_, 0)).getFixedConfig();
+        _beacon = beacon_;
+    }
+
+
+    function _getStorageBeacon(address beacon_, uint version_) private view returns(address) { 
+        return ozUpgradeableBeacon(beacon_).storageBeacon(version_);
     }
 
 
