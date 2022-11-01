@@ -9,9 +9,11 @@ import './StorageBeacon.sol';
 contract FakeGoerliOZL is Ownable {
 
     address user;
-    address receiver;
+    address public receiver;
+    address immutable deadAddr = 0x000000000000000000000000000000000000dEaD;
+    address immutable nullAddr = 0x0000000000000000000000000000000000000000;
 
-    struct FakeOZLVars {
+    struct FakeOZLVars { 
         uint totalVolumeInUSD;
         uint totalVolumeInETH;
         uint wethUM;
@@ -22,6 +24,8 @@ contract FakeGoerliOZL is Ownable {
     }
 
     FakeOZLVars vars;
+
+    mapping(address => mapping(address => uint)) userBalances;
 
     constructor(address receiver_, FakeOZLVars memory vars_) {
         receiver = receiver_;
@@ -34,6 +38,10 @@ contract FakeGoerliOZL is Ownable {
             wethUserShare: vars_.wethUserShare,
             usdUserShare: vars_.usdUserShare
         });
+
+        userBalances[msg.sender][msg.sender] = vars_.ozlBalance;
+        userBalances[msg.sender][deadAddr] = vars_.wethUserShare;
+        userBalances[msg.sender][nullAddr] = vars_.usdUserShare;
     }
 
     receive() external payable {}
@@ -52,13 +60,14 @@ contract FakeGoerliOZL is Ownable {
     }
 
     function balanceOf(address user_) external view returns(uint) {
-        return vars.ozlBalance;
+        return userBalances[user_][user_];
+        // return vars.ozlBalance;
     }
 
-    function getOzelBalances(
-        address user_
-    ) external view returns(uint wethUserShare, uint usdUserShare) {
-        return (vars.wethUserShare, vars.usdUserShare);
+    function getOzelBalances(address user_) external view returns(uint, uint) {
+        uint wethUserShare = userBalances[user_][deadAddr];
+        uint usdUserShare = userBalances[user_][nullAddr];
+        return (wethUserShare, usdUserShare);
     }
 
     //----------
@@ -73,6 +82,9 @@ contract FakeGoerliOZL is Ownable {
 
     function changeFakeOZLVars(FakeOZLVars memory newVars_) external onlyOwner {
         vars = newVars_;
+        userBalances[msg.sender][msg.sender] = newVars_.ozlBalance;
+        userBalances[msg.sender][deadAddr] = newVars_.wethUserShare;
+        userBalances[msg.sender][nullAddr] = newVars_.usdUserShare;
     } 
 
     function changeReceiver(address newReceiver_) external onlyOwner {

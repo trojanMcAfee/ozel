@@ -63,6 +63,7 @@ let evilUserDetails = [deadAddr, deadAddr, 0];
 let preBalance, postBalance;
 let isExist, proxyFactory;
 let tx, receipt;
+let fakeOzl, volume;
 
 
 
@@ -101,6 +102,7 @@ let tx, receipt;
             storeVarsInHelpers(ozERC1967proxyAddr);
 
             proxyFactory = await hre.ethers.getContractAt(factoryABI, ozERC1967proxyAddr);
+            fakeOzl = await hre.ethers.getContractAt('FakeGoerliOZL', fakeOZLaddr);
         });
 
         describe('ProxyFactory', async () => {
@@ -564,9 +566,56 @@ let tx, receipt;
         });
 
         describe('FakeGoerliOZL', async () => {
-            it('should get / any view function', async () => {
-                const fakeOzl = await hre.ethers.getContractAt('FakeGoerliOZL', fakeOZLaddr);
+            it('should get the total volume in USD / getTotalVolumeInUSD', async () => {
+                volume = await fakeOzl.getTotalVolumeInUSD(); 
+                assert.equal(formatEther(volume), 500);
+            });
 
+            it('should get the total volume in ETH / getTotalVolumeInETH()', async () => {
+                volume = await fakeOzl.getTotalVolumeInETH(); 
+                assert.equal(formatEther(volume), 400);
+            });
+
+            it('should get the Assets Under Management in WETH and USD / getAUM()', async () => {
+                const [ wethUM, valueUM ] = await fakeOzl.getAUM(); 
+                assert.equal(formatEther(wethUM), 300);
+                assert.equal(formatEther(valueUM), 200);
+            });
+
+            it('should get the OZL balance of the user / balanceOf()', async () => {
+                balance = await fakeOzl.balanceOf(signerAddr);
+                assert.equal(formatEther(balance), 100);
+            });
+
+            it("should get the user's share of OZL balances in WETH and USD / getOzelBalances()", async () => {
+                const [ wethUserShare, usdUserShare ] = await fakeOzl.getOzelBalances(signerAddr);
+                assert.equal(formatEther(wethUserShare), 220);
+                assert.equal(formatEther(usdUserShare), 150);
+            });
+
+            it('should allow the owner to change the fake OZL vars / changeFakeOZLVars()', async () => {
+                const newVars = [
+                    parseEther('950'),
+                    parseEther('900'),
+                    parseEther('850'),
+                    parseEther('800'),
+                    parseEther('750'),
+                    parseEther('700'),
+                    parseEther('650'),
+                ];
+                await fakeOzl.changeFakeOZLVars(newVars);
+
+                volume = await fakeOzl.getTotalVolumeInUSD(); 
+                assert.equal(formatEther(volume), 950);
+
+                balance = await fakeOzl.balanceOf(signerAddr);
+                assert.equal(formatEther(balance), 750);
+            });
+
+            it('allow the owner to change the receiver / changeReceiver()', async () => {
+                await fakeOzl.changeReceiver(deadAddr);
+                const receiver = await fakeOzl.receiver();
+                assert.equal(deadAddr, receiver);
             });
         });
     });
