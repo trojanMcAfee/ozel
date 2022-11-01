@@ -105,7 +105,7 @@ let fakeOzl, volume;
             fakeOzl = await hre.ethers.getContractAt('FakeGoerliOZL', fakeOZLaddr);
         });
 
-        describe('ProxyFactory', async () => {
+        xdescribe('ProxyFactory', async () => {
             describe('Deploys one proxy', async () => {
                 it('should create a proxy successfully / createNewProxy()', async () => {
                     await proxyFactory.createNewProxy(userDetails);
@@ -200,7 +200,7 @@ let fakeOzl, volume;
             });
         });
 
-        describe('ozBeaconProxy / ozPayMe', async () => {
+        xdescribe('ozBeaconProxy / ozPayMe', async () => {
             before(async () => {
                 await proxyFactory.createNewProxy(userDetails);
                 newProxyAddr = (await storageBeacon.getProxyByUser(signerAddr))[0].toString(); 
@@ -315,7 +315,7 @@ let fakeOzl, volume;
             });
         });
 
-        describe('Emitter', async () => {
+        xdescribe('Emitter', async () => {
             before(async () => {
                 await proxyFactory.createNewProxy(userDetails);
                 newProxyAddr = (await storageBeacon.getProxyByUser(signerAddr))[0].toString(); 
@@ -348,7 +348,7 @@ let fakeOzl, volume;
             }); 
         });
     
-        describe('StorageBeacon', async () => {
+        xdescribe('StorageBeacon', async () => {
             it('shoud not allow an user to issue an userID / issueUserID()', async () => {
                 await assert.rejects(async () => {
                     await storageBeacon.issueUserID(evilUserDetails);
@@ -524,7 +524,7 @@ let fakeOzl, volume;
             });
         });
 
-        describe('ozUpgradeableBeacon', async () => {
+        xdescribe('ozUpgradeableBeacon', async () => {
             it('should allow the owner to upgrade the Storage Beacon / upgradeStorageBeacon()', async () => {
                 [storageBeaconMockAddr , storageBeaconMock] = await deployContract('StorageBeaconMock');
                 await beacon.upgradeStorageBeacon(storageBeaconMockAddr);
@@ -622,7 +622,7 @@ let fakeOzl, volume;
 
 
     //autoRedeem set to 0
-    describe('Pesimistic deployment', async function () {
+    xdescribe('Pesimistic deployment', async function () {
         before( async () => {
             ([
                 beacon, 

@@ -210,7 +210,7 @@ async function compareEventWithVar(receipt, variable) {
 }
 
 
-async function deploySystem(type, userDetails, signerAddr) {
+function getFakeOZLVars() {
     const totalVolumeInUSD = parseEther('500');
     const totalVolumeInETH = parseEther('400');
     const wethUM = parseEther('300');
@@ -219,7 +219,7 @@ async function deploySystem(type, userDetails, signerAddr) {
     const wethUserShare = parseEther('220');
     const usdUserShare = parseEther('150');
 
-    const fakeOZLVars = [
+    return [
         totalVolumeInUSD,
         totalVolumeInETH,
         wethUM,
@@ -228,8 +228,12 @@ async function deploySystem(type, userDetails, signerAddr) {
         wethUserShare,
         usdUserShare
     ];
+}
 
-    let constrArgs = [ myReceiver, fakeOZLVars ];
+
+async function deploySystem(type, userDetails, signerAddr) {
+
+    let constrArgs = [ myReceiver, getFakeOZLVars() ];
 
     //Deploys the fake OZL on arbitrum testnet 
     const [ fakeOZLaddr ] = await deployContract('FakeGoerliOZL', constrArgs);
