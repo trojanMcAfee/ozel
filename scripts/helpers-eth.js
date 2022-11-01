@@ -6,7 +6,8 @@ const { ethers } = require('ethers');
 const { 
     hexStripZeros, 
     defaultAbiCoder: abiCoder,
-    formatEther
+    formatEther,
+    parseEther
 } = ethers.utils;
 
 const { 
@@ -213,7 +214,25 @@ async function compareEventWithVar(receipt, variable) {
 
 
 async function deploySystem(type, userDetails, signerAddr) {
-    let constrArgs = [myReceiver];
+    const totalVolumeInUSD = parseEther('500');
+    const totalVolumeInETH = parseEther('400');
+    const wethUM = parseEther('300');
+    const valueUM = parseEther('200');
+    const ozlBalance = parseEther('100');
+    const wethUserShare = parseEther('220');
+    const usdUserShare = parseEther('150');
+
+    const fakeOZLVars = [
+        totalVolumeInUSD,
+        totalVolumeInETH,
+        wethUM,
+        valueUM,
+        ozlBalance,
+        wethUserShare,
+        usdUserShare
+    ];
+
+    let constrArgs = [ myReceiver, fakeOZLVars ];
 
     //Deploys the fake OZL on arbitrum testnet 
     const [ fakeOZLaddr ] = await deployContract('FakeOZL', constrArgs);

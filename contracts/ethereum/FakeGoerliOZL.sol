@@ -11,7 +11,7 @@ contract FakeGoerliOZL is Ownable {
     address user;
     address receiver;
 
-    struct MyVars {
+    struct FakeOZLVars {
         uint totalVolumeInUSD;
         uint totalVolumeInETH;
         uint wethUM;
@@ -21,11 +21,11 @@ contract FakeGoerliOZL is Ownable {
         uint usdUserShare;
     }
 
-    MyVars vars;
+    FakeOZLVars vars;
 
-    constructor(address receiver_, MyVars memory vars_) {
+    constructor(address receiver_, FakeOZLVars memory vars_) {
         receiver = receiver_;
-        vars = MyVars({
+        vars = FakeOZLVars({
             totalVolumeInUSD: vars_.totalVolumeInUSD,
             totalVolumeInETH: vars_.totalVolumeInETH,
             wethUM: vars_.wethUM,
@@ -71,7 +71,7 @@ contract FakeGoerliOZL is Ownable {
         user = userDetails_.user;
     }
 
-    function changeMyVars(MyVars memory newVars_) external onlyOwner {
+    function changeFakeOZLVars(FakeOZLVars memory newVars_) external onlyOwner {
         vars = newVars_;
     } 
 
