@@ -61,7 +61,6 @@ contract FakeGoerliOZL is Ownable {
 
     function balanceOf(address user_) external view returns(uint) {
         return userBalances[user_][user_];
-        // return vars.ozlBalance;
     }
 
     function getOzelBalances(address user_) external view returns(uint, uint) {

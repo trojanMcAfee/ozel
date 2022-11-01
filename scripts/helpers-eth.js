@@ -362,5 +362,6 @@ module.exports = {
     compareTopicWith,
     storeVarsInHelpers,
     compareEventWithVar,
-    compareTopicWith2
+    compareTopicWith2,
+    getFakeOZLVars
 };
