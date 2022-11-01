@@ -562,6 +562,13 @@ let tx, receipt;
                 assert(isExist);
             });
         });
+
+        describe('FakeGoerliOZL', async () => {
+            it('should get / any view function', async () => {
+                const fakeOzl = await hre.ethers.getContractAt('FakeGoerliOZL', fakeOZLaddr);
+
+            });
+        });
     });
 
 

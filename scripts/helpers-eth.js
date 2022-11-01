@@ -65,13 +65,10 @@ async function deployContract(contractName, constrArgs) {
         case 'UpgradeableBeacon':
             contract = await Contract.deploy(constrArgs);
             break;
-        case 'FakeOZL':
-            ([ var1 ] = constrArgs);
-            contract = await Contract.deploy(var1);
-            break;
         case 'ozUpgradeableBeacon':
         case 'ozERC1967Proxy':
         case 'RolesAuthority':
+        case 'FakeGoerliOZL':
             ([ var1, var2 ] = constrArgs);
             contract = await Contract.deploy(var1, var2);
             break;
@@ -235,7 +232,7 @@ async function deploySystem(type, userDetails, signerAddr) {
     let constrArgs = [ myReceiver, fakeOZLVars ];
 
     //Deploys the fake OZL on arbitrum testnet 
-    const [ fakeOZLaddr ] = await deployContract('FakeOZL', constrArgs);
+    const [ fakeOZLaddr ] = await deployContract('FakeGoerliOZL', constrArgs);
 
     //Calculate fees on L1 > L2 arbitrum tx
     let [ maxSubmissionCost, gasPriceBid, maxGas, autoRedeem ] = await getArbitrumParams(userDetails);
