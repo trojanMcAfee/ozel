@@ -12,7 +12,7 @@ import { ModifiersARB } from '../../Modifiers.sol';
 import '../../arbitrum/facets/oz4626Facet.sol';
 import '../../arbitrum/facets/ExecutorFacet.sol';
 import '../../libraries/SafeTransferLib.sol'; //use the @ from solmate
-import '../../libraries/FixedPointMathLib.sol'; //same as here ^^^^
+import '@rari-capital/solmate/src/utils/FixedPointMathLib.sol';
 import '../../interfaces/IYtri.sol';
 
 // import 'hardhat/console.sol';

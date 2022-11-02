@@ -7,7 +7,7 @@ import '@rari-capital/solmate/src/utils/SafeTransferLib.sol';
 import '@rari-capital/solmate/src/tokens/ERC20.sol';
 import "@openzeppelin/contracts/proxy/utils/Initializable.sol";
 import '@uniswap/v3-periphery/contracts/interfaces/ISwapRouter.sol';
-import '../../libraries/FixedPointMathLib.sol';
+import '@rari-capital/solmate/src/utils/FixedPointMathLib.sol';
 import '../../interfaces/DelayedInbox.sol';
 import '../../interfaces/IOps.sol';
 import '../../interfaces/IWETH.sol';

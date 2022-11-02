@@ -10,8 +10,7 @@ import '../../interfaces/IYtri.sol';
 import {ITri} from '../../interfaces/ICurve.sol';
 import { LibDiamond } from "../../libraries/LibDiamond.sol";
 import './ExecutorFacet.sol';
-// import '@rari-capital/solmate/src/utils/FixedPointMathLib.sol'; //<---- this one
-import '../../libraries/FixedPointMathLib.sol';
+import '@rari-capital/solmate/src/utils/FixedPointMathLib.sol';
 import '@openzeppelin/contracts/token/ERC20/IERC20.sol';
 
 import '@openzeppelin/contracts/utils/Address.sol';

@@ -5,7 +5,7 @@ pragma solidity 0.8.14;
 import './oz20Facet.sol';
 import '@openzeppelin/contracts/token/ERC20/IERC20.sol';
 // import './ExecutorFacet.sol';
-import '../../libraries/FixedPointMathLib.sol';
+import '@rari-capital/solmate/src/utils/FixedPointMathLib.sol';
 import '../../Errors.sol';
 import { ModifiersARB } from '../../Modifiers.sol';
 import { LibDiamond } from "../../libraries/LibDiamond.sol";

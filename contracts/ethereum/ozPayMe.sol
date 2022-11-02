@@ -54,8 +54,8 @@ contract ozPayMe is ReentrancyGuard, Initializable {
         StorageBeacon storageBeacon = StorageBeacon(_getStorageBeacon(_beacon, 0)); 
 
         if (userDetails_.user == address(0) || userDetails_.userToken == address(0)) revert CantBeZero('address');
-        if (!(storageBeacon.isUser(userDetails_.user))) revert UserNotInDatabase(userDetails_.user);
-        if (!(storageBeacon.queryTokenDatabase(userDetails_.userToken))) revert TokenNotInDatabase(userDetails_.userToken);
+        if (!storageBeacon.isUser(userDetails_.user)) revert UserNotInDatabase(userDetails_.user);
+        if (!storageBeacon.queryTokenDatabase(userDetails_.userToken)) revert TokenNotInDatabase(userDetails_.userToken);
         if (userDetails_.userSlippage <= 0) revert CantBeZero('slippage');
         if (!(address(this).balance > 0)) revert CantBeZero('contract balance');
 
