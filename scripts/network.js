@@ -1,6 +1,3 @@
-const { ethers } = require('ethers');
-const { formatEther } = ethers.utils;
-const { l2ProviderTestnet, l2Signer } = require('./state-vars.js');
 
 //Set of auto-redeem contracts deployed to Goerli and Arb Goerli
 
@@ -28,10 +25,6 @@ async function main() {
 
     const ozlBalance = await ozlDiamond.balanceOf(myAddr);
     const [ wethUserShare, usdUserShare ] = await ozlDiamond.getOzelBalances(myAddr);
-
-    console.log('ozlBalance: ', formatEther(ozlBalance));
-    console.log('wethUserShare: ', formatEther(wethUserShare));
-    console.log('usdUserShare: ', formatEther(usdUserShare));
 
     return [
         ozlBalance, 

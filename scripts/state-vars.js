@@ -118,25 +118,6 @@ switch(network) {
         l2Signer = signerX.connect(l2ProviderTestnet);
         l2SignerTestnet = signerTestnet.connect(l2ProviderTestnet);
         break;
-    case 'rinkeby':
-        pokeMeOpsAddr = '0x8c089073A9594a4FB03Fa99feee3effF0e2Bc58a';
-        hopBridge = '0xb8901acB165ed027E32754E0FFe830802919727f'; //no testnet
-        usdtAddrArb = '0x3B00Ef435fA4FcFF5C209a37d1f3dcff37c705aD';
-        inbox = '0x578BAde599406A8fE3d24Fd7f7211c0911F5B29e';
-        gelatoAddr = '0x0630d1b8c2df3f0a68df578d02075027a6397173';
-        swapRouterUniAddr = nullAddr;
-        chainlinkAggregatorAddr = nullAddr;
-        wethAddr = '0xc778417E063141139Fce010982780140Aa0cD5Ab';
-        usdcAddr = '0xeb8f08a975Ab53E34D8a0330E0D34de942C95926';
-        
-        l1ProviderTestnet = new ethers.providers.JsonRpcProvider(process.env.RINKEBY);
-        l1Signer = signerX.connect(l1ProviderTestnet);
-        l1SignerTestnet = signerTestnet.connect(l1ProviderTestnet);
-
-        l2ProviderTestnet = new ethers.providers.JsonRpcProvider(process.env.ARB_TESTNET);
-        l2Signer = signerX.connect(l2ProviderTestnet);
-        l2SignerTestnet = signerTestnet.connect(l2ProviderTestnet);
-        break;
     case 'mainnet': 
         pokeMeOpsAddr = '0xB3f5503f93d5Ef84b06993a1975B9D21B962892F'; 
         hopBridge = '0xb8901acB165ed027E32754E0FFe830802919727f'; 
@@ -243,4 +224,7 @@ module.exports = {
     l1SignerTestnet,
     l2SignerTestnet
 };
+
+
+
 
