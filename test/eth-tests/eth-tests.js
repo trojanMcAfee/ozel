@@ -102,10 +102,10 @@ let fakeOzl, volume;
             storeVarsInHelpers(ozERC1967proxyAddr);
 
             proxyFactory = await hre.ethers.getContractAt(factoryABI, ozERC1967proxyAddr);
-            fakeOzl = await hre.ethers.getContractAt('FakeGoerliOZL', fakeOZLaddr);
+            fakeOzl = await hre.ethers.getContractAt('FakeOZL', fakeOZLaddr);
         });
 
-        xdescribe('ProxyFactory', async () => {
+        describe('ProxyFactory', async () => {
             describe('Deploys one proxy', async () => {
                 it('should create a proxy successfully / createNewProxy()', async () => {
                     await proxyFactory.createNewProxy(userDetails);
@@ -200,7 +200,7 @@ let fakeOzl, volume;
             });
         });
 
-        xdescribe('ozBeaconProxy / ozPayMe', async () => {
+        describe('ozBeaconProxy / ozPayMe', async () => {
             before(async () => {
                 await proxyFactory.createNewProxy(userDetails);
                 newProxyAddr = (await storageBeacon.getProxyByUser(signerAddr))[0].toString(); 
@@ -315,7 +315,7 @@ let fakeOzl, volume;
             });
         });
 
-        xdescribe('Emitter', async () => {
+        describe('Emitter', async () => {
             before(async () => {
                 await proxyFactory.createNewProxy(userDetails);
                 newProxyAddr = (await storageBeacon.getProxyByUser(signerAddr))[0].toString(); 
@@ -348,7 +348,7 @@ let fakeOzl, volume;
             }); 
         });
     
-        xdescribe('StorageBeacon', async () => {
+        describe('StorageBeacon', async () => {
             it('shoud not allow an user to issue an userID / issueUserID()', async () => {
                 await assert.rejects(async () => {
                     await storageBeacon.issueUserID(evilUserDetails);
@@ -524,7 +524,7 @@ let fakeOzl, volume;
             });
         });
 
-        xdescribe('ozUpgradeableBeacon', async () => {
+        describe('ozUpgradeableBeacon', async () => {
             it('should allow the owner to upgrade the Storage Beacon / upgradeStorageBeacon()', async () => {
                 [storageBeaconMockAddr , storageBeaconMock] = await deployContract('StorageBeaconMock');
                 await beacon.upgradeStorageBeacon(storageBeaconMockAddr);
@@ -562,10 +562,15 @@ let fakeOzl, volume;
 
                 isExist = await compareEventWithVar(receipt, 11);
                 assert(isExist);
+
+                //Clean up
+                USDC = await hre.ethers.getContractAt('IERC20', usdcAddr);
+                balance = await USDC.balanceOf(signerAddr);
+                await USDC.transfer(deadAddr, balance);
             });
         });
 
-        describe('FakeGoerliOZL', async () => {
+        describe('FakeOZL', async () => {
             it('should get the total volume in USD / getTotalVolumeInUSD', async () => {
                 volume = await fakeOzl.getTotalVolumeInUSD(); 
                 assert.equal(formatEther(volume), 500);
@@ -622,7 +627,7 @@ let fakeOzl, volume;
 
 
     //autoRedeem set to 0
-    xdescribe('Pesimistic deployment', async function () {
+    describe('Pesimistic deployment', async function () {
         before( async () => {
             ([
                 beacon, 

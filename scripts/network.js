@@ -2,7 +2,7 @@
 //Set of auto-redeem contracts deployed to Goerli and Arb Goerli
 
 // signer address:  0x0E743a1E37D691D8e52F7036375F3D148B4116ba
-// FakeGoerliOZL deployed to:  0x543711ED09A2d8a2c34b7599d9e323cd03B05c94
+// FakeOZL deployed to:  0x543711ED09A2d8a2c34b7599d9e323cd03B05c94
 // Emitter deployed to:  0xF2CBA3Ff01788713dDa2637C87a2B2FFd4365eE9
 // ozPayMe deployed to:  0xCE91A7cA139e778c89F0E319358Aa19f8c3D5754
 // StorageBeacon deployed to:  0x3996522Bc9903f00c4f62aa71CAB48506fd9692D
@@ -20,8 +20,8 @@
 
 async function main() {
     const myAddr = '0x0E743a1E37D691D8e52F7036375F3D148B4116ba'; //main Metamask acc 
-    const diamondAddr = '0x543711ED09A2d8a2c34b7599d9e323cd03B05c94'; //fakeGoerliOZL
-    const ozlDiamond = await hre.ethers.getContractAt('FakeGoerliOZL', diamondAddr);
+    const diamondAddr = '0x543711ED09A2d8a2c34b7599d9e323cd03B05c94'; //FakeOZL
+    const ozlDiamond = await hre.ethers.getContractAt('FakeOZL', diamondAddr);
 
     const ozlBalance = await ozlDiamond.balanceOf(myAddr);
     const [ wethUserShare, usdUserShare ] = await ozlDiamond.getOzelBalances(myAddr);

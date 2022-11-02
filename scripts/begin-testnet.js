@@ -42,7 +42,7 @@ async function deployContract(contractName, signer, constrArgs) {
         case 'ozUpgradeableBeacon':
         case 'ozERC1967Proxy':
         case 'RolesAuthority':
-        case 'FakeGoerliOZL':
+        case 'FakeOZL':
             ([ var1, var2 ] = constrArgs);
             contract = await Contract.connect(signer).deploy(var1, var2, ops);
             break;
@@ -92,7 +92,7 @@ async function deployTestnet(testSigner = false, manualRedeem = false) {
     let constrArgs = [ receiver, getFakeOZLVars() ];
     
     //Deploys the fake OZL on arbitrum testnet 
-    const [ fakeOZLaddr ] = await deployContract('FakeGoerliOZL', l2SignerTest, constrArgs); //fake OZL address in arbitrum
+    const [ fakeOZLaddr ] = await deployContract('FakeOZL', l2SignerTest, constrArgs); //fake OZL address in arbitrum
     // const fakeOZLaddr = '0xd12E835f658C93E5A527b2f81fee0014881d4726';
     // console.log('fakeOZL deployed to: ', fakeOZLaddr);
    
