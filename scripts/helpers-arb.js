@@ -87,13 +87,6 @@ async function sendETH(userDetails, signerIndex = 0, ozelIndex) {
 
 async function getOzelIndex() {
     return await OZLDiamond.getOzelIndex();
-    // const receipt = await tx.wait();
-
-    // console.log('receipt: ', receipt);
-
-    // const { data } = receipt.logs[0];
-    // [ decodedData ] = abiCoder.decode(['uint256'], data);
-    // return decodedData;
 }
 
 async function addTokenToDatabase(tokenSwap, signerIndex = 0) {
@@ -104,11 +97,7 @@ async function addTokenToDatabase(tokenSwap, signerIndex = 0) {
 
 
 async function getRegulatorCounter() {
-    const tx = await OZLDiamond.getRegulatorCounter();
-    const receipt = await tx.wait();
-    const { data } = receipt.logs[0];
-    [ decodedData ] = abiCoder.decode(['uint256'], data);
-    return decodedData;
+    return await OZLDiamond.getRegulatorCounter();
 }
 
 

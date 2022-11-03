@@ -48,7 +48,7 @@ const diamondABI = [
     'function setTESTVAR2(uint256, bytes32 position_) public',
     'function diamondCut(tuple(address facetAddress, uint8 action, bytes4[] functionSelectors)[] calldata _diamondCut, address _init, bytes calldata _calldata) external',
     'function getOzelIndex() external view returns (uint256)',
-    'function getRegulatorCounter() returns (uint256)',
+    'function getRegulatorCounter() external view returns (uint256)',
     'function balanceOf(address account) view returns (uint256)',
     'function transfer(address recipient, uint256 amount) returns (bool)',
     'function exchangeToUserToken(tuple(address user, address userToken, uint userSlippage) userDetails_) external payable',
