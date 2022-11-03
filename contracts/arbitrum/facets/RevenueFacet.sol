@@ -18,7 +18,6 @@ import '../Diamond.sol';
 
 
 
-
 contract RevenueFacet {
 
     AppStorage s;
