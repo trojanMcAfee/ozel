@@ -7,7 +7,7 @@ import '../AppStorage.sol';
 import 'hardhat/console.sol';
 
 import '../../interfaces/IYtri.sol';
-import {ITri} from '../../interfaces/ICurve.sol';
+import { ITri } from '../../interfaces/ICurve.sol';
 import { LibDiamond } from "../../libraries/LibDiamond.sol";
 import './ExecutorFacet.sol';
 import '@rari-capital/solmate/src/utils/FixedPointMathLib.sol';

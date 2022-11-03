@@ -11,7 +11,7 @@ import { IERC165 } from "../../interfaces/IERC165.sol";
 import '../AppStorage.sol';
 
 import '../../interfaces/IYtri.sol';
-import {ITri} from '../../interfaces/ICurve.sol';
+import { ITri } from '../../interfaces/ICurve.sol';
 import '@rari-capital/solmate/src/utils/FixedPointMathLib.sol';
 import '@openzeppelin/contracts/utils/Address.sol';
 
@@ -28,11 +28,6 @@ contract DiamondLoupeFacet is IDiamondLoupe, IERC165 {
     // Diamond Loupe Functions
     ////////////////////////////////////////////////////////////////////
     /// These functions are expected to be called frequently by tools.
-    //
-    // struct Facet {
-    //     address facetAddress;
-    //     bytes4[] functionSelectors;
-    // }
 
     /// @notice Gets all facets and their selectors.
     /// @return facets_ Facet
