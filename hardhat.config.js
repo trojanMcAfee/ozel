@@ -16,14 +16,14 @@ module.exports = {
   },
   networks: {
     hardhat: {
-      // forking: {
-      //   url: process.env.ALCHEMY_ETH,
-      //   blockNumber: 15823986 
-      // }
       forking: {
-        url: process.env.ARBITRUM,
-        blockNumber: 7880962      //2227440
+        url: process.env.ALCHEMY_ETH,
+        blockNumber: 15823986 
       }
+      // forking: {
+      //   url: process.env.ARBITRUM,
+      //   blockNumber: 7880962      //2227440
+      // }
     },
     rinkeby: {
       url: process.env.RINKEBY,

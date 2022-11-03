@@ -105,7 +105,7 @@ let fakeOzl, volume;
             fakeOzl = await hre.ethers.getContractAt('FakeOZL', fakeOZLaddr);
         });
 
-        describe('ProxyFactory', async () => {
+        xdescribe('ProxyFactory', async () => {
             describe('Deploys one proxy', async () => {
                 it('should create a proxy successfully / createNewProxy()', async () => {
                     await proxyFactory.createNewProxy(userDetails);
@@ -200,7 +200,7 @@ let fakeOzl, volume;
             });
         });
 
-        describe('ozBeaconProxy / ozPayMe', async () => {
+        xdescribe('ozBeaconProxy / ozPayMe', async () => {
             before(async () => {
                 await proxyFactory.createNewProxy(userDetails);
                 newProxyAddr = (await storageBeacon.getProxyByUser(signerAddr))[0].toString(); 
@@ -315,7 +315,7 @@ let fakeOzl, volume;
             });
         });
 
-        describe('Emitter', async () => {
+        xdescribe('Emitter', async () => {
             before(async () => {
                 await proxyFactory.createNewProxy(userDetails);
                 newProxyAddr = (await storageBeacon.getProxyByUser(signerAddr))[0].toString(); 
@@ -349,7 +349,7 @@ let fakeOzl, volume;
         });
     
         describe('StorageBeacon', async () => {
-            it('shoud not allow an user to issue an userID / issueUserID()', async () => {
+            xit('shoud not allow an user to issue an userID / issueUserID()', async () => {
                 await assert.rejects(async () => {
                     await storageBeacon.issueUserID(evilUserDetails);
                 }, {
@@ -358,7 +358,7 @@ let fakeOzl, volume;
                 });
             });
 
-            it('should not allow an user to save a proxy / saveUserProxy()', async () => {
+            xit('should not allow an user to save a proxy / saveUserProxy()', async () => {
                 await assert.rejects(async () => {
                     await storageBeacon.saveUserProxy(signerAddr2, deadAddr);
                 }, {
@@ -367,7 +367,7 @@ let fakeOzl, volume;
                 });
             });
 
-            it('should not allow an user to save a taskId / saveTaskId()', async () => {
+            xit('should not allow an user to save a taskId / saveTaskId()', async () => {
                 await assert.rejects(async () => {
                     await storageBeacon.saveTaskId(deadAddr, formatBytes32String('evil data'));
                 }, {
@@ -376,11 +376,11 @@ let fakeOzl, volume;
                 });
             });
 
-            it('should allow the owner to change VariableConfig / changeVariableConfig()', async () => {
+            xit('should allow the owner to change VariableConfig / changeVariableConfig()', async () => {
                 await storageBeacon.changeVariableConfig(varConfig);
             });
 
-            it('should not allow an external user to change VariableConfig / changeVariableConfig()', async () => {
+            xit('should not allow an external user to change VariableConfig / changeVariableConfig()', async () => {
                 await assert.rejects(async () => {
                     await storageBeacon.connect(signers[1]).changeVariableConfig(varConfig);
                 }, {
@@ -389,11 +389,11 @@ let fakeOzl, volume;
                 });
             });
 
-            it('should allow the owner to add a new userToken to the database / addTokenToDatabase()', async () => {
+            xit('should allow the owner to add a new userToken to the database / addTokenToDatabase()', async () => {
                 await storageBeacon.addTokenToDatabase(fraxAddr);
             });
 
-            it('should not allow an external user to add a new userToken to the database / addTokenToDatabase()', async () => {
+            xit('should not allow an external user to add a new userToken to the database / addTokenToDatabase()', async () => {
                 await assert.rejects(async () => {
                     await storageBeacon.connect(signers[1]).addTokenToDatabase(deadAddr);
                 }, {
@@ -402,7 +402,7 @@ let fakeOzl, volume;
                 });
             });
 
-            it('should not allow re-calling / storeBeacon()', async () => {
+            xit('should not allow re-calling / storeBeacon()', async () => {
                 await assert.rejects(async () => {
                     await storageBeacon.storeBeacon(deadAddr);
                 }, {
@@ -411,11 +411,11 @@ let fakeOzl, volume;
                 });
             });
 
-            it('should allow the onwer to change Emergency Mode / changeEmergencyMode()', async () => {
+            xit('should allow the onwer to change Emergency Mode / changeEmergencyMode()', async () => {
                 await storageBeacon.changeEmergencyMode(eMode);
             });
 
-            it('should not allow an external user to change Emergency Mode / changeEmergencyMode()', async () => {
+            xit('should not allow an external user to change Emergency Mode / changeEmergencyMode()', async () => {
                 await assert.rejects(async () => {
                     await storageBeacon.connect(signers[1]).changeEmergencyMode(eMode);
                 }, {
@@ -424,7 +424,7 @@ let fakeOzl, volume;
                 });
             });
 
-            it('should allow the owner to disable the Emitter / changeEmitterStatus()', async () => {
+            xit('should allow the owner to disable the Emitter / changeEmitterStatus()', async () => {
                 await proxyFactory.createNewProxy(userDetails);
                 newProxyAddr = (await storageBeacon.getProxyByUser(signerAddr))[0].toString();
 
@@ -437,7 +437,7 @@ let fakeOzl, volume;
                 await storageBeacon.changeEmitterStatus(false);
             });
     
-            it('should not allow an external user to disable the Emitter / changeEmitterStatus()', async () => {
+            xit('should not allow an external user to disable the Emitter / changeEmitterStatus()', async () => {
                 await assert.rejects(async () => {
                     await storageBeacon.connect(signers[1]).changeEmitterStatus(true);
                 }, {
@@ -446,7 +446,7 @@ let fakeOzl, volume;
                 });
             });
 
-            it('should return the userDetails / getUserDetailsById()', async () => {
+            xit('should return the userDetails / getUserDetailsById()', async () => {
                 await proxyFactory.createNewProxy(userDetails);
                 userDetails[1] = usdtAddrArb;
                 pulledUserDetails = await storageBeacon.getUserDetailsById(0);
@@ -455,50 +455,50 @@ let fakeOzl, volume;
                 assert.equal(pulledUserDetails[2], userDetails[2]);
             });
 
-            it('should return zero values when querying with a non-user / getUserDetailsById()', async () => {
+            xit('should return zero values when querying with a non-user / getUserDetailsById()', async () => {
                 pulledUserDetails = await storageBeacon.getUserDetailsById(100);
                 assert.equal(pulledUserDetails[0], nullAddr);
                 assert.equal(pulledUserDetails[1], nullAddr);
                 assert.equal(pulledUserDetails[2], 0);
             });
 
-            it('should return the proxies an user has / getProxyByUser()', async () => {
+            xit('should return the proxies an user has / getProxyByUser()', async () => {
                 await proxyFactory.createNewProxy(userDetails);
                 userProxies = await storageBeacon.getProxyByUser(signerAddr);
                 assert(userProxies.length > 0);
             });
 
-            it('should return an empty array when querying with a non-user / getProxyByUser()', async () => {
+            xit('should return an empty array when querying with a non-user / getProxyByUser()', async () => {
                 userProxies = await storageBeacon.getProxyByUser(deadAddr);
                 assert(userProxies.length === 0);
             });
 
-            it("should get an user's taskID / getTaskID()", async () => {
+            xit("should get an user's taskID / getTaskID()", async () => {
                 await proxyFactory.createNewProxy(userDetails);
                 userProxies = await storageBeacon.getProxyByUser(signerAddr);
                 taskID = (await storageBeacon.getTaskID(userProxies[0])).toString();
                 assert(taskID.length > 0);
             });
 
-            it("should return a zero taskID when querying with a non-user / getTaskID()", async () => {
+            xit("should return a zero taskID when querying with a non-user / getTaskID()", async () => {
                 taskID = (await storageBeacon.getTaskID(deadAddr)).toString();
                 assert.equal(taskID, formatBytes32String(0));
             });
 
-            it('should return true for an user / isUser()', async () => {
+            xit('should return true for an user / isUser()', async () => {
                 await proxyFactory.createNewProxy(userDetails);
                 assert(await storageBeacon.isUser(signerAddr));
             });
 
-            it('should return false for a non-user / isUser()', async () => {
+            xit('should return false for a non-user / isUser()', async () => {
                 assert(!(await storageBeacon.isUser(deadAddr)));
             });
 
-            it('should get the Emitter status / getEmitterStatus()', async () => {
+            xit('should get the Emitter status / getEmitterStatus()', async () => {
                 assert(!(await storageBeacon.getEmitterStatus()));
             });
 
-            it('should return the full token database / getTokenDatabase()', async () => {
+            xit('should return the full token database / getTokenDatabase()', async () => {
                 const tokenDb = await storageBeacon.getTokenDatabase();
                 assert(tokenDb.length > 0);
             });
@@ -514,7 +514,7 @@ let fakeOzl, volume;
                 assert.equal(formatEther(payments), 0.1);
             });
 
-            it('should not let an external user to store a proxy payment / storeProxyPayment()', async () => {                
+            xit('should not let an external user to store a proxy payment / storeProxyPayment()', async () => {                
                 await assert.rejects(async () => {
                     await storageBeacon.storeProxyPayment(deadAddr, 1000);
                 }, {
@@ -524,7 +524,7 @@ let fakeOzl, volume;
             });
         });
 
-        describe('ozUpgradeableBeacon', async () => {
+        xdescribe('ozUpgradeableBeacon', async () => {
             it('should allow the owner to upgrade the Storage Beacon / upgradeStorageBeacon()', async () => {
                 [storageBeaconMockAddr , storageBeaconMock] = await deployContract('StorageBeaconMock');
                 await beacon.upgradeStorageBeacon(storageBeaconMockAddr);
@@ -570,7 +570,7 @@ let fakeOzl, volume;
             });
         });
 
-        describe('FakeOZL', async () => {
+        xdescribe('FakeOZL', async () => {
             it('should get the total volume in USD / getTotalVolumeInUSD', async () => {
                 volume = await fakeOzl.getTotalVolumeInUSD(); 
                 assert.equal(formatEther(volume), 500);
@@ -627,7 +627,7 @@ let fakeOzl, volume;
 
 
     //autoRedeem set to 0
-    describe('Pesimistic deployment', async function () {
+    xdescribe('Pesimistic deployment', async function () {
         before( async () => {
             ([
                 beacon, 

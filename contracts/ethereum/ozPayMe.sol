@@ -9,12 +9,12 @@ import "@openzeppelin/contracts/proxy/utils/Initializable.sol";
 import '@openzeppelin/contracts/token/ERC20/IERC20.sol';
 import '@uniswap/v3-periphery/contracts/interfaces/ISwapRouter.sol';
 import '../interfaces/DelayedInbox.sol';
+import './ozUpgradeableBeacon.sol';
 import '../interfaces/IWETH.sol';
 import '../interfaces/IOps.sol';
+import './StorageBeacon.sol';
 import './FakeOZL.sol';
 import './Emitter.sol';
-import './StorageBeacon.sol';
-import './ozUpgradeableBeacon.sol';
 import '../Errors.sol';
 
 import 'hardhat/console.sol'; 
@@ -50,7 +50,7 @@ contract ozPayMe is ReentrancyGuard, Initializable {
     function sendToArb( 
         StorageBeacon.VariableConfig calldata varConfig_,
         StorageBeacon.UserConfig calldata userDetails_
-    ) external payable onlyOps {      
+    ) external payable onlyOps {    
         StorageBeacon storageBeacon = StorageBeacon(_getStorageBeacon(_beacon, 0)); 
 
         if (userDetails_.user == address(0) || userDetails_.userToken == address(0)) revert CantBeZero('address');
@@ -78,6 +78,7 @@ contract ozPayMe is ReentrancyGuard, Initializable {
             (success, ) = fxConfig.inbox.call{value: address(this).balance}(ticketData);
 
             if (!success) {
+                console.log('should not log');
                 _runEmergencyMode();
                 isEmergency = true;
                 emit EmergencyTriggered(userDetails_.user, amountToSend);
@@ -210,6 +211,15 @@ contract ozPayMe is ReentrancyGuard, Initializable {
         bool decrease_
     ) private view returns(bytes memory) {
         uint maxSubmissionCost = decrease_ ? _decreaseCost(varConfig_.maxSubmissionCost) : varConfig_.maxSubmissionCost;
+
+        console.log('.');
+        console.log('address(this).balance: ', address(this).balance);
+        console.log('varConfig_.autoRedeem: ', varConfig_.autoRedeem);
+        console.log('maxSubmissionCost: ', maxSubmissionCost);
+        console.log('maxGas: ', fxConfig.maxGas);
+        console.log('gasPriceBid: ', varConfig_.gasPriceBid);
+        console.log('OZL: ', fxConfig.OZL);
+        console.logBytes(swapData_);
 
         return abi.encodeWithSelector(
             DelayedInbox(fxConfig.inbox).createRetryableTicket.selector, 

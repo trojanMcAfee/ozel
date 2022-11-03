@@ -2,8 +2,8 @@
 pragma solidity 0.8.14; 
 
 
-import '@openzeppelin/contracts/proxy/beacon/UpgradeableBeacon.sol';
 import '@rari-capital/solmate/src/auth/authorities/RolesAuthority.sol';
+import '@openzeppelin/contracts/proxy/beacon/UpgradeableBeacon.sol';
 
 
 

@@ -10,14 +10,10 @@ pragma solidity ^0.8.0;
 
 import { LibDiamond } from "../libraries/LibDiamond.sol";
 import { IDiamondCut } from "../interfaces/IDiamondCut.sol";
-// import { IDiamondLoupe } from "../interfaces/IDiamondLoupe.sol";
-// import { IERC173 } from "../interfaces/IERC173.sol";
 import './AppStorage.sol';
 import '../Errors.sol';
 
 import 'hardhat/console.sol';
-
-
 
 
 contract Diamond { 

@@ -1,19 +1,15 @@
 // SPDX-License-Identifier: MIT
 pragma solidity 0.8.14;
 
+import '@rari-capital/solmate/src/utils/FixedPointMathLib.sol';
 import '@openzeppelin/contracts/token/ERC20/extensions/IERC20Metadata.sol';
 import '@openzeppelin/contracts/token/ERC20/IERC20.sol';
 import '@openzeppelin/contracts/utils/Context.sol';
 import '@openzeppelin/contracts/utils/Address.sol';
-
-// import 'hardhat/console.sol';
-
-// import '../AppStorage.sol';
-import '@rari-capital/solmate/src/utils/FixedPointMathLib.sol';
+import { LibDiamond } from "../../libraries/LibDiamond.sol";
 import { ModifiersARB } from '../../Modifiers.sol';
 import '../../Errors.sol';
 
-import { LibDiamond } from "../../libraries/LibDiamond.sol";
 
 /**
  * @dev Implementation of the {IERC20} interface.

@@ -2,20 +2,17 @@
 pragma solidity ^0.8.0;
 
 
-import '../AppStorage.sol';
-
-import 'hardhat/console.sol';
-
-import '../../interfaces/IYtri.sol';
-import { ITri } from '../../interfaces/ICurve.sol';
-import { LibDiamond } from "../../libraries/LibDiamond.sol";
-import './ExecutorFacet.sol';
 import '@rari-capital/solmate/src/utils/FixedPointMathLib.sol';
 import '@openzeppelin/contracts/token/ERC20/IERC20.sol';
-
 import '@openzeppelin/contracts/utils/Address.sol';
+import { LibDiamond } from "../../libraries/LibDiamond.sol";
+import { ITri } from '../../interfaces/ICurve.sol';
+import '../../interfaces/IYtri.sol';
+import './ExecutorFacet.sol';
+import '../AppStorage.sol';
 import '../Diamond.sol';
 
+import 'hardhat/console.sol';
 
 
 contract RevenueFacet {
