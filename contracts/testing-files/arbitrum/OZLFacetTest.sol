@@ -2,7 +2,7 @@
 pragma solidity 0.8.14;
 
 
-// import '@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol';
+import '@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol';
 import '@openzeppelin/contracts/token/ERC20/IERC20.sol';
 import '../../interfaces/ICrvLpToken.sol';
 import '../../interfaces/IWETH.sol';
@@ -15,8 +15,9 @@ import '@openzeppelin/contracts/utils/Address.sol';
 
 
 import '../../arbitrum/AppStorage.sol';
-import '../../libraries/SafeTransferLib.sol'; //use the @ from solmate
+// import '../../libraries/SafeTransferLib.sol'; //use the @ from solmate
 // import '@rari-capital/solmate/src/utils/SafeTransferLib.sol';
+
 import '../../Errors.sol';
 import { ModifiersARB } from '../../Modifiers.sol';
 import './RevenueFacetTest.sol';
@@ -25,7 +26,7 @@ import './RevenueFacetTest.sol';
 
 contract OZLFacetTest is ModifiersARB { 
 
-    using SafeTransferLib for IERC20;
+    using SafeERC20 for IERC20;
     using Address for address;
 
     event NewUserToken(address userToken); 

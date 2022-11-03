@@ -11,7 +11,8 @@ import '@openzeppelin/contracts/token/ERC20/IERC20.sol';
 import { ModifiersARB } from '../../Modifiers.sol';
 import '../../arbitrum/facets/oz4626Facet.sol';
 import '../../arbitrum/facets/ExecutorFacet.sol';
-import '../../libraries/SafeTransferLib.sol'; //use the @ from solmate
+// import '../../libraries/SafeTransferLib.sol'; //use the @ from solmate
+import '@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol';
 import '@rari-capital/solmate/src/utils/FixedPointMathLib.sol';
 import '../../interfaces/IYtri.sol';
 
@@ -129,7 +130,7 @@ contract SecondaryFunctions is ModifiersARB {
 
 contract SwapsForUserTokenV1 is SecondaryFunctions { 
 
-    using SafeTransferLib for IERC20;
+    using SafeERC20 for IERC20;
 
     event ForTesting(uint indexed testNum);
 
@@ -207,7 +208,7 @@ contract SwapsForUserTokenV1 is SecondaryFunctions {
 
 
 contract SwapsForUserTokenV2 is SecondaryFunctions {
-    using SafeTransferLib for IERC20;
+    using SafeERC20 for IERC20;
 
     event ForTesting(uint indexed testNum);
 
@@ -290,7 +291,7 @@ contract SwapsForUserTokenV2 is SecondaryFunctions {
 
 
 contract SwapsForUserTokenV3 is SecondaryFunctions {
-    using SafeTransferLib for IERC20;
+    using SafeERC20 for IERC20;
 
     event ForTesting(uint indexed testNum);
 
@@ -436,7 +437,7 @@ contract UpdateIndexV1 is ModifiersARB {
  */
 
 contract DepositFeesInDeFiV1 is SecondaryFunctions {
-    using SafeTransferLib for IERC20;
+    using SafeERC20 for IERC20;
 
     event ForTesting(uint indexed testNum);
 

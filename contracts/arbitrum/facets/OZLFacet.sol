@@ -10,15 +10,11 @@ import '../../interfaces/IYtri.sol';
 import { ITri } from '../../interfaces/ICurve.sol';
 import { LibDiamond } from "../../libraries/LibDiamond.sol";
 import '@openzeppelin/contracts/utils/Address.sol';
-
-// import 'hardhat/console.sol';
-
-// import '../../libraries/SafeTransferLib.sol'; //use the @ from solmate
-// import '@rari-capital/solmate/src/utils/SafeTransferLib.sol';
 import '@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol';
 import '../../Errors.sol';
 import { ModifiersARB } from '../../Modifiers.sol';
 
+// import 'hardhat/console.sol';
 
 
 contract OZLFacet is ModifiersARB { 
