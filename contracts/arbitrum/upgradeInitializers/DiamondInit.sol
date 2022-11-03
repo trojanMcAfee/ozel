@@ -36,7 +36,6 @@ contract DiamondInit {
         ds.supportedInterfaces[type(IERC173).interfaceId] = true;
 
         //Sets addresses on contracts
-        // s.OZL = vars_.contracts[0]; 
         s.tricrypto = vars_.contracts[0];
         s.crvTricrypto = vars_.contracts[1];
         s.renPool = vars_.contracts[2];
@@ -45,9 +44,7 @@ contract DiamondInit {
         s.yTriPool = vars_.contracts[5];
         s.fraxPool = vars_.contracts[6];
         s.executor = vars_.contracts[7];
-        // s.oz46 = vars_.contracts[9]; 
         s.oz20 = vars_.contracts[8];
-        // s.revenue = vars_.contracts[13];
 
         //Sets ERC20 instances
         s.USDT = vars_.erc20s[0];

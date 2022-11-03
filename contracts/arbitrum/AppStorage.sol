@@ -6,9 +6,8 @@ import "@chainlink/contracts/src/v0.8/interfaces/AggregatorV3Interface.sol";
 import '@uniswap/v3-periphery/contracts/interfaces/ISwapRouter.sol';
 
 
-struct AppStorage { //check if all variables here are used
+struct AppStorage { 
     //Contracts
-    // address OZL; 
     address tricrypto;
     address crvTricrypto; 
     address renPool;
@@ -29,7 +28,6 @@ struct AppStorage { //check if all variables here are used
     address ETH;
 
     //Token infrastructure
-    // address oz46;
     address oz20;
 
     //System config
@@ -43,7 +41,6 @@ struct AppStorage { //check if all variables here are used
     uint feesVault;
     uint failedFees;
     mapping(address => uint) usersPayments;
-    // mapping(address => mapping(IERC20 => uint)) userToFailedERC;
 
     OZLERC20 oz;
 
@@ -69,14 +66,12 @@ struct AppStorage { //check if all variables here are used
     uint invariantRegulatorLimit;
     uint regulatorCounter;
 
-    //Revenue vars (order this)
+    //Revenue vars
     ISwapRouter swapRouter;
     AggregatorV3Interface priceFeed;
     address revenueToken;
     uint24 poolFee;
     uint[] revenueAmounts;
-    // bytes revenueCalldata;
-    // address revenue;
 
 }
 
