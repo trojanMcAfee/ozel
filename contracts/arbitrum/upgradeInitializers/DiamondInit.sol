@@ -14,17 +14,11 @@ import { IDiamondCut } from "../../interfaces/IDiamondCut.sol";
 import { IERC173 } from "../../interfaces/IERC173.sol";
 import { IERC165 } from "../../interfaces/IERC165.sol";
 import '../AppStorage.sol'; 
-// import '@openzeppelin/contracts/token/ERC20/IERC20.sol';
-// import '../../interfaces/IWETH.sol';
 
 import "@chainlink/contracts/src/v0.8/interfaces/AggregatorV3Interface.sol";
 import '@uniswap/v3-periphery/contracts/interfaces/ISwapRouter.sol';
 
 // import 'hardhat/console.sol';
-
-// import '@openzeppelin/contracts/utils/structs/BitMaps.sol';
-
-
 
 
 
@@ -42,18 +36,18 @@ contract DiamondInit {
         ds.supportedInterfaces[type(IERC173).interfaceId] = true;
 
         //Sets addresses on contracts
-        s.OZL = vars_.contracts[0]; 
-        s.tricrypto = vars_.contracts[1];
-        s.crvTricrypto = vars_.contracts[2];
-        s.renPool = vars_.contracts[3];
-        s.mimPool = vars_.contracts[4];
-        s.crv2Pool = vars_.contracts[5];
-        s.yTriPool = vars_.contracts[6];
-        s.fraxPool = vars_.contracts[7];
-        s.executor = vars_.contracts[8];
-        s.oz46 = vars_.contracts[9]; 
-        s.oz20 = vars_.contracts[10];
-        s.revenue = vars_.contracts[13];
+        // s.OZL = vars_.contracts[0]; 
+        s.tricrypto = vars_.contracts[0];
+        s.crvTricrypto = vars_.contracts[1];
+        s.renPool = vars_.contracts[2];
+        s.mimPool = vars_.contracts[3];
+        s.crv2Pool = vars_.contracts[4];
+        s.yTriPool = vars_.contracts[5];
+        s.fraxPool = vars_.contracts[6];
+        s.executor = vars_.contracts[7];
+        // s.oz46 = vars_.contracts[9]; 
+        s.oz20 = vars_.contracts[8];
+        // s.revenue = vars_.contracts[13];
 
         //Sets ERC20 instances
         s.USDT = vars_.erc20s[0];
@@ -108,8 +102,8 @@ contract DiamondInit {
         s.regulatorCounter = 0;
 
         //Revenue vars
-        s.priceFeed = AggregatorV3Interface(vars_.contracts[11]);
-        s.swapRouter = ISwapRouter(vars_.contracts[12]);
+        s.priceFeed = AggregatorV3Interface(vars_.contracts[9]);
+        s.swapRouter = ISwapRouter(vars_.contracts[10]);
         s.revenueToken = s.USDC;
         s.poolFee = uint24(vars_.appVars[2]);
         s.revenueAmounts = vars_.revenueAmounts;

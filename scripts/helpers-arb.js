@@ -244,7 +244,7 @@ async function deploy(n = 0) {
     const revenueFacet = await deployFacet('RevenueFacet');
 
     const contractsAddr = [
-        ozlFacet.address,
+        // ozlFacet.address,
         tricryptoAddr,
         crvTricrypto,
         renPoolAddr,
@@ -253,11 +253,11 @@ async function deploy(n = 0) {
         yTricryptoPoolAddr,
         fraxPoolAddr,
         executorFacet.address,
-        oz4626.address,
+        // oz4626.address,
         oz20.address,
         chainlinkAggregatorAddr,
         swapRouterUniAddr,
-        revenueFacet.address
+        // revenueFacet.address
     ];
 
     const erc20sAddr = [

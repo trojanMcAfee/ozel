@@ -4,15 +4,11 @@ pragma solidity 0.8.14;
 import '@openzeppelin/contracts/token/ERC20/IERC20.sol';
 import "@chainlink/contracts/src/v0.8/interfaces/AggregatorV3Interface.sol";
 import '@uniswap/v3-periphery/contracts/interfaces/ISwapRouter.sol';
-// import '../interfaces/IWETH.sol';
-// import { LibDiamond } from "../libraries/LibDiamond.sol";
-
-// import '@openzeppelin/contracts/utils/structs/BitMaps.sol';
 
 
 struct AppStorage { //check if all variables here are used
     //Contracts
-    address OZL; 
+    // address OZL; 
     address tricrypto;
     address crvTricrypto; 
     address renPool;
@@ -33,7 +29,7 @@ struct AppStorage { //check if all variables here are used
     address ETH;
 
     //Token infrastructure
-    address oz46;
+    // address oz46;
     address oz20;
 
     //System config
@@ -47,11 +43,11 @@ struct AppStorage { //check if all variables here are used
     uint feesVault;
     uint failedFees;
     mapping(address => uint) usersPayments;
-    mapping(address => mapping(IERC20 => uint)) userToFailedERC;
+    // mapping(address => mapping(IERC20 => uint)) userToFailedERC;
 
     OZLERC20 oz;
 
-    //Curve swaps config
+    //Curve swaps config **** code how to easily add a new swap
     TradeOps renSwap;
     TradeOps mimSwap;
     TradeOps usdcSwap;
@@ -79,8 +75,8 @@ struct AppStorage { //check if all variables here are used
     address revenueToken;
     uint24 poolFee;
     uint[] revenueAmounts;
-    bytes revenueCalldata;
-    address revenue;
+    // bytes revenueCalldata;
+    // address revenue;
 
 }
 
