@@ -18,7 +18,7 @@ module.exports = {
     hardhat: {
       forking: {
         url: process.env.ALCHEMY_ETH,
-        blockNumber: 14690061 //14.689.061 gas: 5k -  14.699.061: gas 70 - 14.690.061 gas: 300 (passing)
+        blockNumber: 15823986    // 14689661 - 14.689.661 gas: 1,106 (passing) ETH bal: 5.188593275449158
         /**
          * 15823986 (block of all tests)
          * gelato changed some internal contracts - do eth tests with a recent block 
@@ -29,14 +29,6 @@ module.exports = {
       //   url: process.env.ARBITRUM,
       //   blockNumber: 7880962      //2227440
       // }
-    },
-    rinkeby: {
-      url: process.env.RINKEBY,
-      accounts: [process.env.PK]
-    },
-    arb: {
-      url: process.env.ARB_TESTNET,
-      accounts: [process.env.PK]
     },
     goerli: {
       url: process.env.GOERLI,

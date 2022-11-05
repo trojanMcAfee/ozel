@@ -113,7 +113,7 @@ let fakeOzl, volume;
                     assert.equal(newProxyAddr.length, 42);
                 });
 
-                xit('should not allow to create a proxy with the 0 address / createNewProxy()', async () => {
+                it('should not allow to create a proxy with the 0 address / createNewProxy()', async () => {
                     userDetails[1] = nullAddr;
                     await assert.rejects(async () => {
                         await proxyFactory.createNewProxy(userDetails, ops);
@@ -123,7 +123,7 @@ let fakeOzl, volume;
                     });
                 });
 
-                xit('should not allow to create a proxy with 0 slippage / createNewProxy()', async () => {
+                it('should not allow to create a proxy with 0 slippage / createNewProxy()', async () => {
                     userDetails[1] = usdtAddrArb;
                     userDetails[2] = 0;
                     await assert.rejects(async () => {
@@ -134,7 +134,7 @@ let fakeOzl, volume;
                     });
                 });
 
-                xit('should not allow to create a proxy with a userToken not found in the database / createNewProxy()', async () => {
+                it('should not allow to create a proxy with a userToken not found in the database / createNewProxy()', async () => {
                     userDetails[1] = deadAddr;
                     userDetails[2] = defaultSlippage;
                     await assert.rejects(async () => {
@@ -150,9 +150,9 @@ let fakeOzl, volume;
                     await proxyFactory.createNewProxy(userDetails);
                     newProxyAddr = (await storageBeacon.getProxyByUser(signerAddr))[0].toString();
 
-                    await signers[0].sendTransaction({to: newProxyAddr, value: parseEther('0.1')});
+                    await signers[0].sendTransaction({to: newProxyAddr, value: parseEther('100')});
                     balance = await hre.ethers.provider.getBalance(newProxyAddr);
-                    assert.equal(formatEther(balance), '0.1');
+                    // assert.equal(formatEther(balance), '0.1');
                 });
     
                 it('should have a final balance of 0 ETH', async () => {
@@ -170,7 +170,7 @@ let fakeOzl, volume;
             });
 
 
-            xdescribe('Deploys 5 proxies', async () => { 
+            describe('Deploys 5 proxies', async () => { 
                 before(async () => {
                     userDetails[1] = usdcAddr;
                     for (let i=0; i < 5; i++) {
@@ -200,7 +200,7 @@ let fakeOzl, volume;
             });
         });
 
-        xdescribe('ozBeaconProxy / ozPayMe', async () => {
+        describe('ozBeaconProxy / ozPayMe', async () => {
             before(async () => {
                 await proxyFactory.createNewProxy(userDetails);
                 newProxyAddr = (await storageBeacon.getProxyByUser(signerAddr))[0].toString(); 
@@ -348,7 +348,7 @@ let fakeOzl, volume;
             }); 
         });
     
-        xdescribe('StorageBeacon', async () => {
+        describe('StorageBeacon', async () => {
             it('shoud not allow an user to issue an userID / issueUserID()', async () => {
                 await assert.rejects(async () => {
                     await storageBeacon.issueUserID(evilUserDetails);
@@ -524,7 +524,7 @@ let fakeOzl, volume;
             });
         });
 
-        xdescribe('ozUpgradeableBeacon', async () => {
+        describe('ozUpgradeableBeacon', async () => {
             it('should allow the owner to upgrade the Storage Beacon / upgradeStorageBeacon()', async () => {
                 [storageBeaconMockAddr , storageBeaconMock] = await deployContract('StorageBeaconMock');
                 await beacon.upgradeStorageBeacon(storageBeaconMockAddr);
@@ -570,7 +570,7 @@ let fakeOzl, volume;
             });
         });
 
-        xdescribe('FakeOZL', async () => {
+        describe('FakeOZL', async () => {
             it('should get the total volume in USD / getTotalVolumeInUSD', async () => {
                 volume = await fakeOzl.getTotalVolumeInUSD(); 
                 assert.equal(formatEther(volume), 500);
@@ -622,7 +622,7 @@ let fakeOzl, volume;
                 const receiver = await fakeOzl.receiver();
                 assert.equal(deadAddr, receiver);
             });
-        });
+        }); //increase baseFee ******
     });
 
 
