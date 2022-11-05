@@ -39,7 +39,7 @@ contract ExecutorFacet is ModifiersARB {
         ).approve(pool, inBalance);
 
         /**** 
-            Exchanges the amount between the user's slippage (final swap)
+            Exchanges the amount using the user's slippage (final swap)
             If it fails, it doubles the slippage, divides the amount between two and tries again.
             If none works, sends the baseToken instead to the user.
         ****/ 

@@ -6,7 +6,6 @@ const { ethers } = require('ethers');
 const { 
     hexStripZeros, 
     defaultAbiCoder: abiCoder,
-    formatEther,
     parseEther
 } = ethers.utils;
 
