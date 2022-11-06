@@ -3,7 +3,8 @@ const assert = require('assert');
 const { 
     formatUnits, 
     formatEther,
-    parseEther
+    parseEther,
+    parseUnits
  } = ethers.utils;
 
 const { 
@@ -27,6 +28,7 @@ const {
 
 
 let feeData, baseFee;
+let tx, receipt;
 let provider;
 let balance;
 
@@ -87,8 +89,9 @@ describe('BaseFee stress test', async function () {
         });
     
         it('should create a proxy successfully / createNewProxy()', async () => {
-            await proxyFactory.createNewProxy(userDetails);
-            newProxyAddr = (await storageBeacon.getProxyByUser(signerAddr))[0].toString(); 
+            tx = await proxyFactory.createNewProxy(userDetails);
+            receipt = await tx.wait();
+            newProxyAddr = receipt.logs[0].address;
             assert.equal(newProxyAddr.length, 42);
         });
     });
@@ -105,8 +108,8 @@ describe('BaseFee stress test', async function () {
         });
     
         it('should have a final balance of 0 ETH', async () => {
-            const tx = await proxyFactory.createNewProxy(userDetails);
-            const receipt = await tx.wait();
+            tx = await proxyFactory.createNewProxy(userDetails);
+            receipt = await tx.wait();
             newProxyAddr = receipt.logs[0].address;
     
             balance = await provider.getBalance(newProxyAddr);
@@ -118,7 +121,30 @@ describe('BaseFee stress test', async function () {
         });
     });
     
-    
+    describe('la lal al', async () => {
+        it("increases the block's base fee to 3500", async () => {
+            feeData = await provider.getFeeData(); 
+            baseFee = Number(feeData.maxFeePerGas);
+            baseFeeConverted = formatUnits(baseFee.toString(), 'gwei');
+            console.log('gas pre: ', baseFeeConverted);
+
+            await network.provider.send("hardhat_setNextBlockBaseFeePerGas", [
+                '0x32EE841B800', //parseUnits('3500', 'gwei')
+            ]);
+
+            await hre.network.provider.send("hardhat_mine");
+
+
+            feeData = await provider.getFeeData(); 
+            baseFee = Number(feeData.maxFeePerGas);
+            baseFeeConverted = formatUnits(baseFee.toString(), 'gwei');
+            console.log('gas post: ', baseFeeConverted);
+
+
+        });
+
+
+    });
 
 
 
