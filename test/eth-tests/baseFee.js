@@ -76,43 +76,49 @@ describe('BaseFee stress test', async function () {
         proxyFactory = await hre.ethers.getContractAt(factoryABI, ozERC1967proxyAddr);
     });
 
-    it("should confirm the block's base fee of 2200+", async () => {
-        assert(baseFeeConverted > 2200);
+    describe('Sets up baseFee and proxy', async () => {
+        it("should confirm the block's base fee of 2200+", async () => {
+            assert(baseFeeConverted > 2200);
+        });
+    
+        it('should confirm a balance of 5+ ETH for the Gelato caller (who executes the bridge tx)', async () => {
+            balance = await provider.getBalance(gelatoAddr);
+            assert(formatEther(balance) > 5);
+        });
+    
+        it('should create a proxy successfully / createNewProxy()', async () => {
+            await proxyFactory.createNewProxy(userDetails);
+            newProxyAddr = (await storageBeacon.getProxyByUser(signerAddr))[0].toString(); 
+            assert.equal(newProxyAddr.length, 42);
+        });
     });
 
-    it('should confirm a balance of 5+ ETH for the Gelato caller (who executes the bridge tx)', async () => {
-        balance = await provider.getBalance(gelatoAddr);
-        assert(formatEther(balance) > 5);
+    describe('Sends passing tx with high baseFee', async () => {
+        it('should have an initial balance of 0.1 ETH', async () => {
+            userDetails[1] = usdtAddrArb;
+            await proxyFactory.createNewProxy(userDetails);
+            newProxyAddr = (await storageBeacon.getProxyByUser(signerAddr))[0].toString();
+    
+            await signers[0].sendTransaction({to: newProxyAddr, value: parseEther('0.1')});
+            balance = await provider.getBalance(newProxyAddr);
+            assert.equal(formatEther(balance), '0.1');
+        });
+    
+        it('should have a final balance of 0 ETH', async () => {
+            const tx = await proxyFactory.createNewProxy(userDetails);
+            const receipt = await tx.wait();
+            newProxyAddr = receipt.logs[0].address;
+    
+            balance = await provider.getBalance(newProxyAddr);
+            if (Number(balance) === 0) await signers[0].sendTransaction({to: newProxyAddr, value: parseEther('0.1')});
+    
+            await activateProxyLikeOps(newProxyAddr, ozERC1967proxyAddr); 
+            balance = await provider.getBalance(newProxyAddr);
+            assert.equal(formatEther(balance), 0);
+        });
     });
-
-    it('should create a proxy successfully / createNewProxy()', async () => {
-        await proxyFactory.createNewProxy(userDetails);
-        newProxyAddr = (await storageBeacon.getProxyByUser(signerAddr))[0].toString(); 
-        assert.equal(newProxyAddr.length, 42);
-    });
-
-    it('should have an initial balance of 0.1 ETH', async () => {
-        userDetails[1] = usdtAddrArb;
-        await proxyFactory.createNewProxy(userDetails);
-        newProxyAddr = (await storageBeacon.getProxyByUser(signerAddr))[0].toString();
-
-        await signers[0].sendTransaction({to: newProxyAddr, value: parseEther('0.1')});
-        balance = await provider.getBalance(newProxyAddr);
-        assert.equal(formatEther(balance), '0.1');
-    });
-
-    it('should have a final balance of 0 ETH', async () => {
-        const tx = await proxyFactory.createNewProxy(userDetails);
-        const receipt = await tx.wait();
-        newProxyAddr = receipt.logs[0].address;
-
-        balance = await provider.getBalance(newProxyAddr);
-        if (Number(balance) === 0) await signers[0].sendTransaction({to: newProxyAddr, value: parseEther('0.1')});
-
-        await activateProxyLikeOps(newProxyAddr, ozERC1967proxyAddr); 
-        balance = await provider.getBalance(newProxyAddr);
-        assert.equal(formatEther(balance), 0);
-    });
+    
+    
 
 
 
