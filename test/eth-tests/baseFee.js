@@ -121,14 +121,50 @@ describe('BaseFee stress test', async function () {
     });
     
     describe('Failing base fee', async () => {
-        it("increases the block's base fee to 3500+", async () => {
+        before(async () => {
             await network.provider.send("hardhat_setNextBlockBaseFeePerGas", [
                 '0x32EE841B800', // 3500 in hex 
             ]);
 
             await hre.network.provider.send("hardhat_mine");
             baseFee = await getBaseFee();
+            console.log('new base fee (in gwei): ', baseFee);
+        });
+
+        it("increases the block's base fee to 3500+", async () => {
             assert(baseFee > 3500);
+        });
+
+        it('should have an initial balance of 0.1 ETH', async () => {
+            userDetails[1] = usdtAddrArb;
+            await proxyFactory.createNewProxy(userDetails);
+            newProxyAddr = (await storageBeacon.getProxyByUser(signerAddr))[0].toString();
+
+            balance = await hre.ethers.provider.getBalance(newProxyAddr);
+            if (Number(balance) === 0) await signers[0].sendTransaction({to: newProxyAddr, value: parseEther('0.1')});
+    
+            // await signers[0].sendTransaction({to: newProxyAddr, value: parseEther('0.1')});
+            balance = await provider.getBalance(newProxyAddr);
+            assert.equal(formatEther(balance), '0.1');
+        });
+    
+        it('should have a final balance of 0 ETH', async () => {
+            await assert.rejects(async () => {
+                tx = await proxyFactory.createNewProxy(userDetails);
+                receipt = await tx.wait();
+                newProxyAddr = receipt.logs[0].address;
+        
+                balance = await provider.getBalance(newProxyAddr);
+                if (Number(balance) === 0) await signers[0].sendTransaction({to: newProxyAddr, value: parseEther('0.1')});
+        
+                await activateProxyLikeOps(newProxyAddr, ozERC1967proxyAddr); 
+                balance = await provider.getBalance(newProxyAddr);
+                assert.equal(formatEther(balance), 0);
+            }, {
+                name: 'InvalidInputError'
+                // message: (await err()).notOwner
+            });
+
         });
 
 
