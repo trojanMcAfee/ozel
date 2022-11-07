@@ -46,6 +46,7 @@ describe('BaseFee stress test', async function () {
 
         feeData = await provider.getFeeData(); 
         baseFee = Number(feeData.maxFeePerGas);
+        console.log('gasPrice: ', baseFee);
         baseFeeConverted = formatUnits(baseFee.toString(), 'gwei');
         console.log('base fee of block #14.689.661 (in gwei): ', baseFeeConverted);
         console.log('.');
@@ -79,8 +80,8 @@ describe('BaseFee stress test', async function () {
     });
 
     describe('Sets up baseFee and proxy', async () => {
-        it("should confirm the block's base fee of 2200+", async () => {
-            assert(baseFeeConverted > 2200);
+        it("should confirm the block's base fee of 1000+", async () => {
+            assert(baseFeeConverted > 1000);
         });
     
         it('should confirm a balance of 5+ ETH for the Gelato caller (who executes the bridge tx)', async () => {
@@ -122,23 +123,25 @@ describe('BaseFee stress test', async function () {
     });
     
     describe('la lal al', async () => {
-        it("increases the block's base fee to 3500", async () => {
+        it("increases the block's base fee to 3000", async () => {
             feeData = await provider.getFeeData(); 
             baseFee = Number(feeData.maxFeePerGas);
             baseFeeConverted = formatUnits(baseFee.toString(), 'gwei');
             console.log('gas pre: ', baseFeeConverted);
 
             await network.provider.send("hardhat_setNextBlockBaseFeePerGas", [
-                '0x32EE841B800', //parseUnits('3500', 'gwei')
+                '0x32EE841B800', //parseUnits('3500', 'gwei') - 0x32EE841B800
             ]);
 
             await hre.network.provider.send("hardhat_mine");
 
 
             feeData = await provider.getFeeData(); 
-            baseFee = Number(feeData.maxFeePerGas);
+            baseFee = Number(feeData.gasPrice);
+            console.log('x: ', baseFee);
             baseFeeConverted = formatUnits(baseFee.toString(), 'gwei');
-            console.log('gas post: ', baseFeeConverted);
+            console.log('base fee of block #14.689.661 (in gwei): ', baseFeeConverted);
+            console.log('.');
 
 
         });
