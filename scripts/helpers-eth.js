@@ -7,7 +7,8 @@ const {
     hexStripZeros, 
     defaultAbiCoder: abiCoder,
     parseEther,
-    formatEther
+    formatEther,
+    formatUnits
 } = ethers.utils;
 
 const { 
@@ -211,6 +212,12 @@ async function compareEventWithVar(receipt, variable) {
     }
 }
 
+async function getBaseFee() {
+    feeData = await hre.ethers.provider.getFeeData(); 
+    baseFee = formatUnits(feeData.maxFeePerGas, 'gwei');
+    return baseFee / 2;
+}
+
 
 function getFakeOZLVars() {
     const totalVolumeInUSD = parseEther('500');
@@ -365,5 +372,6 @@ module.exports = {
     storeVarsInHelpers,
     compareEventWithVar,
     compareTopicWith2,
-    getFakeOZLVars
+    getFakeOZLVars,
+    getBaseFee
 };

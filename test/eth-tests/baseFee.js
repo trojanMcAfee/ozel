@@ -23,7 +23,8 @@ const {
     compareTopicWith,
     storeVarsInHelpers,
     compareEventWithVar,
-    compareTopicWith2
+    compareTopicWith2,
+    getBaseFee
  } = require('../../scripts/helpers-eth');
 
 
@@ -44,11 +45,8 @@ describe('BaseFee stress test', async function () {
     before( async () => {
         provider = await hre.ethers.provider;
 
-        feeData = await provider.getFeeData(); 
-        baseFee = Number(feeData.maxFeePerGas);
-        console.log('gasPrice: ', baseFee);
-        baseFeeConverted = formatUnits(baseFee.toString(), 'gwei');
-        console.log('base fee of block #14.689.661 (in gwei): ', baseFeeConverted);
+        baseFee = await getBaseFee();
+        console.log('base fee of block #14.689.661 (in gwei): ', baseFee);
         console.log('.');
 
         ([signerAddr, signerAddr2] = await provider.listAccounts()); 
@@ -80,8 +78,8 @@ describe('BaseFee stress test', async function () {
     });
 
     describe('Sets up baseFee and proxy', async () => {
-        it("should confirm the block's base fee of 1000+", async () => {
-            assert(baseFeeConverted > 1000);
+        it("should confirm the block's base fee of 1100+", async () => {
+            assert(baseFee > 1100);
         });
     
         it('should confirm a balance of 5+ ETH for the Gelato caller (who executes the bridge tx)', async () => {
@@ -122,29 +120,18 @@ describe('BaseFee stress test', async function () {
         });
     });
     
-    describe('la lal al', async () => {
-        it("increases the block's base fee to 3000", async () => {
-            feeData = await provider.getFeeData(); 
-            baseFee = Number(feeData.maxFeePerGas);
-            baseFeeConverted = formatUnits(baseFee.toString(), 'gwei');
-            console.log('gas pre: ', baseFeeConverted);
-
+    describe('Failing base fee', async () => {
+        it("increases the block's base fee to 3500+", async () => {
             await network.provider.send("hardhat_setNextBlockBaseFeePerGas", [
-                '0x32EE841B800', //parseUnits('3500', 'gwei') - 0x32EE841B800
+                '0x32EE841B800', // 3500 in hex 
             ]);
 
             await hre.network.provider.send("hardhat_mine");
-
-
-            feeData = await provider.getFeeData(); 
-            baseFee = Number(feeData.gasPrice);
-            console.log('x: ', baseFee);
-            baseFeeConverted = formatUnits(baseFee.toString(), 'gwei');
-            console.log('base fee of block #14.689.661 (in gwei): ', baseFeeConverted);
-            console.log('.');
-
-
+            baseFee = await getBaseFee();
+            assert(baseFee > 3500);
         });
+
+
 
 
     });
