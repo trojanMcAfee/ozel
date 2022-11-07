@@ -102,6 +102,7 @@ async function getArbitrumParams(userDetails, manualRedeem = false) {
     const autoRedeem = ethers.BigNumber.from(69073611260000000n); //*********/ minimum of 0.06907361126 ETH has to be sent
     submissionPriceWei = ethers.BigNumber.from(3145530432000000n);
     gasPriceBid = ethers.BigNumber.from(150000000n);
+    gasPriceBid = 0;
 
     return [
         submissionPriceWei,

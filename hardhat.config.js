@@ -18,7 +18,7 @@ module.exports = {
     hardhat: {
       forking: {
         url: process.env.ALCHEMY_ETH,
-        blockNumber: 14689661    // 14689661 - 14.689.661 gas: 1,106 (passing) ETH bal: 5.188593275449158
+        blockNumber: 15823986    // 14689661 - 14.689.661 gas: 1,106 (passing) ETH bal: 5.188593275449158
         /**
          * 15823986 (block of all tests)
          * gelato changed some internal contracts - do eth tests with a recent block 
