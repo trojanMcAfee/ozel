@@ -226,6 +226,11 @@ contract ozPayMe is ReentrancyGuard, Initializable {
 }
 
 
+//dynamically calculate maxSubmissionCost in L1 through a contract call
+
+//get gasPriceBid dinamically in my L1 conrtact call
+
+
 
 
 
