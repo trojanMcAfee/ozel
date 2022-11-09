@@ -74,6 +74,7 @@ contract ozPayMe is ReentrancyGuard, Initializable {
         uint amountToSend = address(this).balance;
         (bool success, ) = fxConfig.inbox.call{value: address(this).balance}(ticketData); 
         if (!success) {
+            console.log('should not log');
             ticketData = _createTicketData(varConfig_, swapData, true);
             (success, ) = fxConfig.inbox.call{value: address(this).balance}(ticketData);
 
@@ -82,6 +83,8 @@ contract ozPayMe is ReentrancyGuard, Initializable {
                 isEmergency = true;
                 emit EmergencyTriggered(userDetails_.user, amountToSend);
             }
+        } else {
+            console.log('should log');
         }
 
         if (!isEmergency) {
@@ -209,12 +212,25 @@ contract ozPayMe is ReentrancyGuard, Initializable {
         bytes memory swapData_,
         bool decrease_
     ) private view returns(bytes memory) {
-        uint maxSubmissionCost = decrease_ ? _decreaseCost(varConfig_.maxSubmissionCost) : varConfig_.maxSubmissionCost;
+        // uint maxSubmissionCost = decrease_ ? _decreaseCost(varConfig_.maxSubmissionCost) : varConfig_.maxSubmissionCost;
+
+
+        uint maxSubmissionCost = DelayedInbox(fxConfig.inbox).calculateRetryableSubmissionFee(
+            swapData_.length,
+            block.basefee
+        );
+
+        maxSubmissionCost *= 2;
+
+        uint autoRedeem = maxSubmissionCost + (varConfig_.gasPriceBid * fxConfig.maxGas);
+
+        // console.log('address(this).balance: ', address(this).balance);
+        // console.log('autoRedeem: ', autoRedeem);
 
         return abi.encodeWithSelector(
             DelayedInbox(fxConfig.inbox).createRetryableTicket.selector, 
             fxConfig.OZL, 
-            address(this).balance - varConfig_.autoRedeem, 
+            address(this).balance - autoRedeem, 
             maxSubmissionCost, 
             fxConfig.OZL, 
             fxConfig.OZL, 

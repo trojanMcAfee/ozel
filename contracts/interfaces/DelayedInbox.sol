@@ -32,5 +32,10 @@ interface DelayedInbox {
         bytes memory data
     ) external payable returns (uint256);
 
+    function calculateRetryableSubmissionFee(
+        uint256 dataLength, 
+        uint256 baseFee
+    ) external view returns (uint256);
+
 
 }
