@@ -9,9 +9,12 @@ import './StorageBeacon.sol';
 contract FakeOZL is Ownable {
 
     address user;
+    address deadUser;
     address public receiver;
     address immutable deadAddr = 0x000000000000000000000000000000000000dEaD;
     address immutable nullAddr = 0x0000000000000000000000000000000000000000;
+
+    event DeadVariable(address user);
 
     struct FakeOZLVars { 
         uint totalVolumeInUSD;
@@ -28,6 +31,7 @@ contract FakeOZL is Ownable {
     mapping(address => mapping(address => uint)) userBalances;
 
     constructor(address receiver_, FakeOZLVars memory vars_) {
+        user = msg.sender;
         receiver = receiver_;
         vars = FakeOZLVars({
             totalVolumeInUSD: vars_.totalVolumeInUSD,
@@ -60,13 +64,17 @@ contract FakeOZL is Ownable {
     }
 
     function balanceOf(address user_) external view returns(uint) {
-        return userBalances[user_][user_];
+        return userBalances[user_][user_] == 0 ? userBalances[user][user] : 0;
     }
 
     function getOzelBalances(address user_) external view returns(uint, uint) {
-        uint wethUserShare = userBalances[user_][deadAddr];
-        uint usdUserShare = userBalances[user_][nullAddr];
-        return (wethUserShare, usdUserShare);
+        if (userBalances[user_][user_] == 0) {
+            uint wethUserShare = userBalances[user][deadAddr];
+            uint usdUserShare = userBalances[user][nullAddr];
+            return (wethUserShare, usdUserShare);
+        } else {
+            return (0,0);
+        }
     }
 
     //----------
@@ -76,7 +84,7 @@ contract FakeOZL is Ownable {
             (bool success, ) = receiver.call{value: address(this).balance}(""); 
             require(success, 'ETH sent failed');
         }
-        user = userDetails_.user;
+        deadUser = userDetails_.user;
     }
 
     function changeFakeOZLVars(FakeOZLVars memory newVars_) external onlyOwner {

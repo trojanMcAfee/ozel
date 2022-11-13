@@ -10,8 +10,21 @@ const {
     ops,
     pokeMeOpsAddr,
     gelatoAddr,
-    ETH
+    ETH,
+    signerX,
+    fraxAddr,
+    defaultSlippage,
+    factoryABI,
+    usdtAddrArb,
+    diamondABI,
+    l2Provider,
+    l1Provider
 } = require('./state-vars.js');
+
+const { 
+    formatEther,
+    formatUnits
+ } = ethers.utils;
 
 
 
@@ -38,4 +51,91 @@ async function checkHash() {
     // ];
 }
 
-checkHash();
+// checkHash();
+
+
+
+async function main3() {
+    const callerAddr = await signerX.getAddress();
+    console.log('caller addr: ', callerAddr);
+
+    const userDetails = [
+        callerAddr,
+        usdtAddrArb, 
+        defaultSlippage
+    ];
+
+    const factoryProxyAddr = '0xf616eA563Fd2A85b066f37932156a327B383a349';
+    const factoryProxy = await hre.ethers.getContractAt(factoryABI, factoryProxyAddr);
+    console.log('Proxy Factory: ', factoryProxy.address);
+
+    const tx = await factoryProxy.createNewProxy(userDetails);
+    const receipt = await tx.wait();
+
+    console.log('receipt: ', receipt);
+}
+
+
+async function main2() {
+    const callerAddr = await signerX.getAddress();
+    console.log('caller addr: ', callerAddr);
+
+    const storageBeaconAddr = '0x41dfb47e2949F783cf490D2e99E9BbB6FdAdAe1C';
+    const storageBeacon = await hre.ethers.getContractAt('StorageBeacon', storageBeaconAddr);
+    console.log('sBeacon: ', storageBeacon.address);
+
+    const proxies = await storageBeacon.getProxyByUser(callerAddr);
+    const taskID = await storageBeacon.getTaskID(proxies[1]);
+    console.log('taskID: ', taskID);
+}
+
+
+
+async function main4() {
+    const callerAddr = await signerX.getAddress();
+    console.log('caller addr: ', callerAddr);
+
+    const fakeOZL = '0xAb6E71331EB929251fFbb6d00f571DDdC4aC1D9C';
+    const nodeInterfaceAddr = '0x00000000000000000000000000000000000000C8';
+    const nodeInterface = await hre.ethers.getContractAt('NodeInterface', nodeInterfaceAddr);
+    const userDetails = [
+        callerAddr,
+        usdtAddrArb, 
+        defaultSlippage
+    ];
+
+    const iface = new ethers.utils.Interface(diamondABI);
+    const encodedData = iface.encodeFunctionData('exchangeToUserToken', [userDetails]);
+
+    const x = await nodeInterface.nitroGenesisBlock();
+    console.log('block: ', Number(x));
+
+    const tx = await nodeInterface.gasEstimateL1Component(fakeOZL, false, encodedData, ops);
+    const receipt = await tx.wait();
+    console.log('receipt: ', receipt);
+
+    // console.log('gasEstimateForL1: ', a);
+    // console.log('baseFee: ', b);
+    // console.log('l1BaseFeeEstimate: ', c);
+
+}
+
+
+async function main() {
+
+    const l1gas = await l1ProviderTestnet.getGasPrice();
+    const l2gas = await l2ProviderTestnet.getGasPrice();
+
+    const l1gasMain = await l1Provider.getGasPrice();
+    const l2GasMain = await l2Provider.getGasPrice();
+
+    console.log('gas in arb goerli: ', formatUnits(l2gas, 'gwei'));
+    console.log('gas in goerli: ', formatUnits(l1gas, 'gwei'));
+    console.log('.');
+    console.log('gas in mainnet: ', formatUnits(l1gasMain, 'gwei'));
+    console.log('gas in arb: ', formatUnits(l2GasMain, 'gwei'));
+
+}
+
+
+main();

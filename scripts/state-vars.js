@@ -93,6 +93,7 @@ const ops = {
 const signerX = new ethers.Wallet(process.env.PK);
 const signerTestnet = new ethers.Wallet(process.env.PK_TESTNET);
 const l2Provider = new ethers.providers.JsonRpcProvider(process.env.ARBITRUM);
+const l1Provider = new ethers.providers.JsonRpcProvider(process.env.MAINNET);
 
 let l1Signer, l2Signer, l1SignerTestnet, l2SignerTestnet;
 let l1ProviderTestnet, l2ProviderTestnet;
@@ -222,7 +223,8 @@ module.exports = {
     myReceiver,
     signerTestnet,
     l1SignerTestnet,
-    l2SignerTestnet
+    l2SignerTestnet,
+    l1Provider
 };
 
 

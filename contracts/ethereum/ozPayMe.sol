@@ -207,6 +207,13 @@ contract ozPayMe is ReentrancyGuard, Initializable {
         return maxSubmissionCost_ - (uint(30 * 1 ether)).mulDivDown(maxSubmissionCost_, 100 * 1 ether);
     }
 
+    // function _calculateGasDetails(
+    //     bytes memory swapData_, 
+    //     uint basefee_
+    // ) private returns(uint maxSubmissionCost, uint autoRedeem) {
+
+    // }
+
     function _createTicketData( 
         StorageBeacon.VariableConfig calldata varConfig_, 
         bytes memory swapData_,
@@ -217,15 +224,12 @@ contract ozPayMe is ReentrancyGuard, Initializable {
 
         uint maxSubmissionCost = DelayedInbox(fxConfig.inbox).calculateRetryableSubmissionFee(
             swapData_.length,
-            block.basefee
+            0
         );
 
         maxSubmissionCost *= 2;
 
         uint autoRedeem = maxSubmissionCost + (varConfig_.gasPriceBid * fxConfig.maxGas);
-
-        // console.log('address(this).balance: ', address(this).balance);
-        // console.log('autoRedeem: ', autoRedeem);
 
         return abi.encodeWithSelector(
             DelayedInbox(fxConfig.inbox).createRetryableTicket.selector, 
@@ -242,9 +246,8 @@ contract ozPayMe is ReentrancyGuard, Initializable {
 }
 
 
-//dynamically calculate maxSubmissionCost in L1 through a contract call
 
-//get gasPriceBid dinamically in my L1 conrtact call
+//compare L1 and L2s basefees 
 
 
 

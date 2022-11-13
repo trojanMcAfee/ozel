@@ -37,6 +37,14 @@ module.exports = {
     arb_goerli: {
       url: process.env.ARB_GOERLI,
       accounts: [process.env.PK]
-    }
+    },
+    arbitrum: {
+      url: process.env.ARBITRUM,
+      accounts: [process.env.PK]
+    },
+    mainnet: {
+      url: process.env.MAINNET,
+      accounts: [process.env.PK]
+    },
   }
 };

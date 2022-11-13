@@ -17,5 +17,18 @@ interface NodeInterface {
         bytes calldata data
     ) external pure returns (uint256, uint256);
 
+    function gasEstimateL1Component(
+        address to,
+        bool contractCreation,
+        bytes calldata data
+    )
+        external
+        payable
+        returns (
+            uint64 gasEstimateForL1,
+            uint256 baseFee,
+            uint256 l1BaseFeeEstimate
+        );
 
+    function nitroGenesisBlock() external pure returns (uint256 number);
 }

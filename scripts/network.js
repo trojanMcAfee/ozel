@@ -15,6 +15,23 @@
 // task id:  0xb41e8b76c281c56904f8df1013c39c9aa76c59810ed35022271d751b158ffb48
 
 
+
+// signer address:  0x0E743a1E37D691D8e52F7036375F3D148B4116ba
+// FakeOZL deployed to:  0xAb6E71331EB929251fFbb6d00f571DDdC4aC1D9C
+// Emitter deployed to:  0xD78D58C4ec3682aC188cB801e55e2A7Ba7C610d4
+// ozPayMe deployed to:  0xf2BC292Ffe8Bd65EDd6f84e3228c0a02e0a24Ec6
+// StorageBeacon deployed to:  0x41dfb47e2949F783cf490D2e99E9BbB6FdAdAe1C
+// ozUpgradeableBeacon deployed to:  0x90eCef484801156D1b7E7615F1c9F2584c3F69CC
+// ProxyFactory deployed to:  0x6b67f89F21B409BbC827e3ADEbD5b30F7786c688
+// ozERC1967Proxy deployed to:  0xf616eA563Fd2A85b066f37932156a327B383a349
+// initialize with hash:  0xc4c3d00318470dcee3c1059b511161a1136926b27767d2fcdc87e975875f1da1
+// RedeemedHashes deployed to:  0x640a47d28475d64438B0181344aD322d89f5D2d8
+// RolesAuthority deployed to:  0xbE6a4cD3e8800e78a1c5eaf926De6A96B3847dF4
+// createNewProxy with hash:  0x2a05fb7a293dfcf9eda4d998255755e4026ad9f63b65fc29e8de571af457347c
+// proxy 1:  0x7C9E3023e8c3b7577A610023781B6c885646a88e
+// task id:  0x4d4d4de37331be786e10b615be0f200ae55998ef234bc23aa1ecf2d15b081f84
+
+
 async function main() {
     const myAddr = ''; // <----- connected Metamask account goes here
     const diamondAddr = '0x543711ED09A2d8a2c34b7599d9e323cd03B05c94'; //FakeOZL
