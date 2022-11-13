@@ -1,50 +1,60 @@
 
-// signer address:  0x0E743a1E37D691D8e52F7036375F3D148B4116ba
-// FakeOZL deployed to:  0xB2CfB9e7239e7eFF83D0C730AcFD7a01B76d72f6
-// Emitter deployed to:  0xF41DDB1C1bc77B9778b4e3e0985919653a0DB268
-// ozPayMe deployed to:  0x44C9c02BAc24a1Ded45Ccb4b0eBdFB72645bAb21
-// StorageBeacon deployed to:  0xC745d873ac445b676aDD392aae8E49609282273E
-// ozUpgradeableBeacon deployed to:  0x6CE0D1bCf1Bef2dcf9265Ac7b20B91fD951f5E9C
-// ProxyFactory deployed to:  0xd8816CeA49Cfa02e7eD47452AfBa8a70e150c5E6
-// ozERC1967Proxy deployed to:  0xdcB7231B7d287Eac28CAF0014A7f354a9217B8a1
-// initialize with hash:  0x4e6ee16e520d38b6eea15d9ad4ea23d62d61536e6405ec95c4485c755c1ff5e3
-// RedeemedHashes deployed to:  0xC8447274c5BED0044Cd1754160Eb295459290D0D
-// RolesAuthority deployed to:  0xAb3b4552537e383ff538Ab89b53b0EDFaDfb75D7
-// createNewProxy with hash:  0xfe3573bb882879d36347c487287acc3f440d932e9e5b9a8dc9adbca4ea0842ba
-// proxy 1:  0x4Cb12002de75C581863C383c38a74F7BFac75515
-// task id:  0xb41e8b76c281c56904f8df1013c39c9aa76c59810ed35022271d751b158ffb48
-
-
 
 // signer address:  0x0E743a1E37D691D8e52F7036375F3D148B4116ba
-// FakeOZL deployed to:  0xAb6E71331EB929251fFbb6d00f571DDdC4aC1D9C
-// Emitter deployed to:  0xD78D58C4ec3682aC188cB801e55e2A7Ba7C610d4
-// ozPayMe deployed to:  0xf2BC292Ffe8Bd65EDd6f84e3228c0a02e0a24Ec6
-// StorageBeacon deployed to:  0x41dfb47e2949F783cf490D2e99E9BbB6FdAdAe1C
-// ozUpgradeableBeacon deployed to:  0x90eCef484801156D1b7E7615F1c9F2584c3F69CC
-// ProxyFactory deployed to:  0x6b67f89F21B409BbC827e3ADEbD5b30F7786c688
-// ozERC1967Proxy deployed to:  0xf616eA563Fd2A85b066f37932156a327B383a349
-// initialize with hash:  0xc4c3d00318470dcee3c1059b511161a1136926b27767d2fcdc87e975875f1da1
-// RedeemedHashes deployed to:  0x640a47d28475d64438B0181344aD322d89f5D2d8
-// RolesAuthority deployed to:  0xbE6a4cD3e8800e78a1c5eaf926De6A96B3847dF4
-// createNewProxy with hash:  0x2a05fb7a293dfcf9eda4d998255755e4026ad9f63b65fc29e8de571af457347c
-// proxy 1:  0x7C9E3023e8c3b7577A610023781B6c885646a88e
-// task id:  0x4d4d4de37331be786e10b615be0f200ae55998ef234bc23aa1ecf2d15b081f84
+// FakeOZL deployed to:  0xF9C5Ef23Da6c3139a1B7f9DBb5d5303338e0b52B
+// Emitter deployed to:  0x0a354358EfDfe7F5e308C4Df16195E300199EdC1
+// ozPayMe deployed to:  0xE0ab317b5D7AD571872B025aB6eAE9E60d082467
+// StorageBeacon deployed to:  0x53548E9698BC27eCfEd86dbC1Bd47d827912CB75
+// ozUpgradeableBeacon deployed to:  0x2A88A544E986c7f26D26FF2A3529eEB02787f4D2
+// ProxyFactory deployed to:  0x0cD3a4453c7b3A698AF11f0996f038bEa6eb9348
+// ozERC1967Proxy deployed to:  0x70D24Aa818d7531B49841B5bC0cfF5c5CBFEda7b
+// initialize with hash:  0x2fda5c0e191e362c4f62ece9f503d666a5d418a1533330d4fd883d7d46e89d7a
+// RedeemedHashes deployed to:  0x593a31aeDF34e86C36cadC58a130865587DdC1B4
+// RolesAuthority deployed to:  0x1Ea402A28F9504C74881B299c94dA26f748623E2
+// createNewProxy with hash:  0x9aa75ee5faf90fc509fd651a7f6ef966fd38f03066590083252cb9c887dad671
+// proxy 1:  0x0246bc2BacE3F5763Dfd505EC0D5bb73EDb566f8
+// task id:  0x4460594f777222baa6280125d099d4021961be417431f0f7566f79eb01fe9825
+
+// const totalVolumeInUSD = parseEther('500');
+//     const totalVolumeInETH = parseEther('400');
+//     const wethUM = parseEther('300');
+//     const valueUM = parseEther('200');
+//     const ozlBalance = parseEther('100');
+//     const wethUserShare = parseEther('220');
+//     const usdUserShare = parseEther('150');
+
+
+const { ETH } = require('./state-vars');
+const { ethers } = require("ethers");
+const fakeOzlABI = require('../artifacts/contracts/ethereum/FakeOZL.sol/FakeOZL.json').abi;
+const { formatEther } = ethers.utils;
 
 
 async function main() {
+    const ARB_GOERLI = 'https://arb-goerli.g.alchemy.com/v2/74guRYnbpMeyqhRU7U99rTiq9zzPFNXb';
+    const l2Provider = new ethers.providers.JsonRpcProvider(ARB_GOERLI);
+
     const myAddr = ''; // <----- connected Metamask account goes here
-    const diamondAddr = '0x543711ED09A2d8a2c34b7599d9e323cd03B05c94'; //FakeOZL
-    const ozlDiamond = await hre.ethers.getContractAt('FakeOZL', diamondAddr);
+    const fakeOZLaddr = '0xF9C5Ef23Da6c3139a1B7f9DBb5d5303338e0b52B'; 
+    const fakeOZL = new ethers.Contract(fakeOZLaddr, fakeOzlABI, l2Provider);
 
-    const ozlBalance = await ozlDiamond.balanceOf(myAddr);
-    const [ wethUserShare, usdUserShare ] = await ozlDiamond.getOzelBalances(myAddr);
+    const totalVolumeInUSD = await fakeOZL.getTotalVolumeInUSD();
+    console.log('getTotalVolumeInUSD - 500: ', formatEther(totalVolumeInUSD));
 
-    return [
-        ozlBalance, 
-        wethUserShare,
-        usdUserShare
-    ];
+    const totalVolumeInETH = await fakeOZL.getTotalVolumeInETH();
+    console.log('getTotalVolumeInETH - 400: ', formatEther(totalVolumeInETH));
+
+    const [ wethUM, valueUM ] = await fakeOZL.getAUM();
+    console.log('wethUM - 300: ', formatEther(wethUM));
+    console.log('valueUM - 200: ', formatEther(valueUM));
+
+    const ozlBalance = await fakeOZL.balanceOf(ETH);
+    console.log('balanceOf - 100: ', formatEther(ozlBalance));
+
+    const [ wethUserShare, usdUserShare ] = await fakeOZL.getOzelBalances(ETH);
+    console.log('wethUserShare - 220: ', formatEther(wethUserShare));
+    console.log('usdUserShare - 150: ', formatEther(usdUserShare));
+
 }
 
 
