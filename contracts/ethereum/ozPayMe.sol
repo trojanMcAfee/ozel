@@ -68,17 +68,18 @@ contract ozPayMe is ReentrancyGuard, Initializable {
             FakeOZL(payable(fxConfig.OZL)).exchangeToUserToken.selector, 
             userDetails_
         );
-
+        
         bytes memory ticketData = _createTicketData(varConfig_.gasPriceBid, swapData, false);
-
+        
         uint amountToSend = address(this).balance;
         (bool success, ) = fxConfig.inbox.call{value: address(this).balance}(ticketData); 
-        
+        console.log('success2: ', success);
         if (!success) {
-            ticketData = _createTicketData(varConfig_.gasPriceBid, swapData, true);
+            ticketData = _createTicketData2(varConfig_.gasPriceBid, swapData, true);
             (success, ) = fxConfig.inbox.call{value: address(this).balance}(ticketData);
 
             if (!success) {
+                console.log('should log');
                 _runEmergencyMode();
                 isEmergency = true;
                 emit EmergencyTriggered(userDetails_.user, amountToSend);
@@ -211,7 +212,8 @@ contract ozPayMe is ReentrancyGuard, Initializable {
             swapData_.length,
             0
         );
-        maxSubmissionCost *= 3;
+        console.log('maxCost pre 3: ', maxSubmissionCost);
+        maxSubmissionCost *= 2;
         uint autoRedeem = maxSubmissionCost + (gasPriceBid_ * fxConfig.maxGas);
         return (maxSubmissionCost, autoRedeem);
     }
@@ -224,10 +226,38 @@ contract ozPayMe is ReentrancyGuard, Initializable {
         (uint maxSubmissionCost, uint autoRedeem) = _calculateGasDetails(swapData_, gasPriceBid_);
         maxSubmissionCost = decrease_ ? _decreaseCost(maxSubmissionCost) : maxSubmissionCost;
 
+        console.log('maxCost in sol: ', maxSubmissionCost);
+        console.log('address(this).balance: ', address(this).balance);
+        console.log('autoRedeem: ', autoRedeem);
+
+        maxSubmissionCost *= 2;
+
         return abi.encodeWithSelector(
             DelayedInbox(fxConfig.inbox).createRetryableTicket.selector, 
             fxConfig.OZL, 
-            address(this).balance - autoRedeem, 
+            address(this).balance - autoRedeem, //(address(this).balance + 1)
+            maxSubmissionCost, 
+            fxConfig.OZL, 
+            fxConfig.OZL, 
+            fxConfig.maxGas,  
+            gasPriceBid_, 
+            swapData_
+        );
+    }
+
+    function _createTicketData2( 
+        uint gasPriceBid_, 
+        bytes memory swapData_,
+        bool decrease_
+    ) private view returns(bytes memory) {
+        (uint maxSubmissionCost, uint autoRedeem) = _calculateGasDetails(swapData_, gasPriceBid_);
+        maxSubmissionCost *= 2;
+        maxSubmissionCost = decrease_ ? maxSubmissionCost / 2 : maxSubmissionCost; //-----> this
+
+        return abi.encodeWithSelector(
+            DelayedInbox(fxConfig.inbox).createRetryableTicket.selector, 
+            fxConfig.OZL, 
+            address(this).balance - autoRedeem, //(address(this).balance + 1)
             maxSubmissionCost, 
             fxConfig.OZL, 
             fxConfig.OZL, 
