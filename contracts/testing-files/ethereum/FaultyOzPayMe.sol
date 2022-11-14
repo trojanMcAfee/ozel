@@ -87,30 +87,27 @@ contract FaultyOzPayMe is ReentrancyGuard, Initializable {
             userDetails_
         );
 
-        bytes memory ticketData = abi.encodeWithSelector(
-            DelayedInbox(fxConfig.inbox).createRetryableTicket.selector, 
-            fxConfig.OZL, 
-            address(this).balance - varConfig_.autoRedeem,
-            varConfig_.maxSubmissionCost,  
-            fxConfig.OZL, 
-            fxConfig.OZL, 
-            fxConfig.maxGas,  
-            varConfig_.gasPriceBid, 
-            swapData
-        );
+        bytes memory ticketData = _createTicketData(varConfig_.gasPriceBid, swapData, false);
 
         uint amountToSend = address(this).balance;
         (bool success, ) = fxConfig.inbox.call{value: address(this).balance}(ticketData); 
+        
         if (!success) {
-            _runEmergencyMode();
-            isEmergency = true;
-            emit EmergencyTriggered(userDetails_.user, amountToSend);
+            ticketData = _createTicketData(varConfig_.gasPriceBid, swapData, true);
+            (success, ) = fxConfig.inbox.call{value: address(this).balance}(ticketData);
+
+            if (!success) {
+                _runEmergencyMode();
+                isEmergency = true;
+                emit EmergencyTriggered(userDetails_.user, amountToSend);
+            }
         }
 
         if (!isEmergency) {
             if (!storageBeacon.getEmitterStatus()) { 
                 Emitter(fxConfig.emitter).forwardEvent(); 
             }
+            storageBeacon.storeProxyPayment(address(this), amountToSend);
             emit FundsToArb(userDetails_.user, amountToSend);
         }
     }
@@ -191,6 +188,49 @@ contract FaultyOzPayMe is ReentrancyGuard, Initializable {
         userDetails.userSlippage = newUserSlippage_;
         emit NewUserSlippage(msg.sender, newUserSlippage_);
     } 
+
+
+    /**
+        ARB'S HELPERS
+     */
+
+     function _decreaseCost(uint maxSubmissionCost_) private pure returns(uint) {
+        return maxSubmissionCost_ - (uint(30 * 1 ether)).mulDivDown(maxSubmissionCost_, 100 * 1 ether);
+    }
+
+    
+    function _calculateGasDetails(bytes memory swapData_, uint gasPriceBid_) private view returns(uint, uint) {
+        uint maxSubmissionCost = DelayedInbox(fxConfig.inbox).calculateRetryableSubmissionFee(
+            swapData_.length,
+            0
+        );
+        maxSubmissionCost *= 3;
+        uint autoRedeem = maxSubmissionCost + (gasPriceBid_ * fxConfig.maxGas);
+        return (maxSubmissionCost, autoRedeem);
+    }
+
+    function _createTicketData( 
+        uint gasPriceBid_, 
+        bytes memory swapData_,
+        bool decrease_
+    ) private view returns(bytes memory) {
+        (uint maxSubmissionCost, uint autoRedeem) = _calculateGasDetails(swapData_, gasPriceBid_);
+        maxSubmissionCost = decrease_ ? _decreaseCost(maxSubmissionCost) : maxSubmissionCost;
+
+        autoRedeem = 0;
+
+        return abi.encodeWithSelector(
+            DelayedInbox(fxConfig.inbox).createRetryableTicket.selector, 
+            fxConfig.OZL, 
+            address(this).balance - autoRedeem, 
+            maxSubmissionCost, 
+            fxConfig.OZL, 
+            fxConfig.OZL, 
+            fxConfig.maxGas,  
+            gasPriceBid_, 
+            swapData_
+        );
+    }
 }
 
 
