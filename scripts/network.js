@@ -15,13 +15,6 @@
 // proxy 1:  0x0246bc2BacE3F5763Dfd505EC0D5bb73EDb566f8
 // task id:  0x4460594f777222baa6280125d099d4021961be417431f0f7566f79eb01fe9825
 
-// const totalVolumeInUSD = parseEther('500');
-//     const totalVolumeInETH = parseEther('400');
-//     const wethUM = parseEther('300');
-//     const valueUM = parseEther('200');
-//     const ozlBalance = parseEther('100');
-//     const wethUserShare = parseEther('220');
-//     const usdUserShare = parseEther('150');
 
 
 const { ETH } = require('./state-vars');

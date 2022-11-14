@@ -121,7 +121,7 @@ async function main4() {
 }
 
 
-async function main() {
+async function main11() {
 
     const l1gas = await l1ProviderTestnet.getGasPrice();
     const l2gas = await l2ProviderTestnet.getGasPrice();
@@ -134,6 +134,18 @@ async function main() {
     console.log('.');
     console.log('gas in mainnet: ', formatUnits(l1gasMain, 'gwei'));
     console.log('gas in arb: ', formatUnits(l2GasMain, 'gwei'));
+
+}
+
+
+async function main() {
+    
+    const bridgeAddr = '0xaf4159A80B6Cc41ED517DB1c453d1Ef5C2e4dB72';
+    const abi = ['function delayedMessageCount() external view returns (uint256)'];
+    const bridge = await hre.ethers.getContractAt(abi, bridgeAddr);
+
+    const msgCount = await bridge.delayedMessageCount();
+    console.log('bridge: ', Number(msgCount));
 
 }
 

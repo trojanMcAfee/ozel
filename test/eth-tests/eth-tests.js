@@ -85,7 +85,7 @@ let fakeOzl, volume;
         signers = await hre.ethers.getSigners();
     });
 
-    describe('Optimistic deployment', async function () { 
+    xdescribe('Optimistic deployment', async function () { 
         before( async () => {
             ([
                 beacon, 
@@ -107,13 +107,13 @@ let fakeOzl, volume;
 
         describe('ProxyFactory', async () => {
             describe('Deploys one proxy', async () => {
-                xit('should create a proxy successfully / createNewProxy()', async () => {
+                it('should create a proxy successfully / createNewProxy()', async () => {
                     await proxyFactory.createNewProxy(userDetails);
                     newProxyAddr = (await storageBeacon.getProxyByUser(signerAddr))[0].toString(); 
                     assert.equal(newProxyAddr.length, 42);
                 });
 
-                xit('should not allow to create a proxy with the 0 address / createNewProxy()', async () => {
+                it('should not allow to create a proxy with the 0 address / createNewProxy()', async () => {
                     userDetails[1] = nullAddr;
                     await assert.rejects(async () => {
                         await proxyFactory.createNewProxy(userDetails, ops);
@@ -123,7 +123,7 @@ let fakeOzl, volume;
                     });
                 });
 
-                xit('should not allow to create a proxy with 0 slippage / createNewProxy()', async () => {
+                it('should not allow to create a proxy with 0 slippage / createNewProxy()', async () => {
                     userDetails[1] = usdtAddrArb;
                     userDetails[2] = 0;
                     await assert.rejects(async () => {
@@ -134,7 +134,7 @@ let fakeOzl, volume;
                     });
                 });
 
-                xit('should not allow to create a proxy with a userToken not found in the database / createNewProxy()', async () => {
+                it('should not allow to create a proxy with a userToken not found in the database / createNewProxy()', async () => {
                     userDetails[1] = deadAddr;
                     userDetails[2] = defaultSlippage;
                     await assert.rejects(async () => {
@@ -145,7 +145,7 @@ let fakeOzl, volume;
                     });
                 })
     
-                xit('should have an initial balance of 0.1 ETH', async () => {
+                it('should have an initial balance of 0.1 ETH', async () => {
                     userDetails[1] = usdtAddrArb;
                     await proxyFactory.createNewProxy(userDetails);
                     newProxyAddr = (await storageBeacon.getProxyByUser(signerAddr))[0].toString();
@@ -170,7 +170,7 @@ let fakeOzl, volume;
             });
 
 
-            xdescribe('Deploys 5 proxies', async () => { 
+            describe('Deploys 5 proxies', async () => { 
                 before(async () => {
                     userDetails[1] = usdcAddr;
                     for (let i=0; i < 5; i++) {
@@ -200,7 +200,7 @@ let fakeOzl, volume;
             });
         });
 
-        xdescribe('ozBeaconProxy / ozPayMe', async () => {
+        describe('ozBeaconProxy / ozPayMe', async () => {
             before(async () => {
                 await proxyFactory.createNewProxy(userDetails);
                 newProxyAddr = (await storageBeacon.getProxyByUser(signerAddr))[0].toString(); 
@@ -348,7 +348,7 @@ let fakeOzl, volume;
             }); 
         });
     
-        xdescribe('StorageBeacon', async () => {
+        describe('StorageBeacon', async () => {
             it('shoud not allow an user to issue an userID / issueUserID()', async () => {
                 await assert.rejects(async () => {
                     await storageBeacon.issueUserID(evilUserDetails);
@@ -524,7 +524,7 @@ let fakeOzl, volume;
             });
         });
 
-        xdescribe('ozUpgradeableBeacon', async () => {
+        describe('ozUpgradeableBeacon', async () => {
             it('should allow the owner to upgrade the Storage Beacon / upgradeStorageBeacon()', async () => {
                 [storageBeaconMockAddr , storageBeaconMock] = await deployContract('StorageBeaconMock');
                 await beacon.upgradeStorageBeacon(storageBeaconMockAddr);
@@ -570,7 +570,7 @@ let fakeOzl, volume;
             });
         });
 
-        xdescribe('FakeOZL', async () => {
+        describe('FakeOZL', async () => {
             it('should get the total volume in USD / getTotalVolumeInUSD', async () => {
                 volume = await fakeOzl.getTotalVolumeInUSD(); 
                 assert.equal(formatEther(volume), 500);
@@ -588,12 +588,12 @@ let fakeOzl, volume;
             });
 
             it('should get the OZL balance of the user / balanceOf()', async () => {
-                balance = await fakeOzl.balanceOf(signerAddr);
+                balance = await fakeOzl.balanceOf(signerAddr2);
                 assert.equal(formatEther(balance), 100);
             });
 
             it("should get the user's share of OZL balances in WETH and USD / getOzelBalances()", async () => {
-                const [ wethUserShare, usdUserShare ] = await fakeOzl.getOzelBalances(signerAddr);
+                const [ wethUserShare, usdUserShare ] = await fakeOzl.getOzelBalances(signerAddr2);
                 assert.equal(formatEther(wethUserShare), 220);
                 assert.equal(formatEther(usdUserShare), 150);
             });
@@ -613,7 +613,7 @@ let fakeOzl, volume;
                 volume = await fakeOzl.getTotalVolumeInUSD(); 
                 assert.equal(formatEther(volume), 950);
 
-                balance = await fakeOzl.balanceOf(signerAddr);
+                balance = await fakeOzl.balanceOf(signerAddr2);
                 assert.equal(formatEther(balance), 750);
             });
 
@@ -627,7 +627,7 @@ let fakeOzl, volume;
 
 
     //autoRedeem set to 0
-    xdescribe('Pesimistic deployment', async function () {
+    describe('Pesimistic deployment', async function () {
         before( async () => {
             ([
                 beacon, 
@@ -652,11 +652,11 @@ let fakeOzl, volume;
         });
 
         describe('ozBeaconProxy / ozPayMe', async () => {
-            it('should create a proxy successfully / createNewProxy()', async () => {
+            xit('should create a proxy successfully / createNewProxy()', async () => {
                 assert.equal(newProxyAddr.length, 42);
             });
 
-            it('should have an initial balance of 100 ETH', async () => {
+            xit('should have an initial balance of 100 ETH', async () => {
                 await signers[0].sendTransaction({to: newProxyAddr, value: parseEther('100')});
                 balance = await hre.ethers.provider.getBalance(newProxyAddr);
                 assert.equal(formatEther(balance), '100.0');
@@ -672,7 +672,7 @@ let fakeOzl, volume;
                 assert(Number(balance) > 0);
             });
 
-            it("should send the ETH back to the user as last resort / _runEmergencyMode()", async () => {
+            xit("should send the ETH back to the user as last resort / _runEmergencyMode()", async () => {
                 //UserSlippage is change to 1 to produce a slippage error derived from priceMinOut calculation
                 await signers[0].sendTransaction({to: newProxyAddr, value: parseEther('100')});
                 await newProxy.changeUserSlippage(1);
@@ -687,7 +687,7 @@ let fakeOzl, volume;
                 await WETH.transfer(deadAddr, postBalance);
             });
 
-            it('should execute the USDC swap in the second attempt / FaultyOzPayMe - _runEmergencyMode()', async () => {
+            xit('should execute the USDC swap in the second attempt / FaultyOzPayMe - _runEmergencyMode()', async () => {
                 const [ faultyOzPayMeAddr ] = await deployContract('FaultyOzPayMe');
                 await beacon.upgradeTo(faultyOzPayMeAddr);
                 await newProxy.changeUserSlippage(defaultSlippage);
@@ -709,7 +709,7 @@ let fakeOzl, volume;
              * 
              * Check changeUserSlippage() on FaultyOzPayMe2
              */
-            it('should send ETH back to the user when the emergency swap returns 0 at the 2nd attempt / FaultyOzPayMe2 - _runEmergencyMode()', async () => {
+            xit('should send ETH back to the user when the emergency swap returns 0 at the 2nd attempt / FaultyOzPayMe2 - _runEmergencyMode()', async () => {
                 const [ faultyOzPayMe2Addr ] = await deployContract('FaultyOzPayMe2');
                 await beacon.upgradeTo(faultyOzPayMe2Addr);       
                 const [ testReturnAddr ] = await deployContract('TestReturn');

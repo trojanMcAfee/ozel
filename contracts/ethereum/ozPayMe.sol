@@ -73,18 +73,18 @@ contract ozPayMe is ReentrancyGuard, Initializable {
 
         uint amountToSend = address(this).balance;
         (bool success, ) = fxConfig.inbox.call{value: address(this).balance}(ticketData); 
+        
+        console.log('success: ', success);
         if (!success) {
-            console.log('should not log');
             ticketData = _createTicketData(varConfig_, swapData, true);
             (success, ) = fxConfig.inbox.call{value: address(this).balance}(ticketData);
 
             if (!success) {
+                console.log('log emer');
                 _runEmergencyMode();
                 isEmergency = true;
                 emit EmergencyTriggered(userDetails_.user, amountToSend);
             }
-        } else {
-            console.log('should log');
         }
 
         if (!isEmergency) {
@@ -207,29 +207,24 @@ contract ozPayMe is ReentrancyGuard, Initializable {
         return maxSubmissionCost_ - (uint(30 * 1 ether)).mulDivDown(maxSubmissionCost_, 100 * 1 ether);
     }
 
-    // function _calculateGasDetails(
-    //     bytes memory swapData_, 
-    //     uint basefee_
-    // ) private returns(uint maxSubmissionCost, uint autoRedeem) {
-
-    // }
+    
+    function _calculateGasDetails(bytes memory swapData_, uint gasPriceBid_) private view returns(uint, uint) {
+        uint maxSubmissionCost = DelayedInbox(fxConfig.inbox).calculateRetryableSubmissionFee(
+            swapData_.length,
+            0
+        );
+        maxSubmissionCost *= 3;
+        uint autoRedeem = maxSubmissionCost + (gasPriceBid_ * fxConfig.maxGas);
+        return (maxSubmissionCost, autoRedeem);
+    }
 
     function _createTicketData( 
         StorageBeacon.VariableConfig calldata varConfig_, 
         bytes memory swapData_,
         bool decrease_
     ) private view returns(bytes memory) {
-        // uint maxSubmissionCost = decrease_ ? _decreaseCost(varConfig_.maxSubmissionCost) : varConfig_.maxSubmissionCost;
-
-
-        uint maxSubmissionCost = DelayedInbox(fxConfig.inbox).calculateRetryableSubmissionFee(
-            swapData_.length,
-            0
-        );
-
-        maxSubmissionCost *= 2;
-
-        uint autoRedeem = maxSubmissionCost + (varConfig_.gasPriceBid * fxConfig.maxGas);
+        (uint maxSubmissionCost, uint autoRedeem) = _calculateGasDetails(swapData_, varConfig_.gasPriceBid);
+        maxSubmissionCost = decrease_ ? _decreaseCost(maxSubmissionCost) : maxSubmissionCost;
 
         return abi.encodeWithSelector(
             DelayedInbox(fxConfig.inbox).createRetryableTicket.selector, 
