@@ -652,11 +652,11 @@ let fakeOzl, volume;
         });
 
         describe('ozBeaconProxy / ozPayMe', async () => {
-            xit('should create a proxy successfully / createNewProxy()', async () => {
+            it('should create a proxy successfully / createNewProxy()', async () => {
                 assert.equal(newProxyAddr.length, 42);
             });
 
-            xit('should have an initial balance of 100 ETH', async () => {
+            it('should have an initial balance of 100 ETH', async () => {
                 await signers[0].sendTransaction({to: newProxyAddr, value: parseEther('100')});
                 balance = await hre.ethers.provider.getBalance(newProxyAddr);
                 assert.equal(formatEther(balance), '100.0');
@@ -672,7 +672,7 @@ let fakeOzl, volume;
                 assert(Number(balance) > 0);
             });
 
-            xit("should send the ETH back to the user as last resort / _runEmergencyMode()", async () => {
+            it("should send the ETH back to the user as last resort / _runEmergencyMode()", async () => {
                 //UserSlippage is change to 1 to produce a slippage error derived from priceMinOut calculation
                 await signers[0].sendTransaction({to: newProxyAddr, value: parseEther('100')});
                 await newProxy.changeUserSlippage(1);
@@ -687,7 +687,7 @@ let fakeOzl, volume;
                 await WETH.transfer(deadAddr, postBalance);
             });
 
-            xit('should execute the USDC swap in the second attempt / FaultyOzPayMe - _runEmergencyMode()', async () => {
+            it('should execute the USDC swap in the second attempt / FaultyOzPayMe - _runEmergencyMode()', async () => {
                 const [ faultyOzPayMeAddr ] = await deployContract('FaultyOzPayMe');
                 await beacon.upgradeTo(faultyOzPayMeAddr);
                 await newProxy.changeUserSlippage(defaultSlippage);
@@ -709,7 +709,7 @@ let fakeOzl, volume;
              * 
              * Check changeUserSlippage() on FaultyOzPayMe2
              */
-            xit('should send ETH back to the user when the emergency swap returns 0 at the 2nd attempt / FaultyOzPayMe2 - _runEmergencyMode()', async () => {
+            it('should send ETH back to the user when the emergency swap returns 0 at the 2nd attempt / FaultyOzPayMe2 - _runEmergencyMode()', async () => {
                 const [ faultyOzPayMe2Addr ] = await deployContract('FaultyOzPayMe2');
                 await beacon.upgradeTo(faultyOzPayMe2Addr);       
                 const [ testReturnAddr ] = await deployContract('TestReturn');

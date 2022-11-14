@@ -245,13 +245,13 @@ async function deploySystem(type, userDetails, signerAddr) {
     //Calculate fees on L1 > L2 arbitrum tx
     let [ maxSubmissionCost, gasPriceBid, maxGas, autoRedeem ] = await getArbitrumParams(userDetails);
 
-    if (type === 'Pessimistically') autoRedeem = 0;
+    // if (type === 'Pessimistically') autoRedeem = 0;
 
     // Deploys Emitter
     const [ emitterAddr, emitter ] = await deployContract('Emitter');
 
     //Deploys ozPayMe in mainnet
-    const [ ozPaymeAddr ] = await deployContract('ozPayMe');
+    const [ ozPaymeAddr ] = await deployContract(type === 'Pessimistically' ? 'ozPayMeNoRedeem' : 'ozPayMe');
 
     //Deploys StorageBeacon
     const fxConfig = [
