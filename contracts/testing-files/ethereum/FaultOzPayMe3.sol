@@ -8,19 +8,19 @@ import '@rari-capital/solmate/src/utils/FixedPointMathLib.sol';
 import "@openzeppelin/contracts/proxy/utils/Initializable.sol";
 import '@openzeppelin/contracts/token/ERC20/IERC20.sol';
 import '@uniswap/v3-periphery/contracts/interfaces/ISwapRouter.sol';
-import '../interfaces/DelayedInbox.sol';
-import './ozUpgradeableBeacon.sol';
-import '../interfaces/IWETH.sol';
-import '../interfaces/IOps.sol';
-import './StorageBeacon.sol';
-import './FakeOZL.sol';
-import './Emitter.sol';
-import '../Errors.sol';
+import '../../interfaces/DelayedInbox.sol';
+import '../../ethereum/ozUpgradeableBeacon.sol';
+import '../../interfaces/IWETH.sol';
+import '../../interfaces/IOps.sol';
+import '../../ethereum/StorageBeacon.sol';
+import '../../ethereum/FakeOZL.sol';
+import '../../ethereum/Emitter.sol';
+import '../../Errors.sol';
 
 import 'hardhat/console.sol'; 
 
 
-contract ozPayMe is ReentrancyGuard, Initializable { 
+contract FaultyOzPayMe3 is ReentrancyGuard, Initializable { 
 
     using FixedPointMathLib for uint;
 
@@ -34,6 +34,9 @@ contract ozPayMe is ReentrancyGuard, Initializable {
     event NewUserToken(address indexed user, address indexed newToken);
     event NewUserSlippage(address indexed user, uint indexed newSlippage);
     event FailedERCFunds(address indexed user_, uint indexed amount_);
+
+    //Custom event that checks for the second attempt on the retryable submission
+    event SecondAttempt(uint success);
 
 
     modifier onlyOps() {
@@ -73,9 +76,11 @@ contract ozPayMe is ReentrancyGuard, Initializable {
         
         uint amountToSend = address(this).balance;
         (bool success, ) = fxConfig.inbox.call{value: address(this).balance}(ticketData); 
+        
         if (!success) {
             ticketData = _createTicketData(varConfig_.gasPriceBid, swapData, true);
             (success, ) = fxConfig.inbox.call{value: address(this).balance}(ticketData);
+            emit SecondAttempt(23);
 
             if (!success) {
                 _runEmergencyMode();
@@ -218,10 +223,13 @@ contract ozPayMe is ReentrancyGuard, Initializable {
         (uint maxSubmissionCost, uint autoRedeem) = _calculateGasDetails(swapData_, gasPriceBid_);
         maxSubmissionCost = decrease_ ? maxSubmissionCost / 2 : maxSubmissionCost;
 
+        //Makes the first retryable attempt fail
+        if (!decrease_) maxSubmissionCost *= 2;
+
         return abi.encodeWithSelector(
             DelayedInbox(fxConfig.inbox).createRetryableTicket.selector, 
             fxConfig.OZL, 
-            address(this).balance - autoRedeem, //(address(this).balance + 1)
+            address(this).balance - autoRedeem, 
             maxSubmissionCost, 
             fxConfig.OZL, 
             fxConfig.OZL, 
@@ -234,8 +242,6 @@ contract ozPayMe is ReentrancyGuard, Initializable {
 }
 
 
-
-//compare L1 and L2s basefees 
 
 
 
