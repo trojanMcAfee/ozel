@@ -87,7 +87,7 @@ const factoryABI = [
 
 const ops = {
     gasLimit: ethers.BigNumber.from('30000000'),
-    gasPrice: ethers.BigNumber.from('70134698068')
+    gasPrice: ethers.BigNumber.from('40134698068')
 };
 
 const signerX = new ethers.Wallet(process.env.PK);
@@ -98,7 +98,7 @@ const l1Provider = new ethers.providers.JsonRpcProvider(process.env.MAINNET);
 let l1Signer, l2Signer, l1SignerTestnet, l2SignerTestnet;
 let l1ProviderTestnet, l2ProviderTestnet;
 
-let network = 'mainnet';
+let network = 'goerli';
 switch(network) {
     case 'goerli':
         pokeMeOpsAddr = '0xc1C6805B857Bef1f412519C4A842522431aFed39'; 

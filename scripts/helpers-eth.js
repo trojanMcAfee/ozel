@@ -69,8 +69,8 @@ async function deployContract(contractName, constrArgs) {
 }
 
 const autoRedeem2 = ethers.BigNumber.from(69073611260000000n); //*********/ minimum of 0.06907361126 ETH has to be sent
-const submissionPriceWei2 = ethers.BigNumber.from(3145530432000000n); //check this again ^ - how to create my own rpc node
-const gasPriceBid2 = ethers.BigNumber.from(200000000n); //do a test if autoRedeem is higher than address(this).balance - remove this func
+const submissionPriceWei2 = ethers.BigNumber.from(3145530432000000n); //check this again ^ 
+const gasPriceBid2 = ethers.BigNumber.from(200000000n); //do a test if autoRedeem is higher than address(this).balance
 
 
 async function getArbitrumParams(manualRedeem = false) {
@@ -216,9 +216,6 @@ async function deploySystem(type, userDetails, signerAddr) {
     //Calculate fees on L1 > L2 arbitrum tx
     const [ gasPriceBid, maxGas ] = await getArbitrumParams();
 
-    // maxSubmissionCost
-    // autoRedeem
-
     // Deploys Emitter
     const [ emitterAddr, emitter ] = await deployContract('Emitter');
 
@@ -236,12 +233,6 @@ async function deploySystem(type, userDetails, signerAddr) {
         maxGas
     ];
 
-    // const varConfig = [
-    //     // maxSubmissionCost,
-    //     gasPriceBid,
-    //     // autoRedeem
-    // ];
-
     const eMode = [
         swapRouterUniAddr,
         chainlinkAggregatorAddr,
@@ -258,7 +249,6 @@ async function deploySystem(type, userDetails, signerAddr) {
 
     constrArgs = [
         fxConfig,
-        // varConfig,
         eMode,
         tokensDatabase,
         gasPriceBid
@@ -315,7 +305,6 @@ async function deploySystem(type, userDetails, signerAddr) {
         emitter,
         emitterAddr,
         fakeOZLaddr,
-        // varConfig,
         eMode
     ];
 

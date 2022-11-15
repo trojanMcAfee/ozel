@@ -45,10 +45,7 @@ async function deployContract(contractName, signer, constrArgs) {
         case 'RolesAuthority':
         case 'FakeOZL':
             ([ var1, var2 ] = constrArgs);
-            // b = await signer.getBalance();
-            // console.log('bal: ', formatEther(b));
             contract = await Contract.connect(signer).deploy(var1, var2, ops);
-            // console.log('done');
             break;
         case 'StorageBeacon':
             ([ var1, var2, var3, var4 ] = constrArgs);
@@ -102,7 +99,7 @@ async function deployTestnet(testSigner = false, manualRedeem = false) {
    
     //Calculate fees on L1 > L2 arbitrum tx 
     // manualRedeem = true; //**** comment in for manualRedeem ****
-    let [ maxSubmissionCost, gasPriceBid, maxGas, autoRedeem ] = await getArbitrumParams(manualRedeem);
+    const [ gasPriceBid, maxGas ] = await getArbitrumParams(manualRedeem);
 
     //Deploys Emitter
     const [ emitterAddr, emitter ] = await deployContract('Emitter', l1SignerTest);
@@ -121,12 +118,6 @@ async function deployTestnet(testSigner = false, manualRedeem = false) {
         maxGas
     ];
 
-    const varConfig = [
-        maxSubmissionCost,
-        gasPriceBid,
-        autoRedeem
-    ];
-
     const eMode = [
         swapRouterUniAddr,
         chainlinkAggregatorAddr,
@@ -142,9 +133,9 @@ async function deployTestnet(testSigner = false, manualRedeem = false) {
 
     constrArgs = [
         fxConfig,
-        varConfig,
         eMode,
-        tokensDatabase
+        tokensDatabase,
+        gasPriceBid
     ]; 
 
     const [ storageBeaconAddr, storageBeacon ] = await deployContract('StorageBeacon', l1SignerTest, constrArgs);

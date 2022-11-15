@@ -138,7 +138,7 @@ async function main11() {
 }
 
 
-async function main() {
+async function mainf() {
     
     const bridgeAddr = '0xaf4159A80B6Cc41ED517DB1c453d1Ef5C2e4dB72';
     const abi = ['function delayedMessageCount() external view returns (uint256)'];
@@ -146,6 +146,13 @@ async function main() {
 
     const msgCount = await bridge.delayedMessageCount();
     console.log('bridge: ', Number(msgCount));
+
+}
+
+async function main() {
+
+    const gas = await l1ProviderTestnet.getGasPrice();
+    console.log('gas: ', Number(gas));
 
 }
 
