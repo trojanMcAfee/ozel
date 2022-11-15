@@ -69,8 +69,8 @@ async function deployContract(contractName, constrArgs) {
 }
 
 const autoRedeem2 = ethers.BigNumber.from(69073611260000000n); //*********/ minimum of 0.06907361126 ETH has to be sent
-const submissionPriceWei2 = ethers.BigNumber.from(3145530432000000n); //check this again ^ 
-const gasPriceBid2 = ethers.BigNumber.from(200000000n); //do a test if autoRedeem is higher than address(this).balance
+//check this again ^ 
+//do a test if autoRedeem is higher than address(this).balance
 
 
 async function getArbitrumParams(manualRedeem = false) {
