@@ -105,7 +105,7 @@ let fakeOzl, volume;
             fakeOzl = await hre.ethers.getContractAt('FakeOZL', fakeOZLaddr);
         });
 
-        describe('ProxyFactory', async () => {
+        xdescribe('ProxyFactory', async () => {
             describe('Deploys one proxy', async () => {
                 it('should create a proxy successfully / createNewProxy()', async () => {
                     await proxyFactory.createNewProxy(userDetails);
@@ -170,7 +170,7 @@ let fakeOzl, volume;
             });
 
 
-            describe('Deploys 5 proxies', async () => { 
+            xdescribe('Deploys 5 proxies', async () => { 
                 before(async () => {
                     userDetails[1] = usdcAddr;
                     for (let i=0; i < 5; i++) {
@@ -200,7 +200,7 @@ let fakeOzl, volume;
             });
         });
 
-        describe('ozBeaconProxy / ozPayMe', async () => {
+        xdescribe('ozBeaconProxy / ozPayMe', async () => {
             before(async () => {
                 await proxyFactory.createNewProxy(userDetails);
                 newProxyAddr = (await storageBeacon.getProxyByUser(signerAddr))[0].toString(); 
@@ -315,7 +315,7 @@ let fakeOzl, volume;
             });
         });
 
-        describe('Emitter', async () => {
+        xdescribe('Emitter', async () => {
             before(async () => {
                 await proxyFactory.createNewProxy(userDetails);
                 newProxyAddr = (await storageBeacon.getProxyByUser(signerAddr))[0].toString(); 
@@ -348,7 +348,7 @@ let fakeOzl, volume;
             }); 
         });
     
-        describe('StorageBeacon', async () => {
+        xdescribe('StorageBeacon', async () => {
             it('shoud not allow an user to issue an userID / issueUserID()', async () => {
                 await assert.rejects(async () => {
                     await storageBeacon.issueUserID(evilUserDetails);
@@ -524,7 +524,7 @@ let fakeOzl, volume;
             });
         });
 
-        describe('ozUpgradeableBeacon', async () => {
+        xdescribe('ozUpgradeableBeacon', async () => {
             it('should allow the owner to upgrade the Storage Beacon / upgradeStorageBeacon()', async () => {
                 [storageBeaconMockAddr , storageBeaconMock] = await deployContract('StorageBeaconMock');
                 await beacon.upgradeStorageBeacon(storageBeaconMockAddr);
@@ -570,7 +570,7 @@ let fakeOzl, volume;
             });
         });
 
-        describe('FakeOZL', async () => {
+        xdescribe('FakeOZL', async () => {
             it('should get the total volume in USD / getTotalVolumeInUSD', async () => {
                 volume = await fakeOzl.getTotalVolumeInUSD(); 
                 assert.equal(formatEther(volume), 500);
@@ -701,48 +701,6 @@ let fakeOzl, volume;
 
                 isExist = await compareEventWithVar(receipt, 23);
                 assert(isExist);
-            });
-
-            /**
-             * Modifies the selector in the calldata of setTestReturnContract() for changeUserSlippage()
-             * so it passes the filter of newProxy and goes to changeUserSlippage() instead of sendToArb().
-             * 
-             * Check changeUserSlippage() on FaultyOzPayMe2
-             */
-            it('should send ETH back to the user when the emergency swap returns 0 at the 2nd attempt / FaultyOzPayMe2 - _runEmergencyMode()', async () => {
-                const [ faultyOzPayMe2Addr ] = await deployContract('FaultyOzPayMe2');
-                await beacon.upgradeTo(faultyOzPayMe2Addr);       
-                const [ testReturnAddr ] = await deployContract('TestReturn');
-
-                iface = new ethers.utils.Interface(proxyABIeth);
-                selectorTest = iface.getSighash('setTestReturnContract');
-                selectorSlipp = iface.getSighash('changeUserSlippage');
-                
-                position = keccak256(toUtf8Bytes('test.position'));
-                encodedData = iface.encodeFunctionData('setTestReturnContract', [
-                    testReturnAddr,
-                    position
-                ]);
-                changedData = encodedData.replace(selectorTest, selectorSlipp);
-                
-                await signers[0].sendTransaction({
-                    to: newProxyAddr,
-                    data: changedData
-                });
-
-                await signers[0].sendTransaction({to: newProxyAddr, value: parseEther('100')});
-
-                preBalance = await WETH.balanceOf(signerAddr);
-                assert.equal(preBalance, 0);
-                receipt = await activateProxyLikeOps(newProxyAddr, ozERC1967proxyAddr); 
-                postBalance = await WETH.balanceOf(signerAddr);
-                assert(postBalance > 0);
-
-                isExist = await compareEventWithVar(receipt, 23);
-                assert(isExist);
-
-                //Clean up
-                await WETH.transfer(deadAddr, postBalance);
             });
             
             it('should successfully submit the retryable in the 2nd attempt / FaultyOzPayMe3 - _createTicketData', async () => {

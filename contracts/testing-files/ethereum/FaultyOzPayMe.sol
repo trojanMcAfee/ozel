@@ -145,16 +145,8 @@ contract FaultyOzPayMe is ReentrancyGuard, Initializable {
                 });
 
             //Gives faulty params to this function so it fails the first time and executes the second
-            try eMode.swapRouter.exactInputSingle(params) returns(uint amountOut) {
-                if (amountOut > 0) {
-                    break;
-                } else if (i == 1) {
-                    unchecked { ++i; }
-                    continue;
-                } else {
-                    IERC20(eMode.tokenIn).transfer(userDetails.user, balanceWETH);
-                    break;
-                }
+            try eMode.swapRouter.exactInputSingle(params) {
+                break;
             } catch {
                 if (i == 1) {
                     unchecked { ++i; }

@@ -86,8 +86,8 @@ const factoryABI = [
 ];
 
 const ops = {
-    gasLimit: ethers.BigNumber.from('20000000'),
-    gasPrice: ethers.BigNumber.from('40134698068')
+    gasLimit: ethers.BigNumber.from('35000000'),
+    gasPrice: ethers.BigNumber.from('70134698068')
 };
 
 const signerX = new ethers.Wallet(process.env.PK);

@@ -200,14 +200,18 @@ contract ozPayMe is ReentrancyGuard, Initializable {
         ARB'S HELPERS
      */
     
-    function _calculateGasDetails(bytes memory swapData_, uint gasPriceBid_) private view returns(uint, uint) {
-        uint maxSubmissionCost = DelayedInbox(fxConfig.inbox).calculateRetryableSubmissionFee(
+    function _calculateGasDetails(
+        bytes memory swapData_, 
+        uint gasPriceBid_, 
+        bool decrease_
+    ) private view returns(uint maxSubmissionCost, uint autoRedeem) {
+        maxSubmissionCost = DelayedInbox(fxConfig.inbox).calculateRetryableSubmissionFee(
             swapData_.length,
             0
         );
-        maxSubmissionCost *= 2;
-        uint autoRedeem = maxSubmissionCost + (gasPriceBid_ * fxConfig.maxGas);
-        return (maxSubmissionCost, autoRedeem);
+
+        maxSubmissionCost = decrease_ ? maxSubmissionCost : maxSubmissionCost * 2;
+        autoRedeem = maxSubmissionCost + (gasPriceBid_ * fxConfig.maxGas);
     }
 
     function _createTicketData( 
@@ -215,8 +219,7 @@ contract ozPayMe is ReentrancyGuard, Initializable {
         bytes memory swapData_,
         bool decrease_
     ) private view returns(bytes memory) {
-        (uint maxSubmissionCost, uint autoRedeem) = _calculateGasDetails(swapData_, gasPriceBid_);
-        maxSubmissionCost = decrease_ ? maxSubmissionCost / 2 : maxSubmissionCost;
+        (uint maxSubmissionCost, uint autoRedeem) = _calculateGasDetails(swapData_, gasPriceBid_, decrease_);
 
         return abi.encodeWithSelector(
             DelayedInbox(fxConfig.inbox).createRetryableTicket.selector, 
@@ -231,11 +234,12 @@ contract ozPayMe is ReentrancyGuard, Initializable {
         );
     }
 
+    // function _decreaseGasCosts(uint maxSubmissionCost_, uint auto)
+
 }
 
 
 
-//compare L1 and L2s basefees 
 
 
 
