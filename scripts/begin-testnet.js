@@ -102,7 +102,7 @@ async function deployTestnet(testSigner = false, manualRedeem = false) {
    
     //Calculate fees on L1 > L2 arbitrum tx 
     // manualRedeem = true; //**** comment in for manualRedeem ****
-    let [ maxSubmissionCost, gasPriceBid, maxGas, autoRedeem ] = await getArbitrumParams(userDetails, manualRedeem);
+    let [ maxSubmissionCost, gasPriceBid, maxGas, autoRedeem ] = await getArbitrumParams(manualRedeem);
 
     //Deploys Emitter
     const [ emitterAddr, emitter ] = await deployContract('Emitter', l1SignerTest);

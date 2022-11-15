@@ -32,32 +32,6 @@ const {
 
 
 
-async function getGasDetailsL2(userDetails) {
-    const sendToArbBytes = ethers.utils.defaultAbiCoder.encode(
-        ['tuple(address, address, uint256)'],
-        [userDetails]
-    );
-    const sendToArbBytesLength = hexDataLength(sendToArbBytes) + 4;
-    const l1ToL2MessageGasEstimate = new L1ToL2MessageGasEstimator(l2ProviderTestnet);
-   
-    const _submissionPriceWei = await l1ToL2MessageGasEstimate.estimateSubmissionFee(
-        l1ProviderTestnet,
-        await l1ProviderTestnet.getGasPrice(),
-        sendToArbBytesLength
-    );
-
-    let submissionPriceWei = _submissionPriceWei.mul(5);
-    submissionPriceWei = ethers.BigNumber.from(submissionPriceWei).mul(100);
-
-    let gasPriceBid = await l2ProviderTestnet.getGasPrice();
-    gasPriceBid = gasPriceBid.add(ethers.BigNumber.from(gasPriceBid).div(2));
-
-    return {
-        submissionPriceWei,
-        gasPriceBid
-    }
-}
-
 
 async function deployContract(contractName, constrArgs) {
     const Contract = await hre.ethers.getContractFactory(contractName);
@@ -94,21 +68,18 @@ async function deployContract(contractName, constrArgs) {
     ];
 }
 
+const autoRedeem2 = ethers.BigNumber.from(69073611260000000n); //*********/ minimum of 0.06907361126 ETH has to be sent
+const submissionPriceWei2 = ethers.BigNumber.from(3145530432000000n); //check this again ^ - how to create my own rpc node
+const gasPriceBid2 = ethers.BigNumber.from(200000000n); //do a test if autoRedeem is higher than address(this).balance - remove this func
 
-async function getArbitrumParams(userDetails, manualRedeem = false) {
-    // let { submissionPriceWei, gasPriceBid } = await getGasDetailsL2(userDetails);
-    let maxGas = !manualRedeem ? 3000000 : 10;
-    // const autoRedeem = submissionPriceWei.add(gasPriceBid.mul(maxGas));
-    const autoRedeem = ethers.BigNumber.from(69073611260000000n); //*********/ minimum of 0.06907361126 ETH has to be sent
-    submissionPriceWei = ethers.BigNumber.from(3145530432000000n); //check this again ^ - how to create my own rpc node
-    const gasPriceBid = ethers.BigNumber.from(200000000n); //do a test if autoRedeem is higher than address(this).balance - remove this func
-    // gasPriceBid = 0;
+
+async function getArbitrumParams(manualRedeem = false) {
+    const maxGas = !manualRedeem ? 3000000 : 10;
+    const gasPriceBid = ethers.BigNumber.from(200000000n); 
 
     return [
-        submissionPriceWei,
         gasPriceBid,
-        maxGas,
-        autoRedeem
+        maxGas
     ];
 }
 
@@ -243,9 +214,10 @@ async function deploySystem(type, userDetails, signerAddr) {
     const [ fakeOZLaddr ] = await deployContract('FakeOZL', constrArgs);
 
     //Calculate fees on L1 > L2 arbitrum tx
-    let [ maxSubmissionCost, gasPriceBid, maxGas, autoRedeem ] = await getArbitrumParams(userDetails);
+    const [ gasPriceBid, maxGas ] = await getArbitrumParams();
 
-    // if (type === 'Pessimistically') autoRedeem = 0;
+    // maxSubmissionCost
+    // autoRedeem
 
     // Deploys Emitter
     const [ emitterAddr, emitter ] = await deployContract('Emitter');
@@ -264,11 +236,11 @@ async function deploySystem(type, userDetails, signerAddr) {
         maxGas
     ];
 
-    const varConfig = [
-        maxSubmissionCost,
-        gasPriceBid,
-        autoRedeem
-    ];
+    // const varConfig = [
+    //     // maxSubmissionCost,
+    //     gasPriceBid,
+    //     // autoRedeem
+    // ];
 
     const eMode = [
         swapRouterUniAddr,
@@ -286,9 +258,10 @@ async function deploySystem(type, userDetails, signerAddr) {
 
     constrArgs = [
         fxConfig,
-        varConfig,
+        // varConfig,
         eMode,
-        tokensDatabase
+        tokensDatabase,
+        gasPriceBid
     ]; 
 
     const [ storageBeaconAddr, storageBeacon ] = await deployContract('StorageBeacon', constrArgs);
@@ -342,7 +315,7 @@ async function deploySystem(type, userDetails, signerAddr) {
         emitter,
         emitterAddr,
         fakeOZLaddr,
-        varConfig,
+        // varConfig,
         eMode
     ];
 
@@ -356,7 +329,6 @@ async function storeVarsInHelpers(factory) {
 
 
 module.exports = {
-    getGasDetailsL2,
     deployContract,
     getArbitrumParams,
     activateOzBeaconProxy,

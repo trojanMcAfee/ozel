@@ -31,11 +31,11 @@ contract StorageBeacon is Initializable, Ownable {
         uint maxGas;
     }
 
-    struct VariableConfig { 
-        uint maxSubmissionCost;
-        uint gasPriceBid;
-        uint autoRedeem;
-    }
+    // struct VariableConfig { 
+    //     uint maxSubmissionCost;
+    //     uint gasPriceBid;
+    //     uint autoRedeem;
+    // }
 
     struct EmergencyMode {
         ISwapRouter swapRouter;
@@ -47,7 +47,7 @@ contract StorageBeacon is Initializable, Ownable {
 
 
     FixedConfig fxConfig;
-    VariableConfig varConfig;
+    // VariableConfig varConfig;
     EmergencyMode eMode;
 
     mapping(address => bytes32) public taskIDs;
@@ -64,6 +64,7 @@ contract StorageBeacon is Initializable, Ownable {
     address[] public tokenDatabaseArray;
 
     uint private internalId;
+    uint gasPriceBid;
 
     ozUpgradeableBeacon beacon;
 
@@ -82,9 +83,10 @@ contract StorageBeacon is Initializable, Ownable {
 
     constructor(
         FixedConfig memory fxConfig_,
-        VariableConfig memory varConfig_,
+        // VariableConfig memory varConfig_,
         EmergencyMode memory eMode_,
-        address[] memory tokens_
+        address[] memory tokens_,
+        uint gasPriceBid_
     ) {
         fxConfig = FixedConfig({
             inbox: fxConfig_.inbox,
@@ -96,11 +98,11 @@ contract StorageBeacon is Initializable, Ownable {
             maxGas: fxConfig_.maxGas
         });
 
-        varConfig = VariableConfig({
-            maxSubmissionCost: varConfig_.maxSubmissionCost,
-            gasPriceBid: varConfig_.gasPriceBid,
-            autoRedeem: varConfig_.autoRedeem
-        });
+        // varConfig = VariableConfig({
+        //     maxSubmissionCost: varConfig_.maxSubmissionCost,
+        //     gasPriceBid: varConfig_.gasPriceBid,
+        //     autoRedeem: varConfig_.autoRedeem
+        // });
 
         eMode = EmergencyMode({
             swapRouter: ISwapRouter(eMode_.swapRouter),
@@ -116,6 +118,8 @@ contract StorageBeacon is Initializable, Ownable {
             tokenDatabaseArray.push(tokens_[i]);
             unchecked { ++i; }
         }
+
+        gasPriceBid = gasPriceBid_;
     }
 
  
@@ -138,8 +142,12 @@ contract StorageBeacon is Initializable, Ownable {
         taskIDs[proxy_] = id_;
     }
 
-    function changeVariableConfig(VariableConfig calldata newVarConfig_) external onlyOwner {
-        varConfig = newVarConfig_;
+    // function changeVariableConfig(VariableConfig calldata newVarConfig_) external onlyOwner {
+    //     varConfig = newVarConfig_;
+    // }
+
+    function changeGasPriceBid(uint newGasPriceBid_) external onlyOwner {
+        gasPriceBid = newGasPriceBid_;
     }
 
     function addTokenToDatabase(address newToken_) external onlyOwner {
@@ -173,8 +181,12 @@ contract StorageBeacon is Initializable, Ownable {
         return fxConfig;
     }
 
-    function getVariableConfig() external view returns(VariableConfig memory) {
-        return varConfig; 
+    // function getVariableConfig() external view returns(VariableConfig memory) {
+    //     return varConfig; 
+    // }
+
+    function getGasPriceBid() external view returns(uint) {
+        return gasPriceBid; 
     }
 
     function getEmergencyMode() external view returns(EmergencyMode memory) {

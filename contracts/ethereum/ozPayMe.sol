@@ -48,7 +48,7 @@ contract ozPayMe is ReentrancyGuard, Initializable {
 
 
     function sendToArb( 
-        StorageBeacon.VariableConfig calldata varConfig_,
+        uint gasPriceBid_,
         StorageBeacon.UserConfig calldata userDetails_
     ) external payable onlyOps {    
         StorageBeacon storageBeacon = StorageBeacon(_getStorageBeacon(_beacon, 0)); 
@@ -69,12 +69,12 @@ contract ozPayMe is ReentrancyGuard, Initializable {
             userDetails_
         );
         
-        bytes memory ticketData = _createTicketData(varConfig_.gasPriceBid, swapData, false);
+        bytes memory ticketData = _createTicketData(gasPriceBid_, swapData, false);
         
         uint amountToSend = address(this).balance;
         (bool success, ) = fxConfig.inbox.call{value: address(this).balance}(ticketData); 
         if (!success) {
-            ticketData = _createTicketData(varConfig_.gasPriceBid, swapData, true);
+            ticketData = _createTicketData(gasPriceBid_, swapData, true);
             (success, ) = fxConfig.inbox.call{value: address(this).balance}(ticketData);
 
             if (!success) {

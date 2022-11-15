@@ -96,7 +96,7 @@ let fakeOzl, volume;
                 emitter, 
                 emitterAddr, 
                 fakeOZLaddr, 
-                varConfig, 
+                // varConfig, 
                 eMode
             ] = await deploySystem('Optimistically', userDetails, signerAddr));
             storeVarsInHelpers(ozERC1967proxyAddr);
@@ -105,7 +105,7 @@ let fakeOzl, volume;
             fakeOzl = await hre.ethers.getContractAt('FakeOZL', fakeOZLaddr);
         });
 
-        xdescribe('ProxyFactory', async () => {
+        describe('ProxyFactory', async () => {
             describe('Deploys one proxy', async () => {
                 it('should create a proxy successfully / createNewProxy()', async () => {
                     await proxyFactory.createNewProxy(userDetails);
@@ -170,7 +170,7 @@ let fakeOzl, volume;
             });
 
 
-            xdescribe('Deploys 5 proxies', async () => { 
+            describe('Deploys 5 proxies', async () => { 
                 before(async () => {
                     userDetails[1] = usdcAddr;
                     for (let i=0; i < 5; i++) {
@@ -200,7 +200,7 @@ let fakeOzl, volume;
             });
         });
 
-        xdescribe('ozBeaconProxy / ozPayMe', async () => {
+        describe('ozBeaconProxy / ozPayMe', async () => {
             before(async () => {
                 await proxyFactory.createNewProxy(userDetails);
                 newProxyAddr = (await storageBeacon.getProxyByUser(signerAddr))[0].toString(); 
@@ -315,7 +315,7 @@ let fakeOzl, volume;
             });
         });
 
-        xdescribe('Emitter', async () => {
+        describe('Emitter', async () => {
             before(async () => {
                 await proxyFactory.createNewProxy(userDetails);
                 newProxyAddr = (await storageBeacon.getProxyByUser(signerAddr))[0].toString(); 
@@ -348,7 +348,7 @@ let fakeOzl, volume;
             }); 
         });
     
-        xdescribe('StorageBeacon', async () => {
+        describe('StorageBeacon', async () => {
             it('shoud not allow an user to issue an userID / issueUserID()', async () => {
                 await assert.rejects(async () => {
                     await storageBeacon.issueUserID(evilUserDetails);
@@ -376,13 +376,13 @@ let fakeOzl, volume;
                 });
             });
 
-            it('should allow the owner to change VariableConfig / changeVariableConfig()', async () => {
-                await storageBeacon.changeVariableConfig(varConfig);
+            it('should allow the owner to change changeGasPriceBid / changeGasPriceBid()', async () => {
+                await storageBeacon.changeGasPriceBid(100);
             });
 
-            it('should not allow an external user to change VariableConfig / changeVariableConfig()', async () => {
+            it('should not allow an external user to change changeGasPriceBid / changeGasPriceBid()', async () => {
                 await assert.rejects(async () => {
-                    await storageBeacon.connect(signers[1]).changeVariableConfig(varConfig);
+                    await storageBeacon.connect(signers[1]).changeGasPriceBid(100);
                 }, {
                     name: 'Error',
                     message: (await err()).notOwner 
@@ -524,7 +524,7 @@ let fakeOzl, volume;
             });
         });
 
-        xdescribe('ozUpgradeableBeacon', async () => {
+        describe('ozUpgradeableBeacon', async () => {
             it('should allow the owner to upgrade the Storage Beacon / upgradeStorageBeacon()', async () => {
                 [storageBeaconMockAddr , storageBeaconMock] = await deployContract('StorageBeaconMock');
                 await beacon.upgradeStorageBeacon(storageBeaconMockAddr);
@@ -570,7 +570,7 @@ let fakeOzl, volume;
             });
         });
 
-        xdescribe('FakeOZL', async () => {
+        describe('FakeOZL', async () => {
             it('should get the total volume in USD / getTotalVolumeInUSD', async () => {
                 volume = await fakeOzl.getTotalVolumeInUSD(); 
                 assert.equal(formatEther(volume), 500);
@@ -638,7 +638,7 @@ let fakeOzl, volume;
                 emitter, 
                 emitterAddr, 
                 fakeOZLaddr, 
-                varConfig, 
+                // varConfig, 
                 eMode
             ] = await deploySystem('Pessimistically', userDetails, signerAddr));
 

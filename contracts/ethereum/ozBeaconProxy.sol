@@ -46,8 +46,10 @@ contract ozBeaconProxy is ReentrancyGuard, Initializable, BeaconProxy {
     function _delegate(address implementation) internal override { 
         bytes memory data; 
 
-        StorageBeacon.VariableConfig memory varConfig =
-             _getStorageBeacon().getVariableConfig();
+        // StorageBeacon.VariableConfig memory varConfig =
+        //      _getStorageBeacon().getVariableConfig();
+
+        uint gasPriceBid = _getStorageBeacon().getGasPriceBid();
 
         //first 4 bytes on ozPayMe
         if (
@@ -59,8 +61,8 @@ contract ozBeaconProxy is ReentrancyGuard, Initializable, BeaconProxy {
             data = msg.data;
         } else {
             data = abi.encodeWithSignature(
-                'sendToArb((uint256,uint256,uint256),(address,address,uint256))', 
-                varConfig,
+                'sendToArb(uint256,(address,address,uint256))', 
+                gasPriceBid,
                 userDetails
             );
         }
