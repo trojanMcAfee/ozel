@@ -1,0 +1,280 @@
+{
+    "abi": [
+      {
+        "inputs": [
+          {
+            "internalType": "string",
+            "name": "errorMsg",
+            "type": "string"
+          }
+        ],
+        "name": "CallFailed",
+        "type": "error"
+      },
+      {
+        "inputs": [
+          {
+            "internalType": "string",
+            "name": "nonZeroValue",
+            "type": "string"
+          }
+        ],
+        "name": "CantBeZero",
+        "type": "error"
+      },
+      {
+        "inputs": [
+          {
+            "internalType": "address",
+            "name": "unauthorizedUser_",
+            "type": "address"
+          }
+        ],
+        "name": "NotAuthorized",
+        "type": "error"
+      },
+      {
+        "inputs": [
+          {
+            "internalType": "address",
+            "name": "token",
+            "type": "address"
+          }
+        ],
+        "name": "TokenNotInDatabase",
+        "type": "error"
+      },
+      {
+        "inputs": [
+          {
+            "internalType": "address",
+            "name": "user",
+            "type": "address"
+          }
+        ],
+        "name": "UserNotInDatabase",
+        "type": "error"
+      },
+      {
+        "anonymous": false,
+        "inputs": [
+          {
+            "indexed": true,
+            "internalType": "address",
+            "name": "sender",
+            "type": "address"
+          },
+          {
+            "indexed": false,
+            "internalType": "uint256",
+            "name": "amount",
+            "type": "uint256"
+          }
+        ],
+        "name": "EmergencyTriggered",
+        "type": "event"
+      },
+      {
+        "anonymous": false,
+        "inputs": [
+          {
+            "indexed": true,
+            "internalType": "address",
+            "name": "user_",
+            "type": "address"
+          },
+          {
+            "indexed": true,
+            "internalType": "uint256",
+            "name": "amount_",
+            "type": "uint256"
+          }
+        ],
+        "name": "FailedERCFunds",
+        "type": "event"
+      },
+      {
+        "anonymous": false,
+        "inputs": [
+          {
+            "indexed": true,
+            "internalType": "address",
+            "name": "sender",
+            "type": "address"
+          },
+          {
+            "indexed": false,
+            "internalType": "uint256",
+            "name": "amount",
+            "type": "uint256"
+          }
+        ],
+        "name": "FundsToArb",
+        "type": "event"
+      },
+      {
+        "anonymous": false,
+        "inputs": [
+          {
+            "indexed": true,
+            "internalType": "address",
+            "name": "user",
+            "type": "address"
+          },
+          {
+            "indexed": true,
+            "internalType": "uint256",
+            "name": "newSlippage",
+            "type": "uint256"
+          }
+        ],
+        "name": "NewUserSlippage",
+        "type": "event"
+      },
+      {
+        "anonymous": false,
+        "inputs": [
+          {
+            "indexed": true,
+            "internalType": "address",
+            "name": "user",
+            "type": "address"
+          },
+          {
+            "indexed": true,
+            "internalType": "address",
+            "name": "newToken",
+            "type": "address"
+          }
+        ],
+        "name": "NewUserToken",
+        "type": "event"
+      },
+      {
+        "inputs": [
+          {
+            "internalType": "uint256",
+            "name": "newUserSlippage_",
+            "type": "uint256"
+          }
+        ],
+        "name": "changeUserSlippage",
+        "outputs": [],
+        "stateMutability": "nonpayable",
+        "type": "function"
+      },
+      {
+        "inputs": [
+          {
+            "internalType": "address",
+            "name": "newUserToken_",
+            "type": "address"
+          }
+        ],
+        "name": "changeUserToken",
+        "outputs": [],
+        "stateMutability": "nonpayable",
+        "type": "function"
+      },
+      {
+        "inputs": [],
+        "name": "getUserDetails",
+        "outputs": [
+          {
+            "components": [
+              {
+                "internalType": "address",
+                "name": "user",
+                "type": "address"
+              },
+              {
+                "internalType": "address",
+                "name": "userToken",
+                "type": "address"
+              },
+              {
+                "internalType": "uint256",
+                "name": "userSlippage",
+                "type": "uint256"
+              }
+            ],
+            "internalType": "struct StorageBeacon.UserConfig",
+            "name": "",
+            "type": "tuple"
+          }
+        ],
+        "stateMutability": "view",
+        "type": "function"
+      },
+      {
+        "inputs": [
+          {
+            "internalType": "uint256",
+            "name": "userId_",
+            "type": "uint256"
+          },
+          {
+            "internalType": "address",
+            "name": "beacon_",
+            "type": "address"
+          }
+        ],
+        "name": "initialize",
+        "outputs": [],
+        "stateMutability": "nonpayable",
+        "type": "function"
+      },
+      {
+        "inputs": [
+          {
+            "components": [
+              {
+                "internalType": "uint256",
+                "name": "maxSubmissionCost",
+                "type": "uint256"
+              },
+              {
+                "internalType": "uint256",
+                "name": "gasPriceBid",
+                "type": "uint256"
+              },
+              {
+                "internalType": "uint256",
+                "name": "autoRedeem",
+                "type": "uint256"
+              }
+            ],
+            "internalType": "struct StorageBeacon.VariableConfig",
+            "name": "varConfig_",
+            "type": "tuple"
+          },
+          {
+            "components": [
+              {
+                "internalType": "address",
+                "name": "user",
+                "type": "address"
+              },
+              {
+                "internalType": "address",
+                "name": "userToken",
+                "type": "address"
+              },
+              {
+                "internalType": "uint256",
+                "name": "userSlippage",
+                "type": "uint256"
+              }
+            ],
+            "internalType": "struct StorageBeacon.UserConfig",
+            "name": "userDetails_",
+            "type": "tuple"
+          }
+        ],
+        "name": "sendToArb",
+        "outputs": [],
+        "stateMutability": "payable",
+        "type": "function"
+      }
+    ]   
+  }

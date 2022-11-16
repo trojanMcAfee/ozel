@@ -184,15 +184,16 @@ contract ozPayMe is ReentrancyGuard, Initializable {
         emit NewUserToken(msg.sender, newUserToken_);
     }
 
-
-    function changeUserSlippage(uint newUserSlippage_) external onlyUser {
-        if (newUserSlippage_ <= 0) revert CantBeZero('slippage');
-        userDetails.userSlippage = newUserSlippage_;
-        emit NewUserSlippage(msg.sender, newUserSlippage_);
+    function changeUserSlippage(uint newSlippageBasisPoint_) external onlyUser { 
+        if (newSlippageBasisPoint_ / 1e16 < 1) revert LowSlippage(newSlippageBasisPoint_);
+        // console.log(newSlippageBasisPoint_ / 1e16);
+        userDetails.userSlippage = newSlippageBasisPoint_ / 1e16;
+        // console.log('new sli[: ] ', userDetails.userSlippage);
+        emit NewUserSlippage(msg.sender, newSlippageBasisPoint_);
     } 
 
-    function getUserDetails() external view returns(StorageBeacon.UserConfig memory) {
-        return userDetails;
+    function getUserDetails() external view returns(address, address, uint) {
+        return (userDetails.user, userDetails.userToken, userDetails.userSlippage * 1e16);
     }
 
     function withdrawETH_lastResort() external onlyUser {

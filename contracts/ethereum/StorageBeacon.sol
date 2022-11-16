@@ -155,6 +155,11 @@ contract StorageBeacon is Initializable, Ownable {
         tokenDatabaseArray.push(newToken_);
     }
 
+    // function removeTokenFromDatabase(address toRemove_) external onlyOwner {
+    //     tokenDatabase[toRemove_] = true;
+    //     tokenDatabaseArray.push(newToken_);
+    // }
+
     function storeBeacon(address beacon_) external initializer { 
         beacon = ozUpgradeableBeacon(beacon_);
     }

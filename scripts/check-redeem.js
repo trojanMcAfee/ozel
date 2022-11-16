@@ -160,7 +160,7 @@ async function maint() {
 
 }
 
-const abi = require('../artifacts/contracts/ethereum/StorageBeacon.sol/StorageBeacon.json').abi;
+// const abi = require('../artifacts/contracts/ethereum/StorageBeacon.sol/StorageBeacon.json').abi;
 
 async function main() {
     const sBeaconAddr = '0x53548E9698BC27eCfEd86dbC1Bd47d827912CB75';
@@ -180,4 +180,27 @@ async function main() {
 }
 
 
-maint();
+
+async function main12() {
+    let { abi } = require('./UI_ozBeaconABI.json');
+    const proxyABI = abi;
+    ({abi} = require('./UI_sBeacon.json'));
+    const sBeaconABI = abi;
+
+    const proxy1Addr = '0x0246bc2BacE3F5763Dfd505EC0D5bb73EDb566f8';
+    const sBeaconAddr = '0x53548E9698BC27eCfEd86dbC1Bd47d827912CB75';
+
+    const proxy1 = await hre.ethers.getContractAt(proxyABI, proxy1Addr);
+    const sBeacon = await hre.ethers.getContractAt(sBeaconABI, sBeaconAddr);
+
+    const [usdt] = await sBeacon.getTokenDatabase();
+
+    const tx = await proxy1.changeUserToken(usdt);
+    await tx.wait();
+
+    const inDB = await sBeacon.queryTokenDatabase(usdt);
+    console.log('is in DB (true): ', inDB);
+}
+
+
+main12();

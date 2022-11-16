@@ -52,7 +52,7 @@ let ozERC1967proxyAddr, storageBeacon, emitter, emitterAddr, fakeOZLaddr;
 let userDetails;
 let newProxyAddr, newProxy;
 let balance;
-let newUserToken, newUserSlippage;
+let newUserToken, newUserSlippage, newSlippage;
 let opsContract;
 let signers;
 let showTicketSignature;
@@ -108,7 +108,7 @@ let fakeOzl, volume;
             fakeOzl = await hre.ethers.getContractAt('FakeOZL', fakeOZLaddr);
         });
 
-        describe('ProxyFactory', async () => {
+        xdescribe('ProxyFactory', async () => {
             describe('Deploys one proxy', async () => {
                 it('should create a proxy successfully / createNewProxy()', async () => {
                     await proxyFactory.createNewProxy(userDetails);
@@ -173,7 +173,7 @@ let fakeOzl, volume;
             });
 
 
-            describe('Deploys 5 proxies', async () => { 
+            xdescribe('Deploys 5 proxies', async () => { 
                 before(async () => {
                     userDetails[1] = usdcAddr;
                     for (let i=0; i < 5; i++) {
@@ -263,19 +263,34 @@ let fakeOzl, volume;
                     });
                 });
 
-                it('should allow the user to change userSlippage / changeUserSlippage()', async () => {
-                    tx = await newProxy.changeUserSlippage(200, ops);
-                    receipt = await tx.wait();
-                    newUserSlippage = getEventParam(receipt);
-                    assert.equal(arrayify(newUserSlippage), '200');
+                it('should allow the user to change userSlippage with the minimum of 0.01% / changeUserSlippage()', async () => {
+                    newSlippage = parseEther('0.01');
+                    tx = await newProxy.changeUserSlippage(newSlippage, ops);
+                    await tx.wait();
+
+                    const [ user, token, slippage ] = await newProxy.getUserDetails();
+                    // console.log('slip: ', Number(slippage));
+                    // console.log('format: ', formatEther('1'));
+                    assert.equal(formatEther(slippage), 0.01); 
+                });
+
+                xit('should not allow the user to change UserSlippage with lower than 0.01% / changeUserSlippage()', async () => {
+                    newSlippage = parseEther('0.009');
+                    await assert.rejects(async () => {
+                        await newProxy.changeUserSlippage(newSlippage, ops);
+                    }, {
+                        name: 'Error',
+                        message: (await err(newSlippage)).zeroSlippage
+                    });
                 });
 
                 it('should not allow to change userSlippage to 0 / changeUserSlippage()', async () => {
+                    newSlippage = parseEther('0');
                     await assert.rejects(async () => {
-                        await newProxy.changeUserSlippage(0, ops);
+                        await newProxy.changeUserSlippage(newSlippage, ops);
                     }, {
                         name: 'Error',
-                        message: (await err()).zeroSlippage
+                        message: (await err(newSlippage)).zeroSlippage
                     });
                 });
 
@@ -309,16 +324,16 @@ let fakeOzl, volume;
                     assert(areEqual);
                 });
 
-                it('should get the account details / getUserDetails()', async () => {
+                xit('should get the account details / getUserDetails()', async () => {
                     const [ user, token, slippage ] = await newProxy.getUserDetails();
                     assert.equal(user, userDetails[0]);
                     assert(token === userDetails[1] || token === usdcAddr);
-                    assert(Number(slippage) === userDetails[2] || Number(slippage) === 200);
+                    assert(Number(slippage) === userDetails[2] || Number(slippage) === 20);
                 });
             });
         });
 
-        describe('Emitter', async () => {
+        xdescribe('Emitter', async () => {
             before(async () => {
                 await proxyFactory.createNewProxy(userDetails);
                 newProxyAddr = (await storageBeacon.getProxyByUser(signerAddr))[0].toString(); 
@@ -351,7 +366,7 @@ let fakeOzl, volume;
             }); 
         });
     
-        describe('StorageBeacon', async () => {
+        xdescribe('StorageBeacon', async () => {
             it('shoud not allow an user to issue an userID / issueUserID()', async () => {
                 await assert.rejects(async () => {
                     await storageBeacon.issueUserID(evilUserDetails);
@@ -548,7 +563,7 @@ let fakeOzl, volume;
             });
         });
 
-        describe('ozUpgradeableBeacon', async () => {
+        xdescribe('ozUpgradeableBeacon', async () => {
             it('should allow the owner to upgrade the Storage Beacon / upgradeStorageBeacon()', async () => {
                 [storageBeaconMockAddr , storageBeaconMock] = await deployContract('StorageBeaconMock');
                 await beacon.upgradeStorageBeacon(storageBeaconMockAddr);
@@ -594,7 +609,7 @@ let fakeOzl, volume;
             });
         });
 
-        describe('FakeOZL', async () => {
+        xdescribe('FakeOZL', async () => {
             it('should get the total volume in USD / getTotalVolumeInUSD', async () => {
                 volume = await fakeOzl.getTotalVolumeInUSD(); 
                 assert.equal(formatEther(volume), 500);

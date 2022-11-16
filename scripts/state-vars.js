@@ -103,13 +103,19 @@ switch(network) {
     case 'goerli':
         pokeMeOpsAddr = '0xc1C6805B857Bef1f412519C4A842522431aFed39'; 
         hopBridge = '0xb8901acB165ed027E32754E0FFe830802919727f'; //no testnet
-        usdtAddrArb = '0xe583769738b6dd4E7CAF8451050d1948BE717679';
         inbox = '0x6BEbC4925716945D46F0Ec336D5C2564F419682C';
         gelatoAddr = '0x683913B3A32ada4F8100458A3E1675425BdAa7DF';
         swapRouterUniAddr = nullAddr;
         chainlinkAggregatorAddr = nullAddr;
         wethAddr = '0xB4FBF271143F4FBf7B91A5ded31805e42b2208d6';
         usdcAddr = '0xd35CCeEAD182dcee0F148EbaC9447DA2c4D449c4';
+        renBtcAddr = '0xEB4C2781e4ebA804CE9a9803C67d0893436bB27D'; //mainnet
+        mimAddr = '0x99D8a9C45b2ecA8864373A26D1459e3Dff1e17F3'; //mainnet
+        wbtcAddr = '0xC04B0d3107736C32e19F1c62b2aF67BE61d63a05';
+        usdtAddrArb = '0xe583769738b6dd4E7CAF8451050d1948BE717679';
+        fraxAddr = '0x92d43093959C7DDa89896418bCE9DE0B87879646';
+
+
         
         l1ProviderTestnet = new ethers.providers.JsonRpcProvider(process.env.GOERLI);
         l1Signer = signerX.connect(l1ProviderTestnet);

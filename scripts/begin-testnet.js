@@ -98,7 +98,7 @@ async function deployTestnet(testSigner = false, manualRedeem = false) {
     
     //Deploys the fake OZL on arbitrum testnet 
     const [ fakeOZLaddr ] = await deployContract('FakeOZL', l2SignerTest, constrArgs); //fake OZL address in arbitrum
-    // const fakeOZLaddr = '0xd12E835f658C93E5A527b2f81fee0014881d4726';
+    // const fakeOZLaddr = '0xef4EDE7B27777B67EF5911f6C2d1BCf328fbE02A';
     // console.log('fakeOZL deployed to: ', fakeOZLaddr);
    
     //Calculate fees on L1 > L2 arbitrum tx 
