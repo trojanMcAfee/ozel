@@ -12,13 +12,17 @@ const {
     gelatoAddr,
     ETH,
     signerX,
-    fraxAddr,
     defaultSlippage,
     factoryABI,
-    usdtAddrArb,
     diamondABI,
     l2Provider,
-    l1Provider
+    l1Provider,
+    renBtcAddr,
+    mimAddr,
+    usdcAddr,
+    fraxAddr,
+    usdtAddrArb,
+    wbtcAddr
 } = require('./state-vars.js');
 
 const { 
@@ -149,12 +153,31 @@ async function mainf() {
 
 }
 
-async function main() {
+async function maint() {
 
     const gas = await l1ProviderTestnet.getGasPrice();
     console.log('gas: ', Number(gas));
 
 }
 
+const abi = require('../artifacts/contracts/ethereum/StorageBeacon.sol/StorageBeacon.json').abi;
 
-main();
+async function main() {
+    const sBeaconAddr = '0x53548E9698BC27eCfEd86dbC1Bd47d827912CB75';
+    const sBeacon = await hre.ethers.getContractAt(abi, sBeaconAddr);
+
+    const tx = await sBeacon.addTokenToDatabase(renBtcAddr);
+    const receipt = await tx.wait();
+    console.log('receipt: ', receipt);
+    // await sBeacon.addTokenToDatabase(mimAddr);
+    // await sBeacon.addTokenToDatabase(usdcAddr);
+    // await sBeacon.addTokenToDatabase(fraxAddr);
+    // await sBeacon.addTokenToDatabase(wbtcAddr);
+
+    const x = await sBeacon.getTokenDatabase();
+    console.log('y: ', x);
+
+}
+
+
+maint();

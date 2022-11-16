@@ -13,7 +13,7 @@ import '../AppStorage.sol';
 // import 'hardhat/console.sol';
 
 contract DiamondCutFacet is IDiamondCut {
-    AppStorage s;
+    // AppStorage s;
 
     /// @notice Add/replace/remove any number of functions and optionally execute
     ///         a function with delegatecall
@@ -30,30 +30,30 @@ contract DiamondCutFacet is IDiamondCut {
         LibDiamond.diamondCut(_diamondCut, _init, _calldata);
     }
 
-    function changeDappFee(uint baseUnits_) external {
-        LibDiamond.enforceIsContractOwner();
-        s.dappFee = baseUnits_;
-    }
+    // function changeDappFee(uint baseUnits_) external {
+    //     LibDiamond.enforceIsContractOwner();
+    //     s.dappFee = baseUnits_;
+    // }
 
-    function changeDefaultSlippage(uint baseUnits_) external {
-        LibDiamond.enforceIsContractOwner();
-        s.defaultSlippage = baseUnits_;
-    }
+    // function changeDefaultSlippage(uint baseUnits_) external {
+    //     LibDiamond.enforceIsContractOwner();
+    //     s.defaultSlippage = baseUnits_;
+    // }
 
-    function enableWithdrawals(bool state_) external {
-        LibDiamond.enforceIsContractOwner();
-        s.isEnabled = state_;
-    }
+    // function enableWithdrawals(bool state_) external {
+    //     LibDiamond.enforceIsContractOwner();
+    //     s.isEnabled = state_;
+    // }
 
-    function changeRevenueToken(address newToken_) external {
-        LibDiamond.enforceIsContractOwner();
-        s.revenueToken = newToken_;
-    }
+    // function changeRevenueToken(address newToken_) external {
+    //     LibDiamond.enforceIsContractOwner();
+    //     s.revenueToken = newToken_;
+    // }
 
-    function changeUniPoolFee(uint24 newPoolFee_) external {
-        LibDiamond.enforceIsContractOwner();
-        s.poolFee = newPoolFee_;
-    }
+    // function changeUniPoolFee(uint24 newPoolFee_) external {
+    //     LibDiamond.enforceIsContractOwner();
+    //     s.poolFee = newPoolFee_;
+    // }
 }
 
 

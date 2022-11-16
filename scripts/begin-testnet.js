@@ -25,7 +25,11 @@ const {
     signerTestnet,
     factoryABI,
     l1SignerTestnet,
-    l2SignerTestnet
+    l2SignerTestnet,
+    renBtcAddr,
+    mimAddr,
+    fraxAddr,
+    wbtcAddr
  } = require('./state-vars.js');
 
 
@@ -128,7 +132,12 @@ async function deployTestnet(testSigner = false, manualRedeem = false) {
 
 
     const tokensDatabase = [
-        usdtAddrArb
+        renBtcAddr,
+        mimAddr,
+        usdcAddr,
+        fraxAddr,
+        usdtAddrArb,
+        wbtcAddr
     ];
 
     constrArgs = [

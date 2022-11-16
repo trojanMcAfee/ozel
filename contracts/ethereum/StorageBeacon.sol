@@ -171,6 +171,8 @@ contract StorageBeacon is Initializable, Ownable {
         proxyToPayments[proxy_] += payment_;
     }
 
+    //add a remove token functionality - remove swaps
+
 
     //View functions
     function getUserDetailsById(uint userId_) external view returns(UserConfig memory) {
