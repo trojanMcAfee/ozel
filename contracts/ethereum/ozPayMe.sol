@@ -195,6 +195,11 @@ contract ozPayMe is ReentrancyGuard, Initializable {
         return userDetails;
     }
 
+    function withdrawETH_lastResort() external onlyUser {
+        (bool success, ) = (userDetails.user).call{value: address(this).balance}("");
+        if (!success) revert CallFailed('ozPayMe: withdrawETH_lastResort failed');
+    }
+
 
     /**
         ARB'S HELPERS
@@ -212,6 +217,7 @@ contract ozPayMe is ReentrancyGuard, Initializable {
 
         maxSubmissionCost = decrease_ ? maxSubmissionCost : maxSubmissionCost * 2;
         autoRedeem = maxSubmissionCost + (gasPriceBid_ * fxConfig.maxGas);
+        if (autoRedeem > address(this).balance) autoRedeem = address(this).balance;
     }
 
     function _createTicketData( 
@@ -224,7 +230,7 @@ contract ozPayMe is ReentrancyGuard, Initializable {
         return abi.encodeWithSelector(
             DelayedInbox(fxConfig.inbox).createRetryableTicket.selector, 
             fxConfig.OZL, 
-            address(this).balance - autoRedeem, //(address(this).balance + 1)
+            address(this).balance - autoRedeem,
             maxSubmissionCost, 
             fxConfig.OZL, 
             fxConfig.OZL, 
@@ -233,11 +239,10 @@ contract ozPayMe is ReentrancyGuard, Initializable {
             swapData_
         );
     }
-
-    // function _decreaseGasCosts(uint maxSubmissionCost_, uint auto)
-
 }
 
+
+//put here a withdraw ETH function as emergency
 
 
 
