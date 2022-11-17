@@ -432,9 +432,6 @@ let fakeOzl, volume;
                     name: 'Error',
                     message: (await err()).notOwner 
                 });
-
-                tokens = await storageBeacon.getTokenDatabase();
-                console.log('tokens8: ', tokens);
             });
 
             it('shoud fail when not-owner tries to remove a token in database / removeTokenFromDatabase()', async () => {
@@ -452,13 +449,7 @@ let fakeOzl, volume;
                 let exist = await storageBeacon.queryTokenDatabase(usdtAddrArb);
                 assert(exist);
 
-                tokens = await storageBeacon.getTokenDatabase();
-                console.log('tokens81: ', tokens);
-
                 await storageBeacon.removeTokenFromDatabase(usdtAddrArb);
-
-                tokens = await storageBeacon.getTokenDatabase();
-                console.log('tokens82: ', tokens);
 
                 exist = await storageBeacon.queryTokenDatabase(usdtAddrArb);
                 assert(!exist);

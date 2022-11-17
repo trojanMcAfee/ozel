@@ -157,7 +157,6 @@ contract StorageBeacon is Initializable, Ownable {
 
         delete tokenDatabaseArray[tokenDatabaseArray.length-1];
         tokenDatabaseArray.pop();
-        console.log('l: ', tokenDatabaseArray.length);
     }
 
     function storeBeacon(address beacon_) external initializer { 
