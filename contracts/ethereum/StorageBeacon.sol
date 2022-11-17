@@ -151,14 +151,19 @@ contract StorageBeacon is Initializable, Ownable {
     }
 
     function addTokenToDatabase(address newToken_) external onlyOwner {
+        if (queryTokenDatabase(newToken_)) revert TokenAlreadyInDatabase(newToken_);
         tokenDatabase[newToken_] = true;
         tokenDatabaseArray.push(newToken_);
     }
 
-    // function removeTokenFromDatabase(address toRemove_) external onlyOwner {
-    //     tokenDatabase[toRemove_] = true;
-    //     tokenDatabaseArray.push(newToken_);
-    // }
+    function removeTokenFromDatabase(address toRemove_) external onlyOwner {
+        if (!queryTokenDatabase(toRemove_)) revert TokenNotInDatabase(toRemove_);
+        tokenDatabase[toRemove_] = false;
+
+        for (uint i=0; i < tokenDatabaseArray.length; i++) {
+            if (tokenDatabaseArray[i] == toRemove_) delete tokenDatabaseArray[i];
+        }
+    }
 
     function storeBeacon(address beacon_) external initializer { 
         beacon = ozUpgradeableBeacon(beacon_);
@@ -212,7 +217,7 @@ contract StorageBeacon is Initializable, Ownable {
         return proxyToUser[proxy_];
     }
 
-    function queryTokenDatabase(address token_) external view returns(bool) {
+    function queryTokenDatabase(address token_) public view returns(bool) {
         return tokenDatabase[token_];
     }
 

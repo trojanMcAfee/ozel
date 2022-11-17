@@ -399,6 +399,15 @@ let fakeOzl, volume;
                 await storageBeacon.addTokenToDatabase(fraxAddr);
             });
 
+            it('should not allow the onwer to add a token that is already in database / addTokenToDatabase()', async () => {
+                await assert.rejects(async () => {
+                    await storageBeacon.addTokenToDatabase(usdtAddrArb);
+                }, {
+                    name: 'Error',
+                    message: (await err(usdtAddrArb)).tokenInDatabase 
+                });
+            });
+
             it('should allow the owner to add multiple tokens / addTokenToDatabase()', async () => {
                 const  tokensDB_pre = await storageBeacon.getTokenDatabase();
                 assert(tokensDB_pre.length > 0);
@@ -406,9 +415,7 @@ let fakeOzl, volume;
                 const tokens = [
                     renBtcAddr,
                     mimAddr,
-                    usdcAddr,
                     wbtcAddr,
-                    fraxAddr
                 ];
 
                 for (let i=0; i < tokens.length; i++) {
@@ -417,7 +424,6 @@ let fakeOzl, volume;
 
                 const tokensDB_post = await storageBeacon.getTokenDatabase();
                 assert(tokensDB_post > tokensDB_pre);
-                
             });
 
             it('should not allow an external user to add a new userToken to the database / addTokenToDatabase()', async () => {

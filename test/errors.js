@@ -23,7 +23,8 @@ async function err(n = 0) {
         zeroSlippage: `VM Exception while processing transaction: reverted with custom error 'CantBeZero("slippage")'`,
         tokenNotFound: `VM Exception while processing transaction: reverted with custom error 'TokenNotInDatabase("${n}")'`,
         zeroMsgValue: `VM Exception while processing transaction: reverted with custom error 'CantBeZero("msg.value")'`,
-        zeroShares: `VM Exception while processing transaction: reverted with custom error 'CantBeZero("shares")'`
+        zeroShares: `VM Exception while processing transaction: reverted with custom error 'CantBeZero("shares")'`,
+        tokenInDatabase: `VM Exception while processing transaction: reverted with custom error 'TokenAlreadyInDatabase("${n}")'`
     };
     
 } 
