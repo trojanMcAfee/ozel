@@ -51,7 +51,7 @@ let signerAddr, signerAddr2;
 let ozERC1967proxyAddr, storageBeacon, emitter, emitterAddr, fakeOZLaddr;
 let userDetails;
 let newProxyAddr, newProxy;
-let balance;
+let balance, tokens;
 let newUserToken, newUserSlippage, newSlippage;
 let opsContract;
 let signers;
@@ -99,7 +99,6 @@ let fakeOzl, volume;
                 emitter, 
                 emitterAddr, 
                 fakeOZLaddr, 
-                // varConfig, 
                 eMode
             ] = await deploySystem('Optimistically', userDetails, signerAddr));
             storeVarsInHelpers(ozERC1967proxyAddr);
@@ -433,6 +432,48 @@ let fakeOzl, volume;
                     name: 'Error',
                     message: (await err()).notOwner 
                 });
+
+                tokens = await storageBeacon.getTokenDatabase();
+                console.log('tokens8: ', tokens);
+            });
+
+            it('shoud fail when not-owner tries to remove a token in database / removeTokenFromDatabase()', async () => {
+                let exist = await storageBeacon.queryTokenDatabase(usdtAddrArb);
+                assert(exist);
+                await assert.rejects(async () => {
+                    await storageBeacon.connect(signers[1]).removeTokenFromDatabase(usdtAddrArb);
+                }, {
+                    name: 'Error',
+                    message: (await err()).notOwner 
+                });
+            });
+
+            it('should allow the owner to remove a token from database / removeTokenFromDatabase()', async () => {
+                let exist = await storageBeacon.queryTokenDatabase(usdtAddrArb);
+                assert(exist);
+
+                tokens = await storageBeacon.getTokenDatabase();
+                console.log('tokens81: ', tokens);
+
+                await storageBeacon.removeTokenFromDatabase(usdtAddrArb);
+
+                tokens = await storageBeacon.getTokenDatabase();
+                console.log('tokens82: ', tokens);
+
+                exist = await storageBeacon.queryTokenDatabase(usdtAddrArb);
+                assert(!exist);
+            });
+
+            it('should fail when owner tries to remove a token not in database / removeTokenFromDatabase()', async () => {
+                let exist = await storageBeacon.queryTokenDatabase(deadAddr);
+                assert(!exist);
+
+                await assert.rejects(async () => {
+                    await storageBeacon.removeTokenFromDatabase(deadAddr);
+                }, {
+                    name: 'Error',
+                    message: (await err(deadAddr)).tokenNotFound 
+                });
             });
 
             it('should not allow re-calling / storeBeacon()', async () => {
@@ -496,7 +537,10 @@ let fakeOzl, volume;
             });
 
             it('should return the proxies an user has / getProxyByUser()', async () => {
-                await proxyFactory.createNewProxy(userDetails);
+                tokens = await storageBeacon.getTokenDatabase();
+                userDetails[1] = tokens[0];
+                
+                await proxyFactory.createNewProxy(userDetails, ops);
                 userProxies = await storageBeacon.getProxyByUser(signerAddr);
                 assert(userProxies.length > 0);
             });
@@ -507,7 +551,10 @@ let fakeOzl, volume;
             });
 
             it("should get an user's taskID / getTaskID()", async () => {
-                await proxyFactory.createNewProxy(userDetails);
+                tokens = await storageBeacon.getTokenDatabase();
+                userDetails[1] = tokens[0];
+
+                await proxyFactory.createNewProxy(userDetails, ops);
                 userProxies = await storageBeacon.getProxyByUser(signerAddr);
                 taskID = (await storageBeacon.getTaskID(userProxies[0])).toString();
                 assert(taskID.length > 0);
@@ -519,7 +566,10 @@ let fakeOzl, volume;
             });
 
             it('should return true for an user / isUser()', async () => {
-                await proxyFactory.createNewProxy(userDetails);
+                tokens = await storageBeacon.getTokenDatabase();
+                userDetails[1] = tokens[0];
+
+                await proxyFactory.createNewProxy(userDetails, ops);
                 assert(await storageBeacon.isUser(signerAddr));
             });
 
@@ -537,7 +587,10 @@ let fakeOzl, volume;
             });
 
             it('should store the payment to the proxy / storeProxyPayment()', async () => {
-                tx = await proxyFactory.createNewProxy(userDetails);
+                tokens = await storageBeacon.getTokenDatabase();
+                userDetails[1] = tokens[0];
+                
+                tx = await proxyFactory.createNewProxy(userDetails, ops);
                 receipt = await tx.wait();
                 newProxyAddr = receipt.logs[0].address;
 
@@ -577,12 +630,15 @@ let fakeOzl, volume;
 
             it('should allow the owner to upgrade the implementation and use with the new version of storageBeacon / upgradeTo()', async () => {
                 [ storageBeaconMockAddr ] = await deployContract('StorageBeaconMock');
-                await beacon.upgradeStorageBeacon(storageBeaconMockAddr);
+                await beacon.upgradeStorageBeacon(storageBeaconMockAddr, ops);
                 const [ implMockAddr ] = await deployContract('ImplementationMock');
                 await beacon.upgradeTo(implMockAddr);
 
                 //execute a normal tx to the proxy and read from the new variable placed on implMock
-                await proxyFactory.createNewProxy(userDetails);
+                tokens = await storageBeacon.getTokenDatabase();
+                userDetails[1] = tokens[0];
+
+                await proxyFactory.createNewProxy(userDetails, ops);
                 newProxyAddr = (await storageBeacon.getProxyByUser(signerAddr))[0].toString();
                 
                 await signers[0].sendTransaction({to: newProxyAddr, value: parseEther('1.5')});
@@ -671,14 +727,13 @@ let fakeOzl, volume;
                 emitter, 
                 emitterAddr, 
                 fakeOZLaddr, 
-                // varConfig, 
                 eMode
             ] = await deploySystem('Pessimistically', userDetails, signerAddr));
 
             storeVarsInHelpers(ozERC1967proxyAddr);
 
             proxyFactory = await hre.ethers.getContractAt(factoryABI, ozERC1967proxyAddr);
-            await proxyFactory.createNewProxy(userDetails);
+            await proxyFactory.createNewProxy(userDetails, ops);
             newProxyAddr = (await storageBeacon.getProxyByUser(signerAddr))[0].toString(); 
             newProxy = await hre.ethers.getContractAt(proxyABIeth, newProxyAddr);
             USDC = await hre.ethers.getContractAt('IERC20', usdcAddr);

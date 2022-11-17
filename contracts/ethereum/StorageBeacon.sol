@@ -31,12 +31,6 @@ contract StorageBeacon is Initializable, Ownable {
         uint maxGas;
     }
 
-    // struct VariableConfig { 
-    //     uint maxSubmissionCost;
-    //     uint gasPriceBid;
-    //     uint autoRedeem;
-    // }
-
     struct EmergencyMode {
         ISwapRouter swapRouter;
         AggregatorV3Interface priceFeed; 
@@ -47,7 +41,6 @@ contract StorageBeacon is Initializable, Ownable {
 
 
     FixedConfig fxConfig;
-    // VariableConfig varConfig;
     EmergencyMode eMode;
 
     mapping(address => bytes32) public taskIDs;
@@ -83,7 +76,6 @@ contract StorageBeacon is Initializable, Ownable {
 
     constructor(
         FixedConfig memory fxConfig_,
-        // VariableConfig memory varConfig_,
         EmergencyMode memory eMode_,
         address[] memory tokens_,
         uint gasPriceBid_
@@ -97,12 +89,6 @@ contract StorageBeacon is Initializable, Ownable {
             ETH: fxConfig_.ETH, 
             maxGas: fxConfig_.maxGas
         });
-
-        // varConfig = VariableConfig({
-        //     maxSubmissionCost: varConfig_.maxSubmissionCost,
-        //     gasPriceBid: varConfig_.gasPriceBid,
-        //     autoRedeem: varConfig_.autoRedeem
-        // });
 
         eMode = EmergencyMode({
             swapRouter: ISwapRouter(eMode_.swapRouter),
@@ -142,10 +128,6 @@ contract StorageBeacon is Initializable, Ownable {
         taskIDs[proxy_] = id_;
     }
 
-    // function changeVariableConfig(VariableConfig calldata newVarConfig_) external onlyOwner {
-    //     varConfig = newVarConfig_;
-    // }
-
     function changeGasPriceBid(uint newGasPriceBid_) external onlyOwner {
         gasPriceBid = newGasPriceBid_;
     }
@@ -159,10 +141,23 @@ contract StorageBeacon is Initializable, Ownable {
     function removeTokenFromDatabase(address toRemove_) external onlyOwner {
         if (!queryTokenDatabase(toRemove_)) revert TokenNotInDatabase(toRemove_);
         tokenDatabase[toRemove_] = false;
+        uint index;
 
         for (uint i=0; i < tokenDatabaseArray.length; i++) {
-            if (tokenDatabaseArray[i] == toRemove_) delete tokenDatabaseArray[i];
+            if (tokenDatabaseArray[i] == toRemove_)  {
+                index = i;
+                break;
+            }
         }
+
+        for (uint i=index; i < tokenDatabaseArray.length - 1;){
+            tokenDatabaseArray[i] = tokenDatabaseArray[i+1];
+            unchecked { ++i; }
+        }
+
+        delete tokenDatabaseArray[tokenDatabaseArray.length-1];
+        tokenDatabaseArray.pop();
+        console.log('l: ', tokenDatabaseArray.length);
     }
 
     function storeBeacon(address beacon_) external initializer { 
@@ -192,10 +187,6 @@ contract StorageBeacon is Initializable, Ownable {
     function getFixedConfig() external view returns(FixedConfig memory) {
         return fxConfig;
     }
-
-    // function getVariableConfig() external view returns(VariableConfig memory) {
-    //     return varConfig; 
-    // }
 
     function getGasPriceBid() external view returns(uint) {
         return gasPriceBid; 
