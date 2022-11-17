@@ -20,7 +20,7 @@ async function err(n = 0) {
         notProxy: "VM Exception while processing transaction: reverted with custom error 'NotProxy()'",
         notOwner: "VM Exception while processing transaction: reverted with reason string 'Ownable: caller is not the owner'",
         zeroAddress: `VM Exception while processing transaction: reverted with custom error 'CantBeZero("address")'`,
-        zeroSlippage: `VM Exception while processing transaction: reverted with custom error 'LowSlippage(${n})'`,
+        zeroSlippage: `VM Exception while processing transaction: reverted with custom error 'CantBeZero("slippage")'`,
         tokenNotFound: `VM Exception while processing transaction: reverted with custom error 'TokenNotInDatabase("${n}")'`,
         zeroMsgValue: `VM Exception while processing transaction: reverted with custom error 'CantBeZero("msg.value")'`,
         zeroShares: `VM Exception while processing transaction: reverted with custom error 'CantBeZero("shares")'`

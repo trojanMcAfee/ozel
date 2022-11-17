@@ -108,7 +108,7 @@ let fakeOzl, volume;
             fakeOzl = await hre.ethers.getContractAt('FakeOZL', fakeOZLaddr);
         });
 
-        xdescribe('ProxyFactory', async () => {
+        describe('ProxyFactory', async () => {
             describe('Deploys one proxy', async () => {
                 it('should create a proxy successfully / createNewProxy()', async () => {
                     await proxyFactory.createNewProxy(userDetails);
@@ -173,7 +173,7 @@ let fakeOzl, volume;
             });
 
 
-            xdescribe('Deploys 5 proxies', async () => { 
+            describe('Deploys 5 proxies', async () => { 
                 before(async () => {
                     userDetails[1] = usdcAddr;
                     for (let i=0; i < 5; i++) {
@@ -264,28 +264,16 @@ let fakeOzl, volume;
                 });
 
                 it('should allow the user to change userSlippage with the minimum of 0.01% / changeUserSlippage()', async () => {
-                    newSlippage = parseEther('0.01');
-                    tx = await newProxy.changeUserSlippage(newSlippage, ops);
+                    newUserSlippage = 0.01;
+                    tx = await newProxy.changeUserSlippage(newUserSlippage * 100, ops);
                     await tx.wait();
 
                     const [ user, token, slippage ] = await newProxy.getUserDetails();
-                    // console.log('slip: ', Number(slippage));
-                    // console.log('format: ', formatEther('1'));
-                    assert.equal(formatEther(slippage), 0.01); 
-                });
-
-                xit('should not allow the user to change UserSlippage with lower than 0.01% / changeUserSlippage()', async () => {
-                    newSlippage = parseEther('0.009');
-                    await assert.rejects(async () => {
-                        await newProxy.changeUserSlippage(newSlippage, ops);
-                    }, {
-                        name: 'Error',
-                        message: (await err(newSlippage)).zeroSlippage
-                    });
+                    assert.equal(Number(slippage) / 100, newUserSlippage); 
                 });
 
                 it('should not allow to change userSlippage to 0 / changeUserSlippage()', async () => {
-                    newSlippage = parseEther('0');
+                    newSlippage = 0;
                     await assert.rejects(async () => {
                         await newProxy.changeUserSlippage(newSlippage, ops);
                     }, {
@@ -324,16 +312,16 @@ let fakeOzl, volume;
                     assert(areEqual);
                 });
 
-                xit('should get the account details / getUserDetails()', async () => {
+                it('should get the account details / getUserDetails()', async () => {
                     const [ user, token, slippage ] = await newProxy.getUserDetails();
                     assert.equal(user, userDetails[0]);
                     assert(token === userDetails[1] || token === usdcAddr);
-                    assert(Number(slippage) === userDetails[2] || Number(slippage) === 20);
+                    assert(Number(slippage) === userDetails[2] || Number(slippage) === 1);
                 });
             });
         });
 
-        xdescribe('Emitter', async () => {
+        describe('Emitter', async () => {
             before(async () => {
                 await proxyFactory.createNewProxy(userDetails);
                 newProxyAddr = (await storageBeacon.getProxyByUser(signerAddr))[0].toString(); 
@@ -366,7 +354,7 @@ let fakeOzl, volume;
             }); 
         });
     
-        xdescribe('StorageBeacon', async () => {
+        describe('StorageBeacon', async () => {
             it('shoud not allow an user to issue an userID / issueUserID()', async () => {
                 await assert.rejects(async () => {
                     await storageBeacon.issueUserID(evilUserDetails);
@@ -432,7 +420,7 @@ let fakeOzl, volume;
                 
             });
 
-            xit('should not allow an external user to add a new userToken to the database / addTokenToDatabase()', async () => {
+            it('should not allow an external user to add a new userToken to the database / addTokenToDatabase()', async () => {
                 await assert.rejects(async () => {
                     await storageBeacon.connect(signers[1]).addTokenToDatabase(deadAddr);
                 }, {
@@ -441,7 +429,7 @@ let fakeOzl, volume;
                 });
             });
 
-            xit('should not allow re-calling / storeBeacon()', async () => {
+            it('should not allow re-calling / storeBeacon()', async () => {
                 await assert.rejects(async () => {
                     await storageBeacon.storeBeacon(deadAddr);
                 }, {
@@ -450,11 +438,11 @@ let fakeOzl, volume;
                 });
             });
 
-            xit('should allow the onwer to change Emergency Mode / changeEmergencyMode()', async () => {
+            it('should allow the onwer to change Emergency Mode / changeEmergencyMode()', async () => {
                 await storageBeacon.changeEmergencyMode(eMode);
             });
 
-            xit('should not allow an external user to change Emergency Mode / changeEmergencyMode()', async () => {
+            it('should not allow an external user to change Emergency Mode / changeEmergencyMode()', async () => {
                 await assert.rejects(async () => {
                     await storageBeacon.connect(signers[1]).changeEmergencyMode(eMode);
                 }, {
@@ -463,7 +451,7 @@ let fakeOzl, volume;
                 });
             });
 
-            xit('should allow the owner to disable the Emitter / changeEmitterStatus()', async () => {
+            it('should allow the owner to disable the Emitter / changeEmitterStatus()', async () => {
                 await proxyFactory.createNewProxy(userDetails);
                 newProxyAddr = (await storageBeacon.getProxyByUser(signerAddr))[0].toString();
 
@@ -476,7 +464,7 @@ let fakeOzl, volume;
                 await storageBeacon.changeEmitterStatus(false);
             });
     
-            xit('should not allow an external user to disable the Emitter / changeEmitterStatus()', async () => {
+            it('should not allow an external user to disable the Emitter / changeEmitterStatus()', async () => {
                 await assert.rejects(async () => {
                     await storageBeacon.connect(signers[1]).changeEmitterStatus(true);
                 }, {
@@ -485,7 +473,7 @@ let fakeOzl, volume;
                 });
             });
 
-            xit('should return the userDetails / getUserDetailsById()', async () => {
+            it('should return the userDetails / getUserDetailsById()', async () => {
                 await proxyFactory.createNewProxy(userDetails);
                 userDetails[1] = usdtAddrArb;
                 pulledUserDetails = await storageBeacon.getUserDetailsById(0);
@@ -494,55 +482,55 @@ let fakeOzl, volume;
                 assert.equal(pulledUserDetails[2], userDetails[2]);
             });
 
-            xit('should return zero values when querying with a non-user / getUserDetailsById()', async () => {
+            it('should return zero values when querying with a non-user / getUserDetailsById()', async () => {
                 pulledUserDetails = await storageBeacon.getUserDetailsById(100);
                 assert.equal(pulledUserDetails[0], nullAddr);
                 assert.equal(pulledUserDetails[1], nullAddr);
                 assert.equal(pulledUserDetails[2], 0);
             });
 
-            xit('should return the proxies an user has / getProxyByUser()', async () => {
+            it('should return the proxies an user has / getProxyByUser()', async () => {
                 await proxyFactory.createNewProxy(userDetails);
                 userProxies = await storageBeacon.getProxyByUser(signerAddr);
                 assert(userProxies.length > 0);
             });
 
-            xit('should return an empty array when querying with a non-user / getProxyByUser()', async () => {
+            it('should return an empty array when querying with a non-user / getProxyByUser()', async () => {
                 userProxies = await storageBeacon.getProxyByUser(deadAddr);
                 assert(userProxies.length === 0);
             });
 
-            xit("should get an user's taskID / getTaskID()", async () => {
+            it("should get an user's taskID / getTaskID()", async () => {
                 await proxyFactory.createNewProxy(userDetails);
                 userProxies = await storageBeacon.getProxyByUser(signerAddr);
                 taskID = (await storageBeacon.getTaskID(userProxies[0])).toString();
                 assert(taskID.length > 0);
             });
 
-            xit("should return a zero taskID when querying with a non-user / getTaskID()", async () => {
+            it("should return a zero taskID when querying with a non-user / getTaskID()", async () => {
                 taskID = (await storageBeacon.getTaskID(deadAddr)).toString();
                 assert.equal(taskID, formatBytes32String(0));
             });
 
-            xit('should return true for an user / isUser()', async () => {
+            it('should return true for an user / isUser()', async () => {
                 await proxyFactory.createNewProxy(userDetails);
                 assert(await storageBeacon.isUser(signerAddr));
             });
 
-            xit('should return false for a non-user / isUser()', async () => {
+            it('should return false for a non-user / isUser()', async () => {
                 assert(!(await storageBeacon.isUser(deadAddr)));
             });
 
-            xit('should get the Emitter status / getEmitterStatus()', async () => {
+            it('should get the Emitter status / getEmitterStatus()', async () => {
                 assert(!(await storageBeacon.getEmitterStatus()));
             });
 
-            xit('should return the full token database / getTokenDatabase()', async () => {
+            it('should return the full token database / getTokenDatabase()', async () => {
                 const tokenDb = await storageBeacon.getTokenDatabase();
                 assert(tokenDb.length > 0);
             });
 
-            xit('should store the payment to the proxy / storeProxyPayment()', async () => {
+            it('should store the payment to the proxy / storeProxyPayment()', async () => {
                 tx = await proxyFactory.createNewProxy(userDetails);
                 receipt = await tx.wait();
                 newProxyAddr = receipt.logs[0].address;
@@ -553,7 +541,7 @@ let fakeOzl, volume;
                 assert.equal(formatEther(payments), 0.1);
             });
 
-            xit('should not let an external user to store a proxy payment / storeProxyPayment()', async () => {                
+            it('should not let an external user to store a proxy payment / storeProxyPayment()', async () => {                
                 await assert.rejects(async () => {
                     await storageBeacon.storeProxyPayment(deadAddr, 1000);
                 }, {
@@ -563,7 +551,7 @@ let fakeOzl, volume;
             });
         });
 
-        xdescribe('ozUpgradeableBeacon', async () => {
+        describe('ozUpgradeableBeacon', async () => {
             it('should allow the owner to upgrade the Storage Beacon / upgradeStorageBeacon()', async () => {
                 [storageBeaconMockAddr , storageBeaconMock] = await deployContract('StorageBeaconMock');
                 await beacon.upgradeStorageBeacon(storageBeaconMockAddr);
@@ -609,7 +597,7 @@ let fakeOzl, volume;
             });
         });
 
-        xdescribe('FakeOZL', async () => {
+        describe('FakeOZL', async () => {
             it('should get the total volume in USD / getTotalVolumeInUSD', async () => {
                 volume = await fakeOzl.getTotalVolumeInUSD(); 
                 assert.equal(formatEther(volume), 500);
@@ -666,7 +654,7 @@ let fakeOzl, volume;
 
 
     //autoRedeem set to 0
-    xdescribe('Pesimistic deployment', async function () {
+    describe('Pesimistic deployment', async function () {
         before( async () => {
             ([
                 beacon, 
