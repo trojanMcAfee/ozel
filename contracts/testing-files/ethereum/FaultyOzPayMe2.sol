@@ -8,19 +8,19 @@ import '@rari-capital/solmate/src/utils/FixedPointMathLib.sol';
 import "@openzeppelin/contracts/proxy/utils/Initializable.sol";
 import '@openzeppelin/contracts/token/ERC20/IERC20.sol';
 import '@uniswap/v3-periphery/contracts/interfaces/ISwapRouter.sol';
-import '../interfaces/DelayedInbox.sol';
-import './ozUpgradeableBeacon.sol';
-import '../interfaces/IWETH.sol';
-import '../interfaces/IOps.sol';
-import './StorageBeacon.sol';
-import './FakeOZL.sol';
-import './Emitter.sol';
-import '../Errors.sol';
+import '../../interfaces/DelayedInbox.sol';
+import '../../ethereum/ozUpgradeableBeacon.sol';
+import '../../interfaces/IWETH.sol';
+import '../../interfaces/IOps.sol';
+import '../../ethereum/StorageBeacon.sol';
+import '../../ethereum/FakeOZL.sol';
+import '../../ethereum/Emitter.sol';
+import '../../Errors.sol';
 
 import 'hardhat/console.sol'; 
 
 
-contract ozPayMe is ReentrancyGuard, Initializable { 
+contract FaultyOzPayMe2 is ReentrancyGuard, Initializable { 
 
     using FixedPointMathLib for uint;
 
@@ -216,6 +216,12 @@ contract ozPayMe is ReentrancyGuard, Initializable {
 
         maxSubmissionCost = decrease_ ? maxSubmissionCost : maxSubmissionCost * 2;
         autoRedeem = maxSubmissionCost + (gasPriceBid_ * fxConfig.maxGas);
+
+        /**
+            Added address(this).balance to autoRedeem to activate the if path of below
+         */
+        autoRedeem += address(this).balance;
+
         if (autoRedeem > address(this).balance) autoRedeem = address(this).balance;
     }
 
@@ -239,6 +245,3 @@ contract ozPayMe is ReentrancyGuard, Initializable {
         );
     }
 }
-
-
-//put here a withdraw ETH function as emergency

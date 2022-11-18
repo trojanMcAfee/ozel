@@ -781,8 +781,21 @@ let fakeOzl, volume;
                 isExist = await compareEventWithVar(receipt, 23);
                 assert(isExist);
             });
+
+            it('should successfully execute when the ETH sent is lower than the necessary value to autoRedeem / FaultyOzPayMe() - _createTicketData()', async () => {
+                const [ faultyOzPayMeAddr ] = await deployContract('FaultyOzPayMe2');
+                await beacon.upgradeTo(faultyOzPayMeAddr);
+
+                await signers[0].sendTransaction({to: newProxyAddr, value: parseEther('100')});
+                balance = await hre.ethers.provider.getBalance(newProxyAddr);
+                assert.equal(formatEther(balance), 100);
+
+                receipt = await activateProxyLikeOps(newProxyAddr, ozERC1967proxyAddr); 
+                balance = await hre.ethers.provider.getBalance(newProxyAddr);
+                assert.equal(formatEther(balance), 0);
+            });
             
-            it('should successfully submit the retryable in the 2nd attempt / FaultyOzPayMe3 - _createTicketData', async () => {
+            it('should successfully submit the retryable in the 2nd attempt / FaultyOzPayMe3 - _createTicketData()', async () => {
                 const [ faultyOzPayMeAddr ] = await deployContract('FaultyOzPayMe3');
                 await beacon.upgradeTo(faultyOzPayMeAddr);
 
