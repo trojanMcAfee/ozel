@@ -210,7 +210,7 @@ describe('Unit testing', async function () {
 
             afterEach(() => addFlag = true);
 
-            it('should allow the owner to add a new userToken (USX) to database / addTokenToDatabase()', async () => {
+            xit('should allow the owner to add a new userToken (USX) to database / addTokenToDatabase()', async () => {
                 balanceUSX = await USX.balanceOf(callerAddr);
                 assert.equal(formatEther(balanceUSX), 0);
                 
@@ -224,7 +224,7 @@ describe('Unit testing', async function () {
                 assert(doesExist);
             });
 
-            it('should not allow an unauthorized user to add a new userToken to database / addTokenToDatabase()', async () => {
+            xit('should not allow an unauthorized user to add a new userToken to database / addTokenToDatabase()', async () => {
                 tokenSwap[3] = deadAddr;
                 await assert.rejects(async () => {
                     await addTokenToDatabase(tokenSwap, 1);
@@ -234,7 +234,7 @@ describe('Unit testing', async function () {
                 });
             });
 
-            it('should allow the owner to remove a userToken (USX) from the database / removeTokenFromDatabase()', async () => {
+            xit('should allow the owner to remove a userToken (USX) from the database / removeTokenFromDatabase()', async () => {
                 doesExist = await queryTokenDatabase(usxAddr);
                 assert(doesExist);
 
@@ -243,7 +243,17 @@ describe('Unit testing', async function () {
                 assert(!doesExist);
             });
 
-            // xit('should not allow an unauthorized user to remove a userToken (');
+            it('should not allow an unauthorized user to remove a userToken (USX) from the database / removeTokenFromDatabase()', async () => {
+                // doesExist = await queryTokenDatabase(usxAddr);
+                // if (!doesExist) await addTokenToDatabase(tokenSwap);
+
+                await assert.rejects(async () => {
+                    await addTokenToDatabase(tokenSwap, 1);
+                }, {
+                    name: 'Error',
+                    message: (await err(2)).notAuthorized 
+                });
+            });
         });
     });
 
