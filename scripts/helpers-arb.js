@@ -236,7 +236,8 @@ async function deploy(n = 0) {
     //Facets
     // const diamondCutFacet = await deployFacet('DiamondCutFacet'); 
     const ozCutFacet = await deployFacet('ozCutFacet');
-    const diamondLoupeFacet = await deployFacet('DiamondLoupeFacet'); 
+    // const diamondLoupeFacet = await deployFacet('DiamondLoupeFacet'); 
+    const ozLoupeFacet = await deployFacet('ozLoupeFacet');
     const ozlFacet = await deployFacet('OZLFacet');
     const executorFacet = await deployFacet('ExecutorFacet');
     const oz4626 = await deployFacet('oz4626Facet');
@@ -287,7 +288,7 @@ async function deploy(n = 0) {
 
     const nonRevenueFacets = [ 
         ozCutFacet.address,
-        diamondLoupeFacet.address,
+        ozLoupeFacet.address,
         ownershipFacet.address,
         revenueFacet.address
     ];
@@ -316,7 +317,7 @@ async function deploy(n = 0) {
         diamondName: 'Diamond',
         facets: [
             ['ozCutFacet', ozCutFacet],
-            ['DiamondLoupeFacet', diamondLoupeFacet],
+            ['ozLoupeFacet', ozLoupeFacet],
             ['OZLFacet', ozlFacet],
             ['ExecutorFacet', executorFacet],
             ['oz4626Facet', oz4626],
