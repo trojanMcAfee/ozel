@@ -427,7 +427,7 @@ describe('Unit testing', async function () {
             });
         });
 
-        describe('addTokenToDatabase()', async () => {
+        describe('addTokenToDatabase() / removeTokenFromDatabase()', async () => {
             beforeEach(async () => {
                 //dForcePool --> USX: 0 / USDT: 2 / USDC: 1
                 tokenSwap = [
@@ -442,7 +442,7 @@ describe('Unit testing', async function () {
 
             afterEach(() => addFlag = true);
 
-            it('should allow the owner to add a new userToken (USX) to database', async () => {
+            it('should allow the owner to add a new userToken (USX) to database / addTokenToDatabase()', async () => {
                 balanceUSX = await USX.balanceOf(callerAddr);
                 assert.equal(formatEther(balanceUSX), 0);
                 
@@ -456,8 +456,26 @@ describe('Unit testing', async function () {
                 assert(doesExist);
             });
 
-            it('should not allow an unauthorized user to add a new userToken to database', async () => {
+            xit('should not allow an unauthorized user to add a new userToken to database / addTokenToDatabase()', async () => {
                 tokenSwap[3] = deadAddr;
+                await assert.rejects(async () => {
+                    await addTokenToDatabase(tokenSwap, 1);
+                }, {
+                    name: 'Error',
+                    message: (await err(2)).notAuthorized 
+                });
+            });
+
+            xit('should allow the owner to remove a userToken (USX) from the database / removeTokenFromDatabase()', async () => {
+                doesExist = await queryTokenDatabase(usxAddr);
+                assert(doesExist);
+
+                await ozlDiamond.removeTokenFromDatabase(tokenSwap);
+                doesExist = await queryTokenDatabase(usxAddr);
+                assert(!doesExist);
+            });
+
+            it('should not allow an unauthorized user to remove a userToken (USX) from the database / removeTokenFromDatabase()', async () => {
                 await assert.rejects(async () => {
                     await addTokenToDatabase(tokenSwap, 1);
                 }, {
