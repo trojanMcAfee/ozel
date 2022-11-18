@@ -234,9 +234,7 @@ async function deploy(n = 0) {
 
 
     //Facets
-    // const diamondCutFacet = await deployFacet('DiamondCutFacet'); 
     const ozCutFacet = await deployFacet('ozCutFacet');
-    // const diamondLoupeFacet = await deployFacet('DiamondLoupeFacet'); 
     const ozLoupeFacet = await deployFacet('ozLoupeFacet');
     const ozlFacet = await deployFacet('OZLFacet');
     const executorFacet = await deployFacet('ExecutorFacet');
