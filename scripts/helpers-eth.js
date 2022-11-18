@@ -34,7 +34,18 @@ const {
 
 
 async function deployContract(contractName, constrArgs) {
-    const Contract = await hre.ethers.getContractFactory(contractName);
+    let Contract;
+    
+    if (contractName === 'StorageBeacon') {
+        const [ libCommonAddr ] = await deployContract('LibCommon');
+        Contract = await hre.ethers.getContractFactory(contractName, {
+            libraries: {
+                LibCommon: libCommonAddr
+            }
+        });
+    } else {
+        Contract = await hre.ethers.getContractFactory(contractName);
+    }
 
     switch(contractName) {
         case 'UpgradeableBeacon':
