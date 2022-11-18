@@ -7,6 +7,7 @@ import '@uniswap/v3-periphery/contracts/interfaces/ISwapRouter.sol';
 import "@openzeppelin/contracts/proxy/utils/Initializable.sol";
 import '@openzeppelin/contracts/token/ERC20/IERC20.sol';
 import '@openzeppelin/contracts/access/Ownable.sol';
+import '../libraries/LibCommon.sol';
 import './ozUpgradeableBeacon.sol';
 import '../Errors.sol';
 
@@ -141,22 +142,23 @@ contract StorageBeacon is Initializable, Ownable {
     function removeTokenFromDatabase(address toRemove_) external onlyOwner {
         if (!queryTokenDatabase(toRemove_)) revert TokenNotInDatabase(toRemove_);
         tokenDatabase[toRemove_] = false;
-        uint index;
+        LibCommon.remove(tokenDatabaseArray, toRemove_);
+        // uint index;
 
-        for (uint i=0; i < tokenDatabaseArray.length; i++) {
-            if (tokenDatabaseArray[i] == toRemove_)  {
-                index = i;
-                break;
-            }
-        }
+        // for (uint i=0; i < tokenDatabaseArray.length; i++) {
+        //     if (tokenDatabaseArray[i] == toRemove_)  {
+        //         index = i;
+        //         break;
+        //     }
+        // }
 
-        for (uint i=index; i < tokenDatabaseArray.length - 1;){
-            tokenDatabaseArray[i] = tokenDatabaseArray[i+1];
-            unchecked { ++i; }
-        }
+        // for (uint i=index; i < tokenDatabaseArray.length - 1;){
+        //     tokenDatabaseArray[i] = tokenDatabaseArray[i+1];
+        //     unchecked { ++i; }
+        // }
 
-        delete tokenDatabaseArray[tokenDatabaseArray.length-1];
-        tokenDatabaseArray.pop();
+        // delete tokenDatabaseArray[tokenDatabaseArray.length-1];
+        // tokenDatabaseArray.pop();
     }
 
     function storeBeacon(address beacon_) external initializer { 
@@ -174,8 +176,6 @@ contract StorageBeacon is Initializable, Ownable {
     function storeProxyPayment(address proxy_, uint payment_) external onlyProxy {
         proxyToPayments[proxy_] += payment_;
     }
-
-    //add a remove token functionality - remove swaps
 
 
     //View functions

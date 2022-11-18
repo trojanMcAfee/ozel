@@ -67,7 +67,8 @@ const diamondABI = [
     'function getAUM() external view returns (uint,uint)',
     'function getTotalVolumeInETH() external view returns(uint)',
     'function getTotalVolumeInUSD() external view returns(uint)',
-    'function getOzelBalances(address) external view returns (uint,uint)'
+    'function getOzelBalances(address) external view returns (uint,uint)',
+    'function removeTokenFromDatabase((int128,int128,address,address,address)) external'
 ];
 
 

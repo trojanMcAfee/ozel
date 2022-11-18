@@ -8,6 +8,7 @@ import '@openzeppelin/contracts/utils/Address.sol';
 import { LibDiamond } from "../../libraries/LibDiamond.sol";
 import { ITri } from '../../interfaces/ICurve.sol';
 import { ModifiersARB } from '../../Modifiers.sol';
+import '../../libraries/LibCommon.sol';
 import '../../interfaces/IYtri.sol';
 import '../../interfaces/IWETH.sol';
 import './ExecutorFacet.sol';
@@ -200,6 +201,33 @@ contract OZLFacet is ModifiersARB {
         s.tokenDatabase[newSwap_.userToken] = true;
         s.swaps.push(newSwap_);
         emit NewUserToken(newSwap_.userToken);
+    }
+
+    function removeTokenFromDatabase(TradeOps memory swapToRemove_) external {
+        LibDiamond.enforceIsContractOwner();
+        if(!s.tokenDatabase[swapToRemove_.userToken]) revert TokenNotInDatabase(swapToRemove_.userToken);
+
+        s.tokenDatabase[swapToRemove_.userToken] = false;
+
+        LibCommon.remove(s.swaps, swapToRemove_);
+
+        // uint index;
+
+        // for (uint i=0; i < tokenDatabaseArray.length; i++) {
+        //     if (tokenDatabaseArray[i] == toRemove_)  {
+        //         index = i;
+        //         break;
+        //     }
+        // }
+
+        // for (uint i=index; i < tokenDatabaseArray.length - 1;){
+        //     tokenDatabaseArray[i] = tokenDatabaseArray[i+1];
+        //     unchecked { ++i; }
+        // }
+
+        // delete tokenDatabaseArray[tokenDatabaseArray.length-1];
+        // tokenDatabaseArray.pop();
+        
     }
 
 
