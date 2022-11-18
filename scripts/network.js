@@ -1,19 +1,19 @@
 
 
 // signer address:  0x0E743a1E37D691D8e52F7036375F3D148B4116ba
-// FakeOZL deployed to:  0xF9C5Ef23Da6c3139a1B7f9DBb5d5303338e0b52B
-// Emitter deployed to:  0x0a354358EfDfe7F5e308C4Df16195E300199EdC1
-// ozPayMe deployed to:  0xE0ab317b5D7AD571872B025aB6eAE9E60d082467
-// StorageBeacon deployed to:  0x53548E9698BC27eCfEd86dbC1Bd47d827912CB75
-// ozUpgradeableBeacon deployed to:  0x2A88A544E986c7f26D26FF2A3529eEB02787f4D2
-// ProxyFactory deployed to:  0x0cD3a4453c7b3A698AF11f0996f038bEa6eb9348
-// ozERC1967Proxy deployed to:  0x70D24Aa818d7531B49841B5bC0cfF5c5CBFEda7b
-// initialize with hash:  0x2fda5c0e191e362c4f62ece9f503d666a5d418a1533330d4fd883d7d46e89d7a
-// RedeemedHashes deployed to:  0x593a31aeDF34e86C36cadC58a130865587DdC1B4
-// RolesAuthority deployed to:  0x1Ea402A28F9504C74881B299c94dA26f748623E2
-// createNewProxy with hash:  0x9aa75ee5faf90fc509fd651a7f6ef966fd38f03066590083252cb9c887dad671
-// proxy 1:  0x0246bc2BacE3F5763Dfd505EC0D5bb73EDb566f8
-// task id:  0x4460594f777222baa6280125d099d4021961be417431f0f7566f79eb01fe9825
+// fakeOZL deployed to:  0xD1ee938A82F6cAa151056fd160b7C523AE029d8F
+// Emitter deployed to:  0x2aA80df7466fD490E2ad3DE9BD2E5462d76E62c9
+// ozPayMe deployed to:  0x78c862d984233a9273e2Bcf23c2b821d9b32113a
+// StorageBeacon deployed to:  0x725b97B129E92C581Ec2f2e006380f9B3d43eAaf
+// ozUpgradeableBeacon deployed to:  0x804e819d5b5CE1380E7ef3d306597AC98e2410dd
+// ProxyFactory deployed to:  0x10CE522f9e7480D06218ab1B0E23Fed749029313
+// ozERC1967Proxy deployed to:  0xe3631d1489D598da69a540E08691501efc81B094
+// initialize with hash:  0x0e31ec3f48c96dbb8e84fdaad493c85431b930283ef27c6922b8e67263211b24
+// RolesAuthority deployed to:  0x7F17f50b248DA02bB697fbd7deA288e3A07AaDd0
+// createNewProxy with hash:  0x0a7388474f5d0cbc77917ee1523232e4a6cf4ebaaca2939117ae49069efbdbb0
+// proxy 1:  0x98298D0267c48a246DC8bfEFAa85f9a64621DF54
+// task id:  0xaf4a5ea30c55e06abaa84c5c99b746c3eb12c7ad53078aea66316d67a778b9dd
+// **** Missing RedeemHashes contact ****
 
 
 
