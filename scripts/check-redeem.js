@@ -324,4 +324,29 @@ async function maink() {
 }
 
 
-maink();
+async function tryUI() {
+
+    const myAddr = '0x0E743a1E37D691D8e52F7036375F3D148B4116ba';
+    const storageBeaconAddr = '0x725b97B129E92C581Ec2f2e006380f9B3d43eAaf';
+    const storageBeacon = await hre.ethers.getContractAt('StorageBeacon', storageBeaconAddr);
+    const proxy1Addr = '0x98298D0267c48a246DC8bfEFAa85f9a64621DF54';
+    
+    const proxies = await storageBeacon.getProxyByUser(myAddr);
+    console.log('proxies: ', proxies);
+    const proxy1 = await hre.ethers.getContractAt('ozPayMe', proxies[1]);
+
+    let [ user, token, slippage ] = await proxy1.getUserDetails();
+    console.log('user: ', user);
+    console.log('token: ', token);
+    console.log('slippage %: ', Number(slippage)/100);
+    console.log('.');
+
+    // let payments = await storageBeacon.getProxyPayments(proxy1Addr);
+    // console.log('payments: ', Number(payments));
+    // console.log('parsed payments: ', formatEther(payments));
+
+
+}
+
+
+tryUI();

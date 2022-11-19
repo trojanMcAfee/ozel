@@ -143,22 +143,6 @@ contract StorageBeacon is Initializable, Ownable {
         if (!queryTokenDatabase(toRemove_)) revert TokenNotInDatabase(toRemove_);
         tokenDatabase[toRemove_] = false;
         LibCommon.remove(tokenDatabaseArray, toRemove_);
-        // uint index;
-
-        // for (uint i=0; i < tokenDatabaseArray.length; i++) {
-        //     if (tokenDatabaseArray[i] == toRemove_)  {
-        //         index = i;
-        //         break;
-        //     }
-        // }
-
-        // for (uint i=index; i < tokenDatabaseArray.length - 1;){
-        //     tokenDatabaseArray[i] = tokenDatabaseArray[i+1];
-        //     unchecked { ++i; }
-        // }
-
-        // delete tokenDatabaseArray[tokenDatabaseArray.length-1];
-        // tokenDatabaseArray.pop();
     }
 
     function storeBeacon(address beacon_) external initializer { 
