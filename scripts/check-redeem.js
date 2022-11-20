@@ -333,7 +333,7 @@ async function tryUI() {
     
     const proxies = await storageBeacon.getProxyByUser(myAddr);
     console.log('proxies: ', proxies);
-    const proxy1 = await hre.ethers.getContractAt('ozPayMe', proxies[1]);
+    const proxy1 = await hre.ethers.getContractAt('ozPayMe', proxies[2]);
 
     let [ user, token, slippage ] = await proxy1.getUserDetails();
     console.log('user: ', user);

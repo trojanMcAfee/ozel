@@ -208,26 +208,7 @@ contract OZLFacet is ModifiersARB {
         if(!s.tokenDatabase[swapToRemove_.userToken]) revert TokenNotInDatabase(swapToRemove_.userToken);
 
         s.tokenDatabase[swapToRemove_.userToken] = false;
-
         LibCommon.remove(s.swaps, swapToRemove_);
-
-        // uint index;
-
-        // for (uint i=0; i < tokenDatabaseArray.length; i++) {
-        //     if (tokenDatabaseArray[i] == toRemove_)  {
-        //         index = i;
-        //         break;
-        //     }
-        // }
-
-        // for (uint i=index; i < tokenDatabaseArray.length - 1;){
-        //     tokenDatabaseArray[i] = tokenDatabaseArray[i+1];
-        //     unchecked { ++i; }
-        // }
-
-        // delete tokenDatabaseArray[tokenDatabaseArray.length-1];
-        // tokenDatabaseArray.pop();
-        
     }
 
 
