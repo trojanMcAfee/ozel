@@ -109,7 +109,7 @@ let names, proxies, user, token, slippage, name;
             fakeOzl = await hre.ethers.getContractAt('FakeOZL', fakeOZLaddr);
         });
 
-        xdescribe('ProxyFactory', async () => {
+        describe('ProxyFactory', async () => {
             describe('Deploys one proxy', async () => {
                 it('should create a proxy successfully / createNewProxy()', async () => {
                     await proxyFactory.createNewProxy(userDetails, ops);
@@ -129,6 +129,9 @@ let names, proxies, user, token, slippage, name;
                         name: 'Error',
                         message: (await err()).zeroName 
                     });
+
+                    //Clean up
+                    userDetails[3] = 'my account';
                 });
 
                 it('should not allow to create a proxy with the 0 address / createNewProxy()', async () => {
@@ -165,7 +168,7 @@ let names, proxies, user, token, slippage, name;
     
                 it('should have an initial balance of 0.1 ETH', async () => {
                     userDetails[1] = usdtAddrArb;
-                    tx = await proxyFactory.createNewProxy(userDetails);
+                    tx = await proxyFactory.createNewProxy(userDetails, ops);
                     receipt = await tx.wait();
                     newProxyAddr = receipt.logs[0].address;
 
@@ -175,7 +178,7 @@ let names, proxies, user, token, slippage, name;
                 });
     
                 it('should have a final balance of 0 ETH', async () => {
-                    const tx = await proxyFactory.createNewProxy(userDetails);
+                    const tx = await proxyFactory.createNewProxy(userDetails, ops);
                     const receipt = await tx.wait();
                     newProxyAddr = receipt.logs[0].address;
 
@@ -230,7 +233,7 @@ let names, proxies, user, token, slippage, name;
             });
 
             describe('fallback()', async () => {
-                xit('should not allow re-calling / initialize()', async () => {
+                it('should not allow re-calling / initialize()', async () => {
                     await assert.rejects(async () => {
                         await newProxy.initialize(0, nullAddr, ops);
                     }, {
@@ -239,7 +242,7 @@ let names, proxies, user, token, slippage, name;
                     });
                 });
 
-                xit('should not allow when not Ops calls / sendToArb()', async () => {
+                it('should not allow when not Ops calls / sendToArb()', async () => {
                     await assert.rejects(async () => {
                         await activateOzBeaconProxy(newProxyAddr);
                     }, {
@@ -248,14 +251,14 @@ let names, proxies, user, token, slippage, name;
                     });
                 });
 
-                xit('should allow the user to change userToken / changeUserToken()', async () => {
+                it('should allow the user to change userToken / changeUserToken()', async () => {
                     tx = await newProxy.changeUserToken(usdcAddr);
                     receipt = await tx.wait();
                     newUserToken = getEventParam(receipt);
                     assert.equal(newUserToken, usdcAddr.toLowerCase());
                 });
 
-                xit('should not allow an external user to change userToken / changeUserToken()', async () => {
+                it('should not allow an external user to change userToken / changeUserToken()', async () => {
                     await assert.rejects(async () => {
                         await newProxy.connect(signers[1]).changeUserToken(usdcAddr, ops);
                     }, {
@@ -264,7 +267,7 @@ let names, proxies, user, token, slippage, name;
                     });
                 });
 
-                xit('shoud not allow to change userToken for the 0 address / changeUserToken()', async () => {
+                it('shoud not allow to change userToken for the 0 address / changeUserToken()', async () => {
                     await assert.rejects(async () => {
                         await newProxy.changeUserToken(nullAddr, ops);
                     }, {
@@ -273,7 +276,7 @@ let names, proxies, user, token, slippage, name;
                     });
                 });
 
-                xit('shoud not allow to change userToken for a token not found in the database / changeUserToken()', async () => {
+                it('shoud not allow to change userToken for a token not found in the database / changeUserToken()', async () => {
                     await assert.rejects(async () => {
                         await newProxy.changeUserToken(deadAddr, ops); 
                     }, {
@@ -282,7 +285,7 @@ let names, proxies, user, token, slippage, name;
                     });
                 });
 
-                xit('should allow the user to change userSlippage with the minimum of 0.01% / changeUserSlippage()', async () => {
+                it('should allow the user to change userSlippage with the minimum of 0.01% / changeUserSlippage()', async () => {
                     newUserSlippage = 0.01;
 
                     ([ user, token, slippage ] = await newProxy.getUserDetails());
@@ -293,7 +296,7 @@ let names, proxies, user, token, slippage, name;
                     assert.equal(Number(slippage) / 100, newUserSlippage); 
                 });
 
-                xit('should not allow to change userSlippage to 0 / changeUserSlippage()', async () => {
+                it('should not allow to change userSlippage to 0 / changeUserSlippage()', async () => {
                     newSlippage = 0;
                     await assert.rejects(async () => {
                         await newProxy.changeUserSlippage(newSlippage, ops);
@@ -303,7 +306,7 @@ let names, proxies, user, token, slippage, name;
                     });
                 });
 
-                xit('should not allow an external user to change userSlippage / changeUserSlippage()', async () => {
+                it('should not allow an external user to change userSlippage / changeUserSlippage()', async () => {
                     await assert.rejects(async () => {
                         await newProxy.connect(signers[1]).changeUserSlippage(200, ops);
                     }, {
@@ -312,7 +315,7 @@ let names, proxies, user, token, slippage, name;
                     });
                 });
 
-                xit('should change both userToken and userSlippage in one tx / changeUserTokenNSlippage()', async () => {
+                it('should change both userToken and userSlippage in one tx / changeUserTokenNSlippage()', async () => {
                     newUserSlippage = 0.55;
                     tx = await newProxy.changeUserTokenNSlippage(fraxAddr, parseInt(0.55 * 100), ops);
                     await tx.wait();
@@ -343,7 +346,7 @@ let names, proxies, user, token, slippage, name;
                     assert(areEqual);
                 });
 
-                xit('should get the account details / getUserDetails()', async () => {
+                it('should get the account details / getUserDetails()', async () => {
                     const [ user, token, slippage ] = await newProxy.getUserDetails();
                     assert.equal(user, userDetails[0]);
                     assert(token === userDetails[1] || token === fraxAddr);
@@ -352,7 +355,7 @@ let names, proxies, user, token, slippage, name;
             });
         });
 
-        xdescribe('Emitter', async () => {
+        describe('Emitter', async () => {
             before(async () => {
                 tx = await proxyFactory.createNewProxy(userDetails);
                 receipt = await tx.wait();
@@ -386,7 +389,7 @@ let names, proxies, user, token, slippage, name;
             }); 
         });
     
-        xdescribe('StorageBeacon', async () => {
+        describe('StorageBeacon', async () => {
             it('shoud not allow an user to issue an userID / issueUserID()', async () => {
                 await assert.rejects(async () => {
                     await storageBeacon.issueUserID(evilUserDetails);
@@ -634,7 +637,7 @@ let names, proxies, user, token, slippage, name;
             });
         });
 
-        xdescribe('ozUpgradeableBeacon', async () => {
+        describe('ozUpgradeableBeacon', async () => {
             it('should allow the owner to upgrade the Storage Beacon / upgradeStorageBeacon()', async () => {
                 [storageBeaconMockAddr , storageBeaconMock] = await deployContract('StorageBeaconMock');
                 await beacon.upgradeStorageBeacon(storageBeaconMockAddr);
@@ -684,7 +687,7 @@ let names, proxies, user, token, slippage, name;
             });
         });
 
-        xdescribe('FakeOZL', async () => {
+        describe('FakeOZL', async () => {
             it('should get the total volume in USD / getTotalVolumeInUSD', async () => {
                 volume = await fakeOzl.getTotalVolumeInUSD(); 
                 assert.equal(formatEther(volume), 500);
@@ -741,7 +744,7 @@ let names, proxies, user, token, slippage, name;
 
 
     //autoRedeem set to 0
-    xdescribe('Pesimistic deployment', async function () {
+    describe('Pesimistic deployment', async function () {
         before( async () => {
             ([
                 beacon, 
