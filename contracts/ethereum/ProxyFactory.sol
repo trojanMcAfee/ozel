@@ -54,7 +54,8 @@ contract ProxyFactory is ReentrancyGuard, Initializable {
         if (!success) revert CallFailed('ProxyFactory: init failed');
 
         _startTask(address(newProxy));
-        StorageBeacon(_getStorageBeacon(0)).saveUserProxy(msg.sender, address(newProxy));
+        // StorageBeacon(_getStorageBeacon(0)).saveUserProxy(msg.sender, address(newProxy));
+        StorageBeacon(_getStorageBeacon(0)).saveUserToDetails(address(newProxy), userDetails_); //change userDetails struct to accountDetails
 
         return address(newProxy);
     }

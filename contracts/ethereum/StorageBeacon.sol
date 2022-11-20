@@ -51,7 +51,11 @@ contract StorageBeacon is Initializable, Ownable {
     mapping(address => bool) private userDatabase;
     mapping(uint => UserConfig) public idToUserDetails;
     mapping(address => address) public proxyToUser; 
+
     mapping(address => address[]) public userToProxy;
+    mapping(address => UserConfig[]) public userToDetails;
+
+
     mapping(address => mapping(IERC20 => uint)) public userToFailedERC;
     mapping(address => IERC20[]) public userToFailedTokenCount;
     mapping(address => uint) public proxyToPayments;
@@ -119,12 +123,28 @@ contract StorageBeacon is Initializable, Ownable {
         unchecked { ++internalId; }
     }
     
-    function saveUserProxy(address user_, address proxy_) external hasRole(0x68e540e5) {
-        userToProxy[user_].push(proxy_);
-        proxyToUser[proxy_] = user_;
+    // function saveUserProxy(address user_, address proxy_) external hasRole(0x68e540e5) {
+    //     userToProxy[user_].push(proxy_);
+    //     proxyToUser[proxy_] = user_;
+    //     proxyDatabase[proxy_] = true;
+    //     userDatabase[user_] = true;
+    // }
+
+    //----
+
+    function saveUserToDetails(
+        address proxy_, 
+        UserConfig memory accountDetails_
+    ) external hasRole(0x68e540e5) {
+        userToDetails[accountDetails_.user].push(accountDetails_);
+        userToProxy[accountDetails_.user].push(proxy_);
+
+        proxyToUser[proxy_] = accountDetails_.user;
         proxyDatabase[proxy_] = true;
-        userDatabase[user_] = true;
+        if (!userDatabase[accountDetails_.user]) userDatabase[accountDetails_.user] = true;
     }
+
+    //-----
 
     function saveTaskId(address proxy_, bytes32 id_) external hasRole(0xf2034a69) {
         taskIDs[proxy_] = id_;
@@ -180,9 +200,27 @@ contract StorageBeacon is Initializable, Ownable {
         return eMode;
     }
 
+
+
     function getProxyByUser(address user_) external view returns(address[] memory) {
         return userToProxy[user_];
     } 
+
+    //----
+
+    // function getProxiesByName(address user_) external view returns(address[] memory) {
+    //     // address proxy = nameToProxy[accountName_]; 
+
+    //     // nameToProxies[accountName_]; 
+
+    //     return userToNames[user_];
+    // }
+
+    // function getProxiesDetails(address user_) external view returns(StorageBeacon.UserConfig[] memory) {
+    //     return 
+    // }
+
+    //----
 
     function getTaskID(address proxy_) external view returns(bytes32) {
         return taskIDs[proxy_];
