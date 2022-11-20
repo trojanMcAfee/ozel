@@ -78,7 +78,7 @@ const proxyABIeth = [
     'function changeUserToken(address newUserToken_)',
     'function sendToArb(tuple(uint256 maxSubmissionCost, uint256 gasPriceBid, uint256 autoRedeem) varConfig_, tuple(address user, address userToken, uint256 userSlippage) userDetails_)',
     'function initialize(uint256 userId_, address beacon_)',
-    'function getUserDetails() external view returns ((address,address,uint256))',
+    'function getUserDetails() external view returns ((address,address,uint256,string))',
     'function changeUserTokenNSlippage(address,uint256) external'
 ];
 
