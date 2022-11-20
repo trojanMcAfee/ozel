@@ -1,5 +1,5 @@
 {
-    "abi": [
+  "abi": [
       {
         "inputs": [
           {
@@ -47,28 +47,6 @@
           {
             "components": [
               {
-                "internalType": "uint256",
-                "name": "maxSubmissionCost",
-                "type": "uint256"
-              },
-              {
-                "internalType": "uint256",
-                "name": "gasPriceBid",
-                "type": "uint256"
-              },
-              {
-                "internalType": "uint256",
-                "name": "autoRedeem",
-                "type": "uint256"
-              }
-            ],
-            "internalType": "struct StorageBeacon.VariableConfig",
-            "name": "varConfig_",
-            "type": "tuple"
-          },
-          {
-            "components": [
-              {
                 "internalType": "contract ISwapRouter",
                 "name": "swapRouter",
                 "type": "address"
@@ -102,6 +80,11 @@
             "internalType": "address[]",
             "name": "tokens_",
             "type": "address[]"
+          },
+          {
+            "internalType": "uint256",
+            "name": "gasPriceBid_",
+            "type": "uint256"
           }
         ],
         "stateMutability": "nonpayable",
@@ -110,6 +93,28 @@
       {
         "inputs": [],
         "name": "NotProxy",
+        "type": "error"
+      },
+      {
+        "inputs": [
+          {
+            "internalType": "address",
+            "name": "token",
+            "type": "address"
+          }
+        ],
+        "name": "TokenAlreadyInDatabase",
+        "type": "error"
+      },
+      {
+        "inputs": [
+          {
+            "internalType": "address",
+            "name": "token",
+            "type": "address"
+          }
+        ],
+        "name": "TokenNotInDatabase",
         "type": "error"
       },
       {
@@ -200,29 +205,12 @@
       {
         "inputs": [
           {
-            "components": [
-              {
-                "internalType": "uint256",
-                "name": "maxSubmissionCost",
-                "type": "uint256"
-              },
-              {
-                "internalType": "uint256",
-                "name": "gasPriceBid",
-                "type": "uint256"
-              },
-              {
-                "internalType": "uint256",
-                "name": "autoRedeem",
-                "type": "uint256"
-              }
-            ],
-            "internalType": "struct StorageBeacon.VariableConfig",
-            "name": "newVarConfig_",
-            "type": "tuple"
+            "internalType": "uint256",
+            "name": "newGasPriceBid_",
+            "type": "uint256"
           }
         ],
-        "name": "changeVariableConfig",
+        "name": "changeGasPriceBid",
         "outputs": [],
         "stateMutability": "nonpayable",
         "type": "function"
@@ -331,6 +319,19 @@
         "type": "function"
       },
       {
+        "inputs": [],
+        "name": "getGasPriceBid",
+        "outputs": [
+          {
+            "internalType": "uint256",
+            "name": "",
+            "type": "uint256"
+          }
+        ],
+        "stateMutability": "view",
+        "type": "function"
+      },
+      {
         "inputs": [
           {
             "internalType": "address",
@@ -344,6 +345,11 @@
             "internalType": "address[]",
             "name": "",
             "type": "address[]"
+          },
+          {
+            "internalType": "string[]",
+            "name": "",
+            "type": "string[]"
           }
         ],
         "stateMutability": "view",
@@ -445,39 +451,14 @@
                 "internalType": "uint256",
                 "name": "userSlippage",
                 "type": "uint256"
+              },
+              {
+                "internalType": "string",
+                "name": "accountName",
+                "type": "string"
               }
             ],
             "internalType": "struct StorageBeacon.UserConfig",
-            "name": "",
-            "type": "tuple"
-          }
-        ],
-        "stateMutability": "view",
-        "type": "function"
-      },
-      {
-        "inputs": [],
-        "name": "getVariableConfig",
-        "outputs": [
-          {
-            "components": [
-              {
-                "internalType": "uint256",
-                "name": "maxSubmissionCost",
-                "type": "uint256"
-              },
-              {
-                "internalType": "uint256",
-                "name": "gasPriceBid",
-                "type": "uint256"
-              },
-              {
-                "internalType": "uint256",
-                "name": "autoRedeem",
-                "type": "uint256"
-              }
-            ],
-            "internalType": "struct StorageBeacon.VariableConfig",
             "name": "",
             "type": "tuple"
           }
@@ -509,6 +490,11 @@
             "internalType": "uint256",
             "name": "userSlippage",
             "type": "uint256"
+          },
+          {
+            "internalType": "string",
+            "name": "accountName",
+            "type": "string"
           }
         ],
         "stateMutability": "view",
@@ -551,6 +537,11 @@
                 "internalType": "uint256",
                 "name": "userSlippage",
                 "type": "uint256"
+              },
+              {
+                "internalType": "string",
+                "name": "accountName",
+                "type": "string"
               }
             ],
             "internalType": "struct StorageBeacon.UserConfig",
@@ -659,6 +650,19 @@
         "type": "function"
       },
       {
+        "inputs": [
+          {
+            "internalType": "address",
+            "name": "toRemove_",
+            "type": "address"
+          }
+        ],
+        "name": "removeTokenFromDatabase",
+        "outputs": [],
+        "stateMutability": "nonpayable",
+        "type": "function"
+      },
+      {
         "inputs": [],
         "name": "renounceOwnership",
         "outputs": [],
@@ -687,16 +691,38 @@
         "inputs": [
           {
             "internalType": "address",
-            "name": "user_",
+            "name": "proxy_",
             "type": "address"
           },
           {
-            "internalType": "address",
-            "name": "proxy_",
-            "type": "address"
+            "components": [
+              {
+                "internalType": "address",
+                "name": "user",
+                "type": "address"
+              },
+              {
+                "internalType": "address",
+                "name": "userToken",
+                "type": "address"
+              },
+              {
+                "internalType": "uint256",
+                "name": "userSlippage",
+                "type": "uint256"
+              },
+              {
+                "internalType": "string",
+                "name": "accountName",
+                "type": "string"
+              }
+            ],
+            "internalType": "struct StorageBeacon.UserConfig",
+            "name": "userDetails_",
+            "type": "tuple"
           }
         ],
-        "name": "saveUserProxy",
+        "name": "saveUserToDetails",
         "outputs": [],
         "stateMutability": "nonpayable",
         "type": "function"
@@ -863,7 +889,7 @@
             "type": "uint256"
           }
         ],
-        "name": "userToProxy",
+        "name": "userToProxies",
         "outputs": [
           {
             "internalType": "address",
@@ -875,4 +901,4 @@
         "type": "function"
       }
     ]
-  }
+}

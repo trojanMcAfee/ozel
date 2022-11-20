@@ -190,14 +190,6 @@ contract StorageBeacon is Initializable, Ownable {
         return eMode;
     }
 
-
-
-    // function getProxyByUser(address user_) external view returns(address[] memory) {
-    //     return userToProxies[user_];
-    // } 
-
-    //----
-
     function getProxyByUser(
         address user_
     ) external view returns(address[] memory, string[] memory) {
@@ -209,8 +201,6 @@ contract StorageBeacon is Initializable, Ownable {
         }
         return (proxies, names);
     }
-
-    //----
 
     function getTaskID(address proxy_) external view returns(bytes32) {
         return taskIDs[proxy_];

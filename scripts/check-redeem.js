@@ -263,7 +263,7 @@ async function main() {
 
 async function maink() {
     const l2Provider = new ethers.providers.JsonRpcProvider(process.env.ARB_GOERLI);
-    const fakeOZLaddr = '0xD1ee938A82F6cAa151056fd160b7C523AE029d8F';
+    const fakeOZLaddr = '0xE2C5EbbdE25878153Bd760A1FB7e510eCE5cc19E';
     const fakeOZL = await(await hre.ethers.getContractAt('FakeOZL', fakeOZLaddr)).connect(l2Provider);
     console.log('fakeOZL addr: ', fakeOZLaddr);
 
@@ -291,8 +291,8 @@ async function maink() {
     ({abi} = require('./UI_sBeacon.json'));
     const sBeaconABI = abi;
 
-    const proxy1Addr = '0x98298D0267c48a246DC8bfEFAa85f9a64621DF54';
-    const sBeaconAddr = '0x725b97B129E92C581Ec2f2e006380f9B3d43eAaf';
+    const proxy1Addr = '0x2aAD9512A6c2e95E6d558e58781424C0E3fe60E2';
+    const sBeaconAddr = '0x6FD1b25A2A5C0BEE3269E1B2Ee9c46566aD73846';
 
     const proxy1 = await hre.ethers.getContractAt(proxyABI, proxy1Addr);
     const sBeacon = await hre.ethers.getContractAt(sBeaconABI, sBeaconAddr);
@@ -327,24 +327,53 @@ async function maink() {
 async function tryUI() {
 
     const myAddr = '0x0E743a1E37D691D8e52F7036375F3D148B4116ba';
-    const storageBeaconAddr = '0x725b97B129E92C581Ec2f2e006380f9B3d43eAaf';
+    const storageBeaconAddr = '0x6FD1b25A2A5C0BEE3269E1B2Ee9c46566aD73846';
     const storageBeacon = await hre.ethers.getContractAt('StorageBeacon', storageBeaconAddr);
-    const proxy1Addr = '0x98298D0267c48a246DC8bfEFAa85f9a64621DF54';
+    const proxy1Addr = '0x2aAD9512A6c2e95E6d558e58781424C0E3fe60E2';
     
-    const proxies = await storageBeacon.getProxyByUser(myAddr);
+    const [ proxies, names ] = await storageBeacon.getProxyByUser(myAddr);
     console.log('proxies: ', proxies);
-    const proxy1 = await hre.ethers.getContractAt('ozPayMe', proxies[2]);
+    console.log('names: ', names);
+    const proxy1 = await hre.ethers.getContractAt('ozPayMe', proxies[1]);
 
-    let [ user, token, slippage ] = await proxy1.getUserDetails();
+    let [ user, token, slippage, name ] = await proxy1.getUserDetails();
     console.log('user: ', user);
     console.log('token: ', token);
-    console.log('slippage %: ', Number(slippage)/100);
+    console.log('slippage % - 100: ', Number(slippage)/100);
+    console.log('name: ', name);
     console.log('.');
 
-    // let payments = await storageBeacon.getProxyPayments(proxy1Addr);
-    // console.log('payments: ', Number(payments));
-    // console.log('parsed payments: ', formatEther(payments));
+    tx = await proxy1.changeUserTokenNSlippage(wbtcAddr, 1);
+    await tx.wait();
 
+    ([ user, token, slippage, name ] = await proxy1.getUserDetails());
+    console.log('user: ', user);
+    console.log('token - wbtc: ', token);
+    console.log('slippage % - 0.01: ', Number(slippage)/100);
+    console.log('name - same ^: ', name);
+    console.log('.');
+
+
+}
+
+
+async function create() {
+    const signerAddr = '0x0E743a1E37D691D8e52F7036375F3D148B4116ba';
+    const ozERC1967proxyAddr = '0xb2387018E77A9D08C207C78Ee65631F694a25C46';
+    const proxyFactory = await hre.ethers.getContractAt('ProxyFactory', ozERC1967proxyAddr);
+
+    const userDetails = [
+        signerAddr,
+        usdtAddrArb,
+        defaultSlippage,
+        'test account'
+    ];
+
+    const tx = await proxyFactory.createNewProxy(userDetails, ops);
+    const receipt = await tx.wait();
+    console.log('createNewProxy with hash: ', receipt.transactionHash);
+    const newProxyAddr = receipt.logs[0].address;
+    console.log('newProxy: ', newProxyAddr);
 
 }
 

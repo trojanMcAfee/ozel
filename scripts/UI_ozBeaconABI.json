@@ -1,5 +1,5 @@
 {
-    "abi": [
+  "abi": [
       {
         "inputs": [
           {
@@ -154,7 +154,7 @@
         "inputs": [
           {
             "internalType": "uint256",
-            "name": "newUserSlippage_",
+            "name": "newSlippageBasisPoint_",
             "type": "uint256"
           }
         ],
@@ -172,6 +172,24 @@
           }
         ],
         "name": "changeUserToken",
+        "outputs": [],
+        "stateMutability": "nonpayable",
+        "type": "function"
+      },
+      {
+        "inputs": [
+          {
+            "internalType": "address",
+            "name": "newUserToken_",
+            "type": "address"
+          },
+          {
+            "internalType": "uint256",
+            "name": "newSlippageBasisPoint_",
+            "type": "uint256"
+          }
+        ],
+        "name": "changeUserTokenNSlippage",
         "outputs": [],
         "stateMutability": "nonpayable",
         "type": "function"
@@ -196,6 +214,11 @@
                 "internalType": "uint256",
                 "name": "userSlippage",
                 "type": "uint256"
+              },
+              {
+                "internalType": "string",
+                "name": "accountName",
+                "type": "string"
               }
             ],
             "internalType": "struct StorageBeacon.UserConfig",
@@ -227,26 +250,9 @@
       {
         "inputs": [
           {
-            "components": [
-              {
-                "internalType": "uint256",
-                "name": "maxSubmissionCost",
-                "type": "uint256"
-              },
-              {
-                "internalType": "uint256",
-                "name": "gasPriceBid",
-                "type": "uint256"
-              },
-              {
-                "internalType": "uint256",
-                "name": "autoRedeem",
-                "type": "uint256"
-              }
-            ],
-            "internalType": "struct StorageBeacon.VariableConfig",
-            "name": "varConfig_",
-            "type": "tuple"
+            "internalType": "uint256",
+            "name": "gasPriceBid_",
+            "type": "uint256"
           },
           {
             "components": [
@@ -264,6 +270,11 @@
                 "internalType": "uint256",
                 "name": "userSlippage",
                 "type": "uint256"
+              },
+              {
+                "internalType": "string",
+                "name": "accountName",
+                "type": "string"
               }
             ],
             "internalType": "struct StorageBeacon.UserConfig",
@@ -275,6 +286,13 @@
         "outputs": [],
         "stateMutability": "payable",
         "type": "function"
+      },
+      {
+        "inputs": [],
+        "name": "withdrawETH_lastResort",
+        "outputs": [],
+        "stateMutability": "nonpayable",
+        "type": "function"
       }
-    ]   
-  }
+    ]
+}
