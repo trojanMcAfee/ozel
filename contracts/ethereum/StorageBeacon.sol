@@ -53,7 +53,6 @@ contract StorageBeacon is Initializable, Ownable {
     mapping(address => address) public proxyToUser; 
 
     mapping(address => address[]) public userToProxies;
-    // mapping(address => UserConfig[]) public userToDetails;
     mapping(address => UserConfig) proxyToDetails;
 
 
@@ -123,15 +122,7 @@ contract StorageBeacon is Initializable, Ownable {
         id = internalId;
         unchecked { ++internalId; }
     }
-    
-    // function saveUserProxy(address user_, address proxy_) external hasRole(0x68e540e5) {
-    //     userToProxies[user_].push(proxy_);
-    //     proxyToUser[proxy_] = user_;
-    //     proxyDatabase[proxy_] = true;
-    //     userDatabase[user_] = true;
-    // }
 
-    //----
 
     function saveUserToDetails(
         address proxy_, 
@@ -140,14 +131,10 @@ contract StorageBeacon is Initializable, Ownable {
         userToProxies[userDetails_.user].push(proxy_);
         proxyToDetails[proxy_] = userDetails_;
 
-        // userToDetails[accountDetails_.user].push(accountDetails_);
-        // userToProxies[accountDetails_.user].push(proxy_);
-
         proxyDatabase[proxy_] = true; //remove this later since it can be achieved with proxyToDetails mapping
         if (!userDatabase[userDetails_.user]) userDatabase[userDetails_.user] = true;
     }
 
-    //-----
 
     function saveTaskId(address proxy_, bytes32 id_) external hasRole(0xf2034a69) {
         taskIDs[proxy_] = id_;
@@ -205,13 +192,13 @@ contract StorageBeacon is Initializable, Ownable {
 
 
 
-    function getProxyByUser(address user_) external view returns(address[] memory) {
-        return userToProxies[user_];
-    } 
+    // function getProxyByUser(address user_) external view returns(address[] memory) {
+    //     return userToProxies[user_];
+    // } 
 
     //----
 
-    function getProxiesByUser(
+    function getProxyByUser(
         address user_
     ) external view returns(address[] memory, string[] memory) {
         address[] memory proxies = userToProxies[user_];
@@ -220,21 +207,8 @@ contract StorageBeacon is Initializable, Ownable {
         for (uint i=0; i < proxies.length; i++) {
             names[i] = proxyToDetails[proxies[i]].accountName;
         }
-
         return (proxies, names);
     }
-
-    // function getProxiesByName(address user_) external view returns(address[] memory) {
-    //     // address proxy = nameToProxy[accountName_]; 
-
-    //     // nameToProxies[accountName_]; 
-
-    //     return userToNames[user_];
-    // }
-
-    // function getProxiesDetails(address user_) external view returns(StorageBeacon.UserConfig[] memory) {
-    //     return 
-    // }
 
     //----
 
