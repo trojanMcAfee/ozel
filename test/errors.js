@@ -21,6 +21,7 @@ async function err(n = 0) {
         notOwner: "VM Exception while processing transaction: reverted with reason string 'Ownable: caller is not the owner'",
         zeroAddress: `VM Exception while processing transaction: reverted with custom error 'CantBeZero("address")'`,
         zeroSlippage: `VM Exception while processing transaction: reverted with custom error 'CantBeZero("slippage")'`,
+        zeroName: `VM Exception while processing transaction: reverted with custom error 'CantBeZero("accountName")'`,
         tokenNotFound: `VM Exception while processing transaction: reverted with custom error 'TokenNotInDatabase("${n}")'`,
         zeroMsgValue: `VM Exception while processing transaction: reverted with custom error 'CantBeZero("msg.value")'`,
         zeroShares: `VM Exception while processing transaction: reverted with custom error 'CantBeZero("shares")'`,

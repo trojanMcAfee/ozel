@@ -20,6 +20,7 @@ contract StorageBeacon is Initializable, Ownable {
         address user;
         address userToken;
         uint userSlippage; 
+        string accountName;
     }
 
     struct FixedConfig {  

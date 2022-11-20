@@ -83,7 +83,7 @@ const proxyABIeth = [
 ];
 
 const factoryABI = [
-    'function createNewProxy(tuple(address user, address userToken, uint256 userSlippage) userDetails_) external returns(address)',
+    'function createNewProxy(tuple(address user, address userToken, uint256 userSlippage, string accountName) userDetails_) external returns(address)',
     'function initialize(address beacon_)'
 ];
 

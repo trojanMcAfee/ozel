@@ -48,7 +48,7 @@ contract ozBeaconProxy is ReentrancyGuard, Initializable, BeaconProxy {
         uint gasPriceBid = _getStorageBeacon().getGasPriceBid();
 
         //first 4 bytes on ozPayMe
-        if (
+        if ( //add a way to be add more funcs here (for updgrading)
             bytes4(msg.data) == 0xda35a26f || //initialize
             bytes4(msg.data) == 0x66eb4b13 || //changeUserToken
             bytes4(msg.data) == 0x8fe913f1 || //changeUserSlippage
@@ -58,7 +58,7 @@ contract ozBeaconProxy is ReentrancyGuard, Initializable, BeaconProxy {
             data = msg.data;
         } else {
             data = abi.encodeWithSignature(
-                'sendToArb(uint256,(address,address,uint256))', 
+                'sendToArb(uint256,(address,address,uint256,string))', 
                 gasPriceBid,
                 userDetails
             );
