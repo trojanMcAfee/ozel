@@ -52,8 +52,9 @@ contract StorageBeacon is Initializable, Ownable {
     mapping(uint => UserConfig) public idToUserDetails;
     mapping(address => address) public proxyToUser; 
 
-    mapping(address => address[]) public userToProxy;
-    mapping(address => UserConfig[]) public userToDetails;
+    mapping(address => address[]) public userToProxies;
+    // mapping(address => UserConfig[]) public userToDetails;
+    mapping(address => UserConfig) proxyToDetails;
 
 
     mapping(address => mapping(IERC20 => uint)) public userToFailedERC;
@@ -124,7 +125,7 @@ contract StorageBeacon is Initializable, Ownable {
     }
     
     // function saveUserProxy(address user_, address proxy_) external hasRole(0x68e540e5) {
-    //     userToProxy[user_].push(proxy_);
+    //     userToProxies[user_].push(proxy_);
     //     proxyToUser[proxy_] = user_;
     //     proxyDatabase[proxy_] = true;
     //     userDatabase[user_] = true;
@@ -134,14 +135,16 @@ contract StorageBeacon is Initializable, Ownable {
 
     function saveUserToDetails(
         address proxy_, 
-        UserConfig memory accountDetails_
+        UserConfig memory userDetails_
     ) external hasRole(0x68e540e5) {
-        userToDetails[accountDetails_.user].push(accountDetails_);
-        userToProxy[accountDetails_.user].push(proxy_);
+        userToProxies[userDetails_.user].push(proxy_);
+        proxyToDetails[proxy_] = userDetails_;
 
-        proxyToUser[proxy_] = accountDetails_.user;
-        proxyDatabase[proxy_] = true;
-        if (!userDatabase[accountDetails_.user]) userDatabase[accountDetails_.user] = true;
+        // userToDetails[accountDetails_.user].push(accountDetails_);
+        // userToProxies[accountDetails_.user].push(proxy_);
+
+        proxyDatabase[proxy_] = true; //remove this later since it can be achieved with proxyToDetails mapping
+        if (!userDatabase[userDetails_.user]) userDatabase[userDetails_.user] = true;
     }
 
     //-----
@@ -203,10 +206,23 @@ contract StorageBeacon is Initializable, Ownable {
 
 
     function getProxyByUser(address user_) external view returns(address[] memory) {
-        return userToProxy[user_];
+        return userToProxies[user_];
     } 
 
     //----
+
+    function getProxiesByUser(
+        address user_
+    ) external view returns(address[] memory, string[] memory) {
+        address[] memory proxies = userToProxies[user_];
+        string[] memory names = new string[](proxies.length);
+
+        for (uint i=0; i < proxies.length; i++) {
+            names[i] = proxyToDetails[proxies[i]].accountName;
+        }
+
+        return (proxies, names);
+    }
 
     // function getProxiesByName(address user_) external view returns(address[] memory) {
     //     // address proxy = nameToProxy[accountName_]; 
@@ -227,7 +243,7 @@ contract StorageBeacon is Initializable, Ownable {
     }
 
     function getUserByProxy(address proxy_) external view returns(address) {
-        return proxyToUser[proxy_];
+        return proxyToDetails[proxy_].user;
     }
 
     function queryTokenDatabase(address token_) public view returns(bool) {
