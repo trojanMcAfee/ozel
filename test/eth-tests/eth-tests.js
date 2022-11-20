@@ -79,13 +79,13 @@ let name, names, proxies;
         console.log('signer address: ', signerAddr);
         console.log('.');
 
-        name = 'my account';
+        // name = 'my account';
 
         userDetails = [
             signerAddr,
             usdtAddrArb,
             defaultSlippage,
-            name
+            'my account'
         ];
 
         WETH = await hre.ethers.getContractAt('IERC20', wethAddr);
@@ -112,18 +112,18 @@ let name, names, proxies;
         });
 
         describe('ProxyFactory', async () => {
-            describe('Deploys one proxy', async () => {
+            xdescribe('Deploys one proxy', async () => {
                 it('should create a proxy successfully / createNewProxy()', async () => {
                     await proxyFactory.createNewProxy(userDetails, ops);
                     ([ proxies, names ] = await storageBeacon.getProxiesByUser(signerAddr));
-                    
+
                     newProxyAddr = proxies[0].toString(); 
                     const name = names[0].toString();
                     assert.equal(newProxyAddr.length, 42);
                     assert(name.length > 0);
                 });
 
-                xit('should not allow to create a proxy witn an empty account name / createNewProxy()', async () => {
+                it('should not allow to create a proxy witn an empty account name / createNewProxy()', async () => {
                     userDetails[3] = '';
                     await assert.rejects(async () => {
                         await proxyFactory.createNewProxy(userDetails, ops);
@@ -133,7 +133,7 @@ let name, names, proxies;
                     });
                 });
 
-                xit('should not allow to create a proxy with the 0 address / createNewProxy()', async () => {
+                it('should not allow to create a proxy with the 0 address / createNewProxy()', async () => {
                     userDetails[1] = nullAddr;
                     await assert.rejects(async () => {
                         await proxyFactory.createNewProxy(userDetails, ops);
@@ -143,7 +143,7 @@ let name, names, proxies;
                     });
                 });
 
-                xit('should not allow to create a proxy with 0 slippage / createNewProxy()', async () => {
+                it('should not allow to create a proxy with 0 slippage / createNewProxy()', async () => {
                     userDetails[1] = usdtAddrArb;
                     userDetails[2] = 0;
                     await assert.rejects(async () => {
@@ -154,7 +154,7 @@ let name, names, proxies;
                     });
                 });
 
-                xit('should not allow to create a proxy with a userToken not found in the database / createNewProxy()', async () => {
+                it('should not allow to create a proxy with a userToken not found in the database / createNewProxy()', async () => {
                     userDetails[1] = deadAddr;
                     userDetails[2] = defaultSlippage;
                     await assert.rejects(async () => {
@@ -165,7 +165,7 @@ let name, names, proxies;
                     });
                 })
     
-                xit('should have an initial balance of 0.1 ETH', async () => {
+                it('should have an initial balance of 0.1 ETH', async () => {
                     userDetails[1] = usdtAddrArb;
                     await proxyFactory.createNewProxy(userDetails);
                     newProxyAddr = (await storageBeacon.getProxyByUser(signerAddr))[0].toString();
@@ -175,7 +175,7 @@ let name, names, proxies;
                     assert.equal(formatEther(balance), '0.1');
                 });
     
-                xit('should have a final balance of 0 ETH', async () => {
+                it('should have a final balance of 0 ETH', async () => {
                     const tx = await proxyFactory.createNewProxy(userDetails);
                     const receipt = await tx.wait();
                     newProxyAddr = receipt.logs[0].address;
@@ -190,12 +190,15 @@ let name, names, proxies;
             });
 
 
-            xdescribe('Deploys 5 proxies', async () => { 
+            describe('Deploys 5 proxies', async () => { 
                 before(async () => {
                     userDetails[1] = usdcAddr;
                     for (let i=0; i < 5; i++) {
-                        await proxyFactory.createNewProxy(userDetails);
-                        newProxyAddr = (await storageBeacon.getProxyByUser(signerAddr))[i].toString(); 
+                        userDetails[3] = `my account #${i}`;
+                        tx = await proxyFactory.createNewProxy(userDetails);
+                        receipt = await tx.wait();
+                        // newProxyAddr = (await storageBeacon.getProxyByUser(signerAddr))[i].toString(); 
+                        newProxyAddr = receipt.logs[0].address;
                         usersProxies.push(newProxyAddr);
                         assert.equal(newProxyAddr.length, 42);
                     }
