@@ -45,10 +45,6 @@ contract ozBeaconProxy is ReentrancyGuard, Initializable, BeaconProxy {
  
     function _delegate(address implementation) internal override { 
         bytes memory data; 
-
-        // StorageBeacon.VariableConfig memory varConfig =
-        //      _getStorageBeacon().getVariableConfig();
-
         uint gasPriceBid = _getStorageBeacon().getGasPriceBid();
 
         //first 4 bytes on ozPayMe
@@ -56,7 +52,8 @@ contract ozBeaconProxy is ReentrancyGuard, Initializable, BeaconProxy {
             bytes4(msg.data) == 0xda35a26f || //initialize
             bytes4(msg.data) == 0x66eb4b13 || //changeUserToken
             bytes4(msg.data) == 0x8fe913f1 || //changeUserSlippage
-            bytes4(msg.data) == 0x942886be    //getUserDetails
+            bytes4(msg.data) == 0x942886be ||  //getUserDetails
+            bytes4(msg.data) == 0x7d3f555b //changeUserTokenNSlippage
         ) { 
             data = msg.data;
         } else {

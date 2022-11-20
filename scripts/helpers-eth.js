@@ -26,7 +26,8 @@ const {
     l1ProviderTestnet,
     factoryABI,
     myReceiver,
-    ops
+    ops,
+    fraxAddr
 } = require('./state-vars.js');
 
 
@@ -255,7 +256,8 @@ async function deploySystem(type, userDetails, signerAddr) {
 
     const tokensDatabase = [
         usdtAddrArb,
-        usdcAddr
+        usdcAddr,
+        fraxAddr
     ];
 
     constrArgs = [

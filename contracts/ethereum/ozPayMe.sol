@@ -188,6 +188,21 @@ contract ozPayMe is ReentrancyGuard, Initializable {
         if (newSlippageBasisPoint_ < 1) revert CantBeZero('slippage');
         userDetails.userSlippage = newSlippageBasisPoint_;
         emit NewUserSlippage(msg.sender, newSlippageBasisPoint_);
+    }
+
+    function changeUserTokenNSlippage(
+        address newUserToken_, 
+        uint newSlippageBasisPoint_
+    ) external onlyUser {
+        StorageBeacon storageBeacon = StorageBeacon(_getStorageBeacon(_beacon, 0)); 
+        if (newUserToken_ == address(0)) revert CantBeZero('address');
+        if (!storageBeacon.queryTokenDatabase(newUserToken_)) revert TokenNotInDatabase(newUserToken_);
+        if (newSlippageBasisPoint_ < 1) revert CantBeZero('slippage');
+
+        userDetails.userToken = newUserToken_;
+        userDetails.userSlippage = newSlippageBasisPoint_;
+        emit NewUserToken(msg.sender, newUserToken_);
+        emit NewUserSlippage(msg.sender, newSlippageBasisPoint_);
     } 
 
     function getUserDetails() external view returns(StorageBeacon.UserConfig memory) {
