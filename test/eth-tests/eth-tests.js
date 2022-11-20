@@ -67,7 +67,7 @@ let preBalance, postBalance;
 let isExist, proxyFactory;
 let tx, receipt;
 let fakeOzl, volume;
-let name;
+let name, names, proxies;
 
 
 
@@ -115,13 +115,12 @@ let name;
             describe('Deploys one proxy', async () => {
                 it('should create a proxy successfully / createNewProxy()', async () => {
                     await proxyFactory.createNewProxy(userDetails, ops);
-
-                    const [ proxies, names ] = await storageBeacon.getProxiesByUser(signerAddr);
-                    console.log('proxies: ', proxies);
-                    console.log('names: ', names);
-
-                    // newProxyAddr = (await storageBeacon.getProxyByUser(signerAddr))[0].toString(); 
-                    // assert.equal(newProxyAddr.length, 42);
+                    ([ proxies, names ] = await storageBeacon.getProxiesByUser(signerAddr));
+                    
+                    newProxyAddr = proxies[0].toString(); 
+                    const name = names[0].toString();
+                    assert.equal(newProxyAddr.length, 42);
+                    assert(name.length > 0);
                 });
 
                 xit('should not allow to create a proxy witn an empty account name / createNewProxy()', async () => {
