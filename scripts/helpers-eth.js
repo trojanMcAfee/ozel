@@ -27,7 +27,8 @@ const {
     factoryABI,
     myReceiver,
     ops,
-    fraxAddr
+    fraxAddr,
+    proxyABIeth
 } = require('./state-vars.js');
 
 
@@ -64,8 +65,8 @@ async function deployContract(contractName, constrArgs) {
             contract = await Contract.deploy(var1, var2, var3);
             break;
         case 'StorageBeacon':
-            ([ var1, var2, var3, var4 ] = constrArgs);
-            contract = await Contract.deploy(var1, var2, var3, var4);
+            ([ var1, var2, var3, var4, var5 ] = constrArgs);
+            contract = await Contract.deploy(var1, var2, var3, var4, var5);
             break;
         default:
             contract = await Contract.deploy();
@@ -197,6 +198,25 @@ async function compareEventWithVar(receipt, variable) {
 }
 
 
+function getInitSelectors() {
+    const iface = new ethers.utils.Interface(proxyABIeth);
+    const selectors = [];
+    const methods = [
+        'initialize',
+        'changeUserToken',
+        'changeUserSlippage',
+        'getUserDetails',
+        'changeUserTokenNSlippage'
+    ];
+
+    for (let i=0; i < methods.length; i++) {
+        selectors.push(iface.getSighash(methods[i]));
+    }
+    
+    return selectors;
+}
+
+
 function getFakeOZLVars() {
     const totalVolumeInUSD = parseEther('500');
     const totalVolumeInETH = parseEther('400');
@@ -264,6 +284,7 @@ async function deploySystem(type, userDetails, signerAddr) {
         fxConfig,
         eMode,
         tokensDatabase,
+        getInitSelectors(),
         gasPriceBid
     ]; 
 
@@ -341,5 +362,6 @@ module.exports = {
     storeVarsInHelpers,
     compareEventWithVar,
     compareTopicWith2,
-    getFakeOZLVars
+    getFakeOZLVars,
+    getInitSelectors
 };

@@ -42,22 +42,13 @@ contract ozBeaconProxy is ReentrancyGuard, Initializable, BeaconProxy {
         execPayload = abi.encodeWithSignature('sendToArb()');
     }
 
-    function _searchSelector(bytes4[] memory selectors_) private pure returns(bool) {
-        for (uint i=0; i < selectors_.length; i++) {
-            if (selectors_[i] == bytes4(msg.data)) return true;
-        }
-        return false;
-    }
-
- 
+  
     function _delegate(address implementation) internal override { 
-        console.log('gas pre: ', gasleft());
-
         bytes memory data; 
         StorageBeacon storageBeacon = _getStorageBeacon();
 
         //first 4 bytes on ozPayMe
-        if ( _searchSelector(storageBeacon.getAuthorizedSelectors()) ) { 
+        if ( storageBeacon.isSelectorAuthorized(bytes4(msg.data)) ) { 
             data = msg.data;
         } else {
             data = abi.encodeWithSignature(
@@ -66,8 +57,6 @@ contract ozBeaconProxy is ReentrancyGuard, Initializable, BeaconProxy {
                 userDetails
             );
         }
-
-        console.log('gas post: ', gasleft());
 
         assembly {
             let result := delegatecall(gas(), implementation, add(data, 32), mload(data), 0, 0)

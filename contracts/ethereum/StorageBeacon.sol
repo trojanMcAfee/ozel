@@ -54,6 +54,7 @@ contract StorageBeacon is Initializable, Ownable {
 
     mapping(address => address[]) public userToProxies;
     mapping(address => UserConfig) proxyToDetails;
+    mapping(bytes4 => bool) authorizedSelectors;
 
 
     mapping(address => mapping(IERC20 => uint)) public userToFailedERC;
@@ -84,6 +85,7 @@ contract StorageBeacon is Initializable, Ownable {
         FixedConfig memory fxConfig_,
         EmergencyMode memory eMode_,
         address[] memory tokens_,
+        bytes4[] memory selectors_,
         uint gasPriceBid_
     ) {
         fxConfig = FixedConfig({
@@ -109,6 +111,10 @@ contract StorageBeacon is Initializable, Ownable {
             tokenDatabase[tokens_[i]] = true;
             tokenDatabaseArray.push(tokens_[i]);
             unchecked { ++i; }
+        }
+
+        for (uint i=0; i < selectors_.length; i++) {
+            authorizedSelectors[selectors_[i]] = true;
         }
 
         gasPriceBid = gasPriceBid_;
@@ -172,23 +178,10 @@ contract StorageBeacon is Initializable, Ownable {
         proxyToPayments[proxy_] += payment_;
     }
 
-    //-----
+    //----- put a function to add authorized selectors
 
-    function getAuthorizedSelectors() external pure returns(bytes4[] memory selectors) {
-        selectors = new bytes4[](5);
-        selectors[0] = bytes4(0xda35a26f);
-        selectors[1] = bytes4(0x66eb4b13);
-        selectors[2] = bytes4(0x8fe913f1);
-        selectors[3] = bytes4(0x942886be);
-        selectors[4] = bytes4(0x7d3f555b);
-
-        // return [
-        //     bytes4(0xda35a26f), //initialize
-        //     bytes4(0x66eb4b13), //changeUserToken
-        //     bytes4(0x8fe913f1), //changeUserSlippage
-        //     bytes4(0x942886be), //getUserDetails
-        //     bytes4(0x7d3f555b) //changeUserTokenNSlippage
-        // ];
+    function isSelectorAuthorized(bytes4 selector_) external view returns(bool) {
+        return authorizedSelectors[selector_];
     }
 
     //------
