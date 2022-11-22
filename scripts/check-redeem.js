@@ -329,29 +329,29 @@ async function tryUI() {
     const myAddr = '0x0E743a1E37D691D8e52F7036375F3D148B4116ba';
     const storageBeaconAddr = '0x6FD1b25A2A5C0BEE3269E1B2Ee9c46566aD73846';
     const storageBeacon = await hre.ethers.getContractAt('StorageBeacon', storageBeaconAddr);
-    const proxy1Addr = '0x2aAD9512A6c2e95E6d558e58781424C0E3fe60E2';
+    const proxy1Addr = '0x1353b75508BEF2844E17ab086562ACEe5810868C';
     
     const [ proxies, names ] = await storageBeacon.getProxyByUser(myAddr);
     console.log('proxies: ', proxies);
     console.log('names: ', names);
-    const proxy1 = await hre.ethers.getContractAt('ozPayMe', proxies[1]);
+    const proxy1 = await hre.ethers.getContractAt('ozPayMe', proxy1Addr);
 
-    let [ user, token, slippage, name ] = await proxy1.getUserDetails();
-    console.log('user: ', user);
-    console.log('token: ', token);
-    console.log('slippage % - 100: ', Number(slippage)/100);
-    console.log('name: ', name);
-    console.log('.');
+    // let [ user, token, slippage, name ] = await proxy1.getUserDetails();
+    // console.log('user: ', user);
+    // console.log('token: ', token);
+    // console.log('slippage %: ', Number(slippage)/100);
+    // console.log('name: ', name);
+    // console.log('.');
 
-    tx = await proxy1.changeUserTokenNSlippage(wbtcAddr, 1);
-    await tx.wait();
+    // tx = await proxy1.changeUserTokenNSlippage(wbtcAddr, 1);
+    // await tx.wait();
 
-    ([ user, token, slippage, name ] = await proxy1.getUserDetails());
-    console.log('user: ', user);
-    console.log('token - wbtc: ', token);
-    console.log('slippage % - 0.01: ', Number(slippage)/100);
-    console.log('name - same ^: ', name);
-    console.log('.');
+    // ([ user, token, slippage, name ] = await proxy1.getUserDetails());
+    // console.log('user: ', user);
+    // console.log('token - wbtc: ', token);
+    // console.log('slippage % - 0.01: ', Number(slippage)/100);
+    // console.log('name - same ^: ', name);
+    // console.log('.');
 
 
 }
@@ -365,7 +365,7 @@ async function create() {
     const userDetails = [
         signerAddr,
         usdtAddrArb,
-        defaultSlippage,
+        parseInt(0.5 * 100),
         'test account'
     ];
 

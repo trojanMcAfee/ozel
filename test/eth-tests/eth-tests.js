@@ -134,6 +134,22 @@ let names, proxies, user, token, slippage, name;
                     userDetails[3] = 'my account';
                 });
 
+                it('should not allow to create a proxy with a name with more of 18 characters / createNewProxy()', async () => {
+                    const invalidName = 'fffffffffffffffffff';
+                    assert(invalidName.length > 18);
+                    userDetails[3] = invalidName;
+
+                    await assert.rejects(async () => {
+                        await proxyFactory.createNewProxy(userDetails, ops);
+                    }, {
+                        name: 'Error',
+                        message: (await err()).invalidName 
+                    });
+
+                    //Clean up
+                    userDetails[3] = 'my account';
+                });
+
                 it('should not allow to create a proxy with the 0 address / createNewProxy()', async () => {
                     userDetails[1] = nullAddr;
                     await assert.rejects(async () => {

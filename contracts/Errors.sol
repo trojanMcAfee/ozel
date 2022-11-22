@@ -13,3 +13,4 @@ error NotAuthorized(address unauthorizedUser_);
 error NoReentrance();
 error NotEnabled();
 error LowSlippage(uint slippage);
+error NameTooLong();

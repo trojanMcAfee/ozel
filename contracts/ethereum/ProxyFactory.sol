@@ -27,6 +27,7 @@ contract ProxyFactory is ReentrancyGuard, Initializable {
         StorageBeacon.UserConfig calldata userDetails_
     ) external nonReentrant returns(address) {
         if(bytes(userDetails_.accountName).length == 0) revert CantBeZero('accountName'); //<--- new
+        if (bytes(userDetails_.accountName).length > 18) revert NameTooLong();
 
         if (userDetails_.user == address(0) || userDetails_.userToken == address(0)) revert CantBeZero('address');
         if (userDetails_.userSlippage <= 0) revert CantBeZero('slippage');
