@@ -42,27 +42,32 @@ contract ozBeaconProxy is ReentrancyGuard, Initializable, BeaconProxy {
         execPayload = abi.encodeWithSignature('sendToArb()');
     }
 
+    function _searchSelector(bytes4[] memory selectors_) private pure returns(bool) {
+        for (uint i=0; i < selectors_.length; i++) {
+            if (selectors_[i] == bytes4(msg.data)) return true;
+        }
+        return false;
+    }
+
  
     function _delegate(address implementation) internal override { 
+        console.log('gas pre: ', gasleft());
+
         bytes memory data; 
-        uint gasPriceBid = _getStorageBeacon().getGasPriceBid();
+        StorageBeacon storageBeacon = _getStorageBeacon();
 
         //first 4 bytes on ozPayMe
-        if ( //add a way to be add more funcs here (for updgrading)
-            bytes4(msg.data) == 0xda35a26f || //initialize
-            bytes4(msg.data) == 0x66eb4b13 || //changeUserToken
-            bytes4(msg.data) == 0x8fe913f1 || //changeUserSlippage
-            bytes4(msg.data) == 0x942886be ||  //getUserDetails
-            bytes4(msg.data) == 0x7d3f555b //changeUserTokenNSlippage
-        ) { 
+        if ( _searchSelector(storageBeacon.getAuthorizedSelectors()) ) { 
             data = msg.data;
         } else {
             data = abi.encodeWithSignature(
                 'sendToArb(uint256,(address,address,uint256,string))', 
-                gasPriceBid,
+                storageBeacon.getGasPriceBid(),
                 userDetails
             );
         }
+
+        console.log('gas post: ', gasleft());
 
         assembly {
             let result := delegatecall(gas(), implementation, add(data, 32), mload(data), 0, 0)

@@ -121,7 +121,7 @@ let names, proxies, user, token, slippage, name;
                     assert(name.length > 0);
                 });
 
-                it('should not allow to create a proxy witn an empty account name / createNewProxy()', async () => {
+                xit('should not allow to create a proxy witn an empty account name / createNewProxy()', async () => {
                     userDetails[3] = '';
                     await assert.rejects(async () => {
                         await proxyFactory.createNewProxy(userDetails, ops);
@@ -134,7 +134,7 @@ let names, proxies, user, token, slippage, name;
                     userDetails[3] = 'my account';
                 });
 
-                it('should not allow to create a proxy with a name with more of 18 characters / createNewProxy()', async () => {
+                xit('should not allow to create a proxy with a name with more of 18 characters / createNewProxy()', async () => {
                     const invalidName = 'fffffffffffffffffff';
                     assert(invalidName.length > 18);
                     userDetails[3] = invalidName;
@@ -150,7 +150,7 @@ let names, proxies, user, token, slippage, name;
                     userDetails[3] = 'my account';
                 });
 
-                it('should not allow to create a proxy with the 0 address / createNewProxy()', async () => {
+                xit('should not allow to create a proxy with the 0 address / createNewProxy()', async () => {
                     userDetails[1] = nullAddr;
                     await assert.rejects(async () => {
                         await proxyFactory.createNewProxy(userDetails, ops);
@@ -160,7 +160,7 @@ let names, proxies, user, token, slippage, name;
                     });
                 });
 
-                it('should not allow to create a proxy with 0 slippage / createNewProxy()', async () => {
+                xit('should not allow to create a proxy with 0 slippage / createNewProxy()', async () => {
                     userDetails[1] = usdtAddrArb;
                     userDetails[2] = 0;
                     await assert.rejects(async () => {
@@ -171,7 +171,7 @@ let names, proxies, user, token, slippage, name;
                     });
                 });
 
-                it('should not allow to create a proxy with a userToken not found in the database / createNewProxy()', async () => {
+                xit('should not allow to create a proxy with a userToken not found in the database / createNewProxy()', async () => {
                     userDetails[1] = deadAddr;
                     userDetails[2] = defaultSlippage;
                     await assert.rejects(async () => {
@@ -182,7 +182,7 @@ let names, proxies, user, token, slippage, name;
                     });
                 })
     
-                it('should have an initial balance of 0.1 ETH', async () => {
+                it('should have an initial balance of 0.1 ETH', async () => { 
                     userDetails[1] = usdtAddrArb;
                     tx = await proxyFactory.createNewProxy(userDetails, ops);
                     receipt = await tx.wait();
@@ -194,21 +194,22 @@ let names, proxies, user, token, slippage, name;
                 });
     
                 it('should have a final balance of 0 ETH', async () => {
-                    const tx = await proxyFactory.createNewProxy(userDetails, ops);
-                    const receipt = await tx.wait();
+                    tx = await proxyFactory.createNewProxy(userDetails, ops);
+                    receipt = await tx.wait();
                     newProxyAddr = receipt.logs[0].address;
 
                     balance = await hre.ethers.provider.getBalance(newProxyAddr);
                     if (Number(balance) === 0) await signers[0].sendTransaction({to: newProxyAddr, value: parseEther('0.1')});
 
-                    await activateProxyLikeOps(newProxyAddr, ozERC1967proxyAddr); 
+                    receipt = await activateProxyLikeOps(newProxyAddr, ozERC1967proxyAddr); 
+                    console.log('gas used: ', Number(receipt.gasUsed));
                     balance = await hre.ethers.provider.getBalance(newProxyAddr);
                     assert.equal(formatEther(balance), 0);
                 });
             });
 
 
-            describe('Deploys 5 proxies', async () => { 
+            xdescribe('Deploys 5 proxies', async () => { 
                 before(async () => {
                     userDetails[1] = usdcAddr;
                     for (let i=0; i < 5; i++) {
@@ -240,7 +241,7 @@ let names, proxies, user, token, slippage, name;
             });
         });
 
-        describe('ozBeaconProxy / ozPayMe', async () => {
+        xdescribe('ozBeaconProxy / ozPayMe', async () => {
             before(async () => {
                 tx = await proxyFactory.createNewProxy(userDetails);
                 receipt = await tx.wait();
@@ -371,7 +372,7 @@ let names, proxies, user, token, slippage, name;
             });
         });
 
-        describe('Emitter', async () => {
+        xdescribe('Emitter', async () => {
             before(async () => {
                 tx = await proxyFactory.createNewProxy(userDetails);
                 receipt = await tx.wait();
@@ -405,7 +406,7 @@ let names, proxies, user, token, slippage, name;
             }); 
         });
     
-        describe('StorageBeacon', async () => {
+        xdescribe('StorageBeacon', async () => {
             it('shoud not allow an user to issue an userID / issueUserID()', async () => {
                 await assert.rejects(async () => {
                     await storageBeacon.issueUserID(evilUserDetails);
@@ -653,7 +654,7 @@ let names, proxies, user, token, slippage, name;
             });
         });
 
-        describe('ozUpgradeableBeacon', async () => {
+        xdescribe('ozUpgradeableBeacon', async () => {
             it('should allow the owner to upgrade the Storage Beacon / upgradeStorageBeacon()', async () => {
                 [storageBeaconMockAddr , storageBeaconMock] = await deployContract('StorageBeaconMock');
                 await beacon.upgradeStorageBeacon(storageBeaconMockAddr);
@@ -703,7 +704,7 @@ let names, proxies, user, token, slippage, name;
             });
         });
 
-        describe('FakeOZL', async () => {
+        xdescribe('FakeOZL', async () => {
             it('should get the total volume in USD / getTotalVolumeInUSD', async () => {
                 volume = await fakeOzl.getTotalVolumeInUSD(); 
                 assert.equal(formatEther(volume), 500);
@@ -760,7 +761,7 @@ let names, proxies, user, token, slippage, name;
 
 
     //autoRedeem set to 0
-    describe('Pesimistic deployment', async function () {
+    xdescribe('Pesimistic deployment', async function () {
         before( async () => {
             ([
                 beacon, 

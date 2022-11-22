@@ -254,6 +254,3 @@ contract ozPayMe is ReentrancyGuard, Initializable {
         );
     }
 }
-
-
-//put here a withdraw ETH function as emergency

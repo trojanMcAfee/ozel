@@ -4,14 +4,6 @@ pragma solidity 0.8.14;
 
 import { TradeOps } from '../arbitrum/AppStorage.sol';
 
-// struct TradeOps {
-//     int128 tokenIn;
-//     int128 tokenOut;
-//     address baseToken;
-//     address userToken;  
-//     address pool;
-// }
-
 
 library LibCommon {
 

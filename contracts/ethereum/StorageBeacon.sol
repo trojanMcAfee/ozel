@@ -172,6 +172,27 @@ contract StorageBeacon is Initializable, Ownable {
         proxyToPayments[proxy_] += payment_;
     }
 
+    //-----
+
+    function getAuthorizedSelectors() external pure returns(bytes4[] memory selectors) {
+        selectors = new bytes4[](5);
+        selectors[0] = bytes4(0xda35a26f);
+        selectors[1] = bytes4(0x66eb4b13);
+        selectors[2] = bytes4(0x8fe913f1);
+        selectors[3] = bytes4(0x942886be);
+        selectors[4] = bytes4(0x7d3f555b);
+
+        // return [
+        //     bytes4(0xda35a26f), //initialize
+        //     bytes4(0x66eb4b13), //changeUserToken
+        //     bytes4(0x8fe913f1), //changeUserSlippage
+        //     bytes4(0x942886be), //getUserDetails
+        //     bytes4(0x7d3f555b) //changeUserTokenNSlippage
+        // ];
+    }
+
+    //------
+
 
     //View functions
     function getUserDetailsById(uint userId_) external view returns(UserConfig memory) {
