@@ -13,15 +13,6 @@ import 'hardhat/console.sol';
 contract Emitter is Initializable, Ownable {
     address private _beacon;
 
-    // StorageBeacon.UserConfig userDetails;
-
-    struct UserConfig {
-        address user;
-        address userToken;
-        uint userSlippage; 
-        string accountName;
-    }
-
     event ShowTicket(address indexed proxy);
 
 

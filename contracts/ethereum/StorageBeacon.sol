@@ -45,23 +45,22 @@ contract StorageBeacon is Initializable, Ownable {
     FixedConfig fxConfig;
     EmergencyMode eMode;
 
-    mapping(address => bytes32) public taskIDs;
-    mapping(address => bool) public tokenDatabase;
-    // mapping(address => bool) public proxyDatabase;
-    mapping(address => bool) private userDatabase;
-    mapping(uint => UserConfig) public idToUserDetails;
-    mapping(address => address) public proxyToUser; 
+    mapping(address => bytes32) taskIDs;
+    mapping(address => bool) tokenDatabase;
+    mapping(address => bool) userDatabase;
+    mapping(uint => UserConfig) idToUserDetails;
+    mapping(address => address) proxyToUser; 
 
-    mapping(address => address[]) public userToProxies;
+    mapping(address => address[]) userToProxies;
     mapping(address => UserConfig) public proxyToDetails; //keep this as public
     mapping(bytes4 => bool) authorizedSelectors;
 
 
-    mapping(address => mapping(IERC20 => uint)) public userToFailedERC;
-    mapping(address => IERC20[]) public userToFailedTokenCount;
-    mapping(address => uint) public proxyToPayments;
+    mapping(address => mapping(IERC20 => uint)) userToFailedERC;
+    mapping(address => IERC20[]) userToFailedTokenCount;
+    mapping(address => uint) proxyToPayments;
 
-    address[] public tokenDatabaseArray;
+    address[] tokenDatabaseArray;
 
     uint private internalId;
     uint gasPriceBid;
@@ -76,8 +75,6 @@ contract StorageBeacon is Initializable, Ownable {
     }
 
     modifier onlyProxy() {
-        // if (!proxyDatabase[msg.sender]) revert NotProxy();
-        // console.log('is: ', proxyToDetails[msg.sender].user);
         if(proxyToDetails[msg.sender].user == address(0)) revert NotProxy();
         _;
     }
@@ -138,8 +135,6 @@ contract StorageBeacon is Initializable, Ownable {
     ) external hasRole(0x68e540e5) {
         userToProxies[userDetails_.user].push(proxy_);
         proxyToDetails[proxy_] = userDetails_;
-
-        // proxyDatabase[proxy_] = true; //remove this later since it can be achieved with proxyToDetails mapping
         if (!userDatabase[userDetails_.user]) userDatabase[userDetails_.user] = true;
     }
 
