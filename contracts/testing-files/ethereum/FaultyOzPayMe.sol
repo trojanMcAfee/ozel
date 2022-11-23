@@ -52,10 +52,10 @@ contract FaultyOzPayMe is ReentrancyGuard, Initializable {
 
 
     function initialize(
-        uint userId_, 
+        StorageBeacon.UserConfig calldata userDetails_, 
         address beacon_
     ) external initializer {
-        userDetails = StorageBeacon(_getStorageBeacon(beacon_, 0)).getUserDetailsById(userId_);  
+        userDetails = userDetails_;  
         fxConfig = StorageBeacon(_getStorageBeacon(beacon_, 0)).getFixedConfig();
         _beacon = beacon_;
     }

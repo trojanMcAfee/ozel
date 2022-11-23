@@ -325,8 +325,7 @@ async function deploySystem(type, userDetails, signerAddr) {
     //Set ERC1967Proxy to role 1 and gives it authority to call the functions in StorageBeacon
     await rolesAuthority.setUserRole(ozERC1967proxyAddr, 1, true);
 
-    await rolesAuthority.setRoleCapability(1, storageBeaconAddr, '0x74e0ea7a', true); //issueUserID(UserConfig memory userDetails_)
-    await rolesAuthority.setRoleCapability(1, storageBeaconAddr, '0x68e540e5', true); //saveUserProxy(address sender_, address proxy_)
+    await rolesAuthority.setRoleCapability(1, storageBeaconAddr, '0xcb05ce19', true); //saveUserToDetails(address,(address,address,uint256,string))
     await rolesAuthority.setRoleCapability(1, storageBeaconAddr, '0xf2034a69', true); //saveTaskId(address proxy_, bytes32 id_)
     console.log('.');
 

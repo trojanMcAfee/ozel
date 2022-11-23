@@ -4,6 +4,7 @@ pragma solidity 0.8.14;
 
 import "@openzeppelin/contracts/proxy/utils/Initializable.sol";
 import '@rari-capital/solmate/src/utils/ReentrancyGuard.sol';
+import '@openzeppelin/contracts/utils/Address.sol';
 import './ozUpgradeableBeacon.sol';
 import '../interfaces/IOps.sol';
 import './ozBeaconProxy.sol';
@@ -15,6 +16,9 @@ import 'hardhat/console.sol';
 
 
 contract ProxyFactory is ReentrancyGuard, Initializable { 
+
+    using Address for address;
+
     address private beacon;
 
 
@@ -22,25 +26,14 @@ contract ProxyFactory is ReentrancyGuard, Initializable {
         beacon = beacon_;
     }
 
-
     function createNewProxy(
         StorageBeacon.UserConfig calldata userDetails_
     ) external nonReentrant returns(address) {
-        if(bytes(userDetails_.accountName).length == 0) revert CantBeZero('accountName'); //<--- new
+        if(bytes(userDetails_.accountName).length == 0) revert CantBeZero('accountName'); 
         if (bytes(userDetails_.accountName).length > 18) revert NameTooLong();
-
         if (userDetails_.user == address(0) || userDetails_.userToken == address(0)) revert CantBeZero('address');
         if (userDetails_.userSlippage <= 0) revert CantBeZero('slippage');
         if (!StorageBeacon(_getStorageBeacon(0)).queryTokenDatabase(userDetails_.userToken)) revert TokenNotInDatabase(userDetails_.userToken);
-
-        // bytes memory idData = abi.encodeWithSignature( 
-        //     'issueUserID((address,address,uint256,string))', 
-        //     userDetails_
-        // ); 
-
-        // (bool success, bytes memory returnData) = _getStorageBeacon(0).call(idData);
-        // if (!success) revert CallFailed('ProxyFactory: createNewProxy failed');
-        // uint userId = abi.decode(returnData, (uint)); //<---- check if this is necessary (id)
 
         ozBeaconProxy newProxy = new ozBeaconProxy(
             beacon,
@@ -51,10 +44,10 @@ contract ProxyFactory is ReentrancyGuard, Initializable {
             'initialize((address,address,uint256,string),address)',
             userDetails_, beacon
         );
-        (bool success, ) = address(newProxy).call(createData);
-        if (!success) revert CallFailed('ProxyFactory: init failed');
+        address(newProxy).functionCall(createData);
 
         _startTask(address(newProxy));
+        
         StorageBeacon(_getStorageBeacon(0)).saveUserToDetails(address(newProxy), userDetails_); 
 
         return address(newProxy);

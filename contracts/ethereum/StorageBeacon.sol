@@ -48,7 +48,7 @@ contract StorageBeacon is Initializable, Ownable {
     mapping(address => bytes32) taskIDs;
     mapping(address => bool) tokenDatabase;
     mapping(address => bool) userDatabase;
-    mapping(uint => UserConfig) idToUserDetails;
+    // mapping(uint => UserConfig) idToUserDetails;
     mapping(address => address) proxyToUser; 
 
     mapping(address => address[]) userToProxies;
@@ -122,17 +122,10 @@ contract StorageBeacon is Initializable, Ownable {
  
 
     //State changing functions
-    function issueUserID(UserConfig calldata userDetails_) external hasRole(0x74e0ea7a) returns(uint id) {
-        idToUserDetails[internalId] = userDetails_;
-        id = internalId;
-        unchecked { ++internalId; }
-    }
-
-
     function saveUserToDetails(
         address proxy_, 
         UserConfig memory userDetails_
-    ) external hasRole(0x68e540e5) {
+    ) external hasRole(0xcb05ce19) {
         userToProxies[userDetails_.user].push(proxy_);
         proxyToDetails[proxy_] = userDetails_;
         if (!userDatabase[userDetails_.user]) userDatabase[userDetails_.user] = true;
@@ -183,10 +176,6 @@ contract StorageBeacon is Initializable, Ownable {
     //View functions
     function isSelectorAuthorized(bytes4 selector_) external view returns(bool) {
         return authorizedSelectors[selector_];
-    }
-
-    function getUserDetailsById(uint userId_) external view returns(UserConfig memory) {
-        return idToUserDetails[userId_];
     }
 
     function getFixedConfig() external view returns(FixedConfig memory) {

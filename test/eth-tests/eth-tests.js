@@ -407,15 +407,6 @@ let isAuthorized, newSelector;
         });
     
         describe('StorageBeacon', async () => {
-            it('shoud not allow an user to issue an userID / issueUserID()', async () => {
-                await assert.rejects(async () => {
-                    await storageBeacon.issueUserID(evilUserDetails);
-                }, {
-                    name: 'Error',
-                    message: (await err(1)).notAuthorized 
-                });
-            });
-
             it('should not allow an user to save a proxy / saveUserToDetails()', async () => {
                 await assert.rejects(async () => {
                     await storageBeacon.saveUserToDetails(signerAddr2, userDetails);
