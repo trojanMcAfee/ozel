@@ -40,7 +40,7 @@ contract ProxyFactory is ReentrancyGuard, Initializable {
 
         (bool success, bytes memory returnData) = _getStorageBeacon(0).call(idData);
         if (!success) revert CallFailed('ProxyFactory: createNewProxy failed');
-        uint userId = abi.decode(returnData, (uint));
+        uint userId = abi.decode(returnData, (uint)); //<---- check if this is necessary (id)
 
         ozBeaconProxy newProxy = new ozBeaconProxy(
             beacon,
