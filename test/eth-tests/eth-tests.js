@@ -68,6 +68,7 @@ let isExist, proxyFactory;
 let tx, receipt;
 let fakeOzl, volume;
 let names, proxies, user, token, slippage, name;
+let isAuthorized, newSelector;
 
 
 
@@ -649,6 +650,31 @@ let names, proxies, user, token, slippage, name;
                 }, {
                     name: 'Error',
                     message: (await err()).notProxy
+                });
+            });
+
+            it('should let the owner add a new authorized selector / addAuthorizedSelector()' , async () => {
+                newSelector = 0xb1b3d3f6;
+                isAuthorized = await storageBeacon.isSelectorAuthorized(newSelector);
+                assert(!isAuthorized);
+    
+                tx = await storageBeacon.addAuthorizedSelector(newSelector, ops);
+                await tx.wait();
+    
+                isAuthorized = await storageBeacon.isSelectorAuthorized(newSelector);
+                assert(isAuthorized);
+            });
+    
+            it('should not let an unauthorized user to add a new authorized selector / addAuthorizedSelector()', async () => {
+                newSelector = 0x593d6819;
+                isAuthorized = await storageBeacon.isSelectorAuthorized(newSelector);
+                assert(!isAuthorized);
+    
+                await assert.rejects(async () => {
+                    await storageBeacon.connect(signers[1]).addAuthorizedSelector(newSelector, ops);
+                }, {
+                    name: 'Error',
+                    message: (await err()).notOwner 
                 });
             });
         });

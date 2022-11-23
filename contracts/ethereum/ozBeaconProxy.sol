@@ -47,7 +47,6 @@ contract ozBeaconProxy is ReentrancyGuard, Initializable, BeaconProxy {
         bytes memory data; 
         StorageBeacon storageBeacon = _getStorageBeacon();
 
-        //first 4 bytes on ozPayMe
         if ( storageBeacon.isSelectorAuthorized(bytes4(msg.data)) ) { 
             data = msg.data;
         } else {
