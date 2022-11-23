@@ -252,7 +252,7 @@ let isAuthorized, newSelector;
             describe('fallback()', async () => {
                 it('should not allow re-calling / initialize()', async () => {
                     await assert.rejects(async () => {
-                        await newProxy.initialize(0, nullAddr, ops);
+                        await newProxy.initialize(userDetails, nullAddr, ops);
                     }, {
                         name: 'Error',
                         message: (await err()).alreadyInitialized 
@@ -564,22 +564,6 @@ let isAuthorized, newSelector;
                 });
             });
 
-            it('should return the userDetails / getUserDetailsById()', async () => {
-                await proxyFactory.createNewProxy(userDetails, ops);
-                userDetails[1] = usdtAddrArb;
-                pulledUserDetails = await storageBeacon.getUserDetailsById(0);
-                assert.equal(pulledUserDetails[0], userDetails[0]);
-                assert.equal(pulledUserDetails[1], userDetails[1]);
-                assert.equal(pulledUserDetails[2], userDetails[2]);
-            });
-
-            it('should return zero values when querying with a non-user / getUserDetailsById()', async () => {
-                pulledUserDetails = await storageBeacon.getUserDetailsById(100);
-                assert.equal(pulledUserDetails[0], nullAddr);
-                assert.equal(pulledUserDetails[1], nullAddr);
-                assert.equal(pulledUserDetails[2], 0);
-            });
-
             it('should return the proxies an user has / getProxyByUser()', async () => {
                 tokens = await storageBeacon.getTokenDatabase();
                 userDetails[1] = tokens[0];
@@ -786,7 +770,7 @@ let isAuthorized, newSelector;
 
 
     //autoRedeem set to 0
-    describe('Pesimistic deployment', async function () {
+    xdescribe('Pesimistic deployment', async function () {
         before( async () => {
             ([
                 beacon, 

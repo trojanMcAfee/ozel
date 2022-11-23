@@ -33,14 +33,14 @@ contract ProxyFactory is ReentrancyGuard, Initializable {
         if (userDetails_.userSlippage <= 0) revert CantBeZero('slippage');
         if (!StorageBeacon(_getStorageBeacon(0)).queryTokenDatabase(userDetails_.userToken)) revert TokenNotInDatabase(userDetails_.userToken);
 
-        bytes memory idData = abi.encodeWithSignature( 
-            'issueUserID((address,address,uint256,string))', 
-            userDetails_
-        ); 
+        // bytes memory idData = abi.encodeWithSignature( 
+        //     'issueUserID((address,address,uint256,string))', 
+        //     userDetails_
+        // ); 
 
-        (bool success, bytes memory returnData) = _getStorageBeacon(0).call(idData);
-        if (!success) revert CallFailed('ProxyFactory: createNewProxy failed');
-        uint userId = abi.decode(returnData, (uint)); //<---- check if this is necessary (id)
+        // (bool success, bytes memory returnData) = _getStorageBeacon(0).call(idData);
+        // if (!success) revert CallFailed('ProxyFactory: createNewProxy failed');
+        // uint userId = abi.decode(returnData, (uint)); //<---- check if this is necessary (id)
 
         ozBeaconProxy newProxy = new ozBeaconProxy(
             beacon,
@@ -48,10 +48,10 @@ contract ProxyFactory is ReentrancyGuard, Initializable {
         );
 
         bytes memory createData = abi.encodeWithSignature(
-            'initialize(uint256,address)',
-            userId, beacon
+            'initialize((address,address,uint256,string),address)',
+            userDetails_, beacon
         );
-        (success, ) = address(newProxy).call(createData);
+        (bool success, ) = address(newProxy).call(createData);
         if (!success) revert CallFailed('ProxyFactory: init failed');
 
         _startTask(address(newProxy));
