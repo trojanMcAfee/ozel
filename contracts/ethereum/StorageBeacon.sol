@@ -47,13 +47,13 @@ contract StorageBeacon is Initializable, Ownable {
 
     mapping(address => bytes32) public taskIDs;
     mapping(address => bool) public tokenDatabase;
-    mapping(address => bool) public proxyDatabase;
+    // mapping(address => bool) public proxyDatabase;
     mapping(address => bool) private userDatabase;
     mapping(uint => UserConfig) public idToUserDetails;
     mapping(address => address) public proxyToUser; 
 
     mapping(address => address[]) public userToProxies;
-    mapping(address => UserConfig) proxyToDetails;
+    mapping(address => UserConfig) public proxyToDetails; //keep this as public
     mapping(bytes4 => bool) authorizedSelectors;
 
 
@@ -76,7 +76,9 @@ contract StorageBeacon is Initializable, Ownable {
     }
 
     modifier onlyProxy() {
-        if (!proxyDatabase[msg.sender]) revert NotProxy();
+        // if (!proxyDatabase[msg.sender]) revert NotProxy();
+        // console.log('is: ', proxyToDetails[msg.sender].user);
+        if(proxyToDetails[msg.sender].user == address(0)) revert NotProxy();
         _;
     }
 
@@ -137,7 +139,7 @@ contract StorageBeacon is Initializable, Ownable {
         userToProxies[userDetails_.user].push(proxy_);
         proxyToDetails[proxy_] = userDetails_;
 
-        proxyDatabase[proxy_] = true; //remove this later since it can be achieved with proxyToDetails mapping
+        // proxyDatabase[proxy_] = true; //remove this later since it can be achieved with proxyToDetails mapping
         if (!userDatabase[userDetails_.user]) userDatabase[userDetails_.user] = true;
     }
 
@@ -181,14 +183,6 @@ contract StorageBeacon is Initializable, Ownable {
     function addAuthorizedSelector(bytes4 selector_) external onlyOwner {
         authorizedSelectors[selector_] = true;
     }
-
-    //----- put a function to add authorized selectors
-
-    // function isSelectorAuthorized(bytes4 selector_) external view returns(bool) {
-    //     return authorizedSelectors[selector_];
-    // }
-
-    //------
 
 
     //View functions

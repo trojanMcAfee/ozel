@@ -7,11 +7,20 @@ import '@openzeppelin/contracts/access/Ownable.sol';
 import './StorageBeacon.sol';
 import '../Errors.sol';
 
-// import 'hardhat/console.sol';
+import 'hardhat/console.sol';
 
 
 contract Emitter is Initializable, Ownable {
     address private _beacon;
+
+    // StorageBeacon.UserConfig userDetails;
+
+    struct UserConfig {
+        address user;
+        address userToken;
+        uint userSlippage; 
+        string accountName;
+    }
 
     event ShowTicket(address indexed proxy);
 
@@ -25,12 +34,11 @@ contract Emitter is Initializable, Ownable {
     }
 
     function forwardEvent() external { 
-        if (!_getStorageBeacon().proxyDatabase(msg.sender)) revert NotProxy();
+        (address user,,,) = _getStorageBeacon().proxyToDetails(msg.sender);
+        if (user == address(0)) revert NotProxy();
         emit ShowTicket(msg.sender);
     }
 }
-
-
 
         
 
