@@ -301,7 +301,9 @@ async function deploySystem(type, signerAddr) {
     await emitter.storeBeacon(beaconAddr);
 
     //Deploys ProxyFactory
-    const [ proxyFactoryAddr ] = await deployContract('ProxyFactory');
+    const [ proxyFactoryAddr ] = await deployContract(
+        type === 'Pessimistically_v2' ? 'FaultyProxyFactory' : 'ProxyFactory'
+    );
 
     //Deploys ozERC1967Proxy (proxy from Proxy Factory)
     constrArgs = [

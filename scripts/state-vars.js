@@ -79,7 +79,8 @@ const proxyABIeth = [
     'function sendToArb(tuple(uint256 maxSubmissionCost, uint256 gasPriceBid, uint256 autoRedeem) varConfig_, tuple(address user, address userToken, uint256 userSlippage) userDetails_)',
     'function initialize((address,address,uint256,string), address beacon_)',
     'function getUserDetails() external view returns ((address,address,uint256,string))',
-    'function changeUserTokenNSlippage(address,uint256) external'
+    'function changeUserTokenNSlippage(address,uint256) external',
+    'function withdrawETH_lastResort() external'
 ];
 
 const factoryABI = [

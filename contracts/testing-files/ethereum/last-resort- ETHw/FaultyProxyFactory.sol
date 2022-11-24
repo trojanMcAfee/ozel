@@ -15,7 +15,7 @@ import 'hardhat/console.sol';
 
 
 
-contract ProxyFactory is ReentrancyGuard, Initializable { 
+contract FaultyProxyFactory is ReentrancyGuard, Initializable { 
 
     using Address for address;
 
