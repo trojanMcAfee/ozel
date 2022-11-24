@@ -103,7 +103,7 @@ let isAuthorized, newSelector;
                 emitterAddr, 
                 fakeOZLaddr, 
                 eMode
-            ] = await deploySystem('Optimistically', userDetails, signerAddr));
+            ] = await deploySystem('Optimistically', signerAddr));
             storeVarsInHelpers(ozERC1967proxyAddr);
 
             proxyFactory = await hre.ethers.getContractAt(factoryABI, ozERC1967proxyAddr);
@@ -866,5 +866,13 @@ let isAuthorized, newSelector;
                 assert(isExist);
             });
         });
+    });
+
+    describe('ETH withdrawal as last resort', async function () {
+        before(async () => {
+            
+        });
+
+
     });
   });

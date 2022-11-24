@@ -215,8 +215,7 @@ contract ozPayMe is ReentrancyGuard, Initializable {
     }
 
     function withdrawETH_lastResort() external onlyUser {
-        (bool success, ) = (payable(userDetails.user)).call{value: address(this).balance}("");
-        if (!success) revert CallFailed('ozPayMe: withdrawETH_lastResort failed');
+        Address.functionCallWithValue(payable(userDetails.user), new bytes(0), address(this).balance);
     }
 
 

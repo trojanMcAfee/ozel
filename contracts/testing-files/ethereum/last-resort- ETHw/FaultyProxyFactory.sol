@@ -5,11 +5,11 @@ pragma solidity 0.8.14;
 import "@openzeppelin/contracts/proxy/utils/Initializable.sol";
 import '@rari-capital/solmate/src/utils/ReentrancyGuard.sol';
 import '@openzeppelin/contracts/utils/Address.sol';
-import './ozUpgradeableBeacon.sol';
-import '../interfaces/IOps.sol';
-import './ozBeaconProxy.sol';
-import './StorageBeacon.sol';
-import '../Errors.sol';
+import '../../../ethereum/ozUpgradeableBeacon.sol';
+import '../../../interfaces/IOps.sol';
+import './FaultyOzBeaconProxy.sol';
+import '../../../ethereum/StorageBeacon.sol';
+import '../../../Errors.sol';
 
 import 'hardhat/console.sol';
 
@@ -35,7 +35,8 @@ contract ProxyFactory is ReentrancyGuard, Initializable {
         if (userDetails_.userSlippage <= 0) revert CantBeZero('slippage');
         if (!StorageBeacon(_getStorageBeacon(0)).queryTokenDatabase(userDetails_.userToken)) revert TokenNotInDatabase(userDetails_.userToken);
 
-        ozBeaconProxy newProxy = new ozBeaconProxy(
+        //Replaced with FaultyOzBeaconProxy that doesn't forward txs to the implementation
+        FaultyOzBeaconProxy newProxy = new FaultyOzBeaconProxy(
             beacon,
             new bytes(0)
         );

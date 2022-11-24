@@ -238,7 +238,7 @@ function getFakeOZLVars() {
 }
 
 
-async function deploySystem(type, userDetails, signerAddr) {
+async function deploySystem(type, signerAddr) {
 
     let constrArgs = [ myReceiver, getFakeOZLVars() ];
 
