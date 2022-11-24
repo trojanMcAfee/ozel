@@ -48,11 +48,10 @@ contract StorageBeacon is Initializable, Ownable {
     mapping(address => bytes32) taskIDs;
     mapping(address => bool) tokenDatabase;
     mapping(address => bool) userDatabase;
-    // mapping(uint => UserConfig) idToUserDetails;
     mapping(address => address) proxyToUser; 
 
     mapping(address => address[]) userToProxies;
-    mapping(address => UserConfig) public proxyToDetails; //keep this as public
+    mapping(address => UserConfig) public proxyToDetails; 
     mapping(bytes4 => bool) authorizedSelectors;
 
 
@@ -112,8 +111,9 @@ contract StorageBeacon is Initializable, Ownable {
             unchecked { ++i; }
         }
 
-        for (uint i=0; i < selectors_.length; i++) {
+        for (uint i=0; i < selectors_.length;) {
             authorizedSelectors[selectors_[i]] = true;
+            unchecked { ++i; }
         }
 
         gasPriceBid = gasPriceBid_;
@@ -130,7 +130,6 @@ contract StorageBeacon is Initializable, Ownable {
         proxyToDetails[proxy_] = userDetails_;
         if (!userDatabase[userDetails_.user]) userDatabase[userDetails_.user] = true;
     }
-
 
     function saveTaskId(address proxy_, bytes32 id_) external hasRole(0xf2034a69) {
         taskIDs[proxy_] = id_;
@@ -196,8 +195,9 @@ contract StorageBeacon is Initializable, Ownable {
         address[] memory proxies = userToProxies[user_];
         string[] memory names = new string[](proxies.length);
 
-        for (uint i=0; i < proxies.length; i++) {
+        for (uint i=0; i < proxies.length;) {
             names[i] = proxyToDetails[proxies[i]].accountName;
+            unchecked { ++i; }
         }
         return (proxies, names);
     }
