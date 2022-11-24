@@ -10,6 +10,7 @@ import '@rari-capital/solmate/src/utils/FixedPointMathLib.sol';
 import "@openzeppelin/contracts/proxy/utils/Initializable.sol";
 import '../../interfaces/DelayedInbox.sol';
 import '../../interfaces/IOps.sol';
+import '../../interfaces/IWETH.sol';
 import '../../ethereum/FakeOZL.sol';
 import '../../ethereum/Emitter.sol';
 import '../../ethereum/StorageBeacon.sol';
@@ -47,6 +48,18 @@ contract ImplementationMock is ReentrancyGuard, Initializable {
         _;
     }
 
+    modifier checkToken(address newUserToken_) {
+        StorageBeacon storageBeacon = StorageBeacon(_getStorageBeacon(_beacon, 0)); 
+        if (newUserToken_ == address(0)) revert CantBeZero('address');
+        if (!storageBeacon.queryTokenDatabase(newUserToken_)) revert TokenNotInDatabase(newUserToken_);
+        _;
+    }
+
+    modifier checkSlippage(uint newSlippageBasisPoint_) {
+        if (newSlippageBasisPoint_ < 1) revert CantBeZero('slippage');
+        _;
+    }
+
 
     function initialize(
         StorageBeacon.UserConfig calldata userDetails_, 
@@ -69,6 +82,8 @@ contract ImplementationMock is ReentrancyGuard, Initializable {
     ) external payable onlyOps { 
         StorageBeacon storageBeacon = StorageBeacon(_getStorageBeacon(_beacon, 0)); 
 
+        if (bytes(userDetails_.accountName).length == 0) revert CantBeZero('accountName'); 
+        if (bytes(userDetails_.accountName).length > 18) revert NameTooLong();
         if (userDetails_.user == address(0) || userDetails_.userToken == address(0)) revert CantBeZero('address');
         if (!storageBeacon.isUser(userDetails_.user)) revert UserNotInDatabase(userDetails_.user);
         if (!storageBeacon.queryTokenDatabase(userDetails_.userToken)) revert TokenNotInDatabase(userDetails_.userToken);
@@ -105,65 +120,97 @@ contract ImplementationMock is ReentrancyGuard, Initializable {
     }
 
 
-    function _calculateMinOut(StorageBeacon.EmergencyMode memory eMode_, uint i_) private view returns(uint minOut) {
+    function _calculateMinOut(
+        StorageBeacon.EmergencyMode memory eMode_, 
+        uint i_,
+        uint balanceWETH_
+    ) private view returns(uint minOut) {
         (,int price,,,) = eMode_.priceFeed.latestRoundData();
-        uint expectedOut = address(this).balance.mulDivDown(uint(price) * 10 ** 10, 1 ether);
-        uint minOutUnprocessed = expectedOut - expectedOut.mulDivDown(userDetails.userSlippage * i_ * 100, 1000000); 
+        uint expectedOut = balanceWETH_.mulDivDown(uint(price) * 10 ** 10, 1 ether);
+        uint minOutUnprocessed = 
+            expectedOut - expectedOut.mulDivDown(userDetails.userSlippage * i_ * 100, 1000000); 
         minOut = minOutUnprocessed.mulWadDown(10 ** 6);
     }
 
 
 
     function _runEmergencyMode() private nonReentrant { 
-        StorageBeacon.EmergencyMode memory eMode = StorageBeacon(_getStorageBeacon(_beacon, 0)).getEmergencyMode();
+        address sBeacon = _getStorageBeacon(_beacon, 0);
+        StorageBeacon.EmergencyMode memory eMode = StorageBeacon(sBeacon).getEmergencyMode();
+        
+        IWETH(eMode.tokenIn).deposit{value: address(this).balance}();
+        uint balanceWETH = IWETH(eMode.tokenIn).balanceOf(address(this));
+
+        IERC20(eMode.tokenIn).approve(address(eMode.swapRouter), balanceWETH);
 
         for (uint i=1; i <= 2;) {
             ISwapRouter.ExactInputSingleParams memory params =
                 ISwapRouter.ExactInputSingleParams({
                     tokenIn: eMode.tokenIn,
-                    tokenOut: eMode.tokenOut,
+                    tokenOut: eMode.tokenOut, 
                     fee: eMode.poolFee,
                     recipient: userDetails.user,
                     deadline: block.timestamp,
-                    amountIn: address(this).balance,
-                    amountOutMinimum: _calculateMinOut(eMode, i), 
+                    amountIn: balanceWETH,
+                    amountOutMinimum: _calculateMinOut(eMode, i, balanceWETH), 
                     sqrtPriceLimitX96: 0
                 });
 
-            try eMode.swapRouter.exactInputSingle{value: address(this).balance}(params) {
-                break;
+            try eMode.swapRouter.exactInputSingle(params) { 
+                break; 
             } catch {
                 if (i == 1) {
                     unchecked { ++i; }
                     continue; 
                 } else {
-                    (bool success, ) = payable(userDetails.user).call{value: address(this).balance}('');
-                    if (!success) revert CallFailed('ImplementationMock: ETH transfer failed');
-                    unchecked { ++i; }
+                    IERC20(eMode.tokenIn).transfer(userDetails.user, balanceWETH);
+                    break;
                 }
             }
         } 
     }
 
 
-    function _transfer(uint256 _amount, address _paymentToken) private {
-        if (_paymentToken == fxConfig.ETH) {
-            (bool success, ) = fxConfig.gelato.call{value: _amount}("");
-            if (!success) revert CallFailed("_transfer: ETH transfer failed");
+    function _transfer(uint256 amount_, address paymentToken_) private {
+        if (paymentToken_ == fxConfig.ETH) {
+            Address.functionCallWithValue(fxConfig.gelato, new bytes(0), amount_);
         } else {
-            SafeTransferLib.safeTransfer(ERC20(_paymentToken), fxConfig.gelato, _amount); 
+            SafeTransferLib.safeTransfer(ERC20(paymentToken_), fxConfig.gelato, amount_); 
         }
     }
 
 
-    function changeUserToken(address newUserToken_) external onlyUser {
+    function changeUserToken(
+        address newUserToken_
+    ) external onlyUser checkToken(newUserToken_) {
         userDetails.userToken = newUserToken_;
         emit NewUserToken(msg.sender, newUserToken_);
     }
 
-    function changeUserSlippage(uint newUserSlippage_) external onlyUser {
-        userDetails.userSlippage = newUserSlippage_;
-        emit NewUserSlippage(msg.sender, newUserSlippage_);
+    function changeUserSlippage(
+        uint newSlippage_
+    ) external onlyUser checkSlippage(newSlippage_) { 
+        userDetails.userSlippage = newSlippage_;
+        emit NewUserSlippage(msg.sender, newSlippage_);
+    }
+
+    function changeUserTokenNSlippage(
+        address newUserToken_, 
+        uint newSlippage_
+    ) external onlyUser checkToken(newUserToken_) checkSlippage(newSlippage_) {
+        userDetails.userToken = newUserToken_;
+        userDetails.userSlippage = newSlippage_;
+        emit NewUserToken(msg.sender, newUserToken_);
+        emit NewUserSlippage(msg.sender, newSlippage_);
+    } 
+
+    function getUserDetails() external view returns(StorageBeacon.UserConfig memory) {
+        return userDetails;
+    }
+
+    function withdrawETH_lastResort() external onlyUser {
+        (bool success, ) = payable(userDetails.user).call{value: address(this).balance}('');
+        if (!success) revert CallFailed('ozPayMe: withdrawETH_lastResort failed');
     }
 
 
@@ -177,19 +224,19 @@ contract ImplementationMock is ReentrancyGuard, Initializable {
         ARB'S HELPERS
      */
 
-     function _decreaseCost(uint maxSubmissionCost_) private pure returns(uint) {
-        return maxSubmissionCost_ - (uint(30 * 1 ether)).mulDivDown(maxSubmissionCost_, 100 * 1 ether);
-    }
-
-    
-    function _calculateGasDetails(bytes memory swapData_, uint gasPriceBid_) private view returns(uint, uint) {
-        uint maxSubmissionCost = DelayedInbox(fxConfig.inbox).calculateRetryableSubmissionFee(
+    function _calculateGasDetails(
+        bytes memory swapData_, 
+        uint gasPriceBid_, 
+        bool decrease_
+    ) private view returns(uint maxSubmissionCost, uint autoRedeem) {
+        maxSubmissionCost = DelayedInbox(fxConfig.inbox).calculateRetryableSubmissionFee(
             swapData_.length,
             0
         );
-        maxSubmissionCost *= 3;
-        uint autoRedeem = maxSubmissionCost + (gasPriceBid_ * fxConfig.maxGas);
-        return (maxSubmissionCost, autoRedeem);
+
+        maxSubmissionCost = decrease_ ? maxSubmissionCost : maxSubmissionCost * 2;
+        autoRedeem = maxSubmissionCost + (gasPriceBid_ * fxConfig.maxGas);
+        if (autoRedeem > address(this).balance) autoRedeem = address(this).balance;
     }
 
     function _createTicketData( 
@@ -197,15 +244,14 @@ contract ImplementationMock is ReentrancyGuard, Initializable {
         bytes memory swapData_,
         bool decrease_
     ) private view returns(bytes memory) {
-        (uint maxSubmissionCost, uint autoRedeem) = _calculateGasDetails(swapData_, gasPriceBid_);
-        maxSubmissionCost = decrease_ ? _decreaseCost(maxSubmissionCost) : maxSubmissionCost;
+        (uint maxSubmissionCost, uint autoRedeem) = _calculateGasDetails(swapData_, gasPriceBid_, decrease_);
 
         autoRedeem = 0;
 
         return abi.encodeWithSelector(
             DelayedInbox(fxConfig.inbox).createRetryableTicket.selector, 
             fxConfig.OZL, 
-            address(this).balance - autoRedeem, 
+            address(this).balance - autoRedeem,
             maxSubmissionCost, 
             fxConfig.OZL, 
             fxConfig.OZL, 
@@ -214,8 +260,6 @@ contract ImplementationMock is ReentrancyGuard, Initializable {
             swapData_
         );
     }
-
-    
 }
 
 

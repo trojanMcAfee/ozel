@@ -91,7 +91,7 @@ let isAuthorized, newSelector;
         signers = await hre.ethers.getSigners();
     });
 
-    xdescribe('Optimistic deployment', async function () { 
+    describe('Optimistic deployment', async function () { 
         before( async () => {
             ([
                 beacon, 
@@ -761,31 +761,31 @@ let isAuthorized, newSelector;
 
 
     //autoRedeem set to 0
-    xdescribe('Pesimistic deployment', async function () {
-        before( async () => {
-            ([
-                beacon, 
-                beaconAddr, 
-                ozERC1967proxyAddr, 
-                storageBeacon, 
-                storageBeaconAddr, 
-                emitter, 
-                emitterAddr, 
-                fakeOZLaddr, 
-                eMode
-            ] = await deploySystem('Pessimistically', signerAddr));
-
-            storeVarsInHelpers(ozERC1967proxyAddr);
-
-            proxyFactory = await hre.ethers.getContractAt(factoryABI, ozERC1967proxyAddr);
-            tx = await proxyFactory.createNewProxy(userDetails, ops);
-            receipt = await tx.wait();
-            newProxyAddr = receipt.logs[0].address;
-            newProxy = await hre.ethers.getContractAt(proxyABIeth, newProxyAddr);
-            USDC = await hre.ethers.getContractAt('IERC20', usdcAddr);
-        });
-
+    describe('Pesimistic deployment', async function () {
         describe('ozBeaconProxy / ozPayMe', async () => {
+            before( async () => {
+                ([
+                    beacon, 
+                    beaconAddr, 
+                    ozERC1967proxyAddr, 
+                    storageBeacon, 
+                    storageBeaconAddr, 
+                    emitter, 
+                    emitterAddr, 
+                    fakeOZLaddr, 
+                    eMode
+                ] = await deploySystem('Pessimistically', signerAddr));
+    
+                storeVarsInHelpers(ozERC1967proxyAddr);
+    
+                proxyFactory = await hre.ethers.getContractAt(factoryABI, ozERC1967proxyAddr);
+                tx = await proxyFactory.createNewProxy(userDetails, ops);
+                receipt = await tx.wait();
+                newProxyAddr = receipt.logs[0].address;
+                newProxy = await hre.ethers.getContractAt(proxyABIeth, newProxyAddr);
+                USDC = await hre.ethers.getContractAt('IERC20', usdcAddr);
+            });
+
             it('should create a proxy successfully / createNewProxy()', async () => {
                 assert.equal(newProxyAddr.length, 42);
             });
@@ -866,60 +866,60 @@ let isAuthorized, newSelector;
                 assert(isExist);
             });
         });
-    });
 
-    describe('ETH withdrawal as last resort', async function () {
-        before( async () => {
-            ([
-                beacon, 
-                beaconAddr, 
-                ozERC1967proxyAddr, 
-                storageBeacon, 
-                storageBeaconAddr, 
-                emitter, 
-                emitterAddr, 
-                fakeOZLaddr, 
-                eMode
-            ] = await deploySystem('Pessimistically_v2', signerAddr));
-
-            storeVarsInHelpers(ozERC1967proxyAddr);
-
-            proxyFactory = await hre.ethers.getContractAt(factoryABI, ozERC1967proxyAddr);
-            tx = await proxyFactory.createNewProxy(userDetails, ops);
-            receipt = await tx.wait();
-            newProxyAddr = receipt.logs[0].address;
-            newProxy = await hre.ethers.getContractAt(proxyABIeth, newProxyAddr);
-            USDC = await hre.ethers.getContractAt('IERC20', usdcAddr);
-        });
-
-        beforeEach(async () => {
-            await signers[0].sendTransaction({to: newProxyAddr, value: parseEther('100')});
-            balance = await hre.ethers.provider.getBalance(newProxyAddr);
-            assert(formatEther(balance) === '100.0' || formatEther(balance) === '200.0');
-        });
-
-        it('should not send to Arbitrum an ETH transfer made to the proxy / lack of delegate()', async () => {
-            await activateProxyLikeOps(newProxyAddr, ozERC1967proxyAddr); 
-            balance = await hre.ethers.provider.getBalance(newProxyAddr);
-            assert.equal(formatEther(balance), '100.0');
-        });
-
-        it('should let the user withdraw the ETH stuck on their proxy / withdrawETH_lastResort()', async () => {
-            preBalance = await hre.ethers.provider.getBalance(signerAddr);
-            await newProxy.withdrawETH_lastResort(ops);
-            postBalance = await hre.ethers.provider.getBalance(signerAddr);
-            assert(formatEther(postBalance) > formatEther(preBalance));
-        });
-
-        it('should not let user B to withdraw the stuck ETH of user A / withdrawETH_lastResort()', async () => {
-            await assert.rejects(async () => {
-                await newProxy.connect(signers[1]).withdrawETH_lastResort(ops);
-            }, {
-                name: 'Error',
-                message: (await err(signerAddr2)).notAuthorized
+        describe('ETH withdrawal as last resort', async function () {
+            before( async () => {
+                ([
+                    beacon, 
+                    beaconAddr, 
+                    ozERC1967proxyAddr, 
+                    storageBeacon, 
+                    storageBeaconAddr, 
+                    emitter, 
+                    emitterAddr, 
+                    fakeOZLaddr, 
+                    eMode
+                ] = await deploySystem('Pessimistically_v2', signerAddr));
+    
+                storeVarsInHelpers(ozERC1967proxyAddr);
+    
+                proxyFactory = await hre.ethers.getContractAt(factoryABI, ozERC1967proxyAddr);
+                tx = await proxyFactory.createNewProxy(userDetails, ops);
+                receipt = await tx.wait();
+                newProxyAddr = receipt.logs[0].address;
+                newProxy = await hre.ethers.getContractAt(proxyABIeth, newProxyAddr);
+                USDC = await hre.ethers.getContractAt('IERC20', usdcAddr);
             });
+    
+            beforeEach(async () => {
+                await signers[0].sendTransaction({to: newProxyAddr, value: parseEther('100')});
+                balance = await hre.ethers.provider.getBalance(newProxyAddr);
+                assert(formatEther(balance) === '100.0' || formatEther(balance) === '200.0');
+            });
+    
+            it('should not send to Arbitrum an ETH transfer made to the proxy / lack of delegate()', async () => {
+                await activateProxyLikeOps(newProxyAddr, ozERC1967proxyAddr); 
+                balance = await hre.ethers.provider.getBalance(newProxyAddr);
+                assert.equal(formatEther(balance), '100.0');
+            });
+    
+            it('should let the user withdraw the ETH stuck on their proxy / withdrawETH_lastResort()', async () => {
+                preBalance = await hre.ethers.provider.getBalance(signerAddr);
+                await newProxy.withdrawETH_lastResort(ops);
+                postBalance = await hre.ethers.provider.getBalance(signerAddr);
+                assert(formatEther(postBalance) > formatEther(preBalance));
+            });
+    
+            it('should not let user B to withdraw the stuck ETH of user A / withdrawETH_lastResort()', async () => {
+                await assert.rejects(async () => {
+                    await newProxy.connect(signers[1]).withdrawETH_lastResort(ops);
+                }, {
+                    name: 'Error',
+                    message: (await err(signerAddr2)).notAuthorized
+                });
+            });
+    
+    
         });
-
-
     });
   });

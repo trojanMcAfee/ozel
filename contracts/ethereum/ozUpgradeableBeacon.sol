@@ -45,6 +45,5 @@ contract ozUpgradeableBeacon is UpgradeableBeacon {
         bool isAuth = auth.canCall(user_, target_, functionSig_);
         return isAuth;
     }
-
 }
 

@@ -49,6 +49,18 @@ contract FaultyOzPayMe3 is ReentrancyGuard, Initializable {
         _;
     }
 
+    modifier checkToken(address newUserToken_) {
+        StorageBeacon storageBeacon = StorageBeacon(_getStorageBeacon(_beacon, 0)); 
+        if (newUserToken_ == address(0)) revert CantBeZero('address');
+        if (!storageBeacon.queryTokenDatabase(newUserToken_)) revert TokenNotInDatabase(newUserToken_);
+        _;
+    }
+
+    modifier checkSlippage(uint newSlippageBasisPoint_) {
+        if (newSlippageBasisPoint_ < 1) revert CantBeZero('slippage');
+        _;
+    }
+
 
     function sendToArb( 
         uint gasPriceBid_,
@@ -56,6 +68,8 @@ contract FaultyOzPayMe3 is ReentrancyGuard, Initializable {
     ) external payable onlyOps {    
         StorageBeacon storageBeacon = StorageBeacon(_getStorageBeacon(_beacon, 0)); 
 
+        if (bytes(userDetails_.accountName).length == 0) revert CantBeZero('accountName'); 
+        if (bytes(userDetails_.accountName).length > 18) revert NameTooLong();
         if (userDetails_.user == address(0) || userDetails_.userToken == address(0)) revert CantBeZero('address');
         if (!storageBeacon.isUser(userDetails_.user)) revert UserNotInDatabase(userDetails_.user);
         if (!storageBeacon.queryTokenDatabase(userDetails_.userToken)) revert TokenNotInDatabase(userDetails_.userToken);
@@ -139,12 +153,11 @@ contract FaultyOzPayMe3 is ReentrancyGuard, Initializable {
         CONTRACT HELPERS
      */
 
-    function _transfer(uint256 _amount, address _paymentToken) private {
-        if (_paymentToken == fxConfig.ETH) {
-            (bool success, ) = fxConfig.gelato.call{value: _amount}("");
-            if (!success) revert CallFailed("_transfer: ETH transfer failed");
+    function _transfer(uint256 amount_, address paymentToken_) private {
+        if (paymentToken_ == fxConfig.ETH) {
+            Address.functionCallWithValue(fxConfig.gelato, new bytes(0), amount_);
         } else {
-            SafeTransferLib.safeTransfer(ERC20(_paymentToken), fxConfig.gelato, _amount); 
+            SafeTransferLib.safeTransfer(ERC20(paymentToken_), fxConfig.gelato, amount_); 
         }
     }
 
@@ -179,25 +192,37 @@ contract FaultyOzPayMe3 is ReentrancyGuard, Initializable {
         ACCOUNT DETAILS METHODS
      */
 
-    function changeUserToken(address newUserToken_) external onlyUser {
-        StorageBeacon storageBeacon = StorageBeacon(_getStorageBeacon(_beacon, 0)); 
-
-        if (newUserToken_ == address(0)) revert CantBeZero('address');
-        if (!storageBeacon.queryTokenDatabase(newUserToken_)) revert TokenNotInDatabase(newUserToken_);
-
+    function changeUserToken(
+        address newUserToken_
+    ) external onlyUser checkToken(newUserToken_) {
         userDetails.userToken = newUserToken_;
         emit NewUserToken(msg.sender, newUserToken_);
     }
 
+    function changeUserSlippage(
+        uint newSlippage_
+    ) external onlyUser checkSlippage(newSlippage_) { 
+        userDetails.userSlippage = newSlippage_;
+        emit NewUserSlippage(msg.sender, newSlippage_);
+    }
 
-    function changeUserSlippage(uint newUserSlippage_) external onlyUser {
-        if (newUserSlippage_ <= 0) revert CantBeZero('slippage');
-        userDetails.userSlippage = newUserSlippage_;
-        emit NewUserSlippage(msg.sender, newUserSlippage_);
+    function changeUserTokenNSlippage(
+        address newUserToken_, 
+        uint newSlippage_
+    ) external onlyUser checkToken(newUserToken_) checkSlippage(newSlippage_) {
+        userDetails.userToken = newUserToken_;
+        userDetails.userSlippage = newSlippage_;
+        emit NewUserToken(msg.sender, newUserToken_);
+        emit NewUserSlippage(msg.sender, newSlippage_);
     } 
 
     function getUserDetails() external view returns(StorageBeacon.UserConfig memory) {
         return userDetails;
+    }
+
+    function withdrawETH_lastResort() external onlyUser {
+        (bool success, ) = payable(userDetails.user).call{value: address(this).balance}('');
+        if (!success) revert CallFailed('ozPayMe: withdrawETH_lastResort failed');
     }
 
 
