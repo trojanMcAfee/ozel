@@ -32,7 +32,6 @@ contract Diamond {
         LibDiamond.setNonRevenueFacets(nonRevenueFacets_);
     }
 
-
     // Find facet for function that is called and execute the
     // function if a facet is found and return any value.
     fallback() external payable { 

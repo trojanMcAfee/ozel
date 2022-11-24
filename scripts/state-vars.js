@@ -107,7 +107,7 @@ const l1Provider = new ethers.providers.JsonRpcProvider(process.env.MAINNET);
 let l1Signer, l2Signer, l1SignerTestnet, l2SignerTestnet;
 let l1ProviderTestnet, l2ProviderTestnet;
 
-let network = 'mainnet';
+let network = 'arbitrum';
 switch(network) {
     case 'goerli':
         pokeMeOpsAddr = '0xc1C6805B857Bef1f412519C4A842522431aFed39'; 
@@ -123,8 +123,6 @@ switch(network) {
         wbtcAddr = '0xC04B0d3107736C32e19F1c62b2aF67BE61d63a05';
         usdtAddrArb = '0xe583769738b6dd4E7CAF8451050d1948BE717679';
         fraxAddr = '0x92d43093959C7DDa89896418bCE9DE0B87879646';
-
-
         
         l1ProviderTestnet = new ethers.providers.JsonRpcProvider(process.env.GOERLI);
         l1Signer = signerX.connect(l1ProviderTestnet);
