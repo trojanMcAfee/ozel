@@ -28,15 +28,23 @@ const {
     myReceiver,
     ops,
     fraxAddr,
-    proxyABIeth
+    proxyABIeth,
+    opsL2
 } = require('./state-vars.js');
 
 
 
 
 //** Remember that LibCommon is deployed here and on helpers-arb when it should one deployment for mainnet */
-async function deployContract(contractName, constrArgs) {
+async function deployContract(contractName, constrArgs, signer = null) {
+    let signer1;
+    let var1, var2, var3, var4, var5;
     let Contract;
+    
+    if (!signer) {
+        [ signer1 ] = await hre.ethers.getSigners();
+        signer = signer1;
+    }
     
     if (contractName === 'StorageBeacon') {
         const [ libCommonAddr ] = await deployContract('LibCommon');
@@ -51,25 +59,27 @@ async function deployContract(contractName, constrArgs) {
 
     switch(contractName) {
         case 'UpgradeableBeacon':
-            contract = await Contract.deploy(constrArgs);
+            contract = await Contract.connect(signer).deploy(constrArgs, ops);
             break;
         case 'ozUpgradeableBeacon':
         case 'ozERC1967Proxy':
         case 'RolesAuthority':
         case 'FakeOZL':
+            let gas = ops;
             ([ var1, var2 ] = constrArgs);
-            contract = await Contract.deploy(var1, var2);
+            if (contractName === 'FakeOZL') gas = opsL2;
+            contract = await Contract.connect(signer).deploy(var1, var2, gas);
             break;
         case 'ozERC1967Proxy':
             ([ var1, var2, var3 ] = constrArgs);
-            contract = await Contract.deploy(var1, var2, var3);
+            contract = await Contract.connect(signer).deploy(var1, var2, var3, ops);
             break;
         case 'StorageBeacon':
             ([ var1, var2, var3, var4, var5 ] = constrArgs);
-            contract = await Contract.deploy(var1, var2, var3, var4, var5);
+            contract = await Contract.connect(signer).deploy(var1, var2, var3, var4, var5, ops);
             break;
         default:
-            contract = await Contract.deploy();
+            contract = await Contract.connect(signer).deploy(ops);
     }
 
     await contract.deployed();
@@ -81,9 +91,7 @@ async function deployContract(contractName, constrArgs) {
     ];
 }
 
-const autoRedeem2 = ethers.BigNumber.from(69073611260000000n); //*********/ minimum of 0.06907361126 ETH has to be sent
-//check this again ^ 
-//do a test if autoRedeem is higher than address(this).balance
+ //*********/ minimum of 0.06907361126 ETH has to be sent
 
 
 async function getArbitrumParams(manualRedeem = false) {

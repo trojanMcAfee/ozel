@@ -12,7 +12,6 @@ contract ozCutFacet is DiamondCutFacet {
 
     AppStorage s;
 
-
     function changeDappFee(uint baseUnits_) external {
         LibDiamond.enforceIsContractOwner();
         s.dappFee = baseUnits_;
