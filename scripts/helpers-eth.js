@@ -33,6 +33,19 @@ const {
 } = require('./state-vars.js');
 
 
+async function sendETH(receiver, amount) {
+    const [ signer ] = await hre.ethers.getSigners();
+    await signer.sendTransaction({to: receiver, value: parseEther(amount.toString())});
+    const balance = await hre.ethers.provider.getBalance(receiver);
+    return balance;
+}
+
+async function createProxy(factory, userDetails) {
+    const tx = await factory.createNewProxy(userDetails, ops);
+    const receipt = await tx.wait();
+    return receipt.logs[0].address;
+}
+
 
 
 //** Remember that LibCommon is deployed here and on helpers-arb when it should one deployment for mainnet */
@@ -40,7 +53,7 @@ async function deployContract(contractName, constrArgs, signer = null) {
     let signer1;
     let var1, var2, var3, var4, var5;
     let Contract;
-    
+
     if (!signer) {
         [ signer1 ] = await hre.ethers.getSigners();
         signer = signer1;
@@ -354,9 +367,9 @@ async function deploySystem(type, signerAddr) {
 }
 
 
-async function storeVarsInHelpers(factory) {
-    proxyFactory = factory;
-}
+// async function storeVarsInHelpers(factory) {
+//     proxyFactory = factory;
+// }
 
 
 
@@ -368,9 +381,11 @@ module.exports = {
     getEventParam,
     activateProxyLikeOps,
     compareTopicWith,
-    storeVarsInHelpers,
+    // storeVarsInHelpers,
     compareEventWithVar,
     compareTopicWith2,
     getFakeOZLVars,
-    getInitSelectors
+    getInitSelectors,
+    sendETH,
+    createProxy
 };
