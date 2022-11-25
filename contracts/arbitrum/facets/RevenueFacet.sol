@@ -10,7 +10,7 @@ import { ITri } from '../../interfaces/ICurve.sol';
 import '../../interfaces/IYtri.sol';
 import './ExecutorFacet.sol';
 import '../AppStorage.sol';
-import '../Diamond.sol';
+import '../ozDiamond.sol';
 
 import 'hardhat/console.sol';
 

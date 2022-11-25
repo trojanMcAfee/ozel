@@ -165,5 +165,4 @@ contract ExecutorFacet is ModifiersARB {
         s.usersPayments[sender_] -= amountToTransfer;
         s.usersPayments[receiver_] += amountToTransfer;
     }
-
 }

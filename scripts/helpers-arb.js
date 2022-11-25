@@ -205,7 +205,7 @@ async function queryTokenDatabase(token) {
 
 async function deployFacet(facetName) { 
     let Contract;
-    
+
     if (facetName === 'OZLFacet') {
         libCommon = await deployFacet('LibCommon');
         Contract = await hre.ethers.getContractFactory(facetName, {
@@ -324,7 +324,7 @@ async function deploy(n = 0) {
 
     //Deploys diamond
     const deployedDiamond = await myDiamondUtil.deploy({ 
-        diamondName: 'Diamond',
+        diamondName: 'ozDiamond',
         facets: [
             ['ozCutFacet', ozCutFacet],
             ['ozLoupeFacet', ozLoupeFacet],
@@ -340,7 +340,7 @@ async function deploy(n = 0) {
             callerAddr, functionCall, diamondInit: diamondInit.address, nonRevenueFacets
         }
     });
-    console.log('Diamond deployed to: ', deployedDiamond.address);
+    console.log('ozDiamond deployed to: ', deployedDiamond.address);
 
     return {
         deployedDiamond, 

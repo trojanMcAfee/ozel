@@ -77,7 +77,7 @@ contract OZLFacet is ModifiersARB {
     function _swapsForUserToken(
         uint amountIn_, 
         uint baseTokenOut_, 
-        UserConfig memory userDetails_
+        UserConfig calldata userDetails_
     ) private {
         IERC20(s.WETH).approve(s.tricrypto, amountIn_);
 
@@ -115,13 +115,12 @@ contract OZLFacet is ModifiersARB {
         if ((userDetails_.userToken != s.USDT && userDetails_.userToken != s.WBTC) && baseBalance > 0) { 
             _tradeWithExecutor(userDetails_); 
         }
-        
     }
 
     
 
     function withdrawUserShare(
-        UserConfig memory userDetails_,
+        UserConfig calldata userDetails_,
         address receiver_,
         uint shares_
     ) external onlyWhenEnabled filterDetails(userDetails_) { 

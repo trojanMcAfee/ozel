@@ -16,7 +16,7 @@ import '../Errors.sol';
 import 'hardhat/console.sol';
 
 
-contract Diamond { 
+contract ozDiamond { 
 
     AppStorage s;
 
@@ -53,7 +53,7 @@ contract Diamond {
         );
 
         // get facet from function selector
-        require(facet != address(0), "Diamond: Function does not exist");
+        require(facet != address(0), "ozDiamond: Function does not exist");
         // Execute external function from facet using delegatecall and return any value. 
         assembly {
             // copy function selector and any arguments
