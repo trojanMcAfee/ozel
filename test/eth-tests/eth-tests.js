@@ -4,10 +4,7 @@ require('dotenv').config();
 
 const { 
     formatEther, 
-    arrayify,
     formatBytes32String,
-    keccak256,
-    toUtf8Bytes,
     parseEther
 } = ethers.utils;
 
@@ -18,7 +15,6 @@ const {
     usdtAddrArb,
     usdcAddr,
     fraxAddr,
-    l1Signer,
     defaultSlippage,
     ETH,
     nullAddr,
@@ -38,7 +34,6 @@ const {
     getEventParam,
     activateProxyLikeOps,
     compareTopicWith,
-    // storeVarsInHelpers,
     compareEventWithVar,
     compareTopicWith2,
     sendETH,
@@ -50,7 +45,7 @@ const {
 
 
 let signerAddr, signerAddr2;
-let ozERC1967proxyAddr, storageBeacon, emitter, emitterAddr, fakeOZLaddr;
+let ozERC1967proxyAddr, storageBeacon, emitter, fakeOZLaddr;
 let userDetails;
 let newProxyAddr, newProxy;
 let balance, tokens;
@@ -58,7 +53,6 @@ let newUserToken, newUserSlippage, newSlippage;
 let opsContract;
 let signers;
 let showTicketSignature;
-let pulledUserDetails;
 let taskID;
 let storageBeaconMockAddr; 
 let USDC, WETH;
@@ -69,7 +63,7 @@ let preBalance, postBalance;
 let isExist, proxyFactory;
 let tx, receipt;
 let fakeOzl, volume;
-let names, proxies, user, token, slippage, name;
+let names, proxies, slippage;
 let isAuthorized, newSelector;
 
 
@@ -106,7 +100,6 @@ let isAuthorized, newSelector;
                 fakeOZLaddr, 
                 eMode
             ] = await deploySystem('Optimistically', signerAddr));
-            // storeVarsInHelpers(ozERC1967proxyAddr);
 
             proxyFactory = await hre.ethers.getContractAt(factoryABI, ozERC1967proxyAddr);
             fakeOzl = await hre.ethers.getContractAt('FakeOZL', fakeOZLaddr);

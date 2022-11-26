@@ -37,7 +37,7 @@ const {
 
 
 async function checkHash() { 
-    const hash = '0x20a7709fd1df71cdb6f6eb0203da1833f748ff2df5a9f1f28fd0deaada62fadf';
+    const hash = '0x613e67c23f51c1b4b4b6fb8b94ef128f1c6ca11892965313018ecd611b84c7b7';
     const l2Wallet = new Wallet(process.env.PK, l2ProviderTestnet);
 
     console.log(1);
@@ -58,7 +58,7 @@ async function checkHash() {
     // ];
 }
 
-// checkHash();
+checkHash();
 
 
 
@@ -160,6 +160,7 @@ async function maint() {
 
     while(true) {
         const gas = (await l1ProviderTestnet.getGasPrice()).toString();
+        console.log('x: ', gas);
         console.log('gas: ', formatUnits(gas, 'gwei'));
     }
 
@@ -215,17 +216,21 @@ async function main13() {
     const wallet = await new ethers.Wallet(process.env.PK, provider);
 
 
-    ops.nonce = 341;
-    ops.to = '0x2B75D8312cA463Dea9E80981b5c690f15E94Bd55';
-    ops.value = parseEther('0.01');
-    let tx = await wallet.sendTransaction(ops);
-    const receipt = await tx.wait();
-    console.log('hash: ', receipt.transactionHash);
-    console.log('sent out');
+    // ops.nonce = 431;
+    // ops.to = '0x2B75D8312cA463Dea9E80981b5c690f15E94Bd55';
+    // ops.value = parseEther('0.01');
+    // let tx = await wallet.sendTransaction(ops);
+    // let receipt = await tx.wait();
+    // console.log('hash: ', receipt.transactionHash);
+    // console.log('sent out');
 
-    // ops.nonce = 313;
+    // ops.nonce = 431;
+    // ops.to = '0x2B75D8312cA463Dea9E80981b5c690f15E94Bd55';
+    // ops.value = parseEther('0.01');
     // tx = await wallet.sendTransaction(ops);
-    // await tx.wait();
+    // receipt = await tx.wait();
+    // console.log('hash: ', receipt.transactionHash);
+    // console.log('sent out');
 
     let count = await hre.ethers.provider.getTransactionCount('0x0E743a1E37D691D8e52F7036375F3D148B4116ba', 'pending');
     console.log('count pen: ', Number(count));
@@ -374,8 +379,43 @@ async function create() {
     console.log('createNewProxy with hash: ', receipt.transactionHash);
     const newProxyAddr = receipt.logs[0].address;
     console.log('newProxy: ', newProxyAddr);
+}
+
+
+
+async function lastPart() {
+    const signerAddr = '0x0E743a1E37D691D8e52F7036375F3D148B4116ba';
+
+    const userDetails = [
+        signerAddr,
+        usdtAddrArb,
+        defaultSlippage,
+        'test account'
+    ];
+
+    const rolesAuthority = await hre.ethers.getContractAt('RolesAuthority', '0xA52330df54f710f60729275062150457E8c8D379');
+    const storageBeaconAddr = '0xB687DAfb84A4C83acFaCECFAc01f3e71b3FEcb5D';
+    const storageBeacon = await hre.ethers.getContractAt('StorageBeacon', storageBeaconAddr);
+
+    const proxyFactory = await hre.ethers.getContractAt('ProxyFactory', '0x70a2f448AE72624298208c620356dc3a0d75c9CD');
+
+    await rolesAuthority.setRoleCapability(1, storageBeaconAddr, '0xcb05ce19', true, ops); //saveUserToDetails(address,(address,address,uint256,string))
+    console.log('set role 1 done...');
+    await rolesAuthority.setRoleCapability(1, storageBeaconAddr, '0xf2034a69', true, ops); //saveTaskId(address proxy_, bytes32 id_)
+    console.log('set role 2 done...');
+
+    //Creates 1st proxy
+    tx = await proxyFactory.createNewProxy(userDetails, ops);
+    receipt = await tx.wait();
+    console.log('createNewProxy with hash: ', receipt.transactionHash);
+    const newProxyAddr = receipt.logs[0].address;
+    console.log('proxy 1: ', newProxyAddr);
+
+    //Gets user's task id
+    const taskId = await storageBeacon.getTaskID(newProxyAddr, ops);
+    console.log('task id: ', taskId.toString());
 
 }
 
 
-maint();
+// lastPart();

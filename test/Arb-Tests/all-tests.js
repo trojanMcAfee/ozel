@@ -44,7 +44,7 @@ let userDetails;
 let FRAX, WBTC, MIM, USDT, USDC;
 let callerAddr, caller2Addr;
 let ozelIndex, newOzelIndex;
-let balance, OZLbalanceFirstUser, OZLbalanceSecondUser, totalOZLusers, halfOZLbalance;
+let balance, OZLbalanceFirstUser, OZLbalanceSecondUser, totalOZLusers;
 let deployedDiamond;
 let preYvCrvBalance, currYvCrvBalance;
 let toTransfer;

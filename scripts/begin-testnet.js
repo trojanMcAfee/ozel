@@ -115,24 +115,24 @@ async function deployTestnet(testSigner = false, manualRedeem = false) {
     let constrArgs = [ receiver, getFakeOZLVars() ]; 
     
     //Deploys the fake OZL on arbitrum testnet 
-    const [ fakeOZLaddr ] = await deployContract('FakeOZL', constrArgs, l2SignerTest); //fake OZL address in arbitrum
-    // const fakeOZLaddr = '0xD1ee938A82F6cAa151056fd160b7C523AE029d8F';
-    // console.log('fakeOZL deployed to: ', fakeOZLaddr);
+    // const [ fakeOZLaddr ] = await deployContract('FakeOZL', constrArgs, l2SignerTest); //fake OZL address in arbitrum
+    const fakeOZLaddr = '0xec0bb67bF1EC382f681f189e3BfCCDa290610a5e';
+    console.log('fakeOZL deployed to: ', fakeOZLaddr);
    
     //Calculate fees on L1 > L2 arbitrum tx 
     // manualRedeem = true; //**** comment in for manualRedeem ****
     const [ gasPriceBid, maxGas ] = await getArbitrumParams(manualRedeem);
 
     //Deploys Emitter
-    const [ emitterAddr, emitter ] = await deployContract('Emitter', '', l1SignerTest);
-    // const emitterAddr = '0x2aA80df7466fD490E2ad3DE9BD2E5462d76E62c9';
-    // console.log('Emitter deployed to: ', emitterAddr);
-    // const emitter = await hre.ethers.getContractAt('Emitter', emitterAddr);
+    // const [ emitterAddr, emitter ] = await deployContract('Emitter', '', l1SignerTest);
+    const emitterAddr = '0x72244800aA477667858200Fe17F18F7C086a2017';
+    console.log('Emitter deployed to: ', emitterAddr);
+    const emitter = await hre.ethers.getContractAt('Emitter', emitterAddr);
 
     //Deploys ozPayMe in mainnet
-    const [ ozPaymeAddr ] = await deployContract('ozPayMe', '', l1SignerTest);
-    // const ozPaymeAddr = '0x78c862d984233a9273e2Bcf23c2b821d9b32113a';
-    // console.log('ozPayMe deployed to: ', ozPaymeAddr);
+    // const [ ozPaymeAddr ] = await deployContract('ozPayMe', '', l1SignerTest);
+    const ozPaymeAddr = '0x6D0bfaAbA796dBe0ec4A2849375FcB5fdef71912';
+    console.log('ozPayMe deployed to: ', ozPaymeAddr);
 
     //Deploys StorageBeacon
     const fxConfig = [
@@ -218,9 +218,9 @@ async function deployTestnet(testSigner = false, manualRedeem = false) {
     await rolesAuthority.setUserRole(ozERC1967proxyAddr, 1, true, ops);
     console.log('set user role done...');
 
-    await rolesAuthority.setRoleCapability(1, storageBeaconAddr, '0xcb05ce19', true); //saveUserToDetails(address,(address,address,uint256,string))
+    await rolesAuthority.setRoleCapability(1, storageBeaconAddr, '0xcb05ce19', true, ops); //saveUserToDetails(address,(address,address,uint256,string))
     console.log('set role 1 done...');
-    await rolesAuthority.setRoleCapability(1, storageBeaconAddr, '0xf2034a69', true); //saveTaskId(address proxy_, bytes32 id_)
+    await rolesAuthority.setRoleCapability(1, storageBeaconAddr, '0xf2034a69', true, ops); //saveTaskId(address proxy_, bytes32 id_)
     console.log('set role 2 done...');
 
     //Creates 1st proxy

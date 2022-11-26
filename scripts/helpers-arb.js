@@ -1,6 +1,11 @@
 const myDiamondUtil = require('./myDiamondUtil.js');
 const assert = require('assert');
-const { defaultAbiCoder: abiCoder, formatEther, keccak256, toUtf8Bytes } = ethers.utils;
+const { 
+    defaultAbiCoder: abiCoder, 
+    formatEther, 
+    keccak256, 
+    toUtf8Bytes 
+} = ethers.utils;
 
 const {
     wethAddr,

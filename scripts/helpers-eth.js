@@ -33,20 +33,6 @@ const {
 } = require('./state-vars.js');
 
 
-async function sendETH(receiver, amount) {
-    const [ signer ] = await hre.ethers.getSigners();
-    await signer.sendTransaction({to: receiver, value: parseEther(amount.toString())});
-    const balance = await hre.ethers.provider.getBalance(receiver);
-    return balance;
-}
-
-async function createProxy(factory, userDetails) {
-    const tx = await factory.createNewProxy(userDetails, ops);
-    const receipt = await tx.wait();
-    return receipt.logs[0].address;
-}
-
-
 
 //** Remember that LibCommon is deployed here and on helpers-arb when it should one deployment for mainnet */
 async function deployContract(contractName, constrArgs, signer = null) {
@@ -256,6 +242,19 @@ function getFakeOZLVars() {
         wethUserShare,
         usdUserShare
     ];
+}
+
+async function sendETH(receiver, amount) {
+    const [ signer ] = await hre.ethers.getSigners();
+    await signer.sendTransaction({to: receiver, value: parseEther(amount.toString())});
+    const balance = await hre.ethers.provider.getBalance(receiver);
+    return balance;
+}
+
+async function createProxy(factory, userDetails) {
+    const tx = await factory.createNewProxy(userDetails, ops);
+    const receipt = await tx.wait();
+    return receipt.logs[0].address;
 }
 
 

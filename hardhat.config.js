@@ -17,7 +17,7 @@ module.exports = {
   networks: {
     hardhat: {
       forking: {
-        url: process.env.ALCHEMY_ETH,
+        url: process.env.MAINNET,
         blockNumber: 15823986    // 14689661 - 14.689.661 gas: 1,106 (passing) ETH bal: 5.188593275449158
         /**
          * 15823986 (block of all tests)
