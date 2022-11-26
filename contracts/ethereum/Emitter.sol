@@ -7,7 +7,7 @@ import '@openzeppelin/contracts/access/Ownable.sol';
 import './StorageBeacon.sol';
 import '../Errors.sol';
 
-import 'hardhat/console.sol';
+// import 'hardhat/console.sol';
 
 
 contract Emitter is Initializable, Ownable {

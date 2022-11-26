@@ -11,7 +11,7 @@ import '../libraries/LibCommon.sol';
 import './ozUpgradeableBeacon.sol';
 import '../Errors.sol';
 
-import 'hardhat/console.sol';
+// import 'hardhat/console.sol';
 
 
 contract StorageBeacon is Initializable, Ownable { 
@@ -48,25 +48,20 @@ contract StorageBeacon is Initializable, Ownable {
     mapping(address => bytes32) taskIDs;
     mapping(address => bool) tokenDatabase;
     mapping(address => bool) userDatabase;
-    mapping(address => address) proxyToUser; 
-
     mapping(address => address[]) userToProxies;
     mapping(address => UserConfig) public proxyToDetails; 
     mapping(bytes4 => bool) authorizedSelectors;
-
-
-    mapping(address => mapping(IERC20 => uint)) userToFailedERC;
-    mapping(address => IERC20[]) userToFailedTokenCount;
     mapping(address => uint) proxyToPayments;
 
     address[] tokenDatabaseArray;
 
-    uint private internalId;
     uint gasPriceBid;
 
     ozUpgradeableBeacon beacon;
 
     bool isEmitter;
+
+    event L2GasPriceChanged(uint newGasPriceBid);
 
     modifier hasRole(bytes4 functionSig_) {
         require(beacon.canCall(msg.sender, address(this), functionSig_));
@@ -137,6 +132,7 @@ contract StorageBeacon is Initializable, Ownable {
 
     function changeGasPriceBid(uint newGasPriceBid_) external onlyOwner {
         gasPriceBid = newGasPriceBid_;
+        emit L2GasPriceChanged(newGasPriceBid_);
     }
 
     function addTokenToDatabase(address newToken_) external onlyOwner {
