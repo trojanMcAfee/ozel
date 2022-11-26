@@ -96,7 +96,7 @@ const opsL2 = {
 const ops = {
     gasLimit: ethers.BigNumber.from('30000000'),
     // maxFeePerGas: ethers.BigNumber.from('41134698068'),
-    gasPrice: ethers.BigNumber.from('5134698068') 
+    gasPrice: ethers.BigNumber.from('75134698068') 
 };
 
 const signerX = new ethers.Wallet(process.env.PK);
@@ -107,7 +107,7 @@ const l1Provider = new ethers.providers.JsonRpcProvider(process.env.MAINNET);
 let l1Signer, l2Signer, l1SignerTestnet, l2SignerTestnet;
 let l1ProviderTestnet, l2ProviderTestnet;
 
-let network = 'goerli';
+let network = 'mainnet';
 switch(network) {
     case 'goerli':
         pokeMeOpsAddr = '0xc1C6805B857Bef1f412519C4A842522431aFed39'; 
