@@ -36,7 +36,6 @@ contract ozDiamond is Diamond {
         address[] memory nonRevenueFacets_, 
         address revenueFacet_
     ) private {
-        // bytes memory data = abi.encodeWithSignature('checkForRevenue()');
         uint length = nonRevenueFacets_.length;
         bool callFlag;
 
@@ -63,7 +62,6 @@ contract ozDiamond is Diamond {
 
         address facet = ds.selectorToFacetAndPosition[msg.sig].facetAddress;
         
-        //with selector for checkRevenue()
         _filterRevenueCheck(
             facet, 
             ds.nonRevenueFacets, 

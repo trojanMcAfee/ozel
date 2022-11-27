@@ -10,29 +10,18 @@ pragma solidity ^0.8.0;
 
 import { LibDiamond } from "../libraries/LibDiamond.sol";
 import { IDiamondCut } from "../interfaces/IDiamondCut.sol";
-// import '@openzeppelin/contracts/utils/Address.sol';
-// import './AppStorage.sol';
-// import '../Errors.sol';
-
-// import 'hardhat/console.sol';
 
 
 contract Diamond { 
-
-    // AppStorage s;
-
-    // using Address for address;
 
     constructor(
         IDiamondCut.FacetCut[] memory _diamondCut, 
         address _contractOwner, 
         bytes memory _functionCall, 
         address _init
-        // address[] memory nonRevenueFacets_ 
     ) payable {        
         LibDiamond.diamondCut(_diamondCut, _init, _functionCall);
         LibDiamond.setContractOwner(_contractOwner);
-        // LibDiamond.setNonRevenueFacets(nonRevenueFacets_);
     }
 
     // Find facet for function that is called and execute the
@@ -47,13 +36,6 @@ contract Diamond {
         }
 
         address facet = ds.selectorToFacetAndPosition[msg.sig].facetAddress;
-
-        //with selector for checkRevenue()
-        // _filterRevenueCheck(
-        //     facet, 
-        //     ds.nonRevenueFacets, 
-        //     ds.selectorToFacetAndPosition[0xbe795977].facetAddress 
-        // );
 
         // get facet from function selector
         require(facet != address(0), "ozDiamond: Function does not exist");
@@ -77,28 +59,6 @@ contract Diamond {
     }
 
     receive() external payable {}
-
-
-    // function _filterRevenueCheck(
-    //     address calledFacet_, 
-    //     address[] memory nonRevenueFacets_, 
-    //     address revenueFacet_
-    // ) private {
-    //     bytes memory data = abi.encodeWithSignature('checkForRevenue()');
-    //     uint length = nonRevenueFacets_.length;
-    //     bool callFlag;
-
-    //     for (uint i=0; i < length;) {
-    //         if (calledFacet_ == nonRevenueFacets_[i]) {
-    //             callFlag = true;
-    //             break;
-    //         }
-    //         unchecked { ++i; }
-    //     }
-
-    //     if (!callFlag) revenueFacet_.functionDelegateCall(data);
-    // }
-
 }
 
 
