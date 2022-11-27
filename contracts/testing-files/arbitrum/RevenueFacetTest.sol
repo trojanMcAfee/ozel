@@ -3,6 +3,7 @@ pragma solidity 0.8.14;
 
 
 import '@rari-capital/solmate/src/utils/FixedPointMathLib.sol';
+import '@openzeppelin/contracts/utils/Address.sol';
 import { LibDiamond } from "../../libraries/LibDiamond.sol";
 import { ITri } from '../../interfaces/ICurve.sol';
 import '../../arbitrum/AppStorage.sol';
@@ -15,6 +16,7 @@ contract RevenueFacetTest {
     AppStorage s;
 
     using FixedPointMathLib for uint;
+    using Address for address;
 
     event RevenueEarned(uint indexed amount);
 
@@ -26,12 +28,10 @@ contract RevenueFacetTest {
         for (uint j=0; j < s.revenueAmounts.length; j++) {
 
             if ((s.feesVault * 2) * uint(price) >= s.revenueAmounts[j] * 1 ether) {
-                uint yBalance = IYtri(s.yTriPool).balanceOf(address(this));
-                uint priceShare = IYtri(s.yTriPool).pricePerShare();
 
-                uint balanceCrv3 = (yBalance * priceShare) / 1 ether;
-                uint triBalance = ITri(s.tricrypto).calc_withdraw_one_coin(balanceCrv3, 2);
-                uint valueUM = triBalance * (uint(price) / 10 ** 8);
+                bytes memory data = abi.encodeWithSignature('getAUM(int256)', price);
+                bytes memory returnData = address(this).functionCall(data);
+                (uint yBalance, uint valueUM) = abi.decode(returnData, (uint, uint));
 
                 for (uint i=0; i < s.revenueAmounts.length; i++) {
                     if (valueUM >= s.revenueAmounts[i] * 1 ether) {
