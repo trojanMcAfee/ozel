@@ -270,7 +270,9 @@ describe('Integration testing', async function () {
     });
 });
 
-
+/**
+ * Specific unit-tests for certain functions within Arbitrum contracts.
+ */
 describe('Unit testing', async function () {
     this.timeout(1000000);
 

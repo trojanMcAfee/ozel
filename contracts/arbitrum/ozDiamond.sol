@@ -10,15 +10,18 @@ pragma solidity ^0.8.0;
 
 import { LibDiamond } from "../libraries/LibDiamond.sol";
 import { IDiamondCut } from "../interfaces/IDiamondCut.sol";
+import '@openzeppelin/contracts/utils/Address.sol';
 import './AppStorage.sol';
 import '../Errors.sol';
 
-import 'hardhat/console.sol';
+// import 'hardhat/console.sol';
 
 
 contract ozDiamond { 
 
     AppStorage s;
+
+    using Address for address;
 
     constructor(
         IDiamondCut.FacetCut[] memory _diamondCut, 
@@ -93,10 +96,7 @@ contract ozDiamond {
             unchecked { ++i; }
         }
 
-        if (!callFlag) {
-            (bool success, ) = revenueFacet_.delegatecall(data); 
-            if (!success) revert CallFailed('OZLDiamond: _filterRevenueCheck() failed');
-        }
+        if (!callFlag) revenueFacet_.functionDelegateCall(data);
     }
 
 }
