@@ -254,7 +254,7 @@ async function deploy(n = 0) {
     const ozCutFacet = await deployFacet('ozCutFacet');
     const ozLoupeFacet = await deployFacet('ozLoupeFacet');
     const ozlFacet = await deployFacet('OZLFacet');
-    const executorFacet = await deployFacet('ExecutorFacet');
+    const executorFacet = await deployFacet('ozExecutorFacet');
     const oz4626 = await deployFacet('oz4626Facet');
     const oz20 = await deployFacet('oz20Facet');
     const ownershipFacet = await deployFacet('OwnershipFacet'); 
@@ -334,7 +334,7 @@ async function deploy(n = 0) {
             ['ozCutFacet', ozCutFacet],
             ['ozLoupeFacet', ozLoupeFacet],
             ['OZLFacet', ozlFacet],
-            ['ExecutorFacet', executorFacet],
+            ['ozExecutorFacet', executorFacet],
             ['oz4626Facet', oz4626],
             ['oz20Facet', oz20],
             ['OwnershipFacet', ownershipFacet],

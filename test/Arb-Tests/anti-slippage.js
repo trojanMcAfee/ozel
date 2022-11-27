@@ -33,7 +33,7 @@ let testingNum;
 
 /**
  * It tests the anti-slippage system designed with try/catch blocks on the contracts
- * OZLFacet and ExecutorFacet.
+ * OZLFacet and ozExecutorFacet.
  * 
  * It uses the functions from TestingFunctions.sol
  */
@@ -149,7 +149,7 @@ describe('Anti-slippage system', async function () {
     });
 
 
-    describe('Modified ExecutorFacet', async () => {
+    describe('Modified ozExecutorFacet', async () => {
         before( async () => {
             abi = ['function executeFinalTrade((int128 tokenIn, int128 tokenOut, address baseToken, address userToken, address pool) swapDetails_, uint256 userSlippage_, address user_, uint256 lockNum_) external payable'];
             iface = new ethers.utils.Interface(abi);

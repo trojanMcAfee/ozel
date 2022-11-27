@@ -8,7 +8,7 @@ import '@openzeppelin/contracts/utils/Address.sol';
 import { LibDiamond } from "../../libraries/LibDiamond.sol";
 import { ITri } from '../../interfaces/ICurve.sol';
 import '../../interfaces/IYtri.sol';
-import './ExecutorFacet.sol';
+import './ozExecutorFacet.sol';
 import '../AppStorage.sol';
 import '../ozDiamond.sol';
 
@@ -58,7 +58,7 @@ contract RevenueFacet {
 
         for (uint i=1; i <= 2; i++) {
             uint triAmountWithdraw = ITri(s.tricrypto).calc_withdraw_one_coin(assetsToWithdraw / i, 2); 
-            uint minOut = ExecutorFacet(s.executor).calculateSlippage(
+            uint minOut = ozExecutorFacet(s.executor).calculateSlippage(
                 triAmountWithdraw, s.defaultSlippage
             ); 
 

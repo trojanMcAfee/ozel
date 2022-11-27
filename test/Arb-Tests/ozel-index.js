@@ -39,7 +39,7 @@ let iface, abi, selector;
  * It uses the ModExecutorFacet contract with hard-coded values in order to represent
  * a point in the future where the mechanism kicks in. 
  * 
- * The two main differences from the real implementation on ExecutorFacet is on
+ * The two main differences from the real implementation on ozExecutorFacet is on
  * line 133, 136 140 (from the Mod version) that uses much lower values in order to
  * show the workings of the mechanism.
  */

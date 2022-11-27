@@ -488,7 +488,7 @@ describe('Unit testing', async function () {
         });
     });
 
-    describe('ExecutorFacet', async () => { 
+    describe('ozExecutorFacet', async () => { 
         it('shout not allow an unauthorized user to run the function / updateExecutorState()', async () => {
             await assert.rejects(async () => {
                 await ozlDiamond.updateExecutorState(evilAmount, deadAddr, 1, ops);
@@ -596,7 +596,7 @@ describe('Unit testing', async function () {
  * It uses the ModExecutorFacet contract with hard-coded values in order to represent
  * a point in the future where the mechanism kicks in. 
  * 
- * The two main differences from the real implementation on ExecutorFacet is on
+ * The two main differences from the real implementation on ozExecutorFacet is on
  * line 133, 136 140 (from the Mod version) that uses much lower values in order to
  * show the workings of the mechanism.
  */
@@ -700,7 +700,7 @@ describe('Unit testing', async function () {
 
 /**
  * It tests the anti-slippage system designed with try/catch blocks on the contracts
- * OZLFacet and ExecutorFacet.
+ * OZLFacet and ozExecutorFacet.
  * 
  * It uses the functions from TestingFunctions.sol
  */
@@ -816,7 +816,7 @@ describe('Anti-slippage system', async function () {
     });
 
 
-    describe('Modified ExecutorFacet', async () => {
+    describe('Modified ozExecutorFacet', async () => {
         before( async () => {
             abi = ['function executeFinalTrade((int128 tokenIn, int128 tokenOut, address baseToken, address userToken, address pool) swapDetails_, uint256 userSlippage_, address user_, uint256 lockNum_) external payable'];
             iface = new ethers.utils.Interface(abi);

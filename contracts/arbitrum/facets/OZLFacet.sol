@@ -11,7 +11,7 @@ import { ModifiersARB } from '../../Modifiers.sol';
 import '../../libraries/LibCommon.sol';
 import '../../interfaces/IYtri.sol';
 import '../../interfaces/IWETH.sol';
-import './ExecutorFacet.sol';
+import './ozExecutorFacet.sol';
 import './oz4626Facet.sol';
 import '../../Errors.sol';
 
@@ -89,7 +89,7 @@ contract OZLFacet is ModifiersARB {
         
         for (uint i=1; i <= 2; i++) {
             uint minOut = ITri(s.tricrypto).get_dy(2, baseTokenOut_, amountIn_ / i);
-            uint slippage = ExecutorFacet(s.executor).calculateSlippage(minOut, userDetails_.userSlippage * i);
+            uint slippage = ozExecutorFacet(s.executor).calculateSlippage(minOut, userDetails_.userSlippage * i);
             
             try ITri(s.tricrypto).exchange(2, baseTokenOut_, amountIn_ / i, slippage, false) {
                 if (i == 2) {
@@ -146,7 +146,7 @@ contract OZLFacet is ModifiersARB {
         //tricrypto= USDT: 0 / crv2- USDT: 1 , USDC: 0 / mim- MIM: 0 , CRV2lp: 1
         uint tokenAmountIn = ITri(s.tricrypto).calc_withdraw_one_coin(assets, 0); 
         
-        uint minOut = ExecutorFacet(s.executor).calculateSlippage(
+        uint minOut = ozExecutorFacet(s.executor).calculateSlippage(
             tokenAmountIn, userDetails_.userSlippage
         ); 
 
@@ -166,7 +166,7 @@ contract OZLFacet is ModifiersARB {
         IERC20(s.WETH).approve(s.tricrypto, tokenAmountIn);
 
         for (uint i=1; i <= 2; i++) {
-            uint minAmount = ExecutorFacet(s.executor).calculateSlippage(tokenAmountIn, s.defaultSlippage * i);
+            uint minAmount = ozExecutorFacet(s.executor).calculateSlippage(tokenAmountIn, s.defaultSlippage * i);
 
             try ITri(s.tricrypto).add_liquidity(amounts, minAmount) {
                 //Deposit crvTricrypto in Yearn
@@ -216,7 +216,7 @@ contract OZLFacet is ModifiersARB {
      ******/
 
     function _getFee(uint amount_) private view returns(uint, uint) {
-        uint fee = amount_ - ExecutorFacet(s.executor).calculateSlippage(amount_, s.dappFee);
+        uint fee = amount_ - ozExecutorFacet(s.executor).calculateSlippage(amount_, s.dappFee);
         uint netAmount = amount_ - fee;
         return (netAmount, fee);
     }

@@ -7,8 +7,8 @@ import '@rari-capital/solmate/src/utils/FixedPointMathLib.sol';
 import '@openzeppelin/contracts/token/ERC20/IERC20.sol';
 import { ITri } from '../../interfaces/ICurve.sol';
 import { ModifiersARB } from '../../Modifiers.sol';
-import '../../arbitrum/facets/ExecutorFacet.sol';
-import '../../arbitrum/facets/ExecutorFacet.sol';
+import '../../arbitrum/facets/ozExecutorFacet.sol';
+import '../../arbitrum/facets/ozExecutorFacet.sol';
 import '../../arbitrum/facets/oz4626Facet.sol';
 import '../../arbitrum/AppStorage.sol';
 import '../../interfaces/IWETH.sol';
@@ -22,7 +22,7 @@ contract SecondaryFunctions is ModifiersARB {
     using FixedPointMathLib for uint;
 
     function _getFee(uint amount_) internal view returns(uint, uint) {
-        uint fee = amount_ - ExecutorFacet(s.executor).calculateSlippage(amount_, s.dappFee);
+        uint fee = amount_ - ozExecutorFacet(s.executor).calculateSlippage(amount_, s.dappFee);
         uint netAmount = amount_ - fee;
         return (netAmount, fee);
     }
@@ -180,7 +180,7 @@ contract SwapsForUserTokenV1 is SecondaryFunctions {
         ****/ 
         for (uint i=1; i <= 2; i++) {
             uint minOut = ITri(s.tricrypto).get_dy(2, baseTokenOut_, amountIn_ / i);
-            uint slippage = ExecutorFacet(s.executor).calculateSlippage(minOut, userDetails_.userSlippage * i);
+            uint slippage = ozExecutorFacet(s.executor).calculateSlippage(minOut, userDetails_.userSlippage * i);
             
             try ITri(s.tricrypto).exchange(2, baseTokenOut_, amountIn_ / i, type(uint).max, false) {
                 if (i == 2) {
@@ -259,7 +259,7 @@ contract SwapsForUserTokenV2 is SecondaryFunctions {
         ****/ 
         for (uint i=1; i <= 2; i++) {
             uint minOut = ITri(s.tricrypto).get_dy(2, baseTokenOut_, amountIn_ / i);
-            uint slippage = ExecutorFacet(s.executor).calculateSlippage(minOut, userDetails_.userSlippage * i);
+            uint slippage = ozExecutorFacet(s.executor).calculateSlippage(minOut, userDetails_.userSlippage * i);
 
             //Testing variable
             uint testVar = i == 1 ? type(uint).max : slippage;
@@ -342,7 +342,7 @@ contract SwapsForUserTokenV3 is SecondaryFunctions {
         ****/ 
         for (uint i=1; i <= 2; i++) {
             uint minOut = ITri(s.tricrypto).get_dy(2, baseTokenOut_, amountIn_ / i);
-            uint slippage = ExecutorFacet(s.executor).calculateSlippage(minOut, userDetails_.userSlippage * i);
+            uint slippage = ozExecutorFacet(s.executor).calculateSlippage(minOut, userDetails_.userSlippage * i);
 
             //Testing variables
             uint testVar = i == 1 ? type(uint).max : slippage;
@@ -492,7 +492,7 @@ contract DepositFeesInDeFiV1 is SecondaryFunctions {
         ****/ 
         for (uint i=1; i <= 2; i++) {
             uint minOut = ITri(s.tricrypto).get_dy(2, baseTokenOut_, amountIn_ / i);
-            uint slippage = ExecutorFacet(s.executor).calculateSlippage(minOut, userDetails_.userSlippage * i);
+            uint slippage = ozExecutorFacet(s.executor).calculateSlippage(minOut, userDetails_.userSlippage * i);
             
             try ITri(s.tricrypto).exchange(2, baseTokenOut_, amountIn_ / i, slippage, false) {
                 if (i == 2) {
@@ -522,7 +522,7 @@ contract DepositFeesInDeFiV1 is SecondaryFunctions {
         IERC20(s.WETH).approve(s.tricrypto, tokenAmountIn);
 
         for (uint i=1; i <= 2; i++) {
-            uint minAmount = ExecutorFacet(s.executor).calculateSlippage(tokenAmountIn, s.defaultSlippage * i);
+            uint minAmount = ozExecutorFacet(s.executor).calculateSlippage(tokenAmountIn, s.defaultSlippage * i);
 
             //Testing variable
             uint testVar = isRetry_ ? minAmount : type(uint).max;
@@ -558,7 +558,7 @@ contract DepositFeesInDeFiV1 is SecondaryFunctions {
 
 
 /**
-    ExecutorFacet() 
+    ozExecutorFacet() 
  */
 
 contract ExecutorFacetV1 is SecondaryFunctions {    
@@ -987,7 +987,7 @@ contract ComputeRevenueV1 is SecondaryFunctions {
         for (uint i=1; i <= 2; i++) {
 
             uint triAmountWithdraw = ITri(s.tricrypto).calc_withdraw_one_coin(assetsToWithdraw / i, 2); 
-            uint minOut = ExecutorFacet(s.executor).calculateSlippage(
+            uint minOut = ozExecutorFacet(s.executor).calculateSlippage(
                 triAmountWithdraw, s.defaultSlippage
             ); 
 
@@ -1074,7 +1074,7 @@ contract ComputeRevenueV2 is SecondaryFunctions {
 
         for (uint i=1; i <= 2; i++) {
             uint triAmountWithdraw = ITri(s.tricrypto).calc_withdraw_one_coin(assetsToWithdraw / i, 2); 
-            uint minOut = ExecutorFacet(s.executor).calculateSlippage(
+            uint minOut = ozExecutorFacet(s.executor).calculateSlippage(
                 triAmountWithdraw, s.defaultSlippage
             ); 
 
@@ -1163,7 +1163,7 @@ contract ComputeRevenueV3 is SecondaryFunctions {
 
         for (uint i=1; i <= 2; i++) {
             uint triAmountWithdraw = ITri(s.tricrypto).calc_withdraw_one_coin(assetsToWithdraw / i, 2); 
-            uint minOut = ExecutorFacet(s.executor).calculateSlippage(
+            uint minOut = ozExecutorFacet(s.executor).calculateSlippage(
                 triAmountWithdraw, s.defaultSlippage
             ); 
 
@@ -1244,7 +1244,7 @@ contract ComputeRevenueV4 is SecondaryFunctions {
 
         for (uint i=1; i <= 2; i++) {
             uint triAmountWithdraw = ITri(s.tricrypto).calc_withdraw_one_coin(assetsToWithdraw / i, 2); 
-            uint minOut = ExecutorFacet(s.executor).calculateSlippage(
+            uint minOut = ozExecutorFacet(s.executor).calculateSlippage(
                 triAmountWithdraw, s.defaultSlippage
             ); 
 
@@ -1332,7 +1332,7 @@ contract SwapWETHforRevenueV1 {
 
         for (uint i=1; i <= 2; i++) {
             uint triAmountWithdraw = ITri(s.tricrypto).calc_withdraw_one_coin(assetsToWithdraw / i, 2); 
-            uint minOut = ExecutorFacet(s.executor).calculateSlippage(
+            uint minOut = ozExecutorFacet(s.executor).calculateSlippage(
                 triAmountWithdraw, s.defaultSlippage
             ); 
 
@@ -1462,7 +1462,7 @@ contract SwapWETHforRevenueV2 {
 
         for (uint i=1; i <= 2; i++) {
             uint triAmountWithdraw = ITri(s.tricrypto).calc_withdraw_one_coin(assetsToWithdraw / i, 2); 
-            uint minOut = ExecutorFacet(s.executor).calculateSlippage(
+            uint minOut = ozExecutorFacet(s.executor).calculateSlippage(
                 triAmountWithdraw, s.defaultSlippage
             ); 
 
@@ -1599,7 +1599,7 @@ contract SwapWETHforRevenueV3 {
 
         for (uint i=1; i <= 2; i++) {
             uint triAmountWithdraw = ITri(s.tricrypto).calc_withdraw_one_coin(assetsToWithdraw / i, 2); 
-            uint minOut = ExecutorFacet(s.executor).calculateSlippage(
+            uint minOut = ozExecutorFacet(s.executor).calculateSlippage(
                 triAmountWithdraw, s.defaultSlippage
             ); 
 
