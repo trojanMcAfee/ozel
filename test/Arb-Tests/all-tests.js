@@ -556,7 +556,33 @@ describe('Unit testing', async function () {
         });
     });
 
+    describe('ozLoupeFacet', async () => {
+        beforeEach(async () => {
+            userDetails[1] = usdcAddr;
+            await sendETH(userDetails);
+        });
 
+        it('should get the amount in USD of Assets Under Management / getAUM()', async () => {
+            const [ wethUM, valueUM]  = await ozlDiamond.getAUM(); 
+            assert(formatEther(valueUM) > 20);
+        });
+
+        it('should get the total volume in ETH / getTotalVolumeInETH()', async () => {
+            totalVolume = await ozlDiamond.getTotalVolumeInETH();
+            assert(formatEther(totalVolume) > 0);
+        });
+
+        it('should get the total volume in USD / getTotalVolumeInUSD()', async () => {
+            totalVolume = await ozlDiamond.getTotalVolumeInUSD();
+            assert(formatEther(totalVolume) > 0);
+        });
+
+        it('should get the Ozel balance in ETH and USD, getOzelBalances()', async () => {
+            const [ wethUserShare, usdUserShare ] = await ozlDiamond.getOzelBalances(userDetails[0]);
+            assert(formatEther(wethUserShare) > 0);
+            assert(formatEther(usdUserShare) > 0);
+        });
+    });
 });
 
 
@@ -572,8 +598,7 @@ describe('Unit testing', async function () {
  * line 133, 136 140 (from the Mod version) that uses much lower values in order to
  * show the workings of the mechanism.
  */
-
-describe('Ozel Index', async function () { 
+ describe('Ozel Index', async function () { 
     this.timeout(100000000000000000000);
 
     before( async () => {

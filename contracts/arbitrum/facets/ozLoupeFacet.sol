@@ -56,8 +56,9 @@ contract ozLoupeFacet is DiamondLoupeFacet {
         bytes memory returnData = address(this).functionStaticCall(data); 
         uint userOzlBalance = abi.decode(returnData, (uint));
 
-        uint wethUserShare = userOzlBalance.mulDivDown(wethUM, 100 * 1 ether);
-        uint usdUserShare = userOzlBalance.mulDivDown(valueUM, 100 * 1 ether);
+        uint wethUserShare = _getUserShare(userOzlBalance, wethUM);
+        uint usdUserShare = _getUserShare(userOzlBalance, valueUM);
+
         return (wethUserShare, usdUserShare);
     }
 
@@ -69,5 +70,12 @@ contract ozLoupeFacet is DiamondLoupeFacet {
         uint wethUM = ITri(s.tricrypto).calc_withdraw_one_coin(balanceCrv3, 2);
         uint valueUM = (wethUM * uint(price_)) / 10 ** 8;
         return (yBalance, wethUM, valueUM);
+    }
+
+    function _getUserShare(
+        uint userOzlBalance_, 
+        uint amountUM_
+    ) private pure returns(uint) {
+        return userOzlBalance_.mulDivDown(amountUM_, 100 * 1 ether);
     }
 }

@@ -36,7 +36,7 @@ let toTransfer, balanceMIM, yvCrvTri;
 
 
 
-describe('Standard user interaction', async function () {
+describe('Integration testing', async function () {
     this.timeout(1000000);
 
     before( async () => {

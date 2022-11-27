@@ -224,7 +224,7 @@ describe('Unit testing', async function () {
                 assert(doesExist);
             });
 
-            xit('should not allow an unauthorized user to add a new userToken to database / addTokenToDatabase()', async () => {
+            it('should not allow an unauthorized user to add a new userToken to database / addTokenToDatabase()', async () => {
                 tokenSwap[3] = deadAddr;
                 await assert.rejects(async () => {
                     await addTokenToDatabase(tokenSwap, 1);
@@ -234,7 +234,7 @@ describe('Unit testing', async function () {
                 });
             });
 
-            xit('should allow the owner to remove a userToken (USX) from the database / removeTokenFromDatabase()', async () => {
+            it('should allow the owner to remove a userToken (USX) from the database / removeTokenFromDatabase()', async () => {
                 doesExist = await queryTokenDatabase(usxAddr);
                 assert(doesExist);
 
@@ -324,8 +324,11 @@ describe('Unit testing', async function () {
         });
     });
 
-    describe('DiamondLoupeFacet', async () => {
-        beforeEach(async () => await sendETH(userDetails));
+    describe('ozLoupeFacet', async () => {
+        beforeEach(async () => {
+            userDetails[1] = usdcAddr;
+            await sendETH(userDetails);
+        });
 
         it('should get the amount in USD of Assets Under Management / getAUM()', async () => {
             const [ wethUM, valueUM]  = await ozlDiamond.getAUM(); 
@@ -348,6 +351,4 @@ describe('Unit testing', async function () {
             assert(formatEther(usdUserShare) > 0);
         });
     });
-
-
 });

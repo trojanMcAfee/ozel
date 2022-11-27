@@ -9,7 +9,7 @@ import { IDiamondLoupe } from "../../interfaces/IDiamondLoupe.sol";
 import { LibDiamond } from  "../../libraries/LibDiamond.sol";
 import { IERC165 } from "../../interfaces/IERC165.sol";
 
-import 'hardhat/console.sol';
+// import 'hardhat/console.sol';
 
 
 contract DiamondLoupeFacet is IDiamondLoupe, IERC165 { 
