@@ -44,14 +44,12 @@ struct AppStorage {
 
     OZLERC20 oz;
 
-    //Curve swaps config **** code how to easily add a new swap
+    //Curve swaps config
     TradeOps renSwap;
     TradeOps mimSwap;
     TradeOps usdcSwap;
     TradeOps fraxSwap;
     TradeOps[] swaps;
-
-    bool isEnabled;
 
     //Mutex locks
     mapping(uint => uint) bitLocks;
@@ -72,6 +70,10 @@ struct AppStorage {
     address revenueToken;
     uint24 poolFee;
     uint[] revenueAmounts;
+
+    //Misc vars
+    bool isEnabled;
+    bytes checkForRevenueSelec;
 
 }
 

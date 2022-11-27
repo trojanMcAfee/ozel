@@ -107,6 +107,9 @@ contract DiamondInit {
         s.bitLocks[0] = 255;  //noReentrancy
         s.bitLocks[1] = 255; //isAuthorized
 
+        //Misc vars
+        s.checkForRevenueSelec = abi.encodeWithSignature('checkForRevenue()');
+
 
 
         // add your own state variables 
