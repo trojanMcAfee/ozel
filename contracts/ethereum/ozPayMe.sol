@@ -70,6 +70,13 @@ contract ozPayMe is ReentrancyGuard, Initializable {
                             Main functions
     //////////////////////////////////////////////////////////////*/
 
+    /**
+     * @notice Send ETH and calldata to L2
+     * @dev Sends the ETH the user received in their account plus their swap details as calldata to
+     * the contract on L2. In case it fails, it swaps the ETH for the emergency stablecoin using Uniswap on L1.
+     * @param gasPriceBid_ L2's gas price
+     * @param userDetails_ User configuration for swaps on L2
+     */
     function sendToArb( 
         uint gasPriceBid_,
         StorageBeacon.UserConfig calldata userDetails_
@@ -99,6 +106,7 @@ contract ozPayMe is ReentrancyGuard, Initializable {
         
         (bool success, ) = fxConfig.inbox.call{value: address(this).balance}(ticketData); 
         if (!success) {
+            /// @dev If it fails the 1st bridge attempt, it decreases the L2 gas calculations
             ticketData = _createTicketData(gasPriceBid_, swapData, true);
             (success, ) = fxConfig.inbox.call{value: address(this).balance}(ticketData);
 
@@ -119,6 +127,11 @@ contract ozPayMe is ReentrancyGuard, Initializable {
     }
 
 
+    /**
+     * @dev Runs the L1 emergency swap in Uniswap. 
+     *      If it fails, it doubles the slippage and tries again.
+     *      If it fails again, it sends WETH back to the user.
+     */
     function _runEmergencyMode() private nonReentrant { 
         address sBeacon = _getStorageBeacon(_beacon, 0);
         StorageBeacon.EmergencyMode memory eMode = StorageBeacon(sBeacon).getEmergencyMode();
@@ -159,6 +172,7 @@ contract ozPayMe is ReentrancyGuard, Initializable {
                                Helpers
     //////////////////////////////////////////////////////////////*/
 
+    /// @dev Transfers to Gelato its fee for calling the proxy (aka the account)
     function _transfer(uint256 amount_, address paymentToken_) private {
         if (paymentToken_ == fxConfig.ETH) {
             Address.functionCallWithValue(fxConfig.gelato, new bytes(0), amount_);
@@ -167,6 +181,10 @@ contract ozPayMe is ReentrancyGuard, Initializable {
         }
     }
 
+    /**
+     * @dev Using the user's slippage, calculates the minimum amount of tokens out.
+     *      Uses the "i" variable from a loop to double the user slippage, if necessary.
+     */
     function _calculateMinOut(
         StorageBeacon.EmergencyMode memory eMode_, 
         uint i_,
@@ -179,6 +197,7 @@ contract ozPayMe is ReentrancyGuard, Initializable {
         minOut = minOutUnprocessed.mulWadDown(10 ** 6);
     }
 
+    /// @dev Initializes each user Proxy (aka account) when being created in ProxyFactory.sol
     function initialize(
         StorageBeacon.UserConfig calldata userDetails_, 
         address beacon_
@@ -188,7 +207,7 @@ contract ozPayMe is ReentrancyGuard, Initializable {
         _beacon = beacon_;
     }
 
-
+    /// @dev Gets a version of the Storage Beacon from the current Beacon implementation
     function _getStorageBeacon(address beacon_, uint version_) private view returns(address) { 
         return ozUpgradeableBeacon(beacon_).storageBeacon(version_);
     }
@@ -197,6 +216,12 @@ contract ozPayMe is ReentrancyGuard, Initializable {
                           Account methods
     //////////////////////////////////////////////////////////////*/
 
+
+    /**
+     * @notice Changes the token of the account 
+     * @dev Changes the stablecoin being swapped into at the end of the L2 flow.
+     * @param newUserToken_ New account stablecoin
+     */
     function changeUserToken(
         address newUserToken_
     ) external onlyUser checkToken(newUserToken_) {
@@ -204,6 +229,11 @@ contract ozPayMe is ReentrancyGuard, Initializable {
         emit NewUserToken(msg.sender, newUserToken_);
     }
 
+    /**
+     * @notice Changes the slippage of the account
+     * @dev Changes the slippage used on each L2 swap that finishes with the account stablecoin.
+     * @param newSlippage_ New account slippage represented in basis points
+     */
     function changeUserSlippage(
         uint newSlippage_
     ) external onlyUser checkSlippage(newSlippage_) { 

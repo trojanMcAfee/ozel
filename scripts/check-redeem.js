@@ -24,14 +24,20 @@ const {
     usdtAddrArb,
     wbtcAddr,
     deadAddr,
-    l2Signer
+    l2Signer,
+    l2SignerTest,
+    l1SignerTest
 } = require('./state-vars.js');
-const { parseEther, parseUnits } = require("ethers/lib/utils.js");
+
 
 const { 
     formatEther,
-    formatUnits
+    formatUnits,
+    parseEther,
+    parseUnits
  } = ethers.utils;
+
+ const { deployContract } = require('./helpers-eth');
 
 
 
@@ -393,16 +399,37 @@ async function lastPart() {
         'test account'
     ];
 
-    const rolesAuthority = await hre.ethers.getContractAt('RolesAuthority', '0xA52330df54f710f60729275062150457E8c8D379');
-    const storageBeaconAddr = '0xB687DAfb84A4C83acFaCECFAc01f3e71b3FEcb5D';
+    //------
+
+    const beaconAddr = '0xeC934e548f0e42aDE66404C3E5Cce436b8Cb4A2F';
+    const beacon = await hre.ethers.getContractAt('ozUpgradeableBeacon', beaconAddr);
+    const ozERC1967proxyAddr = '0x90a8197d3B8a55504cDF3Af68D85d8eB884561fb';
+    const storageBeaconAddr = '0x216FD2A1DD6D2a8544cB5F75E6E39A121DA86D0c';
+    const proxyFactory = await hre.ethers.getContractAt('ProxyFactory', ozERC1967proxyAddr);
     const storageBeacon = await hre.ethers.getContractAt('StorageBeacon', storageBeaconAddr);
 
-    const proxyFactory = await hre.ethers.getContractAt('ProxyFactory', '0x70a2f448AE72624298208c620356dc3a0d75c9CD');
+    //--------
 
-    await rolesAuthority.setRoleCapability(1, storageBeaconAddr, '0xcb05ce19', true, ops); //saveUserToDetails(address,(address,address,uint256,string))
-    console.log('set role 1 done...');
-    await rolesAuthority.setRoleCapability(1, storageBeaconAddr, '0xf2034a69', true, ops); //saveTaskId(address proxy_, bytes32 id_)
-    console.log('set role 2 done...');
+    // const [ redeemedHashesAddr, redeemedHashes ] = await deployContract('RedeemedHashes', '', l2SignerTest); 
+
+    // //Deploys Auth
+    // constrArgs = [ 
+    //     signerAddr,
+    //     beaconAddr
+    // ];
+
+    // const [ rolesAuthorityAddr, rolesAuthority ] = await deployContract('RolesAuthority', constrArgs, l1SignerTest);
+    // await beacon.setAuth(rolesAuthorityAddr, ops);
+    // console.log('set auth done...');
+
+    // //Set ERC1967Proxy to role 1 and gives it authority to call the functions in StorageBeacon
+    // await rolesAuthority.setUserRole(ozERC1967proxyAddr, 1, true, ops);
+    // console.log('set user role done...');
+
+    // await rolesAuthority.setRoleCapability(1, storageBeaconAddr, '0xcb05ce19', true, ops); //saveUserToDetails(address,(address,address,uint256,string))
+    // console.log('set role 1 done...');
+    // await rolesAuthority.setRoleCapability(1, storageBeaconAddr, '0xf2034a69', true, ops); //saveTaskId(address proxy_, bytes32 id_)
+    // console.log('set role 2 done...');
 
     //Creates 1st proxy
     tx = await proxyFactory.createNewProxy(userDetails, ops);
@@ -418,4 +445,4 @@ async function lastPart() {
 }
 
 
-maint();
+lastPart();
