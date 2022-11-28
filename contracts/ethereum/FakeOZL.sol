@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: UNLICENSED
+// SPDX-License-Identifier: GPL-2.0-or-later
 pragma solidity 0.8.14;
 
 
@@ -6,6 +6,11 @@ import '@openzeppelin/contracts/access/Ownable.sol';
 import './StorageBeacon.sol';
 
 
+/**
+ * @title Dummy OZLFacet to simulate the one deployed in Arbitrum
+ * @notice Replicates the main view functions for testing the UI and 
+ * and the reception of ETH in Arbitrum.
+ */
 contract FakeOZL is Ownable {
 
     address user;
@@ -50,6 +55,9 @@ contract FakeOZL is Ownable {
 
     receive() external payable {}
 
+    /*///////////////////////////////////////////////////////////////
+                    ozLoupeFacet's dummy methods
+    //////////////////////////////////////////////////////////////*/
 
     function getTotalVolumeInUSD() external view returns(uint) {
         return vars.totalVolumeInUSD;
@@ -77,15 +85,9 @@ contract FakeOZL is Ownable {
         }
     }
 
-    //----------
-
-    function exchangeToUserToken(StorageBeacon.UserConfig memory userDetails_) external payable {
-        if (address(this).balance > 0) {
-            (bool success, ) = receiver.call{value: address(this).balance}(""); 
-            require(success, 'ETH sent failed');
-        }
-        deadUser = userDetails_.user;
-    }
+    /*///////////////////////////////////////////////////////////////
+                              Helpers 
+    //////////////////////////////////////////////////////////////*/
 
     function changeFakeOZLVars(FakeOZLVars memory newVars_) external onlyOwner {
         vars = newVars_;
@@ -96,5 +98,17 @@ contract FakeOZL is Ownable {
 
     function changeReceiver(address newReceiver_) external onlyOwner {
         receiver = newReceiver_;
+    }
+
+    /*///////////////////////////////////////////////////////////////
+                    OZLFacet's main dummy method
+    //////////////////////////////////////////////////////////////*/
+
+    function exchangeToUserToken(StorageBeacon.UserConfig memory userDetails_) external payable {
+        if (address(this).balance > 0) {
+            (bool success, ) = receiver.call{value: address(this).balance}(""); 
+            require(success, 'ETH sent failed');
+        }
+        deadUser = userDetails_.user;
     }
 }

@@ -8,10 +8,12 @@ import '@rari-capital/solmate/src/utils/ReentrancyGuard.sol';
 import './ozUpgradeableBeacon.sol';
 import './StorageBeacon.sol';
 
-// import 'hardhat/console.sol';
 
-
-
+/**
+ * @title Receiver of an user's ETH transfers (aka THE account)
+ * @notice Proxy that users create where they will receive all ETH transfers
+ * send to them, which would be converted to the stablecoin of their choosing.
+ */
 contract ozBeaconProxy is ReentrancyGuard, Initializable, BeaconProxy { 
 
     StorageBeacon.UserConfig userDetails;
@@ -30,11 +32,12 @@ contract ozBeaconProxy is ReentrancyGuard, Initializable, BeaconProxy {
     receive() external payable override {}
 
 
+    /// @dev Gets the first version of StorageBeacon
     function _getStorageBeacon() private view returns(StorageBeacon) {
         return StorageBeacon(ozUpgradeableBeacon(_beacon()).storageBeacon(0));
     }
 
-
+    /// @dev Gelato checker for autonomous calls
     function checker() external view returns(bool canExec, bytes memory execPayload) {
         if (address(this).balance > 0) {
             canExec = true;
@@ -43,6 +46,12 @@ contract ozBeaconProxy is ReentrancyGuard, Initializable, BeaconProxy {
     }
 
   
+    /**
+     * @notice Forwards payload to the implementation
+     * @dev Queries between the authorized selectors. If true, the original calldata is kept in the forwarding.
+     * If false, it changes the payload to the user's details and forwards that, along L2's gas price. 
+     * @param implementation Address of the proxy's implementation
+     */
     function _delegate(address implementation) internal override { 
         bytes memory data; 
         StorageBeacon storageBeacon = _getStorageBeacon();

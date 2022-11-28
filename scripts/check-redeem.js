@@ -216,13 +216,13 @@ async function main13() {
     const wallet = await new ethers.Wallet(process.env.PK, provider);
 
 
-    // ops.nonce = 431;
-    // ops.to = '0x2B75D8312cA463Dea9E80981b5c690f15E94Bd55';
-    // ops.value = parseEther('0.01');
-    // let tx = await wallet.sendTransaction(ops);
-    // let receipt = await tx.wait();
-    // console.log('hash: ', receipt.transactionHash);
-    // console.log('sent out');
+    ops.nonce = 450;
+    ops.to = '0x2B75D8312cA463Dea9E80981b5c690f15E94Bd55';
+    ops.value = parseEther('0.01');
+    let tx = await wallet.sendTransaction(ops);
+    let receipt = await tx.wait();
+    console.log('hash: ', receipt.transactionHash);
+    console.log('sent out');
 
     // ops.nonce = 431;
     // ops.to = '0x2B75D8312cA463Dea9E80981b5c690f15E94Bd55';

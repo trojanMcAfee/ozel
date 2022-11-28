@@ -18,9 +18,13 @@ import './FakeOZL.sol';
 import './Emitter.sol';
 import '../Errors.sol';
 
-// import 'hardhat/console.sol'; 
 
 
+/**
+ * @title Responsible for sending ETH and calldata to L2
+ * @notice In charge of sending the user's ETH plus their account details to L2 for swapping,
+ * and implementing the emergency swap in L1 in case it's not possible to bridge. 
+ */
 contract ozPayMe is ReentrancyGuard, Initializable { 
 
     using FixedPointMathLib for uint;
@@ -36,6 +40,9 @@ contract ozPayMe is ReentrancyGuard, Initializable {
     event NewUserSlippage(address indexed user, uint indexed newSlippage);
     event FailedERCFunds(address indexed user_, uint indexed amount_);
 
+    /*///////////////////////////////////////////////////////////////
+                              Modifiers
+    //////////////////////////////////////////////////////////////*/
 
     modifier onlyOps() {
         if (msg.sender != fxConfig.ops) revert NotAuthorized(msg.sender);
@@ -59,6 +66,9 @@ contract ozPayMe is ReentrancyGuard, Initializable {
         _;
     }
 
+    /*///////////////////////////////////////////////////////////////
+                            Main functions
+    //////////////////////////////////////////////////////////////*/
 
     function sendToArb( 
         uint gasPriceBid_,
@@ -145,9 +155,9 @@ contract ozPayMe is ReentrancyGuard, Initializable {
         } 
     }
 
-    /**
-        CONTRACT HELPERS
-     */
+    /*///////////////////////////////////////////////////////////////
+                               Helpers
+    //////////////////////////////////////////////////////////////*/
 
     function _transfer(uint256 amount_, address paymentToken_) private {
         if (paymentToken_ == fxConfig.ETH) {
@@ -183,10 +193,9 @@ contract ozPayMe is ReentrancyGuard, Initializable {
         return ozUpgradeableBeacon(beacon_).storageBeacon(version_);
     }
 
-
-    /**
-        ACCOUNT DETAILS METHODS
-     */
+    /*///////////////////////////////////////////////////////////////
+                          Account methods
+    //////////////////////////////////////////////////////////////*/
 
     function changeUserToken(
         address newUserToken_
@@ -222,9 +231,9 @@ contract ozPayMe is ReentrancyGuard, Initializable {
     }
 
 
-    /**
-        ARB'S HELPERS
-     */
+    /*///////////////////////////////////////////////////////////////
+                    L2's gas calculation methods
+    //////////////////////////////////////////////////////////////*/
     
     function _calculateGasDetails(
         bytes memory swapData_, 

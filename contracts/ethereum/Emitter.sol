@@ -7,9 +7,12 @@ import '@openzeppelin/contracts/access/Ownable.sol';
 import './StorageBeacon.sol';
 import '../Errors.sol';
 
-// import 'hardhat/console.sol';
 
-
+/**
+ * @title Forwarding contract for manual redeems.
+ * @notice Forwards the address of the proxy that received a transfer, for a check-up
+ * of the tx in case it needs a manual redeem
+ */
 contract Emitter is Initializable, Ownable {
     address private _beacon;
 

@@ -72,7 +72,7 @@ async function deployTestnet(testSigner = false, manualRedeem = false) {
     // console.log('fakeOZL deployed to: ', fakeOZLaddr);
    
     //Calculate fees on L1 > L2 arbitrum tx 
-    // manualRedeem = true; //**** comment in for manualRedeem ****
+    manualRedeem = true; //**** comment in for manualRedeem ****
     const [ gasPriceBid, maxGas ] = await getArbitrumParams(manualRedeem);
 
     //Deploys Emitter
