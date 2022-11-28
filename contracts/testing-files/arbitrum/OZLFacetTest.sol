@@ -9,6 +9,7 @@ import { LibDiamond } from "../../libraries/LibDiamond.sol";
 import { ITri } from '../../interfaces/ICurve.sol';
 import { ModifiersARB } from '../../Modifiers.sol';
 import '../../arbitrum/facets/oz4626Facet.sol';
+import '../../libraries/LibCommon.sol';
 import '../../interfaces/IWETH.sol';
 import '../../interfaces/IYtri.sol';
 import './ExecutorFacetTest.sol';
@@ -151,6 +152,14 @@ contract OZLFacetTest is ModifiersARB {
         s.tokenDatabase[newSwap_.userToken] = true;
         s.swaps.push(newSwap_);
         emit NewUserToken(newSwap_.userToken);
+    }
+
+    function removeTokenFromDatabase(TradeOps memory swapToRemove_) external {
+        LibDiamond.enforceIsContractOwner();
+        if(!s.tokenDatabase[swapToRemove_.userToken]) revert TokenNotInDatabase(swapToRemove_.userToken);
+
+        s.tokenDatabase[swapToRemove_.userToken] = false;
+        LibCommon.remove(s.swaps, swapToRemove_);
     }
 
 
