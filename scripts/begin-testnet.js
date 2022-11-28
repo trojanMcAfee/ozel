@@ -37,54 +37,6 @@ const {
  } = require('./state-vars.js');
 
 
- 
-
-
-// async function deployContract(contractName, signer, constrArgs) {
-//     if (contractName === 'StorageBeacon') {
-//         const [ libCommonAddr ] = await deployContract('LibCommon', signer);
-//         Contract = await hre.ethers.getContractFactory(contractName, {
-//             libraries: {
-//                 LibCommon: libCommonAddr
-//             }
-//         });
-//     } else {
-//         Contract = await hre.ethers.getContractFactory(contractName);
-//     }
-
-//     let contract;
-//     let var1, var2, var3, var4;
-
-//     switch(contractName) {
-//         case 'UpgradeableBeacon':
-//             contract = await Contract.connect(signer).deploy(constrArgs, ops);
-//             break;
-//         case 'ozUpgradeableBeacon':
-//         case 'ozERC1967Proxy':
-//         case 'RolesAuthority':
-//         case 'FakeOZL':
-//             let gas = ops;
-//             ([ var1, var2 ] = constrArgs);
-//             if (contractName === 'FakeOZL') gas = opsL2;
-//             contract = await Contract.connect(signer).deploy(var1, var2, gas);
-//             break;
-//         case 'StorageBeacon':
-//             ([ var1, var2, var3, var4 ] = constrArgs);
-//             contract = await Contract.connect(signer).deploy(var1, var2, var3, var4, ops);
-//             break;
-//         default:
-//             contract = await Contract.connect(signer).deploy(ops);
-//     }
-
-//     await contract.deployed();
-//     console.log(`${contractName} deployed to: `, contract.address);
-
-//     return [
-//         contract.address,
-//         contract
-//     ];
-// }
-
 
 //Deploys ozPayMe in mainnet and routes ETH to Manager (OZL) in Arbitrum
 async function deployTestnet(testSigner = false, manualRedeem = false) { 
@@ -115,24 +67,24 @@ async function deployTestnet(testSigner = false, manualRedeem = false) {
     let constrArgs = [ receiver, getFakeOZLVars() ]; 
     
     //Deploys the fake OZL on arbitrum testnet 
-    // const [ fakeOZLaddr ] = await deployContract('FakeOZL', constrArgs, l2SignerTest); //fake OZL address in arbitrum
-    const fakeOZLaddr = '0xec0bb67bF1EC382f681f189e3BfCCDa290610a5e';
-    console.log('fakeOZL deployed to: ', fakeOZLaddr);
+    const [ fakeOZLaddr ] = await deployContract('FakeOZL', constrArgs, l2SignerTest); //fake OZL address in arbitrum
+    // const fakeOZLaddr = '0xec0bb67bF1EC382f681f189e3BfCCDa290610a5e';
+    // console.log('fakeOZL deployed to: ', fakeOZLaddr);
    
     //Calculate fees on L1 > L2 arbitrum tx 
     // manualRedeem = true; //**** comment in for manualRedeem ****
     const [ gasPriceBid, maxGas ] = await getArbitrumParams(manualRedeem);
 
     //Deploys Emitter
-    // const [ emitterAddr, emitter ] = await deployContract('Emitter', '', l1SignerTest);
-    const emitterAddr = '0x72244800aA477667858200Fe17F18F7C086a2017';
-    console.log('Emitter deployed to: ', emitterAddr);
-    const emitter = await hre.ethers.getContractAt('Emitter', emitterAddr);
+    const [ emitterAddr, emitter ] = await deployContract('Emitter', '', l1SignerTest);
+    // const emitterAddr = '0x72244800aA477667858200Fe17F18F7C086a2017';
+    // console.log('Emitter deployed to: ', emitterAddr);
+    // const emitter = await hre.ethers.getContractAt('Emitter', emitterAddr);
 
     //Deploys ozPayMe in mainnet
-    // const [ ozPaymeAddr ] = await deployContract('ozPayMe', '', l1SignerTest);
-    const ozPaymeAddr = '0x6D0bfaAbA796dBe0ec4A2849375FcB5fdef71912';
-    console.log('ozPayMe deployed to: ', ozPaymeAddr);
+    const [ ozPaymeAddr ] = await deployContract('ozPayMe', '', l1SignerTest);
+    // const ozPaymeAddr = '0x6D0bfaAbA796dBe0ec4A2849375FcB5fdef71912';
+    // console.log('ozPayMe deployed to: ', ozPaymeAddr);
 
     //Deploys StorageBeacon
     const fxConfig = [

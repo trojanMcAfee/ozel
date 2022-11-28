@@ -15,6 +15,7 @@ async function sendETHandAssert(newProxyAddr) {
 
     const tx = await l1SignerTestnet.sendTransaction(ops);
     await tx.wait();
+    console.log(3);
 
     const balance = await hre.ethers.provider.getBalance(newProxyAddr);
     assert(formatEther(balance) == value);
@@ -38,9 +39,10 @@ async function autoRedeem() {
     ] = await deployTestnet(true);
 
     // const [
-    //     storageBeaconAddr,
+    //     storageBeacon,
     //     emitterAddr,
-    //     redeemedHashesAddr
+    //     newProxyAddr,
+    //     redeemedHashes
     // ] = await simulateDeployment();
 
     console.log('');
@@ -57,18 +59,19 @@ async function manualRedeem() {
     console.log('');
 
     console.log('--------------------- Contract addresses ---------------------');
+    // const [
+    //     storageBeacon,
+    //     emitterAddr,
+    //     newProxyAddr,
+    //     redeemedHashes
+    // ] = await deployTestnet(true, true);
+
     const [
         storageBeacon,
         emitterAddr,
         newProxyAddr,
         redeemedHashes
-    ] = await deployTestnet(true, true);
-
-    // const [
-    //     storageBeaconAddr,
-    //     newProxyAddr,
-    //     redeemedHashesAddr
-    // ] = await simulateDeployment();
+    ] = await simulateDeployment();
 
     console.log('');
     await startListening(storageBeacon, emitterAddr, redeemedHashes, true);
@@ -79,14 +82,18 @@ async function manualRedeem() {
 
 async function simulateDeployment() {
     const storageBeaconAddr = '0xF15423Bce9704Fc6E3199c685B46C03b67AF4217';
+    const storageBeacon = await hre.ethers.getContractAt('StorageBeacon', storageBeaconAddr);
+
     const emitterAddr = '0xBDf7Acf088814912329aC12c6895c0b9FE690c93';
     const redeemedHashesAddr = '0xFf3DaB28E5dEf3416a68B26A022cf557499F856a';
+    const redeemedHashes = await hre.ethers.getContractAt('RedeemedHashes', redeemedHashesAddr);
+
     const proxyFactoryAddr = '0xFa2EA7C79190956B6f8F95e191533E36F68EB7d1';
 
     return [
-        storageBeaconAddr,
+        storageBeacon,
         emitterAddr,
-        redeemedHashesAddr,
+        redeemedHashes,
         proxyFactoryAddr
     ];
 
@@ -94,7 +101,7 @@ async function simulateDeployment() {
 
 
 (async () => await autoRedeem())();
-(async () => await manualRedeem())();
+// (async () => await manualRedeem())();
 
 
 

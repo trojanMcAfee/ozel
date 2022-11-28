@@ -58,7 +58,7 @@ async function checkHash() {
     // ];
 }
 
-checkHash();
+// checkHash();
 
 
 
@@ -418,4 +418,4 @@ async function lastPart() {
 }
 
 
-// lastPart();
+maint();
