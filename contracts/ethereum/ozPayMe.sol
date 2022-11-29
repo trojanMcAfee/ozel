@@ -14,7 +14,7 @@ import '../interfaces/ozIPayMe.sol';
 import './ozUpgradeableBeacon.sol';
 import '../interfaces/IWETH.sol';
 import '../interfaces/IOps.sol';
-import './StorageBeacon.sol';
+// import './StorageBeacon.sol';
 import './FakeOZL.sol';
 import './Emitter.sol';
 import '../Errors.sol';
@@ -26,7 +26,7 @@ import '../Errors.sol';
  * @notice Sends the user's ETH plus their account details to L2 for swapping.
  * It also implements the emergency swap in L1 in case it's not possible to bridge. 
  */
-contract ozPayMe is ReentrancyGuard, Initializable, ozIPayMe { 
+contract ozPayMe is ozIPayMe, ReentrancyGuard, Initializable { 
 
     using FixedPointMathLib for uint;
 

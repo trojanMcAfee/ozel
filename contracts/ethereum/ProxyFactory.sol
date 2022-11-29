@@ -6,9 +6,10 @@ import "@openzeppelin/contracts/proxy/utils/Initializable.sol";
 import '@rari-capital/solmate/src/utils/ReentrancyGuard.sol';
 import '@openzeppelin/contracts/utils/Address.sol';
 import './ozUpgradeableBeacon.sol';
+import '../interfaces/IProxyFactory.sol';
 import '../interfaces/IOps.sol';
 import './ozBeaconProxy.sol';
-import './StorageBeacon.sol';
+// import './StorageBeacon.sol';
 import '../Errors.sol';
 
 // import 'hardhat/console.sol';
@@ -16,19 +17,16 @@ import '../Errors.sol';
 
 /**
  * @title Factory of user proxies (aka accounts)
- * @notice 
+ * @notice Creates the accounts where users will receive their ETH on L1. 
+ * Each account is the proxy connected -through the Beacon- to ozPayMe (the implementation)
  */
-contract ProxyFactory is ReentrancyGuard, Initializable { 
+contract ProxyFactory is IProxyFactory, ReentrancyGuard, Initializable { 
 
     using Address for address;
 
     address private beacon;
 
-
-    function initialize(address beacon_) external initializer {
-        beacon = beacon_;
-    }
-
+    /// @inheritdoc IProxyFactory
     function createNewProxy(
         StorageBeacon.UserConfig calldata userDetails_
     ) external nonReentrant returns(address) {
@@ -56,14 +54,11 @@ contract ProxyFactory is ReentrancyGuard, Initializable {
         return address(newProxy);
     }
 
+    /*///////////////////////////////////////////////////////////////
+                                Helpers
+    //////////////////////////////////////////////////////////////*/
 
-    function _getStorageBeacon(uint version_) private view returns(address) {
-        return ozUpgradeableBeacon(beacon).storageBeacon(version_);
-    }
-
-
-    // *** GELATO TASK ******
-
+    /// @dev Creates the Gelato task of each proxy/account
     function _startTask(address beaconProxy_) private { 
         StorageBeacon.FixedConfig memory fxConfig = StorageBeacon(_getStorageBeacon(0)).getFixedConfig(); 
 
@@ -76,5 +71,15 @@ contract ProxyFactory is ReentrancyGuard, Initializable {
         );
 
         StorageBeacon(_getStorageBeacon(0)).saveTaskId(beaconProxy_, id);
+    }
+
+    /// @dev Gets a version of the Storage Beacon
+    function _getStorageBeacon(uint version_) private view returns(address) {
+        return ozUpgradeableBeacon(beacon).storageBeacon(version_);
+    }
+
+    /// @dev Initializer
+    function initialize(address beacon_) external initializer {
+        beacon = beacon_;
     }
 }
