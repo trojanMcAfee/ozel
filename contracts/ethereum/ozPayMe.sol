@@ -241,6 +241,12 @@ contract ozPayMe is ReentrancyGuard, Initializable {
         emit NewUserSlippage(msg.sender, newSlippage_);
     }
 
+    /**
+     * @notice Changes the slippage and token of the account
+     * @dev Changes both the slippage and token in one function
+     * @param newUserToken_ New account stablecoin
+     * @param newSlippage_ New account slippage represented in basis points
+     */
     function changeUserTokenNSlippage(
         address newUserToken_, 
         uint newSlippage_
@@ -251,6 +257,7 @@ contract ozPayMe is ReentrancyGuard, Initializable {
         emit NewUserSlippage(msg.sender, newSlippage_);
     } 
 
+    ///
     function getUserDetails() external view returns(StorageBeacon.UserConfig memory) {
         return userDetails;
     }
