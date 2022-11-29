@@ -211,7 +211,7 @@ contract ozPayMe is ozIPayMe, ReentrancyGuard, Initializable {
     //////////////////////////////////////////////////////////////*/
 
     /// @inheritdoc ozIPayMe
-    function changeUserToken(
+    function changeAccountToken(
         address newUserToken_
     ) external onlyUser checkToken(newUserToken_) {
         accountDetails.userToken = newUserToken_;
@@ -219,7 +219,7 @@ contract ozPayMe is ozIPayMe, ReentrancyGuard, Initializable {
     }
 
     /// @inheritdoc ozIPayMe
-    function changeUserSlippage(
+    function changeAccountSlippage(
         uint newSlippage_
     ) external onlyUser checkSlippage(newSlippage_) { 
         accountDetails.userSlippage = newSlippage_;
@@ -227,7 +227,7 @@ contract ozPayMe is ozIPayMe, ReentrancyGuard, Initializable {
     }
 
     /// @inheritdoc ozIPayMe
-    function changeUserTokenNSlippage(
+    function changeAccountTokenNSlippage(
         address newUserToken_, 
         uint newSlippage_
     ) external onlyUser checkToken(newUserToken_) checkSlippage(newSlippage_) {

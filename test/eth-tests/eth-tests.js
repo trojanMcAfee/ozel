@@ -252,73 +252,73 @@ let isAuthorized, newSelector;
                     });
                 });
 
-                it('should allow the user to change userToken / changeUserToken()', async () => {
-                    tx = await newProxy.changeUserToken(usdcAddr);
+                it('should allow the user to change userToken / changeAccountToken()', async () => {
+                    tx = await newProxy.changeAccountToken(usdcAddr);
                     receipt = await tx.wait();
                     newUserToken = getEventParam(receipt);
                     assert.equal(newUserToken, usdcAddr.toLowerCase());
                 });
 
-                it('should not allow an external user to change userToken / changeUserToken()', async () => {
+                it('should not allow an external user to change userToken / changeAccountToken()', async () => {
                     await assert.rejects(async () => {
-                        await newProxy.connect(signers[1]).changeUserToken(usdcAddr, ops);
+                        await newProxy.connect(signers[1]).changeAccountToken(usdcAddr, ops);
                     }, {
                         name: 'Error',
                         message: (await err(signerAddr2)).notAuthorized 
                     });
                 });
 
-                it('shoud not allow to change userToken for the 0 address / changeUserToken()', async () => {
+                it('shoud not allow to change userToken for the 0 address / changeAccountToken()', async () => {
                     await assert.rejects(async () => {
-                        await newProxy.changeUserToken(nullAddr, ops);
+                        await newProxy.changeAccountToken(nullAddr, ops);
                     }, {
                         name: 'Error',
                         message: (await err()).zeroAddress
                     });
                 });
 
-                it('shoud not allow to change userToken for a token not found in the database / changeUserToken()', async () => {
+                it('shoud not allow to change userToken for a token not found in the database / changeAccountToken()', async () => {
                     await assert.rejects(async () => {
-                        await newProxy.changeUserToken(deadAddr, ops); 
+                        await newProxy.changeAccountToken(deadAddr, ops); 
                     }, {
                         name: 'Error',
                         message: (await err(deadAddr)).tokenNotFound
                     });
                 });
 
-                it('should allow the user to change userSlippage with the minimum of 0.01% / changeUserSlippage()', async () => {
+                it('should allow the user to change userSlippage with the minimum of 0.01% / changeAccountSlippage()', async () => {
                     newUserSlippage = 0.01;
 
                     ([ user, token, slippage ] = await newProxy.getUserDetails());
-                    tx = await newProxy.changeUserSlippage(parseInt(newUserSlippage * 100), ops);
+                    tx = await newProxy.changeAccountSlippage(parseInt(newUserSlippage * 100), ops);
                     await tx.wait();
 
                     ([ user, token, slippage, name ] = await newProxy.getUserDetails());
                     assert.equal(Number(slippage) / 100, newUserSlippage); 
                 });
 
-                it('should not allow to change userSlippage to 0 / changeUserSlippage()', async () => {
+                it('should not allow to change userSlippage to 0 / changeAccountSlippage()', async () => {
                     newSlippage = 0;
                     await assert.rejects(async () => {
-                        await newProxy.changeUserSlippage(newSlippage, ops);
+                        await newProxy.changeAccountSlippage(newSlippage, ops);
                     }, {
                         name: 'Error',
                         message: (await err(newSlippage)).zeroSlippage
                     });
                 });
 
-                it('should not allow an external user to change userSlippage / changeUserSlippage()', async () => {
+                it('should not allow an external user to change userSlippage / changeAccountSlippage()', async () => {
                     await assert.rejects(async () => {
-                        await newProxy.connect(signers[1]).changeUserSlippage(200, ops);
+                        await newProxy.connect(signers[1]).changeAccountSlippage(200, ops);
                     }, {
                         name: 'Error',
                         message: (await err(signerAddr2)).notAuthorized
                     });
                 });
 
-                it('should change both userToken and userSlippage in one tx / changeUserTokenNSlippage()', async () => {
+                it('should change both userToken and userSlippage in one tx / changeAccountTokenNSlippage()', async () => {
                     newUserSlippage = 0.55;
-                    tx = await newProxy.changeUserTokenNSlippage(fraxAddr, parseInt(0.55 * 100), ops);
+                    tx = await newProxy.changeAccountTokenNSlippage(fraxAddr, parseInt(0.55 * 100), ops);
                     await tx.wait();
 
                     const [ user, token, slippage ] = await newProxy.getUserDetails();
@@ -780,7 +780,7 @@ let isAuthorized, newSelector;
             it("should send the ETH back to the user as last resort / _runEmergencyMode()", async () => {
                 //UserSlippage is change to 1 to produce a slippage error derived from priceMinOut calculation
                 await sendETH(newProxyAddr, 100);
-                await newProxy.changeUserSlippage(1);
+                await newProxy.changeAccountSlippage(1);
 
                 preBalance = await WETH.balanceOf(signerAddr);
                 assert.equal(preBalance, 0);
@@ -795,7 +795,7 @@ let isAuthorized, newSelector;
             it('should execute the USDC swap in the second attempt / FaultyOzPayMe - _runEmergencyMode()', async () => {
                 const [ faultyOzPayMeAddr ] = await deployContract('FaultyOzPayMe');
                 await beacon.upgradeTo(faultyOzPayMeAddr);
-                await newProxy.changeUserSlippage(defaultSlippage);
+                await newProxy.changeAccountSlippage(defaultSlippage);
                 
                 await sendETH(newProxyAddr, 100);
 

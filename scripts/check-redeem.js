@@ -208,7 +208,7 @@ async function main12() {
 
     const [usdt] = await sBeacon.getTokenDatabase();
 
-    const tx = await proxy1.changeUserToken(usdt);
+    const tx = await proxy1.changeAccountToken(usdt);
     await tx.wait();
 
     const inDB = await sBeacon.queryTokenDatabase(usdt);
@@ -264,7 +264,7 @@ async function main() {
     let [ user, userToken, slippage ] = await proxy1.getUserDetails();
     console.log('slippage - (100): ', Number(slippage));
 
-    const tx = await proxy1.changeUserSlippage(funcParam, ops);
+    const tx = await proxy1.changeAccountSlippage(funcParam, ops);
     await tx.wait();
 
     ([ user, userToken, slippage ] = await proxy1.getUserDetails());
@@ -314,7 +314,7 @@ async function maink() {
     let [ user, userToken, slippage ] = await proxy1.getUserDetails();
     console.log('slippage - (100): ', Number(slippage)); //old slippage
 
-    let tx = await proxy1.changeUserSlippage(funcParam, ops);
+    let tx = await proxy1.changeAccountSlippage(funcParam, ops);
     await tx.wait();
 
     ([ user, userToken, slippage ] = await proxy1.getUserDetails());
@@ -324,7 +324,7 @@ async function maink() {
 
     const [usdt] = await sBeacon.getTokenDatabase();
 
-    tx = await proxy1.changeUserToken(usdt);
+    tx = await proxy1.changeAccountToken(usdt);
     await tx.wait();
 
     const inDB = await sBeacon.queryTokenDatabase(usdt);
@@ -354,7 +354,7 @@ async function tryUI() {
     // console.log('name: ', name);
     // console.log('.');
 
-    // tx = await proxy1.changeUserTokenNSlippage(wbtcAddr, 1);
+    // tx = await proxy1.changeAccountTokenNSlippage(wbtcAddr, 1);
     // await tx.wait();
 
     // ([ user, token, slippage, name ] = await proxy1.getUserDetails());

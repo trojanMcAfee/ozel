@@ -187,14 +187,14 @@ contract FaultyOzPayMe2 is ReentrancyGuard, Initializable {
         ACCOUNT DETAILS METHODS
      */
 
-    function changeUserToken(
+    function changeAccountToken(
         address newUserToken_
     ) external onlyUser checkToken(newUserToken_) {
         accountDetails.userToken = newUserToken_;
         emit NewUserToken(msg.sender, newUserToken_);
     }
 
-    function changeUserSlippage(
+    function changeAccountSlippage(
         uint newSlippage_
     ) external onlyUser checkSlippage(newSlippage_) { 
         accountDetails.userSlippage = newSlippage_;

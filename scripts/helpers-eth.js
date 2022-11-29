@@ -210,10 +210,10 @@ function getInitSelectors() {
     const selectors = [];
     const methods = [
         'initialize',
-        'changeUserToken',
-        'changeUserSlippage',
+        'changeAccountToken',
+        'changeAccountSlippage',
         'getUserDetails',
-        'changeUserTokenNSlippage'
+        'changeAccountTokenNSlippage'
     ];
 
     for (let i=0; i < methods.length; i++) {

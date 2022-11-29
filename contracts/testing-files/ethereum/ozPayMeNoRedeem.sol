@@ -175,7 +175,7 @@ contract ozPayMeNoRedeem is ReentrancyGuard, Initializable {
         ACCOUNT DETAILS METHODS
      */
 
-    function changeUserToken(address newUserToken_) external onlyUser {
+    function changeAccountToken(address newUserToken_) external onlyUser {
         StorageBeacon storageBeacon = StorageBeacon(_getStorageBeacon(_beacon, 0)); 
 
         if (newUserToken_ == address(0)) revert CantBeZero('address');
@@ -186,7 +186,7 @@ contract ozPayMeNoRedeem is ReentrancyGuard, Initializable {
     }
 
 
-    function changeUserSlippage(uint newUserSlippage_) external onlyUser {
+    function changeAccountSlippage(uint newUserSlippage_) external onlyUser {
         if (newUserSlippage_ <= 0) revert CantBeZero('slippage');
         accountDetails.userSlippage = newUserSlippage_;
         emit NewUserSlippage(msg.sender, newUserSlippage_);

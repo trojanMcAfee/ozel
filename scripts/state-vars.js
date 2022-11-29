@@ -74,12 +74,12 @@ const diamondABI = [
 
 const proxyABIeth = [
     'function setTestReturnContract(address testReturn_, bytes32 position_) public',
-    'function changeUserSlippage(uint256 newUserSlippage_) external',
-    'function changeUserToken(address newUserToken_)',
+    'function changeAccountSlippage(uint256 newUserSlippage_) external',
+    'function changeAccountToken(address newUserToken_)',
     'function sendToArb(tuple(uint256 maxSubmissionCost, uint256 gasPriceBid, uint256 autoRedeem) varConfig_, tuple(address user, address userToken, uint256 userSlippage) accountDetails_)',
     'function initialize((address,address,uint256,string), address beacon_)',
     'function getUserDetails() external view returns ((address,address,uint256,string))',
-    'function changeUserTokenNSlippage(address,uint256) external',
+    'function changeAccountTokenNSlippage(address,uint256) external',
     'function withdrawETH_lastResort() external'
 ];
 
@@ -107,7 +107,7 @@ const l1Provider = new ethers.providers.JsonRpcProvider(process.env.MAINNET);
 let l1Signer, l2Signer, l1SignerTestnet, l2SignerTestnet;
 let l1ProviderTestnet, l2ProviderTestnet;
 
-let network = 'arbitrum';
+let network = 'mainnet';
 switch(network) {
     case 'goerli':
         pokeMeOpsAddr = '0xc1C6805B857Bef1f412519C4A842522431aFed39'; 
