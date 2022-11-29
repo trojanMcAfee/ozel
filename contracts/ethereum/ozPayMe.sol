@@ -45,6 +45,7 @@ contract ozPayMe is ReentrancyGuard, Initializable, ozIPayMe {
                               Modifiers
     //////////////////////////////////////////////////////////////*/
 
+    /// @dev Checks that only Gelato's PokeMe can make the call
     modifier onlyOps() {
         if (msg.sender != fxConfig.ops) revert NotAuthorized(msg.sender);
         _;

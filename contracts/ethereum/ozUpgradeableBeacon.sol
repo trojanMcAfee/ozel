@@ -4,10 +4,16 @@ pragma solidity 0.8.14;
 
 import '@rari-capital/solmate/src/auth/authorities/RolesAuthority.sol';
 import '@openzeppelin/contracts/proxy/beacon/UpgradeableBeacon.sol';
+import '../interfaces/ozIUpgradeableBeacon.sol';
 
 
-
-contract ozUpgradeableBeacon is UpgradeableBeacon { 
+/**
+ * @title Middleware beacon proxy
+ * @notice Holds the current version of the beacon and possible multiple versions
+ * of the Storage beacon. It also hosts the control access methods for some actions
+ */
+contract ozUpgradeableBeacon is UpgradeableBeacon, ozIUpgradeableBeacon { 
+    /// @dev Holds all the versions of the Storage Beacon
     address[] private _storageBeacons;
 
     RolesAuthority auth;
@@ -21,22 +27,32 @@ contract ozUpgradeableBeacon is UpgradeableBeacon {
     }
 
 
+    /*///////////////////////////////////////////////////////////////
+                        Storage Beacon methods
+    //////////////////////////////////////////////////////////////*/
+
+    /// @inheritdoc ozIUpgradeableBeacon
     function storageBeacon(uint version_) external view returns(address) {
         return _storageBeacons[version_];
     }
 
+    /// @inheritdoc ozIUpgradeableBeacon
     function upgradeStorageBeacon(address newStorageBeacon_) external onlyOwner {
         _storageBeacons.push(newStorageBeacon_);
         emit UpgradedStorageBeacon(newStorageBeacon_);
     }
 
+    /*///////////////////////////////////////////////////////////////
+                              Access Control
+    //////////////////////////////////////////////////////////////*/
 
-    //AUTH part
+    /// @inheritdoc ozIUpgradeableBeacon
     function setAuth(address auth_) external onlyOwner {
         auth = RolesAuthority(auth_);
         emit NewAuthority(auth_);
     }
 
+    /// @inheritdoc ozIUpgradeableBeacon
     function canCall( 
         address user_,
         address target_,

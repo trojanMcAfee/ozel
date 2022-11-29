@@ -14,7 +14,10 @@ import '../Errors.sol';
 // import 'hardhat/console.sol';
 
 
-
+/**
+ * @title Factory of user proxies (aka accounts)
+ * @notice 
+ */
 contract ProxyFactory is ReentrancyGuard, Initializable { 
 
     using Address for address;
