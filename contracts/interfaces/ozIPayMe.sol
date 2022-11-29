@@ -55,6 +55,7 @@ interface ozIPayMe {
      * @dev Gets the account (aka proxy) details.
      *      In the context of the L1 contracts, it's the account details and not user details.
      *      Naming convention is preserve to keep a standard for activity on L2 contracts.
+     * @return UserConfig Struct containing the account details (user, userToken, userSlippage, accountName)
      */
     function getUserDetails() external view returns(StorageBeacon.UserConfig memory);
 

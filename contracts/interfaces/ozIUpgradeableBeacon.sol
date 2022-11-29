@@ -25,6 +25,10 @@ interface ozIUpgradeableBeacon {
     /**
      * @notice Authorizing function
      * @dev To be queried in order to know if an user can call a certain function
+     * @param user_ Entity to be queried in regards to authorization
+     * @param target_ Contract where the function to be called is
+     * @param functionSig_ Selector of function to be called
+     * @return bool If the user_ is authorized 
      */
     function canCall( 
         address user_,

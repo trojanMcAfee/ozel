@@ -14,7 +14,6 @@ import '../interfaces/ozIPayMe.sol';
 import './ozUpgradeableBeacon.sol';
 import '../interfaces/IWETH.sol';
 import '../interfaces/IOps.sol';
-// import './StorageBeacon.sol';
 import './FakeOZL.sol';
 import './Emitter.sol';
 import '../Errors.sol';
@@ -202,7 +201,7 @@ contract ozPayMe is ozIPayMe, ReentrancyGuard, Initializable {
         _beacon = beacon_;
     }
 
-    /// @dev Gets a version of the Storage Beacon from the current Beacon implementation
+    /// @dev Gets a version of the Storage Beacon from a Beacon implementation
     function _getStorageBeacon(address beacon_, uint version_) private view returns(address) { 
         return ozUpgradeableBeacon(beacon_).storageBeacon(version_);
     }

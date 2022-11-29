@@ -9,7 +9,6 @@ import './ozUpgradeableBeacon.sol';
 import '../interfaces/IProxyFactory.sol';
 import '../interfaces/IOps.sol';
 import './ozBeaconProxy.sol';
-// import './StorageBeacon.sol';
 import '../Errors.sol';
 
 // import 'hardhat/console.sol';

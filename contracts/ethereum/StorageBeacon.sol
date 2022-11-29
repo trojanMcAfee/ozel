@@ -2,11 +2,12 @@
 pragma solidity 0.8.14;
 
 
-import "@chainlink/contracts/src/v0.8/interfaces/AggregatorV3Interface.sol";
-import '@uniswap/v3-periphery/contracts/interfaces/ISwapRouter.sol';
+// import "@chainlink/contracts/src/v0.8/interfaces/AggregatorV3Interface.sol";
+// import '@uniswap/v3-periphery/contracts/interfaces/ISwapRouter.sol';
 import "@openzeppelin/contracts/proxy/utils/Initializable.sol";
 import '@openzeppelin/contracts/token/ERC20/IERC20.sol';
 import '@openzeppelin/contracts/access/Ownable.sol';
+import '../interfaces/IStorageBeacon.sol';
 import '../libraries/LibCommon.sol';
 import './ozUpgradeableBeacon.sol';
 import '../Errors.sol';
@@ -14,14 +15,14 @@ import '../Errors.sol';
 // import 'hardhat/console.sol';
 
 
-contract StorageBeacon is Initializable, Ownable { 
+contract StorageBeacon is IStorageBeacon, Initializable, Ownable { 
 
-    struct UserConfig {
-        address user;
-        address userToken;
-        uint userSlippage; 
-        string accountName;
-    }
+    // struct UserConfig {
+    //     address user;
+    //     address userToken;
+    //     uint userSlippage; 
+    //     string accountName;
+    // }
 
     struct FixedConfig {  
         address inbox;
@@ -33,13 +34,13 @@ contract StorageBeacon is Initializable, Ownable {
         uint maxGas;
     }
 
-    struct EmergencyMode {
-        ISwapRouter swapRouter;
-        AggregatorV3Interface priceFeed; 
-        uint24 poolFee;
-        address tokenIn;
-        address tokenOut; 
-    }
+    // struct EmergencyMode {
+    //     ISwapRouter swapRouter;
+    //     AggregatorV3Interface priceFeed; 
+    //     uint24 poolFee;
+    //     address tokenIn;
+    //     address tokenOut; 
+    // }
 
 
     FixedConfig fxConfig;
@@ -63,11 +64,17 @@ contract StorageBeacon is Initializable, Ownable {
 
     event L2GasPriceChanged(uint newGasPriceBid);
 
+    /*///////////////////////////////////////////////////////////////
+                            Modifiers
+    //////////////////////////////////////////////////////////////*/
+
+    /// @dev Checks -using RolesAuthority- if the sender can call certain method
     modifier hasRole(bytes4 functionSig_) {
         require(beacon.canCall(msg.sender, address(this), functionSig_));
         _;
     }
 
+    /// @dev Only allows a call from an account/proxy created through ProxyFactory
     modifier onlyProxy() {
         if(proxyToDetails[msg.sender].user == address(0)) revert NotProxy();
         _;
@@ -116,7 +123,11 @@ contract StorageBeacon is Initializable, Ownable {
 
  
 
-    //State changing functions
+    /*///////////////////////////////////////////////////////////////
+                        State-changin functions
+    //////////////////////////////////////////////////////////////*/
+
+    /// @inheritdoc IStorageBeacon
     function saveUserToDetails(
         address proxy_, 
         UserConfig memory userDetails_
@@ -126,10 +137,12 @@ contract StorageBeacon is Initializable, Ownable {
         if (!userDatabase[userDetails_.user]) userDatabase[userDetails_.user] = true;
     }
 
+    /// @inheritdoc IStorageBeacon
     function saveTaskId(address proxy_, bytes32 id_) external hasRole(0xf2034a69) {
         taskIDs[proxy_] = id_;
     }
 
+    /// @inheritdoc IStorageBeacon
     function changeGasPriceBid(uint newGasPriceBid_) external onlyOwner {
         gasPriceBid = newGasPriceBid_;
         emit L2GasPriceChanged(newGasPriceBid_);
@@ -151,24 +164,32 @@ contract StorageBeacon is Initializable, Ownable {
         beacon = ozUpgradeableBeacon(beacon_);
     }
 
+    /// @inheritdoc IStorageBeacon
     function changeEmergencyMode(EmergencyMode calldata newEmode_) external onlyOwner {
         eMode = newEmode_;
     }
 
-    function changeEmitterStatus(bool newStatus) external onlyOwner {
-        isEmitter = newStatus;
+    /// @inheritdoc IStorageBeacon
+    function changeEmitterStatus(bool newStatus_) external onlyOwner {
+        isEmitter = newStatus_;
     }
 
+    /// @dev Stores the ETH transfer made to each proxy/account
     function storeProxyPayment(address proxy_, uint payment_) external onlyProxy {
         proxyToPayments[proxy_] += payment_;
     }
 
+    /// @inheritdoc IStorageBeacon
     function addAuthorizedSelector(bytes4 selector_) external onlyOwner {
         authorizedSelectors[selector_] = true;
     }
 
 
-    //View functions
+    /*///////////////////////////////////////////////////////////////
+                            View functions
+    //////////////////////////////////////////////////////////////*/
+
+    /// @inheritdoc IStorageBeacon
     function isSelectorAuthorized(bytes4 selector_) external view returns(bool) {
         return authorizedSelectors[selector_];
     }
@@ -177,6 +198,7 @@ contract StorageBeacon is Initializable, Ownable {
         return fxConfig;
     }
 
+    /// @dev Gets the L2 gas price
     function getGasPriceBid() external view returns(uint) {
         return gasPriceBid; 
     }
