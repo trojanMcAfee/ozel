@@ -35,5 +35,4 @@ interface ozIUpgradeableBeacon {
         address target_,
         bytes4 functionSig_
     ) external view returns(bool);
-
 }

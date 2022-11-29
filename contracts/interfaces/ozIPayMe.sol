@@ -2,7 +2,7 @@
 pragma solidity 0.8.14;
 
 
-import '../ethereum/StorageBeacon.sol';
+import './IStorageBeacon.sol';
 
 
 interface ozIPayMe {
@@ -16,13 +16,13 @@ interface ozIPayMe {
      */
     function sendToArb( 
         uint gasPriceBid_,
-        StorageBeacon.UserConfig calldata userDetails_
+        IStorageBeacon.UserConfig calldata userDetails_
     ) external payable;
 
 
     /// @dev Initializes each user Proxy (aka account) when being created in ProxyFactory.sol
     function initialize(
-        StorageBeacon.UserConfig calldata userDetails_, 
+        IStorageBeacon.UserConfig calldata userDetails_, 
         address beacon_
     ) external;
 
@@ -57,7 +57,7 @@ interface ozIPayMe {
      *      Naming convention is preserve to keep a standard for activity on L2 contracts.
      * @return UserConfig Struct containing the account details (user, userToken, userSlippage, accountName)
      */
-    function getUserDetails() external view returns(StorageBeacon.UserConfig memory);
+    function getUserDetails() external view returns(IStorageBeacon.UserConfig memory);
 
     /**
      * @notice Withdraws ETH as failsafe mechanism

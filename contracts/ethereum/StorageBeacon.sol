@@ -2,8 +2,6 @@
 pragma solidity 0.8.14;
 
 
-// import "@chainlink/contracts/src/v0.8/interfaces/AggregatorV3Interface.sol";
-// import '@uniswap/v3-periphery/contracts/interfaces/ISwapRouter.sol';
 import "@openzeppelin/contracts/proxy/utils/Initializable.sol";
 import '@openzeppelin/contracts/token/ERC20/IERC20.sol';
 import '@openzeppelin/contracts/access/Ownable.sol';
@@ -12,36 +10,8 @@ import '../libraries/LibCommon.sol';
 import './ozUpgradeableBeacon.sol';
 import '../Errors.sol';
 
-// import 'hardhat/console.sol';
-
 
 contract StorageBeacon is IStorageBeacon, Initializable, Ownable { 
-
-    // struct UserConfig {
-    //     address user;
-    //     address userToken;
-    //     uint userSlippage; 
-    //     string accountName;
-    // }
-
-    // struct FixedConfig {  
-    //     address inbox;
-    //     address ops;
-    //     address OZL;
-    //     address emitter;
-    //     address payable gelato;
-    //     address ETH; 
-    //     uint maxGas;
-    // }
-
-    // struct EmergencyMode {
-    //     ISwapRouter swapRouter;
-    //     AggregatorV3Interface priceFeed; 
-    //     uint24 poolFee;
-    //     address tokenIn;
-    //     address tokenOut; 
-    // }
-
 
     FixedConfig fxConfig;
     EmergencyMode eMode;

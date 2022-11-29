@@ -2,7 +2,7 @@
 pragma solidity 0.8.14;
 
 
-import '../ethereum/StorageBeacon.sol';
+import './IStorageBeacon.sol';
 
 interface IProxyFactory {
 
@@ -14,6 +14,6 @@ interface IProxyFactory {
      * @return address The address of the account/proxy
      */
     function createNewProxy(
-        StorageBeacon.UserConfig calldata userDetails_
+        IStorageBeacon.UserConfig calldata userDetails_
     ) external returns(address);
 }
