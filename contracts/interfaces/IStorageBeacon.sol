@@ -15,6 +15,16 @@ interface IStorageBeacon {
         string accountName;
     }
 
+    struct FixedConfig {  
+        address inbox;
+        address ops;
+        address OZL;
+        address emitter;
+        address payable gelato;
+        address ETH; 
+        uint maxGas;
+    }
+
     struct EmergencyMode {
         ISwapRouter swapRouter;
         AggregatorV3Interface priceFeed; 
@@ -77,6 +87,23 @@ interface IStorageBeacon {
      */
     function isSelectorAuthorized(bytes4 selector_) external view returns(bool);
 
+    /**
+     * @notice Gets the accounts/proxies created by an user
+     * @dev Gets the addresses and names of the proxies
+     * @param user_ Address of the user
+     * @return address[] Addresses of the accounts
+     * @return string[] Names of the accounts
+     */
+    function getProxyByUser(
+        address user_
+    ) external view returns(address[] memory, string[] memory);
+
+    /**
+     * @dev Gets the Gelato task of an account/proxy
+     * @param proxy_ Account
+     * @return bytes32 Gelato Task ID
+     */
+    function getTaskID(address proxy_) external view returns(bytes32);
 }
 
 

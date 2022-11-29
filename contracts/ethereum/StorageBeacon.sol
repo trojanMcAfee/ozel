@@ -24,15 +24,15 @@ contract StorageBeacon is IStorageBeacon, Initializable, Ownable {
     //     string accountName;
     // }
 
-    struct FixedConfig {  
-        address inbox;
-        address ops;
-        address OZL;
-        address emitter;
-        address payable gelato;
-        address ETH; 
-        uint maxGas;
-    }
+    // struct FixedConfig {  
+    //     address inbox;
+    //     address ops;
+    //     address OZL;
+    //     address emitter;
+    //     address payable gelato;
+    //     address ETH; 
+    //     uint maxGas;
+    // }
 
     // struct EmergencyMode {
     //     ISwapRouter swapRouter;
@@ -121,7 +121,6 @@ contract StorageBeacon is IStorageBeacon, Initializable, Ownable {
         gasPriceBid = gasPriceBid_;
     }
 
- 
 
     /*///////////////////////////////////////////////////////////////
                         State-changin functions
@@ -207,6 +206,7 @@ contract StorageBeacon is IStorageBeacon, Initializable, Ownable {
         return eMode;
     }
 
+    /// @inheritdoc IStorageBeacon
     function getProxyByUser(
         address user_
     ) external view returns(address[] memory, string[] memory) {
@@ -220,10 +220,12 @@ contract StorageBeacon is IStorageBeacon, Initializable, Ownable {
         return (proxies, names);
     }
 
+    /// @inheritdoc IStorageBeacon
     function getTaskID(address proxy_) external view returns(bytes32) {
         return taskIDs[proxy_];
     }
 
+    /// @dev Gets the owner of an account
     function getUserByProxy(address proxy_) external view returns(address) {
         return proxyToDetails[proxy_].user;
     }
@@ -236,6 +238,7 @@ contract StorageBeacon is IStorageBeacon, Initializable, Ownable {
         return userDatabase[user_];
     }
 
+    /// @dev Queries if the forwarding to the Emitter is enabled
     function getEmitterStatus() external view returns(bool) {
         return isEmitter;
     }
@@ -244,6 +247,7 @@ contract StorageBeacon is IStorageBeacon, Initializable, Ownable {
         return tokenDatabaseArray;
     }
 
+    /// @dev Gets all the ETH transfer done to an account/proxy
     function getProxyPayments(address proxy_) external view returns(uint) {
         return proxyToPayments[proxy_];
     }
