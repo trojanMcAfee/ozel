@@ -10,6 +10,7 @@ import "@openzeppelin/contracts/proxy/utils/Initializable.sol";
 import '@openzeppelin/contracts/token/ERC20/IERC20.sol';
 import '@openzeppelin/contracts/utils/Address.sol';
 import '../interfaces/DelayedInbox.sol';
+import '../interfaces/ozIPayMe.sol';
 import './ozUpgradeableBeacon.sol';
 import '../interfaces/IWETH.sol';
 import '../interfaces/IOps.sol';
@@ -22,10 +23,10 @@ import '../Errors.sol';
 
 /**
  * @title Responsible for sending ETH and calldata to L2
- * @notice In charge of sending the user's ETH plus their account details to L2 for swapping,
- * and implementing the emergency swap in L1 in case it's not possible to bridge. 
+ * @notice Sends the user's ETH plus their account details to L2 for swapping.
+ * It also implements the emergency swap in L1 in case it's not possible to bridge. 
  */
-contract ozPayMe is ReentrancyGuard, Initializable { 
+contract ozPayMe is ReentrancyGuard, Initializable, ozIPayMe { 
 
     using FixedPointMathLib for uint;
 
@@ -70,13 +71,7 @@ contract ozPayMe is ReentrancyGuard, Initializable {
                             Main functions
     //////////////////////////////////////////////////////////////*/
 
-    /**
-     * @notice Send ETH and calldata to L2
-     * @dev Sends the ETH the user received in their account plus their swap details as calldata to
-     * the contract on L2. In case it fails, it swaps the ETH for the emergency stablecoin using Uniswap on L1.
-     * @param gasPriceBid_ L2's gas price
-     * @param userDetails_ User configuration for swaps on L2
-     */
+    /// @inheritdoc ozIPayMe
     function sendToArb( 
         uint gasPriceBid_,
         StorageBeacon.UserConfig calldata userDetails_
@@ -125,7 +120,6 @@ contract ozPayMe is ReentrancyGuard, Initializable {
             emit FundsToArb(userDetails_.user, amountToSend);
         }
     }
-
 
     /**
      * @dev Runs the L1 emergency swap in Uniswap. 
@@ -183,7 +177,7 @@ contract ozPayMe is ReentrancyGuard, Initializable {
 
     /**
      * @dev Using the user's slippage, calculates the minimum amount of tokens out.
-     *      Uses the "i" variable from a loop to double the user slippage, if necessary.
+     *      Uses the "i" variable from the parent loop to double the user slippage, if necessary.
      */
     function _calculateMinOut(
         StorageBeacon.EmergencyMode memory eMode_, 
@@ -197,7 +191,7 @@ contract ozPayMe is ReentrancyGuard, Initializable {
         minOut = minOutUnprocessed.mulWadDown(10 ** 6);
     }
 
-    /// @dev Initializes each user Proxy (aka account) when being created in ProxyFactory.sol
+    /// @inheritdoc ozIPayMe
     function initialize(
         StorageBeacon.UserConfig calldata userDetails_, 
         address beacon_
@@ -216,12 +210,7 @@ contract ozPayMe is ReentrancyGuard, Initializable {
                           Account methods
     //////////////////////////////////////////////////////////////*/
 
-
-    /**
-     * @notice Changes the token of the account 
-     * @dev Changes the stablecoin being swapped into at the end of the L2 flow.
-     * @param newUserToken_ New account stablecoin
-     */
+    /// @inheritdoc ozIPayMe
     function changeUserToken(
         address newUserToken_
     ) external onlyUser checkToken(newUserToken_) {
@@ -229,11 +218,7 @@ contract ozPayMe is ReentrancyGuard, Initializable {
         emit NewUserToken(msg.sender, newUserToken_);
     }
 
-    /**
-     * @notice Changes the slippage of the account
-     * @dev Changes the slippage used on each L2 swap that finishes with the account stablecoin.
-     * @param newSlippage_ New account slippage represented in basis points
-     */
+    /// @inheritdoc ozIPayMe
     function changeUserSlippage(
         uint newSlippage_
     ) external onlyUser checkSlippage(newSlippage_) { 
@@ -241,12 +226,7 @@ contract ozPayMe is ReentrancyGuard, Initializable {
         emit NewUserSlippage(msg.sender, newSlippage_);
     }
 
-    /**
-     * @notice Changes the slippage and token of the account
-     * @dev Changes both the slippage and token in one function
-     * @param newUserToken_ New account stablecoin
-     * @param newSlippage_ New account slippage represented in basis points
-     */
+    /// @inheritdoc ozIPayMe
     function changeUserTokenNSlippage(
         address newUserToken_, 
         uint newSlippage_
@@ -257,21 +237,24 @@ contract ozPayMe is ReentrancyGuard, Initializable {
         emit NewUserSlippage(msg.sender, newSlippage_);
     } 
 
-    ///
+    /// @inheritdoc ozIPayMe
     function getUserDetails() external view returns(StorageBeacon.UserConfig memory) {
         return userDetails;
     }
 
+    /// @inheritdoc ozIPayMe
     function withdrawETH_lastResort() external onlyUser {
         (bool success, ) = payable(userDetails.user).call{value: address(this).balance}('');
         if (!success) revert CallFailed('ozPayMe: withdrawETH_lastResort failed');
     }
 
-
     /*///////////////////////////////////////////////////////////////
-                    L2's gas calculation methods
+                        Retryable helper methods
     //////////////////////////////////////////////////////////////*/
     
+    /**
+     * @dev Calculates the L1 gas values for the retryableticket's auto redeemption
+     */
     function _calculateGasDetails(
         bytes memory swapData_, 
         uint gasPriceBid_, 
@@ -287,6 +270,9 @@ contract ozPayMe is ReentrancyGuard, Initializable {
         if (autoRedeem > address(this).balance) autoRedeem = address(this).balance;
     }
 
+    /**
+     * @dev Creates the ticket's calldata based on L1 gas values
+     */
     function _createTicketData( 
         uint gasPriceBid_, 
         bytes memory swapData_,
