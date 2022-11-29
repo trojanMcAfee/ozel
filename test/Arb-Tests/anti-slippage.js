@@ -21,7 +21,7 @@ const {
 
 
 
-let userDetails;
+let accountDetails;
 let WBTC, MIM, USDT;
 let callerAddr, caller2Addr;
 let deployedDiamond;
@@ -60,13 +60,13 @@ describe('Anti-slippage system', async function () {
     
         getVarsForHelpers(deployedDiamond, ozlFacet);
 
-        userDetails = [ 
+        accountDetails = [ 
             callerAddr,
             usdtAddrArb,
             defaultSlippage
         ];
 
-        abi = ['function exchangeToUserToken((address user, address userToken, uint256 userSlippage) userDetails_) external payable'];
+        abi = ['function exchangeToUserToken((address user, address userToken, uint256 userSlippage) accountDetails_) external payable'];
         iface = new ethers.utils.Interface(abi);
         selector = iface.getSighash('exchangeToUserToken');
     });
@@ -79,7 +79,7 @@ describe('Anti-slippage system', async function () {
          * the last resort mechanism (send WETH back to user)
          */ 
         it('should replace swapsUserToken for V1 / SwapsForUserTokenV1', async () => {            
-            ({ testingNum, balance: balanceWETH } = await replaceForModVersion('SwapsForUserTokenV1', true, selector, userDetails, true));
+            ({ testingNum, balance: balanceWETH } = await replaceForModVersion('SwapsForUserTokenV1', true, selector, accountDetails, true));
             assert(formatEther(balanceWETH) > 0);  
         });
 
@@ -89,7 +89,7 @@ describe('Anti-slippage system', async function () {
          * but makes the trade in the second.
          */
         it('should replace swapsUserToken for V2 / SwapsForUserTokenV2', async () => {            
-            ({ testingNum, balance: balanceUSDT } = await replaceForModVersion('SwapsForUserTokenV2', true, selector, userDetails));
+            ({ testingNum, balance: balanceUSDT } = await replaceForModVersion('SwapsForUserTokenV2', true, selector, accountDetails));
             assert.equal(testingNum, 23);
             assert(balanceUSDT / 10 ** 6 > 0);
 
@@ -104,7 +104,7 @@ describe('Anti-slippage system', async function () {
             balanceUSDTpre = (await USDT.balanceOf(callerAddr)) / 10 ** 6;
             balanceWETHpre = formatEther(await WETH.balanceOf(callerAddr));
 
-            ({ testingNum, balance: balanceWETH } = await replaceForModVersion('SwapsForUserTokenV3', false, selector, userDetails, true));
+            ({ testingNum, balance: balanceWETH } = await replaceForModVersion('SwapsForUserTokenV3', false, selector, accountDetails, true));
             balanceWETH = formatEther(balanceWETH);
             halfInitialTransferInUSDT = 255000 / 2;
             halfInitialTransferInWETH = 100 / 2;
@@ -131,7 +131,7 @@ describe('Anti-slippage system', async function () {
          * the app (deposit - withdraw).
          */
         it('should add failed fees to its own variable / DepositFeesInDeFiV1', async () => {            
-            ({ testingNum } = await replaceForModVersion('DepositFeesInDeFiV1', false, selector, userDetails));
+            ({ testingNum } = await replaceForModVersion('DepositFeesInDeFiV1', false, selector, accountDetails));
             assert.equal(testingNum, 23);
         });
 
@@ -139,12 +139,12 @@ describe('Anti-slippage system', async function () {
          * It deposits -in DeFi- the failedFees that weren't deposited in the prior test.
          */
         it('should deposit any failed fees found in the failedFees variable / DepositFeesInDeFiV1', async () => {            
-            await replaceForModVersion('DepositFeesInDeFiV1', false, selector, userDetails);
-            receipt = await sendETH(userDetails);
+            await replaceForModVersion('DepositFeesInDeFiV1', false, selector, accountDetails);
+            receipt = await sendETH(accountDetails);
             assert.equal(getTestingNumber(receipt, true), 24);
 
             //Reverts to the original _depositFeesInDeFi()
-            await replaceForModVersion(ozlFacet, false, selector, userDetails, false, true);
+            await replaceForModVersion(ozlFacet, false, selector, accountDetails, false, true);
         });
     });
 
@@ -154,7 +154,7 @@ describe('Anti-slippage system', async function () {
             abi = ['function executeFinalTrade((int128 tokenIn, int128 tokenOut, address baseToken, address userToken, address pool) swapDetails_, uint256 userSlippage_, address user_, uint256 lockNum_) external payable'];
             iface = new ethers.utils.Interface(abi);
             selector = iface.getSighash('executeFinalTrade');
-            userDetails[1] = renBtcAddr;
+            accountDetails[1] = renBtcAddr;
         });
 
         /**
@@ -164,7 +164,7 @@ describe('Anti-slippage system', async function () {
             balanceWBTC = await WBTC.balanceOf(callerAddr);
             assert.equal(balanceWBTC / 10 ** 8, 0);
 
-            ({ testingNum, balance: balanceWBTC } = await replaceForModVersion('ExecutorFacetV1', false, selector, userDetails, 2));
+            ({ testingNum, balance: balanceWBTC } = await replaceForModVersion('ExecutorFacetV1', false, selector, accountDetails, 2));
             balanceRenBTC = (await renBTC.balanceOf(callerAddr)) / 10 ** 8;
             assert.equal(testingNum, 23);
             
@@ -183,7 +183,7 @@ describe('Anti-slippage system', async function () {
             balanceRenBTC = (await renBTC.balanceOf(callerAddr)) / 10 ** 8;
             assert.equal(balanceRenBTC, 0);
 
-            ({ testingNum, balance: balanceRenBTC } = await replaceForModVersion('ExecutorFacetV2', false, selector, userDetails, 3));
+            ({ testingNum, balance: balanceRenBTC } = await replaceForModVersion('ExecutorFacetV2', false, selector, accountDetails, 3));
             assert.equal(testingNum, 23);
 
             balanceRenBTC = await renBTC.balanceOf(callerAddr);
@@ -203,7 +203,7 @@ describe('Anti-slippage system', async function () {
             balanceWBTC = (await WBTC.balanceOf(callerAddr)) / 10 ** 8;
             assert.equal(balanceWBTC, 0);
 
-            ({ testingNum, balance: balanceRenBTC, receipt } = await replaceForModVersion('ExecutorFacetV3', false, selector, userDetails, 3));
+            ({ testingNum, balance: balanceRenBTC, receipt } = await replaceForModVersion('ExecutorFacetV3', false, selector, accountDetails, 3));
             assert.equal(testingNum, 23);
 
             testingNum = getTestingNumber(receipt, true);
@@ -220,8 +220,8 @@ describe('Anti-slippage system', async function () {
          * (2nd leg for non-BTC-2Pool coins)
          */
         it('should swap the funds to userToken only / ExecutorFacetV4', async () => {            
-            userDetails[1] = mimAddr;
-            ({ testingNum, balance: balanceUSDT } = await replaceForModVersion('ExecutorFacetV4', false, selector, userDetails, false));
+            accountDetails[1] = mimAddr;
+            ({ testingNum, balance: balanceUSDT } = await replaceForModVersion('ExecutorFacetV4', false, selector, accountDetails, false));
             assert.equal(testingNum, 23);
             assert(balanceUSDT > 0);
             await USDT.transfer(caller2Addr, balanceUSDT);
@@ -233,11 +233,11 @@ describe('Anti-slippage system', async function () {
          * All funds are in userToken through two swaps (2nd leg for non-BTC-2Pool coins)
          */
         it('should send userToken to the user in the 2nd loop iteration / ExecutorFacetV5', async () => {
-            userDetails[1] = mimAddr;
+            accountDetails[1] = mimAddr;
             balanceMIM = formatEther(await MIM.balanceOf(callerAddr));
             assert.equal(balanceMIM, 0);
 
-            ({ testingNum, balance: balanceMIM } = await replaceForModVersion('ExecutorFacetV5', false, selector, userDetails, 4));
+            ({ testingNum, balance: balanceMIM } = await replaceForModVersion('ExecutorFacetV5', false, selector, accountDetails, 4));
             assert.equal(testingNum, 23);
             assert(formatEther(balanceMIM) > 0);
 
@@ -250,14 +250,14 @@ describe('Anti-slippage system', async function () {
          * and the other half in the baseToken.
          */
         it('should divide the funds between baseToken and userToken / ExecutorFacetV6', async () => {            
-            userDetails[1] = mimAddr;
+            accountDetails[1] = mimAddr;
             balanceMIM = formatEther(await MIM.balanceOf(callerAddr));
             assert.equal(balanceMIM, 0);
 
             balanceUSDT = (await USDT.balanceOf(callerAddr)) / 10 ** 6;
             assert.equal(balanceUSDT, 0);
 
-            ({ testingNum, balance: balanceMIM } = await replaceForModVersion('ExecutorFacetV6', false, selector, userDetails, 4));
+            ({ testingNum, balance: balanceMIM } = await replaceForModVersion('ExecutorFacetV6', false, selector, accountDetails, 4));
             assert.equal(testingNum, 23);
             assert(formatEther(balanceMIM) > 0);
 

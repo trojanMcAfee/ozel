@@ -46,7 +46,7 @@ const {
 
 let signerAddr, signerAddr2;
 let ozERC1967proxyAddr, storageBeacon, emitter, fakeOZLaddr;
-let userDetails;
+let accountDetails;
 let newProxyAddr, newProxy;
 let balance, tokens;
 let newUserToken, newUserSlippage, newSlippage;
@@ -76,7 +76,7 @@ let isAuthorized, newSelector;
         console.log('signer address: ', signerAddr);
         console.log('.');
 
-        userDetails = [
+        accountDetails = [
             signerAddr,
             usdtAddrArb,
             defaultSlippage,
@@ -108,7 +108,7 @@ let isAuthorized, newSelector;
         describe('ProxyFactory', async () => {
             describe('Deploys one proxy', async () => {
                 it('should create a proxy successfully / createNewProxy()', async () => {
-                    await proxyFactory.createNewProxy(userDetails, ops);
+                    await proxyFactory.createNewProxy(accountDetails, ops);
                     ([ proxies, names ] = await storageBeacon.getProxyByUser(signerAddr));
 
                     newProxyAddr = proxies[0].toString(); 
@@ -118,38 +118,38 @@ let isAuthorized, newSelector;
                 });
 
                 it('should not allow to create a proxy witn an empty account name / createNewProxy()', async () => {
-                    userDetails[3] = '';
+                    accountDetails[3] = '';
                     await assert.rejects(async () => {
-                        await proxyFactory.createNewProxy(userDetails, ops);
+                        await proxyFactory.createNewProxy(accountDetails, ops);
                     }, {
                         name: 'Error',
                         message: (await err()).zeroName 
                     });
 
                     //Clean up
-                    userDetails[3] = 'my account';
+                    accountDetails[3] = 'my account';
                 });
 
                 it('should not allow to create a proxy with a name with more of 18 characters / createNewProxy()', async () => {
                     const invalidName = 'fffffffffffffffffff';
                     assert(invalidName.length > 18);
-                    userDetails[3] = invalidName;
+                    accountDetails[3] = invalidName;
 
                     await assert.rejects(async () => {
-                        await proxyFactory.createNewProxy(userDetails, ops);
+                        await proxyFactory.createNewProxy(accountDetails, ops);
                     }, {
                         name: 'Error',
                         message: (await err()).invalidName 
                     });
 
                     //Clean up
-                    userDetails[3] = 'my account';
+                    accountDetails[3] = 'my account';
                 });
 
                 it('should not allow to create a proxy with the 0 address / createNewProxy()', async () => {
-                    userDetails[1] = nullAddr;
+                    accountDetails[1] = nullAddr;
                     await assert.rejects(async () => {
-                        await proxyFactory.createNewProxy(userDetails, ops);
+                        await proxyFactory.createNewProxy(accountDetails, ops);
                     }, {
                         name: 'Error',
                         message: (await err()).zeroAddress 
@@ -157,10 +157,10 @@ let isAuthorized, newSelector;
                 });
 
                 it('should not allow to create a proxy with 0 slippage / createNewProxy()', async () => {
-                    userDetails[1] = usdtAddrArb;
-                    userDetails[2] = 0;
+                    accountDetails[1] = usdtAddrArb;
+                    accountDetails[2] = 0;
                     await assert.rejects(async () => {
-                        await proxyFactory.createNewProxy(userDetails, ops);
+                        await proxyFactory.createNewProxy(accountDetails, ops);
                     }, {
                         name: 'Error',
                         message: (await err()).zeroSlippage
@@ -168,10 +168,10 @@ let isAuthorized, newSelector;
                 });
 
                 it('should not allow to create a proxy with a userToken not found in the database / createNewProxy()', async () => {
-                    userDetails[1] = deadAddr;
-                    userDetails[2] = defaultSlippage;
+                    accountDetails[1] = deadAddr;
+                    accountDetails[2] = defaultSlippage;
                     await assert.rejects(async () => {
-                        await proxyFactory.createNewProxy(userDetails, ops);
+                        await proxyFactory.createNewProxy(accountDetails, ops);
                     }, {
                         name: 'Error',
                         message: (await err(deadAddr)).tokenNotFound
@@ -179,15 +179,15 @@ let isAuthorized, newSelector;
                 })
     
                 it('should have an initial balance of 0.1 ETH', async () => { 
-                    userDetails[1] = usdtAddrArb;
-                    newProxyAddr = await createProxy(proxyFactory, userDetails);
+                    accountDetails[1] = usdtAddrArb;
+                    newProxyAddr = await createProxy(proxyFactory, accountDetails);
 
                     balance = await sendETH(newProxyAddr, 0.1);
                     assert.equal(formatEther(balance), '0.1');
                 });
     
                 it('should have a final balance of 0 ETH', async () => {
-                    newProxyAddr = await createProxy(proxyFactory, userDetails);
+                    newProxyAddr = await createProxy(proxyFactory, accountDetails);
                     balance = await hre.ethers.provider.getBalance(newProxyAddr);
                     if (Number(balance) === 0) await sendETH(newProxyAddr, 0.1);
 
@@ -200,10 +200,10 @@ let isAuthorized, newSelector;
 
             describe('Deploys 5 proxies', async () => { 
                 before(async () => {
-                    userDetails[1] = usdcAddr;
+                    accountDetails[1] = usdcAddr;
                     for (let i=0; i < 5; i++) {
-                        userDetails[3] = `my account #${i}`;
-                        newProxyAddr = await createProxy(proxyFactory, userDetails);
+                        accountDetails[3] = `my account #${i}`;
+                        newProxyAddr = await createProxy(proxyFactory, accountDetails);
                         usersProxies.push(newProxyAddr);
                         assert.equal(newProxyAddr.length, 42);
                     }
@@ -229,14 +229,14 @@ let isAuthorized, newSelector;
 
         describe('ozBeaconProxy / ozPayMe', async () => {
             before(async () => {
-                newProxyAddr = await createProxy(proxyFactory, userDetails);
+                newProxyAddr = await createProxy(proxyFactory, accountDetails);
                 newProxy = await hre.ethers.getContractAt(proxyABIeth, newProxyAddr);
             });
 
             describe('fallback()', async () => {
                 it('should not allow re-calling / initialize()', async () => {
                     await assert.rejects(async () => {
-                        await newProxy.initialize(userDetails, nullAddr, ops);
+                        await newProxy.initialize(accountDetails, nullAddr, ops);
                     }, {
                         name: 'Error',
                         message: (await err()).alreadyInitialized 
@@ -326,7 +326,7 @@ let isAuthorized, newSelector;
                     assert.equal(Number(slippage) / 100, newUserSlippage); 
                 });
 
-                it('should allow funds to be sent with correct userDetails even if malicious data was passed / sendToArb() - delegate()', async () => {
+                it('should allow funds to be sent with correct accountDetails even if malicious data was passed / sendToArb() - delegate()', async () => {
                     opsContract = await hre.ethers.getContractAt('IOps', pokeMeOpsAddr);
 
                     await opsContract.connect(signers[1]).createTaskNoPrepayment(
@@ -349,16 +349,16 @@ let isAuthorized, newSelector;
 
                 it('should get the account details / getUserDetails()', async () => {
                     const [ user, token, slippage ] = await newProxy.getUserDetails();
-                    assert.equal(user, userDetails[0]);
-                    assert(token === userDetails[1] || token === fraxAddr);
-                    assert(Number(slippage) === userDetails[2] || Number(slippage) / 100 === 0.55);
+                    assert.equal(user, accountDetails[0]);
+                    assert(token === accountDetails[1] || token === fraxAddr);
+                    assert(Number(slippage) === accountDetails[2] || Number(slippage) / 100 === 0.55);
                 });
             });
         });
 
         describe('Emitter', async () => {
             before(async () => {
-                newProxyAddr = await createProxy(proxyFactory, userDetails);
+                newProxyAddr = await createProxy(proxyFactory, accountDetails);
             });
 
             it('should emit msg.sender (proxy) / forwardEvent()', async () => {
@@ -391,7 +391,7 @@ let isAuthorized, newSelector;
         describe('StorageBeacon', async () => {
             it('should not allow an user to save a proxy / saveUserToDetails()', async () => {
                 await assert.rejects(async () => {
-                    await storageBeacon.saveUserToDetails(signerAddr2, userDetails);
+                    await storageBeacon.saveUserToDetails(signerAddr2, accountDetails);
                 }, {
                     name: 'Error',
                     message: (await err(1)).notAuthorized 
@@ -515,7 +515,7 @@ let isAuthorized, newSelector;
             });
 
             it('should allow the owner to disable the Emitter / changeEmitterStatus()', async () => {
-                newProxyAddr = await createProxy(proxyFactory, userDetails);
+                newProxyAddr = await createProxy(proxyFactory, accountDetails);
                 await storageBeacon.changeEmitterStatus(true, ops);
                 await sendETH(newProxyAddr, 0.01)
 
@@ -538,9 +538,9 @@ let isAuthorized, newSelector;
 
             it('should return the proxies an user has / getProxyByUser()', async () => {
                 tokens = await storageBeacon.getTokenDatabase();
-                userDetails[1] = tokens[0];
+                accountDetails[1] = tokens[0];
                 
-                await proxyFactory.createNewProxy(userDetails, ops);
+                await proxyFactory.createNewProxy(accountDetails, ops);
                 ([userProxies] = await storageBeacon.getProxyByUser(signerAddr));
                 assert(userProxies.length > 0);
             });
@@ -552,9 +552,9 @@ let isAuthorized, newSelector;
 
             it("should get an user's taskID / getTaskID()", async () => {
                 tokens = await storageBeacon.getTokenDatabase();
-                userDetails[1] = tokens[0];
+                accountDetails[1] = tokens[0];
 
-                await proxyFactory.createNewProxy(userDetails, ops);
+                await proxyFactory.createNewProxy(accountDetails, ops);
                 ([userProxies] = await storageBeacon.getProxyByUser(signerAddr));
                 taskID = (await storageBeacon.getTaskID(userProxies[0])).toString();
                 assert(taskID.length > 0);
@@ -567,9 +567,9 @@ let isAuthorized, newSelector;
 
             it('should return true for an user / isUser()', async () => {
                 tokens = await storageBeacon.getTokenDatabase();
-                userDetails[1] = tokens[0];
+                accountDetails[1] = tokens[0];
 
-                await proxyFactory.createNewProxy(userDetails, ops);
+                await proxyFactory.createNewProxy(accountDetails, ops);
                 assert(await storageBeacon.isUser(signerAddr));
             });
 
@@ -588,9 +588,9 @@ let isAuthorized, newSelector;
 
             it('should store the payment to the proxy / storeProxyPayment()', async () => {
                 tokens = await storageBeacon.getTokenDatabase();
-                userDetails[1] = tokens[0];
+                accountDetails[1] = tokens[0];
                 
-                newProxyAddr = await createProxy(proxyFactory, userDetails);
+                newProxyAddr = await createProxy(proxyFactory, accountDetails);
 
                 await sendETH(newProxyAddr, 0.1);
                 await activateProxyLikeOps(newProxyAddr, ozERC1967proxyAddr); 
@@ -659,9 +659,9 @@ let isAuthorized, newSelector;
 
                 //execute a normal tx to the proxy and read from the new variable placed on implMock
                 tokens = await storageBeacon.getTokenDatabase();
-                userDetails[1] = tokens[0];
+                accountDetails[1] = tokens[0];
 
-                newProxyAddr = await createProxy(proxyFactory, userDetails);
+                newProxyAddr = await createProxy(proxyFactory, accountDetails);
                 
                 balance = await sendETH(newProxyAddr, 1.5);
                 assert(formatEther(balance) >= 1.5 && formatEther(balance) < 1.54);
@@ -753,7 +753,7 @@ let isAuthorized, newSelector;
                 ] = await deploySystem('Pessimistically', signerAddr));
         
                 proxyFactory = await hre.ethers.getContractAt(factoryABI, ozERC1967proxyAddr);
-                newProxyAddr = await createProxy(proxyFactory, userDetails);
+                newProxyAddr = await createProxy(proxyFactory, accountDetails);
                 newProxy = await hre.ethers.getContractAt(proxyABIeth, newProxyAddr);
                 USDC = await hre.ethers.getContractAt('IERC20', usdcAddr);
             });
@@ -851,7 +851,7 @@ let isAuthorized, newSelector;
                 ] = await deploySystem('Pessimistically_v2', signerAddr));
         
                 proxyFactory = await hre.ethers.getContractAt(factoryABI, ozERC1967proxyAddr);
-                newProxyAddr = await createProxy(proxyFactory, userDetails);
+                newProxyAddr = await createProxy(proxyFactory, accountDetails);
                 newProxy = await hre.ethers.getContractAt(proxyABIeth, newProxyAddr);
                 USDC = await hre.ethers.getContractAt('IERC20', usdcAddr);
             });

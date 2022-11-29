@@ -27,7 +27,7 @@ contract ImplementationMock is ReentrancyGuard, Initializable {
 
     using FixedPointMathLib for uint;
 
-    StorageBeacon.UserConfig userDetails;
+    StorageBeacon.AccountConfig accountDetails;
     StorageBeacon.FixedConfig fxConfig;
 
     address private _beacon;
@@ -44,7 +44,7 @@ contract ImplementationMock is ReentrancyGuard, Initializable {
     }
 
     modifier onlyUser() {
-        if (msg.sender != userDetails.user) revert NotAuthorized(msg.sender);
+        if (msg.sender != accountDetails.user) revert NotAuthorized(msg.sender);
         _;
     }
 
@@ -62,10 +62,10 @@ contract ImplementationMock is ReentrancyGuard, Initializable {
 
 
     function initialize(
-        StorageBeacon.UserConfig calldata userDetails_, 
+        StorageBeacon.AccountConfig calldata accountDetails_, 
         address beacon_
     ) external initializer {
-        userDetails = userDetails_;  
+        accountDetails = accountDetails_;  
         fxConfig = StorageBeacon(_getStorageBeacon(beacon_, 0)).getFixedConfig();
         _beacon = beacon_;
     }
@@ -78,16 +78,16 @@ contract ImplementationMock is ReentrancyGuard, Initializable {
 
     function sendToArb( 
         uint gasPriceBid_,
-        StorageBeacon.UserConfig memory userDetails_
+        StorageBeacon.AccountConfig memory accountDetails_
     ) external payable onlyOps { 
         StorageBeacon storageBeacon = StorageBeacon(_getStorageBeacon(_beacon, 0)); 
 
-        if (bytes(userDetails_.accountName).length == 0) revert CantBeZero('accountName'); 
-        if (bytes(userDetails_.accountName).length > 18) revert NameTooLong();
-        if (userDetails_.user == address(0) || userDetails_.userToken == address(0)) revert CantBeZero('address');
-        if (!storageBeacon.isUser(userDetails_.user)) revert UserNotInDatabase(userDetails_.user);
-        if (!storageBeacon.queryTokenDatabase(userDetails_.userToken)) revert TokenNotInDatabase(userDetails_.userToken);
-        if (userDetails_.userSlippage <= 0) revert CantBeZero('slippage');
+        if (bytes(accountDetails_.accountName).length == 0) revert CantBeZero('accountName'); 
+        if (bytes(accountDetails_.accountName).length > 18) revert NameTooLong();
+        if (accountDetails_.user == address(0) || accountDetails_.userToken == address(0)) revert CantBeZero('address');
+        if (!storageBeacon.isUser(accountDetails_.user)) revert UserNotInDatabase(accountDetails_.user);
+        if (!storageBeacon.queryTokenDatabase(accountDetails_.userToken)) revert TokenNotInDatabase(accountDetails_.userToken);
+        if (accountDetails_.userSlippage <= 0) revert CantBeZero('slippage');
         if (!(address(this).balance > 0)) revert CantBeZero('contract balance');
 
         (uint fee, ) = IOps(fxConfig.ops).getFeeDetails();
@@ -97,7 +97,7 @@ contract ImplementationMock is ReentrancyGuard, Initializable {
 
         bytes memory swapData = abi.encodeWithSelector(
             FakeOZL(payable(fxConfig.OZL)).exchangeToUserToken.selector, 
-            userDetails_
+            accountDetails_
         );
 
         bytes memory ticketData = _createTicketData(gasPriceBid_, swapData, false);
@@ -107,14 +107,14 @@ contract ImplementationMock is ReentrancyGuard, Initializable {
         if (!success) {
             _runEmergencyMode();
             isEmergency = true;
-            emit EmergencyTriggered(userDetails_.user, amountToSend);
+            emit EmergencyTriggered(accountDetails_.user, amountToSend);
         }
 
         if (!isEmergency) {
             if (!storageBeacon.getEmitterStatus()) { 
                 Emitter(fxConfig.emitter).forwardEvent(); 
             }
-            emit FundsToArb(userDetails_.user, amountToSend);
+            emit FundsToArb(accountDetails_.user, amountToSend);
         }
         _callStorageBeaconMock();
     }
@@ -128,7 +128,7 @@ contract ImplementationMock is ReentrancyGuard, Initializable {
         (,int price,,,) = eMode_.priceFeed.latestRoundData();
         uint expectedOut = balanceWETH_.mulDivDown(uint(price) * 10 ** 10, 1 ether);
         uint minOutUnprocessed = 
-            expectedOut - expectedOut.mulDivDown(userDetails.userSlippage * i_ * 100, 1000000); 
+            expectedOut - expectedOut.mulDivDown(accountDetails.userSlippage * i_ * 100, 1000000); 
         minOut = minOutUnprocessed.mulWadDown(10 ** 6);
     }
 
@@ -149,7 +149,7 @@ contract ImplementationMock is ReentrancyGuard, Initializable {
                     tokenIn: eMode.tokenIn,
                     tokenOut: eMode.tokenOut, 
                     fee: eMode.poolFee,
-                    recipient: userDetails.user,
+                    recipient: accountDetails.user,
                     deadline: block.timestamp,
                     amountIn: balanceWETH,
                     amountOutMinimum: _calculateMinOut(eMode, i, balanceWETH), 
@@ -163,7 +163,7 @@ contract ImplementationMock is ReentrancyGuard, Initializable {
                     unchecked { ++i; }
                     continue; 
                 } else {
-                    IERC20(eMode.tokenIn).transfer(userDetails.user, balanceWETH);
+                    IERC20(eMode.tokenIn).transfer(accountDetails.user, balanceWETH);
                     break;
                 }
             }
@@ -183,14 +183,14 @@ contract ImplementationMock is ReentrancyGuard, Initializable {
     function changeUserToken(
         address newUserToken_
     ) external onlyUser checkToken(newUserToken_) {
-        userDetails.userToken = newUserToken_;
+        accountDetails.userToken = newUserToken_;
         emit NewUserToken(msg.sender, newUserToken_);
     }
 
     function changeUserSlippage(
         uint newSlippage_
     ) external onlyUser checkSlippage(newSlippage_) { 
-        userDetails.userSlippage = newSlippage_;
+        accountDetails.userSlippage = newSlippage_;
         emit NewUserSlippage(msg.sender, newSlippage_);
     }
 
@@ -198,18 +198,18 @@ contract ImplementationMock is ReentrancyGuard, Initializable {
         address newUserToken_, 
         uint newSlippage_
     ) external onlyUser checkToken(newUserToken_) checkSlippage(newSlippage_) {
-        userDetails.userToken = newUserToken_;
-        userDetails.userSlippage = newSlippage_;
+        accountDetails.userToken = newUserToken_;
+        accountDetails.userSlippage = newSlippage_;
         emit NewUserToken(msg.sender, newUserToken_);
         emit NewUserSlippage(msg.sender, newSlippage_);
     } 
 
-    function getUserDetails() external view returns(StorageBeacon.UserConfig memory) {
-        return userDetails;
+    function getUserDetails() external view returns(StorageBeacon.AccountConfig memory) {
+        return accountDetails;
     }
 
     function withdrawETH_lastResort() external onlyUser {
-        (bool success, ) = payable(userDetails.user).call{value: address(this).balance}('');
+        (bool success, ) = payable(accountDetails.user).call{value: address(this).balance}('');
         if (!success) revert CallFailed('ozPayMe: withdrawETH_lastResort failed');
     }
 

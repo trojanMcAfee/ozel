@@ -8,7 +8,7 @@ import '@uniswap/v3-periphery/contracts/interfaces/ISwapRouter.sol';
 
 interface IStorageBeacon {
 
-    struct UserConfig {
+    struct AccountConfig {
         address user;
         address userToken;
         uint userSlippage; 
@@ -37,11 +37,11 @@ interface IStorageBeacon {
      * @dev Saves and connects -in a mapping- the proxy/account to the details of
      * the user who created it.
      * @param proxy_ The account/proxy
-     * @param userDetails_ Details of the account/proxy
+     * @param accountDetails_ Details of the account/proxy
      */
     function saveUserToDetails(
         address proxy_, 
-        UserConfig memory userDetails_
+        AccountConfig memory accountDetails_
     ) external;
 
     /**

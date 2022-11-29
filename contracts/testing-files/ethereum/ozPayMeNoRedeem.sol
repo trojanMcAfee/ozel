@@ -24,7 +24,7 @@ contract ozPayMeNoRedeem is ReentrancyGuard, Initializable {
 
     using FixedPointMathLib for uint;
 
-    StorageBeacon.UserConfig userDetails;
+    StorageBeacon.AccountConfig accountDetails;
     StorageBeacon.FixedConfig fxConfig;
 
     address private _beacon;
@@ -42,21 +42,21 @@ contract ozPayMeNoRedeem is ReentrancyGuard, Initializable {
     }
 
     modifier onlyUser() {
-        if (msg.sender != userDetails.user) revert NotAuthorized(msg.sender);
+        if (msg.sender != accountDetails.user) revert NotAuthorized(msg.sender);
         _;
     }
 
 
     function sendToArb( 
         uint gasPriceBid_,
-        StorageBeacon.UserConfig calldata userDetails_
+        StorageBeacon.AccountConfig calldata accountDetails_
     ) external payable onlyOps {    
         StorageBeacon storageBeacon = StorageBeacon(_getStorageBeacon(_beacon, 0)); 
 
-        if (userDetails_.user == address(0) || userDetails_.userToken == address(0)) revert CantBeZero('address');
-        if (!storageBeacon.isUser(userDetails_.user)) revert UserNotInDatabase(userDetails_.user);
-        if (!storageBeacon.queryTokenDatabase(userDetails_.userToken)) revert TokenNotInDatabase(userDetails_.userToken);
-        if (userDetails_.userSlippage <= 0) revert CantBeZero('slippage');
+        if (accountDetails_.user == address(0) || accountDetails_.userToken == address(0)) revert CantBeZero('address');
+        if (!storageBeacon.isUser(accountDetails_.user)) revert UserNotInDatabase(accountDetails_.user);
+        if (!storageBeacon.queryTokenDatabase(accountDetails_.userToken)) revert TokenNotInDatabase(accountDetails_.userToken);
+        if (accountDetails_.userSlippage <= 0) revert CantBeZero('slippage');
         if (!(address(this).balance > 0)) revert CantBeZero('contract balance');
 
         (uint fee, ) = IOps(fxConfig.ops).getFeeDetails();
@@ -66,7 +66,7 @@ contract ozPayMeNoRedeem is ReentrancyGuard, Initializable {
 
         bytes memory swapData = abi.encodeWithSelector(
             FakeOZL(payable(fxConfig.OZL)).exchangeToUserToken.selector, 
-            userDetails_
+            accountDetails_
         );
 
         bytes memory ticketData = _createTicketData(gasPriceBid_, swapData, false);
@@ -81,7 +81,7 @@ contract ozPayMeNoRedeem is ReentrancyGuard, Initializable {
             if (!success) {
                 _runEmergencyMode();
                 isEmergency = true;
-                emit EmergencyTriggered(userDetails_.user, amountToSend);
+                emit EmergencyTriggered(accountDetails_.user, amountToSend);
             }
         }
 
@@ -90,7 +90,7 @@ contract ozPayMeNoRedeem is ReentrancyGuard, Initializable {
                 Emitter(fxConfig.emitter).forwardEvent(); 
             }
             storageBeacon.storeProxyPayment(address(this), amountToSend);
-            emit FundsToArb(userDetails_.user, amountToSend);
+            emit FundsToArb(accountDetails_.user, amountToSend);
         }
     }
 
@@ -110,7 +110,7 @@ contract ozPayMeNoRedeem is ReentrancyGuard, Initializable {
                     tokenIn: eMode.tokenIn,
                     tokenOut: eMode.tokenOut, 
                     fee: eMode.poolFee,
-                    recipient: userDetails.user,
+                    recipient: accountDetails.user,
                     deadline: block.timestamp,
                     amountIn: balanceWETH,
                     amountOutMinimum: _calculateMinOut(eMode, i, balanceWETH), 
@@ -124,7 +124,7 @@ contract ozPayMeNoRedeem is ReentrancyGuard, Initializable {
                     unchecked { ++i; }
                     continue; 
                 } else {
-                    IERC20(eMode.tokenIn).transfer(userDetails.user, balanceWETH);
+                    IERC20(eMode.tokenIn).transfer(accountDetails.user, balanceWETH);
                     break;
                 }
             }
@@ -152,15 +152,15 @@ contract ozPayMeNoRedeem is ReentrancyGuard, Initializable {
         (,int price,,,) = eMode_.priceFeed.latestRoundData();
         uint expectedOut = balanceWETH_.mulDivDown(uint(price) * 10 ** 10, 1 ether);
         uint minOutUnprocessed = 
-            expectedOut - expectedOut.mulDivDown(userDetails.userSlippage * i_ * 100, 1000000); 
+            expectedOut - expectedOut.mulDivDown(accountDetails.userSlippage * i_ * 100, 1000000); 
         minOut = minOutUnprocessed.mulWadDown(10 ** 6);
     }
 
     function initialize(
-        StorageBeacon.UserConfig calldata userDetails_, 
+        StorageBeacon.AccountConfig calldata accountDetails_, 
         address beacon_
     ) external initializer {
-        userDetails = userDetails_;  
+        accountDetails = accountDetails_;  
         fxConfig = StorageBeacon(_getStorageBeacon(beacon_, 0)).getFixedConfig();
         _beacon = beacon_;
     }
@@ -181,19 +181,19 @@ contract ozPayMeNoRedeem is ReentrancyGuard, Initializable {
         if (newUserToken_ == address(0)) revert CantBeZero('address');
         if (!storageBeacon.queryTokenDatabase(newUserToken_)) revert TokenNotInDatabase(newUserToken_);
 
-        userDetails.userToken = newUserToken_;
+        accountDetails.userToken = newUserToken_;
         emit NewUserToken(msg.sender, newUserToken_);
     }
 
 
     function changeUserSlippage(uint newUserSlippage_) external onlyUser {
         if (newUserSlippage_ <= 0) revert CantBeZero('slippage');
-        userDetails.userSlippage = newUserSlippage_;
+        accountDetails.userSlippage = newUserSlippage_;
         emit NewUserSlippage(msg.sender, newUserSlippage_);
     } 
 
-    function getUserDetails() external view returns(StorageBeacon.UserConfig memory) {
-        return userDetails;
+    function getUserDetails() external view returns(StorageBeacon.AccountConfig memory) {
+        return accountDetails;
     }
 
 

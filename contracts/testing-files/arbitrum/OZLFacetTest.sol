@@ -27,8 +27,8 @@ contract OZLFacetTest is ModifiersARB {
  
 
     function exchangeToUserToken(
-        UserConfig calldata userDetails_
-    ) external payable noReentrancy(0) filterDetails(userDetails_) { 
+        AccountConfig calldata accountDetails_
+    ) external payable noReentrancy(0) filterDetails(accountDetails_) { 
         if (msg.value <= 0) revert CantBeZero('msg.value');
 
         if (s.failedFees > 0) _depositFeesInDeFi(s.failedFees, true);
@@ -43,7 +43,7 @@ contract OZLFacetTest is ModifiersARB {
         //Deposits in oz4626Facet
         bytes memory data = abi.encodeWithSignature(
             'deposit(uint256,address,uint256)', 
-            wethIn, userDetails_.user, 0
+            wethIn, accountDetails_.user, 0
         );
 
         LibDiamond.callFacet(data);
@@ -51,15 +51,15 @@ contract OZLFacetTest is ModifiersARB {
         (uint netAmountIn, uint fee) = _getFee(wethIn);
 
         uint baseTokenOut = 
-            userDetails_.userToken == s.WBTC || userDetails_.userToken == s.renBTC ? 1 : 0;
+            accountDetails_.userToken == s.WBTC || accountDetails_.userToken == s.renBTC ? 1 : 0;
 
         //Swaps WETH to userToken (Base: USDT-WBTC / Route: MIM-USDC-renBTC-WBTC) 
         _swapsForUserToken(
-            netAmountIn, baseTokenOut, userDetails_
+            netAmountIn, baseTokenOut, accountDetails_
         );
       
-        uint toUser = IERC20(userDetails_.userToken).balanceOf(address(this));
-        if (toUser > 0) IERC20(userDetails_.userToken).safeTransfer(userDetails_.user, toUser);
+        uint toUser = IERC20(accountDetails_.userToken).balanceOf(address(this));
+        if (toUser > 0) IERC20(accountDetails_.userToken).safeTransfer(accountDetails_.user, toUser);
 
         _depositFeesInDeFi(fee, false);
     }
@@ -70,28 +70,28 @@ contract OZLFacetTest is ModifiersARB {
     function _swapsForUserToken(
         uint amountIn_, 
         uint baseTokenOut_, 
-        UserConfig memory userDetails_
+        AccountConfig memory accountDetails_
     ) private { 
         IERC20(s.WETH).approve(s.tricrypto, amountIn_);
 
         uint minOut = ITri(s.tricrypto).get_dy(2, baseTokenOut_, amountIn_);
-        uint slippage = ExecutorFacetTest(s.executor).calculateSlippage(minOut, userDetails_.userSlippage);
+        uint slippage = ExecutorFacetTest(s.executor).calculateSlippage(minOut, accountDetails_.userSlippage);
         
         ITri(s.tricrypto).exchange(2, baseTokenOut_, amountIn_, slippage, false);  
         uint baseBalance = IERC20(baseTokenOut_ == 0 ? s.USDT : s.WBTC).balanceOf(address(this));
 
-        if ((userDetails_.userToken != s.USDT && userDetails_.userToken != s.WBTC) && baseBalance > 0) { 
-            _tradeWithExecutor(userDetails_); 
+        if ((accountDetails_.userToken != s.USDT && accountDetails_.userToken != s.WBTC) && baseBalance > 0) { 
+            _tradeWithExecutor(accountDetails_); 
         }
     }
 
     
 
     function withdrawUserShare(
-        UserConfig memory userDetails_,
+        AccountConfig memory accountDetails_,
         address receiver_,
         uint shares_
-    ) external onlyWhenEnabled filterDetails(userDetails_) { 
+    ) external onlyWhenEnabled filterDetails(accountDetails_) { 
         if (receiver_ == address(0)) revert CantBeZero('address');
         if (shares_ <= 0) revert CantBeZero('shares');
 
@@ -103,7 +103,7 @@ contract OZLFacetTest is ModifiersARB {
 
         bytes memory data = abi.encodeWithSignature(
             'redeem(uint256,address,address,uint256)', 
-            shares_, receiver_, userDetails_.user, 3
+            shares_, receiver_, accountDetails_.user, 3
         );
 
         data = LibDiamond.callFacet(data);
@@ -115,15 +115,15 @@ contract OZLFacetTest is ModifiersARB {
         uint tokenAmountIn = ITri(s.tricrypto).calc_withdraw_one_coin(assets, 0); 
         
         uint minOut = ExecutorFacetTest(s.executor).calculateSlippage(
-            tokenAmountIn, userDetails_.userSlippage
+            tokenAmountIn, accountDetails_.userSlippage
         ); 
 
         ITri(s.tricrypto).remove_liquidity_one_coin(assets, 0, minOut);
 
-        _tradeWithExecutor(userDetails_); 
+        _tradeWithExecutor(accountDetails_); 
 
-        uint userTokens = IERC20(userDetails_.userToken).balanceOf(address(this));
-        IERC20(userDetails_.userToken).safeTransfer(receiver_, userTokens); 
+        uint userTokens = IERC20(accountDetails_.userToken).balanceOf(address(this));
+        IERC20(accountDetails_.userToken).safeTransfer(receiver_, userTokens); 
     } 
     
 
@@ -173,15 +173,15 @@ contract OZLFacetTest is ModifiersARB {
         return (netAmount, fee);
     }
 
-    function _tradeWithExecutor(UserConfig memory userDetails_) private { 
+    function _tradeWithExecutor(AccountConfig memory accountDetails_) private { 
         _toggleBit(1, 2);
         uint length = s.swaps.length;
 
         for (uint i=0; i < length;) {
-            if (s.swaps[i].userToken == userDetails_.userToken) {
+            if (s.swaps[i].userToken == accountDetails_.userToken) {
                 bytes memory data = abi.encodeWithSignature(
                     'executeFinalTrade((int128,int128,address,address,address),uint256,address,uint256)', 
-                    s.swaps[i], userDetails_.userSlippage, userDetails_.user, 2
+                    s.swaps[i], accountDetails_.userSlippage, accountDetails_.user, 2
                 );
 
                 LibDiamond.callFacet(data);

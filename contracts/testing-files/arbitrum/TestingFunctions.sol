@@ -133,8 +133,8 @@ contract SwapsForUserTokenV1 is SecondaryFunctions {
     event ForTesting(uint indexed testNum);
 
     function exchangeToUserToken(
-        UserConfig calldata userDetails_
-    ) external payable noReentrancy(0) filterDetails(userDetails_) { 
+        AccountConfig calldata accountDetails_
+    ) external payable noReentrancy(0) filterDetails(accountDetails_) { 
         if (msg.value <= 0) revert CantBeZero('msg.value');
 
         IWETH(s.WETH).deposit{value: msg.value}();
@@ -147,7 +147,7 @@ contract SwapsForUserTokenV1 is SecondaryFunctions {
         //Deposits in oz4626Facet
         bytes memory data = abi.encodeWithSignature(
             'deposit(uint256,address,uint256)', 
-            wethIn, userDetails_.user, 0
+            wethIn, accountDetails_.user, 0
         );
 
         LibDiamond.callFacet(data);
@@ -155,21 +155,21 @@ contract SwapsForUserTokenV1 is SecondaryFunctions {
         (uint netAmountIn, ) = _getFee(wethIn);
 
         uint baseTokenOut = 
-            userDetails_.userToken == s.WBTC || userDetails_.userToken == s.renBTC ? 1 : 0;
+            accountDetails_.userToken == s.WBTC || accountDetails_.userToken == s.renBTC ? 1 : 0;
 
         //Swaps WETH to userToken (Base: USDT-WBTC / Route: MIM-USDC-renBTC-WBTC) 
         _swapsForUserToken(
-            netAmountIn, baseTokenOut, userDetails_
+            netAmountIn, baseTokenOut, accountDetails_
         );
       
-        uint toUser = IERC20(userDetails_.userToken).balanceOf(address(this));
-        if (toUser > 0) IERC20(userDetails_.userToken).safeTransfer(userDetails_.user, toUser);
+        uint toUser = IERC20(accountDetails_.userToken).balanceOf(address(this));
+        if (toUser > 0) IERC20(accountDetails_.userToken).safeTransfer(accountDetails_.user, toUser);
     }
 
     function _swapsForUserToken(
         uint amountIn_, 
         uint baseTokenOut_, 
-        UserConfig memory userDetails_
+        AccountConfig memory accountDetails_
     ) private { 
         IERC20(s.WETH).approve(s.tricrypto, amountIn_);
 
@@ -180,14 +180,14 @@ contract SwapsForUserTokenV1 is SecondaryFunctions {
         ****/ 
         for (uint i=1; i <= 2; i++) {
             uint minOut = ITri(s.tricrypto).get_dy(2, baseTokenOut_, amountIn_ / i);
-            uint slippage = ozExecutorFacet(s.executor).calculateSlippage(minOut, userDetails_.userSlippage * i);
+            uint slippage = ozExecutorFacet(s.executor).calculateSlippage(minOut, accountDetails_.userSlippage * i);
             
             try ITri(s.tricrypto).exchange(2, baseTokenOut_, amountIn_ / i, type(uint).max, false) {
                 if (i == 2) {
                     try ITri(s.tricrypto).exchange(2, baseTokenOut_, amountIn_ / i, slippage, false) {
                         break;
                     } catch {
-                        IERC20(s.WETH).transfer(userDetails_.user, amountIn_ / 2);
+                        IERC20(s.WETH).transfer(accountDetails_.user, amountIn_ / 2);
                         break;
                     }
                 }
@@ -196,7 +196,7 @@ contract SwapsForUserTokenV1 is SecondaryFunctions {
                 if (i == 1) {
                     continue;
                 } else {
-                    IERC20(s.WETH).transfer(userDetails_.user, amountIn_);
+                    IERC20(s.WETH).transfer(accountDetails_.user, amountIn_);
                 }
             }
         }
@@ -211,8 +211,8 @@ contract SwapsForUserTokenV2 is SecondaryFunctions {
     event ForTesting(uint indexed testNum);
 
     function exchangeToUserToken(
-        UserConfig calldata userDetails_
-    ) external payable noReentrancy(0) filterDetails(userDetails_) { 
+        AccountConfig calldata accountDetails_
+    ) external payable noReentrancy(0) filterDetails(accountDetails_) { 
         if (msg.value <= 0) revert CantBeZero('msg.value');
 
         IWETH(s.WETH).deposit{value: msg.value}();
@@ -225,7 +225,7 @@ contract SwapsForUserTokenV2 is SecondaryFunctions {
         //Deposits in oz4626Facet
         bytes memory data = abi.encodeWithSignature(
             'deposit(uint256,address,uint256)', 
-            wethIn, userDetails_.user, 0
+            wethIn, accountDetails_.user, 0
         );
 
         LibDiamond.callFacet(data);
@@ -233,21 +233,21 @@ contract SwapsForUserTokenV2 is SecondaryFunctions {
         (uint netAmountIn, ) = _getFee(wethIn);
 
         uint baseTokenOut = 
-            userDetails_.userToken == s.WBTC || userDetails_.userToken == s.renBTC ? 1 : 0;
+            accountDetails_.userToken == s.WBTC || accountDetails_.userToken == s.renBTC ? 1 : 0;
 
         //Swaps WETH to userToken (Base: USDT-WBTC / Route: MIM-USDC-renBTC-WBTC) 
         _swapsForUserToken(
-            netAmountIn, baseTokenOut, userDetails_
+            netAmountIn, baseTokenOut, accountDetails_
         );
       
-        uint toUser = IERC20(userDetails_.userToken).balanceOf(address(this));
-        if (toUser > 0) IERC20(userDetails_.userToken).safeTransfer(userDetails_.user, toUser);
+        uint toUser = IERC20(accountDetails_.userToken).balanceOf(address(this));
+        if (toUser > 0) IERC20(accountDetails_.userToken).safeTransfer(accountDetails_.user, toUser);
     }
 
     function _swapsForUserToken(
         uint amountIn_, 
         uint baseTokenOut_, 
-        UserConfig memory userDetails_
+        AccountConfig memory accountDetails_
     ) private { 
         IERC20(s.WETH).approve(s.tricrypto, amountIn_);
         
@@ -259,7 +259,7 @@ contract SwapsForUserTokenV2 is SecondaryFunctions {
         ****/ 
         for (uint i=1; i <= 2; i++) {
             uint minOut = ITri(s.tricrypto).get_dy(2, baseTokenOut_, amountIn_ / i);
-            uint slippage = ozExecutorFacet(s.executor).calculateSlippage(minOut, userDetails_.userSlippage * i);
+            uint slippage = ozExecutorFacet(s.executor).calculateSlippage(minOut, accountDetails_.userSlippage * i);
 
             //Testing variable
             uint testVar = i == 1 ? type(uint).max : slippage;
@@ -270,7 +270,7 @@ contract SwapsForUserTokenV2 is SecondaryFunctions {
                         emit ForTesting(23);
                         break;
                     } catch {
-                        IERC20(s.WETH).transfer(userDetails_.user, amountIn_ / 2);
+                        IERC20(s.WETH).transfer(accountDetails_.user, amountIn_ / 2);
                         break;
                     }
                 }
@@ -279,7 +279,7 @@ contract SwapsForUserTokenV2 is SecondaryFunctions {
                 if (i == 1) {
                     continue;
                 } else {
-                    IERC20(s.WETH).transfer(userDetails_.user, amountIn_); 
+                    IERC20(s.WETH).transfer(accountDetails_.user, amountIn_); 
                 }
             }
         }
@@ -294,8 +294,8 @@ contract SwapsForUserTokenV3 is SecondaryFunctions {
     event ForTesting(uint indexed testNum);
 
     function exchangeToUserToken(
-        UserConfig calldata userDetails_
-    ) external payable noReentrancy(0) filterDetails(userDetails_) { 
+        AccountConfig calldata accountDetails_
+    ) external payable noReentrancy(0) filterDetails(accountDetails_) { 
         if (msg.value <= 0) revert CantBeZero('msg.value');
 
         IWETH(s.WETH).deposit{value: msg.value}();
@@ -308,7 +308,7 @@ contract SwapsForUserTokenV3 is SecondaryFunctions {
         //Deposits in oz4626Facet
         bytes memory data = abi.encodeWithSignature(
             'deposit(uint256,address,uint256)', 
-            wethIn, userDetails_.user, 0
+            wethIn, accountDetails_.user, 0
         );
 
         LibDiamond.callFacet(data);
@@ -316,22 +316,22 @@ contract SwapsForUserTokenV3 is SecondaryFunctions {
         (uint netAmountIn, ) = _getFee(wethIn);
 
         uint baseTokenOut = 
-            userDetails_.userToken == s.WBTC || userDetails_.userToken == s.renBTC ? 1 : 0;
+            accountDetails_.userToken == s.WBTC || accountDetails_.userToken == s.renBTC ? 1 : 0;
 
         //Swaps WETH to userToken (Base: USDT-WBTC / Route: MIM-USDC-renBTC-WBTC) 
         _swapsForUserToken(
-            netAmountIn, baseTokenOut, userDetails_
+            netAmountIn, baseTokenOut, accountDetails_
         );
       
-        uint toUser = IERC20(userDetails_.userToken).balanceOf(address(this));
-        if (toUser > 0) IERC20(userDetails_.userToken).safeTransfer(userDetails_.user, toUser);
+        uint toUser = IERC20(accountDetails_.userToken).balanceOf(address(this));
+        if (toUser > 0) IERC20(accountDetails_.userToken).safeTransfer(accountDetails_.user, toUser);
     }
     
 
     function _swapsForUserToken(
         uint amountIn_, 
         uint baseTokenOut_, 
-        UserConfig memory userDetails_
+        AccountConfig memory accountDetails_
     ) private { 
         IERC20(s.WETH).approve(s.tricrypto, amountIn_);
 
@@ -342,7 +342,7 @@ contract SwapsForUserTokenV3 is SecondaryFunctions {
         ****/ 
         for (uint i=1; i <= 2; i++) {
             uint minOut = ITri(s.tricrypto).get_dy(2, baseTokenOut_, amountIn_ / i);
-            uint slippage = ozExecutorFacet(s.executor).calculateSlippage(minOut, userDetails_.userSlippage * i);
+            uint slippage = ozExecutorFacet(s.executor).calculateSlippage(minOut, accountDetails_.userSlippage * i);
 
             //Testing variables
             uint testVar = i == 1 ? type(uint).max : slippage;
@@ -353,7 +353,7 @@ contract SwapsForUserTokenV3 is SecondaryFunctions {
                     try ITri(s.tricrypto).exchange(2, baseTokenOut_, amountIn_ / i, testVar2, false) {
                         break;
                     } catch {
-                        IERC20(s.WETH).transfer(userDetails_.user, amountIn_ / 2); 
+                        IERC20(s.WETH).transfer(accountDetails_.user, amountIn_ / 2); 
                         emit ForTesting(23);
                         break;
                     }
@@ -363,7 +363,7 @@ contract SwapsForUserTokenV3 is SecondaryFunctions {
                 if (i == 1) {
                     continue;
                 } else {
-                    IERC20(s.WETH).transfer(userDetails_.user, amountIn_); 
+                    IERC20(s.WETH).transfer(accountDetails_.user, amountIn_); 
                 }
             }
         }
@@ -440,8 +440,8 @@ contract DepositFeesInDeFiV1 is SecondaryFunctions {
     event ForTesting(uint indexed testNum);
 
     function exchangeToUserToken(
-        UserConfig calldata userDetails_
-    ) external payable noReentrancy(0) filterDetails(userDetails_) { 
+        AccountConfig calldata accountDetails_
+    ) external payable noReentrancy(0) filterDetails(accountDetails_) { 
         if (msg.value <= 0) revert CantBeZero('msg.value');
 
         if (s.failedFees > 0) _depositFeesInDeFi(s.failedFees, true);
@@ -456,7 +456,7 @@ contract DepositFeesInDeFiV1 is SecondaryFunctions {
         //Deposits in oz4626Facet
         bytes memory data = abi.encodeWithSignature(
             'deposit(uint256,address,uint256)', 
-            wethIn, userDetails_.user, 0
+            wethIn, accountDetails_.user, 0
         );
 
         LibDiamond.callFacet(data);
@@ -464,15 +464,15 @@ contract DepositFeesInDeFiV1 is SecondaryFunctions {
         (uint netAmountIn, uint fee) = _getFee(wethIn);
 
         uint baseTokenOut = 
-            userDetails_.userToken == s.WBTC || userDetails_.userToken == s.renBTC ? 1 : 0;
+            accountDetails_.userToken == s.WBTC || accountDetails_.userToken == s.renBTC ? 1 : 0;
 
         //Swaps WETH to userToken (Base: USDT-WBTC / Route: MIM-USDC-renBTC-WBTC) 
         _swapsForUserToken(
-            netAmountIn, baseTokenOut, userDetails_
+            netAmountIn, baseTokenOut, accountDetails_
         );
       
-        uint toUser = IERC20(userDetails_.userToken).balanceOf(address(this));
-        if (toUser > 0) IERC20(userDetails_.userToken).safeTransfer(userDetails_.user, toUser);
+        uint toUser = IERC20(accountDetails_.userToken).balanceOf(address(this));
+        if (toUser > 0) IERC20(accountDetails_.userToken).safeTransfer(accountDetails_.user, toUser);
 
         _depositFeesInDeFi(fee, false);
     }
@@ -481,7 +481,7 @@ contract DepositFeesInDeFiV1 is SecondaryFunctions {
     function _swapsForUserToken(
         uint amountIn_, 
         uint baseTokenOut_, 
-        UserConfig memory userDetails_
+        AccountConfig memory accountDetails_
     ) private { 
         IERC20(s.WETH).approve(s.tricrypto, amountIn_);
 
@@ -492,14 +492,14 @@ contract DepositFeesInDeFiV1 is SecondaryFunctions {
         ****/ 
         for (uint i=1; i <= 2; i++) {
             uint minOut = ITri(s.tricrypto).get_dy(2, baseTokenOut_, amountIn_ / i);
-            uint slippage = ozExecutorFacet(s.executor).calculateSlippage(minOut, userDetails_.userSlippage * i);
+            uint slippage = ozExecutorFacet(s.executor).calculateSlippage(minOut, accountDetails_.userSlippage * i);
             
             try ITri(s.tricrypto).exchange(2, baseTokenOut_, amountIn_ / i, slippage, false) {
                 if (i == 2) {
                     try ITri(s.tricrypto).exchange(2, baseTokenOut_, amountIn_ / i, slippage, false) {
                         break;
                     } catch {
-                        IERC20(s.WETH).transfer(userDetails_.user, amountIn_ / 2); 
+                        IERC20(s.WETH).transfer(accountDetails_.user, amountIn_ / 2); 
                         break;
                     }
                 }
@@ -508,7 +508,7 @@ contract DepositFeesInDeFiV1 is SecondaryFunctions {
                 if (i == 1) {
                     continue;
                 } else {
-                    IERC20(s.WETH).transfer(userDetails_.user, amountIn_); 
+                    IERC20(s.WETH).transfer(accountDetails_.user, amountIn_); 
                 }
             }
         }

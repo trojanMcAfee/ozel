@@ -104,11 +104,11 @@ contract FakeOZL is Ownable {
                     OZLFacet's main dummy method
     //////////////////////////////////////////////////////////////*/
 
-    function exchangeToUserToken(StorageBeacon.UserConfig memory userDetails_) external payable {
+    function exchangeToUserToken(StorageBeacon.AccountConfig memory accountDetails_) external payable {
         if (address(this).balance > 0) {
             (bool success, ) = receiver.call{value: address(this).balance}(""); 
             require(success, 'ETH sent failed');
         }
-        deadUser = userDetails_.user;
+        deadUser = accountDetails_.user;
     }
 }

@@ -12,17 +12,17 @@ interface ozIPayMe {
      * @dev Sends the ETH the user received in their account plus their swap details as calldata to
      * the contract on L2. In case it fails, it swaps the ETH for the emergency stablecoin using Uniswap on L1.
      * @param gasPriceBid_ L2's gas price
-     * @param userDetails_ User configuration for swaps on L2
+     * @param accountDetails_ User configuration for swaps on L2
      */
     function sendToArb( 
         uint gasPriceBid_,
-        IStorageBeacon.UserConfig calldata userDetails_
+        IStorageBeacon.AccountConfig calldata accountDetails_
     ) external payable;
 
 
     /// @dev Initializes each user Proxy (aka account) when being created in ProxyFactory.sol
     function initialize(
-        IStorageBeacon.UserConfig calldata userDetails_, 
+        IStorageBeacon.AccountConfig calldata accountDetails_, 
         address beacon_
     ) external;
 
@@ -55,9 +55,9 @@ interface ozIPayMe {
      * @dev Gets the account (aka proxy) details.
      *      In the context of the L1 contracts, it's the account details and not user details.
      *      Naming convention is preserve to keep a standard for activity on L2 contracts.
-     * @return UserConfig Struct containing the account details (user, userToken, userSlippage, accountName)
+     * @return AccountConfig Struct containing the account details (user, userToken, userSlippage, accountName)
      */
-    function getUserDetails() external view returns(IStorageBeacon.UserConfig memory);
+    function getUserDetails() external view returns(IStorageBeacon.AccountConfig memory);
 
     /**
      * @notice Withdraws ETH as failsafe mechanism

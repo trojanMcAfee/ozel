@@ -67,20 +67,20 @@ async function transferOZL(recipient, amount, signerIndex = 0) {
     return receipt;
 }
 
-async function withdrawShareOZL(userDetails, receiverAddr, balanceOZL, signerIndex = 0) {  
+async function withdrawShareOZL(accountDetails, receiverAddr, balanceOZL, signerIndex = 0) {  
     const signers = await hre.ethers.getSigners();
     const signer = signers[signerIndex ? 0 : signerIndex];
-    await OZLDiamond.connect(signer).withdrawUserShare(userDetails, receiverAddr, balanceOZL, ops);
+    await OZLDiamond.connect(signer).withdrawUserShare(accountDetails, receiverAddr, balanceOZL, ops);
 } 
 
 
 //Sends ETH to contracts (simulates ETH bridging) **** MAIN FUNCTION ****
-async function sendETH(userDetails, signerIndex = 0, ozelIndex) {
+async function sendETH(accountDetails, signerIndex = 0, ozelIndex) {
     const signers = await hre.ethers.getSigners();
     const signer = signers[signerIndex ? 0 : signerIndex];
     let value = ethers.utils.parseEther(signerIndex === 'no value' ? '0' : '10');
     value = ozelIndex === 'ozel index test' ? ethers.utils.parseEther('100') : value;
-    const tx = await OZLDiamond.connect(signer).exchangeToUserToken(userDetails, {
+    const tx = await OZLDiamond.connect(signer).exchangeToUserToken(accountDetails, {
         value,
         gasLimit: ethers.BigNumber.from('5000000'),
         gasPrice: ethers.BigNumber.from('40134698068')
@@ -120,7 +120,7 @@ function getTestingNumber(receipt, isSecond = false) {
 }
 
 
-async function replaceForModVersion(contractName, checkUSDTbalance, selector, userDetails, checkERC = false, isIndex = false) {
+async function replaceForModVersion(contractName, checkUSDTbalance, selector, accountDetails, checkERC = false, isIndex = false) {
     function whichERC20() {
         switch(checkERC) {
             case true:
@@ -189,7 +189,7 @@ async function replaceForModVersion(contractName, checkUSDTbalance, selector, us
     await OZLDiamond.diamondCut(faceCutArgs, nullAddr, '0x');
 
     if (!isIndex) {
-        receipt = await sendETH(userDetails); 
+        receipt = await sendETH(accountDetails); 
         testingNum = getTestingNumber(receipt);
         balance = await (whichERC20()).balanceOf(callerAddr);
 

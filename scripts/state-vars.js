@@ -51,8 +51,8 @@ const diamondABI = [
     'function getRegulatorCounter() external view returns (uint256)',
     'function balanceOf(address account) view returns (uint256)',
     'function transfer(address recipient, uint256 amount) returns (bool)',
-    'function exchangeToUserToken(tuple(address user, address userToken, uint userSlippage) userDetails_) external payable',
-    'function withdrawUserShare(tuple(address user, address userToken, uint userSlippage) userDetails_, address receiver, uint shares_)',
+    'function exchangeToUserToken(tuple(address user, address userToken, uint userSlippage) accountDetails_) external payable',
+    'function withdrawUserShare(tuple(address user, address userToken, uint userSlippage) accountDetails_, address receiver, uint shares_)',
     'function enableWithdrawals(bool state_) external',
     'function updateExecutorState(uint256 amount_, address user_, uint256 lockNum_) external payable',
     'function deposit(uint256 assets, address receiver, uint256 lockNum_) external payable returns (uint256 shares)',
@@ -76,7 +76,7 @@ const proxyABIeth = [
     'function setTestReturnContract(address testReturn_, bytes32 position_) public',
     'function changeUserSlippage(uint256 newUserSlippage_) external',
     'function changeUserToken(address newUserToken_)',
-    'function sendToArb(tuple(uint256 maxSubmissionCost, uint256 gasPriceBid, uint256 autoRedeem) varConfig_, tuple(address user, address userToken, uint256 userSlippage) userDetails_)',
+    'function sendToArb(tuple(uint256 maxSubmissionCost, uint256 gasPriceBid, uint256 autoRedeem) varConfig_, tuple(address user, address userToken, uint256 userSlippage) accountDetails_)',
     'function initialize((address,address,uint256,string), address beacon_)',
     'function getUserDetails() external view returns ((address,address,uint256,string))',
     'function changeUserTokenNSlippage(address,uint256) external',
@@ -84,7 +84,7 @@ const proxyABIeth = [
 ];
 
 const factoryABI = [
-    'function createNewProxy(tuple(address user, address userToken, uint256 userSlippage, string accountName) userDetails_) external returns(address)',
+    'function createNewProxy(tuple(address user, address userToken, uint256 userSlippage, string accountName) accountDetails_) external returns(address)',
     'function initialize(address beacon_)'
 ];
 
@@ -107,7 +107,7 @@ const l1Provider = new ethers.providers.JsonRpcProvider(process.env.MAINNET);
 let l1Signer, l2Signer, l1SignerTestnet, l2SignerTestnet;
 let l1ProviderTestnet, l2ProviderTestnet;
 
-let network = 'mainnet';
+let network = 'arbitrum';
 switch(network) {
     case 'goerli':
         pokeMeOpsAddr = '0xc1C6805B857Bef1f412519C4A842522431aFed39'; 

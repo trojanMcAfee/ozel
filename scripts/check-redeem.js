@@ -72,7 +72,7 @@ async function main3() {
     const callerAddr = await signerX.getAddress();
     console.log('caller addr: ', callerAddr);
 
-    const userDetails = [
+    const accountDetails = [
         callerAddr,
         usdtAddrArb, 
         defaultSlippage
@@ -82,7 +82,7 @@ async function main3() {
     const factoryProxy = await hre.ethers.getContractAt(factoryABI, factoryProxyAddr);
     console.log('Proxy Factory: ', factoryProxy.address);
 
-    const tx = await factoryProxy.createNewProxy(userDetails);
+    const tx = await factoryProxy.createNewProxy(accountDetails);
     const receipt = await tx.wait();
 
     console.log('receipt: ', receipt);
@@ -111,14 +111,14 @@ async function main4() {
     const fakeOZL = '0xAb6E71331EB929251fFbb6d00f571DDdC4aC1D9C';
     const nodeInterfaceAddr = '0x00000000000000000000000000000000000000C8';
     const nodeInterface = await hre.ethers.getContractAt('NodeInterface', nodeInterfaceAddr);
-    const userDetails = [
+    const accountDetails = [
         callerAddr,
         usdtAddrArb, 
         defaultSlippage
     ];
 
     const iface = new ethers.utils.Interface(diamondABI);
-    const encodedData = iface.encodeFunctionData('exchangeToUserToken', [userDetails]);
+    const encodedData = iface.encodeFunctionData('exchangeToUserToken', [accountDetails]);
 
     const x = await nodeInterface.nitroGenesisBlock();
     console.log('block: ', Number(x));
@@ -373,14 +373,14 @@ async function create() {
     const ozERC1967proxyAddr = '0xb2387018E77A9D08C207C78Ee65631F694a25C46';
     const proxyFactory = await hre.ethers.getContractAt('ProxyFactory', ozERC1967proxyAddr);
 
-    const userDetails = [
+    const accountDetails = [
         signerAddr,
         usdtAddrArb,
         parseInt(0.5 * 100),
         'test account'
     ];
 
-    const tx = await proxyFactory.createNewProxy(userDetails, ops);
+    const tx = await proxyFactory.createNewProxy(accountDetails, ops);
     const receipt = await tx.wait();
     console.log('createNewProxy with hash: ', receipt.transactionHash);
     const newProxyAddr = receipt.logs[0].address;
@@ -392,7 +392,7 @@ async function create() {
 async function lastPart() {
     const signerAddr = '0x0E743a1E37D691D8e52F7036375F3D148B4116ba';
 
-    const userDetails = [
+    const accountDetails = [
         signerAddr,
         usdtAddrArb,
         defaultSlippage,
@@ -432,7 +432,7 @@ async function lastPart() {
     // console.log('set role 2 done...');
 
     //Creates 1st proxy
-    tx = await proxyFactory.createNewProxy(userDetails, ops);
+    tx = await proxyFactory.createNewProxy(accountDetails, ops);
     receipt = await tx.wait();
     console.log('createNewProxy with hash: ', receipt.transactionHash);
     const newProxyAddr = receipt.logs[0].address;

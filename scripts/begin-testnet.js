@@ -57,7 +57,7 @@ async function deployTestnet(testSigner = false, manualRedeem = false) {
     const signerAddr = await signer.getAddress();
     console.log('signer address: ', signerAddr);
 
-    const userDetails = [
+    const accountDetails = [
         signerAddr,
         usdtAddrArb,
         defaultSlippage,
@@ -176,7 +176,7 @@ async function deployTestnet(testSigner = false, manualRedeem = false) {
     console.log('set role 2 done...');
 
     //Creates 1st proxy
-    tx = await proxyFactory.connect(l1SignerTest).createNewProxy(userDetails, ops);
+    tx = await proxyFactory.connect(l1SignerTest).createNewProxy(accountDetails, ops);
     receipt = await tx.wait();
     console.log('createNewProxy with hash: ', receipt.transactionHash);
     const newProxyAddr = receipt.logs[0].address;
@@ -192,7 +192,7 @@ async function deployTestnet(testSigner = false, manualRedeem = false) {
         newProxyAddr,
         redeemedHashes,
         proxyFactory,
-        userDetails
+        accountDetails
     ];
 
 }

@@ -10,7 +10,7 @@ import '../../../ethereum/StorageBeacon.sol';
 
 contract FaultyOzBeaconProxy is ReentrancyGuard, Initializable, BeaconProxy { 
 
-    StorageBeacon.UserConfig userDetails;
+    StorageBeacon.AccountConfig accountDetails;
     StorageBeacon.FixedConfig fxConfig;
 
     address private beacon; 

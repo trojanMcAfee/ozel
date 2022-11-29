@@ -22,7 +22,7 @@ const {
 
 
 
-let userDetails;
+let accountDetails;
 let callerAddr;
 let ozelIndex;
 let deployedDiamond;
@@ -67,7 +67,7 @@ describe('Ozel Index', async function () {
     
         getVarsForHelpers(deployedDiamond, ozlFacet);
 
-        userDetails = [
+        accountDetails = [
             callerAddr,
             fraxAddr,
             defaultSlippage
@@ -79,9 +79,9 @@ describe('Ozel Index', async function () {
     });
 
     it('should successfully stabilize the index for OZL balances calculations / UpdateIndexV1 & balanceOf()', async () => {
-        await replaceForModVersion('UpdateIndexV1', false, selector, userDetails, false, true);
+        await replaceForModVersion('UpdateIndexV1', false, selector, accountDetails, false, true);
         
-        userDetails[1] = usdcAddr;
+        accountDetails[1] = usdcAddr;
         accounts = await hre.ethers.provider.listAccounts();
         signers = await hre.ethers.getSigners();
 
@@ -111,9 +111,9 @@ describe('Ozel Index', async function () {
             console.log(`tx #${i}`);
 
             if (j == 4) j = 0;
-            userDetails[0] = await signers[j].getAddress();
+            accountDetails[0] = await signers[j].getAddress();
 
-            await sendETH(userDetails, j, 'ozel index test'); 
+            await sendETH(accountDetails, j, 'ozel index test'); 
 
             ozelIndex = formatEther(await getOzelIndex());
             if (i === 0) higherIndex = ozelIndex;

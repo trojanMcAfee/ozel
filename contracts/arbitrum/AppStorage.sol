@@ -91,7 +91,7 @@ struct TradeOps {
     address pool;
 }
 
-struct UserConfig { 
+struct AccountConfig { 
     address user;
     address userToken;
     uint userSlippage; 

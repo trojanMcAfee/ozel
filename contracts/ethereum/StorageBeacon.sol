@@ -20,7 +20,7 @@ contract StorageBeacon is IStorageBeacon, Initializable, Ownable {
     mapping(address => bool) tokenDatabase;
     mapping(address => bool) userDatabase;
     mapping(address => address[]) userToProxies;
-    mapping(address => UserConfig) public proxyToDetails; 
+    mapping(address => AccountConfig) public proxyToDetails; 
     mapping(bytes4 => bool) authorizedSelectors;
     mapping(address => uint) proxyToPayments;
 
@@ -99,11 +99,11 @@ contract StorageBeacon is IStorageBeacon, Initializable, Ownable {
     /// @inheritdoc IStorageBeacon
     function saveUserToDetails(
         address proxy_, 
-        UserConfig memory userDetails_
+        AccountConfig memory accountDetails_
     ) external hasRole(0xcb05ce19) {
-        userToProxies[userDetails_.user].push(proxy_);
-        proxyToDetails[proxy_] = userDetails_;
-        if (!userDatabase[userDetails_.user]) userDatabase[userDetails_.user] = true;
+        userToProxies[accountDetails_.user].push(proxy_);
+        proxyToDetails[proxy_] = accountDetails_;
+        if (!userDatabase[accountDetails_.user]) userDatabase[accountDetails_.user] = true;
     }
 
     /// @inheritdoc IStorageBeacon

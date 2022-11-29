@@ -27,13 +27,13 @@ contract ProxyFactory is IProxyFactory, ReentrancyGuard, Initializable {
 
     /// @inheritdoc IProxyFactory
     function createNewProxy(
-        StorageBeacon.UserConfig calldata userDetails_
+        StorageBeacon.AccountConfig calldata accountDetails_
     ) external nonReentrant returns(address) {
-        if (bytes(userDetails_.accountName).length == 0) revert CantBeZero('accountName'); 
-        if (bytes(userDetails_.accountName).length > 18) revert NameTooLong();
-        if (userDetails_.user == address(0) || userDetails_.userToken == address(0)) revert CantBeZero('address');
-        if (userDetails_.userSlippage <= 0) revert CantBeZero('slippage');
-        if (!StorageBeacon(_getStorageBeacon(0)).queryTokenDatabase(userDetails_.userToken)) revert TokenNotInDatabase(userDetails_.userToken);
+        if (bytes(accountDetails_.accountName).length == 0) revert CantBeZero('accountName'); 
+        if (bytes(accountDetails_.accountName).length > 18) revert NameTooLong();
+        if (accountDetails_.user == address(0) || accountDetails_.userToken == address(0)) revert CantBeZero('address');
+        if (accountDetails_.userSlippage <= 0) revert CantBeZero('slippage');
+        if (!StorageBeacon(_getStorageBeacon(0)).queryTokenDatabase(accountDetails_.userToken)) revert TokenNotInDatabase(accountDetails_.userToken);
 
         ozBeaconProxy newProxy = new ozBeaconProxy(
             beacon,
@@ -42,13 +42,13 @@ contract ProxyFactory is IProxyFactory, ReentrancyGuard, Initializable {
 
         bytes memory createData = abi.encodeWithSignature(
             'initialize((address,address,uint256,string),address)',
-            userDetails_, beacon
+            accountDetails_, beacon
         );
         address(newProxy).functionCall(createData);
 
         _startTask(address(newProxy));
 
-        StorageBeacon(_getStorageBeacon(0)).saveUserToDetails(address(newProxy), userDetails_); 
+        StorageBeacon(_getStorageBeacon(0)).saveUserToDetails(address(newProxy), accountDetails_); 
 
         return address(newProxy);
     }

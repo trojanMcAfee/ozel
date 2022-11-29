@@ -25,7 +25,7 @@ const {
 
 
 
-let userDetails;
+let accountDetails;
 let FRAX, MIM, USDT, USDC;
 let callerAddr, caller2Addr;
 let ozelIndex, newOzelIndex;
@@ -59,7 +59,7 @@ describe('Integration testing', async function () {
     
         getVarsForHelpers(deployedDiamond, ozlFacet);
 
-        userDetails = [
+        accountDetails = [
             callerAddr,
             fraxAddr, 
             defaultSlippage
@@ -77,7 +77,7 @@ describe('Integration testing', async function () {
 
     describe('1st user, 1st transfer', async () => {
         it('should convert ETH to userToken (FRAX)', async () => {
-            receipt = await sendETH(userDetails); 
+            receipt = await sendETH(accountDetails); 
             assert(formatEther(await FRAX.balanceOf(callerAddr)) > 0);
         });
 
@@ -98,10 +98,10 @@ describe('Integration testing', async function () {
 
     describe('2nd user, 1st transfer', async () => {
         it('should convert ETH to userToken (WBTC)', async () => {
-            userDetails[0] = caller2Addr;
-            userDetails[1] = wbtcAddr;
+            accountDetails[0] = caller2Addr;
+            accountDetails[1] = wbtcAddr;
 
-            await sendETH(userDetails); 
+            await sendETH(accountDetails); 
             assert(formatEther(await FRAX.balanceOf(callerAddr)) > 0);
         });
 
@@ -123,10 +123,10 @@ describe('Integration testing', async function () {
 
     describe('1st user, 2nd transfer', async () => {
         it('should convert ETH to userToken (MIM)', async () => {
-            userDetails[0] = callerAddr;
-            userDetails[1] = mimAddr;
+            accountDetails[0] = callerAddr;
+            accountDetails[1] = mimAddr;
 
-            await sendETH(userDetails);
+            await sendETH(accountDetails);
             balanceMIM = await MIM.balanceOf(callerAddr);
             assert(formatEther(balanceMIM) > 0);
 
@@ -171,8 +171,8 @@ describe('Integration testing', async function () {
     describe("1st user's OZL withdrawal", async () => {
         it("should have a balance of the dapp's fees on userToken (USDC)", async () => {
             await enableWithdrawals(true);
-            userDetails[1] = usdcAddr;
-            await withdrawShareOZL(userDetails, callerAddr, parseEther((await balanceOfOZL(callerAddr)).toString()));
+            accountDetails[1] = usdcAddr;
+            await withdrawShareOZL(accountDetails, callerAddr, parseEther((await balanceOfOZL(callerAddr)).toString()));
             balance = await USDC.balanceOf(callerAddr);
             assert(balance > 0);
         });
@@ -189,7 +189,7 @@ describe('Integration testing', async function () {
 
     describe('1st user, 3rd and 4th transfers', async () => {
         it('should leave the 2nd user with more OZL tokens', async() => {
-            await sendETH(userDetails);
+            await sendETH(accountDetails);
             OZLbalanceFirstUser = await balanceOfOZL(callerAddr);
             OZLbalanceSecondUser = await balanceOfOZL(caller2Addr);
             assert(OZLbalanceSecondUser > OZLbalanceFirstUser);
@@ -214,9 +214,9 @@ describe('Integration testing', async function () {
     describe('2nd user withdrawas 1/3 OZL tokens', async () => {
 
         it("should have a balance of the dapp's fees on userToken (USDT)", async () => {
-            userDetails[0] = caller2Addr;
-            userDetails[1] = usdtAddrArb;
-            await withdrawShareOZL(userDetails, caller2Addr, parseEther(toTransfer.toString()), 1);
+            accountDetails[0] = caller2Addr;
+            accountDetails[1] = usdtAddrArb;
+            await withdrawShareOZL(accountDetails, caller2Addr, parseEther(toTransfer.toString()), 1);
             balance = await USDT.balanceOf(caller2Addr);
             assert(balance > 0);
         });
