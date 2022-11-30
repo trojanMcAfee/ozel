@@ -8,73 +8,45 @@ import '@openzeppelin/contracts/utils/Context.sol';
 import '@openzeppelin/contracts/utils/Address.sol';
 import { LibDiamond } from "../../libraries/LibDiamond.sol";
 import { ModifiersARB } from '../../Modifiers.sol';
+import '../../interfaces/ozI20Facet.sol';
 import '../../Errors.sol';
 
 
 /**
- * @dev Implementation of the {IERC20} interface.
- * @author Original author: OpenZeppelin
+ * @title Custom implementation of OpenZeppelin's ERC20 contract.
+ * @notice A new version was made, instead of inheriting from the original 
+ * and overriding methods, since a new storage layout was needed in order  
+ * to fit the architecture of the whole system. 
+ * @dev Untouched functions have been tagged as "Unchanged method"
  */
-contract oz20Facet is ModifiersARB, Context, IERC20, IERC20Metadata {
+contract oz20Facet is ozI20Facet, ModifiersARB, Context, IERC20, IERC20Metadata {
     
     using FixedPointMathLib for uint;
     using Address for address;
 
-    /**
-     * @dev Sets the values for {name} and {symbol}.
-     *
-     * The default value of {decimals} is 18. To select a different value for
-     * {decimals} you should overload it.
-     *
-     * All two of these values are immutable: they can only be set once during
-     * construction.
-     */
 
-    /**
-     * @dev Returns the name of the token.
-     */
-    function name() external view virtual override returns (string memory) {
+    function name() external view returns (string memory) {
         return s.oz.name;
     }
 
-    /**
-     * @dev Returns the symbol of the token, usually a shorter version of the
-     * name.
-     */
-    function symbol() external view virtual override returns (string memory) {
+    function symbol() external view returns (string memory) {
         return s.oz.symbol; 
     }
 
-    /**
-     * @dev Returns the number of decimals used to get its user representation.
-     * For example, if `decimals` equals `2`, a balance of `505` tokens should
-     * be displayed to a user as `5.05` (`505 / 10 ** 2`).
-     *
-     * Tokens usually opt for a value of 18, imitating the relationship between
-     * Ether and Wei. This is the value {ERC20} uses, unless this function is
-     * overridden;
-     *
-     * NOTE: This information is only used for _display_ purposes: it in
-     * no way affects any of the arithmetic of the contract, including
-     * {IERC20-balanceOf} and {IERC20-transfer}.
-     */
-    function decimals() external view virtual override returns (uint8) {
+    /// @dev Unchanged method
+    function decimals() external view returns (uint8) {
         return 18;
     }
 
-    /**
-     * @dev See {IERC20-totalSupply}.
-     */
-    function totalSupply() external view virtual override returns (uint256) { 
+    /// @dev Unchanged method
+    function totalSupply() external view returns (uint256) { 
         return 100;
     }
 
-    /**
-     * @dev See {IERC20-balanceOf}.
-     */
-    function balanceOf(address account) public view virtual override returns (uint256) { 
+    /// @inheritdoc ozI20Facet
+    function balanceOf(address user_) public view returns (uint256) { 
         uint stableMod = s.indexFlag ? 1 : s.stabilizer; 
-        return (s.ozelIndex.mulDivDown(s.usersPayments[account] * 100, 10 ** 22) / 4 ** s.indexRegulator) / stableMod;
+        return (s.ozelIndex.mulDivDown(s.usersPayments[user_] * 100, 10 ** 22) / 4 ** s.indexRegulator) / stableMod;
     }
 
     /**
@@ -85,7 +57,7 @@ contract oz20Facet is ModifiersARB, Context, IERC20, IERC20Metadata {
      * - `recipient` cannot be the zero address.
      * - the caller must have a balance of at least `amount`.
      */
-    function transfer(address recipient, uint256 amount) external virtual override returns (bool) {
+    function transfer(address recipient, uint256 amount) external returns (bool) {
         _transfer(_msgSender(), recipient, amount);
         return true;
     }
@@ -93,7 +65,7 @@ contract oz20Facet is ModifiersARB, Context, IERC20, IERC20Metadata {
     /**
      * @dev See {IERC20-allowance}.
      */
-    function allowance(address owner, address spender) external view virtual override returns (uint256) {
+    function allowance(address owner, address spender) external view returns (uint256) {
         return s.oz.allowances[owner][spender];
     }
 
@@ -104,7 +76,7 @@ contract oz20Facet is ModifiersARB, Context, IERC20, IERC20Metadata {
      *
      * - `spender` cannot be the zero address.
      */
-    function approve(address spender, uint256 amount) external virtual override returns (bool) {
+    function approve(address spender, uint256 amount) external returns (bool) {
         _approve(_msgSender(), spender, amount);
         return true;
     }
@@ -126,7 +98,7 @@ contract oz20Facet is ModifiersARB, Context, IERC20, IERC20Metadata {
         address sender,
         address recipient,
         uint256 amount
-    ) external virtual override returns (bool) {
+    ) external returns (bool) {
         _transfer(sender, recipient, amount);
 
         uint256 currentAllowance = s.oz.allowances[sender][_msgSender()];
@@ -150,7 +122,7 @@ contract oz20Facet is ModifiersARB, Context, IERC20, IERC20Metadata {
      *
      * - `spender` cannot be the zero address.
      */
-    function increaseAllowance(address spender, uint256 addedValue) external virtual returns (bool) {
+    function increaseAllowance(address spender, uint256 addedValue) external returns (bool) {
         _approve(_msgSender(), spender, s.oz.allowances[_msgSender()][spender] + addedValue);
         return true;
     }
@@ -169,7 +141,7 @@ contract oz20Facet is ModifiersARB, Context, IERC20, IERC20Metadata {
      * - `spender` must have allowance for the caller of at least
      * `subtractedValue`.
      */
-    function decreaseAllowance(address spender, uint256 subtractedValue) external virtual returns (bool) {
+    function decreaseAllowance(address spender, uint256 subtractedValue) external returns (bool) {
         uint256 currentAllowance = s.oz.allowances[_msgSender()][spender];
         require(currentAllowance >= subtractedValue, "ERC20: decreased allowance below zero");
         unchecked {
@@ -197,7 +169,7 @@ contract oz20Facet is ModifiersARB, Context, IERC20, IERC20Metadata {
         address sender,
         address recipient,
         uint256 amount
-    ) internal virtual {
+    ) internal {
         require(sender != address(0), "oz20Facet: transfer from the zero address");
         require(recipient != address(0), "oz20Facet: transfer to the zero address");
 
