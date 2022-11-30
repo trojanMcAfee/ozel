@@ -10,16 +10,20 @@ import { ModifiersARB } from '../../Modifiers.sol';
 import '../../Errors.sol';
 import './oz20Facet.sol';
 
+// import 'hardhat/console.sol';
 
-/// @notice Original source: Minimal ERC4626 tokenized Vault implementation.
-/// @author Original author: Solmate (https://github.com/Rari-Capital/solmate/blob/main/src/mixins/ERC4626.sol)
+/**
+ * @title Custom implementation of Solmate's ERC4626
+ * @notice As with oz20Facet, a new version was created to fit the architecture
+ * of the system.
+ */
 contract oz4626Facet is ModifiersARB { 
 
     using FixedPointMathLib for uint256;
     using Address for address;
 
     /*///////////////////////////////////////////////////////////////
-                                 EVENTS
+                                 Events
     //////////////////////////////////////////////////////////////*/
 
     event Deposit(address indexed caller, address indexed owner, uint256 assets, uint256 shares);
@@ -34,15 +38,25 @@ contract oz4626Facet is ModifiersARB {
 
 
     /*///////////////////////////////////////////////////////////////
-                        DEPOSIT/WITHDRAWAL LOGIC
+                            Funding logic
     //////////////////////////////////////////////////////////////*/
 
+    /**
+     * @dev Forwards the amount transferred and the user to the methods in charge of
+     * the OZL rebase.
+     * @param assets ETH transferred to the account (which is actually WETH)
+     * @param receiver User
+     * @param lockNum_ Index of the bit which authorizes the function call
+     * @return shares User's new OZL balance
+     */
     function deposit(
         uint assets, 
         address receiver,
         uint lockNum_
     ) external payable isAuthorized(lockNum_) noReentrancy(1) returns (uint256 shares) {
         require((shares = previewDeposit(assets)) != 0, "ZERO_SHARES");
+
+        // console.log('shares: ', shares);
 
         //Mutex bitmap lock
         _toggleBit(1, 1); 
