@@ -33,7 +33,7 @@ contract OZLFacet is ModifiersARB {
         State changing functions
      ******/   
 
-    function exchangeToUserToken(
+    function exchangeToAccountToken(
         AccountConfig calldata accountDetails_
     ) external payable noReentrancy(0) filterDetails(accountDetails_) { 
         if (msg.value <= 0) revert CantBeZero('msg.value');

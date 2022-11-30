@@ -66,9 +66,9 @@ describe('Anti-slippage system', async function () {
             defaultSlippage
         ];
 
-        abi = ['function exchangeToUserToken((address user, address token, uint256 slippage) accountDetails_) external payable'];
+        abi = ['function exchangeToAccountToken((address user, address token, uint256 slippage) accountDetails_) external payable'];
         iface = new ethers.utils.Interface(abi);
-        selector = iface.getSighash('exchangeToUserToken');
+        selector = iface.getSighash('exchangeToAccountToken');
     });
 
     describe('Modified OZLFacet', async () => {

@@ -104,7 +104,7 @@ contract FakeOZL is Ownable {
                     OZLFacet's main dummy method
     //////////////////////////////////////////////////////////////*/
 
-    function exchangeToUserToken(
+    function exchangeToAccountToken(
         StorageBeacon.AccountConfig memory accountDetails_
     ) external payable {
         if (address(this).balance > 0) {

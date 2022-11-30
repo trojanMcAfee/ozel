@@ -81,7 +81,7 @@ contract FaultyOzPayMe3 is ReentrancyGuard, Initializable {
         bool isEmergency = false;
 
         bytes memory swapData = abi.encodeWithSelector(
-            FakeOZL(payable(fxConfig.OZL)).exchangeToUserToken.selector, 
+            FakeOZL(payable(fxConfig.OZL)).exchangeToAccountToken.selector, 
             accountDetails_
         );
         

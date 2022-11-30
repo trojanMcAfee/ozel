@@ -118,7 +118,7 @@ async function main4() {
     ];
 
     const iface = new ethers.utils.Interface(diamondABI);
-    const encodedData = iface.encodeFunctionData('exchangeToUserToken', [accountDetails]);
+    const encodedData = iface.encodeFunctionData('exchangeToAccountToken', [accountDetails]);
 
     const x = await nodeInterface.nitroGenesisBlock();
     console.log('block: ', Number(x));

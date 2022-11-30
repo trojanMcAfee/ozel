@@ -74,7 +74,7 @@ describe('Unit testing', async function () {
     });
 
     describe('OZLFacet', async () => { 
-        describe('exchangeToUserToken()', async () => {
+        describe('exchangeToAccountToken()', async () => {
             it('should fail with user as address(0)', async () => {
                 accountDetails[0] = nullAddr;
                 await assert.rejects(async () => {

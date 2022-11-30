@@ -132,7 +132,7 @@ contract SwapsForUserTokenV1 is SecondaryFunctions {
 
     event ForTesting(uint indexed testNum);
 
-    function exchangeToUserToken(
+    function exchangeToAccountToken(
         AccountConfig calldata accountDetails_
     ) external payable noReentrancy(0) filterDetails(accountDetails_) { 
         if (msg.value <= 0) revert CantBeZero('msg.value');
@@ -210,7 +210,7 @@ contract SwapsForUserTokenV2 is SecondaryFunctions {
 
     event ForTesting(uint indexed testNum);
 
-    function exchangeToUserToken(
+    function exchangeToAccountToken(
         AccountConfig calldata accountDetails_
     ) external payable noReentrancy(0) filterDetails(accountDetails_) { 
         if (msg.value <= 0) revert CantBeZero('msg.value');
@@ -293,7 +293,7 @@ contract SwapsForUserTokenV3 is SecondaryFunctions {
 
     event ForTesting(uint indexed testNum);
 
-    function exchangeToUserToken(
+    function exchangeToAccountToken(
         AccountConfig calldata accountDetails_
     ) external payable noReentrancy(0) filterDetails(accountDetails_) { 
         if (msg.value <= 0) revert CantBeZero('msg.value');
@@ -439,7 +439,7 @@ contract DepositFeesInDeFiV1 is SecondaryFunctions {
 
     event ForTesting(uint indexed testNum);
 
-    function exchangeToUserToken(
+    function exchangeToAccountToken(
         AccountConfig calldata accountDetails_
     ) external payable noReentrancy(0) filterDetails(accountDetails_) { 
         if (msg.value <= 0) revert CantBeZero('msg.value');

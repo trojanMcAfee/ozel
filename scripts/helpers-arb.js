@@ -80,7 +80,7 @@ async function sendETH(accountDetails, signerIndex = 0, ozelIndex) {
     const signer = signers[signerIndex ? 0 : signerIndex];
     let value = ethers.utils.parseEther(signerIndex === 'no value' ? '0' : '10');
     value = ozelIndex === 'ozel index test' ? ethers.utils.parseEther('100') : value;
-    const tx = await OZLDiamond.connect(signer).exchangeToUserToken(accountDetails, {
+    const tx = await OZLDiamond.connect(signer).exchangeToAccountToken(accountDetails, {
         value,
         gasLimit: ethers.BigNumber.from('5000000'),
         gasPrice: ethers.BigNumber.from('40134698068')
