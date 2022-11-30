@@ -138,7 +138,7 @@ async function activateProxyLikeOps(proxy, taskCreator, isEvil, evilParams) {
     });
 
     const gelatoSigner = await hre.ethers.provider.getSigner(gelatoAddr); 
-    iface = new ethers.utils.Interface([`function sendToArb(${isEvil ? 'uint256 gasPriceBid_, tuple(address user, address userToken, uint256 userSlippage, string accountName) accountDetails_)' : ')'}`]); 
+    iface = new ethers.utils.Interface([`function sendToArb(${isEvil ? 'uint256 gasPriceBid_, tuple(address user, address token, uint256 slippage, string name) accountDetails_)' : ')'}`]); 
     let execData;
     if (isEvil) {
         execData = iface.encodeFunctionData('sendToArb', evilParams);

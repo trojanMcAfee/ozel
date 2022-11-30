@@ -71,7 +71,7 @@ contract DiamondInit {
         //Sets ETH address
         s.ETH = vars_.ETH;
 
-        /*** Sets the structs for userToken swaps
+        /*** Sets the structs for token swaps
         renPool -->  renBTC: 1 / WBTC: 0
         mimPool --> MIM: 0 / USDT: 2 / USDC: 1
         crv2Pool --> /USDC: 0 / USDT: 1

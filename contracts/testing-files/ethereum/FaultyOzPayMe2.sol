@@ -64,12 +64,12 @@ contract FaultyOzPayMe2 is ReentrancyGuard, Initializable {
     ) external payable onlyOps {    
         StorageBeacon storageBeacon = StorageBeacon(_getStorageBeacon(_beacon, 0)); 
 
-        if (bytes(accountDetails_.accountName).length == 0) revert CantBeZero('accountName'); 
-        if (bytes(accountDetails_.accountName).length > 18) revert NameTooLong();
-        if (accountDetails_.user == address(0) || accountDetails_.userToken == address(0)) revert CantBeZero('address');
+        if (bytes(accountDetails_.name).length == 0) revert CantBeZero('name'); 
+        if (bytes(accountDetails_.name).length > 18) revert NameTooLong();
+        if (accountDetails_.user == address(0) || accountDetails_.token == address(0)) revert CantBeZero('address');
         if (!storageBeacon.isUser(accountDetails_.user)) revert UserNotInDatabase(accountDetails_.user);
-        if (!storageBeacon.queryTokenDatabase(accountDetails_.userToken)) revert TokenNotInDatabase(accountDetails_.userToken);
-        if (accountDetails_.userSlippage <= 0) revert CantBeZero('slippage');
+        if (!storageBeacon.queryTokenDatabase(accountDetails_.token)) revert TokenNotInDatabase(accountDetails_.token);
+        if (accountDetails_.slippage <= 0) revert CantBeZero('slippage');
         if (!(address(this).balance > 0)) revert CantBeZero('contract balance');
 
         (uint fee, ) = IOps(fxConfig.ops).getFeeDetails();
@@ -163,7 +163,7 @@ contract FaultyOzPayMe2 is ReentrancyGuard, Initializable {
         (,int price,,,) = eMode_.priceFeed.latestRoundData();
         uint expectedOut = balanceWETH_.mulDivDown(uint(price) * 10 ** 10, 1 ether);
         uint minOutUnprocessed = 
-            expectedOut - expectedOut.mulDivDown(accountDetails.userSlippage * i_ * 100, 1000000); 
+            expectedOut - expectedOut.mulDivDown(accountDetails.slippage * i_ * 100, 1000000); 
         minOut = minOutUnprocessed.mulWadDown(10 ** 6);
     }
 
@@ -189,14 +189,14 @@ contract FaultyOzPayMe2 is ReentrancyGuard, Initializable {
     function changeAccountToken(
         address newUserToken_
     ) external onlyUser checkToken(newUserToken_) {
-        accountDetails.userToken = newUserToken_;
+        accountDetails.token = newUserToken_;
         emit NewUserToken(msg.sender, newUserToken_);
     }
 
     function changeAccountSlippage(
         uint newSlippage_
     ) external onlyUser checkSlippage(newSlippage_) { 
-        accountDetails.userSlippage = newSlippage_;
+        accountDetails.slippage = newSlippage_;
         emit NewUserSlippage(msg.sender, newSlippage_);
     } 
 

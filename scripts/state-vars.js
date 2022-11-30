@@ -51,16 +51,16 @@ const diamondABI = [
     'function getRegulatorCounter() external view returns (uint256)',
     'function balanceOf(address account) view returns (uint256)',
     'function transfer(address recipient, uint256 amount) returns (bool)',
-    'function exchangeToUserToken(tuple(address user, address userToken, uint userSlippage) accountDetails_) external payable',
-    'function withdrawUserShare(tuple(address user, address userToken, uint userSlippage) accountDetails_, address receiver, uint shares_)',
+    'function exchangeToUserToken(tuple(address user, address token, uint slippage) accountDetails_) external payable',
+    'function withdrawUserShare(tuple(address user, address token, uint slippage) accountDetails_, address receiver, uint shares_)',
     'function enableWithdrawals(bool state_) external',
     'function updateExecutorState(uint256 amount_, address user_, uint256 lockNum_) external payable',
     'function deposit(uint256 assets, address receiver, uint256 lockNum_) external payable returns (uint256 shares)',
-    'function executeFinalTrade(tuple(int128 tokenIn, int128 tokenOut, address baseToken, address userToken, address pool) swapDetails_, uint256 userSlippage, address user_, uint256 lockNum_) external payable',
+    'function executeFinalTrade(tuple(int128 tokenIn, int128 tokenOut, address baseToken, address token, address pool) swapDetails_, uint256 slippage, address user_, uint256 lockNum_) external payable',
     'function redeem(uint256 shares, address receiver, address owner, uint256 lockNum_) external returns (uint256 assets)',
     'function burn(address account, uint256 amount, uint256 lockNum_) external',
     'function modifyPaymentsAndVolumeExternally(address user_, uint256 newAmount_, uint256 lockNum_) external',
-    'function addTokenToDatabase(tuple(int128 tokenIn, int128 tokenOut, address baseToken, address userToken, address pool) newSwap_) external',
+    'function addTokenToDatabase(tuple(int128 tokenIn, int128 tokenOut, address baseToken, address token, address pool) newSwap_) external',
     'function transferUserAllocation(address sender_, address receiver_, uint256 amount_, uint256 senderBalance_, uint256 lockNum_) external',
     'function owner() external view returns (address owner_)',
     'function queryTokenDatabase(address token_) external view returns (bool)',
@@ -76,7 +76,7 @@ const proxyABIeth = [
     'function setTestReturnContract(address testReturn_, bytes32 position_) public',
     'function changeAccountSlippage(uint256 newUserSlippage_) external',
     'function changeAccountToken(address newUserToken_)',
-    'function sendToArb(tuple(uint256 maxSubmissionCost, uint256 gasPriceBid, uint256 autoRedeem) varConfig_, tuple(address user, address userToken, uint256 userSlippage) accountDetails_)',
+    'function sendToArb(tuple(uint256 maxSubmissionCost, uint256 gasPriceBid, uint256 autoRedeem) varConfig_, tuple(address user, address token, uint256 slippage) accountDetails_)',
     'function initialize((address,address,uint256,string), address beacon_)',
     'function getUserDetails() external view returns ((address,address,uint256,string))',
     'function changeAccountTokenNSlippage(address,uint256) external',
@@ -84,7 +84,7 @@ const proxyABIeth = [
 ];
 
 const factoryABI = [
-    'function createNewProxy(tuple(address user, address userToken, uint256 userSlippage, string accountName) accountDetails_) external returns(address)',
+    'function createNewProxy(tuple(address user, address token, uint256 slippage, string name) accountDetails_) external returns(address)',
     'function initialize(address beacon_)'
 ];
 
@@ -107,7 +107,7 @@ const l1Provider = new ethers.providers.JsonRpcProvider(process.env.MAINNET);
 let l1Signer, l2Signer, l1SignerTestnet, l2SignerTestnet;
 let l1ProviderTestnet, l2ProviderTestnet;
 
-let network = 'mainnet';
+let network = 'arbitrum';
 switch(network) {
     case 'goerli':
         pokeMeOpsAddr = '0xc1C6805B857Bef1f412519C4A842522431aFed39'; 

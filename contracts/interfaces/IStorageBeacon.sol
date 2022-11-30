@@ -10,9 +10,9 @@ interface IStorageBeacon {
 
     struct AccountConfig {
         address user;
-        address userToken;
-        uint userSlippage; 
-        string accountName;
+        address token;
+        uint slippage; 
+        string name;
     }
 
     struct FixedConfig {  

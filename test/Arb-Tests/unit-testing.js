@@ -85,7 +85,7 @@ describe('Unit testing', async function () {
                 });
             });
     
-            it('should fail with userToken as address(0)', async () => {
+            it('should fail with token as address(0)', async () => {
                 accountDetails[0] = callerAddr;
                 accountDetails[1] = nullAddr;
                 await assert.rejects(async () => {
@@ -96,7 +96,7 @@ describe('Unit testing', async function () {
                 });
             });
     
-            it('should fail with userSlippage as 0', async () => {
+            it('should fail with slippage as 0', async () => {
                 accountDetails[1] = fraxAddr;
                 accountDetails[2] = 0;
                 await assert.rejects(async () => {
@@ -107,7 +107,7 @@ describe('Unit testing', async function () {
                 });
             });
     
-            it('should fail when userToken is not in database', async () => {
+            it('should fail when token is not in database', async () => {
                 accountDetails[1] = deadAddr;
                 accountDetails[2] = defaultSlippage;
                 await assert.rejects(async () => {
@@ -142,7 +142,7 @@ describe('Unit testing', async function () {
                 });
             });
     
-            it('should fail with userToken as address(0)', async () => {
+            it('should fail with token as address(0)', async () => {
                 accountDetails[0] = callerAddr;
                 accountDetails[1] = nullAddr;
                 await assert.rejects(async () => {
@@ -153,7 +153,7 @@ describe('Unit testing', async function () {
                 });
             });
     
-            it('should fail with userSlippage as 0', async () => {
+            it('should fail with slippage as 0', async () => {
                 accountDetails[1] = fraxAddr;
                 accountDetails[2] = 0;
                 await assert.rejects(async () => {
@@ -164,7 +164,7 @@ describe('Unit testing', async function () {
                 });
             });
     
-            it('should fail when userToken is not in database', async () => {
+            it('should fail when token is not in database', async () => {
                 accountDetails[1] = deadAddr;
                 accountDetails[2] = defaultSlippage;
                 await assert.rejects(async () => {
@@ -210,7 +210,7 @@ describe('Unit testing', async function () {
 
             afterEach(() => addFlag = true);
 
-            it('should allow the owner to add a new userToken (USX) to database / addTokenToDatabase()', async () => {
+            it('should allow the owner to add a new token (USX) to database / addTokenToDatabase()', async () => {
                 balanceUSX = await USX.balanceOf(callerAddr);
                 assert.equal(formatEther(balanceUSX), 0);
                 
@@ -224,7 +224,7 @@ describe('Unit testing', async function () {
                 assert(doesExist);
             });
 
-            it('should not allow an unauthorized user to add a new userToken to database / addTokenToDatabase()', async () => {
+            it('should not allow an unauthorized user to add a new token to database / addTokenToDatabase()', async () => {
                 tokenSwap[3] = deadAddr;
                 await assert.rejects(async () => {
                     await addTokenToDatabase(tokenSwap, 1);
@@ -234,7 +234,7 @@ describe('Unit testing', async function () {
                 });
             });
 
-            it('should allow the owner to remove a userToken (USX) from the database / removeTokenFromDatabase()', async () => {
+            it('should allow the owner to remove a token (USX) from the database / removeTokenFromDatabase()', async () => {
                 doesExist = await queryTokenDatabase(usxAddr);
                 assert(doesExist);
 
@@ -243,7 +243,7 @@ describe('Unit testing', async function () {
                 assert(!doesExist);
             });
 
-            it('should not allow an unauthorized user to remove a userToken (USX) from the database / removeTokenFromDatabase()', async () => {
+            it('should not allow an unauthorized user to remove a token (USX) from the database / removeTokenFromDatabase()', async () => {
                 await assert.rejects(async () => {
                     await addTokenToDatabase(tokenSwap, 1);
                 }, {

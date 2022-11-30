@@ -184,7 +184,7 @@ contract StorageBeacon is IStorageBeacon, Initializable, Ownable {
         string[] memory names = new string[](accounts.length);
 
         for (uint i=0; i < accounts.length;) {
-            names[i] = accountToDetails[accounts[i]].accountName;
+            names[i] = accountToDetails[accounts[i]].name;
             unchecked { ++i; }
         }
         return (accounts, names);

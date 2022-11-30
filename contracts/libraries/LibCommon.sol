@@ -29,7 +29,7 @@ library LibCommon {
     ) external {
         uint index;
         for (uint i=0; i < swaps_.length; i++) {
-            if (swaps_[i].userToken == swapToRemove_.userToken)  {
+            if (swaps_[i].token == swapToRemove_.token)  {
                 index = i;
                 break;
             }

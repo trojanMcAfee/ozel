@@ -261,13 +261,13 @@ async function main() {
     const userInput = 0.2;
     const funcParam = userInput * 100;
 
-    let [ user, userToken, slippage ] = await proxy1.getUserDetails();
+    let [ user, token, slippage ] = await proxy1.getUserDetails();
     console.log('slippage - (100): ', Number(slippage));
 
     const tx = await proxy1.changeAccountSlippage(funcParam, ops);
     await tx.wait();
 
-    ([ user, userToken, slippage ] = await proxy1.getUserDetails());
+    ([ user, token, slippage ] = await proxy1.getUserDetails());
     console.log('slippage - (20): ', Number(slippage));
 }
 
@@ -311,13 +311,13 @@ async function maink() {
     const userInput = 0.2;
     const funcParam = userInput * 100;
 
-    let [ user, userToken, slippage ] = await proxy1.getUserDetails();
+    let [ user, token, slippage ] = await proxy1.getUserDetails();
     console.log('slippage - (100): ', Number(slippage)); //old slippage
 
     let tx = await proxy1.changeAccountSlippage(funcParam, ops);
     await tx.wait();
 
-    ([ user, userToken, slippage ] = await proxy1.getUserDetails());
+    ([ user, token, slippage ] = await proxy1.getUserDetails());
     console.log('slippage - (20): ', Number(slippage)); //new slippage
 
     //---------

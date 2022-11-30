@@ -108,7 +108,7 @@ describe('Integration testing', async function () {
     */
 
     describe('1st user, 1st transfer', async () => {
-        it('should convert ETH to userToken (FRAX)', async () => {
+        it('should convert ETH to token (FRAX)', async () => {
             receipt = await sendETH(accountDetails); 
             assert(formatEther(await FRAX.balanceOf(callerAddr)) > 0);
         });
@@ -129,7 +129,7 @@ describe('Integration testing', async function () {
     });
 
     describe('2nd user, 1st transfer', async () => {
-        it('should convert ETH to userToken (WBTC)', async () => {
+        it('should convert ETH to token (WBTC)', async () => {
             accountDetails[0] = caller2Addr;
             accountDetails[1] = wbtcAddr;
 
@@ -154,7 +154,7 @@ describe('Integration testing', async function () {
     });
 
     describe('1st user, 2nd transfer', async () => {
-        it('should convert ETH to userToken (MIM)', async () => {
+        it('should convert ETH to token (MIM)', async () => {
             accountDetails[0] = callerAddr;
             accountDetails[1] = mimAddr;
 
@@ -201,7 +201,7 @@ describe('Integration testing', async function () {
     });
 
     describe("1st user's OZL withdrawal", async () => {
-        it("should have a balance of the dapp's fees on userToken (USDC)", async () => {
+        it("should have a balance of the dapp's fees on token (USDC)", async () => {
             await enableWithdrawals(true);
             accountDetails[1] = usdcAddr;
             await withdrawShareOZL(accountDetails, callerAddr, parseEther((await balanceOfOZL(callerAddr)).toString()));
@@ -245,7 +245,7 @@ describe('Integration testing', async function () {
 
     describe('2nd user withdrawas 1/3 OZL tokens', async () => {
 
-        it("should have a balance of the dapp's fees on userToken (USDT)", async () => {
+        it("should have a balance of the dapp's fees on token (USDT)", async () => {
             accountDetails[0] = caller2Addr;
             accountDetails[1] = usdtAddrArb;
             await withdrawShareOZL(accountDetails, caller2Addr, parseEther(toTransfer.toString()), 1);
@@ -319,7 +319,7 @@ describe('Unit testing', async function () {
                 });
             });
     
-            it('should fail with userToken as address(0)', async () => {
+            it('should fail with token as address(0)', async () => {
                 accountDetails[0] = callerAddr;
                 accountDetails[1] = nullAddr;
                 await assert.rejects(async () => {
@@ -330,7 +330,7 @@ describe('Unit testing', async function () {
                 });
             });
     
-            it('should fail with userSlippage as 0', async () => {
+            it('should fail with slippage as 0', async () => {
                 accountDetails[1] = fraxAddr;
                 accountDetails[2] = 0;
                 await assert.rejects(async () => {
@@ -341,7 +341,7 @@ describe('Unit testing', async function () {
                 });
             });
     
-            it('should fail when userToken is not in database', async () => {
+            it('should fail when token is not in database', async () => {
                 accountDetails[1] = deadAddr;
                 accountDetails[2] = defaultSlippage;
                 await assert.rejects(async () => {
@@ -376,7 +376,7 @@ describe('Unit testing', async function () {
                 });
             });
     
-            it('should fail with userToken as address(0)', async () => {
+            it('should fail with token as address(0)', async () => {
                 accountDetails[0] = callerAddr;
                 accountDetails[1] = nullAddr;
                 await assert.rejects(async () => {
@@ -387,7 +387,7 @@ describe('Unit testing', async function () {
                 });
             });
     
-            it('should fail with userSlippage as 0', async () => {
+            it('should fail with slippage as 0', async () => {
                 accountDetails[1] = fraxAddr;
                 accountDetails[2] = 0;
                 await assert.rejects(async () => {
@@ -398,7 +398,7 @@ describe('Unit testing', async function () {
                 });
             });
     
-            it('should fail when userToken is not in database', async () => {
+            it('should fail when token is not in database', async () => {
                 accountDetails[1] = deadAddr;
                 accountDetails[2] = defaultSlippage;
                 await assert.rejects(async () => {
@@ -444,7 +444,7 @@ describe('Unit testing', async function () {
 
             afterEach(() => addFlag = true);
 
-            it('should allow the owner to add a new userToken (USX) to database / addTokenToDatabase()', async () => {
+            it('should allow the owner to add a new token (USX) to database / addTokenToDatabase()', async () => {
                 balanceUSX = await USX.balanceOf(callerAddr);
                 assert.equal(formatEther(balanceUSX), 0);
                 
@@ -458,7 +458,7 @@ describe('Unit testing', async function () {
                 assert(doesExist);
             });
 
-            it('should not allow an unauthorized user to add a new userToken to database / addTokenToDatabase()', async () => {
+            it('should not allow an unauthorized user to add a new token to database / addTokenToDatabase()', async () => {
                 tokenSwap[3] = deadAddr;
                 await assert.rejects(async () => {
                     await addTokenToDatabase(tokenSwap, 1);
@@ -468,7 +468,7 @@ describe('Unit testing', async function () {
                 });
             });
 
-            it('should allow the owner to remove a userToken (USX) from the database / removeTokenFromDatabase()', async () => {
+            it('should allow the owner to remove a token (USX) from the database / removeTokenFromDatabase()', async () => {
                 doesExist = await queryTokenDatabase(usxAddr);
                 assert(doesExist);
 
@@ -477,7 +477,7 @@ describe('Unit testing', async function () {
                 assert(!doesExist);
             });
 
-            it('should not allow an unauthorized user to remove a userToken (USX) from the database / removeTokenFromDatabase()', async () => {
+            it('should not allow an unauthorized user to remove a token (USX) from the database / removeTokenFromDatabase()', async () => {
                 await assert.rejects(async () => {
                     await addTokenToDatabase(tokenSwap, 1);
                 }, {
@@ -733,7 +733,7 @@ describe('Anti-slippage system', async function () {
             defaultSlippage
         ];
 
-        abi = ['function exchangeToUserToken((address user, address userToken, uint256 userSlippage) accountDetails_) external payable'];
+        abi = ['function exchangeToUserToken((address user, address token, uint256 slippage) accountDetails_) external payable'];
         iface = new ethers.utils.Interface(abi);
         selector = iface.getSighash('exchangeToUserToken');
     });
@@ -764,7 +764,7 @@ describe('Anti-slippage system', async function () {
 
         /**
          * Added a 2nd testVar that causes the 3rd swap attempt to fail. The 2nd
-         * swap exchanged half of amountIn to userToken, and due to the failure on
+         * swap exchanged half of amountIn to token, and due to the failure on
          * the 3rd swap, the other half of amountIn was sent as WETH back to the user.
          */
         it('should replace swapsUserToken for V3 / SwapsForUserTokenV3', async () => {            
@@ -818,7 +818,7 @@ describe('Anti-slippage system', async function () {
 
     describe('Modified ozExecutorFacet', async () => {
         before( async () => {
-            abi = ['function executeFinalTrade((int128 tokenIn, int128 tokenOut, address baseToken, address userToken, address pool) swapDetails_, uint256 userSlippage_, address user_, uint256 lockNum_) external payable'];
+            abi = ['function executeFinalTrade((int128 tokenIn, int128 tokenOut, address baseToken, address token, address pool) swapDetails_, uint256 userSlippage_, address user_, uint256 lockNum_) external payable'];
             iface = new ethers.utils.Interface(abi);
             selector = iface.getSighash('executeFinalTrade');
             accountDetails[1] = renBtcAddr;
@@ -844,9 +844,9 @@ describe('Anti-slippage system', async function () {
 
         /**
          * Added an slippage condition so it fails the 1st attempt and activates the slippage mechanism.
-         * All funds are in userToken through two swaps
+         * All funds are in token through two swaps
          */
-        it('should send userToken to the user in the 2nd loop iteration / ExecutorFacetV2', async () => {            
+        it('should send token to the user in the 2nd loop iteration / ExecutorFacetV2', async () => {            
             balanceRenBTC = (await renBTC.balanceOf(callerAddr)) / 10 ** 8;
             assert.equal(balanceRenBTC, 0);
 
@@ -860,10 +860,10 @@ describe('Anti-slippage system', async function () {
 
 
         /**
-         * Fails the 1st and 3rd swapping attempts so half of the user's funds are traded in userToken
+         * Fails the 1st and 3rd swapping attempts so half of the user's funds are traded in token
          * and the other half in the baseToken.
          */
-        it('should divide the funds between baseToken and userToken / ExecutorFacetV3', async () => {            
+        it('should divide the funds between baseToken and token / ExecutorFacetV3', async () => {            
             balanceRenBTC = (await renBTC.balanceOf(callerAddr)) / 10 ** 8;
             assert(balanceRenBTC < 0.000001);
 
@@ -886,7 +886,7 @@ describe('Anti-slippage system', async function () {
          * Changed slippage to type(uint).max in order to fail all trades and activate the last path
          * (2nd leg for non-BTC-2Pool coins)
          */
-        it('should swap the funds to userToken only / ExecutorFacetV4', async () => {            
+        it('should swap the funds to token only / ExecutorFacetV4', async () => {            
             accountDetails[1] = mimAddr;
             ({ testingNum, balance: balanceUSDT } = await replaceForModVersion('ExecutorFacetV4', false, selector, accountDetails, false));
             assert.equal(testingNum, 23);
@@ -897,9 +897,9 @@ describe('Anti-slippage system', async function () {
 
         /**
          * Added an slippage condition so it fails the 1st attempt and activates the slippage mechanism.
-         * All funds are in userToken through two swaps (2nd leg for non-BTC-2Pool coins)
+         * All funds are in token through two swaps (2nd leg for non-BTC-2Pool coins)
          */
-        it('should send userToken to the user in the 2nd loop iteration / ExecutorFacetV5', async () => {
+        it('should send token to the user in the 2nd loop iteration / ExecutorFacetV5', async () => {
             accountDetails[1] = mimAddr;
             balanceMIM = formatEther(await MIM.balanceOf(callerAddr));
             assert.equal(balanceMIM, 0);
@@ -913,10 +913,10 @@ describe('Anti-slippage system', async function () {
 
 
         /**
-         * Fails the 1st and 3rd swapping attempts so half of the user's funds are traded in userToken
+         * Fails the 1st and 3rd swapping attempts so half of the user's funds are traded in token
          * and the other half in the baseToken.
          */
-        it('should divide the funds between baseToken and userToken / ExecutorFacetV6', async () => {            
+        it('should divide the funds between baseToken and token / ExecutorFacetV6', async () => {            
             accountDetails[1] = mimAddr;
             balanceMIM = formatEther(await MIM.balanceOf(callerAddr));
             assert.equal(balanceMIM, 0);

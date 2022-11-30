@@ -76,7 +76,7 @@ describe('Integration testing', async function () {
     */
 
     describe('1st user, 1st transfer', async () => {
-        it('should convert ETH to userToken (FRAX)', async () => {
+        it('should convert ETH to token (FRAX)', async () => {
             receipt = await sendETH(accountDetails); 
             assert(formatEther(await FRAX.balanceOf(callerAddr)) > 0);
         });
@@ -97,7 +97,7 @@ describe('Integration testing', async function () {
     });
 
     describe('2nd user, 1st transfer', async () => {
-        it('should convert ETH to userToken (WBTC)', async () => {
+        it('should convert ETH to token (WBTC)', async () => {
             accountDetails[0] = caller2Addr;
             accountDetails[1] = wbtcAddr;
 
@@ -122,7 +122,7 @@ describe('Integration testing', async function () {
     });
 
     describe('1st user, 2nd transfer', async () => {
-        it('should convert ETH to userToken (MIM)', async () => {
+        it('should convert ETH to token (MIM)', async () => {
             accountDetails[0] = callerAddr;
             accountDetails[1] = mimAddr;
 
@@ -169,7 +169,7 @@ describe('Integration testing', async function () {
     });
 
     describe("1st user's OZL withdrawal", async () => {
-        it("should have a balance of the dapp's fees on userToken (USDC)", async () => {
+        it("should have a balance of the dapp's fees on token (USDC)", async () => {
             await enableWithdrawals(true);
             accountDetails[1] = usdcAddr;
             await withdrawShareOZL(accountDetails, callerAddr, parseEther((await balanceOfOZL(callerAddr)).toString()));
@@ -213,7 +213,7 @@ describe('Integration testing', async function () {
 
     describe('2nd user withdrawas 1/3 OZL tokens', async () => {
 
-        it("should have a balance of the dapp's fees on userToken (USDT)", async () => {
+        it("should have a balance of the dapp's fees on token (USDT)", async () => {
             accountDetails[0] = caller2Addr;
             accountDetails[1] = usdtAddrArb;
             await withdrawShareOZL(accountDetails, caller2Addr, parseEther(toTransfer.toString()), 1);

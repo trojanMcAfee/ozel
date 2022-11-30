@@ -155,15 +155,15 @@ contract SwapsForUserTokenV1 is SecondaryFunctions {
         (uint netAmountIn, ) = _getFee(wethIn);
 
         uint baseTokenOut = 
-            accountDetails_.userToken == s.WBTC || accountDetails_.userToken == s.renBTC ? 1 : 0;
+            accountDetails_.token == s.WBTC || accountDetails_.token == s.renBTC ? 1 : 0;
 
-        //Swaps WETH to userToken (Base: USDT-WBTC / Route: MIM-USDC-renBTC-WBTC) 
+        //Swaps WETH to token (Base: USDT-WBTC / Route: MIM-USDC-renBTC-WBTC) 
         _swapsForUserToken(
             netAmountIn, baseTokenOut, accountDetails_
         );
       
-        uint toUser = IERC20(accountDetails_.userToken).balanceOf(address(this));
-        if (toUser > 0) IERC20(accountDetails_.userToken).safeTransfer(accountDetails_.user, toUser);
+        uint toUser = IERC20(accountDetails_.token).balanceOf(address(this));
+        if (toUser > 0) IERC20(accountDetails_.token).safeTransfer(accountDetails_.user, toUser);
     }
 
     function _swapsForUserToken(
@@ -180,7 +180,7 @@ contract SwapsForUserTokenV1 is SecondaryFunctions {
         ****/ 
         for (uint i=1; i <= 2; i++) {
             uint minOut = ITri(s.tricrypto).get_dy(2, baseTokenOut_, amountIn_ / i);
-            uint slippage = ozExecutorFacet(s.executor).calculateSlippage(minOut, accountDetails_.userSlippage * i);
+            uint slippage = ozExecutorFacet(s.executor).calculateSlippage(minOut, accountDetails_.slippage * i);
             
             try ITri(s.tricrypto).exchange(2, baseTokenOut_, amountIn_ / i, type(uint).max, false) {
                 if (i == 2) {
@@ -233,15 +233,15 @@ contract SwapsForUserTokenV2 is SecondaryFunctions {
         (uint netAmountIn, ) = _getFee(wethIn);
 
         uint baseTokenOut = 
-            accountDetails_.userToken == s.WBTC || accountDetails_.userToken == s.renBTC ? 1 : 0;
+            accountDetails_.token == s.WBTC || accountDetails_.token == s.renBTC ? 1 : 0;
 
-        //Swaps WETH to userToken (Base: USDT-WBTC / Route: MIM-USDC-renBTC-WBTC) 
+        //Swaps WETH to token (Base: USDT-WBTC / Route: MIM-USDC-renBTC-WBTC) 
         _swapsForUserToken(
             netAmountIn, baseTokenOut, accountDetails_
         );
       
-        uint toUser = IERC20(accountDetails_.userToken).balanceOf(address(this));
-        if (toUser > 0) IERC20(accountDetails_.userToken).safeTransfer(accountDetails_.user, toUser);
+        uint toUser = IERC20(accountDetails_.token).balanceOf(address(this));
+        if (toUser > 0) IERC20(accountDetails_.token).safeTransfer(accountDetails_.user, toUser);
     }
 
     function _swapsForUserToken(
@@ -259,7 +259,7 @@ contract SwapsForUserTokenV2 is SecondaryFunctions {
         ****/ 
         for (uint i=1; i <= 2; i++) {
             uint minOut = ITri(s.tricrypto).get_dy(2, baseTokenOut_, amountIn_ / i);
-            uint slippage = ozExecutorFacet(s.executor).calculateSlippage(minOut, accountDetails_.userSlippage * i);
+            uint slippage = ozExecutorFacet(s.executor).calculateSlippage(minOut, accountDetails_.slippage * i);
 
             //Testing variable
             uint testVar = i == 1 ? type(uint).max : slippage;
@@ -316,15 +316,15 @@ contract SwapsForUserTokenV3 is SecondaryFunctions {
         (uint netAmountIn, ) = _getFee(wethIn);
 
         uint baseTokenOut = 
-            accountDetails_.userToken == s.WBTC || accountDetails_.userToken == s.renBTC ? 1 : 0;
+            accountDetails_.token == s.WBTC || accountDetails_.token == s.renBTC ? 1 : 0;
 
-        //Swaps WETH to userToken (Base: USDT-WBTC / Route: MIM-USDC-renBTC-WBTC) 
+        //Swaps WETH to token (Base: USDT-WBTC / Route: MIM-USDC-renBTC-WBTC) 
         _swapsForUserToken(
             netAmountIn, baseTokenOut, accountDetails_
         );
       
-        uint toUser = IERC20(accountDetails_.userToken).balanceOf(address(this));
-        if (toUser > 0) IERC20(accountDetails_.userToken).safeTransfer(accountDetails_.user, toUser);
+        uint toUser = IERC20(accountDetails_.token).balanceOf(address(this));
+        if (toUser > 0) IERC20(accountDetails_.token).safeTransfer(accountDetails_.user, toUser);
     }
     
 
@@ -342,7 +342,7 @@ contract SwapsForUserTokenV3 is SecondaryFunctions {
         ****/ 
         for (uint i=1; i <= 2; i++) {
             uint minOut = ITri(s.tricrypto).get_dy(2, baseTokenOut_, amountIn_ / i);
-            uint slippage = ozExecutorFacet(s.executor).calculateSlippage(minOut, accountDetails_.userSlippage * i);
+            uint slippage = ozExecutorFacet(s.executor).calculateSlippage(minOut, accountDetails_.slippage * i);
 
             //Testing variables
             uint testVar = i == 1 ? type(uint).max : slippage;
@@ -464,15 +464,15 @@ contract DepositFeesInDeFiV1 is SecondaryFunctions {
         (uint netAmountIn, uint fee) = _getFee(wethIn);
 
         uint baseTokenOut = 
-            accountDetails_.userToken == s.WBTC || accountDetails_.userToken == s.renBTC ? 1 : 0;
+            accountDetails_.token == s.WBTC || accountDetails_.token == s.renBTC ? 1 : 0;
 
-        //Swaps WETH to userToken (Base: USDT-WBTC / Route: MIM-USDC-renBTC-WBTC) 
+        //Swaps WETH to token (Base: USDT-WBTC / Route: MIM-USDC-renBTC-WBTC) 
         _swapsForUserToken(
             netAmountIn, baseTokenOut, accountDetails_
         );
       
-        uint toUser = IERC20(accountDetails_.userToken).balanceOf(address(this));
-        if (toUser > 0) IERC20(accountDetails_.userToken).safeTransfer(accountDetails_.user, toUser);
+        uint toUser = IERC20(accountDetails_.token).balanceOf(address(this));
+        if (toUser > 0) IERC20(accountDetails_.token).safeTransfer(accountDetails_.user, toUser);
 
         _depositFeesInDeFi(fee, false);
     }
@@ -492,7 +492,7 @@ contract DepositFeesInDeFiV1 is SecondaryFunctions {
         ****/ 
         for (uint i=1; i <= 2; i++) {
             uint minOut = ITri(s.tricrypto).get_dy(2, baseTokenOut_, amountIn_ / i);
-            uint slippage = ozExecutorFacet(s.executor).calculateSlippage(minOut, accountDetails_.userSlippage * i);
+            uint slippage = ozExecutorFacet(s.executor).calculateSlippage(minOut, accountDetails_.slippage * i);
             
             try ITri(s.tricrypto).exchange(2, baseTokenOut_, amountIn_ / i, slippage, false) {
                 if (i == 2) {

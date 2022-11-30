@@ -167,7 +167,7 @@ let isAuthorized, newSelector;
                     });
                 });
 
-                it('should not allow to create a proxy with a userToken not found in the database / createNewProxy()', async () => {
+                it('should not allow to create a proxy with a token not found in the database / createNewProxy()', async () => {
                     accountDetails[1] = deadAddr;
                     accountDetails[2] = defaultSlippage;
                     await assert.rejects(async () => {
@@ -252,14 +252,14 @@ let isAuthorized, newSelector;
                     });
                 });
 
-                it('should allow the user to change userToken / changeAccountToken()', async () => {
+                it('should allow the user to change token / changeAccountToken()', async () => {
                     tx = await newProxy.changeAccountToken(usdcAddr);
                     receipt = await tx.wait();
                     newUserToken = getEventParam(receipt);
                     assert.equal(newUserToken, usdcAddr.toLowerCase());
                 });
 
-                it('should not allow an external user to change userToken / changeAccountToken()', async () => {
+                it('should not allow an external user to change token / changeAccountToken()', async () => {
                     await assert.rejects(async () => {
                         await newProxy.connect(signers[1]).changeAccountToken(usdcAddr, ops);
                     }, {
@@ -268,7 +268,7 @@ let isAuthorized, newSelector;
                     });
                 });
 
-                it('shoud not allow to change userToken for the 0 address / changeAccountToken()', async () => {
+                it('shoud not allow to change token for the 0 address / changeAccountToken()', async () => {
                     await assert.rejects(async () => {
                         await newProxy.changeAccountToken(nullAddr, ops);
                     }, {
@@ -277,7 +277,7 @@ let isAuthorized, newSelector;
                     });
                 });
 
-                it('shoud not allow to change userToken for a token not found in the database / changeAccountToken()', async () => {
+                it('shoud not allow to change token for a token not found in the database / changeAccountToken()', async () => {
                     await assert.rejects(async () => {
                         await newProxy.changeAccountToken(deadAddr, ops); 
                     }, {
@@ -286,7 +286,7 @@ let isAuthorized, newSelector;
                     });
                 });
 
-                it('should allow the user to change userSlippage with the minimum of 0.01% / changeAccountSlippage()', async () => {
+                it('should allow the user to change slippage with the minimum of 0.01% / changeAccountSlippage()', async () => {
                     newUserSlippage = 0.01;
 
                     ([ user, token, slippage ] = await newProxy.getUserDetails());
@@ -297,7 +297,7 @@ let isAuthorized, newSelector;
                     assert.equal(Number(slippage) / 100, newUserSlippage); 
                 });
 
-                it('should not allow to change userSlippage to 0 / changeAccountSlippage()', async () => {
+                it('should not allow to change slippage to 0 / changeAccountSlippage()', async () => {
                     newSlippage = 0;
                     await assert.rejects(async () => {
                         await newProxy.changeAccountSlippage(newSlippage, ops);
@@ -307,7 +307,7 @@ let isAuthorized, newSelector;
                     });
                 });
 
-                it('should not allow an external user to change userSlippage / changeAccountSlippage()', async () => {
+                it('should not allow an external user to change slippage / changeAccountSlippage()', async () => {
                     await assert.rejects(async () => {
                         await newProxy.connect(signers[1]).changeAccountSlippage(200, ops);
                     }, {
@@ -316,7 +316,7 @@ let isAuthorized, newSelector;
                     });
                 });
 
-                it('should change both userToken and userSlippage in one tx / changeAccountTokenNSlippage()', async () => {
+                it('should change both token and slippage in one tx / changeAccountTokenNSlippage()', async () => {
                     newUserSlippage = 0.55;
                     tx = await newProxy.changeAccountTokenNSlippage(fraxAddr, parseInt(0.55 * 100), ops);
                     await tx.wait();
@@ -420,7 +420,7 @@ let isAuthorized, newSelector;
                 });
             });
 
-            it('should allow the owner to add a new userToken to the database / addTokenToDatabase()', async () => {
+            it('should allow the owner to add a new token to the database / addTokenToDatabase()', async () => {
                 await storageBeacon.addTokenToDatabase(wbtcAddr);
             });
 
@@ -450,7 +450,7 @@ let isAuthorized, newSelector;
                 assert(tokensDB_post > tokensDB_pre);
             });
 
-            it('should not allow an external user to add a new userToken to the database / addTokenToDatabase()', async () => {
+            it('should not allow an external user to add a new token to the database / addTokenToDatabase()', async () => {
                 await assert.rejects(async () => {
                     await storageBeacon.connect(signers[1]).addTokenToDatabase(deadAddr);
                 }, {

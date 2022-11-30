@@ -66,7 +66,7 @@ describe('Anti-slippage system', async function () {
             defaultSlippage
         ];
 
-        abi = ['function exchangeToUserToken((address user, address userToken, uint256 userSlippage) accountDetails_) external payable'];
+        abi = ['function exchangeToUserToken((address user, address token, uint256 slippage) accountDetails_) external payable'];
         iface = new ethers.utils.Interface(abi);
         selector = iface.getSighash('exchangeToUserToken');
     });
@@ -97,7 +97,7 @@ describe('Anti-slippage system', async function () {
 
         /**
          * Added a 2nd testVar that causes the 3rd swap attempt to fail. The 2nd
-         * swap exchanged half of amountIn to userToken, and due to the failure on
+         * swap exchanged half of amountIn to token, and due to the failure on
          * the 3rd swap, the other half of amountIn was sent as WETH back to the user.
          */
         it('should replace swapsUserToken for V3 / SwapsForUserTokenV3', async () => {            
@@ -151,7 +151,7 @@ describe('Anti-slippage system', async function () {
 
     describe('Modified ozExecutorFacet', async () => {
         before( async () => {
-            abi = ['function executeFinalTrade((int128 tokenIn, int128 tokenOut, address baseToken, address userToken, address pool) swapDetails_, uint256 userSlippage_, address user_, uint256 lockNum_) external payable'];
+            abi = ['function executeFinalTrade((int128 tokenIn, int128 tokenOut, address baseToken, address token, address pool) swapDetails_, uint256 userSlippage_, address user_, uint256 lockNum_) external payable'];
             iface = new ethers.utils.Interface(abi);
             selector = iface.getSighash('executeFinalTrade');
             accountDetails[1] = renBtcAddr;
@@ -177,9 +177,9 @@ describe('Anti-slippage system', async function () {
 
         /**
          * Added an slippage condition so it fails the 1st attempt and activates the slippage mechanism.
-         * All funds are in userToken through two swaps
+         * All funds are in token through two swaps
          */
-        it('should send userToken to the user in the 2nd loop iteration / ExecutorFacetV2', async () => {            
+        it('should send token to the user in the 2nd loop iteration / ExecutorFacetV2', async () => {            
             balanceRenBTC = (await renBTC.balanceOf(callerAddr)) / 10 ** 8;
             assert.equal(balanceRenBTC, 0);
 
@@ -193,10 +193,10 @@ describe('Anti-slippage system', async function () {
 
 
         /**
-         * Fails the 1st and 3rd swapping attempts so half of the user's funds are traded in userToken
+         * Fails the 1st and 3rd swapping attempts so half of the user's funds are traded in token
          * and the other half in the baseToken.
          */
-        it('should divide the funds between baseToken and userToken / ExecutorFacetV3', async () => {            
+        it('should divide the funds between baseToken and token / ExecutorFacetV3', async () => {            
             balanceRenBTC = (await renBTC.balanceOf(callerAddr)) / 10 ** 8;
             assert(balanceRenBTC < 0.000001);
 
@@ -219,7 +219,7 @@ describe('Anti-slippage system', async function () {
          * Changed slippage to type(uint).max in order to fail all trades and activate the last path
          * (2nd leg for non-BTC-2Pool coins)
          */
-        it('should swap the funds to userToken only / ExecutorFacetV4', async () => {            
+        it('should swap the funds to token only / ExecutorFacetV4', async () => {            
             accountDetails[1] = mimAddr;
             ({ testingNum, balance: balanceUSDT } = await replaceForModVersion('ExecutorFacetV4', false, selector, accountDetails, false));
             assert.equal(testingNum, 23);
@@ -230,9 +230,9 @@ describe('Anti-slippage system', async function () {
 
         /**
          * Added an slippage condition so it fails the 1st attempt and activates the slippage mechanism.
-         * All funds are in userToken through two swaps (2nd leg for non-BTC-2Pool coins)
+         * All funds are in token through two swaps (2nd leg for non-BTC-2Pool coins)
          */
-        it('should send userToken to the user in the 2nd loop iteration / ExecutorFacetV5', async () => {
+        it('should send token to the user in the 2nd loop iteration / ExecutorFacetV5', async () => {
             accountDetails[1] = mimAddr;
             balanceMIM = formatEther(await MIM.balanceOf(callerAddr));
             assert.equal(balanceMIM, 0);
@@ -246,10 +246,10 @@ describe('Anti-slippage system', async function () {
 
 
         /**
-         * Fails the 1st and 3rd swapping attempts so half of the user's funds are traded in userToken
+         * Fails the 1st and 3rd swapping attempts so half of the user's funds are traded in token
          * and the other half in the baseToken.
          */
-        it('should divide the funds between baseToken and userToken / ExecutorFacetV6', async () => {            
+        it('should divide the funds between baseToken and token / ExecutorFacetV6', async () => {            
             accountDetails[1] = mimAddr;
             balanceMIM = formatEther(await MIM.balanceOf(callerAddr));
             assert.equal(balanceMIM, 0);

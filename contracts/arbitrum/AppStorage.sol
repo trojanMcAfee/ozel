@@ -87,14 +87,14 @@ struct TradeOps {
     int128 tokenIn;
     int128 tokenOut;
     address baseToken;
-    address userToken;  
+    address token;  
     address pool;
 }
 
 struct AccountConfig { 
     address user;
-    address userToken;
-    uint userSlippage; 
+    address token;
+    uint slippage; 
 }
 
 

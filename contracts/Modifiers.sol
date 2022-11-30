@@ -32,9 +32,9 @@ abstract contract ModifiersARB is Bits {
     }
 
     modifier filterDetails(AccountConfig memory accountDetails_) {
-        if (accountDetails_.user == address(0) || accountDetails_.userToken == address(0)) revert CantBeZero('address'); 
-        if (accountDetails_.userSlippage <= 0) revert CantBeZero('slippage');
-        if (!s.tokenDatabase[accountDetails_.userToken]) revert TokenNotInDatabase(accountDetails_.userToken);
+        if (accountDetails_.user == address(0) || accountDetails_.token == address(0)) revert CantBeZero('address'); 
+        if (accountDetails_.slippage <= 0) revert CantBeZero('slippage');
+        if (!s.tokenDatabase[accountDetails_.token]) revert TokenNotInDatabase(accountDetails_.token);
         _;
     }
 }

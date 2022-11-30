@@ -29,11 +29,11 @@ contract FaultyProxyFactory is ReentrancyGuard, Initializable {
     function createNewProxy(
         StorageBeacon.AccountConfig calldata accountDetails_
     ) external nonReentrant returns(address) {
-        if (bytes(accountDetails_.accountName).length == 0) revert CantBeZero('accountName'); 
-        if (bytes(accountDetails_.accountName).length > 18) revert NameTooLong();
-        if (accountDetails_.user == address(0) || accountDetails_.userToken == address(0)) revert CantBeZero('address');
-        if (accountDetails_.userSlippage <= 0) revert CantBeZero('slippage');
-        if (!StorageBeacon(_getStorageBeacon(0)).queryTokenDatabase(accountDetails_.userToken)) revert TokenNotInDatabase(accountDetails_.userToken);
+        if (bytes(accountDetails_.name).length == 0) revert CantBeZero('name'); 
+        if (bytes(accountDetails_.name).length > 18) revert NameTooLong();
+        if (accountDetails_.user == address(0) || accountDetails_.token == address(0)) revert CantBeZero('address');
+        if (accountDetails_.slippage <= 0) revert CantBeZero('slippage');
+        if (!StorageBeacon(_getStorageBeacon(0)).queryTokenDatabase(accountDetails_.token)) revert TokenNotInDatabase(accountDetails_.token);
 
         //Replaced with FaultyOzBeaconProxy that doesn't forward txs to the implementation
         FaultyOzBeaconProxy newProxy = new FaultyOzBeaconProxy(
