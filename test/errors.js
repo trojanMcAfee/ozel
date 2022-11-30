@@ -17,7 +17,7 @@ async function err(n = 0) {
                 
             }
         })(n),
-        notProxy: "VM Exception while processing transaction: reverted with custom error 'NotProxy()'",
+        notProxy: "VM Exception while processing transaction: reverted with custom error 'NotAccount()'",
         notOwner: "VM Exception while processing transaction: reverted with reason string 'Ownable: caller is not the owner'",
         zeroAddress: `VM Exception while processing transaction: reverted with custom error 'CantBeZero("address")'`,
         zeroSlippage: `VM Exception while processing transaction: reverted with custom error 'CantBeZero("slippage")'`,

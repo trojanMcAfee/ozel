@@ -7,7 +7,7 @@ error CallFailed(string errorMsg);
 error TokenNotInDatabase(address token);
 error TokenAlreadyInDatabase(address token);
 error UserNotInDatabase(address user);
-error NotProxy();
+error NotAccount();
 error ConditionNotMet(string errorMsg);
 error NotAuthorized(address unauthorizedUser_);
 error NoReentrance();

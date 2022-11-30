@@ -10,7 +10,7 @@ import '../Errors.sol';
 
 /**
  * @title Forwarding contract for manual redeems.
- * @notice Forwards the address of the proxy that received a transfer, for a check-up
+ * @notice Forwards the address of the account that received a transfer, for a check-up
  * of the tx in case it needs a manual redeem
  */
 contract Emitter is Initializable, Ownable {
@@ -29,7 +29,7 @@ contract Emitter is Initializable, Ownable {
 
     function forwardEvent() external { 
         (address user,,,) = _getStorageBeacon().accountToDetails(msg.sender);
-        if (user == address(0)) revert NotProxy();
+        if (user == address(0)) revert NotAccount();
         emit ShowTicket(msg.sender);
     }
 }

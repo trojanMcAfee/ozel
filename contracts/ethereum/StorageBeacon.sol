@@ -46,7 +46,7 @@ contract StorageBeacon is IStorageBeacon, Initializable, Ownable {
 
     /// @dev Only allows a call from an account/proxy created through ProxyFactory
     modifier onlyAccount() {
-        if(accountToDetails[msg.sender].user == address(0)) revert NotProxy();
+        if(accountToDetails[msg.sender].user == address(0)) revert NotAccount();
         _;
     }
 

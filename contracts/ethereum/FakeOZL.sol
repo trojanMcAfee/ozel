@@ -7,9 +7,9 @@ import './StorageBeacon.sol';
 
 
 /**
- * @title Dummy OZLFacet to simulate the one deployed in Arbitrum
+ * @title Dummy OZLFacet to simulate the one deployed in L2
  * @notice Replicates the main view functions for testing the UI and 
- * and the reception of ETH in Arbitrum.
+ * and the reception of ETH in L2.
  */
 contract FakeOZL is Ownable {
 
@@ -104,7 +104,9 @@ contract FakeOZL is Ownable {
                     OZLFacet's main dummy method
     //////////////////////////////////////////////////////////////*/
 
-    function exchangeToUserToken(StorageBeacon.AccountConfig memory accountDetails_) external payable {
+    function exchangeToUserToken(
+        StorageBeacon.AccountConfig memory accountDetails_
+    ) external payable {
         if (address(this).balance > 0) {
             (bool success, ) = receiver.call{value: address(this).balance}(""); 
             require(success, 'ETH sent failed');

@@ -33,7 +33,6 @@ contract FaultyOzPayMe2 is ReentrancyGuard, Initializable {
     event EmergencyTriggered(address indexed sender, uint amount);
     event NewUserToken(address indexed user, address indexed newToken);
     event NewUserSlippage(address indexed user, uint indexed newSlippage);
-    event FailedERCFunds(address indexed user_, uint indexed amount_);
 
 
     modifier onlyOps() {

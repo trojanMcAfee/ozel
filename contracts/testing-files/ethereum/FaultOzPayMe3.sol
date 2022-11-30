@@ -33,7 +33,6 @@ contract FaultyOzPayMe3 is ReentrancyGuard, Initializable {
     event EmergencyTriggered(address indexed sender, uint amount);
     event NewUserToken(address indexed user, address indexed newToken);
     event NewUserSlippage(address indexed user, uint indexed newSlippage);
-    event FailedERCFunds(address indexed user_, uint indexed amount_);
 
     //Custom event that checks for the second attempt on the retryable submission
     event SecondAttempt(uint success);

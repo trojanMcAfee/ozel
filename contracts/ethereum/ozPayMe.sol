@@ -22,7 +22,7 @@ import '../Errors.sol';
 
 /**
  * @title Responsible for sending ETH and calldata to L2
- * @notice Sends the user's ETH plus their account details to L2 for swapping.
+ * @notice Sends the ETH an account just received plus its details to L2 for swapping.
  * It also implements the emergency swap in L1 in case it's not possible to bridge. 
  */
 contract ozPayMe is ozIPayMe, ReentrancyGuard, Initializable { 
@@ -38,7 +38,6 @@ contract ozPayMe is ozIPayMe, ReentrancyGuard, Initializable {
     event EmergencyTriggered(address indexed sender, uint amount);
     event NewUserToken(address indexed user, address indexed newToken);
     event NewUserSlippage(address indexed user, uint indexed newSlippage);
-    event FailedERCFunds(address indexed user_, uint indexed amount_);
 
     /*///////////////////////////////////////////////////////////////
                               Modifiers
@@ -166,7 +165,7 @@ contract ozPayMe is ozIPayMe, ReentrancyGuard, Initializable {
                                Helpers
     //////////////////////////////////////////////////////////////*/
 
-    /// @dev Transfers to Gelato its fee for calling the proxy (aka the account)
+    /// @dev Transfers to Gelato its fee for calling the account
     function _transfer(uint256 amount_, address paymentToken_) private {
         if (paymentToken_ == fxConfig.ETH) {
             Address.functionCallWithValue(fxConfig.gelato, new bytes(0), amount_);
@@ -176,8 +175,8 @@ contract ozPayMe is ozIPayMe, ReentrancyGuard, Initializable {
     }
 
     /**
-     * @dev Using the user's slippage, calculates the minimum amount of tokens out.
-     *      Uses the "i" variable from the parent loop to double the user slippage, if necessary.
+     * @dev Using the account slippage, calculates the minimum amount of tokens out.
+     *      Uses the "i" variable from the parent loop to double the slippage, if necessary.
      */
     function _calculateMinOut(
         StorageBeacon.EmergencyMode memory eMode_, 
@@ -212,10 +211,10 @@ contract ozPayMe is ozIPayMe, ReentrancyGuard, Initializable {
 
     /// @inheritdoc ozIPayMe
     function changeAccountToken(
-        address newUserToken_
-    ) external onlyUser checkToken(newUserToken_) {
-        accountDetails.userToken = newUserToken_;
-        emit NewUserToken(msg.sender, newUserToken_);
+        address newToken_
+    ) external onlyUser checkToken(newToken_) {
+        accountDetails.userToken = newToken_;
+        emit NewUserToken(msg.sender, newToken_);
     }
 
     /// @inheritdoc ozIPayMe
@@ -228,12 +227,12 @@ contract ozPayMe is ozIPayMe, ReentrancyGuard, Initializable {
 
     /// @inheritdoc ozIPayMe
     function changeAccountTokenNSlippage(
-        address newUserToken_, 
+        address newToken_, 
         uint newSlippage_
-    ) external onlyUser checkToken(newUserToken_) checkSlippage(newSlippage_) {
-        accountDetails.userToken = newUserToken_;
+    ) external onlyUser checkToken(newToken_) checkSlippage(newSlippage_) {
+        accountDetails.userToken = newToken_;
         accountDetails.userSlippage = newSlippage_;
-        emit NewUserToken(msg.sender, newUserToken_);
+        emit NewUserToken(msg.sender, newToken_);
         emit NewUserSlippage(msg.sender, newSlippage_);
     } 
 

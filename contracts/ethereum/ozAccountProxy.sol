@@ -12,7 +12,7 @@ import './StorageBeacon.sol';
 /**
  * @title Receiver of an user's ETH transfers (aka THE account)
  * @notice Proxy that users create where they will receive all ETH transfers
- * send to them, which would be converted to the stablecoin of their choosing.
+ * sent to them, which would be converted to the stablecoin of their choosing.
  */
 contract ozAccountProxy is ReentrancyGuard, Initializable, BeaconProxy { 
 
@@ -21,7 +21,7 @@ contract ozAccountProxy is ReentrancyGuard, Initializable, BeaconProxy {
 
     address private beacon; 
 
-    event FundsToArb(address indexed proxy, address indexed sender, uint amount);
+    event FundsToArb(address indexed account, address indexed sender, uint amount);
     
     constructor(
         address beacon_,
@@ -49,8 +49,8 @@ contract ozAccountProxy is ReentrancyGuard, Initializable, BeaconProxy {
     /**
      * @notice Forwards payload to the implementation
      * @dev Queries between the authorized selectors. If true, the original calldata is kept in the forwarding.
-     * If false, it changes the payload to the user's details and forwards that, along L2's gas price. 
-     * @param implementation Address of the proxy's implementation
+     * If false, it changes the payload to the account details and forwards that, along L2 gas price. 
+     * @param implementation Address of the implementation connected to each account
      */
     function _delegate(address implementation) internal override { 
         bytes memory data; 
