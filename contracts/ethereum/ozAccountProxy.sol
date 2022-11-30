@@ -14,7 +14,7 @@ import './StorageBeacon.sol';
  * @notice Proxy that users create where they will receive all ETH transfers
  * send to them, which would be converted to the stablecoin of their choosing.
  */
-contract ozBeaconProxy is ReentrancyGuard, Initializable, BeaconProxy { 
+contract ozAccountProxy is ReentrancyGuard, Initializable, BeaconProxy { 
 
     StorageBeacon.AccountConfig accountDetails;
     StorageBeacon.FixedConfig fxConfig;

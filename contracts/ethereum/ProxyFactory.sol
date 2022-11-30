@@ -8,7 +8,7 @@ import '@openzeppelin/contracts/utils/Address.sol';
 import './ozUpgradeableBeacon.sol';
 import '../interfaces/IProxyFactory.sol';
 import '../interfaces/IOps.sol';
-import './ozBeaconProxy.sol';
+import './ozAccountProxy.sol';
 import '../Errors.sol';
 
 // import 'hardhat/console.sol';
@@ -35,7 +35,7 @@ contract ProxyFactory is IProxyFactory, ReentrancyGuard, Initializable {
         if (accountDetails_.userSlippage <= 0) revert CantBeZero('slippage');
         if (!StorageBeacon(_getStorageBeacon(0)).queryTokenDatabase(accountDetails_.userToken)) revert TokenNotInDatabase(accountDetails_.userToken);
 
-        ozBeaconProxy newProxy = new ozBeaconProxy(
+        ozAccountProxy newProxy = new ozAccountProxy(
             beacon,
             new bytes(0)
         );

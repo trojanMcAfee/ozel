@@ -227,7 +227,7 @@ let isAuthorized, newSelector;
             });
         });
 
-        describe('ozBeaconProxy / ozPayMe', async () => {
+        describe('ozAccountProxy / ozPayMe', async () => {
             before(async () => {
                 newProxyAddr = await createProxy(proxyFactory, accountDetails);
                 newProxy = await hre.ethers.getContractAt(proxyABIeth, newProxyAddr);
@@ -738,7 +738,7 @@ let isAuthorized, newSelector;
 
     //autoRedeem set to 0
     describe('Pesimistic deployment', async function () {
-        describe('ozBeaconProxy / ozPayMe', async () => {
+        describe('ozAccountProxy / ozPayMe', async () => {
             before( async () => {
                 ([
                     beacon, 

@@ -71,7 +71,7 @@ interface IStorageBeacon {
 
     /**
      * @dev Authorizes  a new function so it can get called with its original 
-     * calldata -on ozBeaconProxy (each user's account/proxy)- to the implementation (ozPayMe)
+     * calldata -on ozAccountProxy (each user's account/proxy)- to the implementation (ozPayMe)
      * instead of just forwarding the user details for briding to L2. 
      * @param selector_ Selector of new authorized function
      */
@@ -80,7 +80,7 @@ interface IStorageBeacon {
     /**
      * @notice View method related to the one above
      * @dev Queries if a function's payload will get to the implementation or if it'll be 
-     * substituted by the bridging payload on ozBeaconProxy. If it's authorized, it'll keep
+     * substituted by the bridging payload on ozAccountProxy. If it's authorized, it'll keep
      * the original calldata.
      * @param selector_ Selector of the authorized function in the implementation
      * @return bool If the target function is authorized to keep its calldata
