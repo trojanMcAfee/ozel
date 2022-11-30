@@ -261,13 +261,13 @@ async function main() {
     const userInput = 0.2;
     const funcParam = userInput * 100;
 
-    let [ user, token, slippage ] = await proxy1.getUserDetails();
+    let [ user, token, slippage ] = await proxy1.getAccountDetails();
     console.log('slippage - (100): ', Number(slippage));
 
     const tx = await proxy1.changeAccountSlippage(funcParam, ops);
     await tx.wait();
 
-    ([ user, token, slippage ] = await proxy1.getUserDetails());
+    ([ user, token, slippage ] = await proxy1.getAccountDetails());
     console.log('slippage - (20): ', Number(slippage));
 }
 
@@ -311,13 +311,13 @@ async function maink() {
     const userInput = 0.2;
     const funcParam = userInput * 100;
 
-    let [ user, token, slippage ] = await proxy1.getUserDetails();
+    let [ user, token, slippage ] = await proxy1.getAccountDetails();
     console.log('slippage - (100): ', Number(slippage)); //old slippage
 
     let tx = await proxy1.changeAccountSlippage(funcParam, ops);
     await tx.wait();
 
-    ([ user, token, slippage ] = await proxy1.getUserDetails());
+    ([ user, token, slippage ] = await proxy1.getAccountDetails());
     console.log('slippage - (20): ', Number(slippage)); //new slippage
 
     //---------
@@ -347,7 +347,7 @@ async function tryUI() {
     console.log('names: ', names);
     const proxy1 = await hre.ethers.getContractAt('ozPayMe', proxy1Addr);
 
-    // let [ user, token, slippage, name ] = await proxy1.getUserDetails();
+    // let [ user, token, slippage, name ] = await proxy1.getAccountDetails();
     // console.log('user: ', user);
     // console.log('token: ', token);
     // console.log('slippage %: ', Number(slippage)/100);
@@ -357,7 +357,7 @@ async function tryUI() {
     // tx = await proxy1.changeAccountTokenNSlippage(wbtcAddr, 1);
     // await tx.wait();
 
-    // ([ user, token, slippage, name ] = await proxy1.getUserDetails());
+    // ([ user, token, slippage, name ] = await proxy1.getAccountDetails());
     // console.log('user: ', user);
     // console.log('token - wbtc: ', token);
     // console.log('slippage % - 0.01: ', Number(slippage)/100);

@@ -237,7 +237,7 @@ contract ozPayMe is ozIPayMe, ReentrancyGuard, Initializable {
     } 
 
     /// @inheritdoc ozIPayMe
-    function getUserDetails() external view returns(StorageBeacon.AccountConfig memory) {
+    function getAccountDetails() external view returns(StorageBeacon.AccountConfig memory) {
         return accountDetails;
     }
 

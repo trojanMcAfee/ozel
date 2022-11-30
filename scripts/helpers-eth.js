@@ -90,8 +90,6 @@ async function deployContract(contractName, constrArgs, signer = null) {
     ];
 }
 
- //*********/ minimum of 0.06907361126 ETH has to be sent
-
 
 async function getArbitrumParams(manualRedeem = false) {
     const maxGas = !manualRedeem ? 3000000 : 10;
@@ -212,7 +210,7 @@ function getInitSelectors() {
         'initialize',
         'changeAccountToken',
         'changeAccountSlippage',
-        'getUserDetails',
+        'getAccountDetails',
         'changeAccountTokenNSlippage'
     ];
 
@@ -366,10 +364,6 @@ async function deploySystem(type, signerAddr) {
 }
 
 
-// async function storeVarsInHelpers(factory) {
-//     proxyFactory = factory;
-// }
-
 
 
 module.exports = {
@@ -380,7 +374,6 @@ module.exports = {
     getEventParam,
     activateProxyLikeOps,
     compareTopicWith,
-    // storeVarsInHelpers,
     compareEventWithVar,
     compareTopicWith2,
     getFakeOZLVars,

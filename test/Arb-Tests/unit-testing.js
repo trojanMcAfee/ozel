@@ -85,7 +85,7 @@ describe('Unit testing', async function () {
                 });
             });
     
-            it('should fail with token as address(0)', async () => {
+            it('should fail with account token as address(0)', async () => {
                 accountDetails[0] = callerAddr;
                 accountDetails[1] = nullAddr;
                 await assert.rejects(async () => {
@@ -107,7 +107,7 @@ describe('Unit testing', async function () {
                 });
             });
     
-            it('should fail when token is not in database', async () => {
+            it('should fail when account token is not in database', async () => {
                 accountDetails[1] = deadAddr;
                 accountDetails[2] = defaultSlippage;
                 await assert.rejects(async () => {
@@ -142,7 +142,7 @@ describe('Unit testing', async function () {
                 });
             });
     
-            it('should fail with token as address(0)', async () => {
+            it('should fail with account token as address(0)', async () => {
                 accountDetails[0] = callerAddr;
                 accountDetails[1] = nullAddr;
                 await assert.rejects(async () => {
@@ -153,7 +153,7 @@ describe('Unit testing', async function () {
                 });
             });
     
-            it('should fail with slippage as 0', async () => {
+            it('should fail with account slippage as 0', async () => {
                 accountDetails[1] = fraxAddr;
                 accountDetails[2] = 0;
                 await assert.rejects(async () => {
@@ -164,7 +164,7 @@ describe('Unit testing', async function () {
                 });
             });
     
-            it('should fail when token is not in database', async () => {
+            it('should fail when account token is not in database', async () => {
                 accountDetails[1] = deadAddr;
                 accountDetails[2] = defaultSlippage;
                 await assert.rejects(async () => {

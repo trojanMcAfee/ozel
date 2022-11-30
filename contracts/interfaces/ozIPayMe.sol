@@ -54,7 +54,7 @@ interface ozIPayMe {
      * @dev Gets the account/proxy details.
      * @return AccountConfig Struct containing the account details (user, token, slippage, name)
      */
-    function getUserDetails() external view returns(IStorageBeacon.AccountConfig memory);
+    function getAccountDetails() external view returns(IStorageBeacon.AccountConfig memory);
 
     /**
      * @notice Withdraws ETH as failsafe mechanism

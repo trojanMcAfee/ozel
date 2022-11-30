@@ -215,7 +215,7 @@ contract FaultyOzPayMe3 is ReentrancyGuard, Initializable {
         emit NewSlippage(msg.sender, newSlippage_);
     } 
 
-    function getUserDetails() external view returns(StorageBeacon.AccountConfig memory) {
+    function getAccountDetails() external view returns(StorageBeacon.AccountConfig memory) {
         return accountDetails;
     }
 

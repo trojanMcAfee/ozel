@@ -106,8 +106,8 @@ let isAuthorized, newSelector;
         });
 
         describe('ProxyFactory', async () => {
-            describe('Deploys one proxy', async () => {
-                it('should create a proxy successfully / createNewProxy()', async () => {
+            describe('Deploys one account', async () => {
+                it('should create a account successfully / createNewProxy()', async () => {
                     await proxyFactory.createNewProxy(accountDetails, ops);
                     ([ proxies, names ] = await storageBeacon.getAccountsByUser(signerAddr));
 
@@ -117,7 +117,7 @@ let isAuthorized, newSelector;
                     assert(name.length > 0);
                 });
 
-                it('should not allow to create a proxy witn an empty account name / createNewProxy()', async () => {
+                it('should not allow to create a account witn an empty account name / createNewProxy()', async () => {
                     accountDetails[3] = '';
                     await assert.rejects(async () => {
                         await proxyFactory.createNewProxy(accountDetails, ops);
@@ -130,7 +130,7 @@ let isAuthorized, newSelector;
                     accountDetails[3] = 'my account';
                 });
 
-                it('should not allow to create a proxy with a name with more of 18 characters / createNewProxy()', async () => {
+                it('should not allow to create a account with a name with more of 18 characters / createNewProxy()', async () => {
                     const invalidName = 'fffffffffffffffffff';
                     assert(invalidName.length > 18);
                     accountDetails[3] = invalidName;
@@ -146,7 +146,7 @@ let isAuthorized, newSelector;
                     accountDetails[3] = 'my account';
                 });
 
-                it('should not allow to create a proxy with the 0 address / createNewProxy()', async () => {
+                it('should not allow to create a account with the 0 address / createNewProxy()', async () => {
                     accountDetails[1] = nullAddr;
                     await assert.rejects(async () => {
                         await proxyFactory.createNewProxy(accountDetails, ops);
@@ -156,7 +156,7 @@ let isAuthorized, newSelector;
                     });
                 });
 
-                it('should not allow to create a proxy with 0 slippage / createNewProxy()', async () => {
+                it('should not allow to create a account with 0 slippage / createNewProxy()', async () => {
                     accountDetails[1] = usdtAddrArb;
                     accountDetails[2] = 0;
                     await assert.rejects(async () => {
@@ -167,7 +167,7 @@ let isAuthorized, newSelector;
                     });
                 });
 
-                it('should not allow to create a proxy with a token not found in the database / createNewProxy()', async () => {
+                it('should not allow to create a account with a token not found in the database / createNewProxy()', async () => {
                     accountDetails[1] = deadAddr;
                     accountDetails[2] = defaultSlippage;
                     await assert.rejects(async () => {
@@ -198,7 +198,7 @@ let isAuthorized, newSelector;
             });
 
 
-            describe('Deploys 5 proxies', async () => { 
+            describe('Deploys 5 accounts', async () => { 
                 before(async () => {
                     accountDetails[1] = usdcAddr;
                     for (let i=0; i < 5; i++) {
@@ -210,14 +210,14 @@ let isAuthorized, newSelector;
                     ([ proxies, names ] = await storageBeacon.getAccountsByUser(signerAddr));
                 });
 
-                it('deploys 5 proxies with an initial balance of 100 ETH each / createNewProxy()', async () => {
+                it('deploys 5 accounts with an initial balance of 100 ETH each / createNewProxy()', async () => {
                     for (let i=0; i < proxies.length; i++) {
                         balance = await sendETH(proxies[i], 100);
                         assert(formatEther(balance) === '100.0' || formatEther(balance) === '100.1');
                     }
                 });
     
-                it('should leave each of the 5 proxies with a final balance of 0 ETH / createNewProxy()', async () => {
+                it('should leave each of the 5 accounts with a final balance of 0 ETH / createNewProxy()', async () => {
                     for (let i=0; i < proxies.length; i++) {
                         await activateProxyLikeOps(proxies[i], ozERC1967proxyAddr);
                         balance = await hre.ethers.provider.getBalance(proxies[i]);
@@ -252,14 +252,14 @@ let isAuthorized, newSelector;
                     });
                 });
 
-                it('should allow the user to change token / changeAccountToken()', async () => {
+                it('should allow the user to change account token / changeAccountToken()', async () => {
                     tx = await newProxy.changeAccountToken(usdcAddr);
                     receipt = await tx.wait();
                     newUserToken = getEventParam(receipt);
                     assert.equal(newUserToken, usdcAddr.toLowerCase());
                 });
 
-                it('should not allow an external user to change token / changeAccountToken()', async () => {
+                it('should not allow an external user to change account token / changeAccountToken()', async () => {
                     await assert.rejects(async () => {
                         await newProxy.connect(signers[1]).changeAccountToken(usdcAddr, ops);
                     }, {
@@ -268,7 +268,7 @@ let isAuthorized, newSelector;
                     });
                 });
 
-                it('shoud not allow to change token for the 0 address / changeAccountToken()', async () => {
+                it('shoud not allow to change account token for the 0 address / changeAccountToken()', async () => {
                     await assert.rejects(async () => {
                         await newProxy.changeAccountToken(nullAddr, ops);
                     }, {
@@ -277,7 +277,7 @@ let isAuthorized, newSelector;
                     });
                 });
 
-                it('shoud not allow to change token for a token not found in the database / changeAccountToken()', async () => {
+                it('shoud not allow to change account token for one not found in the database / changeAccountToken()', async () => {
                     await assert.rejects(async () => {
                         await newProxy.changeAccountToken(deadAddr, ops); 
                     }, {
@@ -286,18 +286,18 @@ let isAuthorized, newSelector;
                     });
                 });
 
-                it('should allow the user to change slippage with the minimum of 0.01% / changeAccountSlippage()', async () => {
+                it('should allow the user to change the slippage with the minimum of 0.01% / changeAccountSlippage()', async () => {
                     newUserSlippage = 0.01;
 
-                    ([ user, token, slippage ] = await newProxy.getUserDetails());
+                    ([ user, token, slippage ] = await newProxy.getAccountDetails());
                     tx = await newProxy.changeAccountSlippage(parseInt(newUserSlippage * 100), ops);
                     await tx.wait();
 
-                    ([ user, token, slippage, name ] = await newProxy.getUserDetails());
+                    ([ user, token, slippage, name ] = await newProxy.getAccountDetails());
                     assert.equal(Number(slippage) / 100, newUserSlippage); 
                 });
 
-                it('should not allow to change slippage to 0 / changeAccountSlippage()', async () => {
+                it('should not allow to change the slippage to 0 / changeAccountSlippage()', async () => {
                     newSlippage = 0;
                     await assert.rejects(async () => {
                         await newProxy.changeAccountSlippage(newSlippage, ops);
@@ -307,7 +307,7 @@ let isAuthorized, newSelector;
                     });
                 });
 
-                it('should not allow an external user to change slippage / changeAccountSlippage()', async () => {
+                it('should not allow an external user to change the slippage / changeAccountSlippage()', async () => {
                     await assert.rejects(async () => {
                         await newProxy.connect(signers[1]).changeAccountSlippage(200, ops);
                     }, {
@@ -321,7 +321,7 @@ let isAuthorized, newSelector;
                     tx = await newProxy.changeAccountTokenNSlippage(fraxAddr, parseInt(0.55 * 100), ops);
                     await tx.wait();
 
-                    const [ user, token, slippage ] = await newProxy.getUserDetails();
+                    const [ user, token, slippage ] = await newProxy.getAccountDetails();
                     assert.equal(token, fraxAddr);
                     assert.equal(Number(slippage) / 100, newUserSlippage); 
                 });
@@ -347,8 +347,8 @@ let isAuthorized, newSelector;
                     assert(areEqual);
                 });
 
-                it('should get the account details / getUserDetails()', async () => {
-                    const [ user, token, slippage ] = await newProxy.getUserDetails();
+                it('should get the account details / getAccountDetails()', async () => {
+                    const [ user, token, slippage ] = await newProxy.getAccountDetails();
                     assert.equal(user, accountDetails[0]);
                     assert(token === accountDetails[1] || token === fraxAddr);
                     assert(Number(slippage) === accountDetails[2] || Number(slippage) / 100 === 0.55);
@@ -361,7 +361,7 @@ let isAuthorized, newSelector;
                 newProxyAddr = await createProxy(proxyFactory, accountDetails);
             });
 
-            it('should emit msg.sender (proxy) / forwardEvent()', async () => {
+            it('should emit msg.sender (account) / forwardEvent()', async () => {
                 await sendETH(newProxyAddr, 0.1);
                 receipt = await activateProxyLikeOps(newProxyAddr, ozERC1967proxyAddr);
                 showTicketSignature = '0x6901520c999a000bb546b2316af0525bc22cc86be859f5dac839762f3d40e0aa';
@@ -389,7 +389,7 @@ let isAuthorized, newSelector;
         });
     
         describe('StorageBeacon', async () => {
-            it('should not allow an user to save a proxy / saveUserToDetails()', async () => {
+            it('should not allow an user to save an account / saveUserToDetails()', async () => {
                 await assert.rejects(async () => {
                     await storageBeacon.saveUserToDetails(signerAddr2, accountDetails);
                 }, {
@@ -536,7 +536,7 @@ let isAuthorized, newSelector;
                 });
             });
 
-            it('should return the proxies an user has / getAccountsByUser()', async () => {
+            it('should return the accounts an user has / getAccountsByUser()', async () => {
                 tokens = await storageBeacon.getTokenDatabase();
                 accountDetails[1] = tokens[0];
                 
@@ -586,7 +586,7 @@ let isAuthorized, newSelector;
                 assert(tokenDb.length > 0);
             });
 
-            it('should store the payment to the proxy / storeAccountPayment()', async () => {
+            it('should store the payment to the account / storeAccountPayment()', async () => {
                 tokens = await storageBeacon.getTokenDatabase();
                 accountDetails[1] = tokens[0];
                 
@@ -598,7 +598,7 @@ let isAuthorized, newSelector;
                 assert.equal(formatEther(payments), 0.1);
             });
 
-            it('should not let an external user to store a proxy payment / storeAccountPayment()', async () => {                
+            it('should not let an external user to store a account payment / storeAccountPayment()', async () => {                
                 await assert.rejects(async () => {
                     await storageBeacon.storeAccountPayment(deadAddr, 1000);
                 }, {
@@ -736,8 +736,12 @@ let isAuthorized, newSelector;
     });
 
 
-    //autoRedeem set to 0
+    
     describe('Pesimistic deployment', async function () {
+
+        /**
+         * Deploys ozPayMeNoRedeem. which has an autoRedeem of 0, instead of ozPayme 
+         */
         describe('ozAccountProxy / ozPayMe', async () => {
             before( async () => {
                 ([
@@ -758,7 +762,7 @@ let isAuthorized, newSelector;
                 USDC = await hre.ethers.getContractAt('IERC20', usdcAddr);
             });
 
-            it('should create a proxy successfully / createNewProxy()', async () => {
+            it('should create an account successfully / createNewProxy()', async () => {
                 assert.equal(newProxyAddr.length, 42);
             });
 
@@ -837,6 +841,11 @@ let isAuthorized, newSelector;
         });
 
         describe('ETH withdrawal as last resort', async function () {
+
+            /**
+             * Deploys FaultyProxyFactory which creates FaultyOzBeaconProxy that doesn't
+             * have a delegate() function for proxy forwarding.
+             */
             before( async () => {
                 ([
                     beacon, 
@@ -861,13 +870,13 @@ let isAuthorized, newSelector;
                 assert(formatEther(balance) === '100.0' || formatEther(balance) === '200.0');
             });
     
-            it('should not send to Arbitrum an ETH transfer made to the proxy / lack of delegate()', async () => {
+            it('should not send to Arbitrum an ETH transfer made to the account / lack of delegate()', async () => {
                 await activateProxyLikeOps(newProxyAddr, ozERC1967proxyAddr); 
                 balance = await hre.ethers.provider.getBalance(newProxyAddr);
                 assert.equal(formatEther(balance), '100.0');
             });
     
-            it('should let the user withdraw the ETH stuck on their proxy / withdrawETH_lastResort()', async () => {
+            it('should let the user withdraw the ETH stuck on their account / withdrawETH_lastResort()', async () => {
                 preBalance = await hre.ethers.provider.getBalance(signerAddr);
                 await newProxy.withdrawETH_lastResort(ops);
                 postBalance = await hre.ethers.provider.getBalance(signerAddr);
@@ -882,8 +891,6 @@ let isAuthorized, newSelector;
                     message: (await err(signerAddr2)).notAuthorized
                 });
             });
-    
-    
         });
     });
   });

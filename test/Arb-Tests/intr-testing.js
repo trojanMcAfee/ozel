@@ -140,7 +140,6 @@ describe('Integration testing', async function () {
         });
 
         it('should leave the first user with more OZL tokens than 2nd user', async () => {
-
             OZLbalanceFirstUser = await balanceOfOZL(callerAddr);
             OZLbalanceSecondUser = await balanceOfOZL(caller2Addr);
             assert(OZLbalanceFirstUser > OZLbalanceSecondUser);
@@ -213,7 +212,7 @@ describe('Integration testing', async function () {
 
     describe('2nd user withdrawas 1/3 OZL tokens', async () => {
 
-        it("should have a balance of the dapp's fees on token (USDT)", async () => {
+        it("should have a balance of the dapp's fees on account token (USDT)", async () => {
             accountDetails[0] = caller2Addr;
             accountDetails[1] = usdtAddrArb;
             await withdrawShareOZL(accountDetails, caller2Addr, parseEther(toTransfer.toString()), 1);
