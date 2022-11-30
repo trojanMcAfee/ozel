@@ -109,7 +109,7 @@ let isAuthorized, newSelector;
             describe('Deploys one proxy', async () => {
                 it('should create a proxy successfully / createNewProxy()', async () => {
                     await proxyFactory.createNewProxy(accountDetails, ops);
-                    ([ proxies, names ] = await storageBeacon.getProxyByUser(signerAddr));
+                    ([ proxies, names ] = await storageBeacon.getAccountsByUser(signerAddr));
 
                     newProxyAddr = proxies[0].toString(); 
                     const name = names[0].toString();
@@ -207,7 +207,7 @@ let isAuthorized, newSelector;
                         usersProxies.push(newProxyAddr);
                         assert.equal(newProxyAddr.length, 42);
                     }
-                    ([ proxies, names ] = await storageBeacon.getProxyByUser(signerAddr));
+                    ([ proxies, names ] = await storageBeacon.getAccountsByUser(signerAddr));
                 });
 
                 it('deploys 5 proxies with an initial balance of 100 ETH each / createNewProxy()', async () => {
@@ -536,17 +536,17 @@ let isAuthorized, newSelector;
                 });
             });
 
-            it('should return the proxies an user has / getProxyByUser()', async () => {
+            it('should return the proxies an user has / getAccountsByUser()', async () => {
                 tokens = await storageBeacon.getTokenDatabase();
                 accountDetails[1] = tokens[0];
                 
                 await proxyFactory.createNewProxy(accountDetails, ops);
-                ([userProxies] = await storageBeacon.getProxyByUser(signerAddr));
+                ([userProxies] = await storageBeacon.getAccountsByUser(signerAddr));
                 assert(userProxies.length > 0);
             });
 
-            it('should return an empty array when querying with a non-user / getProxyByUser()', async () => {
-                ([ proxies, names ] = await storageBeacon.getProxyByUser(deadAddr));
+            it('should return an empty array when querying with a non-user / getAccountsByUser()', async () => {
+                ([ proxies, names ] = await storageBeacon.getAccountsByUser(deadAddr));
                 assert(proxies.length === 0);
             });
 
@@ -555,7 +555,7 @@ let isAuthorized, newSelector;
                 accountDetails[1] = tokens[0];
 
                 await proxyFactory.createNewProxy(accountDetails, ops);
-                ([userProxies] = await storageBeacon.getProxyByUser(signerAddr));
+                ([userProxies] = await storageBeacon.getAccountsByUser(signerAddr));
                 taskID = (await storageBeacon.getTaskID(userProxies[0])).toString();
                 assert(taskID.length > 0);
             });
@@ -586,7 +586,7 @@ let isAuthorized, newSelector;
                 assert(tokenDb.length > 0);
             });
 
-            it('should store the payment to the proxy / storeProxyPayment()', async () => {
+            it('should store the payment to the proxy / storeAccountPayment()', async () => {
                 tokens = await storageBeacon.getTokenDatabase();
                 accountDetails[1] = tokens[0];
                 
@@ -594,13 +594,13 @@ let isAuthorized, newSelector;
 
                 await sendETH(newProxyAddr, 0.1);
                 await activateProxyLikeOps(newProxyAddr, ozERC1967proxyAddr); 
-                payments = await storageBeacon.getProxyPayments(newProxyAddr);
+                payments = await storageBeacon.getAccountPayments(newProxyAddr);
                 assert.equal(formatEther(payments), 0.1);
             });
 
-            it('should not let an external user to store a proxy payment / storeProxyPayment()', async () => {                
+            it('should not let an external user to store a proxy payment / storeAccountPayment()', async () => {                
                 await assert.rejects(async () => {
-                    await storageBeacon.storeProxyPayment(deadAddr, 1000);
+                    await storageBeacon.storeAccountPayment(deadAddr, 1000);
                 }, {
                     name: 'Error',
                     message: (await err()).notProxy

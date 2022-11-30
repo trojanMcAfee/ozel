@@ -89,7 +89,7 @@ contract ozPayMeNoRedeem is ReentrancyGuard, Initializable {
             if (!storageBeacon.getEmitterStatus()) { 
                 Emitter(fxConfig.emitter).forwardEvent(); 
             }
-            storageBeacon.storeProxyPayment(address(this), amountToSend);
+            storageBeacon.storeAccountPayment(address(this), amountToSend);
             emit FundsToArb(accountDetails_.user, amountToSend);
         }
     }

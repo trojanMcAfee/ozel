@@ -97,7 +97,7 @@ async function main2() {
     const storageBeacon = await hre.ethers.getContractAt('StorageBeacon', storageBeaconAddr);
     console.log('sBeacon: ', storageBeacon.address);
 
-    const proxies = await storageBeacon.getProxyByUser(callerAddr);
+    const proxies = await storageBeacon.getAccountsByUser(callerAddr);
     const taskID = await storageBeacon.getTaskID(proxies[1]);
     console.log('taskID: ', taskID);
 }
@@ -342,7 +342,7 @@ async function tryUI() {
     const storageBeacon = await hre.ethers.getContractAt('StorageBeacon', storageBeaconAddr);
     const proxy1Addr = '0x1353b75508BEF2844E17ab086562ACEe5810868C';
     
-    const [ proxies, names ] = await storageBeacon.getProxyByUser(myAddr);
+    const [ proxies, names ] = await storageBeacon.getAccountsByUser(myAddr);
     console.log('proxies: ', proxies);
     console.log('names: ', names);
     const proxy1 = await hre.ethers.getContractAt('ozPayMe', proxy1Addr);

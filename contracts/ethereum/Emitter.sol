@@ -28,7 +28,7 @@ contract Emitter is Initializable, Ownable {
     }
 
     function forwardEvent() external { 
-        (address user,,,) = _getStorageBeacon().proxyToDetails(msg.sender);
+        (address user,,,) = _getStorageBeacon().accountToDetails(msg.sender);
         if (user == address(0)) revert NotProxy();
         emit ShowTicket(msg.sender);
     }

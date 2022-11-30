@@ -94,7 +94,7 @@ interface IStorageBeacon {
      * @return address[] Addresses of the accounts
      * @return string[] Names of the accounts
      */
-    function getProxyByUser(
+    function getAccountsByUser(
         address user_
     ) external view returns(address[] memory, string[] memory);
 

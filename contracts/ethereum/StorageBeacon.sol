@@ -19,10 +19,10 @@ contract StorageBeacon is IStorageBeacon, Initializable, Ownable {
     mapping(address => bytes32) taskIDs;
     mapping(address => bool) tokenDatabase;
     mapping(address => bool) userDatabase;
-    mapping(address => address[]) userToProxies;
-    mapping(address => AccountConfig) public proxyToDetails; 
+    mapping(address => address[]) userToAccounts;
+    mapping(address => AccountConfig) public accountToDetails; 
     mapping(bytes4 => bool) authorizedSelectors;
-    mapping(address => uint) proxyToPayments;
+    mapping(address => uint) accountToPayments;
 
     address[] tokenDatabaseArray;
 
@@ -45,8 +45,8 @@ contract StorageBeacon is IStorageBeacon, Initializable, Ownable {
     }
 
     /// @dev Only allows a call from an account/proxy created through ProxyFactory
-    modifier onlyProxy() {
-        if(proxyToDetails[msg.sender].user == address(0)) revert NotProxy();
+    modifier onlyAccount() {
+        if(accountToDetails[msg.sender].user == address(0)) revert NotProxy();
         _;
     }
 
@@ -98,17 +98,17 @@ contract StorageBeacon is IStorageBeacon, Initializable, Ownable {
 
     /// @inheritdoc IStorageBeacon
     function saveUserToDetails(
-        address proxy_, 
+        address account_, 
         AccountConfig memory accountDetails_
     ) external hasRole(0xcb05ce19) {
-        userToProxies[accountDetails_.user].push(proxy_);
-        proxyToDetails[proxy_] = accountDetails_;
+        userToAccounts[accountDetails_.user].push(account_);
+        accountToDetails[account_] = accountDetails_;
         if (!userDatabase[accountDetails_.user]) userDatabase[accountDetails_.user] = true;
     }
 
     /// @inheritdoc IStorageBeacon
-    function saveTaskId(address proxy_, bytes32 id_) external hasRole(0xf2034a69) {
-        taskIDs[proxy_] = id_;
+    function saveTaskId(address account_, bytes32 id_) external hasRole(0xf2034a69) {
+        taskIDs[account_] = id_;
     }
 
     /// @inheritdoc IStorageBeacon
@@ -144,8 +144,8 @@ contract StorageBeacon is IStorageBeacon, Initializable, Ownable {
     }
 
     /// @dev Stores the ETH transfer made to each proxy/account
-    function storeProxyPayment(address proxy_, uint payment_) external onlyProxy {
-        proxyToPayments[proxy_] += payment_;
+    function storeAccountPayment(address account_, uint payment_) external onlyAccount {
+        accountToPayments[account_] += payment_;
     }
 
     /// @inheritdoc IStorageBeacon
@@ -177,27 +177,27 @@ contract StorageBeacon is IStorageBeacon, Initializable, Ownable {
     }
 
     /// @inheritdoc IStorageBeacon
-    function getProxyByUser(
+    function getAccountsByUser(
         address user_
     ) external view returns(address[] memory, string[] memory) {
-        address[] memory proxies = userToProxies[user_];
-        string[] memory names = new string[](proxies.length);
+        address[] memory accounts = userToAccounts[user_];
+        string[] memory names = new string[](accounts.length);
 
-        for (uint i=0; i < proxies.length;) {
-            names[i] = proxyToDetails[proxies[i]].accountName;
+        for (uint i=0; i < accounts.length;) {
+            names[i] = accountToDetails[accounts[i]].accountName;
             unchecked { ++i; }
         }
-        return (proxies, names);
+        return (accounts, names);
     }
 
     /// @inheritdoc IStorageBeacon
-    function getTaskID(address proxy_) external view returns(bytes32) {
-        return taskIDs[proxy_];
+    function getTaskID(address account_) external view returns(bytes32) {
+        return taskIDs[account_];
     }
 
     /// @dev Gets the owner of an account
-    function getUserByProxy(address proxy_) external view returns(address) {
-        return proxyToDetails[proxy_].user;
+    function getUserByAccount(address account_) external view returns(address) {
+        return accountToDetails[account_].user;
     }
 
     function queryTokenDatabase(address token_) public view returns(bool) {
@@ -218,8 +218,8 @@ contract StorageBeacon is IStorageBeacon, Initializable, Ownable {
     }
 
     /// @dev Gets all the ETH transfer done to an account/proxy
-    function getProxyPayments(address proxy_) external view returns(uint) {
-        return proxyToPayments[proxy_];
+    function getAccountPayments(address account_) external view returns(uint) {
+        return accountToPayments[account_];
     }
 }
 
