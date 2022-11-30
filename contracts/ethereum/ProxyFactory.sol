@@ -11,13 +11,11 @@ import '../interfaces/IOps.sol';
 import './ozAccountProxy.sol';
 import '../Errors.sol';
 
-// import 'hardhat/console.sol';
-
 
 /**
  * @title Factory of user proxies (aka accounts)
  * @notice Creates the accounts where users will receive their ETH on L1. 
- * Each account is the proxy connected -through the Beacon- to ozPayMe (the implementation)
+ * Each account is the proxy (ozAccountProxy) connected -through the Beacon- to ozPayMe (the implementation)
  */
 contract ProxyFactory is IProxyFactory, ReentrancyGuard, Initializable { 
 
@@ -35,7 +33,7 @@ contract ProxyFactory is IProxyFactory, ReentrancyGuard, Initializable {
         if (accountDetails_.slippage <= 0) revert CantBeZero('slippage');
         if (!StorageBeacon(_getStorageBeacon(0)).queryTokenDatabase(accountDetails_.token)) revert TokenNotInDatabase(accountDetails_.token);
 
-        ozAccountProxy newProxy = new ozAccountProxy(
+        ozAccountProxy newAccount = new ozAccountProxy(
             beacon,
             new bytes(0)
         );
@@ -44,13 +42,13 @@ contract ProxyFactory is IProxyFactory, ReentrancyGuard, Initializable {
             'initialize((address,address,uint256,string),address)',
             accountDetails_, beacon
         );
-        address(newProxy).functionCall(createData);
+        address(newAccount).functionCall(createData);
 
-        _startTask(address(newProxy));
+        _startTask(address(newAccount));
 
-        StorageBeacon(_getStorageBeacon(0)).saveUserToDetails(address(newProxy), accountDetails_); 
+        StorageBeacon(_getStorageBeacon(0)).saveUserToDetails(address(newAccount), accountDetails_); 
 
-        return address(newProxy);
+        return address(newAccount);
     }
 
     /*///////////////////////////////////////////////////////////////
@@ -58,18 +56,18 @@ contract ProxyFactory is IProxyFactory, ReentrancyGuard, Initializable {
     //////////////////////////////////////////////////////////////*/
 
     /// @dev Creates the Gelato task of each proxy/account
-    function _startTask(address beaconProxy_) private { 
+    function _startTask(address account_) private { 
         StorageBeacon.FixedConfig memory fxConfig = StorageBeacon(_getStorageBeacon(0)).getFixedConfig(); 
 
         (bytes32 id) = IOps(fxConfig.ops).createTaskNoPrepayment( 
-            beaconProxy_,
+            account_,
             bytes4(abi.encodeWithSignature('sendToArb()')),
-            beaconProxy_,
+            account_,
             abi.encodeWithSignature('checker()'),
             fxConfig.ETH
         );
 
-        StorageBeacon(_getStorageBeacon(0)).saveTaskId(beaconProxy_, id);
+        StorageBeacon(_getStorageBeacon(0)).saveTaskId(account_, id);
     }
 
     /// @dev Gets a version of the Storage Beacon

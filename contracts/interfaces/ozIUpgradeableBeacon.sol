@@ -3,7 +3,6 @@ pragma solidity 0.8.14;
 
 
 
-
 interface ozIUpgradeableBeacon {
 
     /**
@@ -28,7 +27,7 @@ interface ozIUpgradeableBeacon {
      * @param user_ Entity to be queried in regards to authorization
      * @param target_ Contract where the function to be called is
      * @param functionSig_ Selector of function to be called
-     * @return bool If the user_ is authorized 
+     * @return bool If user_ is authorized 
      */
     function canCall( 
         address user_,

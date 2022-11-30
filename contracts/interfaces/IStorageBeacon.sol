@@ -34,22 +34,21 @@ interface IStorageBeacon {
     }
 
     /**
-     * @dev Saves and connects -in a mapping- the proxy/account to the details of
-     * the user who created it.
-     * @param proxy_ The account/proxy
+     * @dev Saves and connects the address of the account to its details.
+     * @param account_ The account/proxy
      * @param accountDetails_ Details of the account/proxy
      */
     function saveUserToDetails(
-        address proxy_, 
+        address account_, 
         AccountConfig memory accountDetails_
     ) external;
 
     /**
      * @dev Stores the Gelato task. Can only be called by the Proxy Factory. 
-     * @param proxy_ Address of the account/proxy
-     * @param id_ ID number of the Gelato task
+     * @param account_ Address of the account/proxy
+     * @param id_ ID of the Gelato task
      */
-    function saveTaskId(address proxy_, bytes32 id_) external;
+    function saveTaskId(address account_, bytes32 id_) external;
 
     /**
      * @dev Changes the hard-coded L2 gas price
@@ -70,9 +69,9 @@ interface IStorageBeacon {
     function changeEmitterStatus(bool newStatus_) external;
 
     /**
-     * @dev Authorizes  a new function so it can get called with its original 
+     * @dev Authorizes a new function so it can get called with its original 
      * calldata -on ozAccountProxy (each user's account/proxy)- to the implementation (ozPayMe)
-     * instead of just forwarding the user details for briding to L2. 
+     * instead of just forwarding the account details for briding to L2. 
      * @param selector_ Selector of new authorized function
      */
     function addAuthorizedSelector(bytes4 selector_) external;
@@ -89,7 +88,7 @@ interface IStorageBeacon {
 
     /**
      * @notice Gets the accounts/proxies created by an user
-     * @dev Gets the addresses and names of the proxies
+     * @dev Gets the addresses and names of the accounts
      * @param user_ Address of the user
      * @return address[] Addresses of the accounts
      * @return string[] Names of the accounts
@@ -100,10 +99,10 @@ interface IStorageBeacon {
 
     /**
      * @dev Gets the Gelato task of an account/proxy
-     * @param proxy_ Account
+     * @param account_ Account
      * @return bytes32 Gelato Task ID
      */
-    function getTaskID(address proxy_) external view returns(bytes32);
+    function getTaskID(address account_) external view returns(bytes32);
 }
 
 

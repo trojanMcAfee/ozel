@@ -7,9 +7,9 @@ import './IStorageBeacon.sol';
 interface IProxyFactory {
 
     /**
-     * @notice Creator the user account and Gelato task
+     * @notice Creator the user account and its correspondant Gelato task
      * @dev Creates the proxy where users get their ETH sent to, and calls for 
-     * the generates the Gelato task for each account
+     * the generation of the Gelato task for each one.
      * @param accountDetails_ Account details attached to each user
      * @return address The address of the account/proxy
      */
