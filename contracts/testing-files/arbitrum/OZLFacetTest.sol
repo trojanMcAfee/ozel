@@ -22,7 +22,7 @@ contract OZLFacetTest is ModifiersARB {
     using SafeERC20 for IERC20;
     using Address for address;
 
-    event NewUserToken(address token); 
+    event NewToken(address token); 
     event DeadVariables(bool isRetry);
  
 
@@ -151,7 +151,7 @@ contract OZLFacetTest is ModifiersARB {
         LibDiamond.enforceIsContractOwner();
         s.tokenDatabase[newSwap_.token] = true;
         s.swaps.push(newSwap_);
-        emit NewUserToken(newSwap_.token);
+        emit NewToken(newSwap_.token);
     }
 
     function removeTokenFromDatabase(TradeOps memory swapToRemove_) external {

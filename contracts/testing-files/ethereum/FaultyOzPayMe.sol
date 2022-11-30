@@ -33,8 +33,8 @@ contract FaultyOzPayMe is ReentrancyGuard, Initializable {
 
     event FundsToArb(address indexed sender, uint amount);
     event EmergencyTriggered(address indexed sender, uint amount);
-    event NewUserToken(address indexed user, address indexed newToken);
-    event NewUserSlippage(address indexed user, uint indexed newSlippage);
+    event NewToken(address indexed user, address indexed newToken);
+    event NewSlippage(address indexed user, uint indexed newSlippage);
 
     //Custom event that checks for the second attempt on EmergencyMode
     event SecondAttempt(uint success);
@@ -49,10 +49,10 @@ contract FaultyOzPayMe is ReentrancyGuard, Initializable {
         _;
     }
 
-    modifier checkToken(address newUserToken_) {
+    modifier checkToken(address newToken_) {
         StorageBeacon storageBeacon = StorageBeacon(_getStorageBeacon(_beacon, 0)); 
-        if (newUserToken_ == address(0)) revert CantBeZero('address');
-        if (!storageBeacon.queryTokenDatabase(newUserToken_)) revert TokenNotInDatabase(newUserToken_);
+        if (newToken_ == address(0)) revert CantBeZero('address');
+        if (!storageBeacon.queryTokenDatabase(newToken_)) revert TokenNotInDatabase(newToken_);
         _;
     }
 
@@ -184,27 +184,27 @@ contract FaultyOzPayMe is ReentrancyGuard, Initializable {
 
 
     function changeAccountToken(
-        address newUserToken_
-    ) external onlyUser checkToken(newUserToken_) {
-        accountDetails.token = newUserToken_;
-        emit NewUserToken(msg.sender, newUserToken_);
+        address newToken_
+    ) external onlyUser checkToken(newToken_) {
+        accountDetails.token = newToken_;
+        emit NewToken(msg.sender, newToken_);
     }
 
     function changeAccountSlippage(
         uint newSlippage_
     ) external onlyUser checkSlippage(newSlippage_) { 
         accountDetails.slippage = newSlippage_;
-        emit NewUserSlippage(msg.sender, newSlippage_);
+        emit NewSlippage(msg.sender, newSlippage_);
     }
 
     function changeAccountTokenNSlippage(
-        address newUserToken_, 
+        address newToken_, 
         uint newSlippage_
-    ) external onlyUser checkToken(newUserToken_) checkSlippage(newSlippage_) {
-        accountDetails.token = newUserToken_;
+    ) external onlyUser checkToken(newToken_) checkSlippage(newSlippage_) {
+        accountDetails.token = newToken_;
         accountDetails.slippage = newSlippage_;
-        emit NewUserToken(msg.sender, newUserToken_);
-        emit NewUserSlippage(msg.sender, newSlippage_);
+        emit NewToken(msg.sender, newToken_);
+        emit NewSlippage(msg.sender, newSlippage_);
     } 
 
     function getUserDetails() external view returns(StorageBeacon.AccountConfig memory) {

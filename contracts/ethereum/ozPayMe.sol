@@ -36,8 +36,8 @@ contract ozPayMe is ozIPayMe, ReentrancyGuard, Initializable {
 
     event FundsToArb(address indexed sender, uint amount);
     event EmergencyTriggered(address indexed sender, uint amount);
-    event NewUserToken(address indexed user, address indexed newToken);
-    event NewUserSlippage(address indexed user, uint indexed newSlippage);
+    event NewToken(address indexed user, address indexed newToken);
+    event NewSlippage(address indexed user, uint indexed newSlippage);
 
     /*///////////////////////////////////////////////////////////////
                               Modifiers
@@ -54,10 +54,10 @@ contract ozPayMe is ozIPayMe, ReentrancyGuard, Initializable {
         _;
     }
 
-    modifier checkToken(address newUserToken_) {
+    modifier checkToken(address newToken_) {
         StorageBeacon storageBeacon = StorageBeacon(_getStorageBeacon(_beacon, 0)); 
-        if (newUserToken_ == address(0)) revert CantBeZero('address');
-        if (!storageBeacon.queryTokenDatabase(newUserToken_)) revert TokenNotInDatabase(newUserToken_);
+        if (newToken_ == address(0)) revert CantBeZero('address');
+        if (!storageBeacon.queryTokenDatabase(newToken_)) revert TokenNotInDatabase(newToken_);
         _;
     }
 
@@ -214,7 +214,7 @@ contract ozPayMe is ozIPayMe, ReentrancyGuard, Initializable {
         address newToken_
     ) external onlyUser checkToken(newToken_) {
         accountDetails.token = newToken_;
-        emit NewUserToken(msg.sender, newToken_);
+        emit NewToken(msg.sender, newToken_);
     }
 
     /// @inheritdoc ozIPayMe
@@ -222,7 +222,7 @@ contract ozPayMe is ozIPayMe, ReentrancyGuard, Initializable {
         uint newSlippage_
     ) external onlyUser checkSlippage(newSlippage_) { 
         accountDetails.slippage = newSlippage_;
-        emit NewUserSlippage(msg.sender, newSlippage_);
+        emit NewSlippage(msg.sender, newSlippage_);
     }
 
     /// @inheritdoc ozIPayMe
@@ -232,8 +232,8 @@ contract ozPayMe is ozIPayMe, ReentrancyGuard, Initializable {
     ) external onlyUser checkToken(newToken_) checkSlippage(newSlippage_) {
         accountDetails.token = newToken_;
         accountDetails.slippage = newSlippage_;
-        emit NewUserToken(msg.sender, newToken_);
-        emit NewUserSlippage(msg.sender, newSlippage_);
+        emit NewToken(msg.sender, newToken_);
+        emit NewSlippage(msg.sender, newSlippage_);
     } 
 
     /// @inheritdoc ozIPayMe

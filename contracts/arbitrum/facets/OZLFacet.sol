@@ -23,7 +23,7 @@ contract OZLFacet is ModifiersARB {
     using SafeERC20 for IERC20;
     using Address for address;
 
-    event NewUserToken(address token);
+    event NewToken(address token);
 
     /**
     WBTC: 1 / USDT: 0 / WETH: 2
@@ -199,7 +199,7 @@ contract OZLFacet is ModifiersARB {
         
         s.tokenDatabase[newSwap_.token] = true;
         s.swaps.push(newSwap_);
-        emit NewUserToken(newSwap_.token);
+        emit NewToken(newSwap_.token);
     }
 
     function removeTokenFromDatabase(TradeOps memory swapToRemove_) external {

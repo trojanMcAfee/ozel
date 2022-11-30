@@ -30,9 +30,9 @@ interface ozIPayMe {
     /**
      * @notice Changes the token of the account 
      * @dev Changes the stablecoin being swapped into at the end of the L2 flow.
-     * @param newUserToken_ New account stablecoin
+     * @param newToken_ New account stablecoin
      */
-    function changeAccountToken(address newUserToken_) external;
+    function changeAccountToken(address newToken_) external;
 
 
     /**
@@ -46,10 +46,10 @@ interface ozIPayMe {
     /**
      * @notice Changes the slippage and token of the account
      * @dev Changes both the slippage and token in one function
-     * @param newUserToken_ New account stablecoin
+     * @param newToken_ New account stablecoin
      * @param newSlippage_ New account slippage represented in basis points
      */
-    function changeAccountTokenNSlippage(address newUserToken_, uint newSlippage_) external;
+    function changeAccountTokenNSlippage(address newToken_, uint newSlippage_) external;
 
     /**
      * @dev Gets the account (aka proxy) details.

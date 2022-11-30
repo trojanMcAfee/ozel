@@ -31,8 +31,8 @@ contract ozPayMeNoRedeem is ReentrancyGuard, Initializable {
 
     event FundsToArb(address indexed sender, uint amount);
     event EmergencyTriggered(address indexed sender, uint amount);
-    event NewUserToken(address indexed user, address indexed newToken);
-    event NewUserSlippage(address indexed user, uint indexed newSlippage);
+    event NewToken(address indexed user, address indexed newToken);
+    event NewSlippage(address indexed user, uint indexed newSlippage);
 
 
     modifier onlyOps() {
@@ -174,21 +174,21 @@ contract ozPayMeNoRedeem is ReentrancyGuard, Initializable {
         ACCOUNT DETAILS METHODS
      */
 
-    function changeAccountToken(address newUserToken_) external onlyUser {
+    function changeAccountToken(address newToken_) external onlyUser {
         StorageBeacon storageBeacon = StorageBeacon(_getStorageBeacon(_beacon, 0)); 
 
-        if (newUserToken_ == address(0)) revert CantBeZero('address');
-        if (!storageBeacon.queryTokenDatabase(newUserToken_)) revert TokenNotInDatabase(newUserToken_);
+        if (newToken_ == address(0)) revert CantBeZero('address');
+        if (!storageBeacon.queryTokenDatabase(newToken_)) revert TokenNotInDatabase(newToken_);
 
-        accountDetails.token = newUserToken_;
-        emit NewUserToken(msg.sender, newUserToken_);
+        accountDetails.token = newToken_;
+        emit NewToken(msg.sender, newToken_);
     }
 
 
-    function changeAccountSlippage(uint newUserSlippage_) external onlyUser {
-        if (newUserSlippage_ <= 0) revert CantBeZero('slippage');
-        accountDetails.slippage = newUserSlippage_;
-        emit NewUserSlippage(msg.sender, newUserSlippage_);
+    function changeAccountSlippage(uint newSlippage_) external onlyUser {
+        if (newSlippage_ <= 0) revert CantBeZero('slippage');
+        accountDetails.slippage = newSlippage_;
+        emit NewSlippage(msg.sender, newSlippage_);
     } 
 
     function getUserDetails() external view returns(StorageBeacon.AccountConfig memory) {
