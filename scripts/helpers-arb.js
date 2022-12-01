@@ -34,7 +34,8 @@ const {
     revenueAmounts,
     diamondABI,
     usxAddr,
-    ops
+    ops,
+    opsL2
 } = require('./state-vars.js');
 
 
@@ -137,6 +138,7 @@ async function replaceForModVersion(contractName, checkUSDTbalance, selector, ac
                 return FRAX;
         }
     }
+    
     const USDT = await hre.ethers.getContractAt('IERC20', usdtAddrArb);
     const WETH = await hre.ethers.getContractAt('IERC20', wethAddr);
     const WBTC = await hre.ethers.getContractAt('IERC20', wbtcAddr);
@@ -186,7 +188,7 @@ async function replaceForModVersion(contractName, checkUSDTbalance, selector, ac
         assert.equal(balance, 0);
     };
 
-    await OZLDiamond.diamondCut(faceCutArgs, nullAddr, '0x');
+    await OZLDiamond.diamondCut(faceCutArgs, nullAddr, '0x', opsL2);
 
     if (!isIndex) {
         receipt = await sendETH(accountDetails); 

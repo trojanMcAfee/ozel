@@ -243,7 +243,7 @@ describe('Integration testing', async function () {
         });
     });
 
-    describe('2nd user withdrawas 1/3 OZL tokens', async () => {
+    describe('2nd user withdraws 1/3 OZL tokens', async () => {
 
         it("should have a balance of the dapp's fees on account token (USDT)", async () => {
             accountDetails[0] = caller2Addr;
