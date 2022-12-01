@@ -53,8 +53,6 @@ contract oz4626Facet is ModifiersARB {
         address receiver,
         uint lockNum_
     ) external payable isAuthorized(lockNum_) noReentrancy(1) {
-        // require((shares = previewDeposit(assets)) != 0, "ZERO_SHARES");
-
         //Mutex bitmap lock
         _toggleBit(1, 1); 
 
@@ -94,21 +92,11 @@ contract oz4626Facet is ModifiersARB {
                            ACCOUNTING LOGIC
     //////////////////////////////////////////////////////////////*/
 
-    // function convertToShares(uint256 assets) public view virtual returns (uint256) { 
-    //     return s.ozelIndex == 0 ? 
-    //         oz20Facet(s.oz20).totalSupply() : 
-    //             s.ozelIndex.mulDivDown(assets * 100, 10 ** 22);
-    // }
-
     function convertToAssets(uint256 shares) public view virtual returns (uint256) { 
         uint vaultBalance = IERC20(s.yTriPool).balanceOf(address(this));
         uint assets = shares.mulDivDown(vaultBalance, 100 * 1 ether); 
         return assets;
     }
-
-    // function previewDeposit(uint256 assets) public view virtual returns (uint256) {
-    //     return convertToShares(assets);
-    // }
 
     function previewRedeem(uint256 shares) public view virtual returns (uint256) {
         return convertToAssets(shares);
