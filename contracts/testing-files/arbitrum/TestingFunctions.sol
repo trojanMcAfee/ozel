@@ -5,6 +5,7 @@ pragma solidity 0.8.14;
 import '@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol';
 import '@rari-capital/solmate/src/utils/FixedPointMathLib.sol';
 import '@openzeppelin/contracts/token/ERC20/IERC20.sol';
+import '@openzeppelin/contracts/utils/Address.sol';
 import { ITri } from '../../interfaces/ICurve.sol';
 import { ModifiersARB } from '../../Modifiers.sol';
 import '../../arbitrum/facets/ozExecutorFacet.sol';
@@ -938,6 +939,7 @@ contract ExecutorFacetV6 is SecondaryFunctions {
 
 contract ComputeRevenueV1 is SecondaryFunctions {
     using FixedPointMathLib for uint;
+    using Address for address;
 
     event RevenueEarned(uint indexed amount);
     event ForTesting(uint indexed testNum);
@@ -952,12 +954,10 @@ contract ComputeRevenueV1 is SecondaryFunctions {
         for (uint j=0; j < s.revenueAmounts.length; j++) {
 
             if ((s.feesVault * 2) * uint(price) >= s.revenueAmounts[j] * 1 ether) {
-                uint yBalance = IYtri(s.yTriPool).balanceOf(address(this));
-                uint priceShare = IYtri(s.yTriPool).pricePerShare();
 
-                uint balanceCrv3 = (yBalance * priceShare) / 1 ether;
-                uint triBalance = ITri(s.tricrypto).calc_withdraw_one_coin(balanceCrv3, 2);
-                uint valueUM = triBalance * (uint(price) / 10 ** 8);
+                bytes memory data = abi.encodeWithSignature('getAUM(int256)', price);
+                bytes memory returnData = address(this).functionCall(data);
+                (uint yBalance, uint valueUM) = abi.decode(returnData, (uint, uint));
 
                 for (uint i=0; i < s.revenueAmounts.length; i++) {
                     if (valueUM >= s.revenueAmounts[i] * 1 ether) {
@@ -1025,6 +1025,7 @@ contract ComputeRevenueV1 is SecondaryFunctions {
 
 contract ComputeRevenueV2 is SecondaryFunctions {
     using FixedPointMathLib for uint;
+    using Address for address;
 
     event RevenueEarned(uint indexed amount);
     event ForTesting(uint indexed testNum);
@@ -1040,12 +1041,10 @@ contract ComputeRevenueV2 is SecondaryFunctions {
         for (uint j=0; j < s.revenueAmounts.length; j++) {
 
             if ((s.feesVault * 2) * uint(price) >= s.revenueAmounts[j] * 1 ether) {
-                uint yBalance = IYtri(s.yTriPool).balanceOf(address(this));
-                uint priceShare = IYtri(s.yTriPool).pricePerShare();
 
-                uint balanceCrv3 = (yBalance * priceShare) / 1 ether;
-                uint triBalance = ITri(s.tricrypto).calc_withdraw_one_coin(balanceCrv3, 2);
-                uint valueUM = triBalance * (uint(price) / 10 ** 8);
+                bytes memory data = abi.encodeWithSignature('getAUM(int256)', price);
+                bytes memory returnData = address(this).functionCall(data);
+                (uint yBalance, uint valueUM) = abi.decode(returnData, (uint, uint));
 
                 for (uint i=0; i < s.revenueAmounts.length; i++) {
                     if (valueUM >= s.revenueAmounts[i] * 1 ether) {
@@ -1113,6 +1112,7 @@ contract ComputeRevenueV2 is SecondaryFunctions {
 
 contract ComputeRevenueV3 is SecondaryFunctions {
     using FixedPointMathLib for uint;
+    using Address for address;
 
     event RevenueEarned(uint indexed amount);
     event ForTesting(uint indexed testNum);
@@ -1129,12 +1129,10 @@ contract ComputeRevenueV3 is SecondaryFunctions {
         for (uint j=0; j < s.revenueAmounts.length; j++) {
 
             if ((s.feesVault * 2) * uint(price) >= s.revenueAmounts[j] * 1 ether) {
-                uint yBalance = IYtri(s.yTriPool).balanceOf(address(this));
-                uint priceShare = IYtri(s.yTriPool).pricePerShare();
 
-                uint balanceCrv3 = (yBalance * priceShare) / 1 ether;
-                uint triBalance = ITri(s.tricrypto).calc_withdraw_one_coin(balanceCrv3, 2);
-                uint valueUM = triBalance * (uint(price) / 10 ** 8);
+                bytes memory data = abi.encodeWithSignature('getAUM(int256)', price);
+                bytes memory returnData = address(this).functionCall(data);
+                (uint yBalance, uint valueUM) = abi.decode(returnData, (uint, uint));
 
                 for (uint i=0; i < s.revenueAmounts.length; i++) {
                     if (valueUM >= s.revenueAmounts[i] * 1 ether) {
@@ -1202,6 +1200,7 @@ contract ComputeRevenueV3 is SecondaryFunctions {
 
 contract ComputeRevenueV4 is SecondaryFunctions {
     using FixedPointMathLib for uint;
+    using Address for address;
 
     event RevenueEarned(uint indexed amount);
     event ForTesting(uint indexed testNum);
@@ -1216,12 +1215,10 @@ contract ComputeRevenueV4 is SecondaryFunctions {
         for (uint j=0; j < s.revenueAmounts.length; j++) {
 
             if ((s.feesVault * 2) * uint(price) >= s.revenueAmounts[j] * 1 ether) {
-                uint yBalance = IYtri(s.yTriPool).balanceOf(address(this));
-                uint priceShare = IYtri(s.yTriPool).pricePerShare();
 
-                uint balanceCrv3 = (yBalance * priceShare) / 1 ether;
-                uint triBalance = ITri(s.tricrypto).calc_withdraw_one_coin(balanceCrv3, 2);
-                uint valueUM = triBalance * (uint(price) / 10 ** 8);
+                bytes memory data = abi.encodeWithSignature('getAUM(int256)', price);
+                bytes memory returnData = address(this).functionCall(data);
+                (uint yBalance, uint valueUM) = abi.decode(returnData, (uint, uint));
 
                 for (uint i=0; i < s.revenueAmounts.length; i++) {
                     if (valueUM >= s.revenueAmounts[i] * 1 ether) {
@@ -1293,6 +1290,7 @@ contract SwapWETHforRevenueV1 {
     AppStorage s;
 
     using FixedPointMathLib for uint;
+    using Address for address;
 
     event ForTesting(uint indexed testNum);
     event DeadVariables(uint variable);
@@ -1304,12 +1302,10 @@ contract SwapWETHforRevenueV1 {
         for (uint j=0; j < s.revenueAmounts.length; j++) {
 
             if ((s.feesVault * 2) * uint(price) >= s.revenueAmounts[j] * 1 ether) {
-                uint yBalance = IYtri(s.yTriPool).balanceOf(address(this));
-                uint priceShare = IYtri(s.yTriPool).pricePerShare();
 
-                uint balanceCrv3 = (yBalance * priceShare) / 1 ether;
-                uint triBalance = ITri(s.tricrypto).calc_withdraw_one_coin(balanceCrv3, 2);
-                uint valueUM = triBalance * (uint(price) / 10 ** 8);
+                bytes memory data = abi.encodeWithSignature('getAUM(int256)', price);
+                bytes memory returnData = address(this).functionCall(data);
+                (uint yBalance, uint valueUM) = abi.decode(returnData, (uint, uint));
 
                 for (uint i=0; i < s.revenueAmounts.length; i++) {
                     if (valueUM >= s.revenueAmounts[i] * 1 ether) {
@@ -1424,6 +1420,7 @@ contract SwapWETHforRevenueV2 {
     AppStorage s;
 
     using FixedPointMathLib for uint;
+    using Address for address;
 
     event ForTesting(uint indexed testNum);
 
@@ -1433,13 +1430,11 @@ contract SwapWETHforRevenueV2 {
 
         for (uint j=0; j < s.revenueAmounts.length; j++) {
 
-            if ((s.feesVault * 2) * uint(price) >= s.revenueAmounts[j] * 1 ether) {                
-                uint yBalance = IYtri(s.yTriPool).balanceOf(address(this));
-                uint priceShare = IYtri(s.yTriPool).pricePerShare();
+            if ((s.feesVault * 2) * uint(price) >= s.revenueAmounts[j] * 1 ether) { 
 
-                uint balanceCrv3 = (yBalance * priceShare) / 1 ether;
-                uint triBalance = ITri(s.tricrypto).calc_withdraw_one_coin(balanceCrv3, 2);
-                uint valueUM = triBalance * (uint(price) / 10 ** 8);
+                bytes memory data = abi.encodeWithSignature('getAUM(int256)', price);
+                bytes memory returnData = address(this).functionCall(data);
+                (uint yBalance, uint valueUM) = abi.decode(returnData, (uint, uint));
 
                 for (uint i=0; i < s.revenueAmounts.length; i++) {
                     if (valueUM >= s.revenueAmounts[i] * 1 ether) {
@@ -1560,6 +1555,7 @@ contract SwapWETHforRevenueV3 {
     AppStorage s;
 
     using FixedPointMathLib for uint;
+    using Address for address;
 
     event RevenueEarned(uint indexed amount);
     event ForTesting(uint indexed testNum);
@@ -1571,12 +1567,10 @@ contract SwapWETHforRevenueV3 {
         for (uint j=0; j < s.revenueAmounts.length; j++) {
 
             if ((s.feesVault * 2) * uint(price) >= s.revenueAmounts[j] * 1 ether) {
-                uint yBalance = IYtri(s.yTriPool).balanceOf(address(this));
-                uint priceShare = IYtri(s.yTriPool).pricePerShare();
-
-                uint balanceCrv3 = (yBalance * priceShare) / 1 ether;
-                uint triBalance = ITri(s.tricrypto).calc_withdraw_one_coin(balanceCrv3, 2);
-                uint valueUM = triBalance * (uint(price) / 10 ** 8);
+                
+                bytes memory data = abi.encodeWithSignature('getAUM(int256)', price);
+                bytes memory returnData = address(this).functionCall(data);
+                (uint yBalance, uint valueUM) = abi.decode(returnData, (uint, uint));
 
                 for (uint i=0; i < s.revenueAmounts.length; i++) {
                     if (valueUM >= s.revenueAmounts[i] * 1 ether) {

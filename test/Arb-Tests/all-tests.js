@@ -707,7 +707,7 @@ describe('Ozel Index', async function () {
  * 
  * It uses the functions from TestingFunctions.sol
  */
- describe('Anti-slippage system', async function () {
+describe('Anti-slippage system', async function () {
     this.timeout(1000000);
 
     before( async () => {
@@ -737,7 +737,7 @@ describe('Ozel Index', async function () {
             'myAccount'
         ];
 
-        abi = ['function exchangeToAccountToken((address user, address token, uint256 slippage) accountDetails_) external payable'];
+        abi = ['function exchangeToAccountToken((address user, address token, uint256 slippage, string name) accountDetails_) external payable'];
         iface = new ethers.utils.Interface(abi);
         selector = iface.getSighash('exchangeToAccountToken');
     });

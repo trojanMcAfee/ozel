@@ -190,6 +190,8 @@ async function replaceForModVersion(contractName, checkUSDTbalance, selector, ac
 
     await OZLDiamond.diamondCut(faceCutArgs, nullAddr, '0x', opsL2);
 
+    console.log('isIndex: ', isIndex);
+
     if (!isIndex) {
         receipt = await sendETH(accountDetails); 
         testingNum = getTestingNumber(receipt);
