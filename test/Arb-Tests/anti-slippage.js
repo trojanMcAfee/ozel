@@ -63,7 +63,8 @@ describe('Anti-slippage system', async function () {
         accountDetails = [ 
             callerAddr,
             usdtAddrArb,
-            defaultSlippage
+            defaultSlippage,
+            'myAccount'
         ];
 
         abi = ['function exchangeToAccountToken((address user, address token, uint256 slippage) accountDetails_) external payable'];

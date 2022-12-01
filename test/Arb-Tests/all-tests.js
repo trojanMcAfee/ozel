@@ -94,7 +94,8 @@ describe('Integration testing', async function () {
         accountDetails = [
             callerAddr,
             fraxAddr, 
-            defaultSlippage
+            defaultSlippage,
+            'myAccount'
         ];
     });
 
@@ -299,7 +300,8 @@ describe('Unit testing', async function () {
         accountDetails = [
             callerAddr,
             fraxAddr,
-            defaultSlippage
+            defaultSlippage,
+            'myAccount'
         ];
 
         ozlDiamond = await hre.ethers.getContractAt(diamondABI, deployedDiamond.address);
@@ -318,7 +320,7 @@ describe('Unit testing', async function () {
                 });
             });
     
-            it('should fail with token as address(0)', async () => {
+            it('should fail with account token as address(0)', async () => {
                 accountDetails[0] = callerAddr;
                 accountDetails[1] = nullAddr;
                 await assert.rejects(async () => {
@@ -340,7 +342,7 @@ describe('Unit testing', async function () {
                 });
             });
     
-            it('should fail when token is not in database', async () => {
+            it('should fail when account token is not in database', async () => {
                 accountDetails[1] = deadAddr;
                 accountDetails[2] = defaultSlippage;
                 await assert.rejects(async () => {
@@ -375,7 +377,7 @@ describe('Unit testing', async function () {
                 });
             });
     
-            it('should fail with token as address(0)', async () => {
+            it('should fail with account token as address(0)', async () => {
                 accountDetails[0] = callerAddr;
                 accountDetails[1] = nullAddr;
                 await assert.rejects(async () => {
@@ -386,7 +388,7 @@ describe('Unit testing', async function () {
                 });
             });
     
-            it('should fail with slippage as 0', async () => {
+            it('should fail with account slippage as 0', async () => {
                 accountDetails[1] = fraxAddr;
                 accountDetails[2] = 0;
                 await assert.rejects(async () => {
@@ -397,7 +399,7 @@ describe('Unit testing', async function () {
                 });
             });
     
-            it('should fail when token is not in database', async () => {
+            it('should fail when account token is not in database', async () => {
                 accountDetails[1] = deadAddr;
                 accountDetails[2] = defaultSlippage;
                 await assert.rejects(async () => {
@@ -599,7 +601,7 @@ describe('Unit testing', async function () {
  * line 133, 136 140 (from the Mod version) that uses much lower values in order to
  * show the workings of the mechanism.
  */
- describe('Ozel Index', async function () { 
+describe('Ozel Index', async function () { 
     this.timeout(100000000000000000000);
 
     before( async () => {
@@ -625,13 +627,15 @@ describe('Unit testing', async function () {
         accountDetails = [
             callerAddr,
             fraxAddr,
-            defaultSlippage
+            defaultSlippage,
+            'myAccount'
         ];
 
         abi = ['function updateExecutorState(uint256 amount_, address user_, uint256 lockNum_) external payable'];
         iface = new ethers.utils.Interface(abi);
         selector = iface.getSighash('updateExecutorState');
     });
+
 
     it('should successfully stabilize the index for OZL balances calculations / UpdateIndexV1 & balanceOf()', async () => {
         await replaceForModVersion('UpdateIndexV1', false, selector, accountDetails, false, true);
@@ -703,7 +707,7 @@ describe('Unit testing', async function () {
  * 
  * It uses the functions from TestingFunctions.sol
  */
-describe('Anti-slippage system', async function () {
+ describe('Anti-slippage system', async function () {
     this.timeout(1000000);
 
     before( async () => {
@@ -729,7 +733,8 @@ describe('Anti-slippage system', async function () {
         accountDetails = [ 
             callerAddr,
             usdtAddrArb,
-            defaultSlippage
+            defaultSlippage,
+            'myAccount'
         ];
 
         abi = ['function exchangeToAccountToken((address user, address token, uint256 slippage) accountDetails_) external payable'];
@@ -937,7 +942,7 @@ describe('Anti-slippage system', async function () {
 /**
  * Tests the anti-slippage system used in RevenueFacet.sol
  */
-describe('My Revenue', async function() {
+ describe('My Revenue', async function() {
     this.timeout(1000000);
 
     before( async () => {
@@ -963,7 +968,8 @@ describe('My Revenue', async function() {
         accountDetails = [
             callerAddr,
             fraxAddr, 
-            defaultSlippage
+            defaultSlippage,
+            'myAccount'
         ];
 
         abi = ['function checkForRevenue() external payable'];

@@ -60,7 +60,8 @@ describe('My Revenue', async function() {
         accountDetails = [
             callerAddr,
             fraxAddr, 
-            defaultSlippage
+            defaultSlippage,
+            'myAccount'
         ];
 
         abi = ['function checkForRevenue() external payable'];

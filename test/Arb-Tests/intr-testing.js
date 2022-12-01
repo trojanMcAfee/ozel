@@ -62,7 +62,8 @@ describe('Integration testing', async function () {
         accountDetails = [
             callerAddr,
             fraxAddr, 
-            defaultSlippage
+            defaultSlippage,
+            'myAccount'
         ];
     });
 

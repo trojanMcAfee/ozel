@@ -66,7 +66,8 @@ describe('Unit testing', async function () {
         accountDetails = [
             callerAddr,
             fraxAddr,
-            defaultSlippage
+            defaultSlippage,
+            'myAccount'
         ];
 
         ozlDiamond = await hre.ethers.getContractAt(diamondABI, deployedDiamond.address);
