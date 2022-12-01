@@ -26,7 +26,7 @@ contract oz4626Facet is ModifiersARB {
                                  Events
     //////////////////////////////////////////////////////////////*/
 
-    event Deposit(address indexed caller, address indexed owner, uint256 assets, uint256 shares);
+    event Deposit(address indexed caller, address indexed owner, uint256 assets);
 
     event Withdraw(
         address indexed caller,
@@ -47,16 +47,13 @@ contract oz4626Facet is ModifiersARB {
      * @param assets ETH transferred to the account (which is actually WETH)
      * @param receiver User
      * @param lockNum_ Index of the bit which authorizes the function call
-     * @return shares User's new OZL balance
      */
     function deposit(
         uint assets, 
         address receiver,
         uint lockNum_
-    ) external payable isAuthorized(lockNum_) noReentrancy(1) returns (uint256 shares) {
-        require((shares = previewDeposit(assets)) != 0, "ZERO_SHARES");
-
-        // console.log('shares: ', shares);
+    ) external payable isAuthorized(lockNum_) noReentrancy(1) {
+        // require((shares = previewDeposit(assets)) != 0, "ZERO_SHARES");
 
         //Mutex bitmap lock
         _toggleBit(1, 1); 
@@ -68,7 +65,7 @@ contract oz4626Facet is ModifiersARB {
 
         LibDiamond.callFacet(data);
 
-        emit Deposit(msg.sender, receiver, assets, shares);
+        emit Deposit(msg.sender, receiver, assets);
     }
 
 
@@ -97,11 +94,11 @@ contract oz4626Facet is ModifiersARB {
                            ACCOUNTING LOGIC
     //////////////////////////////////////////////////////////////*/
 
-    function convertToShares(uint256 assets) public view virtual returns (uint256) { 
-        return s.ozelIndex == 0 ? 
-            oz20Facet(s.oz20).totalSupply() : 
-                s.ozelIndex.mulDivDown(assets * 100, 10 ** 22);
-    }
+    // function convertToShares(uint256 assets) public view virtual returns (uint256) { 
+    //     return s.ozelIndex == 0 ? 
+    //         oz20Facet(s.oz20).totalSupply() : 
+    //             s.ozelIndex.mulDivDown(assets * 100, 10 ** 22);
+    // }
 
     function convertToAssets(uint256 shares) public view virtual returns (uint256) { 
         uint vaultBalance = IERC20(s.yTriPool).balanceOf(address(this));
@@ -109,9 +106,9 @@ contract oz4626Facet is ModifiersARB {
         return assets;
     }
 
-    function previewDeposit(uint256 assets) public view virtual returns (uint256) {
-        return convertToShares(assets);
-    }
+    // function previewDeposit(uint256 assets) public view virtual returns (uint256) {
+    //     return convertToShares(assets);
+    // }
 
     function previewRedeem(uint256 shares) public view virtual returns (uint256) {
         return convertToAssets(shares);
