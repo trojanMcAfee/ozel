@@ -67,6 +67,16 @@ contract oz4626Facet is ModifiersARB {
     }
 
 
+    /**
+     * @notice Redeemption of AUM
+     * @dev Calls for the calculations of how much funds the user will receive in
+     * regards to the amount of OZL tokens held.
+     * @param shares Amount of OZL tokens
+     * @param receiver Receiver of assets
+     * @param owner Address that holds shares
+     * @param lockNum_ Index of the bit which authorizes the function call
+     * @return assets (Redeemed) Funds from AUM for the receiver
+     */
     function redeem(
         uint shares,
         address receiver,
@@ -92,18 +102,24 @@ contract oz4626Facet is ModifiersARB {
                            ACCOUNTING LOGIC
     //////////////////////////////////////////////////////////////*/
 
+    /**
+     * @dev Calculates the amount of assets to receive based on an OZL balance
+     * @param shares OZL balance
+     * @return assets (Redeemed) Funds to receive
+     */
     function convertToAssets(uint256 shares) public view virtual returns (uint256) { 
         uint vaultBalance = IERC20(s.yTriPool).balanceOf(address(this));
         uint assets = shares.mulDivDown(vaultBalance, 100 * 1 ether); 
         return assets;
     }
 
+    /// @dev Previews the amount of funds from AUM to receive
     function previewRedeem(uint256 shares) public view virtual returns (uint256) {
         return convertToAssets(shares);
     }
 
     /*///////////////////////////////////////////////////////////////
-                     DEPOSIT/WITHDRAWAL LIMIT LOGIC
+                        Funding limit logic
     //////////////////////////////////////////////////////////////*/
 
     function maxDeposit(address) public view virtual returns (uint256) { 
@@ -118,6 +134,11 @@ contract oz4626Facet is ModifiersARB {
         return convertToAssets(maxRedeem(owner));
     }
 
+    /**
+     * @notice Maximum redeemable amount of OZL tokens for an user
+     * @param owner Holder of OZL tokens
+     * @return uint OZL balance
+     */
     function maxRedeem(address owner) public view virtual returns (uint256) {
         return oz20Facet(s.oz20).balanceOf(owner);
     }

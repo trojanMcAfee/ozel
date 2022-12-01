@@ -95,6 +95,7 @@ struct AccountConfig {
     address user;
     address token;
     uint slippage; 
+    string name;
 }
 
 

@@ -232,7 +232,8 @@ async function deployFacet(facetName) {
 
 //Deploys contracts in Arbitrum
 async function deploy(n = 0) { 
-    const [callerAddr, caller2Addr] = await hre.ethers.provider.listAccounts();
+    const addresses = await hre.ethers.provider.listAccounts();
+    const [callerAddr, caller2Addr] = addresses;
     console.log('--');
     console.log('Caller 1: ', callerAddr);
     console.log('Caller 2: ', caller2Addr);
