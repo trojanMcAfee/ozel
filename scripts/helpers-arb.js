@@ -156,14 +156,15 @@ async function replaceForModVersion(contractName, checkUSDTbalance, selector, ac
         let flag = false;
 
         try { 
-            const action = contractName === 'ComputeRevenueV1' ? 0 : 1;
+            const facet = await OZLDiamond.facetAddress(selectorTESTVAR);
+            const action = facet === nullAddr ? 0 : 1;
+
             const tx = await OZLDiamond.diamondCut(
                 [[ modContract.address, action, [selectorTESTVAR] ]],
                 nullAddr,
                 '0x'
             );
             await tx.wait();
-            console.log('changed');
         } catch {
             continueComputing();
             flag = true;
@@ -174,17 +175,14 @@ async function replaceForModVersion(contractName, checkUSDTbalance, selector, ac
             if (contractName === 'ComputeRevenueV1') {
                 stringToHash = 'testvar2.position';
             } else if (contractName === 'ComputeRevenueV2') {
-                console.log('here');
                 stringToHash = 'testvar2.second.position';
             } else if (contractName === 'ComputeRevenueV3') {
                 stringToHash = 'testvar2.third.position';
             }
 
             let position = keccak256(toUtf8Bytes(stringToHash)); 
-            console.log(1);
             const tx = await OZLDiamond.setTESTVAR2(1, position);
             await tx.wait();
-            console.log(2);
         }
     }
     
@@ -196,8 +194,6 @@ async function replaceForModVersion(contractName, checkUSDTbalance, selector, ac
     };
 
     await OZLDiamond.diamondCut(faceCutArgs, nullAddr, '0x', opsL2);
-
-    console.log('isIndex: ', isIndex);
 
     if (!isIndex) {
         receipt = await sendETH(accountDetails); 

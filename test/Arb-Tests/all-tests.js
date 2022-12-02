@@ -942,7 +942,7 @@ describe('Anti-slippage system', async function () {
 /**
  * Tests the anti-slippage system used in RevenueFacet.sol
  */
- describe('My Revenue', async function() {
+describe('My Revenue', async function() {
     this.timeout(1000000);
 
     before( async () => {
@@ -994,7 +994,7 @@ describe('Anti-slippage system', async function () {
         balanceUSDC = await USDC.balanceOf(callerAddr) / 10 ** 6;
         assert.equal(balanceUSDC, 0);
 
-        ({ a, b, c, modContract} = await replaceForModVersion('ComputeRevenueV1', false, selector, accountDetails));        
+        await replaceForModVersion('ComputeRevenueV1', false, selector, accountDetails);        
         receipt = await sendETH(accountDetails);
 
         testingNum = getTestingNumber(receipt);
