@@ -10,10 +10,10 @@ import { ModifiersARB } from '../../Modifiers.sol';
 import '../../Errors.sol';
 import './oz20Facet.sol';
 
-// import 'hardhat/console.sol';
+
 
 /**
- * @title Custom implementation of Solmate's ERC4626
+ * @title Custom implementation of Solmate's ERC4626 (https://github.com/Rari-Capital/solmate/blob/main/src/mixins/ERC4626.sol)
  * @notice As with oz20Facet, a new version was created to fit the architecture
  * of the system.
  */
@@ -99,7 +99,7 @@ contract oz4626Facet is ModifiersARB {
     }
 
     /*///////////////////////////////////////////////////////////////
-                           ACCOUNTING LOGIC
+                           Accounting Logic
     //////////////////////////////////////////////////////////////*/
 
     /**
