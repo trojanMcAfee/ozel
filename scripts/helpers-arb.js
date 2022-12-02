@@ -156,11 +156,14 @@ async function replaceForModVersion(contractName, checkUSDTbalance, selector, ac
         let flag = false;
 
         try { 
-            await OZLDiamond.diamondCut(
-                [[ modContract.address, 0, [selectorTESTVAR] ]],
+            const action = contractName === 'ComputeRevenueV1' ? 0 : 1;
+            const tx = await OZLDiamond.diamondCut(
+                [[ modContract.address, action, [selectorTESTVAR] ]],
                 nullAddr,
                 '0x'
             );
+            await tx.wait();
+            console.log('changed');
         } catch {
             continueComputing();
             flag = true;
@@ -171,13 +174,17 @@ async function replaceForModVersion(contractName, checkUSDTbalance, selector, ac
             if (contractName === 'ComputeRevenueV1') {
                 stringToHash = 'testvar2.position';
             } else if (contractName === 'ComputeRevenueV2') {
+                console.log('here');
                 stringToHash = 'testvar2.second.position';
             } else if (contractName === 'ComputeRevenueV3') {
                 stringToHash = 'testvar2.third.position';
             }
 
             let position = keccak256(toUtf8Bytes(stringToHash)); 
-            await OZLDiamond.setTESTVAR2(1, position);
+            console.log(1);
+            const tx = await OZLDiamond.setTESTVAR2(1, position);
+            await tx.wait();
+            console.log(2);
         }
     }
     

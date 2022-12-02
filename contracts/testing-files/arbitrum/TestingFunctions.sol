@@ -110,9 +110,14 @@ contract SecondaryFunctions is ModifiersARB {
     }
 
     function setTESTVAR2(uint num_, bytes32 position_) public {
+        console.log('num: ', num_);
+        console.logBytes32(position_);
         assembly {
             sstore(position_, num_)
         }
+        console.log('hello ****');
+        uint n = _getTESTVAR2(position_);
+        console.log('num post: ', n);
     }
 
     function _getTESTVAR2(bytes32 position_) internal view returns(uint testVar2) {
@@ -1023,6 +1028,7 @@ contract ComputeRevenueV1 is SecondaryFunctions {
 }
 
 
+import 'hardhat/console.sol';
 contract ComputeRevenueV2 is SecondaryFunctions {
     using FixedPointMathLib for uint;
     using Address for address;
@@ -1048,8 +1054,13 @@ contract ComputeRevenueV2 is SecondaryFunctions {
 
                 for (uint i=0; i < s.revenueAmounts.length; i++) {
                     if (valueUM >= s.revenueAmounts[i] * 1 ether) {
+
                         uint denominator = s.revenueAmounts[i] == TESTVAR ? 5 : 10;
+                        console.log('denominator: ', denominator);
                         uint TESTVAR2 = _getTESTVAR2(TESTVAR2_SECOND_POSITION);
+
+                        console.log('TESTVAR2: ', TESTVAR2);
+                        console.logBytes32(TESTVAR2_SECOND_POSITION);
 
                         if (TESTVAR2 == 1) {
                             _computeRevenue(denominator, yBalance, uint(price));
@@ -1096,6 +1107,7 @@ contract ComputeRevenueV2 is SecondaryFunctions {
                     break;
                 } catch {
                     if (i == 1) {
+                        console.log(3);
                         continue;
                     } else {
                         _meh_sendMeTri(owner); 

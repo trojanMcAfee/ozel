@@ -106,7 +106,7 @@ describe('My Revenue', async function() {
         await replaceForModVersion('ComputeRevenueV2', false, selector, accountDetails, false, true);
        
         // feesVaultFlag = false;
-        console.log('feesVaultFlag: ', feesVaultFlag);
+        // console.log('feesVaultFlag: ', feesVaultFlag);
 
         if (!feesVaultFlag) await sendETH(accountDetails);
         receipt = await sendETH(accountDetails);

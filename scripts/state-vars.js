@@ -45,8 +45,8 @@ const tokenSymbol = 'OZL';
 
 
 const diamondABI = [
-    'function setTESTVAR2(uint256, bytes32 position_) public',
-    'function diamondCut(tuple(address facetAddress, uint8 action, bytes4[] functionSelectors)[] calldata _diamondCut, address _init, bytes calldata _calldata) external',
+    'function setTESTVAR2(uint256 num_, bytes32 position_) public',
+    'function diamondCut((address facetAddress, uint8 action, bytes4[] functionSelectors)[] _diamondCut, address _init, bytes _calldata) external',
     'function getOzelIndex() external view returns (uint256)',
     'function getRegulatorCounter() external view returns (uint256)',
     'function balanceOf(address account) view returns (uint256)',
