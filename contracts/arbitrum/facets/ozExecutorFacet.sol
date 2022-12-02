@@ -1,31 +1,28 @@
 // SPDX-License-Identifier: GPL-2.0-or-later
-pragma solidity ^0.8.0;
+pragma solidity 0.8.14;
 
 
 import '@rari-capital/solmate/src/utils/FixedPointMathLib.sol';
 import '@openzeppelin/contracts/token/ERC20/IERC20.sol';
 import { IMulCurv } from '../../interfaces/ICurve.sol';
 import { ModifiersARB } from '../../Modifiers.sol';
+import '../../interfaces/ozIExecutorFacet.sol';
 import '../AppStorage.sol';
 
-// import 'hardhat/console.sol';
 
-
-contract ozExecutorFacet is ModifiersARB { 
+/**
+ * @title Executor of main system functions
+ * @notice In charge of swapping to the account's stablecoin and modifying 
+ * state for pegged OZL rebase
+ */
+contract ozExecutorFacet is ozIExecutorFacet, ModifiersARB { 
 
     using FixedPointMathLib for uint;
 
-    function calculateSlippage(
-        uint amount_, 
-        uint basisPoint_
-    ) public pure returns(uint minAmountOut) {
-        minAmountOut = amount_ - amount_.mulDivDown(basisPoint_, 10000);
-    }
-
-
+    /// @inheritdoc ozIExecutorFacet
     function executeFinalTrade( 
         TradeOps calldata swapDetails_, 
-        uint userSlippage_,
+        uint accountSlippage_,
         address user_,
         uint lockNum_
     ) external payable isAuthorized(lockNum_) noReentrancy(3) {
@@ -38,18 +35,13 @@ contract ozExecutorFacet is ModifiersARB {
             pool != s.renPool ? s.USDT : s.WBTC
         ).approve(pool, inBalance);
 
-        /**** 
-            Exchanges the amount using the user's slippage (final swap)
-            If it fails, it doubles the slippage, divides the amount between two and tries again.
-            If none works, sends the baseToken instead to the user.
-        ****/ 
         for (uint i=1; i <= 2; i++) {
             if (pool == s.renPool || pool == s.crv2Pool) {
 
                 minOut = IMulCurv(pool).get_dy(
                     swapDetails_.tokenIn, swapDetails_.tokenOut, inBalance / i
                 );
-                slippage = calculateSlippage(minOut, userSlippage_ * i);
+                slippage = calculateSlippage(minOut, accountSlippage_ * i);
 
                 try IMulCurv(pool).exchange(
                     swapDetails_.tokenIn, swapDetails_.tokenOut, inBalance / i, slippage
@@ -75,7 +67,7 @@ contract ozExecutorFacet is ModifiersARB {
                 minOut = IMulCurv(pool).get_dy_underlying(
                     swapDetails_.tokenIn, swapDetails_.tokenOut, inBalance / i
                 );
-                slippage = calculateSlippage(minOut, userSlippage_ * i);
+                slippage = calculateSlippage(minOut, accountSlippage_ * i);
                 
                 try IMulCurv(pool).exchange_underlying(
                     swapDetails_.tokenIn, swapDetails_.tokenOut, inBalance / i, slippage
@@ -101,10 +93,25 @@ contract ozExecutorFacet is ModifiersARB {
         }
     }
 
+    /**
+     * @dev Calculates the minimum amount to receive on swaps based on a given slippage
+     * @param amount_ Amount of tokens in
+     * @param basisPoint_ Slippage in basis point
+     * @return minAmountOut Minimum amount to receive
+     */
+    function calculateSlippage(
+        uint amount_, 
+        uint basisPoint_
+    ) public pure returns(uint minAmountOut) {
+        minAmountOut = amount_ - amount_.mulDivDown(basisPoint_, 10000);
+    }
+
    
+    /*///////////////////////////////////////////////////////////////
+                    Updates state for OZL calculations
+    //////////////////////////////////////////////////////////////*/
 
-    //****** Modifies manager's STATE *****/
-
+    /// @inheritdoc ozIExecutorFacet
     function updateExecutorState(
         uint amount_, 
         address user_,
