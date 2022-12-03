@@ -2,9 +2,10 @@
 pragma solidity 0.8.14;
 
 
+import '../arbitrum/AppStorage.sol';
+
 
 interface ozIExecutorFacet {
-
 
     /**
      * @notice Final swap
@@ -38,6 +39,34 @@ interface ozIExecutorFacet {
         uint lockNum_
     ) external payable;
 
+    /**
+     * @notice Helper for burn() on oz20Facet when redeeming OZL for funds
+     * @dev Allows the modification of the system state, and the user's interaction
+     * with it, outside this main contract.
+     * @param user_ Owner of account
+     * @param newAmount_ ETH (WETH internally) transacted
+     * @param lockNum_ Index of the bit which authorizes the function call
+     */
+    function modifyPaymentsAndVolumeExternally(
+        address user_, 
+        uint newAmount_,
+        uint lockNum_
+    ) external;
 
-
+    /**
+     * @notice Helper for _transfer() on oz420Facet
+     * @dev Executes the logic that will cause the transfer of OZL from one user to another
+     * @param sender_ Sender of OZL tokens
+     * @param receiver_ Receiver of sender_'s transfer
+     * @param amount_ OZL tokens to send to receiver_
+     * @param senderBalance_ Sender_'s total OZL balance
+     * @param lockNum_ Index of the bit which authorizes the function call
+     */
+    function transferUserAllocation( 
+        address sender_, 
+        address receiver_, 
+        uint amount_, 
+        uint senderBalance_,
+        uint lockNum_
+    ) external;
 }

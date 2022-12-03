@@ -7,7 +7,7 @@ import '@openzeppelin/contracts/token/ERC20/IERC20.sol';
 import { IMulCurv } from '../../interfaces/ICurve.sol';
 import { ModifiersARB } from '../../Modifiers.sol';
 import '../../interfaces/ozIExecutorFacet.sol';
-import '../AppStorage.sol';
+
 
 
 /**
@@ -122,7 +122,10 @@ contract ozExecutorFacet is ozIExecutorFacet, ModifiersARB {
         _updateIndex();
     }
 
-
+    /**
+     * @dev Balances the Ozel Index using different invariants and regulators, based 
+     *      in the amount of volume have flowed through the system.
+     */
     function _updateIndex() private { 
         uint oneETH = 1 ether;
 
@@ -148,7 +151,7 @@ contract ozExecutorFacet is ozIExecutorFacet, ModifiersARB {
         s.ozelIndex = s.indexFlag ? s.ozelIndex : s.ozelIndex * s.stabilizer;
     }
 
-
+    /// @inheritdoc ozIExecutorFacet
     function modifyPaymentsAndVolumeExternally(
         address user_, 
         uint newAmount_,
@@ -159,6 +162,8 @@ contract ozExecutorFacet is ozIExecutorFacet, ModifiersARB {
         _updateIndex();
     }
 
+
+    /// @inheritdoc ozIExecutorFacet
     function transferUserAllocation( 
         address sender_, 
         address receiver_, 
