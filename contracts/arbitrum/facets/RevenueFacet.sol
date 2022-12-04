@@ -12,7 +12,6 @@ import './ozExecutorFacet.sol';
 import '../AppStorage.sol';
 import '../ozDiamond.sol';
 
-import 'hardhat/console.sol';
 
 
 contract RevenueFacet {
@@ -25,7 +24,14 @@ contract RevenueFacet {
     event RevenueEarned(uint indexed amount);
 
 
-    //WETH: 2, USDT: 0
+    /*///////////////////////////////////////////////////////////////
+                                Main
+    //////////////////////////////////////////////////////////////*/
+
+    /**
+     * @dev Checks if enough fees have been charged in comparison to the revenue
+     * tiers, and if it has reached a level, it'll start computing it (the revenue). 
+     */
     function checkForRevenue() external payable { 
         (,int price,,,) = s.priceFeed.latestRoundData();
 
@@ -49,9 +55,12 @@ contract RevenueFacet {
         }
     }
 
-
+    /**
+     * @notice Starts the computation of revenue for the owner by removing liquidity from Curve.
+     * @dev It tries once and if it fails, it divides the amount to remove between two and tries again
+     * using the same slippage. If both fail, it sends crv3crypto to the owner. 
+     */
     function _computeRevenue(uint denominator_, uint balance_, uint price_) private {        
-
         address owner = LibDiamond.contractOwner(); 
         uint assetsToWithdraw = balance_ / denominator_;
         IYtri(s.yTriPool).withdraw(assetsToWithdraw);
@@ -87,7 +96,11 @@ contract RevenueFacet {
         }
     }
 
-
+    /**
+     * @notice Swaps the withdrawn liquidity, denominated in WETH, for the revenue token
+     * @dev It tries once and if it fails, it divides the amount to swap between 2, multiplies, 
+     * the slippage by 2 and tries again. If both fail, sends WETH to the owner.
+     */
     function _swapWETHforRevenue(address owner_, uint balanceWETH_, uint price_) private {
         IERC20(s.WETH).approve(address(s.swapRouter), balanceWETH_);
 
@@ -123,13 +136,17 @@ contract RevenueFacet {
         }
     }
 
+    /*///////////////////////////////////////////////////////////////
+                                Helpers
+    //////////////////////////////////////////////////////////////*/
 
+    /// @dev Sends crv3crypto to the owner
     function _meh_sendMeTri(address owner_) private {
         uint balanceTri = IERC20(s.crvTricrypto).balanceOf(address(this));
         IERC20(s.crvTricrypto).transfer(owner_, balanceTri);
     }
 
-
+    /// @dev Calculates the minimum amount to receive, based on the system's slippage
     function _calculateMinOut(uint balanceWETH_, uint i_, uint price_) private view returns(uint minOut) {
         uint expectedOut = balanceWETH_.mulDivDown(price_ * 10 ** 10, 1 ether);
         uint minOutUnprocessed = 
@@ -137,7 +154,7 @@ contract RevenueFacet {
         minOut = minOutUnprocessed.mulWadDown(10 ** 6);
     }
 
-
+    /// @dev Solidity implementation of the shift array method
     function _shiftAmounts(uint i_) private returns(uint) {
         uint element = s.revenueAmounts[i_];
         s.revenueAmounts[i_] = s.revenueAmounts[s.revenueAmounts.length - 1];
