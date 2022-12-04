@@ -54,7 +54,7 @@ contract OZLFacetTest is ModifiersARB {
             accountDetails_.token == s.WBTC || accountDetails_.token == s.renBTC ? 1 : 0;
 
         //Swaps WETH to token (Base: USDT-WBTC / Route: MIM-USDC-renBTC-WBTC) 
-        _swapsForUserToken(
+        _swapsForBaseToken(
             netAmountIn, baseTokenOut, accountDetails_
         );
       
@@ -67,7 +67,7 @@ contract OZLFacetTest is ModifiersARB {
 
 
 
-    function _swapsForUserToken(
+    function _swapsForBaseToken(
         uint amountIn_, 
         uint baseTokenOut_, 
         AccountConfig memory accountDetails_

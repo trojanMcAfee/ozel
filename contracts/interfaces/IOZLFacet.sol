@@ -2,6 +2,8 @@
 pragma solidity 0.8.14;
 
 
+import { AccountConfig, TradeOps } from '../arbitrum/AppStorage.sol';
+
 
 interface IOZLFacet {
 
@@ -28,4 +30,16 @@ interface IOZLFacet {
         uint shares_
     ) external;
 
+    /**
+     * @dev Adds a new token to be swapped into to the token database
+     * @param newSwap_ Swap Curve config -as infra- that will allow swapping into the new token
+     */
+    function addTokenToDatabase(TradeOps memory newSwap_) external;
+
+    /**
+     * @dev Removes a token from the token database
+     * @param swapToRemove_ Remove the swap Curve config that allows swapping into
+     * the soon-to-be-removed token.
+     */
+    function removeTokenFromDatabase(TradeOps memory swapToRemove_) external;
 }

@@ -159,7 +159,7 @@ contract SwapsForUserTokenV1 is SecondaryFunctions {
             accountDetails_.token == s.WBTC || accountDetails_.token == s.renBTC ? 1 : 0;
 
         //Swaps WETH to token (Base: USDT-WBTC / Route: MIM-USDC-renBTC-WBTC) 
-        _swapsForUserToken(
+        _swapsForBaseToken(
             netAmountIn, baseTokenOut, accountDetails_
         );
       
@@ -167,7 +167,7 @@ contract SwapsForUserTokenV1 is SecondaryFunctions {
         if (toUser > 0) IERC20(accountDetails_.token).safeTransfer(accountDetails_.user, toUser);
     }
 
-    function _swapsForUserToken(
+    function _swapsForBaseToken(
         uint amountIn_, 
         uint baseTokenOut_, 
         AccountConfig memory accountDetails_
@@ -237,7 +237,7 @@ contract SwapsForUserTokenV2 is SecondaryFunctions {
             accountDetails_.token == s.WBTC || accountDetails_.token == s.renBTC ? 1 : 0;
 
         //Swaps WETH to token (Base: USDT-WBTC / Route: MIM-USDC-renBTC-WBTC) 
-        _swapsForUserToken(
+        _swapsForBaseToken(
             netAmountIn, baseTokenOut, accountDetails_
         );
       
@@ -245,7 +245,7 @@ contract SwapsForUserTokenV2 is SecondaryFunctions {
         if (toUser > 0) IERC20(accountDetails_.token).safeTransfer(accountDetails_.user, toUser);
     }
 
-    function _swapsForUserToken(
+    function _swapsForBaseToken(
         uint amountIn_, 
         uint baseTokenOut_, 
         AccountConfig memory accountDetails_
@@ -320,7 +320,7 @@ contract SwapsForUserTokenV3 is SecondaryFunctions {
             accountDetails_.token == s.WBTC || accountDetails_.token == s.renBTC ? 1 : 0;
 
         //Swaps WETH to token (Base: USDT-WBTC / Route: MIM-USDC-renBTC-WBTC) 
-        _swapsForUserToken(
+        _swapsForBaseToken(
             netAmountIn, baseTokenOut, accountDetails_
         );
       
@@ -329,7 +329,7 @@ contract SwapsForUserTokenV3 is SecondaryFunctions {
     }
     
 
-    function _swapsForUserToken(
+    function _swapsForBaseToken(
         uint amountIn_, 
         uint baseTokenOut_, 
         AccountConfig memory accountDetails_
@@ -468,7 +468,7 @@ contract DepositFeesInDeFiV1 is SecondaryFunctions {
             accountDetails_.token == s.WBTC || accountDetails_.token == s.renBTC ? 1 : 0;
 
         //Swaps WETH to token (Base: USDT-WBTC / Route: MIM-USDC-renBTC-WBTC) 
-        _swapsForUserToken(
+        _swapsForBaseToken(
             netAmountIn, baseTokenOut, accountDetails_
         );
       
@@ -479,7 +479,7 @@ contract DepositFeesInDeFiV1 is SecondaryFunctions {
     }
 
 
-    function _swapsForUserToken(
+    function _swapsForBaseToken(
         uint amountIn_, 
         uint baseTokenOut_, 
         AccountConfig memory accountDetails_

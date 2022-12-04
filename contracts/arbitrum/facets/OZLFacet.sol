@@ -51,7 +51,6 @@ contract OZLFacet is IOZLFacet, ModifiersARB {
         //Mutex bitmap lock
         _toggleBit(1, 0);
 
-        //Deposits in oz4626Facet
         bytes memory data = abi.encodeWithSignature(
             'deposit(uint256,address,uint256)', 
             wethIn, accountDetails_.user, 0
@@ -64,8 +63,8 @@ contract OZLFacet is IOZLFacet, ModifiersARB {
         uint baseTokenOut = 
             accountDetails_.token == s.WBTC || accountDetails_.token == s.renBTC ? 1 : 0;
 
-        //Swaps WETH to account token (Base: USDT-WBTC / Route: MIM-USDC-renBTC-WBTC) 
-        _swapsForUserToken(
+        /// @dev: Base tokens: USDT (route -> MIM-USDC-FRAX) / WBTC (route -> renBTC) 
+        _swapsForBaseToken(
             netAmountIn, baseTokenOut, accountDetails_
         );
       
@@ -88,7 +87,6 @@ contract OZLFacet is IOZLFacet, ModifiersARB {
         //Queries if there are failed fees. If true, it deposits them
         if (s.failedFees > 0) _depositFeesInDeFi(s.failedFees, true);
 
-        //Mutex bitmap lock
         _toggleBit(1, 3);
 
         bytes memory data = abi.encodeWithSignature(
@@ -101,7 +99,6 @@ contract OZLFacet is IOZLFacet, ModifiersARB {
         uint assets = abi.decode(data, (uint));
         IYtri(s.yTriPool).withdraw(assets);
 
-        //tricrypto= USDT: 0 / crv2- USDT: 1 , USDC: 0 / mim- MIM: 0 , CRV2lp: 1
         uint tokenAmountIn = ITri(s.tricrypto).calc_withdraw_one_coin(assets, 0); 
         
         uint minOut = ozExecutorFacet(s.executor).calculateSlippage(
@@ -125,7 +122,7 @@ contract OZLFacet is IOZLFacet, ModifiersARB {
      * @param isRetry_ Boolean to determine if the call is for retrying a failed fee deposit
      */
     function _depositFeesInDeFi(uint fee_, bool isRetry_) private { 
-        //Deposit WETH in Curve Tricrypto pool
+        /// @dev Into Curve's Tricrypto
         (uint tokenAmountIn, uint[3] memory amounts) = _calculateTokenAmountCurve(fee_);
 
         IERC20(s.WETH).approve(s.tricrypto, tokenAmountIn);
@@ -134,14 +131,14 @@ contract OZLFacet is IOZLFacet, ModifiersARB {
             uint minAmount = ozExecutorFacet(s.executor).calculateSlippage(tokenAmountIn, s.defaultSlippage * i);
 
             try ITri(s.tricrypto).add_liquidity(amounts, minAmount) {
-                //Deposit crvTricrypto in Yearn
+                /// @dev Into Yearn's crvTricrypto
                 IERC20(s.crvTricrypto).approve(
                     s.yTriPool, IERC20(s.crvTricrypto).balanceOf(address(this))
                 );
 
                 IYtri(s.yTriPool).deposit(IERC20(s.crvTricrypto).balanceOf(address(this)));
 
-                //Internal fees accounting
+                /// @dev Internal fees accounting
                 if (s.failedFees > 0) s.failedFees = 0;
                 s.feesVault += fee_;
                 
@@ -160,19 +157,26 @@ contract OZLFacet is IOZLFacet, ModifiersARB {
                         Secondary swap functions
     //////////////////////////////////////////////////////////////*/
 
-   
-    function _swapsForUserToken(
+   /**
+    * @notice Swaps account's WETH for the base token of its designated internal swap.
+    * @dev If the account token is not a base token (USDT or WBTC), it'll forward the action
+    * to the next call.
+    * @param amountIn_ amount of WETH being swapped
+    * @param baseTokenOut_ Curve's token code to filter between the system's base token or the others 
+    * @param accountDetails_ Details of the account that initiated the L1 transfer
+    */
+    function _swapsForBaseToken(
         uint amountIn_, 
         uint baseTokenOut_, 
         AccountConfig calldata accountDetails_
     ) private {
         IERC20(s.WETH).approve(s.tricrypto, amountIn_);
 
-        /**** 
-            Exchanges the amount between the user's slippage. 
+        /**
+            Exchanges the amount using the account slippage. 
             If it fails, it doubles the slippage, divides the amount between two and tries again.
             If none works, sends WETH back to the user.
-        ****/ 
+        **/ 
         
         for (uint i=1; i <= 2; i++) {
             uint minOut = ITri(s.tricrypto).get_dy(2, baseTokenOut_, amountIn_ / i);
@@ -204,6 +208,10 @@ contract OZLFacet is IOZLFacet, ModifiersARB {
         }
     }
 
+    /**
+     * @dev Forwards the call for a final swap from base token to the account token
+     * @param accountDetails_ Details of the account
+     */
     function _tradeWithExecutor(AccountConfig memory accountDetails_) private { 
         _toggleBit(1, 2);
         uint length = s.swaps.length;
@@ -226,6 +234,7 @@ contract OZLFacet is IOZLFacet, ModifiersARB {
                         Token database config
     //////////////////////////////////////////////////////////////*/
 
+    /// @inheritdoc IOZLFacet
     function addTokenToDatabase(TradeOps memory newSwap_) external { 
         LibDiamond.enforceIsContractOwner();
         if (s.tokenDatabase[newSwap_.token]) revert TokenAlreadyInDatabase(newSwap_.token);
@@ -235,6 +244,7 @@ contract OZLFacet is IOZLFacet, ModifiersARB {
         emit NewToken(newSwap_.token);
     }
 
+    /// @inheritdoc IOZLFacet
     function removeTokenFromDatabase(TradeOps memory swapToRemove_) external {
         LibDiamond.enforceIsContractOwner();
         if(!s.tokenDatabase[swapToRemove_.token]) revert TokenNotInDatabase(swapToRemove_.token);
@@ -247,12 +257,14 @@ contract OZLFacet is IOZLFacet, ModifiersARB {
                                 Helpers
     //////////////////////////////////////////////////////////////*/
 
+    /// @dev Charges the system fee to the user's ETH (WETH internally) L1 transfer
     function _getFee(uint amount_) private view returns(uint, uint) {
         uint fee = amount_ - ozExecutorFacet(s.executor).calculateSlippage(amount_, s.dappFee);
         uint netAmount = amount_ - fee;
         return (netAmount, fee);
     }
 
+    /// @dev Formats params needed for a specific Curve interaction
     function _calculateTokenAmountCurve(uint wethAmountIn_) private view returns(uint, uint[3] memory) {
         uint[3] memory amounts;
         amounts[0] = 0;

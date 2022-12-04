@@ -75,7 +75,7 @@ describe('Anti-slippage system', async function () {
     describe('Modified OZLFacet', async () => {
 
         /** 
-         * Changed the first slippage for type(uint).max in _swapsForUserToken 
+         * Changed the first slippage for type(uint).max in _swapsForBaseToken 
          * in order to provoke all trades to fail (due to slippage) and invoke
          * the last resort mechanism (send WETH back to user)
          */ 
