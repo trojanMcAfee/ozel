@@ -4,14 +4,15 @@ pragma solidity 0.8.14;
 
 import '@openzeppelin/contracts/utils/Address.sol';
 import '@rari-capital/solmate/src/utils/FixedPointMathLib.sol';
-import '../AppStorage.sol';
 import { ITri } from '../../interfaces/ICurve.sol';
+import '../../interfaces/ozILoupeFacet.sol';
 import '../../interfaces/IYtri.sol';
 import './DiamondLoupeFacet.sol';
+import '../AppStorage.sol';
 
 
 
-contract ozLoupeFacet is DiamondLoupeFacet {
+contract ozLoupeFacet is ozILoupeFacet, DiamondLoupeFacet {
 
     AppStorage s;
 
@@ -23,32 +24,39 @@ contract ozLoupeFacet is DiamondLoupeFacet {
         return s.tokenDatabase[token_];
     }
 
+    /// @inheritdoc ozILoupeFacet
     function getOzelIndex() external view returns(uint) { 
         return s.ozelIndex;
     }
 
+    /// @inheritdoc ozILoupeFacet
     function getRegulatorCounter() external view returns(uint) {
         return s.regulatorCounter;
     }
 
+    /// @dev Gets the total volume that has flowed into the system from L1 ETH transfers. 
     function getTotalVolumeInETH() external view returns(uint) {
         return s.totalVolume;
     }
 
+    /// @dev Same as above but in USD
     function getTotalVolumeInUSD() external view returns(uint) {
         (,int price,,,) = s.priceFeed.latestRoundData();
         return (s.totalVolume * uint(price)) / 10 ** 8;
     }
 
+    /// @dev External version of _getAUM()
     function getAUM(int price_) external view returns(uint yBalance, uint valueUM) { 
         (yBalance, ,valueUM) = _getAUM(price_);
     }
 
+    /// @dev Overloaded -and public- version of _getAUM()
     function getAUM() public view returns(uint wethUM, uint valueUM) { 
         (,int price,,,) = s.priceFeed.latestRoundData();
         (, wethUM, valueUM) = _getAUM(price);
     }
 
+    /// @inheritdoc ozILoupeFacet
     function getOzelBalances(address user_) external view returns(uint, uint) {       
         (uint wethUM, uint valueUM) = getAUM();
 
@@ -62,6 +70,15 @@ contract ozLoupeFacet is DiamondLoupeFacet {
         return (wethUserShare, usdUserShare);
     }
 
+    /**
+     * @notice Calculates the AUM (Assets Under Management) of the system.
+     * @dev At the current version, they (AUM) are all the fees charged in every incoming 
+     * L1 transfer from each account created by an user.
+     * @param price_ Current ETHUSD price feed
+     * @return yBalance AUM expressed in yToken
+     * @return wethUM AUM expressed in WETH
+     * @return valueUM AUM expressed in USD
+     */
     function _getAUM(int price_) private view returns(uint, uint, uint) {
         uint yBalance = IYtri(s.yTriPool).balanceOf(address(this));
         uint priceShare = IYtri(s.yTriPool).pricePerShare();
@@ -72,6 +89,11 @@ contract ozLoupeFacet is DiamondLoupeFacet {
         return (yBalance, wethUM, valueUM);
     }
 
+    /**
+     * @dev Gets the user's share of AUM depending on their OZL balance
+     * @param userOzlBalance_ User's OZL balance
+     * @param amountUM_ AUM
+     */
     function _getUserShare(
         uint userOzlBalance_, 
         uint amountUM_
