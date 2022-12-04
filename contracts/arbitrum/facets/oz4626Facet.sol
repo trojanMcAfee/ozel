@@ -134,11 +134,6 @@ contract oz4626Facet is ModifiersARB {
         return convertToAssets(maxRedeem(owner));
     }
 
-    /**
-     * @notice Maximum redeemable amount of OZL tokens for an user
-     * @param owner Holder of OZL tokens
-     * @return uint OZL balance
-     */
     function maxRedeem(address owner) public view virtual returns (uint256) {
         return oz20Facet(s.oz20).balanceOf(owner);
     }

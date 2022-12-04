@@ -5,8 +5,17 @@ pragma solidity 0.8.14;
 import { TradeOps } from '../arbitrum/AppStorage.sol';
 
 
+/**
+ * @notice Library of common methods using in both L1 and L2 contracts
+ */
 library LibCommon {
 
+    /**
+     * @notice L1 removal method
+     * @dev Removes a token from the token database
+     * @param tokensDB_ Array of addresses where the removal will occur
+     * @param toRemove_ Token to remove
+     */
     function remove(address[] storage tokensDB_, address toRemove_) external {
         uint index;
         for (uint i=0; i < tokensDB_.length; i++) {
@@ -23,6 +32,12 @@ library LibCommon {
         tokensDB_.pop();
     }
 
+    /**
+     * @notice Overloaded L2 removal method
+     * @dev Removes a token and its swap config from the token database
+     * @param swaps_ Array of structs where the removal will occur
+     * @param swapToRemove_ Config struct to be removed
+     */
     function remove(
         TradeOps[] storage swaps_, 
         TradeOps memory swapToRemove_

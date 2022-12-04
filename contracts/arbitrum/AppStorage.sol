@@ -10,7 +10,7 @@ import '@openzeppelin/contracts/token/ERC20/IERC20.sol';
  * @notice Main storage structs
  */
 struct AppStorage { 
-    /// @dev Contracts
+    //Contracts
     address tricrypto;
     address crvTricrypto; 
     address renPool;
@@ -20,7 +20,7 @@ struct AppStorage {
     address fraxPool;
     address executor;
 
-    /// @dev ERC20s
+    //ERC20s
     address USDT;
     address WBTC;
     address renBTC;
@@ -30,33 +30,33 @@ struct AppStorage {
     address FRAX;
     address ETH;
 
-    /// @dev Token infrastructure
+    //Token infrastructure
     address oz20;
     OZLERC20 oz;
 
-    /// @dev System config
+    //System config
     uint dappFee;
     uint defaultSlippage;
     mapping(address => bool) tokenDatabase;
 
-    /// @dev Internal accounting vars
+    //Internal accounting vars
     uint totalVolume;
     uint ozelIndex;
     uint feesVault;
     uint failedFees;
     mapping(address => uint) usersPayments;
 
-    /// @dev Curve swaps config
+    //Curve swaps config
     TradeOps renSwap;
     TradeOps mimSwap;
     TradeOps usdcSwap;
     TradeOps fraxSwap;
     TradeOps[] swaps;
 
-    /// @dev Mutex locks
+    //Mutex locks
     mapping(uint => uint) bitLocks;
 
-    /// @dev Stabilizing mechanism (for ozelIndex)
+    //Stabilizing mechanism (for ozelIndex)
     uint invariant;
     uint invariant2;
     uint indexRegulator;
@@ -66,14 +66,14 @@ struct AppStorage {
     uint invariantRegulatorLimit;
     uint regulatorCounter;
 
-    /// @dev Revenue vars
+    //Revenue vars
     ISwapRouter swapRouter;
     AggregatorV3Interface priceFeed;
     address revenueToken;
     uint24 poolFee;
     uint[] revenueAmounts;
 
-    /// @dev Misc vars
+    //Misc vars
     bool isEnabled;
     bytes checkForRevenueSelec;
 

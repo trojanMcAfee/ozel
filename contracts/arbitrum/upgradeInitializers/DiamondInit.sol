@@ -26,14 +26,14 @@ contract DiamondInit {
     AppStorage s;
     
     function init(LibDiamond.VarsAndAddresses calldata vars_) external {
-        /// @dev adding ERC165 data
+        //Adding ERC165 data
         LibDiamond.DiamondStorage storage ds = LibDiamond.diamondStorage();
         ds.supportedInterfaces[type(IERC165).interfaceId] = true;
         ds.supportedInterfaces[type(IDiamondCut).interfaceId] = true;
         ds.supportedInterfaces[type(IDiamondLoupe).interfaceId] = true;
         ds.supportedInterfaces[type(IERC173).interfaceId] = true;
 
-        /// @dev Addresses on contracts
+        //Addresses on contracts
         s.tricrypto = vars_.contracts[0];
         s.crvTricrypto = vars_.contracts[1];
         s.renPool = vars_.contracts[2];
@@ -44,7 +44,7 @@ contract DiamondInit {
         s.executor = vars_.contracts[7];
         s.oz20 = vars_.contracts[8];
 
-        /// @dev ERC20 addresses
+        //ERC20 addresses
         s.USDT = vars_.erc20s[0];
         s.WBTC = vars_.erc20s[1];
         s.renBTC = vars_.erc20s[2];
@@ -53,43 +53,43 @@ contract DiamondInit {
         s.WETH = vars_.erc20s[5];
         s.FRAX = vars_.erc20s[6];
 
-        /// @dev Tokens database
+        //Tokens database
         uint length = vars_.tokensDb.length;
         for (uint i=0; i < length;) {
             s.tokenDatabase[vars_.tokensDb[i]] = true;
             unchecked { ++i; }
         }
 
-        /// @dev System's general variables
+        //System's general variables
         s.dappFee = vars_.appVars[0];
         s.defaultSlippage = vars_.appVars[1];
 
-        /// @dev Name and Symbol on OZL
+        //Name and Symbol on OZL
         s.oz.name = vars_.ozlVars[0];
         s.oz.symbol = vars_.ozlVars[1];
 
-        /// @dev ETH address
+        //ETH address
         s.ETH = vars_.ETH;
 
         /**
-         * @dev Structs for token swaps (using Curve's token codes)
-         *      renPool -->  renBTC: 1 / WBTC: 0
-         *      mimPool --> MIM: 0 / USDT: 2 / USDC: 1
-         *      crv2Pool --> /USDC: 0 / USDT: 1
-         *      fraxPool --> FRAX: 0 / USDT: 2 / USDC: 1
+         * Structs for token swaps (using Curve's token codes)
+         * renPool -->  renBTC: 1 / WBTC: 0
+         * mimPool --> MIM: 0 / USDT: 2 / USDC: 1
+         * crv2Pool --> /USDC: 0 / USDT: 1
+         * fraxPool --> FRAX: 0 / USDT: 2 / USDC: 1
          */
         s.renSwap = TradeOps(0, 1, s.WBTC, s.renBTC, s.renPool);
         s.mimSwap = TradeOps(2, 0, s.USDT, s.MIM, s.mimPool);
         s.usdcSwap = TradeOps(1, 0, s.USDT, s.USDC, s.crv2Pool);
         s.fraxSwap = TradeOps(2, 0, s.USDT, s.FRAX, s.fraxPool);
 
-        /// @dev Array of swap structs
+        //Array of swap structs
         s.swaps.push(s.renSwap);
         s.swaps.push(s.mimSwap);
         s.swaps.push(s.usdcSwap);
         s.swaps.push(s.fraxSwap);
 
-        /// @dev Stabilizing mechanism variables
+        //Stabilizing mechanism variables
         s.invariant = 10 ** 14;
         s.invariant2 = 10 ** 8;
         s.indexRegulator = 0;
@@ -98,18 +98,18 @@ contract DiamondInit {
         s.invariantRegulatorLimit = type(uint).max / s.invariant;
         s.regulatorCounter = 0;
 
-        /// @dev Revenue vars
+        //Revenue vars
         s.priceFeed = AggregatorV3Interface(vars_.contracts[9]);
         s.swapRouter = ISwapRouter(vars_.contracts[10]);
         s.revenueToken = s.USDC;
         s.poolFee = uint24(vars_.appVars[2]);
         s.revenueAmounts = vars_.revenueAmounts;
 
-        /// @dev Mutex bitmap locks
+        //Mutex bitmap locks
         s.bitLocks[0] = 255;  //noReentrancy
         s.bitLocks[1] = 255; //isAuthorized
 
-        /// @dev Misc vars
+        //Misc vars
         s.checkForRevenueSelec = abi.encodeWithSignature('checkForRevenue()');
 
 
