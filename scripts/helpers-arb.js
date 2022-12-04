@@ -216,19 +216,7 @@ async function queryTokenDatabase(token) {
 
 
 async function deployFacet(facetName) { 
-    let Contract;
-
-    if (facetName === 'OZLFacet') {
-        libCommon = await deployFacet('LibCommon');
-        Contract = await hre.ethers.getContractFactory(facetName, {
-            libraries: {
-                LibCommon: libCommon.address
-            }
-        });
-    } else {
-        Contract = await hre.ethers.getContractFactory(facetName);
-    }
-
+    const Contract = await hre.ethers.getContractFactory(facetName);
     const contract = await Contract.deploy();
     await contract.deployed();
     console.log(`${facetName} deployed to: `, contract.address);

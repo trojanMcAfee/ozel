@@ -38,23 +38,25 @@ const {
 async function deployContract(contractName, constrArgs, signer = null) {
     let signer1;
     let var1, var2, var3, var4, var5;
-    let Contract;
+    // let Contract;
 
     if (!signer) {
         [ signer1 ] = await hre.ethers.getSigners();
         signer = signer1;
     }
     
-    if (contractName === 'StorageBeacon') {
-        const [ libCommonAddr ] = await deployContract('LibCommon');
-        Contract = await hre.ethers.getContractFactory(contractName, {
-            libraries: {
-                LibCommon: libCommonAddr
-            }
-        });
-    } else {
-        Contract = await hre.ethers.getContractFactory(contractName);
-    }
+    // if (contractName === 'StorageBeacon') {
+    //     const [ libCommonAddr ] = await deployContract('LibCommon');
+    //     Contract = await hre.ethers.getContractFactory(contractName, {
+    //         libraries: {
+    //             LibCommon: libCommonAddr
+    //         }
+    //     });
+    // } else {
+    //     const Contract = await hre.ethers.getContractFactory(contractName);
+    // }
+
+    const Contract = await hre.ethers.getContractFactory(contractName);
 
     switch(contractName) {
         case 'UpgradeableBeacon':

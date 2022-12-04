@@ -16,7 +16,7 @@ library LibCommon {
      * @param tokensDB_ Array of addresses where the removal will occur
      * @param toRemove_ Token to remove
      */
-    function remove(address[] storage tokensDB_, address toRemove_) external {
+    function remove(address[] storage tokensDB_, address toRemove_) internal {
         uint index;
         for (uint i=0; i < tokensDB_.length; i++) {
             if (tokensDB_[i] == toRemove_)  {
@@ -41,7 +41,7 @@ library LibCommon {
     function remove(
         TradeOps[] storage swaps_, 
         TradeOps memory swapToRemove_
-    ) external {
+    ) internal {
         uint index;
         for (uint i=0; i < swaps_.length; i++) {
             if (swaps_[i].token == swapToRemove_.token)  {
