@@ -14,3 +14,4 @@ error NoReentrance();
 error NotEnabled();
 error LowSlippage(uint slippage);
 error NameTooLong();
+error InvalidTask(bytes32 taskId);
