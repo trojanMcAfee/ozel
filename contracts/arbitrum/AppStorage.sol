@@ -6,8 +6,11 @@ import '@uniswap/v3-periphery/contracts/interfaces/ISwapRouter.sol';
 import '@openzeppelin/contracts/token/ERC20/IERC20.sol';
 
 
+/**
+ * @notice Main storage structs
+ */
 struct AppStorage { 
-    //Contracts
+    /// @dev Contracts
     address tricrypto;
     address crvTricrypto; 
     address renPool;
@@ -17,7 +20,7 @@ struct AppStorage {
     address fraxPool;
     address executor;
 
-    //ERC20s
+    /// @dev ERC20s
     address USDT;
     address WBTC;
     address renBTC;
@@ -27,34 +30,33 @@ struct AppStorage {
     address FRAX;
     address ETH;
 
-    //Token infrastructure
+    /// @dev Token infrastructure
     address oz20;
+    OZLERC20 oz;
 
-    //System config
+    /// @dev System config
     uint dappFee;
     uint defaultSlippage;
     mapping(address => bool) tokenDatabase;
 
-    //Internal accounting vars
+    /// @dev Internal accounting vars
     uint totalVolume;
     uint ozelIndex;
     uint feesVault;
     uint failedFees;
     mapping(address => uint) usersPayments;
 
-    OZLERC20 oz;
-
-    //Curve swaps config
+    /// @dev Curve swaps config
     TradeOps renSwap;
     TradeOps mimSwap;
     TradeOps usdcSwap;
     TradeOps fraxSwap;
     TradeOps[] swaps;
 
-    //Mutex locks
+    /// @dev Mutex locks
     mapping(uint => uint) bitLocks;
 
-    //Stabilizing mechanism (for ozelIndex)
+    /// @dev Stabilizing mechanism (for ozelIndex)
     uint invariant;
     uint invariant2;
     uint indexRegulator;
@@ -64,25 +66,27 @@ struct AppStorage {
     uint invariantRegulatorLimit;
     uint regulatorCounter;
 
-    //Revenue vars
+    /// @dev Revenue vars
     ISwapRouter swapRouter;
     AggregatorV3Interface priceFeed;
     address revenueToken;
     uint24 poolFee;
     uint[] revenueAmounts;
 
-    //Misc vars
+    /// @dev Misc vars
     bool isEnabled;
     bytes checkForRevenueSelec;
 
 }
 
+/// @dev Reference for oz20Facet storage
 struct OZLERC20 {
     mapping(address => mapping(address => uint256)) allowances;
     string  name;
     string  symbol;
 }
 
+/// @dev Reference for swaps and the addition/removal of account tokens
 struct TradeOps {
     int128 tokenIn;
     int128 tokenOut;
@@ -91,6 +95,7 @@ struct TradeOps {
     address pool;
 }
 
+/// @dev Reference for the details of each account
 struct AccountConfig { 
     address user;
     address token;

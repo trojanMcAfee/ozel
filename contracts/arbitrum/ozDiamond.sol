@@ -9,6 +9,11 @@ import '../Errors.sol';
 import './Diamond.sol';
 
 
+/**
+ * @title Center of the system 
+ * @notice Each call on L2 goes through here first for checking if there's enough
+ * AUM for revenue computing 
+ */
 contract ozDiamond is Diamond {
 
     AppStorage s;
@@ -31,6 +36,11 @@ contract ozDiamond is Diamond {
     }
 
 
+    /**
+     * @dev Checks if the facet to call belongs to the group that's not considered
+     * for revenue computing. If it doesn't, it calls the current implementation of 
+     * RevenueFacet.
+     */
     function _filterRevenueCheck(
         address calledFacet_, 
         address[] memory nonRevenueFacets_, 
@@ -51,6 +61,9 @@ contract ozDiamond is Diamond {
     }
 
 
+    /**
+     * @dev Filters out the call and forwards it to its designated implementation (aka facet).
+     */
     fallback() external payable override {
         LibDiamond.DiamondStorage storage ds;
 
