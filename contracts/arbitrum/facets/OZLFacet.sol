@@ -9,30 +9,34 @@ import { LibDiamond } from "../../libraries/LibDiamond.sol";
 import { ITri } from '../../interfaces/ICurve.sol';
 import { ModifiersARB } from '../../Modifiers.sol';
 import '../../libraries/LibCommon.sol';
+import '../../interfaces/IOZLFacet.sol';
 import '../../interfaces/IYtri.sol';
 import '../../interfaces/IWETH.sol';
 import './ozExecutorFacet.sol';
 import './oz4626Facet.sol';
 import '../../Errors.sol';
 
-// import 'hardhat/console.sol';
 
 
-contract OZLFacet is ModifiersARB { 
+/**
+ * @title Entry L2 contract for swaps 
+ * @notice Receiver of the bridge tx from L1 containing the account's ETH. 
+ * It's also in charge of conducting the core swaps, depositing the system's fees 
+ * and token database config.
+ */
+contract OZLFacet is IOZLFacet, ModifiersARB { 
 
     using SafeERC20 for IERC20;
     using Address for address;
 
     event NewToken(address token);
 
-    /**
-    WBTC: 1 / USDT: 0 / WETH: 2
-     */
 
-     /*******
-        State changing functions
-     ******/   
+    /*///////////////////////////////////////////////////////////////
+                                Main
+    //////////////////////////////////////////////////////////////*/  
 
+    /// @inheritdoc IOZLFacet
     function exchangeToAccountToken(
         AccountConfig calldata accountDetails_
     ) external payable noReentrancy(0) filterDetails(accountDetails_) { 
@@ -60,7 +64,7 @@ contract OZLFacet is ModifiersARB {
         uint baseTokenOut = 
             accountDetails_.token == s.WBTC || accountDetails_.token == s.renBTC ? 1 : 0;
 
-        //Swaps WETH to token (Base: USDT-WBTC / Route: MIM-USDC-renBTC-WBTC) 
+        //Swaps WETH to account token (Base: USDT-WBTC / Route: MIM-USDC-renBTC-WBTC) 
         _swapsForUserToken(
             netAmountIn, baseTokenOut, accountDetails_
         );
@@ -72,8 +76,91 @@ contract OZLFacet is ModifiersARB {
     }
 
 
+    /// @inheritdoc IOZLFacet
+    function withdrawUserShare(
+        AccountConfig calldata accountDetails_,
+        address receiver_,
+        uint shares_
+    ) external onlyWhenEnabled filterDetails(accountDetails_) { 
+        if (receiver_ == address(0)) revert CantBeZero('address');
+        if (shares_ <= 0) revert CantBeZero('shares');
 
+        //Queries if there are failed fees. If true, it deposits them
+        if (s.failedFees > 0) _depositFeesInDeFi(s.failedFees, true);
 
+        //Mutex bitmap lock
+        _toggleBit(1, 3);
+
+        bytes memory data = abi.encodeWithSignature(
+            'redeem(uint256,address,address,uint256)', 
+            shares_, receiver_, accountDetails_.user, 3
+        );
+
+        data = LibDiamond.callFacet(data);
+
+        uint assets = abi.decode(data, (uint));
+        IYtri(s.yTriPool).withdraw(assets);
+
+        //tricrypto= USDT: 0 / crv2- USDT: 1 , USDC: 0 / mim- MIM: 0 , CRV2lp: 1
+        uint tokenAmountIn = ITri(s.tricrypto).calc_withdraw_one_coin(assets, 0); 
+        
+        uint minOut = ozExecutorFacet(s.executor).calculateSlippage(
+            tokenAmountIn, accountDetails_.slippage
+        ); 
+
+        ITri(s.tricrypto).remove_liquidity_one_coin(assets, 0, minOut);
+
+        _tradeWithExecutor(accountDetails_); 
+
+        uint userTokens = IERC20(accountDetails_.token).balanceOf(address(this));
+        IERC20(accountDetails_.token).safeTransfer(receiver_, userTokens); 
+    } 
+    
+
+    /**
+     * @dev Deposit in DeFi the fees charged by the system on each tx. If it failed to 
+     * deposit them (due to slippage), it leaves the option to retry the deposit on a 
+     * future tx. 
+     * @param fee_ System fee
+     * @param isRetry_ Boolean to determine if the call is for retrying a failed fee deposit
+     */
+    function _depositFeesInDeFi(uint fee_, bool isRetry_) private { 
+        //Deposit WETH in Curve Tricrypto pool
+        (uint tokenAmountIn, uint[3] memory amounts) = _calculateTokenAmountCurve(fee_);
+
+        IERC20(s.WETH).approve(s.tricrypto, tokenAmountIn);
+
+        for (uint i=1; i <= 2; i++) {
+            uint minAmount = ozExecutorFacet(s.executor).calculateSlippage(tokenAmountIn, s.defaultSlippage * i);
+
+            try ITri(s.tricrypto).add_liquidity(amounts, minAmount) {
+                //Deposit crvTricrypto in Yearn
+                IERC20(s.crvTricrypto).approve(
+                    s.yTriPool, IERC20(s.crvTricrypto).balanceOf(address(this))
+                );
+
+                IYtri(s.yTriPool).deposit(IERC20(s.crvTricrypto).balanceOf(address(this)));
+
+                //Internal fees accounting
+                if (s.failedFees > 0) s.failedFees = 0;
+                s.feesVault += fee_;
+                
+                break;
+            } catch {
+                if (i == 1) {
+                    continue;
+                } else {
+                    if (!isRetry_) s.failedFees += fee_; 
+                }
+            }
+        }
+    }
+
+    /*///////////////////////////////////////////////////////////////
+                        Secondary swap functions
+    //////////////////////////////////////////////////////////////*/
+
+   
     function _swapsForUserToken(
         uint amountIn_, 
         uint baseTokenOut_, 
@@ -117,81 +204,27 @@ contract OZLFacet is ModifiersARB {
         }
     }
 
-    
+    function _tradeWithExecutor(AccountConfig memory accountDetails_) private { 
+        _toggleBit(1, 2);
+        uint length = s.swaps.length;
 
-    function withdrawUserShare(
-        AccountConfig calldata accountDetails_,
-        address receiver_,
-        uint shares_
-    ) external onlyWhenEnabled filterDetails(accountDetails_) { 
-        if (receiver_ == address(0)) revert CantBeZero('address');
-        if (shares_ <= 0) revert CantBeZero('shares');
-
-        //Queries if there are failed fees. If true, it deposits them
-        if (s.failedFees > 0) _depositFeesInDeFi(s.failedFees, true);
-
-        //Mutex bitmap lock
-        _toggleBit(1, 3);
-
-        bytes memory data = abi.encodeWithSignature(
-            'redeem(uint256,address,address,uint256)', 
-            shares_, receiver_, accountDetails_.user, 3
-        );
-
-        data = LibDiamond.callFacet(data);
-
-        uint assets = abi.decode(data, (uint));
-        IYtri(s.yTriPool).withdraw(assets);
-
-        //tricrypto= USDT: 0 / crv2- USDT: 1 , USDC: 0 / mim- MIM: 0 , CRV2lp: 1
-        uint tokenAmountIn = ITri(s.tricrypto).calc_withdraw_one_coin(assets, 0); 
-        
-        uint minOut = ozExecutorFacet(s.executor).calculateSlippage(
-            tokenAmountIn, accountDetails_.slippage
-        ); 
-
-        ITri(s.tricrypto).remove_liquidity_one_coin(assets, 0, minOut);
-
-        _tradeWithExecutor(accountDetails_); 
-
-        uint userTokens = IERC20(accountDetails_.token).balanceOf(address(this));
-        IERC20(accountDetails_.token).safeTransfer(receiver_, userTokens); 
-    } 
-    
-
-    function _depositFeesInDeFi(uint fee_, bool isRetry_) private { 
-        //Deposit WETH in Curve Tricrypto pool
-        (uint tokenAmountIn, uint[3] memory amounts) = _calculateTokenAmountCurve(fee_);
-
-        IERC20(s.WETH).approve(s.tricrypto, tokenAmountIn);
-
-        for (uint i=1; i <= 2; i++) {
-            uint minAmount = ozExecutorFacet(s.executor).calculateSlippage(tokenAmountIn, s.defaultSlippage * i);
-
-            try ITri(s.tricrypto).add_liquidity(amounts, minAmount) {
-                //Deposit crvTricrypto in Yearn
-                IERC20(s.crvTricrypto).approve(
-                    s.yTriPool, IERC20(s.crvTricrypto).balanceOf(address(this))
+        for (uint i=0; i < length;) {
+            if (s.swaps[i].token == accountDetails_.token) {
+                bytes memory data = abi.encodeWithSignature(
+                    'executeFinalTrade((int128,int128,address,address,address),uint256,address,uint256)', 
+                    s.swaps[i], accountDetails_.slippage, accountDetails_.user, 2
                 );
 
-                IYtri(s.yTriPool).deposit(IERC20(s.crvTricrypto).balanceOf(address(this)));
-
-                //Internal fees accounting
-                if (s.failedFees > 0) s.failedFees = 0;
-                s.feesVault += fee_;
-                
+                LibDiamond.callFacet(data);
                 break;
-            } catch {
-                if (i == 1) {
-                    continue;
-                } else {
-                    if (!isRetry_) s.failedFees += fee_; 
-                }
             }
+            unchecked { ++i; }
         }
-        
     }
 
+    /*///////////////////////////////////////////////////////////////
+                        Token database config
+    //////////////////////////////////////////////////////////////*/
 
     function addTokenToDatabase(TradeOps memory newSwap_) external { 
         LibDiamond.enforceIsContractOwner();
@@ -210,33 +243,14 @@ contract OZLFacet is ModifiersARB {
         LibCommon.remove(s.swaps, swapToRemove_);
     }
 
-
-    /*******
-        Helper functions
-     ******/
+    /*///////////////////////////////////////////////////////////////
+                                Helpers
+    //////////////////////////////////////////////////////////////*/
 
     function _getFee(uint amount_) private view returns(uint, uint) {
         uint fee = amount_ - ozExecutorFacet(s.executor).calculateSlippage(amount_, s.dappFee);
         uint netAmount = amount_ - fee;
         return (netAmount, fee);
-    }
-
-    function _tradeWithExecutor(AccountConfig memory accountDetails_) private { 
-        _toggleBit(1, 2);
-        uint length = s.swaps.length;
-
-        for (uint i=0; i < length;) {
-            if (s.swaps[i].token == accountDetails_.token) {
-                bytes memory data = abi.encodeWithSignature(
-                    'executeFinalTrade((int128,int128,address,address,address),uint256,address,uint256)', 
-                    s.swaps[i], accountDetails_.slippage, accountDetails_.user, 2
-                );
-
-                LibDiamond.callFacet(data);
-                break;
-            }
-            unchecked { ++i; }
-        }
     }
 
     function _calculateTokenAmountCurve(uint wethAmountIn_) private view returns(uint, uint[3] memory) {
