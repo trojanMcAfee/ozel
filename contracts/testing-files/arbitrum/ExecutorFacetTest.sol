@@ -62,9 +62,6 @@ contract ExecutorFacetTest is ModifiersARB {
         
     }
 
-   
-
-    //****** Modifies manager's STATE *****/
 
     function updateExecutorState(
         uint amount_, 
@@ -113,6 +110,7 @@ contract ExecutorFacetTest is ModifiersARB {
         _updateIndex();
     }
 
+
     function transferUserAllocation( 
         address sender_, 
         address receiver_, 
@@ -126,5 +124,4 @@ contract ExecutorFacetTest is ModifiersARB {
         s.usersPayments[sender_] -= amountToTransfer;
         s.usersPayments[receiver_] += amountToTransfer;
     }
-
 }

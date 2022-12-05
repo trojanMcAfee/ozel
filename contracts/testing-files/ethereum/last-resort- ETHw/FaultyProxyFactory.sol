@@ -11,8 +11,6 @@ import './FaultyOzBeaconProxy.sol';
 import '../../../ethereum/StorageBeacon.sol';
 import '../../../Errors.sol';
 
-import 'hardhat/console.sol';
-
 
 
 contract FaultyProxyFactory is ReentrancyGuard, Initializable { 

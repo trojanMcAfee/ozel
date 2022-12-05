@@ -17,7 +17,6 @@ import '../../ethereum/FakeOZL.sol';
 import '../../ethereum/Emitter.sol';
 import '../../Errors.sol';
 
-import 'hardhat/console.sol'; 
 
 
 contract FaultyOzPayMe3 is ReentrancyGuard, Initializable { 

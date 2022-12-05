@@ -65,8 +65,6 @@ contract OZLFacetTest is ModifiersARB {
     }
 
 
-
-
     function _swapsForBaseToken(
         uint amountIn_, 
         uint baseTokenOut_, 
@@ -84,7 +82,6 @@ contract OZLFacetTest is ModifiersARB {
             _tradeWithExecutor(accountDetails_); 
         }
     }
-
     
 
     function withdrawUserShare(

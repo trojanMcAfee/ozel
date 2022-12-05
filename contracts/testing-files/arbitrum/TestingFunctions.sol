@@ -1143,7 +1143,7 @@ contract ComputeRevenueV3 is SecondaryFunctions {
                             setTESTVAR2(2, TESTVAR2_THIRD_POSITION);
                         }
 
-                        // uint deletedEl = _shift(i); //<--- so the other tests can used s.revenueAmounts fully
+                        // uint deletedEl = _shift(i); //<--- so the other tests can use s.revenueAmounts fully
                         // emit RevenueEarned(deletedEl);
                     }
                 }

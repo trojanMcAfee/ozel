@@ -17,7 +17,6 @@ import '../../ethereum/FakeOZL.sol';
 import '../../ethereum/Emitter.sol';
 import '../../Errors.sol';
 
-import 'hardhat/console.sol'; 
 
 
 contract ozPayMeNoRedeem is ReentrancyGuard, Initializable { 
