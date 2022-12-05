@@ -2,11 +2,10 @@
 pragma solidity 0.8.14;
 
 
-import './ethereum/StorageBeacon.sol';
-import './arbitrum/AppStorage.sol';
-import './arbitrum/Bits.sol';
-import './Errors.sol';
-
+import '../ethereum/StorageBeacon.sol';
+import './AppStorage.sol';
+import './Bits.sol';
+import '../Errors.sol';
 
 
 /**

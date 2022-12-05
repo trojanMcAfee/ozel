@@ -6,7 +6,7 @@ import '@rari-capital/solmate/src/utils/FixedPointMathLib.sol';
 import '@openzeppelin/contracts/token/ERC20/IERC20.sol';
 import '@openzeppelin/contracts/utils/Address.sol';
 import { LibDiamond } from "../../libraries/LibDiamond.sol";
-import { ModifiersARB } from '../../Modifiers.sol';
+import { ModifiersARB } from '../Modifiers.sol';
 import '../../Errors.sol';
 import './oz20Facet.sol';
 

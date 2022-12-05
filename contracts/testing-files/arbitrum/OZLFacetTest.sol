@@ -7,7 +7,7 @@ import '@openzeppelin/contracts/token/ERC20/IERC20.sol';
 import '@openzeppelin/contracts/utils/Address.sol';
 import { LibDiamond } from "../../libraries/LibDiamond.sol";
 import { ITri } from '../../interfaces/arbitrum/ICurve.sol';
-import { ModifiersARB } from '../../Modifiers.sol';
+import { ModifiersARB } from '../../arbitrum/Modifiers.sol';
 import '../../arbitrum/facets/oz4626Facet.sol';
 import '../../interfaces/arbitrum/IYtri.sol';
 import '../../interfaces/common/IWETH.sol';

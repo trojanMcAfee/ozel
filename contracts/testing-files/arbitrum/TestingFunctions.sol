@@ -7,7 +7,7 @@ import '@rari-capital/solmate/src/utils/FixedPointMathLib.sol';
 import '@openzeppelin/contracts/token/ERC20/IERC20.sol';
 import '@openzeppelin/contracts/utils/Address.sol';
 import { ITri } from '../../interfaces/arbitrum/ICurve.sol';
-import { ModifiersARB } from '../../Modifiers.sol';
+import { ModifiersARB } from '../../arbitrum/Modifiers.sol';
 import '../../arbitrum/facets/ozExecutorFacet.sol';
 import '../../arbitrum/facets/ozExecutorFacet.sol';
 import '../../arbitrum/facets/oz4626Facet.sol';
