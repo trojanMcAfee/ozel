@@ -2,7 +2,7 @@
 pragma solidity 0.8.14;
 
 
-import { AccountConfig, TradeOps } from '../arbitrum/AppStorage.sol';
+import { AccountConfig, TradeOps } from '../../arbitrum/AppStorage.sol';
 
 
 interface IOZLFacet {

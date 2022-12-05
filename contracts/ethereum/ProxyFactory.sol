@@ -5,9 +5,9 @@ pragma solidity 0.8.14;
 import "@openzeppelin/contracts/proxy/utils/Initializable.sol";
 import '@rari-capital/solmate/src/utils/ReentrancyGuard.sol';
 import '@openzeppelin/contracts/utils/Address.sol';
+import '../interfaces/ethereum/IProxyFactory.sol';
+import '../interfaces/ethereum/IOps.sol';
 import './ozUpgradeableBeacon.sol';
-import '../interfaces/IProxyFactory.sol';
-import '../interfaces/IOps.sol';
 import './ozAccountProxy.sol';
 import '../Errors.sol';
 

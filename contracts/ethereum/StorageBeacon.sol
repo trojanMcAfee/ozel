@@ -5,7 +5,7 @@ pragma solidity 0.8.14;
 import "@openzeppelin/contracts/proxy/utils/Initializable.sol";
 import '@openzeppelin/contracts/token/ERC20/IERC20.sol';
 import '@openzeppelin/contracts/access/Ownable.sol';
-import '../interfaces/IStorageBeacon.sol';
+import '../interfaces/ethereum/IStorageBeacon.sol';
 import '../libraries/LibCommon.sol';
 import './ozUpgradeableBeacon.sol';
 import '../Errors.sol';

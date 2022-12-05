@@ -4,7 +4,7 @@ pragma solidity 0.8.14;
 
 import '@rari-capital/solmate/src/utils/FixedPointMathLib.sol';
 import '@openzeppelin/contracts/token/ERC20/IERC20.sol';
-import { IMulCurv } from '../../interfaces/ICurve.sol';
+import { IMulCurv } from '../../interfaces/arbitrum/ICurve.sol';
 import { ModifiersARB } from '../../Modifiers.sol';
 import '../../arbitrum/AppStorage.sol';
 

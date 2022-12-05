@@ -10,11 +10,11 @@ pragma solidity ^0.8.0;
 
 import "@chainlink/contracts/src/v0.8/interfaces/AggregatorV3Interface.sol";
 import '@uniswap/v3-periphery/contracts/interfaces/ISwapRouter.sol';
-import { IDiamondLoupe } from "../../interfaces/IDiamondLoupe.sol";
-import { IDiamondCut } from "../../interfaces/IDiamondCut.sol";
+import { IDiamondLoupe } from "../../interfaces/arbitrum/IDiamondLoupe.sol";
+import { IDiamondCut } from "../../interfaces/arbitrum/IDiamondCut.sol";
 import { LibDiamond } from "../../libraries/LibDiamond.sol";
-import { IERC173 } from "../../interfaces/IERC173.sol";
-import { IERC165 } from "../../interfaces/IERC165.sol";
+import { IERC173 } from "../../interfaces/arbitrum/IERC173.sol";
+import { IERC165 } from "../../interfaces/arbitrum/IERC165.sol";
 import '../AppStorage.sol'; 
 
 

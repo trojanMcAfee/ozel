@@ -4,9 +4,9 @@ pragma solidity 0.8.14;
 
 import '@openzeppelin/contracts/utils/Address.sol';
 import '@rari-capital/solmate/src/utils/FixedPointMathLib.sol';
-import { ITri } from '../../interfaces/ICurve.sol';
-import '../../interfaces/ozILoupeFacet.sol';
-import '../../interfaces/IYtri.sol';
+import { ITri } from '../../interfaces/arbitrum/ICurve.sol';
+import '../../interfaces/arbitrum/ozILoupeFacet.sol';
+import '../../interfaces/arbitrum/IYtri.sol';
 import './DiamondLoupeFacet.sol';
 import '../AppStorage.sol';
 

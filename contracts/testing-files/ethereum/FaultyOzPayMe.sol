@@ -12,9 +12,9 @@ import '../../ethereum/ozUpgradeableBeacon.sol';
 import '../../ethereum/StorageBeacon.sol';
 import '../../ethereum/FakeOZL.sol';
 import '../../ethereum/Emitter.sol';
-import '../../interfaces/DelayedInbox.sol';
-import '../../interfaces/IOps.sol';
-import '../../interfaces/IWETH.sol';
+import '../../interfaces/ethereum/DelayedInbox.sol';
+import '../../interfaces/ethereum/IOps.sol';
+import '../../interfaces/common/IWETH.sol';
 import '../../Errors.sol';
 
 

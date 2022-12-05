@@ -5,7 +5,7 @@ pragma solidity ^0.8.0;
 * Author: Nick Mudge <nick@perfectabstractions.com> (https://twitter.com/mudgen)
 * EIP-2535 Diamonds: https://eips.ethereum.org/EIPS/eip-2535
 /******************************************************************************/
-import { IDiamondCut } from "../interfaces/IDiamondCut.sol";
+import { IDiamondCut } from "../interfaces/arbitrum/IDiamondCut.sol";
 import '@openzeppelin/contracts/token/ERC20/IERC20.sol';
 
 // import 'hardhat/console.sol';

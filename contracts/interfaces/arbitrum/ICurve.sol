@@ -1,8 +1,10 @@
-//SPDX-License-Identifier: UNLICENSED
-pragma solidity ^0.8.0;
+// SPDX-License-Identifier: GPL-2.0-or-later
+pragma solidity 0.8.14;
 
 
-//Multiple interfaces which integrates Ren, 2Crv, MIM and Frax pools
+/**
+ * @dev Multiple interfaces that integrates Ren, 2Crv, MIM and Frax pools
+ */
 interface IMulCurv {
   function exchange(
     int128 i,

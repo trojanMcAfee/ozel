@@ -6,12 +6,12 @@ import '@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol';
 import '@openzeppelin/contracts/token/ERC20/IERC20.sol';
 import '@openzeppelin/contracts/utils/Address.sol';
 import { LibDiamond } from "../../libraries/LibDiamond.sol";
-import { ITri } from '../../interfaces/ICurve.sol';
+import { ITri } from '../../interfaces/arbitrum/ICurve.sol';
 import { ModifiersARB } from '../../Modifiers.sol';
 import '../../arbitrum/facets/oz4626Facet.sol';
+import '../../interfaces/arbitrum/IYtri.sol';
+import '../../interfaces/common/IWETH.sol';
 import '../../libraries/LibCommon.sol';
-import '../../interfaces/IWETH.sol';
-import '../../interfaces/IYtri.sol';
 import './ExecutorFacetTest.sol';
 import '../../Errors.sol';
 
@@ -82,7 +82,7 @@ contract OZLFacetTest is ModifiersARB {
             _tradeWithExecutor(accountDetails_); 
         }
     }
-    
+
 
     function withdrawUserShare(
         AccountConfig memory accountDetails_,

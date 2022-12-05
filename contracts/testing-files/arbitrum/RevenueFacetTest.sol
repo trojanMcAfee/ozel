@@ -5,9 +5,9 @@ pragma solidity 0.8.14;
 import '@rari-capital/solmate/src/utils/FixedPointMathLib.sol';
 import '@openzeppelin/contracts/utils/Address.sol';
 import { LibDiamond } from "../../libraries/LibDiamond.sol";
-import { ITri } from '../../interfaces/ICurve.sol';
+import { ITri } from '../../interfaces/arbitrum/ICurve.sol';
+import '../../interfaces/arbitrum/IYtri.sol';
 import '../../arbitrum/AppStorage.sol';
-import '../../interfaces/IYtri.sol';
 import './ExecutorFacetTest.sol';
 
 

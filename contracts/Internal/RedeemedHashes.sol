@@ -3,7 +3,7 @@ pragma solidity 0.8.14;
 
 
 import '@openzeppelin/contracts/access/Ownable.sol';
-import '../interfaces/IRedeemedHashes.sol';
+import '../interfaces/arbitrum/IRedeemedHashes.sol';
 import '../Errors.sol';
 
 

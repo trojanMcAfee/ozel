@@ -6,16 +6,15 @@ import '@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol';
 import '@rari-capital/solmate/src/utils/FixedPointMathLib.sol';
 import '@openzeppelin/contracts/token/ERC20/IERC20.sol';
 import '@openzeppelin/contracts/utils/Address.sol';
-import { ITri } from '../../interfaces/ICurve.sol';
+import { ITri } from '../../interfaces/arbitrum/ICurve.sol';
 import { ModifiersARB } from '../../Modifiers.sol';
 import '../../arbitrum/facets/ozExecutorFacet.sol';
 import '../../arbitrum/facets/ozExecutorFacet.sol';
 import '../../arbitrum/facets/oz4626Facet.sol';
 import '../../arbitrum/AppStorage.sol';
-import '../../interfaces/IWETH.sol';
-import '../../interfaces/IYtri.sol';
+import '../../interfaces/common/IWETH.sol';
+import '../../interfaces/arbitrum/IYtri.sol';
 
-// import 'hardhat/console.sol';
 
 
 contract SecondaryFunctions is ModifiersARB {
@@ -1684,7 +1683,6 @@ contract SwapWETHforRevenueV3 {
         return element;
     }
 }
-
 
 
 /**

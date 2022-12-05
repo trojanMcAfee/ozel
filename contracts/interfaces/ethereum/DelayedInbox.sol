@@ -1,5 +1,5 @@
-//SPDX-License-Identifier: UNLICENSED
-pragma solidity ^0.8.0;
+// SPDX-License-Identifier: GPL-2.0-or-later
+pragma solidity 0.8.14;
 
 
 interface DelayedInbox {
@@ -36,6 +36,4 @@ interface DelayedInbox {
         uint256 dataLength, 
         uint256 baseFee
     ) external view returns (uint256);
-
-
 }

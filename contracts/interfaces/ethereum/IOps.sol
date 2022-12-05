@@ -1,5 +1,5 @@
-//SPDX-License-Identifier: UNLICENSED
-pragma solidity ^0.8.0;
+// SPDX-License-Identifier: GPL-2.0-or-later
+pragma solidity 0.8.14;
 
 
 
@@ -13,7 +13,9 @@ interface IOps {
     ) external returns(bytes32 task);
 
     function getFeeDetails() external view returns (uint256, address);
+
     function gelato() external view returns (address payable);
+
     function getResolverHash(
         address _resolverAddress,
         bytes memory _resolverData

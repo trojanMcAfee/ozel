@@ -5,9 +5,9 @@ pragma solidity ^0.8.0;
 * EIP-2535 Diamonds: https://eips.ethereum.org/EIPS/eip-2535
 /******************************************************************************/
 
-import { IDiamondLoupe } from "../../interfaces/IDiamondLoupe.sol";
+import { IDiamondLoupe } from "../../interfaces/arbitrum/IDiamondLoupe.sol";
 import { LibDiamond } from  "../../libraries/LibDiamond.sol";
-import { IERC165 } from "../../interfaces/IERC165.sol";
+import { IERC165 } from "../../interfaces/arbitrum/IERC165.sol";
 
 // import 'hardhat/console.sol';
 

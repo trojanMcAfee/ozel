@@ -6,7 +6,7 @@ import "@openzeppelin/contracts/proxy/utils/Initializable.sol";
 import '@rari-capital/solmate/src/utils/ReentrancyGuard.sol';
 import '@openzeppelin/contracts/utils/Address.sol';
 import '../../../ethereum/ozUpgradeableBeacon.sol';
-import '../../../interfaces/IOps.sol';
+import '../../../interfaces/ethereum/IOps.sol';
 import './FaultyOzBeaconProxy.sol';
 import '../../../ethereum/StorageBeacon.sol';
 import '../../../Errors.sol';
