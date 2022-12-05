@@ -13,7 +13,10 @@ import '../AppStorage.sol';
 import '../ozDiamond.sol';
 
 
-
+/**
+ * @dev Contract in charge of distrubting the revenue to the owner, depending
+ * on the different revenue tiers.
+ */
 contract RevenueFacet {
 
     AppStorage s;

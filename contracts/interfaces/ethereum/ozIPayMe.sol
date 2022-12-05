@@ -19,13 +19,11 @@ interface ozIPayMe {
         IStorageBeacon.AccountConfig calldata accountDetails_
     ) external payable;
 
-
     /// @dev Initializes the user account when being created in ProxyFactory.sol
     function initialize(
         IStorageBeacon.AccountConfig calldata accountDetails_, 
         address beacon_
     ) external;
-
 
     /**
      * @notice Changes the token of the account 
@@ -34,14 +32,12 @@ interface ozIPayMe {
      */
     function changeAccountToken(address newToken_) external;
 
-
     /**
      * @notice Changes the slippage of the account
      * @dev Changes the slippage used on each L2 swap for the account.
      * @param newSlippage_ New account slippage represented in basis points
      */
     function changeAccountSlippage(uint newSlippage_) external;
-
 
     /**
      * @dev Changes both the slippage and token of an account

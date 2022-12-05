@@ -5,7 +5,7 @@ pragma solidity 0.8.14;
 import './AppStorage.sol';
 
 /**
- * @notice Access control functions implemented for bitmaps
+ * @notice Access control functions implemented on bitmaps
  */
 abstract contract Bits {
 

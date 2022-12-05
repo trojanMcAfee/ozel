@@ -11,6 +11,11 @@ import './ozUpgradeableBeacon.sol';
 import '../Errors.sol';
 
 
+/**
+ * @title Main storage contract for the L1 side of the system.
+ * @notice It acts as a separate centralized beacon that functions query for state
+ * variables. It can be upgraded into different versions while keeping the older ones.
+ */
 contract StorageBeacon is IStorageBeacon, Initializable, Ownable { 
 
     FixedConfig fxConfig;

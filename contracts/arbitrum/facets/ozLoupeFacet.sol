@@ -11,7 +11,10 @@ import './DiamondLoupeFacet.sol';
 import '../AppStorage.sol';
 
 
-
+/**
+ * @dev Main view methods that query key components, showing the financial statistics
+ * of the system and its equilibrum. 
+ */
 contract ozLoupeFacet is ozILoupeFacet, DiamondLoupeFacet {
 
     AppStorage s;
@@ -19,7 +22,7 @@ contract ozLoupeFacet is ozILoupeFacet, DiamondLoupeFacet {
     using FixedPointMathLib for uint;
     using Address for address;
 
-
+    /// @inheritdoc ozILoupeFacet
     function queryTokenDatabase(address token_) external view returns(bool) {
         return s.tokenDatabase[token_];
     }
