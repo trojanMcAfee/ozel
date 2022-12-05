@@ -16,4 +16,7 @@ interface IProxyFactory {
     function createNewProxy(
         IStorageBeacon.AccountConfig calldata accountDetails_
     ) external returns(address);
+
+    /// @dev Initializer
+    function initialize(address beacon_) external;
 }

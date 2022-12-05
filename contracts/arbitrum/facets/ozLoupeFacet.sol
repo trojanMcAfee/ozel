@@ -34,18 +34,18 @@ contract ozLoupeFacet is ozILoupeFacet, DiamondLoupeFacet {
         return s.regulatorCounter;
     }
 
-    /// @dev Gets the total volume that has flowed into the system from L1 ETH transfers. 
+    /// @inheritdoc ozILoupeFacet
     function getTotalVolumeInETH() external view returns(uint) {
         return s.totalVolume;
     }
 
-    /// @dev Same as above but in USD
+    /// @inheritdoc ozILoupeFacet
     function getTotalVolumeInUSD() external view returns(uint) {
         (,int price,,,) = s.priceFeed.latestRoundData();
         return (s.totalVolume * uint(price)) / 10 ** 8;
     }
 
-    /// @dev External version of _getAUM()
+    /// @inheritdoc ozILoupeFacet
     function getAUM(int price_) external view returns(uint yBalance, uint valueUM) { 
         (yBalance, ,valueUM) = _getAUM(price_);
     }
@@ -74,7 +74,7 @@ contract ozLoupeFacet is ozILoupeFacet, DiamondLoupeFacet {
      * @notice Calculates the AUM (Assets Under Management) of the system.
      * @dev At the current version, they (AUM) are all the fees charged in every incoming 
      * L1 transfer from each account created by an user.
-     * @param price_ Current ETHUSD price feed
+     * @param price_ Current ETHUSD price feed (Chainlink)
      * @return yBalance AUM expressed in yToken
      * @return wethUM AUM expressed in WETH
      * @return valueUM AUM expressed in USD

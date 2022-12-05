@@ -54,6 +54,7 @@ contract ozPayMe is ozIPayMe, ReentrancyGuard, Initializable {
         _;
     }
 
+    /// @dev Checks that the token exists and that's not address(0)
     modifier checkToken(address newToken_) {
         StorageBeacon storageBeacon = StorageBeacon(_getStorageBeacon(_beacon, 0)); 
         if (newToken_ == address(0)) revert CantBeZero('address');
@@ -61,8 +62,9 @@ contract ozPayMe is ozIPayMe, ReentrancyGuard, Initializable {
         _;
     }
 
-    modifier checkSlippage(uint newSlippageBasisPoint_) {
-        if (newSlippageBasisPoint_ < 1) revert CantBeZero('slippage');
+    /// @dev Checks that the new slippage is more than 1 basis point
+    modifier checkSlippage(uint newSlippage_) {
+        if (newSlippage_ < 1) revert CantBeZero('slippage');
         _;
     }
 
@@ -82,7 +84,7 @@ contract ozPayMe is ozIPayMe, ReentrancyGuard, Initializable {
         if (accountDetails_.user == address(0) || accountDetails_.token == address(0)) revert CantBeZero('address');
         if (!storageBeacon.isUser(accountDetails_.user)) revert UserNotInDatabase(accountDetails_.user);
         if (!storageBeacon.queryTokenDatabase(accountDetails_.token)) revert TokenNotInDatabase(accountDetails_.token);
-        if (accountDetails_.slippage <= 0) revert CantBeZero('slippage');
+        if (accountDetails_.slippage < 1) revert CantBeZero('slippage');
         if (!(address(this).balance > 0)) revert CantBeZero('contract balance');
 
         (uint fee, ) = IOps(fxConfig.ops).getFeeDetails();

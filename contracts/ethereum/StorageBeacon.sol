@@ -117,18 +117,21 @@ contract StorageBeacon is IStorageBeacon, Initializable, Ownable {
         emit L2GasPriceChanged(newGasPriceBid_);
     }
 
+    /// @inheritdoc IStorageBeacon
     function addTokenToDatabase(address newToken_) external onlyOwner {
         if (queryTokenDatabase(newToken_)) revert TokenAlreadyInDatabase(newToken_);
         tokenDatabase[newToken_] = true;
         tokenDatabaseArray.push(newToken_);
     }
 
+    /// @inheritdoc IStorageBeacon
     function removeTokenFromDatabase(address toRemove_) external onlyOwner {
         if (!queryTokenDatabase(toRemove_)) revert TokenNotInDatabase(toRemove_);
         tokenDatabase[toRemove_] = false;
         LibCommon.remove(tokenDatabaseArray, toRemove_);
     }
 
+    /// @inheritdoc IStorageBeacon
     function storeBeacon(address beacon_) external initializer { 
         beacon = ozUpgradeableBeacon(beacon_);
     }
@@ -143,7 +146,7 @@ contract StorageBeacon is IStorageBeacon, Initializable, Ownable {
         isEmitter = newStatus_;
     }
 
-    /// @dev Stores the ETH transfer made to each proxy/account
+    /// @inheritdoc IStorageBeacon
     function storeAccountPayment(address account_, uint payment_) external onlyAccount {
         accountToPayments[account_] += payment_;
     }
@@ -163,15 +166,17 @@ contract StorageBeacon is IStorageBeacon, Initializable, Ownable {
         return authorizedSelectors[selector_];
     }
 
+    /// @inheritdoc IStorageBeacon
     function getFixedConfig() external view returns(FixedConfig memory) {
         return fxConfig;
     }
 
-    /// @dev Gets the L2 gas price
+    /// @inheritdoc IStorageBeacon
     function getGasPriceBid() external view returns(uint) {
         return gasPriceBid; 
     }
-
+    
+    /// @inheritdoc IStorageBeacon
     function getEmergencyMode() external view returns(EmergencyMode memory) {
         return eMode;
     }
@@ -195,29 +200,32 @@ contract StorageBeacon is IStorageBeacon, Initializable, Ownable {
         return taskIDs[account_];
     }
 
-    /// @dev Gets the owner of an account
+    /// @inheritdoc IStorageBeacon
     function getUserByAccount(address account_) external view returns(address) {
         return accountToDetails[account_].user;
     }
 
+    /// @dev If token_ exists in L1 database
     function queryTokenDatabase(address token_) public view returns(bool) {
         return tokenDatabase[token_];
     }
-
+    
+    /// @inheritdoc IStorageBeacon
     function isUser(address user_) external view returns(bool) {
         return userDatabase[user_];
     }
 
-    /// @dev Queries if the forwarding to the Emitter is enabled
+    /// @inheritdoc IStorageBeacon
     function getEmitterStatus() external view returns(bool) {
         return isEmitter;
     }
 
+    /// @inheritdoc IStorageBeacon
     function getTokenDatabase() external view returns(address[] memory) {
         return tokenDatabaseArray;
     }
 
-    /// @dev Gets all the ETH transfer done to an account/proxy
+    /// @inheritdoc IStorageBeacon
     function getAccountPayments(address account_) external view returns(uint) {
         return accountToPayments[account_];
     }

@@ -12,7 +12,7 @@ import '../interfaces/ethereum/ozIUpgradeableBeacon.sol';
  * @notice Holds the current version of the beacon and possible multiple versions
  * of the Storage beacon. It also hosts the control access methods for some actions
  */
-contract ozUpgradeableBeacon is UpgradeableBeacon, ozIUpgradeableBeacon { 
+contract ozUpgradeableBeacon is ozIUpgradeableBeacon, UpgradeableBeacon { 
     /// @dev Holds all the versions of the Storage Beacon
     address[] private _storageBeacons;
 

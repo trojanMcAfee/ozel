@@ -75,7 +75,7 @@ contract ProxyFactory is IProxyFactory, ReentrancyGuard, Initializable {
         return ozUpgradeableBeacon(beacon).storageBeacon(version_);
     }
 
-    /// @dev Initializer
+    /// @inheritdoc IProxyFactory
     function initialize(address beacon_) external initializer {
         beacon = beacon_;
     }

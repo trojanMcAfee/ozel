@@ -56,6 +56,15 @@ interface IStorageBeacon {
      */
     function changeGasPriceBid(uint newGasPriceBid_) external;
 
+    /// @dev Adds a new token to L1 database
+    function addTokenToDatabase(address newToken_) external;
+
+    /// @dev Removes a token from L1 database
+    function removeTokenFromDatabase(address toRemove_) external;
+
+    /// @dev Stores the beacon (ozUpgradableBeacon)
+    function storeBeacon(address beacon_) external;
+
     /**
      * @dev Changes all the params on the Emergency Mode struct
      * @param newEmode_ New eMode struct
@@ -67,6 +76,9 @@ interface IStorageBeacon {
      * @param newStatus_ New boolean for the forwading to the Emitter
      */
     function changeEmitterStatus(bool newStatus_) external;
+
+    /// @dev Stores the ETH transfer made to each proxy/account
+    function storeAccountPayment(address account_, uint payment_) external;
 
     /**
      * @dev Authorizes a new function so it can get called with its original 
@@ -86,6 +98,15 @@ interface IStorageBeacon {
      */
     function isSelectorAuthorized(bytes4 selector_) external view returns(bool);
 
+    /// @dev Gets the Fixed Config struct
+    function getFixedConfig() external view returns(FixedConfig memory);
+
+    /// @dev Gets the L2 gas price
+    function getGasPriceBid() external view returns(uint);
+
+    /// @dev Gets the Emergency Mode struct
+    function getEmergencyMode() external view returns(EmergencyMode memory);
+
     /**
      * @notice Gets the accounts/proxies created by an user
      * @dev Gets the addresses and names of the accounts
@@ -103,6 +124,21 @@ interface IStorageBeacon {
      * @return bytes32 Gelato Task ID
      */
     function getTaskID(address account_) external view returns(bytes32);
+
+    /// @dev Gets the owner of an account
+    function getUserByAccount(address account_) external view returns(address);
+
+    /// @dev If user_ has previously created an account/proxy
+    function isUser(address user_) external view returns(bool);
+
+    /// @dev Queries if the forwarding to the Emitter is enabled
+    function getEmitterStatus() external view returns(bool);
+
+    /// @dev Gets all the tokens in the database
+    function getTokenDatabase() external view returns(address[] memory);
+
+    /// @dev Gets all the ETH transfer done to an account/proxy
+    function getAccountPayments(address account_) external view returns(uint);
 }
 
 

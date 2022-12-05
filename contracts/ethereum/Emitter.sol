@@ -18,15 +18,20 @@ contract Emitter is Initializable, Ownable {
 
     event ShowTicket(address indexed proxy);
 
-
+    /// @dev Stores the beacon (ozUpgradableBeacon)
     function storeBeacon(address beacon_) external initializer {
         _beacon = beacon_;
     }
 
+    /// @dev Gets the first version of the Storage Beacon
     function _getStorageBeacon() private view returns(StorageBeacon) {
         return StorageBeacon(ozUpgradeableBeacon(_beacon).storageBeacon(0));
     }
 
+    /**
+     * @dev Forwards the account/proxy to the offchain script that checks for 
+     * manual redeems.
+     */
     function forwardEvent() external { 
         (address user,,,) = _getStorageBeacon().accountToDetails(msg.sender);
         if (user == address(0)) revert NotAccount();
