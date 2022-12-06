@@ -86,7 +86,8 @@ const proxyABIeth = [
 
 const factoryABI = [
     'function createNewProxy(tuple(address user, address token, uint256 slippage, string name) accountDetails_) external returns(address)',
-    'function initialize(address beacon_)'
+    'function initialize(address beacon_)',
+    'function getImplementation() external view returns(address)'
 ];
 
 const opsL2 = {
@@ -97,7 +98,7 @@ const opsL2 = {
 const ops = {
     gasLimit: ethers.BigNumber.from('30000000'),
     // maxFeePerGas: ethers.BigNumber.from('41134698068'),
-    gasPrice: ethers.BigNumber.from('15134698068') 
+    gasPrice: ethers.BigNumber.from('10134698068') 
 };
 
 const signerX = new ethers.Wallet(process.env.PK);

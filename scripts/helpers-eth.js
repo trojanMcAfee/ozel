@@ -34,27 +34,14 @@ const {
 
 
 
-//** Remember that LibCommon is deployed here and on helpers-arb when it should one deployment for mainnet */
 async function deployContract(contractName, constrArgs, signer = null) {
     let signer1;
     let var1, var2, var3, var4, var5;
-    // let Contract;
 
     if (!signer) {
         [ signer1 ] = await hre.ethers.getSigners();
         signer = signer1;
     }
-    
-    // if (contractName === 'StorageBeacon') {
-    //     const [ libCommonAddr ] = await deployContract('LibCommon');
-    //     Contract = await hre.ethers.getContractFactory(contractName, {
-    //         libraries: {
-    //             LibCommon: libCommonAddr
-    //         }
-    //     });
-    // } else {
-    //     const Contract = await hre.ethers.getContractFactory(contractName);
-    // }
 
     const Contract = await hre.ethers.getContractFactory(contractName);
 
@@ -333,7 +320,8 @@ async function deploySystem(type, signerAddr) {
 
     const [ ozERC1967proxyAddr ] = await deployContract('ozERC1967Proxy', constrArgs);
     const proxyFactory = await hre.ethers.getContractAt(factoryABI, ozERC1967proxyAddr);
-    await proxyFactory.initialize(beaconAddr);
+    const signers = await hre.ethers.getSigners()
+    await proxyFactory.connect(signers[1]).initialize(beaconAddr, ops);
 
     //Deploys Auth
     constrArgs = [

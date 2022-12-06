@@ -445,4 +445,15 @@ async function lastPart() {
 }
 
 
-lastPart();
+async function checkOwner() {
+
+    const ozERC1967ProxyAddr = '0x5a6228EBAE2F0CD5B52415d83982955014D6740e';
+    const proxyFactory = await hre.ethers.getContractAt('ProxyFactory', ozERC1967ProxyAddr);
+
+    await proxyFactory
+
+
+}
+
+
+maint();

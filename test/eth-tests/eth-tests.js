@@ -195,6 +195,11 @@ let isAuthorized, newSelector;
                     balance = await hre.ethers.provider.getBalance(newProxyAddr);
                     assert.equal(formatEther(balance), 0);
                 });
+
+                xit('should return the current implementation of the Proxy Factory / ozERC1967Proxy - getImplementation()', async () => {
+                    const impl = await proxyFactory.getImplementation();
+                    console.log('impl: ', impl);
+                });
             });
 
 
