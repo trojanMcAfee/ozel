@@ -320,8 +320,7 @@ async function deploySystem(type, signerAddr) {
 
     const [ ozERC1967proxyAddr ] = await deployContract('ozERC1967Proxy', constrArgs);
     const proxyFactory = await hre.ethers.getContractAt(factoryABI, ozERC1967proxyAddr);
-    const signers = await hre.ethers.getSigners()
-    await proxyFactory.connect(signers[1]).initialize(beaconAddr, ops);
+    await proxyFactory.initialize(beaconAddr, ops);
 
     //Deploys Auth
     constrArgs = [
@@ -348,7 +347,8 @@ async function deploySystem(type, signerAddr) {
         emitter,
         emitterAddr,
         fakeOZLaddr,
-        eMode
+        eMode,
+        proxyFactoryAddr
     ];
 
 }

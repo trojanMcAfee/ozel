@@ -11,17 +11,25 @@ import './ozUpgradeableBeacon.sol';
 import './ozAccountProxy.sol';
 import '../Errors.sol';
 
+import '@openzeppelin/contracts/access/Ownable.sol';
+import '@openzeppelin/contracts/proxy/utils/UUPSUpgradeable.sol';
+
 
 /**
  * @title Factory of user proxies (aka accounts)
  * @notice Creates the accounts where users will receive their ETH on L1. 
  * Each account is the proxy (ozAccountProxy) connected -through the Beacon- to ozPayMe (the implementation)
  */
-contract ProxyFactory is IProxyFactory, ReentrancyGuard, Initializable { 
+contract ProxyFactory is IProxyFactory, ReentrancyGuard, Initializable, UUPSUpgradeable { 
 
     using Address for address;
 
     address private beacon;
+
+    modifier onlyOwner() {
+        require(_getAdmin() == msg.sender, 'not0admin');
+        _;
+    }
 
     /// @inheritdoc IProxyFactory
     function createNewProxy(
@@ -78,5 +86,16 @@ contract ProxyFactory is IProxyFactory, ReentrancyGuard, Initializable {
     /// @inheritdoc IProxyFactory
     function initialize(address beacon_) external initializer {
         beacon = beacon_;
+        _changeAdmin(msg.sender);
     }
+
+    //-------
+
+    function _authorizeUpgrade(address newImplementation_) internal override onlyOwner {}
+
+    function getAdmin() external view onlyProxy returns(address) {
+        return _getAdmin();
+    }
+
+    
 }

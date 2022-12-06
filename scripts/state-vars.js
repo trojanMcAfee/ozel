@@ -87,7 +87,9 @@ const proxyABIeth = [
 const factoryABI = [
     'function createNewProxy(tuple(address user, address token, uint256 slippage, string name) accountDetails_) external returns(address)',
     'function initialize(address beacon_)',
-    'function getImplementation() external view returns(address)'
+    'function getImplementation() external view returns(address)',
+    'function upgradeTo(address newImplementation) external',
+    'function getAdmin() external view returns(address)'
 ];
 
 const opsL2 = {
