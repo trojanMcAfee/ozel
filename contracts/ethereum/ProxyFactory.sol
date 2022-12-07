@@ -30,7 +30,7 @@ contract ProxyFactory is IProxyFactory, ReentrancyGuard, Initializable, UUPSUpgr
         if(!(_getAdmin() == msg.sender)) revert NotAuthorized(msg.sender);
         _;
     }
-    
+
 
     /// @inheritdoc IProxyFactory
     function createNewProxy(
@@ -90,17 +90,19 @@ contract ProxyFactory is IProxyFactory, ReentrancyGuard, Initializable, UUPSUpgr
         _changeAdmin(msg.sender);
     }
 
-    //-------
+    /*///////////////////////////////////////////////////////////////
+                            Ownership methods
+    //////////////////////////////////////////////////////////////*/
 
     function _authorizeUpgrade(address newImplementation_) internal override onlyOwner {}
 
+    /// @inheritdoc IProxyFactory
     function getOwner() external view onlyProxy returns(address) {
         return _getAdmin();
     }
 
+    /// @inheritdoc IProxyFactory
     function changeOwner(address newOwner_) external onlyProxy onlyOwner {
         _changeAdmin(newOwner_);
     }
-
-    
 }

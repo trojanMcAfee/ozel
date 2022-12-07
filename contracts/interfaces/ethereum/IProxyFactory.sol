@@ -19,4 +19,16 @@ interface IProxyFactory {
 
     /// @dev Initializer
     function initialize(address beacon_) external;
+
+    /**
+     * @dev Gets the owner of Factory
+     * @return address Owner
+     */
+    function getOwner() external view onlyProxy returns(address);
+
+    /**
+     * @dev Changes the owner of the Factory
+     * @param newOwner_ New Owner
+     */
+    function changeOwner(address newOwner_) external;
 }

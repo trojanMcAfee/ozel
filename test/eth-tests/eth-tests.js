@@ -107,7 +107,7 @@ let isAuthorized, newSelector;
         });
 
         describe('ProxyFactory', async () => {
-            xdescribe('Deploys one account', async () => {
+            describe('Deploys one account', async () => {
                 it('should create a account successfully / createNewProxy()', async () => {
                     await proxyFactory.createNewProxy(accountDetails, ops);
                     ([ proxies, names ] = await storageBeacon.getAccountsByUser(signerAddr));
@@ -198,7 +198,7 @@ let isAuthorized, newSelector;
                 });
             });
 
-            xdescribe('Deploys 5 accounts', async () => { 
+            describe('Deploys 5 accounts', async () => { 
                 before(async () => {
                     accountDetails[1] = usdcAddr;
                     for (let i=0; i < 5; i++) {
@@ -252,10 +252,28 @@ let isAuthorized, newSelector;
                     });
                 });
 
+                it('should not allow an unauthorized user to change the owner of the factory / changeOwner()', async () => {
+                    await assert.rejects(async () => {
+                        await proxyFactory.connect(signers[1]).changeOwner(signerAddr2, ops);
+                    }, {
+                        name: 'Error',
+                        message: (await err(signerAddr2)).notAuthorized
+                    });
+                });
+
+                it('should allow the owner to change the owner of the factory / changeOwner()', async () => {
+                    await proxyFactory.changeOwner(signerAddr2, ops);
+                    const newOwner = await proxyFactory.getOwner();
+                    assert.equal(newOwner, signerAddr2);
+
+                    //Clean up
+                    await proxyFactory.connect(signers[1]).changeOwner(signerAddr, ops);
+                });
+
             });
         });
 
-        xdescribe('ozAccountProxy / ozPayMe', async () => {
+        describe('ozAccountProxy / ozPayMe', async () => {
             before(async () => {
                 newProxyAddr = await createProxy(proxyFactory, accountDetails);
                 newProxy = await hre.ethers.getContractAt(proxyABIeth, newProxyAddr);
@@ -384,7 +402,7 @@ let isAuthorized, newSelector;
             });
         });
 
-        xdescribe('Emitter', async () => {
+        describe('Emitter', async () => {
             before(async () => {
                 newProxyAddr = await createProxy(proxyFactory, accountDetails);
             });
@@ -416,7 +434,7 @@ let isAuthorized, newSelector;
             }); 
         });
     
-        xdescribe('StorageBeacon', async () => {
+        describe('StorageBeacon', async () => {
             it('should not allow an user to save an account / saveUserToDetails()', async () => {
                 await assert.rejects(async () => {
                     await storageBeacon.saveUserToDetails(signerAddr2, accountDetails);
@@ -661,7 +679,7 @@ let isAuthorized, newSelector;
             });
         });
 
-        xdescribe('ozUpgradeableBeacon', async () => {
+        describe('ozUpgradeableBeacon', async () => {
             it('should allow the owner to upgrade the Storage Beacon / upgradeStorageBeacon()', async () => {
                 [storageBeaconMockAddr , storageBeaconMock] = await deployContract('StorageBeaconMock');
                 await beacon.upgradeStorageBeacon(storageBeaconMockAddr);
@@ -708,7 +726,7 @@ let isAuthorized, newSelector;
             });
         });
 
-        xdescribe('FakeOZL', async () => {
+        describe('FakeOZL', async () => {
             it('should get the total volume in USD / getTotalVolumeInUSD', async () => {
                 volume = await fakeOzl.getTotalVolumeInUSD(); 
                 assert.equal(formatEther(volume), 500);
@@ -763,9 +781,8 @@ let isAuthorized, newSelector;
         }); 
     });
 
-
     
-    xdescribe('Pesimistic deployment', async function () {
+    describe('Pesimistic deployment', async function () {
 
         /**
          * Deploys ozPayMeNoRedeem. which has an autoRedeem of 0, instead of ozPayme 
