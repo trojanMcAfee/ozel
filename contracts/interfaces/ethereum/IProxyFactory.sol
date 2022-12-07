@@ -24,7 +24,7 @@ interface IProxyFactory {
      * @dev Gets the owner of Factory
      * @return address Owner
      */
-    function getOwner() external view onlyProxy returns(address);
+    function getOwner() external view returns(address);
 
     /**
      * @dev Changes the owner of the Factory
