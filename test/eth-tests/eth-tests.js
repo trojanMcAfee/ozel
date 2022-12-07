@@ -47,7 +47,7 @@ const {
 let signerAddr, signerAddr2;
 let ozERC1967proxyAddr, storageBeacon, emitter, fakeOZLaddr, proxyFactoryAddr;
 let accountDetails;
-let newProxyAddr, newProxy;
+let newProxyAddr, newProxy, newFactoryAddr;
 let balance, tokens;
 let newUserToken, newUserSlippage, newSlippage;
 let opsContract, impl;
@@ -107,8 +107,8 @@ let isAuthorized, newSelector;
         });
 
         describe('ProxyFactory', async () => {
-            describe('Deploys one account', async () => {
-                xit('should create a account successfully / createNewProxy()', async () => {
+            xdescribe('Deploys one account', async () => {
+                it('should create a account successfully / createNewProxy()', async () => {
                     await proxyFactory.createNewProxy(accountDetails, ops);
                     ([ proxies, names ] = await storageBeacon.getAccountsByUser(signerAddr));
 
@@ -118,7 +118,7 @@ let isAuthorized, newSelector;
                     assert(name.length > 0);
                 });
 
-                xit('should not allow to create a account witn an empty account name / createNewProxy()', async () => {
+                it('should not allow to create a account witn an empty account name / createNewProxy()', async () => {
                     accountDetails[3] = '';
                     await assert.rejects(async () => {
                         await proxyFactory.createNewProxy(accountDetails, ops);
@@ -131,7 +131,7 @@ let isAuthorized, newSelector;
                     accountDetails[3] = 'my account';
                 });
 
-                xit('should not allow to create a account with a name with more of 18 characters / createNewProxy()', async () => {
+                it('should not allow to create a account with a name with more of 18 characters / createNewProxy()', async () => {
                     const invalidName = 'fffffffffffffffffff';
                     assert(invalidName.length > 18);
                     accountDetails[3] = invalidName;
@@ -147,7 +147,7 @@ let isAuthorized, newSelector;
                     accountDetails[3] = 'my account';
                 });
 
-                xit('should not allow to create a account with the 0 address / createNewProxy()', async () => {
+                it('should not allow to create a account with the 0 address / createNewProxy()', async () => {
                     accountDetails[1] = nullAddr;
                     await assert.rejects(async () => {
                         await proxyFactory.createNewProxy(accountDetails, ops);
@@ -157,7 +157,7 @@ let isAuthorized, newSelector;
                     });
                 });
 
-                xit('should not allow to create a account with 0 slippage / createNewProxy()', async () => {
+                it('should not allow to create a account with 0 slippage / createNewProxy()', async () => {
                     accountDetails[1] = usdtAddrArb;
                     accountDetails[2] = 0;
                     await assert.rejects(async () => {
@@ -168,7 +168,7 @@ let isAuthorized, newSelector;
                     });
                 });
 
-                xit('should not allow to create a account with a token not found in the database / createNewProxy()', async () => {
+                it('should not allow to create a account with a token not found in the database / createNewProxy()', async () => {
                     accountDetails[1] = deadAddr;
                     accountDetails[2] = defaultSlippage;
                     await assert.rejects(async () => {
@@ -179,7 +179,7 @@ let isAuthorized, newSelector;
                     });
                 })
     
-                xit('should have an initial balance of 0.1 ETH', async () => { 
+                it('should have an initial balance of 0.1 ETH', async () => { 
                     accountDetails[1] = usdtAddrArb;
                     newProxyAddr = await createProxy(proxyFactory, accountDetails);
 
@@ -187,7 +187,7 @@ let isAuthorized, newSelector;
                     assert.equal(formatEther(balance), '0.1');
                 });
     
-                xit('should have a final balance of 0 ETH', async () => {
+                it('should have a final balance of 0 ETH', async () => {
                     newProxyAddr = await createProxy(proxyFactory, accountDetails);
                     balance = await hre.ethers.provider.getBalance(newProxyAddr);
                     if (Number(balance) === 0) await sendETH(newProxyAddr, 0.1);
@@ -196,26 +196,7 @@ let isAuthorized, newSelector;
                     balance = await hre.ethers.provider.getBalance(newProxyAddr);
                     assert.equal(formatEther(balance), 0);
                 });
-
-                describe('Upgrade the Factory', async () => {
-                    xit('should return the current implementation of the Proxy Factory / ozERC1967Proxy - getImplementation()', async () => {
-                        impl = await proxyFactory.getImplementation();
-                        assert.equal(impl, proxyFactoryAddr);
-                    });
-
-                    it('should allow the owner to upgrade the Proxy Factory / ozERC1967Proxy-UUPSUpgradeable - upgradeTo()', async() => {
-                        const [ newFactoryAddr ] = await deployContract('ProxyFactory');
-                        await proxyFactory.upgradeTo(newFactoryAddr, ops);
-                        impl = await proxyFactory.getImplementation();
-                        assert.equal(newFactoryAddr, impl);
-                        
-                        const admin = await proxyFactory.getAdmin();
-                        assert.equal(admin, signerAddr);
-                    });
-
-                });
             });
-
 
             xdescribe('Deploys 5 accounts', async () => { 
                 before(async () => {
@@ -243,6 +224,34 @@ let isAuthorized, newSelector;
                         assert.equal(formatEther(balance), 0);
                     }
                 });
+            });
+
+            describe('Upgrade the Factory', async () => {
+                it('should return the current implementation of the Proxy Factory / ozERC1967Proxy - getImplementation()', async () => {
+                    impl = await proxyFactory.getImplementation();
+                    assert.equal(impl, proxyFactoryAddr);
+                });
+
+                it('should allow the owner to upgrade the Proxy Factory / ozERC1967Proxy-UUPSUpgradeable - upgradeTo()', async() => {
+                    ([ newFactoryAddr ] = await deployContract('ProxyFactory'));
+                    await proxyFactory.upgradeTo(newFactoryAddr, ops);
+                    impl = await proxyFactory.getImplementation();
+                    assert.equal(newFactoryAddr, impl);
+                    
+                    const admin = await proxyFactory.getOwner();
+                    assert.equal(admin, signerAddr);
+                });
+
+                it('shoud not allow an unathorized user to change the Factory implementation / ozERC1967Proxy-UUPSUpgradeable - upgradeTo()', async () => {
+                    ([ newFactoryAddr ] = await deployContract('ProxyFactory'));
+                    await assert.rejects(async () => {
+                        await proxyFactory.connect(signers[1]).upgradeTo(newFactoryAddr, ops);
+                    }, {
+                        name: 'Error',
+                        message: (await err(signerAddr2)).notAuthorized
+                    });
+                });
+
             });
         });
 

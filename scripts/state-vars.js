@@ -89,7 +89,8 @@ const factoryABI = [
     'function initialize(address beacon_)',
     'function getImplementation() external view returns(address)',
     'function upgradeTo(address newImplementation) external',
-    'function getAdmin() external view returns(address)'
+    'function getOwner() external view returns(address)',
+    'function changeOwner(address newOwner_) external'
 ];
 
 const opsL2 = {

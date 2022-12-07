@@ -27,9 +27,10 @@ contract ProxyFactory is IProxyFactory, ReentrancyGuard, Initializable, UUPSUpgr
     address private beacon;
 
     modifier onlyOwner() {
-        require(_getAdmin() == msg.sender, 'not0admin');
+        if(!(_getAdmin() == msg.sender)) revert NotAuthorized(msg.sender);
         _;
     }
+    
 
     /// @inheritdoc IProxyFactory
     function createNewProxy(
@@ -93,8 +94,12 @@ contract ProxyFactory is IProxyFactory, ReentrancyGuard, Initializable, UUPSUpgr
 
     function _authorizeUpgrade(address newImplementation_) internal override onlyOwner {}
 
-    function getAdmin() external view onlyProxy returns(address) {
+    function getOwner() external view onlyProxy returns(address) {
         return _getAdmin();
+    }
+
+    function changeOwner(address newOwner_) external onlyProxy onlyOwner {
+        _changeAdmin(newOwner_);
     }
 
     
