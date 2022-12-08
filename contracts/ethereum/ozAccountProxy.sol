@@ -16,7 +16,7 @@ import './StorageBeacon.sol';
  */
 contract ozAccountProxy is ReentrancyGuard, Initializable, BeaconProxy { 
 
-    StorageBeacon.AccountConfig accountDetails;
+    StorageBeacon.AccountConfig acc;
     StorageBeacon.FixedConfig fxConfig;
 
     address private beacon; 
@@ -62,7 +62,7 @@ contract ozAccountProxy is ReentrancyGuard, Initializable, BeaconProxy {
             data = abi.encodeWithSignature(
                 'sendToArb(uint256,(address,address,uint256,string))', 
                 storageBeacon.getGasPriceBid(),
-                accountDetails
+                acc
             );
         }
 

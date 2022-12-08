@@ -29,7 +29,7 @@ contract ozPayMe is ozIPayMe, ReentrancyGuard, Initializable {
 
     using FixedPointMathLib for uint;
 
-    StorageBeacon.AccountConfig accountDetails;
+    StorageBeacon.AccountConfig acc;
     StorageBeacon.FixedConfig fxConfig;
 
     address private _beacon;
@@ -50,7 +50,7 @@ contract ozPayMe is ozIPayMe, ReentrancyGuard, Initializable {
     }
 
     modifier onlyUser() {
-        if (msg.sender != accountDetails.user) revert NotAuthorized(msg.sender);
+        if (msg.sender != acc.user) revert NotAuthorized(msg.sender);
         _;
     }
 
@@ -68,6 +68,19 @@ contract ozPayMe is ozIPayMe, ReentrancyGuard, Initializable {
         _;
     }
 
+    modifier filterDetails(StorageBeacon.AccountConfig calldata acc_) {
+        StorageBeacon storageBeacon = StorageBeacon(_getStorageBeacon(_beacon, 0)); 
+
+        if (bytes(acc_.name).length == 0) revert CantBeZero('name'); 
+        if (bytes(acc_.name).length > 18) revert NameTooLong();
+        if (acc_.user == address(0) || acc_.token == address(0)) revert CantBeZero('address');
+        if (!storageBeacon.isUser(acc_.user)) revert UserNotInDatabase(acc_.user);
+        if (!storageBeacon.queryTokenDatabase(acc_.token)) revert TokenNotInDatabase(acc_.token);
+        if (acc_.slippage < 1) revert CantBeZero('slippage');
+        if (!(address(this).balance > 0)) revert CantBeZero('contract balance');
+        _;
+    }
+
     /*///////////////////////////////////////////////////////////////
                             Main functions
     //////////////////////////////////////////////////////////////*/
@@ -75,17 +88,9 @@ contract ozPayMe is ozIPayMe, ReentrancyGuard, Initializable {
     /// @inheritdoc ozIPayMe
     function sendToArb( 
         uint gasPriceBid_,
-        StorageBeacon.AccountConfig calldata accountDetails_
-    ) external payable onlyOps {    
+        StorageBeacon.AccountConfig calldata acc_ 
+    ) external payable onlyOps filterDetails(acc_) {    
         StorageBeacon storageBeacon = StorageBeacon(_getStorageBeacon(_beacon, 0)); 
-
-        if (bytes(accountDetails_.name).length == 0) revert CantBeZero('name'); 
-        if (bytes(accountDetails_.name).length > 18) revert NameTooLong();
-        if (accountDetails_.user == address(0) || accountDetails_.token == address(0)) revert CantBeZero('address');
-        if (!storageBeacon.isUser(accountDetails_.user)) revert UserNotInDatabase(accountDetails_.user);
-        if (!storageBeacon.queryTokenDatabase(accountDetails_.token)) revert TokenNotInDatabase(accountDetails_.token);
-        if (accountDetails_.slippage < 1) revert CantBeZero('slippage');
-        if (!(address(this).balance > 0)) revert CantBeZero('contract balance');
 
         (uint fee, ) = IOps(fxConfig.ops).getFeeDetails();
         _transfer(fee, fxConfig.ETH);
@@ -94,7 +99,7 @@ contract ozPayMe is ozIPayMe, ReentrancyGuard, Initializable {
 
         bytes memory swapData = abi.encodeWithSelector(
             FakeOZL(payable(fxConfig.OZL)).exchangeToAccountToken.selector, 
-            accountDetails_
+            acc_
         );
         
         bytes memory ticketData = _createTicketData(gasPriceBid_, swapData, false);
@@ -109,7 +114,7 @@ contract ozPayMe is ozIPayMe, ReentrancyGuard, Initializable {
             if (!success) {
                 _runEmergencyMode();
                 isEmergency = true;
-                emit EmergencyTriggered(accountDetails_.user, amountToSend);
+                emit EmergencyTriggered(acc_.user, amountToSend);
             }
         }
 
@@ -118,7 +123,7 @@ contract ozPayMe is ozIPayMe, ReentrancyGuard, Initializable {
                 Emitter(fxConfig.emitter).forwardEvent(); 
             }
             storageBeacon.storeAccountPayment(address(this), amountToSend);
-            emit FundsToArb(accountDetails_.user, amountToSend);
+            emit FundsToArb(acc_.user, amountToSend);
         }
     }
 
@@ -142,7 +147,7 @@ contract ozPayMe is ozIPayMe, ReentrancyGuard, Initializable {
                     tokenIn: eMode.tokenIn,
                     tokenOut: eMode.tokenOut, 
                     fee: eMode.poolFee,
-                    recipient: accountDetails.user,
+                    recipient: acc.user,
                     deadline: block.timestamp,
                     amountIn: balanceWETH,
                     amountOutMinimum: _calculateMinOut(eMode, i, balanceWETH), 
@@ -156,7 +161,7 @@ contract ozPayMe is ozIPayMe, ReentrancyGuard, Initializable {
                     unchecked { ++i; }
                     continue; 
                 } else {
-                    IERC20(eMode.tokenIn).transfer(accountDetails.user, balanceWETH);
+                    IERC20(eMode.tokenIn).transfer(acc.user, balanceWETH);
                     break;
                 }
             }
@@ -188,7 +193,7 @@ contract ozPayMe is ozIPayMe, ReentrancyGuard, Initializable {
         (,int price,,,) = eMode_.priceFeed.latestRoundData();
         uint expectedOut = balanceWETH_.mulDivDown(uint(price) * 10 ** 10, 1 ether);
         uint minOutUnprocessed = 
-            expectedOut - expectedOut.mulDivDown(accountDetails.slippage * i_ * 100, 1000000); 
+            expectedOut - expectedOut.mulDivDown(acc.slippage * i_ * 100, 1000000); 
         minOut = minOutUnprocessed.mulWadDown(10 ** 6);
     }
 
@@ -197,7 +202,7 @@ contract ozPayMe is ozIPayMe, ReentrancyGuard, Initializable {
         StorageBeacon.AccountConfig calldata accountDetails_, 
         address beacon_
     ) external initializer {
-        accountDetails = accountDetails_;  
+        acc = accountDetails_;  
         fxConfig = StorageBeacon(_getStorageBeacon(beacon_, 0)).getFixedConfig();
         _beacon = beacon_;
     }
@@ -215,7 +220,7 @@ contract ozPayMe is ozIPayMe, ReentrancyGuard, Initializable {
     function changeAccountToken(
         address newToken_
     ) external onlyUser checkToken(newToken_) {
-        accountDetails.token = newToken_;
+        acc.token = newToken_;
         emit NewToken(msg.sender, newToken_);
     }
 
@@ -223,7 +228,7 @@ contract ozPayMe is ozIPayMe, ReentrancyGuard, Initializable {
     function changeAccountSlippage(
         uint newSlippage_
     ) external onlyUser checkSlippage(newSlippage_) { 
-        accountDetails.slippage = newSlippage_;
+        acc.slippage = newSlippage_;
         emit NewSlippage(msg.sender, newSlippage_);
     }
 
@@ -232,20 +237,20 @@ contract ozPayMe is ozIPayMe, ReentrancyGuard, Initializable {
         address newToken_, 
         uint newSlippage_
     ) external onlyUser checkToken(newToken_) checkSlippage(newSlippage_) {
-        accountDetails.token = newToken_;
-        accountDetails.slippage = newSlippage_;
+        acc.token = newToken_;
+        acc.slippage = newSlippage_;
         emit NewToken(msg.sender, newToken_);
         emit NewSlippage(msg.sender, newSlippage_);
     } 
 
     /// @inheritdoc ozIPayMe
     function getAccountDetails() external view returns(StorageBeacon.AccountConfig memory) {
-        return accountDetails;
+        return acc;
     }
 
     /// @inheritdoc ozIPayMe
     function withdrawETH_lastResort() external onlyUser {
-        (bool success, ) = payable(accountDetails.user).call{value: address(this).balance}('');
+        (bool success, ) = payable(acc.user).call{value: address(this).balance}('');
         if (!success) revert CallFailed('ozPayMe: withdrawETH_lastResort failed');
     }
 
