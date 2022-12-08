@@ -27,14 +27,14 @@ library LibDiamond {
         address[] addresses;
     }
 
-    struct VarsAndAddresses { //order this struct
+    struct VarsAndAddresses { 
         address[] contracts;
         address[] erc20s;
         address[] tokensDb;
-        uint[] appVars;
-        string[] ozlVars;
         address ETH;
+        uint[] appVars;
         uint[] revenueAmounts;
+        string[] ozlVars;
     }
 
 

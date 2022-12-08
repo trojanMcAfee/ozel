@@ -106,14 +106,14 @@ contract oz4626Facet is ModifiersARB {
      * @param shares OZL balance
      * @return assets (Redeemed) Funds to receive
      */
-    function convertToAssets(uint256 shares) public view virtual returns (uint256) { 
+    function convertToAssets(uint256 shares) public view returns (uint256) { 
         uint vaultBalance = IERC20(s.yTriPool).balanceOf(address(this));
         uint assets = shares.mulDivDown(vaultBalance, 100 * 1 ether); 
         return assets;
     }
 
     /// @dev Previews the amount of funds from AUM to receive
-    function previewRedeem(uint256 shares) public view virtual returns (uint256) {
+    function previewRedeem(uint256 shares) public view returns (uint256) {
         return convertToAssets(shares);
     }
 
@@ -121,19 +121,15 @@ contract oz4626Facet is ModifiersARB {
                         Funding limit logic
     //////////////////////////////////////////////////////////////*/
 
-    function maxDeposit(address) public view virtual returns (uint256) { 
+    function maxDeposit() public pure returns (uint256) { 
         return type(uint256).max;
     }
 
-    function maxMint(address) public view virtual returns (uint256) {
-        return type(uint256).max;
-    }
-
-    function maxWithdraw(address owner) public view virtual returns (uint256) {
+    function maxWithdraw(address owner) public view returns (uint256) {
         return convertToAssets(maxRedeem(owner));
     }
 
-    function maxRedeem(address owner) public view virtual returns (uint256) {
+    function maxRedeem(address owner) public view returns (uint256) {
         return oz20Facet(s.oz20).balanceOf(owner);
     }
 }

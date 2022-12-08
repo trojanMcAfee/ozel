@@ -20,6 +20,7 @@ import '../Errors.sol';
 
 
 
+
 /**
  * @title Responsible for sending ETH and calldata to L2
  * @notice Sends the ETH an account just received plus its details to L2 for swapping.
@@ -199,10 +200,10 @@ contract ozPayMe is ozIPayMe, ReentrancyGuard, Initializable {
 
     /// @inheritdoc ozIPayMe
     function initialize(
-        StorageBeacon.AccountConfig calldata accountDetails_, 
+        StorageBeacon.AccountConfig calldata acc_, 
         address beacon_
     ) external initializer {
-        acc = accountDetails_;  
+        acc = acc_;  
         fxConfig = StorageBeacon(_getStorageBeacon(beacon_, 0)).getFixedConfig();
         _beacon = beacon_;
     }
@@ -262,12 +263,12 @@ contract ozPayMe is ozIPayMe, ReentrancyGuard, Initializable {
      * @dev Calculates the L1 gas values for the retryableticket's auto redeemption
      */
     function _calculateGasDetails(
-        bytes memory swapData_, 
+        uint dataLength_, 
         uint gasPriceBid_, 
         bool decrease_
     ) private view returns(uint maxSubmissionCost, uint autoRedeem) {
         maxSubmissionCost = DelayedInbox(fxConfig.inbox).calculateRetryableSubmissionFee(
-            swapData_.length,
+            dataLength_,
             0
         );
 
@@ -284,7 +285,7 @@ contract ozPayMe is ozIPayMe, ReentrancyGuard, Initializable {
         bytes memory swapData_,
         bool decrease_
     ) private view returns(bytes memory) {
-        (uint maxSubmissionCost, uint autoRedeem) = _calculateGasDetails(swapData_, gasPriceBid_, decrease_);
+        (uint maxSubmissionCost, uint autoRedeem) = _calculateGasDetails(swapData_.length, gasPriceBid_, decrease_);
 
         return abi.encodeWithSelector(
             DelayedInbox(fxConfig.inbox).createRetryableTicket.selector, 

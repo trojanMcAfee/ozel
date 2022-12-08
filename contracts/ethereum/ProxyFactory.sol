@@ -34,13 +34,13 @@ contract ProxyFactory is IProxyFactory, ReentrancyGuard, Initializable, UUPSUpgr
 
     /// @inheritdoc IProxyFactory
     function createNewProxy(
-        StorageBeacon.AccountConfig calldata accountDetails_
+        StorageBeacon.AccountConfig calldata acc_
     ) external nonReentrant returns(address) {
-        if (bytes(accountDetails_.name).length == 0) revert CantBeZero('name'); 
-        if (bytes(accountDetails_.name).length > 18) revert NameTooLong();
-        if (accountDetails_.user == address(0) || accountDetails_.token == address(0)) revert CantBeZero('address');
-        if (accountDetails_.slippage <= 0) revert CantBeZero('slippage');
-        if (!StorageBeacon(_getStorageBeacon(0)).queryTokenDatabase(accountDetails_.token)) revert TokenNotInDatabase(accountDetails_.token);
+        if (bytes(acc_.name).length == 0) revert CantBeZero('name'); 
+        if (bytes(acc_.name).length > 18) revert NameTooLong();
+        if (acc_.user == address(0) || acc_.token == address(0)) revert CantBeZero('address');
+        if (acc_.slippage <= 0) revert CantBeZero('slippage');
+        if (!StorageBeacon(_getStorageBeacon(0)).queryTokenDatabase(acc_.token)) revert TokenNotInDatabase(acc_.token);
 
         ozAccountProxy newAccount = new ozAccountProxy(
             beacon,
@@ -49,13 +49,13 @@ contract ProxyFactory is IProxyFactory, ReentrancyGuard, Initializable, UUPSUpgr
 
         bytes memory createData = abi.encodeWithSignature(
             'initialize((address,address,uint256,string),address)',
-            accountDetails_, beacon
+            acc_, beacon
         );
         address(newAccount).functionCall(createData);
 
         _startTask(address(newAccount));
 
-        StorageBeacon(_getStorageBeacon(0)).saveUserToDetails(address(newAccount), accountDetails_); 
+        StorageBeacon(_getStorageBeacon(0)).saveUserToDetails(address(newAccount), acc_); 
 
         return address(newAccount);
     }

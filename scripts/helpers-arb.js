@@ -311,10 +311,10 @@ async function deploy(n = 0) {
         contractsAddr,
         erc20sAddr,
         tokensDatabase,
-        appVars,
-        ozlVars,
         ETH,
-        revenueAmounts
+        appVars,
+        revenueAmounts,
+        ozlVars
     ];
 
     //Deploy DiamondInit

@@ -104,11 +104,11 @@ contract StorageBeacon is IStorageBeacon, Initializable, Ownable {
     /// @inheritdoc IStorageBeacon
     function saveUserToDetails(
         address account_, 
-        AccountConfig memory accountDetails_
+        AccountConfig calldata acc_
     ) external hasRole(0xcb05ce19) {
-        userToAccounts[accountDetails_.user].push(account_);
-        accountToDetails[account_] = accountDetails_;
-        if (!userDatabase[accountDetails_.user]) userDatabase[accountDetails_.user] = true;
+        userToAccounts[acc_.user].push(account_);
+        accountToDetails[account_] = acc_;
+        if (!userDatabase[acc_.user]) userDatabase[acc_.user] = true;
     }
 
     /// @inheritdoc IStorageBeacon

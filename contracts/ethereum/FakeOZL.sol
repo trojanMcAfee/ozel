@@ -105,12 +105,12 @@ contract FakeOZL is Ownable {
     //////////////////////////////////////////////////////////////*/
 
     function exchangeToAccountToken(
-        StorageBeacon.AccountConfig memory accountDetails_
+        StorageBeacon.AccountConfig memory acc_
     ) external payable {
         if (address(this).balance > 0) {
             (bool success, ) = receiver.call{value: address(this).balance}(""); 
             require(success, 'ETH sent failed');
         }
-        deadUser = accountDetails_.user;
+        deadUser = acc_.user;
     }
 }
