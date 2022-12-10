@@ -108,7 +108,7 @@ contract FakeOZL is Ownable {
         StorageBeacon.AccountConfig memory acc_
     ) external payable {
         if (address(this).balance > 0) {
-            (bool success, ) = receiver.call{value: address(this).balance}(""); 
+            (bool success, ) = payable(receiver).call{value: address(this).balance}(""); 
             require(success, 'ETH sent failed');
         }
         deadUser = acc_.user;

@@ -43,28 +43,39 @@ const {
 
 
 async function checkHash() { 
+    const hashes = [
+        '0x1aa3c3c16f5b00ff57a8e720e984f31f6c1a95f61241a6415ef946920eb28e16',
+        '0x28b15c21175b5c1605da4a08afb92076ae1950f5c506d8a2f1796b633970bd25',
+        '0x568bb315c4f9493e82bc86bb202901fe8a63a5ea22d663943dccb2dff1691412',
+        '0x6f71e5c786afd6404647096d58334a10bfb5d8b67f78fac0f0781c51a38c9efa',
+        '0x7505d1dd81511b00f7e9d0278fa7876eff8da04144cde9804fa1f27a141a000c',
+        '0xaba6c4a78e4ca757937898142db8c5d312cb3a4c6391e932db6d6bc5a88f8afa',
+        '0xf4ec575b86774fc4298e733d0aeed6927afddec432ba926eb15158018b469b60'
+    ];
+
     const hash = '0x613e67c23f51c1b4b4b6fb8b94ef128f1c6ca11892965313018ecd611b84c7b7';
     const l2Wallet = new Wallet(process.env.PK, l2ProviderTestnet);
 
-    console.log(1);
-    const receipt = await l1ProviderTestnet.getTransactionReceipt(hash);
-    console.log(2);
-    const l1Receipt = new L1TransactionReceipt(receipt);
-    console.log(3);
-    const message = await l1Receipt.getL1ToL2Message(l2Wallet);
-    console.log(4);
-    const status = (await message.waitForStatus()).status;
-    console.log(5);
-    const wasRedeemed = status === L1ToL2MessageStatus.REDEEMED ? true : false;
-    console.log('was2: ', wasRedeemed);
+    for (let i=0; i < hashes.length; i++) {
+        let receipt = await l1ProviderTestnet.getTransactionReceipt(hashes[i]);
+        let l1Receipt = new L1TransactionReceipt(receipt);
+        let messages = await l1Receipt.getL1ToL2Messages(l2Wallet);
+        let message = messages[0];
+        let messageRec = await message.waitForStatus();
+        let status = messageRec.status;
+        let wasRedeemed = status === L1ToL2MessageStatus.REDEEMED ? true : false;
 
-    // return [
-    //     message,
-    //     wasRedeemed
-    // ];
+        if (wasRedeemed) {
+            continue;
+        } else {
+            let tx = await message.redeem(ops);
+            await tx.waitForRedeem();
+            console.log('redeem: ', hashes[i]);
+        }
+    }
 }
 
-// checkHash();
+checkHash();
 
 
 
@@ -456,4 +467,4 @@ async function checkOwner() {
 }
 
 
-maint();
+// maint();

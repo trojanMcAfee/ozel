@@ -98,10 +98,15 @@ const opsL2 = {
     gasPrice: ethers.BigNumber.from('10134698068') 
 };
 
+const opsL2_2 = {
+    gasLimit: ethers.BigNumber.from('5000000'),
+    gasPrice: ethers.BigNumber.from('40134698068')
+};
+
 const ops = {
     gasLimit: ethers.BigNumber.from('30000000'),
     // maxFeePerGas: ethers.BigNumber.from('41134698068'),
-    gasPrice: ethers.BigNumber.from('10134698068') 
+    gasPrice: ethers.BigNumber.from('5134698068') 
 };
 
 const signerX = new ethers.Wallet(process.env.PK);
@@ -243,7 +248,8 @@ module.exports = {
     l1SignerTestnet,
     l2SignerTestnet,
     l1Provider,
-    opsL2
+    opsL2,
+    opsL2_2
 };
 
 

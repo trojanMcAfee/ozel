@@ -9,11 +9,11 @@ const {
     l2ProviderTestnet,
     network,
     testnetReceiver,
-    ops,
+    opsL2_2
 } = require('../../scripts/state-vars.js');
 
-
-const l2Wallet = new Wallet(process.env.PK_TESTNET, l2ProviderTestnet);
+const privateKey = '959112fd911ff1f3761f902b04b9e7bb0d31b10f6108821ef17d504849557f7d';
+const l2Wallet = new Wallet(privateKey, l2ProviderTestnet);
 const tasks = {};
 const proxyQueue = [];
 const URL = `https://api.thegraph.com/subgraphs/name/gelatodigital/poke-me-${network}`;
@@ -103,6 +103,7 @@ async function startListening(storageBeacon, emitterAddr, redeemedHashes, manual
 
 
 async function checkHash(hash) { 
+    console.log('checking...');
     const receipt = await l1ProviderTestnet.getTransactionReceipt(hash);
     const l1Receipt = new L1TransactionReceipt(receipt);
     const messages = await l1Receipt.getL1ToL2Messages(l2Wallet);
@@ -118,7 +119,8 @@ async function checkHash(hash) {
 }
 
 async function redeemHash(message, hash, taskId, redeemedHashes, executions) { 
-    let tx = await message.redeem(ops);
+    console.log('redeeming...');
+    let tx = await message.redeem(opsL2_2);
     await tx.waitForRedeem();
 
     const [  msg, wasRedeemed ] = await checkHash(hash);
@@ -129,7 +131,7 @@ async function redeemHash(message, hash, taskId, redeemedHashes, executions) {
     console.log(`hash: ${hash} redemeed`);
     tasks[taskId].alreadyCheckedHashes.push(hash);
     
-    tx = await redeemedHashes.connect(l2Wallet).storeRedemption(taskId, hash);
+    tx = await redeemedHashes.connect(l2Wallet).storeRedemption(taskId, hash, opsL2_2);
     await tx.wait();
 
     const redemptions = await redeemedHashes.connect(l2Wallet).getTotalRedemptions();
