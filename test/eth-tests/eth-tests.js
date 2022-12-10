@@ -453,7 +453,7 @@ let isAuthorized, newSelector;
                 });
             });
 
-            it('should allow the owner to change changeGasPriceBid / changeGasPriceBid()', async () => {
+            xit('should allow the owner to change changeGasPriceBid / changeGasPriceBid()', async () => {
                 await storageBeacon.changeGasPriceBid(100);
             });
 
