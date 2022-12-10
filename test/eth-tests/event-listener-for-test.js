@@ -125,13 +125,11 @@ async function redeemHash(message, hash, taskId, redeemedHashes, executions) {
 
     const [  msg, wasRedeemed ] = await checkHash(hash);
 
-    // const status = (await message.waitForStatus()).status;
-
     assert(wasRedeemed);
     console.log(`hash: ${hash} redemeed`);
     tasks[taskId].alreadyCheckedHashes.push(hash);
     
-    tx = await redeemedHashes.connect(l2Wallet).storeRedemption(taskId, hash, opsL2_2);
+    tx = await redeemedHashes.storeRedemption(taskId, hash, opsL2_2); //connect(l2Wallet)
     await tx.wait();
 
     const redemptions = await redeemedHashes.connect(l2Wallet).getTotalRedemptions();

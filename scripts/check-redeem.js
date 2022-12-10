@@ -75,7 +75,7 @@ async function checkHash() {
     }
 }
 
-checkHash();
+// checkHash();
 
 
 
@@ -467,4 +467,4 @@ async function checkOwner() {
 }
 
 
-// maint();
+maint();
