@@ -9,6 +9,7 @@ const {
     l2ProviderTestnet,
     network,
     testnetReceiver,
+    ops,
 } = require('../../scripts/state-vars.js');
 
 
@@ -42,7 +43,7 @@ async function startListening(storageBeacon, emitterAddr, redeemedHashes, manual
     };
 
     console.log('-------------------------- Bridging --------------------------');
-    console.log('Listening for the bridge transaction from Mainnet to Arbitrum...');
+    console.log('Listening for the bridge transaction from L1 to L2...');
 
     await hre.ethers.provider.once(filter, async (encodedData) => {
         let codedProxy = encodedData.topics[1];
@@ -61,7 +62,7 @@ async function startListening(storageBeacon, emitterAddr, redeemedHashes, manual
             //ETH has been sent out from the proxy by the Gelato call
             const balance = await hre.ethers.provider.getBalance(proxy);
             assert(Number(balance) === 0);
-            console.log('ETH left Mainnet contract (aka proxy) to Arbitrum');
+            console.log('ETH left L1 contract (aka account/proxy) to L2');
 
             if (!tasks[taskId]) {
                 tasks[taskId] = {};
@@ -104,8 +105,10 @@ async function startListening(storageBeacon, emitterAddr, redeemedHashes, manual
 async function checkHash(hash) { 
     const receipt = await l1ProviderTestnet.getTransactionReceipt(hash);
     const l1Receipt = new L1TransactionReceipt(receipt);
-    const message = await l1Receipt.getL1ToL2Message(l2Wallet);
-    const status = (await message.waitForStatus()).status;
+    const messages = await l1Receipt.getL1ToL2Messages(l2Wallet);
+    const message = messages[0];
+    const messageRec = await message.waitForStatus();
+    const status = messageRec.status;
     const wasRedeemed = status === L1ToL2MessageStatus.REDEEMED ? true : false;
 
     return [
@@ -115,11 +118,14 @@ async function checkHash(hash) {
 }
 
 async function redeemHash(message, hash, taskId, redeemedHashes, executions) { 
-    let tx = await message.redeem();
-    await tx.wait();
+    let tx = await message.redeem(ops);
+    await tx.waitForRedeem();
 
-    const status = (await message.waitForStatus()).status;
-    assert(L1ToL2MessageStatus.REDEEMED == status);
+    const [  msg, wasRedeemed ] = await checkHash(hash);
+
+    // const status = (await message.waitForStatus()).status;
+
+    assert(wasRedeemed);
     console.log(`hash: ${hash} redemeed`);
     tasks[taskId].alreadyCheckedHashes.push(hash);
     
@@ -130,6 +136,8 @@ async function redeemHash(message, hash, taskId, redeemedHashes, executions) {
     assert(executions.length === redemptions.length);
     console.log('redemptions: ', redemptions);
 }
+
+
 
 
 

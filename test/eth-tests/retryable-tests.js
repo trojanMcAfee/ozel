@@ -15,11 +15,10 @@ async function sendETHandAssert(newProxyAddr) {
 
     const tx = await l1SignerTestnet.sendTransaction(ops);
     await tx.wait();
-    console.log(3);
 
     const balance = await hre.ethers.provider.getBalance(newProxyAddr);
     assert(formatEther(balance) == value);
-    console.log('ETH successfully received in proxy (pre-bridge)');
+    console.log('ETH successfully received in account/proxy (pre-bridge)');
 }
 
 function assertProof() {
@@ -57,21 +56,36 @@ async function manualRedeem() {
     assert(1 > 2); 
     console.log('^^^ Only failed assertion to prove it was configured properly');
     console.log('');
-
     console.log('--------------------- Contract addresses ---------------------');
+
     // const [
     //     storageBeacon,
     //     emitterAddr,
-    //     newProxyAddr,
-    //     redeemedHashes
-    // ] = await deployTestnet(true, true);
+    //     redeemedHashes,
+    //     newProxyAddr
+    // ] = await simulateDeployment('manualRedeem');
 
-    const [
-        storageBeacon,
-        emitterAddr,
-        newProxyAddr,
-        redeemedHashes
-    ] = await simulateDeployment();
+    const addresses = await simulateDeployment('manualRedeem');
+
+    for (let prop in addresses) {
+        let addr;
+        switch(prop) {
+            case 'storageBeacon':
+            case 'redeemedHashes':
+                addr = addresses[prop].address;
+                break;
+            default:
+                addr = addresses[prop];
+        }
+        console.log(`${prop}: ${addr}`);
+    }
+
+    const { 
+        storageBeacon, 
+        emitter: emitterAddr, 
+        redeemedHashes, 
+        newProxy: newProxyAddr 
+    } = addresses;
 
     console.log('');
     await startListening(storageBeacon, emitterAddr, redeemedHashes, true);
@@ -80,28 +94,43 @@ async function manualRedeem() {
     await sendETHandAssert(newProxyAddr);
 }
 
-async function simulateDeployment() {
-    const storageBeaconAddr = '0xF15423Bce9704Fc6E3199c685B46C03b67AF4217';
-    const storageBeacon = await hre.ethers.getContractAt('StorageBeacon', storageBeaconAddr);
+async function simulateDeployment(type) {
+    let storageBeaconAddr, storageBeacon;
+    let emitterAddr;
+    let redeemedHashesAddr, redeemedHashes;
+    let newProxyAddr;
 
-    const emitterAddr = '0xBDf7Acf088814912329aC12c6895c0b9FE690c93';
-    const redeemedHashesAddr = '0xFf3DaB28E5dEf3416a68B26A022cf557499F856a';
-    const redeemedHashes = await hre.ethers.getContractAt('RedeemedHashes', redeemedHashesAddr);
+    if (type === 'manualRedeem') {
+        storageBeaconAddr = '0xDf2956dB0E0c283d2cd7eB27ecBDaBBdEe329516';
+        storageBeacon = await hre.ethers.getContractAt('StorageBeacon', storageBeaconAddr);
 
-    const proxyFactoryAddr = '0xFa2EA7C79190956B6f8F95e191533E36F68EB7d1';
+        redeemedHashesAddr = '0xBAa20c48292C4Be9319dA3E7620F4364aac498b4';
+        redeemedHashes = await hre.ethers.getContractAt('RedeemedHashes', redeemedHashesAddr);
 
-    return [
-        storageBeacon,
-        emitterAddr,
-        redeemedHashes,
-        proxyFactoryAddr
-    ];
+        emitterAddr = '0x45cEaeAB767265352977E136234E4A0c3d5cDC44';
+        newProxyAddr = '0x858F9F673Df70DB94c49cdDD221AE2C46451C9Cc';
+    } else if ('auto') {
 
+    }
+
+    return {
+        storageBeacon: storageBeacon,
+        emitter: emitterAddr,
+        redeemedHashes: redeemedHashes,
+        newProxy: newProxyAddr
+    };
+
+    // return [
+    //     storageBeacon,
+    //     emitterAddr,
+    //     redeemedHashes,
+    //     newProxyAddr
+    // ];
 }
 
 
-(async () => await autoRedeem())();
-// (async () => await manualRedeem())();
+// (async () => await autoRedeem())();
+(async () => await manualRedeem())();
 
 
 

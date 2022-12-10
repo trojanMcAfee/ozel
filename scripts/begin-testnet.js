@@ -197,7 +197,7 @@ async function deployTestnet(testSigner = false, manualRedeem = false) {
 
 }
 
-deployTestnet();
+// deployTestnet();
 
 
 
