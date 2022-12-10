@@ -118,6 +118,7 @@ contract StorageBeacon is IStorageBeacon, Initializable, Ownable {
 
     /// @inheritdoc IStorageBeacon
     function changeGasPriceBid(uint newGasPriceBid_) external onlyOwner {
+        console.log('hi');
         gasPriceBid = newGasPriceBid_;
         emit L2GasPriceChanged(newGasPriceBid_);
     }

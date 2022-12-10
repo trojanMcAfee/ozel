@@ -18,11 +18,12 @@ library LibCommon {
      */
     function remove(address[] storage tokensDB_, address toRemove_) internal {
         uint index;
-        for (uint i=0; i < tokensDB_.length; i++) {
+        for (uint i=0; i < tokensDB_.length;) {
             if (tokensDB_[i] == toRemove_)  {
                 index = i;
                 break;
             }
+            unchecked { ++i; }
         }
         for (uint i=index; i < tokensDB_.length - 1;){
             tokensDB_[i] = tokensDB_[i+1];
@@ -48,6 +49,7 @@ library LibCommon {
                 index = i;
                 break;
             }
+            unchecked { ++i; }
         }
         for (uint i=index; i < swaps_.length - 1;){
             swaps_[i] = swaps_[i+1];

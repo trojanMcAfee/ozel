@@ -106,7 +106,7 @@ let isAuthorized, newSelector;
             fakeOzl = await hre.ethers.getContractAt('FakeOZL', fakeOZLaddr);
         });
 
-        describe('ProxyFactory', async () => {
+        xdescribe('ProxyFactory', async () => {
             describe('Deploys one account', async () => {
                 it('should create a account successfully / createNewProxy()', async () => {
                     await proxyFactory.createNewProxy(accountDetails, ops);
@@ -273,7 +273,7 @@ let isAuthorized, newSelector;
             });
         });
 
-        describe('ozAccountProxy / ozPayMe', async () => {
+        xdescribe('ozAccountProxy / ozPayMe', async () => {
             before(async () => {
                 newProxyAddr = await createProxy(proxyFactory, accountDetails);
                 newProxy = await hre.ethers.getContractAt(proxyABIeth, newProxyAddr);
@@ -402,7 +402,7 @@ let isAuthorized, newSelector;
             });
         });
 
-        describe('Emitter', async () => {
+        xdescribe('Emitter', async () => {
             before(async () => {
                 newProxyAddr = await createProxy(proxyFactory, accountDetails);
             });
@@ -435,7 +435,7 @@ let isAuthorized, newSelector;
         });
     
         describe('StorageBeacon', async () => {
-            it('should not allow an user to save an account / saveUserToDetails()', async () => {
+            xit('should not allow an user to save an account / saveUserToDetails()', async () => {
                 await assert.rejects(async () => {
                     await storageBeacon.saveUserToDetails(signerAddr2, accountDetails);
                 }, {
@@ -444,7 +444,7 @@ let isAuthorized, newSelector;
                 });
             });
 
-            it('should not allow an user to save a taskId / saveTaskId()', async () => {
+            xit('should not allow an user to save a taskId / saveTaskId()', async () => {
                 await assert.rejects(async () => {
                     await storageBeacon.saveTaskId(deadAddr, formatBytes32String('evil data'));
                 }, {
@@ -457,7 +457,7 @@ let isAuthorized, newSelector;
                 await storageBeacon.changeGasPriceBid(100);
             });
 
-            it('should not allow an external user to change changeGasPriceBid / changeGasPriceBid()', async () => {
+            xit('should not allow an external user to change changeGasPriceBid / changeGasPriceBid()', async () => {
                 await assert.rejects(async () => {
                     await storageBeacon.connect(signers[1]).changeGasPriceBid(100);
                 }, {
@@ -466,11 +466,11 @@ let isAuthorized, newSelector;
                 });
             });
 
-            it('should allow the owner to add a new token to the database / addTokenToDatabase()', async () => {
+            xit('should allow the owner to add a new token to the database / addTokenToDatabase()', async () => {
                 await storageBeacon.addTokenToDatabase(wbtcAddr);
             });
 
-            it('should not allow the onwer to add a token that is already in database / addTokenToDatabase()', async () => {
+            xit('should not allow the onwer to add a token that is already in database / addTokenToDatabase()', async () => {
                 await assert.rejects(async () => {
                     await storageBeacon.addTokenToDatabase(usdtAddrArb);
                 }, {
@@ -479,7 +479,7 @@ let isAuthorized, newSelector;
                 });
             });
 
-            it('should allow the owner to add multiple tokens / addTokenToDatabase()', async () => {
+            xit('should allow the owner to add multiple tokens / addTokenToDatabase()', async () => {
                 const  tokensDB_pre = await storageBeacon.getTokenDatabase();
                 assert(tokensDB_pre.length > 0);
 
@@ -496,7 +496,7 @@ let isAuthorized, newSelector;
                 assert(tokensDB_post > tokensDB_pre);
             });
 
-            it('should not allow an external user to add a new token to the database / addTokenToDatabase()', async () => {
+            xit('should not allow an external user to add a new token to the database / addTokenToDatabase()', async () => {
                 await assert.rejects(async () => {
                     await storageBeacon.connect(signers[1]).addTokenToDatabase(deadAddr);
                 }, {
@@ -505,7 +505,7 @@ let isAuthorized, newSelector;
                 });
             });
 
-            it('shoud fail when not-owner tries to remove a token in database / removeTokenFromDatabase()', async () => {
+            xit('shoud fail when not-owner tries to remove a token in database / removeTokenFromDatabase()', async () => {
                 let exist = await storageBeacon.queryTokenDatabase(usdtAddrArb);
                 assert(exist);
                 await assert.rejects(async () => {
@@ -516,7 +516,7 @@ let isAuthorized, newSelector;
                 });
             });
 
-            it('should allow the owner to remove a token from database / removeTokenFromDatabase()', async () => {
+            xit('should allow the owner to remove a token from database / removeTokenFromDatabase()', async () => {
                 let exist = await storageBeacon.queryTokenDatabase(usdtAddrArb);
                 assert(exist);
 
@@ -526,7 +526,7 @@ let isAuthorized, newSelector;
                 assert(!exist);
             });
 
-            it('should fail when owner tries to remove a token not in database / removeTokenFromDatabase()', async () => {
+            xit('should fail when owner tries to remove a token not in database / removeTokenFromDatabase()', async () => {
                 let exist = await storageBeacon.queryTokenDatabase(deadAddr);
                 assert(!exist);
 
@@ -538,7 +538,7 @@ let isAuthorized, newSelector;
                 });
             });
 
-            it('should not allow re-calling / storeBeacon()', async () => {
+            xit('should not allow re-calling / storeBeacon()', async () => {
                 await assert.rejects(async () => {
                     await storageBeacon.storeBeacon(deadAddr);
                 }, {
@@ -547,11 +547,11 @@ let isAuthorized, newSelector;
                 });
             });
 
-            it('should allow the onwer to change Emergency Mode / changeEmergencyMode()', async () => {
+            xit('should allow the onwer to change Emergency Mode / changeEmergencyMode()', async () => {
                 await storageBeacon.changeEmergencyMode(eMode);
             });
 
-            it('should not allow an external user to change Emergency Mode / changeEmergencyMode()', async () => {
+            xit('should not allow an external user to change Emergency Mode / changeEmergencyMode()', async () => {
                 await assert.rejects(async () => {
                     await storageBeacon.connect(signers[1]).changeEmergencyMode(eMode);
                 }, {
@@ -560,7 +560,7 @@ let isAuthorized, newSelector;
                 });
             });
 
-            it('should allow the owner to disable the Emitter / changeEmitterStatus()', async () => {
+            xit('should allow the owner to disable the Emitter / changeEmitterStatus()', async () => {
                 newProxyAddr = await createProxy(proxyFactory, accountDetails);
                 await storageBeacon.changeEmitterStatus(true, ops);
                 await sendETH(newProxyAddr, 0.01)
@@ -573,7 +573,7 @@ let isAuthorized, newSelector;
                 await storageBeacon.changeEmitterStatus(false, ops);
             });
     
-            it('should not allow an external user to disable the Emitter / changeEmitterStatus()', async () => {
+            xit('should not allow an external user to disable the Emitter / changeEmitterStatus()', async () => {
                 await assert.rejects(async () => {
                     await storageBeacon.connect(signers[1]).changeEmitterStatus(true);
                 }, {
@@ -582,7 +582,7 @@ let isAuthorized, newSelector;
                 });
             });
 
-            it('should return the accounts an user has / getAccountsByUser()', async () => {
+            xit('should return the accounts an user has / getAccountsByUser()', async () => {
                 tokens = await storageBeacon.getTokenDatabase();
                 accountDetails[1] = tokens[0];
                 
@@ -591,12 +591,12 @@ let isAuthorized, newSelector;
                 assert(userProxies.length > 0);
             });
 
-            it('should return an empty array when querying with a non-user / getAccountsByUser()', async () => {
+            xit('should return an empty array when querying with a non-user / getAccountsByUser()', async () => {
                 ([ proxies, names ] = await storageBeacon.getAccountsByUser(deadAddr));
                 assert(proxies.length === 0);
             });
 
-            it("should get an user's taskID / getTaskID()", async () => {
+            xit("should get an user's taskID / getTaskID()", async () => {
                 tokens = await storageBeacon.getTokenDatabase();
                 accountDetails[1] = tokens[0];
 
@@ -606,12 +606,12 @@ let isAuthorized, newSelector;
                 assert(taskID.length > 0);
             });
 
-            it("should return a zero taskID when querying with a non-user / getTaskID()", async () => {
+            xit("should return a zero taskID when querying with a non-user / getTaskID()", async () => {
                 taskID = (await storageBeacon.getTaskID(deadAddr)).toString();
                 assert.equal(taskID, formatBytes32String(0));
             });
 
-            it('should return true for an user / isUser()', async () => {
+            xit('should return true for an user / isUser()', async () => {
                 tokens = await storageBeacon.getTokenDatabase();
                 accountDetails[1] = tokens[0];
 
@@ -619,20 +619,20 @@ let isAuthorized, newSelector;
                 assert(await storageBeacon.isUser(signerAddr));
             });
 
-            it('should return false for a non-user / isUser()', async () => {
+            xit('should return false for a non-user / isUser()', async () => {
                 assert(!(await storageBeacon.isUser(deadAddr)));
             });
 
-            it('should get the Emitter status / getEmitterStatus()', async () => {
+            xit('should get the Emitter status / getEmitterStatus()', async () => {
                 assert(!(await storageBeacon.getEmitterStatus()));
             });
 
-            it('should return the full token database / getTokenDatabase()', async () => {
+            xit('should return the full token database / getTokenDatabase()', async () => {
                 const tokenDb = await storageBeacon.getTokenDatabase();
                 assert(tokenDb.length > 0);
             });
 
-            it('should store the payment to the account / storeAccountPayment()', async () => {
+            xit('should store the payment to the account / storeAccountPayment()', async () => {
                 tokens = await storageBeacon.getTokenDatabase();
                 accountDetails[1] = tokens[0];
                 
@@ -644,7 +644,7 @@ let isAuthorized, newSelector;
                 assert.equal(formatEther(payments), 0.1);
             });
 
-            it('should not let an external user to store a account payment / storeAccountPayment()', async () => {                
+            xit('should not let an external user to store a account payment / storeAccountPayment()', async () => {                
                 await assert.rejects(async () => {
                     await storageBeacon.storeAccountPayment(deadAddr, 1000);
                 }, {
@@ -653,7 +653,7 @@ let isAuthorized, newSelector;
                 });
             });
 
-            it('should let the owner add a new authorized selector / addAuthorizedSelector()' , async () => {
+            xit('should let the owner add a new authorized selector / addAuthorizedSelector()' , async () => {
                 newSelector = 0xb1b3d3f6;
                 isAuthorized = await storageBeacon.isSelectorAuthorized(newSelector);
                 assert(!isAuthorized);
@@ -665,7 +665,7 @@ let isAuthorized, newSelector;
                 assert(isAuthorized);
             });
     
-            it('should not let an unauthorized user to add a new authorized selector / addAuthorizedSelector()', async () => {
+            xit('should not let an unauthorized user to add a new authorized selector / addAuthorizedSelector()', async () => {
                 newSelector = 0x593d6819;
                 isAuthorized = await storageBeacon.isSelectorAuthorized(newSelector);
                 assert(!isAuthorized);
@@ -679,7 +679,7 @@ let isAuthorized, newSelector;
             });
         });
 
-        describe('ozUpgradeableBeacon', async () => {
+        xdescribe('ozUpgradeableBeacon', async () => {
             it('should allow the owner to upgrade the Storage Beacon / upgradeStorageBeacon()', async () => {
                 [storageBeaconMockAddr , storageBeaconMock] = await deployContract('StorageBeaconMock');
                 await beacon.upgradeStorageBeacon(storageBeaconMockAddr);
@@ -726,7 +726,7 @@ let isAuthorized, newSelector;
             });
         });
 
-        describe('FakeOZL', async () => {
+        xdescribe('FakeOZL', async () => {
             it('should get the total volume in USD / getTotalVolumeInUSD', async () => {
                 volume = await fakeOzl.getTotalVolumeInUSD(); 
                 assert.equal(formatEther(volume), 500);
@@ -782,7 +782,7 @@ let isAuthorized, newSelector;
     });
 
     
-    describe('Pesimistic deployment', async function () {
+    xdescribe('Pesimistic deployment', async function () {
 
         /**
          * Deploys ozPayMeNoRedeem. which has an autoRedeem of 0, instead of ozPayme 
