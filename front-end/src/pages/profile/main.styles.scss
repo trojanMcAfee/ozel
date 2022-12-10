@@ -1,0 +1,68 @@
+.mainPage {
+    position: relative;
+
+    height: 100vh;
+    width: 100vw;
+
+    background: #000;
+
+    background-image: url("../../assets/ozel_logo_new.png");
+
+    background-repeat: no-repeat;
+    background-position-x: center;
+    background-size: 100% 100%;
+
+    display: flex;
+    justify-content: space-around;
+    align-items: center;
+    flex-direction: column;
+
+    .metamask_ham {
+        position: absolute;
+
+        top: 2%;
+        right: 2%;
+
+        display: flex;
+        justify-content: center;
+        align-items: center;
+
+        select {
+            height: calc(2vh + 2vw);
+        }
+    }
+
+    .info {
+        position: absolute;
+        top: 2%;
+        left: 2%;
+        width: calc(30vh + 30vw);
+
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+
+        .field {
+            display: flex;
+            justify-content: space-around;
+            align-items: center;
+
+            width: 100%;
+            margin: calc(0.8vh + 0.8vw);
+            input {
+                width: 65%;
+                border: none;
+                height: calc(1.8vh + 1.8vw);
+                display: flex;
+                justify-content: center;
+                align-items: center;
+            }
+            label {
+                width: 35%;
+                height: calc(1.8vh + 1.8vw);
+                display: flex;
+                justify-content: center;
+                align-items: center;
+            }
+        }
+    }
+}

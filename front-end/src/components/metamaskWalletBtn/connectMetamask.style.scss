@@ -1,0 +1,33 @@
+.metamask__btnContainer {
+    .metamask__Btn {
+        padding: calc(0.4vh + 0.4vw) calc(0.8vh + 0.8vw);
+        border-radius: calc(0.5vh + 0.5vw);
+        margin: calc(0.5vh + 0.5vw);
+        color: rgb(255, 188, 1);
+        font-size: 1rem;
+        font-weight: 600;
+        background-color: black;
+        border: 2px solid rgb(255, 188, 1);
+        cursor: pointer;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        transition: 0.4s ease;
+
+        &:hover {
+            transform: scale(1.05);
+        }
+    }
+}
+
+.hide {
+    display: none;
+}
+
+.metamask__connectBtn {
+    // background-color: orange;
+}
+
+.metamask__disconnectBtn {
+    // background-color: red;
+}

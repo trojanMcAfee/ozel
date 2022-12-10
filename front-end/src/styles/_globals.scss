@@ -1,0 +1,22 @@
+@use "./vars";
+
+.solid-btn{
+    padding : calc(.6vh + .6vw) calc(1vh + 1vw);
+    background-color: black;
+    color: white;
+    font-weight: 500;
+    border-radius: vars.$border-radius;
+    cursor: pointer;
+    &:hover{
+          background-color: rgb(65, 65, 65);  
+    }
+}
+
+.underline{
+
+    cursor: pointer;
+
+    border-bottom: 3px solid black;
+    padding-bottom: calc(.2vh + .2vw);
+}
+

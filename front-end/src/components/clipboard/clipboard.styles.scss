@@ -1,0 +1,20 @@
+.clipboard {
+    display: flex;
+    justify-content: space-around;
+    align-items: center;
+
+    position: relative;
+
+    // width: 100%;
+
+    span {
+        margin: 0 calc(0.5vh + 0.5vw);
+        font-size: 0.8rem;
+        overflow: hidden;
+    }
+
+    h3{
+        position: absolute;
+        left: 125%;
+    }
+}

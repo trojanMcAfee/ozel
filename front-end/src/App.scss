@@ -1,0 +1,15 @@
+.backBtn {
+    top: 4%;
+    left: 4%;
+
+    position: absolute;
+    color: rgb(255, 188, 1);
+    font-weight: 800;
+    text-decoration: none;
+
+    transition: 0.4s ease;
+
+    &:hover {
+        transform: scale(1.05);
+    }
+}

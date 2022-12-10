@@ -1,0 +1,33 @@
+.popUp{
+    position: absolute;
+
+    top: 50%;
+    left: 50%;
+
+    transform: translate(-50%,-50%);
+
+    // width: 50vw;
+    height: 40vh;
+
+    padding: calc(1vh + 1vw) calc(2vh + 2vw);
+
+    border: 2px solid rgb(255, 188, 1);
+
+    background-color: rgba(0, 0, 0, 0.944);
+
+    border-radius: calc(1vh + 1vw);
+
+    z-index: 2;
+
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    flex-direction: column;
+
+    h2,h3{
+        color: rgb(255, 188, 1);
+        text-align: center;
+    }
+
+
+}

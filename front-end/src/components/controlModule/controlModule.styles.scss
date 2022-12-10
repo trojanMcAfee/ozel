@@ -1,0 +1,66 @@
+.controlModule {
+    .moduleContainer {
+        .moduleTabs {
+            display: flex;
+            justify-content: space-between;
+            width: 100%;
+            .tab {
+                background-color: rgb(176, 141, 46);
+                width: 30%;
+                padding: calc(0.4vh + 0.4vw) calc(0.2vh + 0.2vw);
+                text-align: center;
+                font-weight: 600;
+
+                border-radius: calc(0.2vh + 0.2vw) calc(0.2vh + 0.2vw) 0 0;
+
+                transition: .2s ease;
+
+                cursor: pointer;
+
+                &:hover {
+                    background-color: rgb(255, 188, 1);
+                }
+            }
+
+            .activeTab {
+                width: 35%;
+                background-color: rgb(255, 188, 1);
+            }
+        }
+        .moduleBody {
+
+            background-color: rgb(255, 188, 1);
+            width: calc(20vh + 20vw);
+
+            padding: calc(1vh + 1vw) ;
+
+            border-radius: 0 0 calc(0.6vh + 0.6vw) calc(0.6vh + 0.6vw);
+
+            .form{
+
+                height: 100%;
+
+                  display: flex;
+                    justify-content: space-between;
+                    align-items: center;
+                    flex-direction: column;
+                .field{
+                    margin: calc(.6vh + .6vw) 0;
+                    width: 100%;
+                    display: flex;
+                    justify-content: space-between;
+                    align-items: center;
+            
+
+                    label{
+                        font-weight: 600;
+                    }
+                }
+
+                select{
+                    overflow: hidden;
+                }
+            }
+        }
+    }
+}

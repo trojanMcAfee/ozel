@@ -44,7 +44,7 @@ library LibCommon {
         TradeOps memory swapToRemove_
     ) internal {
         uint index;
-        for (uint i=0; i < swaps_.length; i++) {
+        for (uint i=0; i < swaps_.length;) {
             if (swaps_[i].token == swapToRemove_.token)  {
                 index = i;
                 break;
