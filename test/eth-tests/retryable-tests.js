@@ -45,6 +45,13 @@ function logContracts(addresses) {
     }
 }
 
+async function runSetup(assertNum, redeemType) {
+    assertProof(assertNum);
+    const addresses = await simulateDeployment(redeemType);
+    logContracts(addresses);
+    return addresses;
+}
+
 
 async function autoRedeem() {
     assertProof(1);
@@ -52,13 +59,6 @@ async function autoRedeem() {
     const addresses = await simulateDeployment('manualRedeem');
 
     logContracts(addresses);
-
-    // const [
-    //     storageBeacon,
-    //     emitterAddr,
-    //     newProxyAddr,
-    //     redeemedHashes
-    // ] = await deployTestnet(true);
 
     // const [
     //     storageBeacon,
@@ -74,44 +74,6 @@ async function autoRedeem() {
     await sendETHandAssert(newProxyAddr);
 }
 
-async function runSetup(assertNum, redeemType) {
-    assertProof(assertNum);
-
-    const addresses = await simulateDeployment(redeemType);
-
-    logContracts(addresses);
-
-    return addresses;
-
-    const { 
-        storageBeacon, 
-        emitter: emitterAddr, 
-        redeemedHashes, 
-        newProxy: newProxyAddr 
-    } = addresses;
-}
-
-
-async function manualRedeem() {
-    assertProof(2);
-
-    const addresses = await simulateDeployment('manualRedeem');
-
-    logContracts(addresses);
-
-    const { 
-        storageBeacon, 
-        emitter: emitterAddr, 
-        redeemedHashes, 
-        newProxy: newProxyAddr 
-    } = addresses;
-
-    console.log('');
-    await startListening(storageBeacon, emitterAddr, redeemedHashes, true);
-
-    //Sends ETH to the proxy
-    await sendETHandAssert(newProxyAddr);
-}
 
 async function simulateDeployment(type) {
     let storageBeaconAddr, storageBeacon;
@@ -140,6 +102,30 @@ async function simulateDeployment(type) {
         redeemedHashes: redeemedHashes,
         newProxy: newProxyAddr
     };
+}
+
+
+
+async function manualRedeem() {
+    // assertProof(2);
+
+    // const addresses = await simulateDeployment('manualRedeem');
+
+    // logContracts(addresses);
+
+
+    const { 
+        storageBeacon, 
+        emitter: emitterAddr, 
+        redeemedHashes, 
+        newProxy: newProxyAddr 
+    } = await runSetup(2, 'manualRedeem');;
+
+    console.log('');
+    await startListening(storageBeacon, emitterAddr, redeemedHashes, true);
+
+    //Sends ETH to the proxy
+    await sendETHandAssert(newProxyAddr);
 }
 
 

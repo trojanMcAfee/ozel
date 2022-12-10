@@ -103,12 +103,14 @@ async function startListening(storageBeacon, emitterAddr, redeemedHashes, manual
 
 
 async function checkHash(hash) { 
-    console.log('checking...');
+    console.log(`checking tx: ${hash}`);
     const receipt = await l1ProviderTestnet.getTransactionReceipt(hash);
     const l1Receipt = new L1TransactionReceipt(receipt);
     const messages = await l1Receipt.getL1ToL2Messages(l2Wallet);
     const message = messages[0];
+    console.log('Waiting for the status of the message from Goerli...');
     const messageRec = await message.waitForStatus();
+    console.log('Status received...')
     const status = messageRec.status;
     const wasRedeemed = status === L1ToL2MessageStatus.REDEEMED ? true : false;
 
@@ -133,7 +135,7 @@ async function redeemHash(message, hash, taskId, redeemedHashes, executions) {
     await tx.wait();
 
     const redemptions = await redeemedHashes.connect(l2Wallet).getTotalRedemptions();
-    assert(executions.length === redemptions.length);
+    assert(redemptions.length > 0);
     console.log('redemptions: ', redemptions);
 }
 
