@@ -103,7 +103,7 @@ async function startListening(storageBeacon, emitterAddr, redeemedHashes, manual
 
 async function checkHash(hash) { 
     console.log('');
-    console.log(`checking tx: ${hash}`);
+    console.log(`Checking tx: ${hash}`);
     const receipt = await l1ProviderTestnet.getTransactionReceipt(hash);
     const l1Receipt = new L1TransactionReceipt(receipt);
     const messages = await l1Receipt.getL1ToL2Messages(l2Wallet);
@@ -115,7 +115,7 @@ async function checkHash(hash) {
 
     if (status === L1ToL2MessageStatus.REDEEMED) {
         wasRedeemed = true;
-        console.log('hash already redeemed');
+        console.log('Hash already redeemed');
     } else {
         wasRedeemed = false;
     }
@@ -131,16 +131,14 @@ async function redeemHash(message, hash, taskId, redeemedHashes, executions) {
     let tx = await message.redeem(opsL2_2);
     await tx.waitForRedeem();
 
-    console.log(`Hash: ${hash} redemeed`);
+    console.log(`**** Hash: ${hash} redemeed ****`);
     tasks[taskId].alreadyCheckedHashes.push(hash);
     
     tx = await redeemedHashes.connect(l2Wallet).storeRedemption(taskId, hash, opsL2_2);
-    const receipt = await tx.wait();
-    console.log('Store tx: ', receipt.transactionHash); //<--- delete later and the receipt var
+    await tx.wait();
 
     const redemptions = await redeemedHashes.connect(l2Wallet).getTotalRedemptions();
     assert(redemptions.length > 0);
-    console.log('redemptions: ', redemptions);
 }
 
 
