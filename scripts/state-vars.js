@@ -105,7 +105,6 @@ const opsL2_2 = {
 
 const ops = {
     gasLimit: ethers.BigNumber.from('30000000'),
-    // maxFeePerGas: ethers.BigNumber.from('41134698068'),
     gasPrice: ethers.BigNumber.from('5134698068') 
 };
 

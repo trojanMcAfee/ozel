@@ -26,7 +26,8 @@ const {
     deadAddr,
     l2Signer,
     l2SignerTest,
-    l1SignerTest
+    l1SignerTest,
+    opsL2_2
 } = require('./state-vars.js');
 
 
@@ -456,15 +457,37 @@ async function lastPart() {
 }
 
 
-async function checkOwner() {
+async function queryRedemption() {
+    const redeemedHashesAddr = '0x82ab905466713465B4b7e29afb13853225124b0c';
+    const taskId = '0xd8205fbb448f4f449809ef0170ad97b7e889506dcbd5866a29dfaae28063edc5';
+    const hash = '0xac2106eb7a949d185e6476c693c0b1ef9e15c7f4f46a687c294865c87cc33499';
+    const redeemedHashes = await hre.ethers.getContractAt('RedeemedHashes', redeemedHashesAddr);
 
-    const ozERC1967ProxyAddr = '0x5a6228EBAE2F0CD5B52415d83982955014D6740e';
-    const proxyFactory = await hre.ethers.getContractAt('ProxyFactory', ozERC1967ProxyAddr);
+    const owner = await redeemedHashes.owner();
+    console.log('owner: ', owner);
 
-    await proxyFactory
+    let redemptions = await redeemedHashes.getTotalRedemptions();
+    console.log('redeemptions pre: ', redemptions);
 
+    // const tx = await redeemedHashes.storeRedemption(taskId, hash, opsL2_2);
+    // await tx.wait();
 
+    // redemptions = await redeemedHashes.getTotalRedemptions();
+    // console.log('redeemptions post: ', redemptions);
 }
 
+async function deployRedeem() {
+    const privateKey = process.env.PK_TESTNET;
+    const l2ProviderTestnet = new ethers.providers.JsonRpcProvider(process.env.ARB_GOERLI);
+    const l2Wallet = new Wallet(privateKey, l2ProviderTestnet);
 
-maint();
+    const RedeemedHashes = await hre.ethers.getContractFactory('RedeemedHashes');
+    const redeemedHashes = await RedeemedHashes.connect(l2Wallet).deploy();
+    await redeemedHashes.deployed();
+    console.log('redeemedHashes deployed to: ', redeemedHashes.address);
+}
+
+queryRedemption();
+
+
+// queryRedemption();

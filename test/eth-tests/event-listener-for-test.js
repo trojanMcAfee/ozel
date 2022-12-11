@@ -12,7 +12,7 @@ const {
     opsL2_2
 } = require('../../scripts/state-vars.js');
 
-const privateKey = '959112fd911ff1f3761f902b04b9e7bb0d31b10f6108821ef17d504849557f7d';
+const privateKey = process.env.PK_TESTNET;
 const l2Wallet = new Wallet(privateKey, l2ProviderTestnet);
 const tasks = {};
 const proxyQueue = [];
@@ -71,7 +71,6 @@ async function startListening(storageBeacon, emitterAddr, redeemedHashes, manual
 
             let result = await axios.post(URL, query(taskId));
             let executions =  result.data.data.tasks[0].taskExecutions;
-            console.log('Executions: ', executions);
 
             parent:
             for (let i=0; i < executions.length; i++) {
@@ -103,14 +102,23 @@ async function startListening(storageBeacon, emitterAddr, redeemedHashes, manual
 
 
 async function checkHash(hash) { 
-    console.log('checking...');
+    console.log('');
+    console.log(`Checking tx: ${hash}`);
     const receipt = await l1ProviderTestnet.getTransactionReceipt(hash);
     const l1Receipt = new L1TransactionReceipt(receipt);
     const messages = await l1Receipt.getL1ToL2Messages(l2Wallet);
     const message = messages[0];
+    console.log('Waiting for the status of the message from Goerli...');
     const messageRec = await message.waitForStatus();
     const status = messageRec.status;
-    const wasRedeemed = status === L1ToL2MessageStatus.REDEEMED ? true : false;
+    let wasRedeemed;
+
+    if (status === L1ToL2MessageStatus.REDEEMED) {
+        wasRedeemed = true;
+        console.log('Hash already redeemed');
+    } else {
+        wasRedeemed = false;
+    }
 
     return [
         message,
@@ -123,18 +131,14 @@ async function redeemHash(message, hash, taskId, redeemedHashes, executions) {
     let tx = await message.redeem(opsL2_2);
     await tx.waitForRedeem();
 
-    const [  msg, wasRedeemed ] = await checkHash(hash);
-
-    assert(wasRedeemed);
-    console.log(`hash: ${hash} redemeed`);
+    console.log(`**** Hash: ${hash} redemeed ****`);
     tasks[taskId].alreadyCheckedHashes.push(hash);
     
-    tx = await redeemedHashes.storeRedemption(taskId, hash, opsL2_2); //connect(l2Wallet)
+    tx = await redeemedHashes.connect(l2Wallet).storeRedemption(taskId, hash, opsL2_2);
     await tx.wait();
 
     const redemptions = await redeemedHashes.connect(l2Wallet).getTotalRedemptions();
-    assert(executions.length === redemptions.length);
-    console.log('redemptions: ', redemptions);
+    assert(redemptions.length > 0);
 }
 
 

@@ -31,7 +31,7 @@ contract oz20Facet is ModifiersARB, Context, IERC20, IERC20Metadata {
         return 18;
     }
 
-    function totalSupply() external pure returns (uint256) { //<---- this has to be done as a merkle tree to determine that the total supply is always 100
+    function totalSupply() external pure returns (uint256) { 
         return 100;
     }
 
@@ -46,7 +46,7 @@ contract oz20Facet is ModifiersARB, Context, IERC20, IERC20Metadata {
     }
 
     /*///////////////////////////////////////////////////////////////
-                    Methods with different storage layout
+                    With different storage layout
     //////////////////////////////////////////////////////////////*/
 
     function name() external view returns (string memory) {
@@ -105,7 +105,7 @@ contract oz20Facet is ModifiersARB, Context, IERC20, IERC20Metadata {
     }
 
     /*///////////////////////////////////////////////////////////////
-                        Methods with custom logic
+                            With custom logic
     //////////////////////////////////////////////////////////////*/
 
     /**
