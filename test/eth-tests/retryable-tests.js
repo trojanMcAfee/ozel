@@ -26,7 +26,7 @@ function assertProof() {
     assert(1 > 2); 
     console.log(`^^^ Only failed assertion to prove that it was configured properly`);
     console.log('');
-    console.log('--------------------- Contract addresses ---------------------');
+    console.log('--------------------- Contracts addresses ---------------------');
 }
 
 function logContracts(addresses) {
@@ -53,7 +53,7 @@ async function runSetup() {
 
 async function simulateDeployment() {
     const storageBeaconAddr = '0xCB4b0EDFDA95bd2Ed2dE9F8ef8440918F55A91ef';
-    const redeemedHashesAddr = '0x94Fa5674Ac65c18616f760D915819a538B571b77';
+    const redeemedHashesAddr = '0x82ab905466713465B4b7e29afb13853225124b0c'; 
     const emitterAddr = '0x5b3aEae359cE1581Be337081630Fccc375bda757';
     const newProxyAddr = '0x8798Ce76F4a19b87EfB10686949A47a14A883587'; 
 
@@ -91,9 +91,5 @@ async function manualRedeem() {
 
 
 (async () => await manualRedeem())();
-
-
-
-
 
 
