@@ -36,13 +36,13 @@ const STORAGE_BEACON_MAIN = REACT_APP_MAINNET_STORAGE_BEACON
 const OZERC1967PROXY = REACT_APP_OZERC1967PROXY
 const OZERC1967PROXY_MAIN = REACT_APP_MAINNET_OZERC1967PROXY
 
-// functions -- LANDING PAGE -- as in document
+// functions -- LANDING PAGE
 export function fromAtomicUnit(wei) {
     return Web3.utils.fromWei(wei, 'ether');
 }
 
 export async function getBlockNumber() {
-    if (window.ethereum.chainId == MAINNET_CHAIND_ID) {
+    if (window.ethereum.chainId === MAINNET_CHAIND_ID) {
         return await web3_arb_main.eth.getBlockNumber();
     } else {
         return await web3_arb.eth.getBlockNumber();
@@ -51,7 +51,7 @@ export async function getBlockNumber() {
 }
 
 export async function getTotalVolumeInUSD() {
-    if (window.ethereum.chainId == MAINNET_CHAIND_ID) {
+    if (window.ethereum.chainId === MAINNET_CHAIND_ID) {
         const res = await OZL_Main.methods.getTotalVolumeInUSD().call();
         return fromAtomicUnit(res)
     } else {
@@ -61,7 +61,7 @@ export async function getTotalVolumeInUSD() {
 }
 
 export async function getTotalVolumeInETH() {
-    if (window.ethereum.chainId == MAINNET_CHAIND_ID) {
+    if (window.ethereum.chainId === MAINNET_CHAIND_ID) {
         const res = await OZL_Main.methods.getTotalVolumeInETH().call();
         return fromAtomicUnit(res)
     } else {
@@ -71,7 +71,7 @@ export async function getTotalVolumeInETH() {
 }
 
 export async function getAUMWeth() {
-    if (window.ethereum.chainId == MAINNET_CHAIND_ID) {
+    if (window.ethereum.chainId === MAINNET_CHAIND_ID) {
         const res = await OZL_Main.methods.getAUM().call();
         return fromAtomicUnit(res[0])
     } else {
@@ -81,7 +81,7 @@ export async function getAUMWeth() {
 }
 
 export async function getAUMValue() {
-    if (window.ethereum.chainId == MAINNET_CHAIND_ID) {
+    if (window.ethereum.chainId === MAINNET_CHAIND_ID) {
         const res = await OZL_Main.methods.getAUM().call();
         return fromAtomicUnit(res[1])
     } else {
@@ -95,7 +95,7 @@ export async function balanceOf(address) {
 
     if(!address) return;
 
-    if (window.ethereum.chainId == MAINNET_CHAIND_ID) {
+    if (window.ethereum.chainId === MAINNET_CHAIND_ID) {
         const res = await OZL_Main.methods.balanceOf(address).call();
         return fromAtomicUnit(res)
     } else {
@@ -108,7 +108,7 @@ export async function getOzelBalances(address) {
 
     if(!address) return
 
-    if (window.ethereum.chainId == MAINNET_CHAIND_ID) {
+    if (window.ethereum.chainId === MAINNET_CHAIND_ID) {
         const res = await OZL_Main.methods.getOzelBalances(address).call();
         return [fromAtomicUnit(res[0]), fromAtomicUnit(res[1])]
     } else {
@@ -120,7 +120,7 @@ export async function getOzelBalances(address) {
 // functions -- WIDGET -- as in document
 export async function getTokenDatabase() {
     const web3_eth = new Web3(Web3.givenProvider);
-    const contractAddress = window.ethereum.chainId == MAINNET_CHAIND_ID ? STORAGE_BEACON_MAIN : STORAGE_BEACON
+    const contractAddress = window.ethereum.chainId === MAINNET_CHAIND_ID ? STORAGE_BEACON_MAIN : STORAGE_BEACON
     const StorageBeacon = new web3_eth.eth.Contract(StorageBeacon_ABI, contractAddress);
     const res = await StorageBeacon.methods.getTokenDatabase().call();
     return res;
@@ -131,7 +131,7 @@ export async function getAccountsByUser(address) {
     if (!address) return
 
     const web3_eth = new Web3(Web3.givenProvider);
-    const contractAddress = window.ethereum.chainId == MAINNET_CHAIND_ID ? STORAGE_BEACON_MAIN : STORAGE_BEACON
+    const contractAddress = window.ethereum.chainId === MAINNET_CHAIND_ID ? STORAGE_BEACON_MAIN : STORAGE_BEACON
     const StorageBeacon = new web3_eth.eth.Contract(StorageBeacon_ABI, contractAddress);
     const res = await StorageBeacon.methods.getAccountsByUser(address).call();
     return res;
@@ -139,7 +139,7 @@ export async function getAccountsByUser(address) {
 
 export async function createNewProxy(address, token, slippage, accountName) {
     const web3_eth = new Web3(Web3.givenProvider);
-    const contractAddress = window.ethereum.chainId == MAINNET_CHAIND_ID ? OZERC1967PROXY_MAIN : OZERC1967PROXY
+    const contractAddress = window.ethereum.chainId === MAINNET_CHAIND_ID ? OZERC1967PROXY_MAIN : OZERC1967PROXY
     const OZERC1967Proxy = new web3_eth.eth.Contract(OZERC1967Proxy_ABI, contractAddress);
     const res = await OZERC1967Proxy.methods.createNewProxy([address, token, parseInt(slippage * 100), accountName]).send({ from: address });
     return res;
@@ -176,7 +176,7 @@ export async function getAccountPayments(address) {
     if (!address) return
 
     const web3_eth = new Web3(Web3.givenProvider);
-    const contractAddress = window.ethereum.chainId == MAINNET_CHAIND_ID ? STORAGE_BEACON_MAIN : STORAGE_BEACON
+    const contractAddress = window.ethereum.chainId === MAINNET_CHAIND_ID ? STORAGE_BEACON_MAIN : STORAGE_BEACON
     const StorageBeacon = new web3_eth.eth.Contract(StorageBeacon_ABI, contractAddress);
     const res = await StorageBeacon.methods.getAccountPayments(address).call()
     return fromAtomicUnit(res);
