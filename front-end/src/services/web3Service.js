@@ -7,23 +7,34 @@ import OZBeaconProxy_ABI from "../abi/ozAccountProxy.json"
 
 import { MAINNET_CHAIND_ID } from "../utils/constants"
 
+import {
+    REACT_APP_ARB_PROVIDER,
+    REACT_APP_ARB_MAINNET_PROVIDER,
+    REACT_APP_OZL_CONTRACT,
+    REACT_APP_MAINNET_OZL_CONTRACT,
+    REACT_APP_STORAGE_BEACON,
+    REACT_APP_MAINNET_STORAGE_BEACON,
+    REACT_APP_OZERC1967PROXY,
+    REACT_APP_MAINNET_OZERC1967PROXY
+} from "../state-vars.js";
+
 // providers
-const arbProvider = process.env.REACT_APP_ARB_PROVIDER;
-const arbProviderMainnet = process.env.REACT_APP_ARB_MAINNET_PROVIDER;
+const arbProvider = REACT_APP_ARB_PROVIDER;
+const arbProviderMainnet = REACT_APP_ARB_MAINNET_PROVIDER;
 
 // web3 instance
 const web3_arb = new Web3(new Web3.providers.HttpProvider(arbProvider));
 const web3_arb_main = new Web3(new Web3.providers.HttpProvider(arbProviderMainnet));
 
 // contracts
-const OZL = new web3_arb.eth.Contract(Ozl_ABI, process.env.REACT_APP_OZL_CONTRACT);
-const OZL_Main = new web3_arb_main.eth.Contract(Ozl_ABI, process.env.REACT_APP_MAINNET_OZL_CONTRACT);
+const OZL = new web3_arb.eth.Contract(Ozl_ABI, REACT_APP_OZL_CONTRACT);
+const OZL_Main = new web3_arb_main.eth.Contract(Ozl_ABI, REACT_APP_MAINNET_OZL_CONTRACT);
 
-const STORAGE_BEACON = process.env.REACT_APP_STORAGE_BEACON
-const STORAGE_BEACON_MAIN = process.env.REACT_APP_MAINNET_STORAGE_BEACON
+const STORAGE_BEACON = REACT_APP_STORAGE_BEACON
+const STORAGE_BEACON_MAIN = REACT_APP_MAINNET_STORAGE_BEACON
 
-const OZERC1967PROXY = process.env.REACT_APP_OZERC1967PROXY
-const OZERC1967PROXY_MAIN = process.env.REACT_APP_MAINNET_OZERC1967PROXY
+const OZERC1967PROXY = REACT_APP_OZERC1967PROXY
+const OZERC1967PROXY_MAIN = REACT_APP_MAINNET_OZERC1967PROXY
 
 // functions -- LANDING PAGE -- as in document
 export function fromAtomicUnit(wei) {

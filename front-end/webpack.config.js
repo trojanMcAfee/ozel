@@ -1,7 +1,6 @@
 const webpack = require('webpack')
 const path = require('path')
 
-const devBuild = process.env.NODE_ENV !== 'production'
 
 const isVendorModule = (module) => {
     // returns true for everything in node_modules
