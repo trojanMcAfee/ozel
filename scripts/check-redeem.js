@@ -45,13 +45,11 @@ const {
 
 async function checkHash() { 
     const hashes = [
-        '0x1aa3c3c16f5b00ff57a8e720e984f31f6c1a95f61241a6415ef946920eb28e16',
-        '0x28b15c21175b5c1605da4a08afb92076ae1950f5c506d8a2f1796b633970bd25',
-        '0x568bb315c4f9493e82bc86bb202901fe8a63a5ea22d663943dccb2dff1691412',
-        '0x6f71e5c786afd6404647096d58334a10bfb5d8b67f78fac0f0781c51a38c9efa',
-        '0x7505d1dd81511b00f7e9d0278fa7876eff8da04144cde9804fa1f27a141a000c',
-        '0xaba6c4a78e4ca757937898142db8c5d312cb3a4c6391e932db6d6bc5a88f8afa',
-        '0xf4ec575b86774fc4298e733d0aeed6927afddec432ba926eb15158018b469b60'
+        '0x0478b5e1de69048e6523bd179528787f045a08a1e38de0ba06f6a2058fb7d4a2',
+        '0x2cc4b79f27107f245f3d7ec3f79fb67a4e32dd6f1e8d6c6c9e6bb26ed4b6e0a1',
+        '0x51418100aeb9e0368dc9da90489da2923d2d4fe30efc020bf8e69a42d57524b3',
+        '0x863f8c2fb522a3eca1e36e61bac72089b4df240dd3dfcbcd2fba659cce9cd78e',
+        '0xa1e825c397548d11b69cc34151b9fda4d9363ec76715eb08605b4e781919a7a4',
     ];
 
     const hash = '0x613e67c23f51c1b4b4b6fb8b94ef128f1c6ca11892965313018ecd611b84c7b7';
@@ -76,7 +74,7 @@ async function checkHash() {
     }
 }
 
-// checkHash();
+checkHash();
 
 
 
@@ -487,7 +485,7 @@ async function deployRedeem() {
     console.log('redeemedHashes deployed to: ', redeemedHashes.address);
 }
 
-queryRedemption();
+// queryRedemption();
 
 
 // queryRedemption();
