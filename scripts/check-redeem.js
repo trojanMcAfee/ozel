@@ -27,7 +27,7 @@ const {
     l2Signer,
     l2SignerTest,
     l1SignerTest,
-    opsL2_2
+    opsL2_2,
 } = require('./state-vars.js');
 
 
@@ -44,12 +44,32 @@ const {
 
 
 async function checkHash() { 
+    const other = [
+      
+
+    ];
+
     const hashes = [
-        '0x0478b5e1de69048e6523bd179528787f045a08a1e38de0ba06f6a2058fb7d4a2',
-        '0x2cc4b79f27107f245f3d7ec3f79fb67a4e32dd6f1e8d6c6c9e6bb26ed4b6e0a1',
-        '0x51418100aeb9e0368dc9da90489da2923d2d4fe30efc020bf8e69a42d57524b3',
-        '0x863f8c2fb522a3eca1e36e61bac72089b4df240dd3dfcbcd2fba659cce9cd78e',
-        '0xa1e825c397548d11b69cc34151b9fda4d9363ec76715eb08605b4e781919a7a4',
+       '0x3170fe6a71b772007826c9af48975aecefa0b0e1d56f5af8d9d17a635af8bc07',
+       '0x435f21473155de67478de02fd5350bbb6fc9430895950a847c0ecf691b075b7d',
+       '0x49ff7bf9dab5beaede250e3f71106db0b7c3a33ea1f2a495ffb9dac5ec456ade',
+       '0x76c6bab99b9311f0e7c0ceb7f8f0e178c0742dd4a60fb4b8fe3c7ab75f4e6428',
+       '0x88ec4e5102b100fac37f87934e01024038975db6627ce93054fb92176c8a5ffc',
+       '0xc3666a9feb11652d04250c6c9f8c127d5232940f52d7f20b96df9f134bf3b27c',
+       '0xd999bc9f213549b472064957401fa5712266cf6f65175d4ecf9672f499e5afb4',
+       '0x28f6904c3bec8d9eacf31156246748ca59c0292b8f8b2f38567e50889d042848',
+       '0x8a83a476b53b743688d4eff8e6efa020aa74c1c84f597bf76c12cb404a42197c',
+       '0xc470d1c90f375904ad33803ae184dc06f4be1ca14fb6d9bc0c21d4dfeb218c2b',
+       '0xcbeace1f8977d0098cd2beb1a886c68bd9808fedcd6d24e70496fb8ade7735ec',
+       '0xd247803363f722d60585f6d2a0012c06ebb9f833dd9488f90904501819e82f10',
+       '0xe4bccd57bbf119ce2ef140c5c301361314c887f89411ac61cdfc8727dfdef1d3',
+       '0xf7c5371164be15bcee526f2072ec10cce99e289c257983605769a9d7673de11f',
+        '0x6a7c1420e41ba7ad9c3dc5ed1f2262f8cd9b58cd96ddec95ff4c4c4a3f96e8eb',
+        '0x7a515f99ccac69140e1d5825dbc225dbcee724f562c69cce0b1cfbd081c73975',
+        '0x8d87fd32d924a19eac6fa15c49e8f2b44b0f61b3a1b9b6811ba58d51dc720b9c',
+        '0xb9298f32a190f5dfce2017f8eb7a3e4e96eedaea987c44b5c4ac95b9747500ba',
+        '0xf09d3b71d3a8252fdabcae3f8ca6ea776f406cd3bc19159192354822bf3e6476',
+        '0xfc40c353242ff2243bce29b209246a85bcc0e1d9f6ad38b5be4a9c8152c37052'
     ];
 
     const hash = '0x613e67c23f51c1b4b4b6fb8b94ef128f1c6ca11892965313018ecd611b84c7b7';
@@ -74,7 +94,7 @@ async function checkHash() {
     }
 }
 
-checkHash();
+// checkHash();
 
 
 
@@ -180,10 +200,11 @@ async function maint() {
         console.log('gas: ', formatUnits(gas, 'gwei'));
     }
 
-
 }
 
-// const abi = require('../artifacts/contracts/ethereum/StorageBeacon.sol/StorageBeacon.json').abi;
+// maint();
+
+
 
 async function main() {
     const sBeaconAddr = '0x53548E9698BC27eCfEd86dbC1Bd47d827912CB75';
@@ -232,13 +253,13 @@ async function main13() {
     const wallet = await new ethers.Wallet(process.env.PK, provider);
 
 
-    ops.nonce = 450;
-    ops.to = '0x2B75D8312cA463Dea9E80981b5c690f15E94Bd55';
-    ops.value = parseEther('0.01');
-    let tx = await wallet.sendTransaction(ops);
-    let receipt = await tx.wait();
-    console.log('hash: ', receipt.transactionHash);
-    console.log('sent out');
+    // ops.nonce = 450;
+    // ops.to = '0x2B75D8312cA463Dea9E80981b5c690f15E94Bd55';
+    // ops.value = parseEther('0.01');
+    // let tx = await wallet.sendTransaction(ops);
+    // let receipt = await tx.wait();
+    // console.log('hash: ', receipt.transactionHash);
+    // console.log('sent out');
 
     // ops.nonce = 431;
     // ops.to = '0x2B75D8312cA463Dea9E80981b5c690f15E94Bd55';
@@ -254,6 +275,11 @@ async function main13() {
     count = await hre.ethers.provider.getTransactionCount('0x0E743a1E37D691D8e52F7036375F3D148B4116ba', 'latest');
     console.log('count: ', Number(count));
 }
+
+// main13();
+
+
+
 
 
 async function main() {
@@ -346,36 +372,18 @@ async function maink() {
 
 
 async function tryUI() {
-
-    const myAddr = '0x0E743a1E37D691D8e52F7036375F3D148B4116ba';
-    const storageBeaconAddr = '0x6FD1b25A2A5C0BEE3269E1B2Ee9c46566aD73846';
+    const storageBeaconAddr = '0xDf2956dB0E0c283d2cd7eB27ecBDaBBdEe329516';
     const storageBeacon = await hre.ethers.getContractAt('StorageBeacon', storageBeaconAddr);
-    const proxy1Addr = '0x1353b75508BEF2844E17ab086562ACEe5810868C';
+    const test1 = '0xb1188BCb6D5049a6550E260d72FDc33706fdC843';
+    const test4 = '0xF4b21C5988B1169343867E620129A6D2eB1Dc67f';
+    const test6 = '0xbBDdF64fCDBA834a486E81EeFe72a7f3513E28B1';
     
-    const [ proxies, names ] = await storageBeacon.getAccountsByUser(myAddr);
-    console.log('proxies: ', proxies);
-    console.log('names: ', names);
-    const proxy1 = await hre.ethers.getContractAt('ozPayMe', proxy1Addr);
-
-    // let [ user, token, slippage, name ] = await proxy1.getAccountDetails();
-    // console.log('user: ', user);
-    // console.log('token: ', token);
-    // console.log('slippage %: ', Number(slippage)/100);
-    // console.log('name: ', name);
-    // console.log('.');
-
-    // tx = await proxy1.changeAccountTokenNSlippage(wbtcAddr, 1);
-    // await tx.wait();
-
-    // ([ user, token, slippage, name ] = await proxy1.getAccountDetails());
-    // console.log('user: ', user);
-    // console.log('token - wbtc: ', token);
-    // console.log('slippage % - 0.01: ', Number(slippage)/100);
-    // console.log('name - same ^: ', name);
-    // console.log('.');
-
-
+    const taskId = await storageBeacon.getTaskID(test6);
+    console.log('taskId: ', taskId);
+    
 }
+
+// tryUI(); 
 
 
 async function create() {
@@ -488,4 +496,53 @@ async function deployRedeem() {
 // queryRedemption();
 
 
-// queryRedemption();
+async function stressTest() {
+    const test1 = '0xDF7B4352021398894dFf5FF16F5a115C85B765Bd'; //0xDF7B4352021398894dFf5FF16F5a115C85B765Bd
+    const test4 = '0xc35E21afFD6b03fEc1a7c8c0D5e81EBa0150C60B'; //0xc35E21afFD6b03fEc1a7c8c0D5e81EBa0150C60B
+    const test6 = '0xCc7dccCcCfb23750693c08A964DBF561162C5b18'; //0xCc7dccCcCfb23750693c08A964DBF561162C5b18
+    const allAccs = [ test1, test4, test6 ];
+    const hashes = [];
+    let j = 0;
+    
+    const [ signer ] = await hre.ethers.getSigners();
+
+    for (let i=0; j < 9; i++) {
+        if (i >= 3) i = i % 3;
+        let acc = allAccs[i];
+
+        ops.to = acc;
+        ops.value = parseEther('0.1');
+
+        let tx = await signer.sendTransaction(ops);
+        let receipt = await tx.wait();
+        let hash = receipt.transactionHash;
+        hashes.push(hash);
+        console.log('sent');
+
+        j++;
+    }
+
+    console.log('hashes: ', hashes);
+}
+
+
+async function checkMessage() {
+    const l2Wallet = new Wallet(process.env.PK, l2ProviderTestnet);
+    const hash = '0x070d9f470e597c1bde4f79e177d13cf1c6dfa62016a5fc6f91e73e1b6345f609';
+
+    const receipt = await l1ProviderTestnet.getTransactionReceipt(hash);
+    const l1Receipt = new L1TransactionReceipt(receipt);
+    const messages = await l1Receipt.getL1ToL2Messages(l2Wallet);
+    const message = messages[0];
+    const messageRec = await message.waitForStatus();
+    const status = messageRec.status;
+    const wasRedeemed = status === L1ToL2MessageStatus.REDEEMED ? true : false;
+
+    console.log('was: ', wasRedeemed);
+}
+
+// checkMessage();
+
+
+
+stressTest();
