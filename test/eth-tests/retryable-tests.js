@@ -1,6 +1,6 @@
 const { ethers } = require('ethers');
 const { parseEther, formatEther } = ethers.utils;
-const { startListening } = require('./event-listener-for-test.js');
+const { startListening } = require('./listener-test/event-listener.js');
 const { ops, l1SignerTestnet } = require('../../scripts/state-vars.js');
 const { assert } = require("console");
 
@@ -52,10 +52,10 @@ async function runSetup() {
 }
 
 async function simulateDeployment() {
-    const storageBeaconAddr = '0xCB4b0EDFDA95bd2Ed2dE9F8ef8440918F55A91ef';
-    const redeemedHashesAddr = '0x82ab905466713465B4b7e29afb13853225124b0c'; 
-    const emitterAddr = '0x5b3aEae359cE1581Be337081630Fccc375bda757';
-    const newProxyAddr = '0x8798Ce76F4a19b87EfB10686949A47a14A883587'; 
+    const storageBeaconAddr = '0xDf2956dB0E0c283d2cd7eB27ecBDaBBdEe329516';
+    const redeemedHashesAddr = '0xBAa20c48292C4Be9319dA3E7620F4364aac498b4'; //0x82ab905466713465B4b7e29afb13853225124b0c
+    const emitterAddr = '0x45cEaeAB767265352977E136234E4A0c3d5cDC44';
+    const newProxyAddr = '0x02A5dC16D0be5FF5FC2Ed264cbF66002303C6387'; 
 
     const storageBeacon = await hre.ethers.getContractAt('StorageBeacon', storageBeaconAddr);
     const redeemedHashes = await hre.ethers.getContractAt('RedeemedHashes', redeemedHashesAddr);
@@ -76,14 +76,14 @@ async function manualRedeem() {
     console.log('******** START OF MANUAL REDEEM ********');
     console.log('');
 
-    let { 
+    const { 
         storageBeacon, 
         emitter: emitterAddr, 
         redeemedHashes, 
         newProxy: newProxyAddr 
     } = await runSetup();
 
-    await startListening(storageBeacon, emitterAddr, redeemedHashes, true);
+    await startListening(storageBeacon, emitterAddr, redeemedHashes);
 
     //Sends ETH to the account/proxy
     await sendETHandAssert(newProxyAddr);
