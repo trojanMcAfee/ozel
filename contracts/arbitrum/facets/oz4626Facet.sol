@@ -20,10 +20,7 @@ contract oz4626Facet is ModifiersARB {
 
     using FixedPointMathLib for uint256;
     using Address for address;
-
-    /*///////////////////////////////////////////////////////////////
-                                 Events
-    //////////////////////////////////////////////////////////////*/
+    
 
     event Deposit(address indexed caller, address indexed owner, uint256 assets);
 
