@@ -161,11 +161,9 @@ contract oz20Facet is ModifiersARB, Context, IERC20, IERC20Metadata {
     ) external isAuthorized(lockNum_) noReentrancy(4) { 
         if(user_ == address(0)) revert CantBeZero('oz4626Facet: address');
 
-        uint256 accountBalance = balanceOf(user_); 
-        if(!(accountBalance >= amount_)) revert ConditionNotMet("oz20Facet: burn amount exceeds balance");
-
         uint userBalanceOZL = balanceOf(user_);
         if(!(userBalanceOZL > 0)) revert ConditionNotMet("oz20Facet: userBalanceOZL cannot be 0");
+        if(!(userBalanceOZL >= amount_)) revert ConditionNotMet("oz20Facet: burn amount exceeds balance");
 
         uint allocationPercentage = (amount_.mulDivDown(10000, userBalanceOZL)).mulDivDown(1 ether, 100);
         uint amountToReduce = allocationPercentage.mulDivDown(s.usersPayments[user_], 100 * 1 ether);
