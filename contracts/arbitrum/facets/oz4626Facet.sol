@@ -71,7 +71,7 @@ contract oz4626Facet is ModifiersARB {
      * @param receiver Receiver of assets
      * @param owner Address that holds shares
      * @param lockNum_ Index of the bit which authorizes the function call
-     * @return assets (Redeemed) Funds from AUM for the receiver
+     * @return assets (Redeemed) Funds from AUM for the receiver, expressed in yvCurve-Tricrypto
      */
     function redeem(
         uint shares,
