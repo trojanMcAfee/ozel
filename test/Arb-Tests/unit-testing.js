@@ -27,7 +27,7 @@ const {
     usxAddr,
     dForcePoolAddr,
     ops,
-    dappFee
+    protocolFee
 } = require('../../scripts/state-vars.js');
 
 
@@ -355,7 +355,7 @@ describe('Unit testing', async function () {
 
         it("should get the protocol's fee / getProtocolFee()", async () => {
             const fee = await ozlDiamond.getProtocolFee();
-            assert.equal(Number(fee), dappFee);
+            assert.equal(Number(fee), protocolFee);
         });
     });
 });

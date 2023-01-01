@@ -61,7 +61,7 @@ contract DiamondInit {
         }
 
         //System's general variables
-        s.dappFee = vars_.appVars[0];
+        s.protocolFee = vars_.appVars[0];
         s.defaultSlippage = vars_.appVars[1];
 
         //Name and Symbol on OZL

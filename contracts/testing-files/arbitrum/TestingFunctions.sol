@@ -22,7 +22,7 @@ contract SecondaryFunctions is ModifiersARB {
     using FixedPointMathLib for uint;
 
     function _getFee(uint amount_) internal view returns(uint, uint) {
-        uint fee = amount_ - ozExecutorFacet(s.executor).calculateSlippage(amount_, s.dappFee);
+        uint fee = amount_ - ozExecutorFacet(s.executor).calculateSlippage(amount_, s.protocolFee);
         uint netAmount = amount_ - fee;
         return (netAmount, fee);
     }

@@ -48,4 +48,10 @@ interface ozILoupeFacet {
      * @param price_ Current ETHUSD price feed (Chainlink)
      */
     function getAUM(int price_) external view returns(uint yBalance, uint valueUM);
+
+    /**
+     * @notice Gets the protocol's fee
+     * @return uint256 The protocol's fee expressed in base units
+     */
+    function getProtocolFee() external view returns(uint);
 }

@@ -25,7 +25,7 @@ contract ozCutFacet is DiamondCutFacet {
     /// @dev Changes the fee that the system charges per usage
     function changeDappFee(uint baseUnits_) external {
         LibDiamond.enforceIsContractOwner();
-        s.dappFee = baseUnits_;
+        s.protocolFee = baseUnits_;
         emit newDappFee(baseUnits_);
     }
 

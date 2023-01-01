@@ -259,7 +259,7 @@ contract OZLFacet is IOZLFacet, ModifiersARB {
 
     /// @dev Charges the system fee to the user's ETH (WETH internally) L1 transfer
     function _getFee(uint amount_) private view returns(uint, uint) {
-        uint fee = amount_ - ozExecutorFacet(s.executor).calculateSlippage(amount_, s.dappFee);
+        uint fee = amount_ - ozExecutorFacet(s.executor).calculateSlippage(amount_, s.protocolFee);
         uint netAmount = amount_ - fee;
         return (netAmount, fee);
     }

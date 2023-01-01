@@ -165,7 +165,7 @@ contract OZLFacetTest is ModifiersARB {
      ******/
 
     function _getFee(uint amount_) private view returns(uint, uint) {
-        uint fee = amount_ - ExecutorFacetTest(s.executor).calculateSlippage(amount_, s.dappFee);
+        uint fee = amount_ - ExecutorFacetTest(s.executor).calculateSlippage(amount_, s.protocolFee);
         uint netAmount = amount_ - fee;
         return (netAmount, fee);
     }

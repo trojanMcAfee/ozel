@@ -35,7 +35,7 @@ struct AppStorage {
     OZLERC20 oz;
 
     //System config
-    uint dappFee;
+    uint protocolFee;
     uint defaultSlippage;
     mapping(address => bool) tokenDatabase;
 

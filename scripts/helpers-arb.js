@@ -23,7 +23,7 @@ const {
     yTricryptoPoolAddr,
     fraxPoolAddr,
     ETH,
-    dappFee,
+    protocolFee,
     tokenName,
     tokenSymbol,
     defaultSlippage,
@@ -290,7 +290,7 @@ async function deploy(n = 0) {
     ];
 
     const appVars = [
-        dappFee,
+        protocolFee,
         defaultSlippage,
         poolFeeUni
     ];
