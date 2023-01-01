@@ -69,7 +69,8 @@ const diamondABI = [
     'function getTotalVolumeInUSD() external view returns(uint)',
     'function getOzelBalances(address) external view returns (uint,uint)',
     'function removeTokenFromDatabase((int128,int128,address,address,address)) external',
-    'function facetAddress(bytes4 _functionSelector) external view returns (address facetAddress_)'
+    'function facetAddress(bytes4 _functionSelector) external view returns (address facetAddress_)',
+    'function getProtocolFee() external view returns(uint)'
 ];
 
 

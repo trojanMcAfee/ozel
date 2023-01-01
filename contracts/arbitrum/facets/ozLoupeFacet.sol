@@ -103,4 +103,8 @@ contract ozLoupeFacet is ozILoupeFacet, DiamondLoupeFacet {
     ) private pure returns(uint) {
         return userOzlBalance_.mulDivDown(amountUM_, 100 * 1 ether);
     }
+
+    function getProtocolFee() external view returns(uint) {
+        return s.dappFee; 
+    }
 }

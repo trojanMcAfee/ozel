@@ -580,10 +580,15 @@ describe('Unit testing', async function () {
             assert(formatEther(totalVolume) > 0);
         });
 
-        it('should get the Ozel balance in ETH and USD, getOzelBalances()', async () => {
+        it('should get the Ozel balance in ETH and USD / getOzelBalances()', async () => {
             const [ wethUserShare, usdUserShare ] = await ozlDiamond.getOzelBalances(accountDetails[0]);
             assert(formatEther(wethUserShare) > 0);
             assert(formatEther(usdUserShare) > 0);
+        });
+
+        it("should get the protocol's fee / getProtocolFee()", async () => {
+            const fee = await ozlDiamond.getProtocolFee();
+            assert.equal(Number(fee), dappFee);
         });
     });
 });
