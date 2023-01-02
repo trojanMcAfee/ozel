@@ -108,4 +108,9 @@ contract ozLoupeFacet is ozILoupeFacet, DiamondLoupeFacet {
     function getProtocolFee() external view returns(uint) {
         return s.protocolFee; 
     }
+
+    /// @inheritdoc ozILoupeFacet
+    function getDefaultSlippage() external view returns(uint) {
+        return s.defaultSlippage;
+    }
 }

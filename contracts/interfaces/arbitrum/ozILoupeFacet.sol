@@ -54,4 +54,10 @@ interface ozILoupeFacet {
      * @return uint256 The protocol's fee expressed in base units
      */
     function getProtocolFee() external view returns(uint);
+
+    /**
+     * @notice Gets the slippage used in non-user swaps
+     * @return uint256 Slippage of non-user swaps
+     */
+    function getDefaultSlippage() external view returns(uint);
 }
