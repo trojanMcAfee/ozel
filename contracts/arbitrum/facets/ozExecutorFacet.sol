@@ -30,13 +30,11 @@ contract ozExecutorFacet is ozIExecutorFacet, ModifiersARB {
         uint minOut;
         uint slippage;
 
-        IERC20(
-            pool != s.renPool ? s.USDT : s.WBTC
-        ).approve(pool, inBalance);
+        IERC20(s.USDT).approve(pool, inBalance);
 
         for (uint i=1; i <= 2; i++) {
-            if (pool == s.renPool || pool == s.crv2Pool) {
-
+            if (pool == s.crv2Pool) {
+                
                 minOut = IMulCurv(pool).get_dy(
                     swap_.tokenIn, swap_.tokenOut, inBalance / i
                 );

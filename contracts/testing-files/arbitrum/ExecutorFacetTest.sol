@@ -36,11 +36,9 @@ contract ExecutorFacetTest is ModifiersARB {
         uint minOut;
         uint slippage;
 
-        IERC20(
-            pool != s.renPool ? s.USDT : s.WBTC
-        ).approve(pool, inBalance);
+        IERC20(s.USDT).approve(pool, inBalance);
 
-        if (pool == s.renPool || pool == s.crv2Pool) {
+        if (pool == s.crv2Pool) {
             minOut = IMulCurv(pool).get_dy(
                 swapDetails_.tokenIn, swapDetails_.tokenOut, inBalance
             );

@@ -2,13 +2,11 @@ const { ethers } = require("ethers");
 
 let usdtAddrArb;
 let wbtcAddr;
-let renBtcAddr;
 let wethAddr;
 let usdcAddr;
 let mimAddr;
 let tricryptoAddr;
 let crvTricrypto;
-let renPoolAddr;
 let mimPoolAddr;
 let crv2PoolAddr;
 let yTricryptoPoolAddr;
@@ -128,7 +126,6 @@ switch(network) {
         chainlinkAggregatorAddr = nullAddr;
         wethAddr = '0xB4FBF271143F4FBf7B91A5ded31805e42b2208d6';
         usdcAddr = '0xd35CCeEAD182dcee0F148EbaC9447DA2c4D449c4';
-        renBtcAddr = '0xEB4C2781e4ebA804CE9a9803C67d0893436bB27D'; //mainnet
         mimAddr = '0x99D8a9C45b2ecA8864373A26D1459e3Dff1e17F3'; //mainnet
         wbtcAddr = '0xC04B0d3107736C32e19F1c62b2aF67BE61d63a05';
         usdtAddrArb = '0xe583769738b6dd4E7CAF8451050d1948BE717679';
@@ -152,8 +149,6 @@ switch(network) {
         crvTricrypto = '0xc4AD29ba4B3c580e6D59105FFf484999997675Ff';
         wethAddr = '0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2'; 
         wbtcAddr = '0x2260FAC5E5542a773Aa44fBCfeDf7C193bc2C599';
-        renBtcAddr = '0xEB4C2781e4ebA804CE9a9803C67d0893436bB27D';
-        renPoolAddr = '0x93054188d876f558f4a66B2EF1d97d16eDf0895B';
         usdcAddr = '0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48';
         mimAddr = '0x99D8a9C45b2ecA8864373A26D1459e3Dff1e17F3';
         mimPoolAddr = '0x5a6A4D54456819380173272A5E8E9B9904BdF41B'; 
@@ -179,8 +174,6 @@ switch(network) {
         crvTricrypto = '0x8e0B8c8BB9db49a46697F3a5Bb8A308e744821D2';
         wethAddr = '0x82aF49447D8a07e3bd95BD0d56f35241523fBab1';
         wbtcAddr = '0x2f2a2543B76A4166549F7aaB2e75Bef0aefC5B0f';
-        renBtcAddr = '0xDBf31dF14B66535aF65AaC99C32e9eA844e14501';
-        renPoolAddr = '0x3E01dD8a5E1fb3481F0F589056b428Fc308AF0Fb';
         usdcAddr = '0xFF970A61A04b1cA14834A43f5dE4533eBDDB5CC8';
         mimAddr = '0xFEa7a6a0B346362BF88A9e4A88416B77a57D6c2A';
         mimPoolAddr = '0x30dF229cefa463e991e29D42DB0bae2e122B2AC7';
@@ -201,13 +194,11 @@ switch(network) {
 
 module.exports = {
     wbtcAddr,
-    renBtcAddr,
     wethAddr,
     usdcAddr,
     mimAddr,
     tricryptoAddr,
     crvTricrypto,
-    renPoolAddr,
     mimPoolAddr,
     crv2PoolAddr,
     yTricryptoPoolAddr,

@@ -17,7 +17,6 @@ const {
     diamondABI,
     l2Provider,
     l1Provider,
-    renBtcAddr,
     mimAddr,
     usdcAddr,
     fraxAddr,
@@ -203,25 +202,6 @@ async function maint() {
 }
 
 // maint();
-
-
-
-async function main() {
-    const sBeaconAddr = '0x53548E9698BC27eCfEd86dbC1Bd47d827912CB75';
-    const sBeacon = await hre.ethers.getContractAt(abi, sBeaconAddr);
-
-    const tx = await sBeacon.addTokenToDatabase(renBtcAddr);
-    const receipt = await tx.wait();
-    console.log('receipt: ', receipt);
-    // await sBeacon.addTokenToDatabase(mimAddr);
-    // await sBeacon.addTokenToDatabase(usdcAddr);
-    // await sBeacon.addTokenToDatabase(fraxAddr);
-    // await sBeacon.addTokenToDatabase(wbtcAddr);
-
-    const x = await sBeacon.getTokenDatabase();
-    console.log('y: ', x);
-
-}
 
 
 

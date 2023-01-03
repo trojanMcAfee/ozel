@@ -50,10 +50,9 @@ contract OZLFacetTest is ModifiersARB {
 
         (uint netAmountIn, uint fee) = _getFee(wethIn);
 
-        uint baseTokenOut = 
-            accountDetails_.token == s.WBTC || accountDetails_.token == s.renBTC ? 1 : 0;
+        uint baseTokenOut = accountDetails_.token == s.WBTC ? 1 : 0;
 
-        //Swaps WETH to token (Base: USDT-WBTC / Route: MIM-USDC-renBTC-WBTC) 
+        //Swaps WETH to token (Base: USDT-WBTC / Route: MIM-USDC-FRAX) 
         _swapsForBaseToken(
             netAmountIn, baseTokenOut, accountDetails_
         );

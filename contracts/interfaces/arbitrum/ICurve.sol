@@ -3,7 +3,7 @@ pragma solidity 0.8.14;
 
 
 /**
- * @dev Multiple interfaces that integrates Ren, 2Crv, MIM and Frax pools
+ * @dev Multiple interfaces that integrates 2Crv, MIM and Frax pools
  */
 interface IMulCurv {
   function exchange(

@@ -17,7 +17,7 @@ import { IERC173 } from "../../interfaces/arbitrum/IERC173.sol";
 import { IERC165 } from "../../interfaces/arbitrum/IERC165.sol";
 import '../AppStorage.sol'; 
 
-
+import 'hardhat/console.sol';
 /**
  * @notice Initializer of the storage variables
  */
@@ -36,22 +36,20 @@ contract DiamondInit {
         //Addresses on contracts
         s.tricrypto = vars_.contracts[0];
         s.crvTricrypto = vars_.contracts[1];
-        s.renPool = vars_.contracts[2];
-        s.mimPool = vars_.contracts[3];
-        s.crv2Pool = vars_.contracts[4];
-        s.yTriPool = vars_.contracts[5];
-        s.fraxPool = vars_.contracts[6];
-        s.executor = vars_.contracts[7];
-        s.oz20 = vars_.contracts[8];
+        s.mimPool = vars_.contracts[2];
+        s.crv2Pool = vars_.contracts[3];
+        s.yTriPool = vars_.contracts[4];
+        s.fraxPool = vars_.contracts[5];
+        s.executor = vars_.contracts[6];
+        s.oz20 = vars_.contracts[7];
 
         //ERC20 addresses
         s.USDT = vars_.erc20s[0];
         s.WBTC = vars_.erc20s[1];
-        s.renBTC = vars_.erc20s[2];
-        s.USDC = vars_.erc20s[3];
-        s.MIM = vars_.erc20s[4];
-        s.WETH = vars_.erc20s[5];
-        s.FRAX = vars_.erc20s[6];
+        s.USDC = vars_.erc20s[2];
+        s.MIM = vars_.erc20s[3];
+        s.WETH = vars_.erc20s[4];
+        s.FRAX = vars_.erc20s[5];
 
         //Tokens database
         uint length = vars_.tokensDb.length;
@@ -73,18 +71,15 @@ contract DiamondInit {
 
         /**
          * Structs for token swaps (using Curve's token codes)
-         * renPool -->  renBTC: 1 / WBTC: 0
          * mimPool --> MIM: 0 / USDT: 2 / USDC: 1
          * crv2Pool --> /USDC: 0 / USDT: 1
          * fraxPool --> FRAX: 0 / USDT: 2 / USDC: 1
          */
-        s.renSwap = TradeOps(0, 1, s.WBTC, s.renBTC, s.renPool);
         s.mimSwap = TradeOps(2, 0, s.USDT, s.MIM, s.mimPool);
         s.usdcSwap = TradeOps(1, 0, s.USDT, s.USDC, s.crv2Pool);
         s.fraxSwap = TradeOps(2, 0, s.USDT, s.FRAX, s.fraxPool);
 
         //Array of swap structs
-        s.swaps.push(s.renSwap);
         s.swaps.push(s.mimSwap);
         s.swaps.push(s.usdcSwap);
         s.swaps.push(s.fraxSwap);
@@ -99,8 +94,8 @@ contract DiamondInit {
         s.regulatorCounter = 0;
 
         //Revenue vars
-        s.priceFeed = AggregatorV3Interface(vars_.contracts[9]);
-        s.swapRouter = ISwapRouter(vars_.contracts[10]);
+        s.priceFeed = AggregatorV3Interface(vars_.contracts[8]);
+        s.swapRouter = ISwapRouter(vars_.contracts[9]);
         s.revenueToken = s.USDC;
         s.poolFee = uint24(vars_.appVars[2]);
         s.revenueAmounts = vars_.revenueAmounts;

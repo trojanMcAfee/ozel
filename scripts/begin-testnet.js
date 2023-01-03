@@ -28,7 +28,6 @@ const {
     factoryABI,
     l1SignerTestnet,
     l2SignerTestnet,
-    renBtcAddr,
     mimAddr,
     fraxAddr,
     wbtcAddr,
@@ -100,7 +99,6 @@ async function deployTestnet(testSigner = false, manualRedeem = false) {
 
 
     const tokensDatabase = [
-        renBtcAddr,
         mimAddr,
         usdcAddr,
         fraxAddr,

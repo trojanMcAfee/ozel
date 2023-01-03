@@ -1,5 +1,7 @@
 /* global ethers */
 
+const { opsL2 } = require('./state-vars.js');
+
 const FacetCutAction = {
     Add: 0,
     Replace: 1,
@@ -88,8 +90,7 @@ const FacetCutAction = {
     for (let prop in overrides) {
       otherArgs.push(overrides[prop]);
     }
-   
-    const deployedDiamond = await diamondFactory.deploy(...constructorArguments, ...otherArgs)
+    const deployedDiamond = await diamondFactory.deploy(...constructorArguments, ...otherArgs, opsL2)
     await deployedDiamond.deployed()
     const result = await deployedDiamond.deployTransaction.wait()
   

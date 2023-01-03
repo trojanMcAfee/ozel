@@ -13,8 +13,6 @@ const {
     usdtAddrArb,
     crvTricrypto,
     wbtcAddr,
-    renBtcAddr,
-    renPoolAddr,
     usdcAddr,
     mimAddr,
     fraxAddr,
@@ -131,10 +129,8 @@ async function replaceForModVersion(contractName, checkUSDTbalance, selector, ac
             case 2:
                 return WBTC;
             case 3:
-                return renBTC;
-            case 4:
                 return MIM;
-            case 5:
+            case 4:
                 return FRAX;
         }
     }
@@ -142,7 +138,6 @@ async function replaceForModVersion(contractName, checkUSDTbalance, selector, ac
     const USDT = await hre.ethers.getContractAt('IERC20', usdtAddrArb);
     const WETH = await hre.ethers.getContractAt('IERC20', wethAddr);
     const WBTC = await hre.ethers.getContractAt('IERC20', wbtcAddr);
-    const renBTC = await hre.ethers.getContractAt('IERC20', renBtcAddr);
     const MIM = await hre.ethers.getContractAt('IERC20', mimAddr);
     const FRAX = await hre.ethers.getContractAt('IERC20', fraxAddr);
     const [callerAddr] = await hre.ethers.provider.listAccounts();
@@ -237,14 +232,12 @@ async function deploy(n = 0) {
     const WETH = await hre.ethers.getContractAt('IERC20', wethAddr);
     const USDT = await hre.ethers.getContractAt('IERC20', usdtAddrArb);
     const WBTC = await hre.ethers.getContractAt('IERC20', wbtcAddr);
-    const renBTC = await hre.ethers.getContractAt('IERC20', renBtcAddr);
     const USDC = await hre.ethers.getContractAt('IERC20', usdcAddr);
     const MIM = await hre.ethers.getContractAt('IERC20', mimAddr);
     const crvTri = await hre.ethers.getContractAt('IERC20', crvTricrypto);
     const yvCrvTri = await hre.ethers.getContractAt('IYtri', yTricryptoPoolAddr);
     const FRAX = await hre.ethers.getContractAt('IERC20', fraxAddr);
     const USX = await hre.ethers.getContractAt('IERC20', usxAddr);
-
 
     //Facets
     const ozCutFacet = await deployFacet('ozCutFacet');
@@ -259,7 +252,6 @@ async function deploy(n = 0) {
     const contractsAddr = [
         tricryptoAddr,
         crvTricrypto,
-        renPoolAddr,
         mimPoolAddr,
         crv2PoolAddr,
         yTricryptoPoolAddr,
@@ -273,7 +265,6 @@ async function deploy(n = 0) {
     const erc20sAddr = [
         usdtAddrArb,
         wbtcAddr,
-        renBtcAddr,
         usdcAddr,
         mimAddr,
         wethAddr,
@@ -285,8 +276,7 @@ async function deploy(n = 0) {
         usdcAddr,
         fraxAddr,
         wbtcAddr,
-        mimAddr,
-        renBtcAddr
+        mimAddr
     ];
 
     const appVars = [
@@ -348,7 +338,6 @@ async function deploy(n = 0) {
         WETH,
         USDT,
         WBTC,
-        renBTC,
         USDC,
         MIM,
         FRAX,

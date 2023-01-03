@@ -13,7 +13,6 @@ struct AppStorage {
     //Contracts
     address tricrypto;
     address crvTricrypto; 
-    address renPool;
     address mimPool;
     address crv2Pool;
     address yTriPool;
@@ -23,7 +22,6 @@ struct AppStorage {
     //ERC20s
     address USDT;
     address WBTC;
-    address renBTC;
     address USDC;
     address MIM;
     address WETH;
@@ -47,7 +45,6 @@ struct AppStorage {
     mapping(address => uint) usersPayments;
 
     //Curve swaps config
-    TradeOps renSwap;
     TradeOps mimSwap;
     TradeOps usdcSwap;
     TradeOps fraxSwap;

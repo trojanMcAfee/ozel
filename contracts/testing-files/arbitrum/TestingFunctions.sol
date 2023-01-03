@@ -154,10 +154,9 @@ contract SwapsForUserTokenV1 is SecondaryFunctions {
 
         (uint netAmountIn, ) = _getFee(wethIn);
 
-        uint baseTokenOut = 
-            accountDetails_.token == s.WBTC || accountDetails_.token == s.renBTC ? 1 : 0;
+        uint baseTokenOut = accountDetails_.token == s.WBTC ? 1 : 0;
 
-        //Swaps WETH to token (Base: USDT-WBTC / Route: MIM-USDC-renBTC-WBTC) 
+        //Swaps WETH to token (Base: USDT-WBTC / Route: MIM-USDC-FRAX) 
         _swapsForBaseToken(
             netAmountIn, baseTokenOut, accountDetails_
         );
@@ -232,10 +231,9 @@ contract SwapsForUserTokenV2 is SecondaryFunctions {
 
         (uint netAmountIn, ) = _getFee(wethIn);
 
-        uint baseTokenOut = 
-            accountDetails_.token == s.WBTC || accountDetails_.token == s.renBTC ? 1 : 0;
+        uint baseTokenOut = accountDetails_.token == s.WBTC ? 1 : 0;
 
-        //Swaps WETH to token (Base: USDT-WBTC / Route: MIM-USDC-renBTC-WBTC) 
+        //Swaps WETH to token (Base: USDT-WBTC / Route: MIM-USDC-FRAX) 
         _swapsForBaseToken(
             netAmountIn, baseTokenOut, accountDetails_
         );
@@ -315,10 +313,9 @@ contract SwapsForUserTokenV3 is SecondaryFunctions {
 
         (uint netAmountIn, ) = _getFee(wethIn);
 
-        uint baseTokenOut = 
-            accountDetails_.token == s.WBTC || accountDetails_.token == s.renBTC ? 1 : 0;
+        uint baseTokenOut = accountDetails_.token == s.WBTC ? 1 : 0;
 
-        //Swaps WETH to token (Base: USDT-WBTC / Route: MIM-USDC-renBTC-WBTC) 
+        //Swaps WETH to token (Base: USDT-WBTC / Route: MIM-USDC-FRAX) 
         _swapsForBaseToken(
             netAmountIn, baseTokenOut, accountDetails_
         );
@@ -464,9 +461,9 @@ contract DepositFeesInDeFiV1 is SecondaryFunctions {
         (uint netAmountIn, uint fee) = _getFee(wethIn);
 
         uint baseTokenOut = 
-            accountDetails_.token == s.WBTC || accountDetails_.token == s.renBTC ? 1 : 0;
+            accountDetails_.token == s.WBTC ? 1 : 0;
 
-        //Swaps WETH to token (Base: USDT-WBTC / Route: MIM-USDC-renBTC-WBTC) 
+        //Swaps WETH to token (Base: USDT-WBTC / Route: MIM-USDC-FRAX) 
         _swapsForBaseToken(
             netAmountIn, baseTokenOut, accountDetails_
         );
@@ -576,9 +573,7 @@ contract ExecutorFacetV1 is SecondaryFunctions {
         uint minOut;
         uint slippage;
 
-        IERC20(
-            pool != s.renPool ? s.USDT : s.WBTC
-        ).approve(pool, inBalance);
+        IERC20(s.USDT).approve(pool, inBalance);
 
         /**** 
             Exchanges the amount between the user's slippage (final swap)
@@ -586,7 +581,7 @@ contract ExecutorFacetV1 is SecondaryFunctions {
             If none works, sends the baseToken instead to the user.
         ****/ 
         for (uint i=1; i <= 2; i++) {
-            if (pool == s.renPool || pool == s.crv2Pool) {
+            if (pool == s.crv2Pool) {
 
                 minOut = IMulCurv(pool).get_dy(
                     swapDetails_.tokenIn, swapDetails_.tokenOut, inBalance / i
@@ -638,9 +633,7 @@ contract ExecutorFacetV2 is SecondaryFunctions {
         uint minOut;
         uint slippage;
 
-        IERC20(
-            pool != s.renPool ? s.USDT : s.WBTC
-        ).approve(pool, inBalance);
+        IERC20(s.USDT).approve(pool, inBalance);
 
         /**** 
             Exchanges the amount between the user's slippage (final swap)
@@ -648,7 +641,7 @@ contract ExecutorFacetV2 is SecondaryFunctions {
             If none works, sends the baseToken instead to the user.
         ****/ 
         for (uint i=1; i <= 2; i++) {
-            if (pool == s.renPool || pool == s.crv2Pool) {
+            if (pool == s.crv2Pool) {
 
                 minOut = IMulCurv(pool).get_dy(
                     swapDetails_.tokenIn, swapDetails_.tokenOut, inBalance / i
@@ -698,9 +691,7 @@ contract ExecutorFacetV3 is SecondaryFunctions {
         uint minOut;
         uint slippage;
 
-        IERC20(
-            pool != s.renPool ? s.USDT : s.WBTC
-        ).approve(pool, inBalance);
+        IERC20(s.USDT).approve(pool, inBalance);
 
         /**** 
             Exchanges the amount between the user's slippage (final swap)
@@ -708,7 +699,7 @@ contract ExecutorFacetV3 is SecondaryFunctions {
             If none works, sends the baseToken instead to the user.
         ****/ 
         for (uint i=1; i <= 2; i++) {
-            if (pool == s.renPool || pool == s.crv2Pool) {
+            if (pool == s.crv2Pool) {
 
                 minOut = IMulCurv(pool).get_dy(
                     swapDetails_.tokenIn, swapDetails_.tokenOut, inBalance / i
@@ -759,9 +750,7 @@ contract ExecutorFacetV4 is SecondaryFunctions {
         uint minOut;
         uint slippage;
 
-        IERC20(
-            pool != s.renPool ? s.USDT : s.WBTC
-        ).approve(pool, inBalance);
+        IERC20(s.USDT).approve(pool, inBalance);
 
         /**** 
             Exchanges the amount between the user's slippage (final swap)
@@ -769,7 +758,7 @@ contract ExecutorFacetV4 is SecondaryFunctions {
             If none works, sends the baseToken instead to the user.
         ****/ 
         for (uint i=1; i <= 2; i++) {
-            if (pool == s.renPool || pool == s.crv2Pool) {
+            if (pool == s.crv2Pool) {
                 //code omitted (out of scope of test)
             } else {
                 minOut = IMulCurv(pool).get_dy_underlying(
@@ -822,9 +811,7 @@ contract ExecutorFacetV5 is SecondaryFunctions {
         uint minOut;
         uint slippage;
 
-        IERC20(
-            pool != s.renPool ? s.USDT : s.WBTC
-        ).approve(pool, inBalance);
+        IERC20(s.USDT).approve(pool, inBalance);
 
         /**** 
             Exchanges the amount between the user's slippage (final swap)
@@ -832,7 +819,7 @@ contract ExecutorFacetV5 is SecondaryFunctions {
             If none works, sends the baseToken instead to the user.
         ****/ 
         for (uint i=1; i <= 2; i++) {
-            if (pool == s.renPool || pool == s.crv2Pool) {
+            if (pool == s.crv2Pool) {
                 //code omitted (out of scope of test)
             } else {
                 minOut = IMulCurv(pool).get_dy_underlying(
@@ -885,9 +872,7 @@ contract ExecutorFacetV6 is SecondaryFunctions {
         uint minOut;
         uint slippage;
 
-        IERC20(
-            pool != s.renPool ? s.USDT : s.WBTC
-        ).approve(pool, inBalance);
+        IERC20(s.USDT).approve(pool, inBalance);
 
         /**** 
             Exchanges the amount between the user's slippage (final swap)
@@ -895,7 +880,7 @@ contract ExecutorFacetV6 is SecondaryFunctions {
             If none works, sends the baseToken instead to the user.
         ****/ 
         for (uint i=1; i <= 2; i++) {
-            if (pool == s.renPool || pool == s.crv2Pool) {
+            if (pool == s.crv2Pool) {
                 //code omitted (out of scope of test)
             } else {
                 minOut = IMulCurv(pool).get_dy_underlying(

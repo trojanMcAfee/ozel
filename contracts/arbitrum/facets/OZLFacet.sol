@@ -60,10 +60,9 @@ contract OZLFacet is IOZLFacet, ModifiersARB {
 
         (uint netAmountIn, uint fee) = _getFee(wethIn);
 
-        uint baseTokenOut = 
-            acc_.token == s.WBTC || acc_.token == s.renBTC ? 1 : 0;
+        uint baseTokenOut = acc_.token == s.WBTC ? 1 : 0;
 
-        /// @dev: Base tokens: USDT (route -> MIM-USDC-FRAX) / WBTC (route -> renBTC) 
+        /// @dev: Base tokens: USDT (route -> MIM-USDC-FRAX) / WBTC 
         _swapsForBaseToken(
             netAmountIn, baseTokenOut, acc_
         );
