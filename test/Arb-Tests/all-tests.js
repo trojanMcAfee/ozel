@@ -830,22 +830,22 @@ describe('Anti-slippage system', async function () {
             abi = ['function executeFinalTrade((int128 tokenIn, int128 tokenOut, address baseToken, address token, address pool) swapDetails_, uint256 userSlippage_, address user_, uint256 lockNum_) external payable'];
             iface = new ethers.utils.Interface(abi);
             selector = iface.getSighash('executeFinalTrade');
-            accountDetails[1] = mimAddr;
+            accountDetails[1] = usdcAddr;
         });
 
         /**
          * Changed slippage to type(uint).max in order to fail all trades and activate the last path
          */
-        it("should send the funds to the user in their account token's swap's baseToken / ExecutorFacetV1", async () => {            
+        xit("should send the funds to the user in their account token's swap's baseToken / ExecutorFacetV1", async () => {            
             balanceUSDT = await USDT.balanceOf(callerAddr);
             assert.equal(balanceUSDT / 10 ** 8, 0);
 
-            ({ testingNum, balance: balanceUSDT } = await replaceForModVersion('ExecutorFacetV1', false, selector, accountDetails, 2));
-            balanceMIM = (await MIM.balanceOf(callerAddr)) / 10 ** 8;
+            ({ testingNum, balance: balanceUSDT } = await replaceForModVersion('ExecutorFacetV1', false, selector, accountDetails, false));
+            balanceUSDC = (await USDC.balanceOf(callerAddr)) / 10 ** 8;
             assert.equal(testingNum, 23);
             
             assert(balanceUSDT / 10 ** 8 > 0);
-            assert.equal(balanceMIM, 0);
+            assert.equal(balanceUSDC, 0);
 
             //Clean up
             await USDT.transfer(caller2Addr, balanceUSDT);
@@ -856,15 +856,15 @@ describe('Anti-slippage system', async function () {
          * All funds are in account token through two swaps
          */
         xit('should send the account token to the user in the 2nd loop iteration / ExecutorFacetV2', async () => {            
-            balanceMIM = (await MIM.balanceOf(callerAddr)) / 10 ** 8;
-            assert.equal(balanceMIM, 0);
+            balanceUSDC = (await USDC.balanceOf(callerAddr)) / 10 ** 8;
+            assert.equal(balanceUSDC, 0);
 
-            ({ testingNum, balance: balanceMIM } = await replaceForModVersion('ExecutorFacetV2', false, selector, accountDetails, 3));
+            ({ testingNum, balance: balanceUSDC } = await replaceForModVersion('ExecutorFacetV2', false, selector, accountDetails, 3));
             assert.equal(testingNum, 23);
 
-            balanceMIM = await MIM.balanceOf(callerAddr);
-            assert(balanceMIM / 10 ** 8 > 0);
-            await MIM.transfer(caller2Addr, balanceMIM);
+            balanceUSDC = await USDC.balanceOf(callerAddr);
+            assert(balanceUSDC / 10 ** 8 > 0);
+            await USDC.transfer(caller2Addr, balanceUSDC);
         });
 
 
@@ -872,21 +872,21 @@ describe('Anti-slippage system', async function () {
          * Fails the 1st and 3rd swapping attempts so half of the user's funds are traded in account token
          * and the other half in the baseToken.
          */
-        xit('should divide the funds between baseToken and account token / ExecutorFacetV3', async () => {            
-            balanceMIM = (await MIM.balanceOf(callerAddr)) / 10 ** 8;
-            assert(balanceMIM < 0.000001);
+        it('should divide the funds between baseToken and account token / ExecutorFacetV3', async () => {            
+            balanceUSDC = (await USDC.balanceOf(callerAddr)) / 10 ** 8;
+            assert(balanceUSDC < 0.000001);
 
             balanceUSDT = (await USDT.balanceOf(callerAddr)) / 10 ** 8;
             assert.equal(balanceUSDT, 0);
 
-            ({ testingNum, balance: balanceMIM, receipt } = await replaceForModVersion('ExecutorFacetV3', false, selector, accountDetails, 3));
+            ({ testingNum, balance: balanceUSDC, receipt } = await replaceForModVersion('ExecutorFacetV3', false, selector, accountDetails, 3));
             assert.equal(testingNum, 23);
 
             testingNum = getTestingNumber(receipt, true);
             assert.equal(testingNum, 24);
 
             balanceUSDT = await USDT.balanceOf(callerAddr);
-            assert(balanceMIM / 10 ** 8 > 0);
+            assert(balanceUSDC / 10 ** 8 > 0);
             assert(balanceUSDT / 10 ** 8 > 0);
         }); 
 
