@@ -23,17 +23,17 @@ contract ozCutFacet is DiamondCutFacet {
     event newUniPoolFee(uint24 newPoolFee);
 
     /// @dev Changes the fee that the system charges per usage
-    function changeDappFee(uint baseUnits_) external {
+    function changeProtocolFee(uint bps_) external {
         LibDiamond.enforceIsContractOwner();
-        s.protocolFee = baseUnits_;
-        emit newDappFee(baseUnits_);
+        s.protocolFee = bps_;
+        emit newDappFee(bps_);
     }
 
     /// @dev Changes the default slippage that the system uses on non-user swaps
-    function changeDefaultSlippage(uint baseUnits_) external {
+    function changeDefaultSlippage(uint bps_) external {
         LibDiamond.enforceIsContractOwner();
-        s.defaultSlippage = baseUnits_;
-        emit newDefaultSlippage(baseUnits_);
+        s.defaultSlippage = bps_;
+        emit newDefaultSlippage(bps_);
     }
 
     /// @dev Allows/Disallows redeeming OZL tokens for AUM (aka withdrawing funds)

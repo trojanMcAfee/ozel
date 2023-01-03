@@ -3,7 +3,7 @@ DiamondCutFacet -> IDiamondCut;
 DiamondCutFacet[shape="box"label=< <TABLE border="0"><TR><TD align="center"><B>DiamondCutFacet</B></TD></TR><TR><TD align="left"><I>Public Functions:</I></TD></TR><TR><TD align="left"><font color="#FFA500">    diamondCut(IDiamondCut.FacetCut[],address,bytes)</font></TD></TR></TABLE> >];
 
 ozCutFacet -> DiamondCutFacet;
-ozCutFacet[shape="box"label=< <TABLE border="0"><TR><TD align="center"><B>ozCutFacet</B></TD></TR><TR><TD align="left"><I>Public Functions:</I></TD></TR><TR><TD align="left">    changeDappFee(uint256)</TD></TR><TR><TD align="left">    changeDefaultSlippage(uint256)</TD></TR><TR><TD align="left">    enableWithdrawals(bool)</TD></TR><TR><TD align="left">    changeRevenueToken(address)</TD></TR><TR><TD align="left">    changeUniPoolFee(uint24)</TD></TR><TR><TD align="left"><I>Private Variables:</I></TD></TR><TR><TD align="left">    s</TD></TR></TABLE> >];
+ozCutFacet[shape="box"label=< <TABLE border="0"><TR><TD align="center"><B>ozCutFacet</B></TD></TR><TR><TD align="left"><I>Public Functions:</I></TD></TR><TR><TD align="left">    changeProtocolFee(uint256)</TD></TR><TR><TD align="left">    changeDefaultSlippage(uint256)</TD></TR><TR><TD align="left">    enableWithdrawals(bool)</TD></TR><TR><TD align="left">    changeRevenueToken(address)</TD></TR><TR><TD align="left">    changeUniPoolFee(uint24)</TD></TR><TR><TD align="left"><I>Private Variables:</I></TD></TR><TR><TD align="left">    s</TD></TR></TABLE> >];
 
 IDiamondCut[shape="box"label=< <TABLE border="0"><TR><TD align="center"><B>IDiamondCut</B></TD></TR><TR><TD align="left"><I>Public Functions:</I></TD></TR><TR><TD align="left">    diamondCut(IDiamondCut.FacetCut[],address,bytes)</TD></TR></TABLE> >];
 
