@@ -132,6 +132,8 @@ async function replaceForModVersion(contractName, checkUSDTbalance, selector, ac
                 return MIM;
             case 4:
                 return FRAX;
+            case 5:
+                return USDC
         }
     }
     
@@ -140,6 +142,7 @@ async function replaceForModVersion(contractName, checkUSDTbalance, selector, ac
     const WBTC = await hre.ethers.getContractAt('IERC20', wbtcAddr);
     const MIM = await hre.ethers.getContractAt('IERC20', mimAddr);
     const FRAX = await hre.ethers.getContractAt('IERC20', fraxAddr);
+    const USDC = await hre.ethers.getContractAt('IERC20', usdcAddr);
     const [callerAddr] = await hre.ethers.provider.listAccounts();
     let stringToHash;
 

@@ -68,7 +68,7 @@ let addFlag, tokenSwap;
  * exchangeToAccountToken() which would simulate an Arbitrum L1 > L2 tx where
  * sendToArb() in L1 in ozPayMe would send the ETH to OZLFacet in L2.
 */
-xdescribe('Integration testing', async function () {
+describe('Integration testing', async function () {
     this.timeout(1000000);
 
     before( async () => {
@@ -274,7 +274,7 @@ xdescribe('Integration testing', async function () {
 /**
  * Specific unit-tests for certain functions within Arbitrum contracts.
  */
-xdescribe('Unit testing', async function () {
+describe('Unit testing', async function () {
     this.timeout(1000000);
 
     before( async () => {
@@ -607,7 +607,7 @@ xdescribe('Unit testing', async function () {
  * line 133, 136 140 (from the Mod version) that uses much lower values in order to
  * show the workings of the mechanism.
  */
-xdescribe('Ozel Index', async function () { 
+describe('Ozel Index', async function () { 
     this.timeout(100000000000000000000);
 
     before( async () => {
@@ -747,7 +747,7 @@ describe('Anti-slippage system', async function () {
         selector = iface.getSighash('exchangeToAccountToken');
     });
 
-    xdescribe('Modified OZLFacet', async () => {
+    describe('Modified OZLFacet', async () => {
 
         /** 
          * Changed the first slippage for type(uint).max in _swapsForBaseToken 
@@ -831,12 +831,17 @@ describe('Anti-slippage system', async function () {
             iface = new ethers.utils.Interface(abi);
             selector = iface.getSighash('executeFinalTrade');
             accountDetails[1] = usdcAddr;
+
+            balanceUSDT = await USDT.balanceOf(callerAddr);
+            balanceUSDC = await USDC.balanceOf(callerAddr);
+            if (Number(balanceUSDT) > 0) await USDT.transfer(deadAddr, balanceUSDT);
+            if (Number(balanceUSDC) > 0) await USDC.transfer(deadAddr, balanceUSDC);
         });
 
         /**
          * Changed slippage to type(uint).max in order to fail all trades and activate the last path
          */
-        xit("should send the funds to the user in their account token's swap's baseToken / ExecutorFacetV1", async () => {            
+        it("should send the funds to the user in their account token's swap's baseToken / ExecutorFacetV1", async () => {            
             balanceUSDT = await USDT.balanceOf(callerAddr);
             assert.equal(balanceUSDT / 10 ** 8, 0);
 
@@ -855,7 +860,7 @@ describe('Anti-slippage system', async function () {
          * Added an slippage condition so it fails the 1st attempt and activates the slippage mechanism.
          * All funds are in account token through two swaps
          */
-        xit('should send the account token to the user in the 2nd loop iteration / ExecutorFacetV2', async () => {            
+        it('should send the account token to the user in the 2nd loop iteration / ExecutorFacetV2', async () => {            
             balanceUSDC = (await USDC.balanceOf(callerAddr)) / 10 ** 8;
             assert.equal(balanceUSDC, 0);
 
@@ -879,7 +884,7 @@ describe('Anti-slippage system', async function () {
             balanceUSDT = (await USDT.balanceOf(callerAddr)) / 10 ** 8;
             assert.equal(balanceUSDT, 0);
 
-            ({ testingNum, balance: balanceUSDC, receipt } = await replaceForModVersion('ExecutorFacetV3', false, selector, accountDetails, 3));
+            ({ testingNum, balance: balanceUSDC, receipt } = await replaceForModVersion('ExecutorFacetV3', false, selector, accountDetails, 5));
             assert.equal(testingNum, 23);
 
             testingNum = getTestingNumber(receipt, true);
@@ -895,7 +900,7 @@ describe('Anti-slippage system', async function () {
          * Changed slippage to type(uint).max in order to fail all trades and activate the last path
          * (2nd leg for non-BTC-2Pool coins)
          */
-        xit('should swap the funds to account token only / ExecutorFacetV4', async () => {            
+        it('should swap the funds to account token only / ExecutorFacetV4', async () => {            
             accountDetails[1] = mimAddr;
             ({ testingNum, balance: balanceUSDT } = await replaceForModVersion('ExecutorFacetV4', false, selector, accountDetails, false));
             assert.equal(testingNum, 23);
@@ -908,12 +913,12 @@ describe('Anti-slippage system', async function () {
          * Added an slippage condition so it fails the 1st attempt and activates the slippage mechanism.
          * All funds are in account token through two swaps (2nd leg for non-BTC-2Pool coins)
          */
-        xit('should send account token to the user in the 2nd loop iteration / ExecutorFacetV5', async () => {
+        it('should send account token to the user in the 2nd loop iteration / ExecutorFacetV5', async () => {
             accountDetails[1] = mimAddr;
             balanceMIM = formatEther(await MIM.balanceOf(callerAddr));
             assert.equal(balanceMIM, 0);
 
-            ({ testingNum, balance: balanceMIM } = await replaceForModVersion('ExecutorFacetV5', false, selector, accountDetails, 4));
+            ({ testingNum, balance: balanceMIM } = await replaceForModVersion('ExecutorFacetV5', false, selector, accountDetails, 3));
             assert.equal(testingNum, 23);
             assert(formatEther(balanceMIM) > 0);
 
@@ -925,7 +930,7 @@ describe('Anti-slippage system', async function () {
          * Fails the 1st and 3rd swapping attempts so half of the user's funds are traded in account token
          * and the other half in the baseToken.
          */
-        xit('should divide the funds between baseToken and account token / ExecutorFacetV6', async () => {            
+        it('should divide the funds between baseToken and account token / ExecutorFacetV6', async () => {            
             accountDetails[1] = mimAddr;
             balanceMIM = formatEther(await MIM.balanceOf(callerAddr));
             assert.equal(balanceMIM, 0);
@@ -933,7 +938,7 @@ describe('Anti-slippage system', async function () {
             balanceUSDT = (await USDT.balanceOf(callerAddr)) / 10 ** 6;
             assert.equal(balanceUSDT, 0);
 
-            ({ testingNum, balance: balanceMIM } = await replaceForModVersion('ExecutorFacetV6', false, selector, accountDetails, 4));
+            ({ testingNum, balance: balanceMIM } = await replaceForModVersion('ExecutorFacetV6', false, selector, accountDetails, 3));
             assert.equal(testingNum, 23);
             assert(formatEther(balanceMIM) > 0);
 
@@ -949,7 +954,7 @@ describe('Anti-slippage system', async function () {
 /**
  * Tests the anti-slippage system used in RevenueFacet.sol
  */
-xdescribe('My Revenue', async function() {
+describe('My Revenue', async function() {
     this.timeout(1000000);
 
     before( async () => {
