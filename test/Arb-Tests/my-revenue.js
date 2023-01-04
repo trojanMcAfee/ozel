@@ -44,7 +44,6 @@ describe('My Revenue', async function() {
             WETH,
             USDT,
             WBTC,
-            renBTC,
             USDC,
             MIM,
             FRAX,

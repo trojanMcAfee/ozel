@@ -55,7 +55,6 @@ describe('Ozel Index', async function () {
             WETH,
             USDT,
             WBTC,
-            renBTC,
             USDC,
             MIM,
             FRAX,

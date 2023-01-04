@@ -40,6 +40,9 @@ let tokenSwap;
 let addFlag, totalVolume;
 
 
+/**
+ * Specific unit-tests for certain functions within Arbitrum contracts.
+ */
 describe('Unit testing', async function () {
     this.timeout(1000000);
 
@@ -50,7 +53,6 @@ describe('Unit testing', async function () {
             WETH,
             USDT,
             WBTC,
-            renBTC,
             USDC,
             MIM,
             FRAX,
