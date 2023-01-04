@@ -201,7 +201,7 @@ async function maint() {
 
 }
 
-maint();
+// maint();
 
 
 
@@ -505,6 +505,7 @@ async function stressTest() {
     console.log('hashes: ', hashes);
 }
 
+// stressTest();
 
 async function checkMessage() {
     const l2Wallet = new Wallet(process.env.PK, l2ProviderTestnet);
@@ -524,5 +525,16 @@ async function checkMessage() {
 // checkMessage();
 
 
+async function checkPayments() {
+    const sBeaconAddr = '0x3D722622B82b676580820F3bd0B083837b33B6FA';
+    const sBeacon = await hre.ethers.getContractAt('StorageBeacon', sBeaconAddr);
+    const account = '0x61f70468bf14D1a4A1045F433996C4Ca5769E613';
 
-stressTest();
+    const payments = await sBeacon.getAccountPayments(account);
+    console.log('payments: ', formatEther(payments));
+
+
+}
+
+checkPayments();
+
