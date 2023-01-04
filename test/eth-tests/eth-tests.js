@@ -484,8 +484,6 @@ let isAuthorized, newSelector;
                 const  tokensDB_pre = await storageBeacon.getTokenDatabase();
                 assert(tokensDB_pre.length > 0);
 
-                // console.log('tokens DB *******: ', tokensDB_pre);
-
                 const tokens = [
                     mimAddr,
                     usdcAddr
