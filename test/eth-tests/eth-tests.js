@@ -479,13 +479,16 @@ let isAuthorized, newSelector;
             });
 
             it('should allow the owner to add multiple tokens / addTokenToDatabase()', async () => {
+                await storageBeacon.removeTokenFromDatabase(usdcAddr);
+
                 const  tokensDB_pre = await storageBeacon.getTokenDatabase();
                 assert(tokensDB_pre.length > 0);
 
-                console.log('tokens DB *******: ', tokensDB_pre);
+                // console.log('tokens DB *******: ', tokensDB_pre);
 
                 const tokens = [
-                    mimAddr
+                    mimAddr,
+                    usdcAddr
                 ];
 
                 for (let i=0; i < tokens.length; i++) {
