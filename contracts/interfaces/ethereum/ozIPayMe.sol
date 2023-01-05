@@ -13,10 +13,12 @@ interface ozIPayMe {
      * the contract on L2. In case it fails, it swaps the ETH for the emergency stablecoin using Uniswap on L1.
      * @param gasPriceBid_ L2's gas price
      * @param accountDetails_ User configuration for swaps on L2
+     * @param amountToSend xxxxxxxxx
      */
     function sendToArb( 
         uint gasPriceBid_,
-        IStorageBeacon.AccountConfig calldata accountDetails_
+        IStorageBeacon.AccountConfig calldata accountDetails_,
+        uint amountToSend
     ) external payable;
 
     /// @dev Initializes the user account when being created in ProxyFactory.sol

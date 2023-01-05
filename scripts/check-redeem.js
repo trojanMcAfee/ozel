@@ -122,14 +122,17 @@ async function main2() {
     const callerAddr = await signerX.getAddress();
     console.log('caller addr: ', callerAddr);
 
-    const storageBeaconAddr = '0x41dfb47e2949F783cf490D2e99E9BbB6FdAdAe1C';
+    const storageBeaconAddr = '0x3D722622B82b676580820F3bd0B083837b33B6FA';
     const storageBeacon = await hre.ethers.getContractAt('StorageBeacon', storageBeaconAddr);
     console.log('sBeacon: ', storageBeacon.address);
 
-    const proxies = await storageBeacon.getAccountsByUser(callerAddr);
-    const taskID = await storageBeacon.getTaskID(proxies[1]);
+    // const proxies = await storageBeacon.getAccountsByUser(callerAddr);
+    const acc = '0xfA7Bd39bcfa1f5abd2B0A4FAf28E26b8A017fd9F';
+    const taskID = await storageBeacon.getTaskID(acc);
     console.log('taskID: ', taskID);
 }
+
+main2();
 
 
 
@@ -533,8 +536,25 @@ async function checkPayments() {
     const payments = await sBeacon.getAccountPayments(account);
     console.log('payments: ', formatEther(payments));
 
-
 }
 
-checkPayments();
+// checkPayments();
+
+
+async function changeImpl() {
+    console.log('deploying payme...');
+    const [ newPayMeAddr ] = await deployContract('ozPayMe');
+    const beaconAddr = '0x2C4131d8760Be227b1E0a545220111208D94678F';
+    const beacon = await hre.ethers.getContractAt('ozUpgradeableBeacon', beaconAddr);
+
+    const [ newFactoryAddr, newFactory ] = await deployContract('ProxyFactory');
+
+    await newFactory.initialize(beaconAddr, ops);
+    console.log('done with factory initialization...');
+    await beacon.upgradeTo(newPayMeAddr, ops);
+    console.log('done');
+}
+
+// changeImpl();
+
 

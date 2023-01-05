@@ -12,7 +12,7 @@ import './ozUpgradeableBeacon.sol';
 import './ozAccountProxy.sol';
 import '../Errors.sol';
 
-
+import 'hardhat/console.sol';
 
 /**
  * @title Factory of user proxies (aka accounts)
@@ -69,7 +69,7 @@ contract ProxyFactory is IProxyFactory, ReentrancyGuard, Initializable, UUPSUpgr
 
         (bytes32 id) = IOps(fxConfig.ops).createTaskNoPrepayment( 
             account_,
-            bytes4(abi.encodeWithSignature('sendToArb()')),
+            bytes4(abi.encodeWithSignature('sendToArb(uint256)')),
             account_,
             abi.encodeWithSignature('checker()'),
             fxConfig.ETH

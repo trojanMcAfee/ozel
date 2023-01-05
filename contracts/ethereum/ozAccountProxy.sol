@@ -39,10 +39,12 @@ contract ozAccountProxy is ReentrancyGuard, Initializable, BeaconProxy {
 
     /// @dev Gelato checker for autonomous calls
     function checker() external view returns(bool canExec, bytes memory execPayload) {
+        // uint amountToSend = address(this).balance;
+
         if (address(this).balance > 0) {
             canExec = true;
         }
-        execPayload = abi.encodeWithSignature('sendToArb()');
+        execPayload = abi.encodeWithSignature('sendToArb(uint256)', address(this).balance); 
     }
 
   
@@ -59,10 +61,13 @@ contract ozAccountProxy is ReentrancyGuard, Initializable, BeaconProxy {
         if ( storageBeacon.isSelectorAuthorized(bytes4(msg.data)) ) { 
             data = msg.data;
         } else {
+            uint amountToSend = abi.decode(msg.data[4:], (uint));
+
             data = abi.encodeWithSignature(
-                'sendToArb(uint256,(address,address,uint256,string))', 
+                'sendToArb(uint256,(address,address,uint256,string),uint256)', 
                 storageBeacon.getGasPriceBid(),
-                acc
+                acc,
+                amountToSend
             );
         }
 

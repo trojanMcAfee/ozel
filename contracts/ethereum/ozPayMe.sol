@@ -89,7 +89,8 @@ contract ozPayMe is ozIPayMe, ReentrancyGuard, Initializable {
     /// @inheritdoc ozIPayMe
     function sendToArb( 
         uint gasPriceBid_,
-        StorageBeacon.AccountConfig calldata acc_ 
+        StorageBeacon.AccountConfig calldata acc_, 
+        uint amountToSend
     ) external payable onlyOps filterDetails(acc_) {    
         StorageBeacon storageBeacon = StorageBeacon(_getStorageBeacon(_beacon, 0)); 
 
@@ -104,7 +105,7 @@ contract ozPayMe is ozIPayMe, ReentrancyGuard, Initializable {
         );
         
         bytes memory ticketData = _createTicketData(gasPriceBid_, swapData, false);
-        uint amountToSend = address(this).balance;
+        // uint amountToSend = address(this).balance;
         
         (bool success, ) = fxConfig.inbox.call{value: address(this).balance}(ticketData); 
         if (!success) {

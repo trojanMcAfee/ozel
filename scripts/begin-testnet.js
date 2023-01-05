@@ -66,17 +66,17 @@ async function deployTestnet(testSigner = false, manualRedeem = false) {
     let constrArgs = [ receiver, getFakeOZLVars() ]; 
     
     //Deploys the fake OZL on arbitrum testnet 
-    // const [ fakeOZLaddr ] = await deployContract('FakeOZL', constrArgs, l2SignerTest); 
-    const fakeOZLaddr = '0x4373e925106D91d1B9B6C6c15dc70b7FCa660fa9';
+    const [ fakeOZLaddr ] = await deployContract('FakeOZL', constrArgs, l2SignerTest); 
+    // const fakeOZLaddr = '0x4373e925106D91d1B9B6C6c15dc70b7FCa660fa9';
    
     //Calculate fees on L1 > L2 arbitrum tx 
     // manualRedeem = true; //**** comment in for manualRedeem ****
     const [ gasPriceBid, maxGas ] = await getArbitrumParams(manualRedeem);
 
     //Deploys Emitter
-    // const [ emitterAddr, emitter ] = await deployContract('Emitter', '', l1SignerTest);
-    const emitterAddr = '0xFeEF89D9DFa289aec9a8013c5706297C5a03B4De';
-    const emitter = await hre.ethers.getContractAt('Emitter', emitterAddr);
+    const [ emitterAddr, emitter ] = await deployContract('Emitter', '', l1SignerTest);
+    // const emitterAddr = '0xFeEF89D9DFa289aec9a8013c5706297C5a03B4De';
+    // const emitter = await hre.ethers.getContractAt('Emitter', emitterAddr);
 
     //Deploys ozPayMe in mainnet
     const [ ozPaymeAddr ] = await deployContract('ozPayMe', '', l1SignerTest);
