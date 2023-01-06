@@ -17,7 +17,7 @@ import { IERC173 } from "../../interfaces/arbitrum/IERC173.sol";
 import { IERC165 } from "../../interfaces/arbitrum/IERC165.sol";
 import '../AppStorage.sol'; 
 
-import 'hardhat/console.sol';
+
 /**
  * @notice Initializer of the storage variables
  */

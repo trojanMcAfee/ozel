@@ -1,7 +1,7 @@
 digraph "" {
 ozERC1967Proxy -> ReentrancyGuard [ label="1" ];
 ozERC1967Proxy -> ERC1967Proxy [ label="2" ];
-ozERC1967Proxy[shape="box"label=< <TABLE border="0"><TR><TD align="center"><B>ozERC1967Proxy</B></TD></TR></TABLE> >];
+ozERC1967Proxy[shape="box"label=< <TABLE border="0"><TR><TD align="center"><B>ozERC1967Proxy</B></TD></TR><TR><TD align="left"><I>Public Functions:</I></TD></TR><TR><TD align="left">    getImplementation()</TD></TR></TABLE> >];
 
 IERC1822Proxiable[shape="box"label=< <TABLE border="0"><TR><TD align="center"><B>IERC1822Proxiable</B></TD></TR><TR><TD align="left"><I>Public Functions:</I></TD></TR><TR><TD align="left">    proxiableUUID()</TD></TR></TABLE> >];
 

@@ -12,7 +12,6 @@ import './ozUpgradeableBeacon.sol';
 import './ozAccountProxy.sol';
 import '../Errors.sol';
 
-import 'hardhat/console.sol';
 
 /**
  * @title Factory of user proxies (aka accounts)
