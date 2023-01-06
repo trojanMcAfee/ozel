@@ -8,7 +8,7 @@ import '@rari-capital/solmate/src/utils/ReentrancyGuard.sol';
 import '../../../ethereum/StorageBeacon.sol';
 
 
-contract FaultyOzBeaconProxy is ReentrancyGuard, Initializable, BeaconProxy { 
+contract FaultyOzAccountProxy is ReentrancyGuard, Initializable, BeaconProxy { 
 
     StorageBeacon.AccountConfig accountDetails;
     StorageBeacon.FixedConfig fxConfig;

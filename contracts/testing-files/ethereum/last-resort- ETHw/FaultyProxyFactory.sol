@@ -7,7 +7,7 @@ import '@rari-capital/solmate/src/utils/ReentrancyGuard.sol';
 import '@openzeppelin/contracts/utils/Address.sol';
 import '../../../ethereum/ozUpgradeableBeacon.sol';
 import '../../../interfaces/ethereum/IOps.sol';
-import './FaultyOzBeaconProxy.sol';
+import './FaultyOzAccountProxy.sol';
 import '../../../ethereum/StorageBeacon.sol';
 import '../../../Errors.sol';
 
@@ -33,8 +33,8 @@ contract FaultyProxyFactory is ReentrancyGuard, Initializable {
         if (accountDetails_.slippage <= 0) revert CantBeZero('slippage');
         if (!StorageBeacon(_getStorageBeacon(0)).queryTokenDatabase(accountDetails_.token)) revert TokenNotInDatabase(accountDetails_.token);
 
-        //Replaced with FaultyOzBeaconProxy that doesn't forward txs to the implementation
-        FaultyOzBeaconProxy newProxy = new FaultyOzBeaconProxy(
+        //Replaced with FaultyOzAccountProxy that doesn't forward txs to the implementation
+        FaultyOzAccountProxy newProxy = new FaultyOzAccountProxy(
             beacon,
             new bytes(0)
         );
@@ -65,7 +65,7 @@ contract FaultyProxyFactory is ReentrancyGuard, Initializable {
 
         (bytes32 id) = IOps(fxConfig.ops).createTaskNoPrepayment( 
             beaconProxy_,
-            bytes4(abi.encodeWithSignature('sendToArb()')),
+            bytes4(abi.encodeWithSignature('sendToArb(uint256)')),
             beaconProxy_,
             abi.encodeWithSignature('checker()'),
             fxConfig.ETH
