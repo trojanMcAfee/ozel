@@ -38,13 +38,13 @@ contract ozAccountProxy is ReentrancyGuard, Initializable, BeaconProxy {
     }
 
     /// @dev Gelato checker for autonomous calls
-    function checker() external view returns(bool canExec, bytes memory execPayload) {
-        // uint amountToSend = address(this).balance;
+    function checker() external view returns(bool canExec, bytes memory execPayload) { 
+        uint amountToSend = address(this).balance;
 
-        if (address(this).balance > 0) {
+        if (amountToSend > 0) {
             canExec = true;
         }
-        execPayload = abi.encodeWithSignature('sendToArb(uint256)', address(this).balance); 
+        execPayload = abi.encodeWithSignature('sendToArb(uint256)', amountToSend); 
     }
 
   

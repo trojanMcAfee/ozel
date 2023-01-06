@@ -137,7 +137,7 @@ interface IStorageBeacon {
     /// @dev Gets all the tokens in the database
     function getTokenDatabase() external view returns(address[] memory);
 
-    /// @dev Gets all the ETH transfer done to an account/proxy
+    /// @dev Gets all the gross ETH transfers (without the Gelato's execution fees) done to an account/proxy
     function getAccountPayments(address account_) external view returns(uint);
 }
 

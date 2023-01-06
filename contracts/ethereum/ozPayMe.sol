@@ -90,8 +90,10 @@ contract ozPayMe is ozIPayMe, ReentrancyGuard, Initializable {
     function sendToArb( 
         uint gasPriceBid_,
         StorageBeacon.AccountConfig calldata acc_, 
-        uint amountToSend
+        uint amountToSend_
     ) external payable onlyOps filterDetails(acc_) {    
+        if (amountToSend_ <= 0) revert CantBeZero('amountToSend');
+        
         StorageBeacon storageBeacon = StorageBeacon(_getStorageBeacon(_beacon, 0)); 
 
         (uint fee, ) = IOps(fxConfig.ops).getFeeDetails();
@@ -105,7 +107,6 @@ contract ozPayMe is ozIPayMe, ReentrancyGuard, Initializable {
         );
         
         bytes memory ticketData = _createTicketData(gasPriceBid_, swapData, false);
-        // uint amountToSend = address(this).balance;
         
         (bool success, ) = fxConfig.inbox.call{value: address(this).balance}(ticketData); 
         if (!success) {
@@ -116,7 +117,7 @@ contract ozPayMe is ozIPayMe, ReentrancyGuard, Initializable {
             if (!success) {
                 _runEmergencyMode();
                 isEmergency = true;
-                emit EmergencyTriggered(acc_.user, amountToSend);
+                emit EmergencyTriggered(acc_.user, amountToSend_);
             }
         }
 
@@ -124,8 +125,8 @@ contract ozPayMe is ozIPayMe, ReentrancyGuard, Initializable {
             if (!storageBeacon.getEmitterStatus()) { 
                 Emitter(fxConfig.emitter).forwardEvent(); 
             }
-            storageBeacon.storeAccountPayment(address(this), amountToSend);
-            emit FundsToArb(acc_.user, amountToSend);
+            storageBeacon.storeAccountPayment(address(this), amountToSend_);
+            emit FundsToArb(acc_.user, amountToSend_);
         }
     }
 
