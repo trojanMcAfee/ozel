@@ -1,4 +1,4 @@
-// const { ethers } = require("ethers");
+const { ethers, Wallet } = require("ethers");
 const axios = require('axios').default;
 const { L1TransactionReceipt, L1ToL2MessageStatus } = require('@arbitrum/sdk');
 const { assert } = require("console");
@@ -17,7 +17,8 @@ const {
 const privateKey = process.env.PK_TESTNET; //<---- replace this for a hard-coded private key
 const l2Wallet = new Wallet(privateKey, l2ProviderTestnet);
 const tasks = {}; 
-let proxy, storageBeacon, redeemedHashes;
+const storageBeaconAddr = '0xd7ED96eD862eCd10725De44770244269e2978b5E';
+const redeemedHashesAddr = '0x9b482ed221e548a8cdB1B7177079Aef68D8AB298';
 const URL = `https://api.thegraph.com/subgraphs/name/gelatodigital/poke-me-${network}`;
 const query = (taskId) => {
     return {
@@ -38,10 +39,9 @@ const query = (taskId) => {
 
 
 process.on('message', async (msg) => {
-    // const storageBeacon = await hre.ethers.getContractAt(sBeaconABI, storageBeaconAddr); 
-    ({ proxy, storageBeacon, redeemedHashes } = msg);
-    
-    // let { proxy } = msg;
+    const storageBeacon = await hre.ethers.getContractAt('StorageBeacon', storageBeaconAddr); 
+
+    let { proxy } = msg;
     let taskId = await storageBeacon.getTaskID(proxy);
 
     //ETH has been sent out from the account/proxy by the Gelato call
@@ -66,7 +66,7 @@ process.on('message', async (msg) => {
 
         let [ message, wasRedeemed ] = await checkHash(hash);
 
-        wasRedeemed ? tasks[taskId].alreadyCheckedHashes.push(hash) : await redeemHash(message, hash, taskId, redeemedHashes);
+        wasRedeemed ? tasks[taskId].alreadyCheckedHashes.push(hash) : await redeemHash(message, hash, taskId);
     }
 
     assert(tasks[taskId].alreadyCheckedHashes.length === executions.length);
@@ -125,6 +125,7 @@ async function redeemHash(message, hash, taskId, redeemedHashes) {
     console.log(`**** Hash: ${hash} redemeed ****`);
     tasks[taskId].alreadyCheckedHashes.push(hash);
 
+    const redeemedHashes = new ethers.Contract(redeemedHashesAddr, 'RedeemedHashes', l2ProviderTestnet);
     tx = await redeemedHashes.connect(l2Wallet).storeRedemption(taskId, hash, opsL2_2);
     await tx.wait();
 
@@ -132,4 +133,5 @@ async function redeemHash(message, hash, taskId, redeemedHashes) {
     assert(redemptions.length > 0);
     } catch {}
 }
+
 

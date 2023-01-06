@@ -1,15 +1,14 @@
 const { fork } = require('node:child_process');
 const { ethers } = require("ethers");
-const whileFork = fork('while-fork.js');
+const whileFork = fork('test/eth-tests/listener-test/while-fork.js');
+const { sendToRedeemFork } = require('./redeem-fork.js');
+
 const { defaultAbiCoder: abiCoder } = ethers.utils;
 
 const proxyQueue = [];
-let storageBeacon, redeemedHashes;
+const emitterAddr = '0x124bd273D2007fb71151cb5e16e3Fc1557748147';
 
-
-async function startListening(sBeacon, emitterAddr, rHashes) {
-    storageBeacon = sBeacon;
-    redeemedHashes = rHashes;
+async function startListening() { 
 
     const filter = {
         address: emitterAddr, 
@@ -27,11 +26,7 @@ async function startListening(sBeacon, emitterAddr, rHashes) {
 
         if (proxyQueue.indexOf(proxy) === -1) proxyQueue.push(proxy);
 
-        whileFork.send({
-            proxyQueue, 
-            storageBeacon,
-            redeemedHashes
-        });
+        whileFork.send(proxyQueue);
     });
 
     whileFork.on('message', (msg) => proxyQueue.shift());

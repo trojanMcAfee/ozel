@@ -48,14 +48,14 @@ async function runSetup() {
     assertProof();
     const addresses = await simulateDeployment();
     logContracts(addresses);
-    return addresses;
+    return addresses.newProxy;
 }
 
 async function simulateDeployment() {
-    const storageBeaconAddr = '0xDf2956dB0E0c283d2cd7eB27ecBDaBBdEe329516';
-    const redeemedHashesAddr = '0xBAa20c48292C4Be9319dA3E7620F4364aac498b4'; //0x82ab905466713465B4b7e29afb13853225124b0c
-    const emitterAddr = '0x45cEaeAB767265352977E136234E4A0c3d5cDC44';
-    const newProxyAddr = '0x02A5dC16D0be5FF5FC2Ed264cbF66002303C6387'; 
+    const storageBeaconAddr = '0xd7ED96eD862eCd10725De44770244269e2978b5E';
+    const redeemedHashesAddr = '0x9b482ed221e548a8cdB1B7177079Aef68D8AB298'; 
+    const emitterAddr = '0x124bd273D2007fb71151cb5e16e3Fc1557748147';
+    const newProxyAddr = '0x254d6F75D6B4A23Db420d03785CF39bd45dab012'; 
 
     const storageBeacon = await hre.ethers.getContractAt('StorageBeacon', storageBeaconAddr);
     const redeemedHashes = await hre.ethers.getContractAt('RedeemedHashes', redeemedHashesAddr);
@@ -76,17 +76,12 @@ async function manualRedeem() {
     console.log('******** START OF MANUAL REDEEM ********');
     console.log('');
 
-    const { 
-        storageBeacon, 
-        emitter: emitterAddr, 
-        redeemedHashes, 
-        newProxy: newProxyAddr 
-    } = await runSetup();
+    const newProxy = await runSetup();
 
-    await startListening(storageBeacon, emitterAddr, redeemedHashes);
+    await startListening();
 
     //Sends ETH to the account/proxy
-    await sendETHandAssert(newProxyAddr);
+    await sendETHandAssert(newProxy);
 }
 
 
