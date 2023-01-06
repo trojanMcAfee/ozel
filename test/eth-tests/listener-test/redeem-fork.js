@@ -17,8 +17,7 @@ const {
 const privateKey = process.env.PK_TESTNET; //<---- replace this for a hard-coded private key
 const l2Wallet = new Wallet(privateKey, l2ProviderTestnet);
 const tasks = {}; 
-const storageBeaconAddr = '0xd7ED96eD862eCd10725De44770244269e2978b5E';
-const redeemedHashesAddr = '0x9b482ed221e548a8cdB1B7177079Aef68D8AB298';
+let storageBeacon, redeemedHashes;
 const URL = `https://api.thegraph.com/subgraphs/name/gelatodigital/poke-me-${network}`;
 const query = (taskId) => {
     return {
@@ -37,9 +36,14 @@ const query = (taskId) => {
 };
 
 
+async function sendToRedeemFork(sBeacon, rHashes) {
+    storageBeacon = sBeacon;
+    redeemedHashes = rHashes;
+}
+
+
 
 process.on('message', async (msg) => {
-    const storageBeacon = await hre.ethers.getContractAt('StorageBeacon', storageBeaconAddr); 
 
     let { proxy } = msg;
     let taskId = await storageBeacon.getTaskID(proxy);
@@ -125,7 +129,6 @@ async function redeemHash(message, hash, taskId, redeemedHashes) {
     console.log(`**** Hash: ${hash} redemeed ****`);
     tasks[taskId].alreadyCheckedHashes.push(hash);
 
-    const redeemedHashes = new ethers.Contract(redeemedHashesAddr, 'RedeemedHashes', l2ProviderTestnet);
     tx = await redeemedHashes.connect(l2Wallet).storeRedemption(taskId, hash, opsL2_2);
     await tx.wait();
 
@@ -134,4 +137,9 @@ async function redeemHash(message, hash, taskId, redeemedHashes) {
     } catch {}
 }
 
+
+
+module.exports = {
+    sendToRedeemFork
+};
 

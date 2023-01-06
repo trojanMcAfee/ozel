@@ -48,7 +48,7 @@ async function runSetup() {
     assertProof();
     const addresses = await simulateDeployment();
     logContracts(addresses);
-    return addresses.newProxy;
+    return addresses;
 }
 
 async function simulateDeployment() {
@@ -76,12 +76,17 @@ async function manualRedeem() {
     console.log('******** START OF MANUAL REDEEM ********');
     console.log('');
 
-    const newProxy = await runSetup();
+    const { 
+        storageBeacon, 
+        emitter: emitterAddr, 
+        redeemedHashes, 
+        newProxy: newProxyAddr 
+    } = await runSetup();
 
-    await startListening();
+    await startListening(storageBeacon, emitterAddr, redeemedHashes);
 
     //Sends ETH to the account/proxy
-    await sendETHandAssert(newProxy);
+    await sendETHandAssert(newProxyAddr);
 }
 
 

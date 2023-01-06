@@ -6,9 +6,11 @@ const { sendToRedeemFork } = require('./redeem-fork.js');
 const { defaultAbiCoder: abiCoder } = ethers.utils;
 
 const proxyQueue = [];
-const emitterAddr = '0x124bd273D2007fb71151cb5e16e3Fc1557748147';
 
-async function startListening() { 
+
+async function startListening(sBeacon, emitterAddr, rHashes) { 
+
+    await sendToRedeemFork(sBeacon, rHashes);
 
     const filter = {
         address: emitterAddr, 
