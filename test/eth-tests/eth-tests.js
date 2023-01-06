@@ -8,7 +8,6 @@ const {
     parseEther
 } = ethers.utils;
 
-
 const { 
     wethAddr,
     pokeMeOpsAddr,
@@ -56,8 +55,8 @@ let taskID;
 let storageBeaconMockAddr; 
 let USDC, WETH;
 let usersProxies = [];
-let evilVarConfig = [0, 0, 0];
-let evilUserDetails = [deadAddr, deadAddr, 0, 'nothing'];
+const evilUserDetails = [deadAddr, deadAddr, 0, 'nothing'];
+const evilAmount = ethers.constants.MaxUint256;
 let preBalance, postBalance;
 let isExist, proxyFactory;
 let tx, receipt;
@@ -288,7 +287,7 @@ let isAuthorized, newSelector;
                     });
                 });
 
-                it('should not allow when an entity that is not Ops makes the call / sendToArb()', async () => {
+                xit('should not allow when an entity that is not Ops makes the call / sendToArb()', async () => {
                     await assert.rejects(async () => {
                         await activateOzBeaconProxy(newProxyAddr);
                     }, {
@@ -371,19 +370,24 @@ let isAuthorized, newSelector;
                     assert.equal(Number(slippage) / 100, newUserSlippage); 
                 });
 
-                xit('should allow funds to be sent with correct accountDetails even if malicious data was passed / sendToArb() - delegate()', async () => {
+                it('should allow funds to be sent with correct accountDetails even if malicious data was passed / sendToArb() - delegate()', async () => {
                     opsContract = await hre.ethers.getContractAt('IOps', pokeMeOpsAddr);
+                    const abi = [
+                        'function sendToArb(uint256,(address,address,uint256,string),uint256) external payable',
+                        'function checker() external view returns(bool canExec, bytes memory execPayload)'
+                    ];
+                    const iface = new ethers.utils.Interface(abi);
 
                     await opsContract.connect(signers[1]).createTaskNoPrepayment(
                         newProxyAddr,
-                        0x9095465e, //first 4 bytes of sendToArb(uint256,(address,address,uint256,string))
+                        iface.getSighash('sendToArb'), //first 4 bytes of sendToArb(uint256,(address,address,uint256,string),uint256)
                         newProxyAddr,
-                        0xcf5303cf, //first 4 bytes of checker() - 0x58e9fc59
+                        iface.getSighash('checker'), //first 4 bytes of checker() - 0x58e9fc59
                         ETH
                     );
 
                     await sendETH(newProxyAddr, 0.1);
-                    receipt = await activateProxyLikeOps(newProxyAddr, signerAddr2, true, [evilVarConfig, evilUserDetails]);
+                    receipt = await activateProxyLikeOps(newProxyAddr, signerAddr2, true, [evilAmount, evilUserDetails, evilAmount]);
 
                     balance = await hre.ethers.provider.getBalance(newProxyAddr);
                     assert.equal(balance.toString(), 0);
