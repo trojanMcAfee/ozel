@@ -60,10 +60,10 @@ contract ImplementationMock is ReentrancyGuard, Initializable {
 
 
     function initialize(
-        StorageBeacon.AccountConfig calldata accountDetails_, 
+        StorageBeacon.AccountConfig calldata acc_, 
         address beacon_
     ) external initializer {
-        accountDetails = accountDetails_;  
+        accountDetails = acc_;  
         fxConfig = StorageBeacon(_getStorageBeacon(beacon_, 0)).getFixedConfig();
         _beacon = beacon_;
     }
@@ -76,16 +76,19 @@ contract ImplementationMock is ReentrancyGuard, Initializable {
 
     function sendToArb( 
         uint gasPriceBid_,
-        StorageBeacon.AccountConfig memory accountDetails_
+        StorageBeacon.AccountConfig memory acc_,
+        uint amountToSend_
     ) external payable onlyOps { 
+        if (amountToSend_ <= 0) revert CantBeZero('amountToSend');
+
         StorageBeacon storageBeacon = StorageBeacon(_getStorageBeacon(_beacon, 0)); 
 
-        if (bytes(accountDetails_.name).length == 0) revert CantBeZero('name'); 
-        if (bytes(accountDetails_.name).length > 18) revert NameTooLong();
-        if (accountDetails_.user == address(0) || accountDetails_.token == address(0)) revert CantBeZero('address');
-        if (!storageBeacon.isUser(accountDetails_.user)) revert UserNotInDatabase(accountDetails_.user);
-        if (!storageBeacon.queryTokenDatabase(accountDetails_.token)) revert TokenNotInDatabase(accountDetails_.token);
-        if (accountDetails_.slippage <= 0) revert CantBeZero('slippage');
+        if (bytes(acc_.name).length == 0) revert CantBeZero('name'); 
+        if (bytes(acc_.name).length > 18) revert NameTooLong();
+        if (acc_.user == address(0) || acc_.token == address(0)) revert CantBeZero('address');
+        if (!storageBeacon.isUser(acc_.user)) revert UserNotInDatabase(acc_.user);
+        if (!storageBeacon.queryTokenDatabase(acc_.token)) revert TokenNotInDatabase(acc_.token);
+        if (acc_.slippage <= 0) revert CantBeZero('slippage');
         if (!(address(this).balance > 0)) revert CantBeZero('contract balance');
 
         (uint fee, ) = IOps(fxConfig.ops).getFeeDetails();
@@ -95,24 +98,23 @@ contract ImplementationMock is ReentrancyGuard, Initializable {
 
         bytes memory swapData = abi.encodeWithSelector(
             FakeOZL(payable(fxConfig.OZL)).exchangeToAccountToken.selector, 
-            accountDetails_
+            acc_
         );
 
         bytes memory ticketData = _createTicketData(gasPriceBid_, swapData, false);
 
-        uint amountToSend = address(this).balance;
         (bool success, ) = fxConfig.inbox.call{value: address(this).balance}(ticketData); 
         if (!success) {
             _runEmergencyMode();
             isEmergency = true;
-            emit EmergencyTriggered(accountDetails_.user, amountToSend);
+            emit EmergencyTriggered(acc_.user, amountToSend_);
         }
 
         if (!isEmergency) {
             if (!storageBeacon.getEmitterStatus()) { 
                 Emitter(fxConfig.emitter).forwardEvent(); 
             }
-            emit FundsToArb(accountDetails_.user, amountToSend);
+            emit FundsToArb(acc_.user, amountToSend_);
         }
         _callStorageBeaconMock();
     }

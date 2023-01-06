@@ -92,8 +92,8 @@ async function getArbitrumParams(manualRedeem = false) {
 
 
 async function activateOzBeaconProxy(proxyAddr) {
-    const proxy = await hre.ethers.getContractAt(['function sendToArb()'], proxyAddr);
-    await proxy.sendToArb(ops);
+    const proxy = await hre.ethers.getContractAt(['function sendToArb(uint256)'], proxyAddr);
+    await proxy.sendToArb(parseEther('0.1'), ops);
 }
 
 
@@ -131,7 +131,6 @@ async function activateProxyLikeOps(proxy, taskCreator, isEvil, evilParams) {
         execData = iface.encodeFunctionData('sendToArb', evilParams);
     } else {
         execData = iface.encodeFunctionData('sendToArb', [ethers.FixedNumber.from('0.1')]); 
-        console.log('execData: ', execData);
     }
 
     const tx = await ops.connect(gelatoSigner).exec(0, ETH, taskCreator, false, false, resolverHash, proxy, execData);

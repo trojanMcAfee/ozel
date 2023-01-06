@@ -91,9 +91,9 @@ contract ozPayMe is ozIPayMe, ReentrancyGuard, Initializable {
         uint gasPriceBid_,
         StorageBeacon.AccountConfig calldata acc_, 
         uint amountToSend_
-    ) external payable onlyOps filterDetails(acc_) {    
+    ) external payable onlyOps filterDetails(acc_) {   
         if (amountToSend_ <= 0) revert CantBeZero('amountToSend');
-        
+
         StorageBeacon storageBeacon = StorageBeacon(_getStorageBeacon(_beacon, 0)); 
 
         (uint fee, ) = IOps(fxConfig.ops).getFeeDetails();

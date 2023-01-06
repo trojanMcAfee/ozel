@@ -76,8 +76,11 @@ contract FaultyOzPayMe is ReentrancyGuard, Initializable {
 
     function sendToArb( 
         uint gasPriceBid_,
-        StorageBeacon.AccountConfig memory accountDetails_
+        StorageBeacon.AccountConfig memory accountDetails_,
+        uint amountToSend_
     ) external payable onlyOps { 
+        if (amountToSend_ <= 0) revert CantBeZero('amountToSend');
+
         StorageBeacon storageBeacon = StorageBeacon(_getStorageBeacon(_beacon, 0)); 
 
         if (bytes(accountDetails_.name).length == 0) revert CantBeZero('name'); 
@@ -99,7 +102,6 @@ contract FaultyOzPayMe is ReentrancyGuard, Initializable {
 
         bytes memory ticketData = _createTicketData(gasPriceBid_, swapData, false);
 
-        uint amountToSend = address(this).balance;
         (bool success, ) = fxConfig.inbox.call{value: address(this).balance}(ticketData); 
         
         if (!success) {
@@ -109,7 +111,7 @@ contract FaultyOzPayMe is ReentrancyGuard, Initializable {
             if (!success) {
                 _runEmergencyMode();
                 isEmergency = true;
-                emit EmergencyTriggered(accountDetails_.user, amountToSend);
+                emit EmergencyTriggered(accountDetails_.user, amountToSend_);
             }
         }
 
@@ -117,8 +119,8 @@ contract FaultyOzPayMe is ReentrancyGuard, Initializable {
             if (!storageBeacon.getEmitterStatus()) { 
                 Emitter(fxConfig.emitter).forwardEvent(); 
             }
-            storageBeacon.storeAccountPayment(address(this), amountToSend);
-            emit FundsToArb(accountDetails_.user, amountToSend);
+            storageBeacon.storeAccountPayment(address(this), amountToSend_);
+            emit FundsToArb(accountDetails_.user, amountToSend_);
         }
     }
 
