@@ -2,7 +2,7 @@ const { ethers, Wallet } = require("ethers");
 const axios = require('axios').default;
 const { L1TransactionReceipt, L1ToL2MessageStatus } = require('@arbitrum/sdk');
 const { assert } = require("console");
-const { parseEther } = require("ethers/lib/utils.js");
+const { parseEther, formatEther } = require("ethers/lib/utils.js");
 // const { sBeaconABI, redeemABI } = require('./abis.json');
 
 const {
@@ -36,16 +36,20 @@ const query = (taskId) => {
 };
 
 
-async function sendToRedeemFork(sBeacon, rHashes) {
-    storageBeacon = sBeacon;
-    redeemedHashes = rHashes;
-}
+// async function sendToRedeemFork(sBeacon, rHashes) {
+//     storageBeacon = sBeacon;
+//     redeemedHashes = rHashes;
+// }
 
 
 
 process.on('message', async (msg) => {
+    const { proxy, storageBeaconAddr, redeemedHashesAddr } = msg;
+    const storageBeacon = await hre.ethers.getContractAt('StorageBeacon', storageBeaconAddr);
 
-    let { proxy } = msg;
+    // let { proxy } = msg;
+    // console.log('proxy: ', proxy);
+    // console.log('sBeacon: ', sBeacon);
     let taskId = await storageBeacon.getTaskID(proxy);
 
     //ETH has been sent out from the account/proxy by the Gelato call
@@ -70,24 +74,24 @@ process.on('message', async (msg) => {
 
         let [ message, wasRedeemed ] = await checkHash(hash);
 
-        wasRedeemed ? tasks[taskId].alreadyCheckedHashes.push(hash) : await redeemHash(message, hash, taskId);
+        wasRedeemed ? tasks[taskId].alreadyCheckedHashes.push(hash) : await redeemHash(message, hash, taskId, redeemedHashesAddr);
     }
 
     assert(tasks[taskId].alreadyCheckedHashes.length === executions.length);
     console.log('checked hashes: ', tasks[taskId].alreadyCheckedHashes);
 
-    setTimeout(waitingForFunds, 600000);
-    console.log(`Waiting for funds on L2 (takes ~10 minutes; current time: ${new Date().toTimeString()})`);
+    setTimeout(waitingForFunds, 900000);
+    console.log(`Waiting for funds on L2 (takes ~15 minutes; current time: ${new Date().toTimeString()})`);
 
     async function waitingForFunds() { 
-        const balance = await l2ProviderTestnet.getBalance(testnetReceiver);
-        console.log('L2 balance: ', Number(balance));
-        assert(Number(balance) > 0.05);
+        const balance = formatEther(await l2ProviderTestnet.getBalance(testnetReceiver));
+        console.log('L2 balance: ', balance);
+        assert(balance > 0.05);
         console.log('Contract in L2 received the ETH');
 
         opsL2_2.to = myReceiver;
-        opsL2_2.value = parseEther(balance);
-        const tx = await l2Wallet.sendTransaction(opsL2_2);
+        opsL2_2.value = parseEther(balance.toString());
+        const tx = await l2Wallet.sendTransaction(opsL2_2); //run this at it is ******
         await tx.wait();
     }
 
@@ -120,7 +124,7 @@ async function checkHash(hash) {
     ];
 }
 
-async function redeemHash(message, hash, taskId, redeemedHashes) {
+async function redeemHash(message, hash, taskId, redeemedHashesAddr) {
     console.log('redeeming...');
     try {
     let tx = await message.redeem(opsL2_2);
@@ -129,6 +133,7 @@ async function redeemHash(message, hash, taskId, redeemedHashes) {
     console.log(`**** Hash: ${hash} redemeed ****`);
     tasks[taskId].alreadyCheckedHashes.push(hash);
 
+    const redeemedHashes = new ethers.Contract(redeemedHashesAddr, 'RedeemedHashes', l2ProviderTestnet);
     tx = await redeemedHashes.connect(l2Wallet).storeRedemption(taskId, hash, opsL2_2);
     await tx.wait();
 
@@ -138,8 +143,4 @@ async function redeemHash(message, hash, taskId, redeemedHashes) {
 }
 
 
-
-module.exports = {
-    sendToRedeemFork
-};
 

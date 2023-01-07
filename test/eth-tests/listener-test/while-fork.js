@@ -1,26 +1,26 @@
 const { fork } = require('node:child_process');
 const redeemFork = fork('test/eth-tests/listener-test/redeem-fork.js');
 
-let proxyQueue, storageBeacon, redeemedHashes;
+let proxyQueue;
 let turn = true;
 
 
 process.on('message', (msg) => {
-    proxyQueue = msg;
+    ({ proxyQueue, storageBeaconAddr, redeemedHashesAddr } = msg);
 
     if (turn) {
-        checkProxyQueue(proxyQueue);
+        checkProxyQueue(proxyQueue, storageBeaconAddr, redeemedHashesAddr);
         turn = false;
     }
 });
 
 
-function checkProxyQueue(proxyQueue) {
+function checkProxyQueue(proxyQueue, storageBeaconAddr, redeemedHashesAddr) {
     if (proxyQueue.length > 0) {
         proxy = proxyQueue.shift();
         process.send(true);
         
-        setTimeout(continueExecution, 60000, proxy);
+        setTimeout(continueExecution, 60000, {proxy, storageBeaconAddr, redeemedHashesAddr});
         console.log('Wait 1 minute to query Gelato subgraph for L1 transaction hashes...');
         console.log('-------------------------- Redeem checkup --------------------------');
     } else {
@@ -31,4 +31,4 @@ function checkProxyQueue(proxyQueue) {
 
 redeemFork.on('message', (msg) => checkProxyQueue(proxyQueue));
 
-const continueExecution = (proxy) => redeemFork.send({ proxy });
+const continueExecution = (params) => redeemFork.send(params);

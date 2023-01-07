@@ -132,7 +132,7 @@ async function main2() {
     console.log('taskID: ', taskID);
 }
 
-main2();
+// main2();
 
 
 
@@ -556,5 +556,33 @@ async function changeImpl() {
 }
 
 // changeImpl();
+
+
+async function createAccount() {
+    const ozERC1967proxyAddr = '0x3bb56739519F41Ddb3CDf7f6875956a6DEf99227';
+    const storageBeaconAddr = '0xd7ED96eD862eCd10725De44770244269e2978b5E';
+    const proxyFactory = await hre.ethers.getContractAt('ProxyFactory', ozERC1967proxyAddr);
+    const storageBeacon = await hre.ethers.getContractAt('StorageBeacon', storageBeaconAddr);
+
+    const [ signer ] = await hre.ethers.getSigners();
+    const signerAddr = await signer.getAddress();
+    console.log('signer address: ', signerAddr);
+
+    const accountDetails = [
+        signerAddr,
+        usdtAddrArb,
+        defaultSlippage,
+        'test2'
+    ];
+
+    const tx = await proxyFactory.createNewProxy(accountDetails, ops);
+    const receipt = await tx.wait();
+    console.log('Account created with hash: ', receipt.transactionHash);
+
+    const accounts = await storageBeacon.getAccountsByUser(signerAddr);
+    console.log('accounts: ', accounts);
+}
+
+createAccount();
 
 

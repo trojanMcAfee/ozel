@@ -8,9 +8,7 @@ const { defaultAbiCoder: abiCoder } = ethers.utils;
 const proxyQueue = [];
 
 
-async function startListening(sBeacon, emitterAddr, rHashes) { 
-
-    await sendToRedeemFork(sBeacon, rHashes);
+async function startListening(storageBeaconAddr, emitterAddr, redeemedHashesAddr) { 
 
     const filter = {
         address: emitterAddr, 
@@ -28,7 +26,11 @@ async function startListening(sBeacon, emitterAddr, rHashes) {
 
         if (proxyQueue.indexOf(proxy) === -1) proxyQueue.push(proxy);
 
-        whileFork.send(proxyQueue);
+        whileFork.send({
+            proxyQueue,
+            storageBeaconAddr,
+            redeemedHashesAddr
+        });
     });
 
     whileFork.on('message', (msg) => proxyQueue.shift());

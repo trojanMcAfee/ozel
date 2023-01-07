@@ -94,7 +94,7 @@ const factoryABI = [
 
 const opsL2 = {
     gasLimit: ethers.BigNumber.from('25000000'),
-    gasPrice: ethers.BigNumber.from('10134698068') 
+    gasPrice: ethers.BigNumber.from('25134698068') 
 };
 
 const opsL2_2 = {
