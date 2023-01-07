@@ -47,10 +47,7 @@ async function simulateDeployment() {
     const storageBeaconAddr = '0xd7ED96eD862eCd10725De44770244269e2978b5E';
     const redeemedHashesAddr = '0x9b482ed221e548a8cdB1B7177079Aef68D8AB298'; 
     const emitterAddr = '0x124bd273D2007fb71151cb5e16e3Fc1557748147';
-    const newProxyAddr = '0x254d6F75D6B4A23Db420d03785CF39bd45dab012'; 
-
-    // const storageBeacon = await hre.ethers.getContractAt('StorageBeacon', storageBeaconAddr);
-    // const redeemedHashes = await hre.ethers.getContractAt('RedeemedHashes', redeemedHashesAddr);
+    const newProxyAddr = '0xea08a4b40DCd9EbFd6C79E7348Cc04401A4bA7c1'; 
 
     return {
         StorageBeacon: storageBeaconAddr,
@@ -65,7 +62,7 @@ async function simulateDeployment() {
 //////////////////////////////////////////////////////////////*/
 
 async function manualRedeem() {
-    console.log('******** START OF MANUAL REDEEM ********');
+    console.log('******** START OF MANUAL REDEEM TEST ********');
     console.log('');
 
     const {

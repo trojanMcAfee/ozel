@@ -24,7 +24,6 @@ function checkProxyQueue(proxyQueue, storageBeaconAddr, redeemedHashesAddr) {
         console.log('Wait 1 minute to query Gelato subgraph for L1 transaction hashes...');
         console.log('-------------------------- Redeem checkup --------------------------');
     } else {
-        console.log('THE END');
         turn = true;
     }
 } 

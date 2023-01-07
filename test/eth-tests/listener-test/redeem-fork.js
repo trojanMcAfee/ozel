@@ -3,7 +3,6 @@ const axios = require('axios').default;
 const { L1TransactionReceipt, L1ToL2MessageStatus } = require('@arbitrum/sdk');
 const { assert } = require("console");
 const { parseEther, formatEther } = require("ethers/lib/utils.js");
-// const { sBeaconABI, redeemABI } = require('./abis.json');
 
 const {
   l1ProviderTestnet,
@@ -36,20 +35,10 @@ const query = (taskId) => {
 };
 
 
-// async function sendToRedeemFork(sBeacon, rHashes) {
-//     storageBeacon = sBeacon;
-//     redeemedHashes = rHashes;
-// }
-
-
-
 process.on('message', async (msg) => {
     const { proxy, storageBeaconAddr, redeemedHashesAddr } = msg;
     const storageBeacon = await hre.ethers.getContractAt('StorageBeacon', storageBeaconAddr);
 
-    // let { proxy } = msg;
-    // console.log('proxy: ', proxy);
-    // console.log('sBeacon: ', sBeacon);
     let taskId = await storageBeacon.getTaskID(proxy);
 
     //ETH has been sent out from the account/proxy by the Gelato call
@@ -80,18 +69,19 @@ process.on('message', async (msg) => {
     assert(tasks[taskId].alreadyCheckedHashes.length === executions.length);
     console.log('checked hashes: ', tasks[taskId].alreadyCheckedHashes);
 
-    setTimeout(waitingForFunds, 900000);
-    console.log(`Waiting for funds on L2 (takes ~15 minutes; current time: ${new Date().toTimeString()})`);
+    setTimeout(waitingForFunds, 60000);
+    console.log(`Waiting for funds on L2 (takes ~10 minutes due to Goerli's finalization issue; current time: ${new Date().toTimeString()})`);
 
     async function waitingForFunds() { 
         const balance = formatEther(await l2ProviderTestnet.getBalance(testnetReceiver));
         console.log('L2 balance: ', balance);
-        assert(balance > 0.05);
+        assert(balance > 0.09);
         console.log('Contract in L2 received the ETH');
+        console.log('******** END OF MANUAL REDEEM TEST ********');
 
         opsL2_2.to = myReceiver;
         opsL2_2.value = parseEther(balance.toString());
-        const tx = await l2Wallet.sendTransaction(opsL2_2); //run this at it is ******
+        const tx = await l2Wallet.sendTransaction(opsL2_2); 
         await tx.wait();
     }
 

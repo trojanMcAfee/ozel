@@ -23,7 +23,7 @@ let inbox;
 let gelatoAddr;
 const ETH = '0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE';
 const nullAddr = '0x0000000000000000000000000000000000000000';
-const testnetReceiver = '0x5d9B5dEF9E6549820d506084e3629f60f1fF6E96';
+const testnetReceiver = '0x2B75D8312cA463Dea9E80981b5c690f15E94Bd55'; //0x5d9B5dEF9E6549820d506084e3629f60f1fF6E96
 const myReceiver = '0x2B75D8312cA463Dea9E80981b5c690f15E94Bd55';
 const protocolFee = 10; //prev: 10 -> 0.1% / 100-1 / 1000-10 / 10000 - 100%
 const poolFeeUni = 500; //0.05%

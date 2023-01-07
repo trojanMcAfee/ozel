@@ -1,7 +1,6 @@
 const { fork } = require('node:child_process');
 const { ethers } = require("ethers");
 const whileFork = fork('test/eth-tests/listener-test/while-fork.js');
-const { sendToRedeemFork } = require('./redeem-fork.js');
 
 const { defaultAbiCoder: abiCoder } = ethers.utils;
 
