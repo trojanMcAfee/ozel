@@ -301,7 +301,7 @@ async function deploy(n = 0) {
         revenueFacet.address
     ];
 
-    if (n === 1) revenueAmounts[0] = 25;
+    if (n === 1) revenueAmounts[0] = 12;
 
     //Data structs for init()
     const VarsAndAddrStruct = [
