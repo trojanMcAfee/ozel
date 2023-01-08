@@ -16,7 +16,6 @@ const {
 const privateKey = process.env.PK_TESTNET; //<---- replace this for a hard-coded private key
 const l2Wallet = new Wallet(privateKey, l2ProviderTestnet);
 const tasks = {}; 
-let storageBeacon, redeemedHashes;
 const URL = `https://api.thegraph.com/subgraphs/name/gelatodigital/poke-me-${network}`;
 const query = (taskId) => {
     return {
