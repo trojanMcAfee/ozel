@@ -1,8 +1,11 @@
-const diamond = require('diamond-util');
+const myDiamondUtil = require('./myDiamondUtil.js');
 const assert = require('assert');
-const { getSelectors } = require('./libraries/diamond.js');
-const { defaultAbiCoder: abiCoder, formatEther, keccak256, toUtf8Bytes } = ethers.utils;
-const { MaxUint256 } = ethers.constants;
+const { 
+    defaultAbiCoder: abiCoder, 
+    formatEther, 
+    keccak256, 
+    toUtf8Bytes 
+} = ethers.utils;
 
 const {
     wethAddr,
@@ -10,8 +13,6 @@ const {
     usdtAddrArb,
     crvTricrypto,
     wbtcAddr,
-    renBtcAddr,
-    renPoolAddr,
     usdcAddr,
     mimAddr,
     fraxAddr,
@@ -20,7 +21,7 @@ const {
     yTricryptoPoolAddr,
     fraxPoolAddr,
     ETH,
-    dappFee,
+    protocolFee,
     tokenName,
     tokenSymbol,
     defaultSlippage,
@@ -29,7 +30,10 @@ const {
     swapRouterUniAddr,
     poolFeeUni,
     revenueAmounts,
-    diamondABI
+    diamondABI,
+    usxAddr,
+    ops,
+    opsL2
 } = require('./state-vars.js');
 
 
@@ -57,60 +61,47 @@ async function balanceOfOZL(user) {
 async function transferOZL(recipient, amount, signerIndex = 0) { 
     const signers = await hre.ethers.getSigners();
     const signer = signers[signerIndex];
-    await OZLDiamond.connect(signer).transfer(recipient, amount);
+    const tx = await OZLDiamond.connect(signer).transfer(recipient, amount);
+    const receipt = await tx.wait();
+    return receipt;
 }
 
-async function withdrawShareOZL(userDetails, receiverAddr, balanceOZL, signerIndex = 0) {  
+async function withdrawShareOZL(accountDetails, receiverAddr, balanceOZL, signerIndex = 0) {  
     const signers = await hre.ethers.getSigners();
     const signer = signers[signerIndex ? 0 : signerIndex];
-    await OZLDiamond.connect(signer).withdrawUserShare(userDetails, receiverAddr, balanceOZL);
+    await OZLDiamond.connect(signer).withdrawUserShare(accountDetails, receiverAddr, balanceOZL, ops);
 } 
 
 
 //Sends ETH to contracts (simulates ETH bridging) **** MAIN FUNCTION ****
-async function sendETH(userDetails, signerIndex = 0) {
+async function sendETH(accountDetails, signerIndex = 0, ozelIndex) {
     const signers = await hre.ethers.getSigners();
     const signer = signers[signerIndex ? 0 : signerIndex];
-    const value = ethers.utils.parseEther(signerIndex === 'no value' ? '0' : '100');
-    const tx = await OZLDiamond.connect(signer).exchangeToUserToken(userDetails, { value });
+    let value = ethers.utils.parseEther(signerIndex === 'no value' ? '0' : '10');
+    value = ozelIndex === 'ozel index test' ? ethers.utils.parseEther('100') : value;
+    const tx = await OZLDiamond.connect(signer).exchangeToAccountToken(accountDetails, {
+        value,
+        gasLimit: ethers.BigNumber.from('5000000'),
+        gasPrice: ethers.BigNumber.from('40134698068')
+    });
     const receipt = await tx.wait();
     return receipt;
 }
 
 
 async function getOzelIndex() {
-    const tx = await OZLDiamond.getOzelIndex();
-    const receipt = await tx.wait();
-    const { data } = receipt.logs[0];
-    [ decodedData ] = abiCoder.decode(['uint256'], data);
-    return decodedData;
+    return await OZLDiamond.getOzelIndex();
 }
 
-async function addTokenToDatabase(token, signerIndex = 0) {
+async function addTokenToDatabase(tokenSwap, signerIndex = 0) {
     const signers = await hre.ethers.getSigners();
     const signer = signers[signerIndex];
-    await OZLDiamond.connect(signer).addTokenToDatabase(token);
+    await OZLDiamond.connect(signer).addTokenToDatabase(tokenSwap, ops);
 }
 
 
-async function getCalldata(method, params) {
-    const signatures = {
-        exchangeToUserToken: 'function exchangeToUserToken(tuple(address user, address userToken, uint userSlippage) userDetails_)',
-        sendToArb: 'function sendToArb(tuple(address user, address userToken, uint userSlippage) userDetails_, uint256 _callvalue) returns (uint256)'
-    };
-    const abi = [];
-    abi.push(signatures[method]);
-    const iface = new ethers.utils.Interface(abi);
-    const data = iface.encodeFunctionData(method, params);
-    return data;
-} 
-
 async function getRegulatorCounter() {
-    const tx = await OZLDiamond.getRegulatorCounter();
-    const receipt = await tx.wait();
-    const { data } = receipt.logs[0];
-    [ decodedData ] = abiCoder.decode(['uint256'], data);
-    return decodedData;
+    return await OZLDiamond.getRegulatorCounter();
 }
 
 
@@ -128,7 +119,7 @@ function getTestingNumber(receipt, isSecond = false) {
 }
 
 
-async function replaceForModVersion(contractName, checkUSDTbalance, selector, userDetails, checkERC = false, isIndex = false) {
+async function replaceForModVersion(contractName, checkUSDTbalance, selector, accountDetails, checkERC = false, isIndex = false) {
     function whichERC20() {
         switch(checkERC) {
             case true:
@@ -138,48 +129,59 @@ async function replaceForModVersion(contractName, checkUSDTbalance, selector, us
             case 2:
                 return WBTC;
             case 3:
-                return renBTC;
-            case 4:
                 return MIM;
-            case 5:
+            case 4:
                 return FRAX;
+            case 5:
+                return USDC
         }
     }
+    
     const USDT = await hre.ethers.getContractAt('IERC20', usdtAddrArb);
     const WETH = await hre.ethers.getContractAt('IERC20', wethAddr);
     const WBTC = await hre.ethers.getContractAt('IERC20', wbtcAddr);
-    const renBTC = await hre.ethers.getContractAt('IERC20', renBtcAddr);
     const MIM = await hre.ethers.getContractAt('IERC20', mimAddr);
     const FRAX = await hre.ethers.getContractAt('IERC20', fraxAddr);
+    const USDC = await hre.ethers.getContractAt('IERC20', usdcAddr);
     const [callerAddr] = await hre.ethers.provider.listAccounts();
     let stringToHash;
-
-    const USDC = await hre.ethers.getContractAt('IERC20', usdcAddr);
 
     modContract = typeof contractName === 'string' ? await deployFacet(contractName) : contractName;
        
     if (contractName === 'ComputeRevenueV1' || contractName === 'ComputeRevenueV2' || contractName === 'ComputeRevenueV3') {
         const iface = new ethers.utils.Interface(diamondABI);
         const selectorTESTVAR = iface.getSighash('setTESTVAR2');
+        let flag = false;
 
-        if (contractName === 'ComputeRevenueV1') {
-            await OZLDiamond.diamondCut(
-                [[ modContract.address, 0, [selectorTESTVAR] ]],
+        try { 
+            const facet = await OZLDiamond.facetAddress(selectorTESTVAR);
+            const action = facet === nullAddr ? 0 : 1;
+
+            const tx = await OZLDiamond.diamondCut(
+                [[ modContract.address, action, [selectorTESTVAR] ]],
                 nullAddr,
                 '0x'
             );
+            await tx.wait();
+        } catch {
+            continueComputing();
+            flag = true;
         }
+        if (!flag) continueComputing();
+        
+        async function continueComputing() {
+            if (contractName === 'ComputeRevenueV1') {
+                stringToHash = 'testvar2.position';
+            } else if (contractName === 'ComputeRevenueV2') {
+                stringToHash = 'testvar2.second.position';
+            } else if (contractName === 'ComputeRevenueV3') {
+                stringToHash = 'testvar2.third.position';
+            }
 
-        if (contractName === 'ComputeRevenueV1') {
-            stringToHash = 'testvar2.position';
-        } else if (contractName === 'ComputeRevenueV2') {
-            stringToHash = 'testvar2.second.position';
-        } else if (contractName === 'ComputeRevenueV3') {
-            stringToHash = 'testvar2.third.position';
+            let position = keccak256(toUtf8Bytes(stringToHash)); 
+            const tx = await OZLDiamond.setTESTVAR2(1, position);
+            await tx.wait();
         }
-
-        let position = keccak256(toUtf8Bytes(stringToHash)); 
-        await OZLDiamond.setTESTVAR2(1, position);
     }
     
     faceCutArgs = [[ modContract.address, 1, [selector] ]]; 
@@ -189,10 +191,10 @@ async function replaceForModVersion(contractName, checkUSDTbalance, selector, us
         assert.equal(balance, 0);
     };
 
-    await OZLDiamond.diamondCut(faceCutArgs, nullAddr, '0x');
+    await OZLDiamond.diamondCut(faceCutArgs, nullAddr, '0x', opsL2);
 
     if (!isIndex) {
-        receipt = await sendETH(userDetails); 
+        receipt = await sendETH(accountDetails); 
         testingNum = getTestingNumber(receipt);
         balance = await (whichERC20()).balanceOf(callerAddr);
 
@@ -206,7 +208,10 @@ async function replaceForModVersion(contractName, checkUSDTbalance, selector, us
 }
 
 
-//------ From deploy.js ---------
+async function queryTokenDatabase(token) {
+    return await OZLDiamond.queryTokenDatabase(token, ops);
+}
+
 
 async function deployFacet(facetName) { 
     const Contract = await hre.ethers.getContractFactory(facetName);
@@ -220,7 +225,8 @@ async function deployFacet(facetName) {
 
 //Deploys contracts in Arbitrum
 async function deploy(n = 0) { 
-    const [callerAddr, caller2Addr] = await hre.ethers.provider.listAccounts();
+    const addresses = await hre.ethers.provider.listAccounts();
+    const [callerAddr, caller2Addr] = addresses;
     console.log('--');
     console.log('Caller 1: ', callerAddr);
     console.log('Caller 2: ', caller2Addr);
@@ -229,47 +235,39 @@ async function deploy(n = 0) {
     const WETH = await hre.ethers.getContractAt('IERC20', wethAddr);
     const USDT = await hre.ethers.getContractAt('IERC20', usdtAddrArb);
     const WBTC = await hre.ethers.getContractAt('IERC20', wbtcAddr);
-    const renBTC = await hre.ethers.getContractAt('IERC20', renBtcAddr);
     const USDC = await hre.ethers.getContractAt('IERC20', usdcAddr);
     const MIM = await hre.ethers.getContractAt('IERC20', mimAddr);
     const crvTri = await hre.ethers.getContractAt('IERC20', crvTricrypto);
     const yvCrvTri = await hre.ethers.getContractAt('IYtri', yTricryptoPoolAddr);
     const FRAX = await hre.ethers.getContractAt('IERC20', fraxAddr);
-
+    const USX = await hre.ethers.getContractAt('IERC20', usxAddr);
 
     //Facets
-    const diamondCutFacet = await deployFacet('DiamondCutFacet');
-    const diamondLoupeFacet = await deployFacet('DiamondLoupeFacet'); 
+    const ozCutFacet = await deployFacet('ozCutFacet');
+    const ozLoupeFacet = await deployFacet('ozLoupeFacet');
     const ozlFacet = await deployFacet('OZLFacet');
-    const gettersFacet = await deployFacet('GettersFacet');
-    const executorFacet = await deployFacet('ExecutorFacet');
+    const executorFacet = await deployFacet('ozExecutorFacet');
     const oz4626 = await deployFacet('oz4626Facet');
     const oz20 = await deployFacet('oz20Facet');
     const ownershipFacet = await deployFacet('OwnershipFacet'); 
     const revenueFacet = await deployFacet('RevenueFacet');
 
     const contractsAddr = [
-        ozlFacet.address,
         tricryptoAddr,
         crvTricrypto,
-        gettersFacet.address,
-        renPoolAddr,
         mimPoolAddr,
         crv2PoolAddr,
         yTricryptoPoolAddr,
         fraxPoolAddr,
         executorFacet.address,
-        oz4626.address,
         oz20.address,
         chainlinkAggregatorAddr,
         swapRouterUniAddr,
-        revenueFacet.address
     ];
 
     const erc20sAddr = [
         usdtAddrArb,
         wbtcAddr,
-        renBtcAddr,
         usdcAddr,
         mimAddr,
         wethAddr,
@@ -281,12 +279,11 @@ async function deploy(n = 0) {
         usdcAddr,
         fraxAddr,
         wbtcAddr,
-        mimAddr,
-        renBtcAddr
+        mimAddr
     ];
 
     const appVars = [
-        dappFee,
+        protocolFee,
         defaultSlippage,
         poolFeeUni
     ];
@@ -294,23 +291,23 @@ async function deploy(n = 0) {
     const ozlVars = [tokenName, tokenSymbol];
 
     const nonRevenueFacets = [ 
-        diamondCutFacet.address,
-        diamondLoupeFacet.address,
+        ozCutFacet.address,
+        ozLoupeFacet.address,
         ownershipFacet.address,
         revenueFacet.address
     ];
 
-    if (n === 1) revenueAmounts[0] = 250;
+    if (n === 1) revenueAmounts[0] = 25;
 
     //Data structs for init()
     const VarsAndAddrStruct = [
         contractsAddr,
         erc20sAddr,
         tokensDatabase,
-        appVars,
-        ozlVars,
         ETH,
-        revenueAmounts
+        appVars,
+        revenueAmounts,
+        ozlVars
     ];
 
     //Deploy DiamondInit
@@ -320,32 +317,30 @@ async function deploy(n = 0) {
     const functionCall = diamondInit.interface.encodeFunctionData('init', [VarsAndAddrStruct]);
 
     //Deploys diamond
-    const deployedDiamond = await diamond.deploy({
-        diamondName: 'Diamond',
+    const deployedDiamond = await myDiamondUtil.deploy({ 
+        diamondName: 'ozDiamond',
         facets: [
-            ['DiamondCutFacet', diamondCutFacet],
-            ['DiamondLoupeFacet', diamondLoupeFacet],
+            ['ozCutFacet', ozCutFacet],
+            ['ozLoupeFacet', ozLoupeFacet],
             ['OZLFacet', ozlFacet],
-            ['GettersFacet', gettersFacet],
-            ['ExecutorFacet', executorFacet],
+            ['ozExecutorFacet', executorFacet],
             ['oz4626Facet', oz4626],
             ['oz20Facet', oz20],
             ['OwnershipFacet', ownershipFacet],
-            ['ReveneuFacet', revenueFacet]
+            ['RevenueFacet', revenueFacet]
         ],
         args: '',
         overrides: {
             callerAddr, functionCall, diamondInit: diamondInit.address, nonRevenueFacets
         }
     });
-    console.log('Diamond deployed to: ', deployedDiamond.address);
+    console.log('ozDiamond deployed to: ', deployedDiamond.address);
 
     return {
         deployedDiamond, 
         WETH,
         USDT,
         WBTC,
-        renBTC,
         USDC,
         MIM,
         FRAX,
@@ -353,7 +348,8 @@ async function deploy(n = 0) {
         callerAddr, 
         caller2Addr,
         ozlFacet,
-        yvCrvTri
+        yvCrvTri,
+        USX
     };
 
 }
@@ -367,7 +363,6 @@ module.exports = {
     withdrawShareOZL,
     getVarsForHelpers,
     sendETH,
-    getCalldata,
     enableWithdrawals,
     deploy,
     getOzelIndex,
@@ -375,5 +370,6 @@ module.exports = {
     getRegulatorCounter,
     getTestingNumber,
     deployFacet,
-    replaceForModVersion
+    replaceForModVersion,
+    queryTokenDatabase
 };

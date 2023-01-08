@@ -1,0 +1,24 @@
+digraph "" {
+ozERC1967Proxy -> ReentrancyGuard [ label="1" ];
+ozERC1967Proxy -> ERC1967Proxy [ label="2" ];
+ozERC1967Proxy[shape="box"label=< <TABLE border="0"><TR><TD align="center"><B>ozERC1967Proxy</B></TD></TR><TR><TD align="left"><I>Public Functions:</I></TD></TR><TR><TD align="left">    getImplementation()</TD></TR></TABLE> >];
+
+IERC1822Proxiable[shape="box"label=< <TABLE border="0"><TR><TD align="center"><B>IERC1822Proxiable</B></TD></TR><TR><TD align="left"><I>Public Functions:</I></TD></TR><TR><TD align="left">    proxiableUUID()</TD></TR></TABLE> >];
+
+ERC1967Proxy -> Proxy [ label="1" ];
+ERC1967Proxy -> ERC1967Upgrade [ label="2" ];
+ERC1967Proxy[shape="box"label=< <TABLE border="0"><TR><TD align="center"><B>ERC1967Proxy</B></TD></TR><TR><TD align="left"><I>Private Functions:</I></TD></TR><TR><TD align="left"><font color="#FFA500">    _implementation()</font></TD></TR></TABLE> >];
+
+ERC1967Upgrade[shape="box"label=< <TABLE border="0"><TR><TD align="center"><B>ERC1967Upgrade</B></TD></TR><TR><TD align="left"><I>Private Functions:</I></TD></TR><TR><TD align="left">    _getImplementation()</TD></TR><TR><TD align="left">    _setImplementation(address)</TD></TR><TR><TD align="left">    _upgradeTo(address)</TD></TR><TR><TD align="left">    _upgradeToAndCall(address,bytes,bool)</TD></TR><TR><TD align="left">    _upgradeToAndCallUUPS(address,bytes,bool)</TD></TR><TR><TD align="left">    _getAdmin()</TD></TR><TR><TD align="left">    _setAdmin(address)</TD></TR><TR><TD align="left">    _changeAdmin(address)</TD></TR><TR><TD align="left">    _getBeacon()</TD></TR><TR><TD align="left">    _setBeacon(address)</TD></TR><TR><TD align="left">    _upgradeBeaconToAndCall(address,bytes,bool)</TD></TR><TR><TD align="left"><I>Private Variables:</I></TD></TR><TR><TD align="left">    _ROLLBACK_SLOT</TD></TR><TR><TD align="left">    _IMPLEMENTATION_SLOT</TD></TR><TR><TD align="left">    _ADMIN_SLOT</TD></TR><TR><TD align="left">    _BEACON_SLOT</TD></TR></TABLE> >];
+
+Proxy[shape="box"label=< <TABLE border="0"><TR><TD align="center"><B>Proxy</B></TD></TR><TR><TD align="left"><I>Public Functions:</I></TD></TR><TR><TD align="left">    fallback()</TD></TR><TR><TD align="left">    receive()</TD></TR><TR><TD align="left"><I>Private Functions:</I></TD></TR><TR><TD align="left">    _delegate(address)</TD></TR><TR><TD align="left">    _implementation()</TD></TR><TR><TD align="left">    _fallback()</TD></TR><TR><TD align="left">    _beforeFallback()</TD></TR></TABLE> >];
+
+IBeacon[shape="box"label=< <TABLE border="0"><TR><TD align="center"><B>IBeacon</B></TD></TR><TR><TD align="left"><I>Public Functions:</I></TD></TR><TR><TD align="left">    implementation()</TD></TR></TABLE> >];
+
+Address[shape="box"label=< <TABLE border="0"><TR><TD align="center"><B>Address</B></TD></TR><TR><TD align="left"><I>Private Functions:</I></TD></TR><TR><TD align="left">    isContract(address)</TD></TR><TR><TD align="left">    sendValue(address,uint256)</TD></TR><TR><TD align="left">    functionCall(address,bytes)</TD></TR><TR><TD align="left">    functionCall(address,bytes,string)</TD></TR><TR><TD align="left">    functionCallWithValue(address,bytes,uint256)</TD></TR><TR><TD align="left">    functionCallWithValue(address,bytes,uint256,string)</TD></TR><TR><TD align="left">    functionStaticCall(address,bytes)</TD></TR><TR><TD align="left">    functionStaticCall(address,bytes,string)</TD></TR><TR><TD align="left">    functionDelegateCall(address,bytes)</TD></TR><TR><TD align="left">    functionDelegateCall(address,bytes,string)</TD></TR><TR><TD align="left">    verifyCallResult(bool,bytes,string)</TD></TR></TABLE> >];
+
+StorageSlot[shape="box"label=< <TABLE border="0"><TR><TD align="center"><B>StorageSlot</B></TD></TR><TR><TD align="left"><I>Private Functions:</I></TD></TR><TR><TD align="left">    getAddressSlot(bytes32)</TD></TR><TR><TD align="left">    getBooleanSlot(bytes32)</TD></TR><TR><TD align="left">    getBytes32Slot(bytes32)</TD></TR><TR><TD align="left">    getUint256Slot(bytes32)</TD></TR></TABLE> >];
+
+ReentrancyGuard[shape="box"label=< <TABLE border="0"><TR><TD align="center"><B>ReentrancyGuard</B></TD></TR><TR><TD align="left"><I>Modifiers:</I></TD></TR><TR><TD align="left">    nonReentrant()</TD></TR><TR><TD align="left"><I>Private Variables:</I></TD></TR><TR><TD align="left">    locked</TD></TR></TABLE> >];
+
+}

@@ -1,41 +1,57 @@
 // SPDX-License-Identifier: GPL-2.0-or-later
-pragma solidity ^0.8.0;
+pragma solidity 0.8.14;
 
 
-// import { LibDiamond } from "../libraries/LibDiamond.sol";
+import '../ethereum/StorageBeacon.sol';
 import './AppStorage.sol';
+import './Bits.sol';
 import '../Errors.sol';
 
 
-abstract contract Modifiers {
+/**
+ * @title Modifiers for the L2 contracts
+ */
+abstract contract ModifiersARB is Bits {
 
-    AppStorage s;
-
-    modifier noReentrancy(uint lockNum_) {
-        require(!(s.isLocked[lockNum_]), "No reentrance");
-        s.isLocked[lockNum_] = true;
+    /**
+     * @dev Protector against reentrancy using bitmaps and bitwise operations
+     * @param index_ Index of the bit to be flipped 
+     */
+    modifier noReentrancy(uint index_) { 
+        if (!(_getBit(0, index_))) revert NoReentrance();
+        _toggleBit(0, index_);
         _;
-        s.isLocked[lockNum_] = false;
+        _toggleBit(0, index_);
     }
 
-
-    modifier isAuthorized(uint lockNum_) {
-        require(s.isAuth[lockNum_], "Not authorized");
+    /**
+     * @dev Access control using bitmaps and bitwise operations
+     * @param index_ Index of the bit to be flipped 
+     */
+    modifier isAuthorized(uint index_) {
+        if (_getBit(1, index_)) revert NotAuthorized(msg.sender);
         _;
-        s.isAuth[lockNum_] = false;
+        _toggleBit(1, index_);
     }
 
-
+    /**
+     * @dev Allows/disallows redeemptions of OZL for AUM 
+     */
     modifier onlyWhenEnabled() {
-        require(s.isEnabled, 'Operation not enabled');
+        if (!(s.isEnabled)) revert NotEnabled();
         _;
     }
 
-    modifier filterDetails(UserConfig memory userDetails_) {
-        if (userDetails_.user == address(0) || userDetails_.userToken == address(0)) revert CantBeZero('address'); 
-        if (userDetails_.userSlippage <= 0) revert CantBeZero('slippage');
-        if (!s.tokenDatabase[userDetails_.userToken]) revert NotFoundInDatabase('token');
+    /**
+     * @dev Does primery checks on the details of an account
+     * @param accountDetails_ Details of account/proxy
+     */
+    modifier filterDetails(AccountConfig memory accountDetails_) {
+        if (accountDetails_.user == address(0) || accountDetails_.token == address(0)) revert CantBeZero('address'); 
+        if (accountDetails_.slippage <= 0) revert CantBeZero('slippage');
+        if (bytes(accountDetails_.name).length == 0) revert CantBeZero('name'); 
+        if (bytes(accountDetails_.name).length > 18) revert NameTooLong();
+        if (!s.tokenDatabase[accountDetails_.token]) revert TokenNotInDatabase(accountDetails_.token);
         _;
     }
-
 }

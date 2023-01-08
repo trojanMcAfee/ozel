@@ -1,16 +1,12 @@
-// const { BigNumber } = require("@ethersproject/bignumber");
 const { ethers } = require("ethers");
-const { toBn } = require('evm-bn');
 
 let usdtAddrArb;
 let wbtcAddr;
-let renBtcAddr;
 let wethAddr;
 let usdcAddr;
 let mimAddr;
 let tricryptoAddr;
 let crvTricrypto;
-let renPoolAddr;
 let mimPoolAddr;
 let crv2PoolAddr;
 let yTricryptoPoolAddr;
@@ -19,19 +15,21 @@ let fraxAddr;
 let swapRouterUniAddr; 
 let chainlinkAggregatorAddr;
 let deadAddr;
-//------
-let chainId; //arbitrum
-let pokeMeOpsAddr; //gelato
+let usxAddr;
+let dForcePoolAddr;
+let pokeMeOpsAddr; 
 let hopBridge;
-let inbox; //arbitrum rinkeby
+let inbox; 
 let gelatoAddr;
 const ETH = '0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE';
 const nullAddr = '0x0000000000000000000000000000000000000000';
-const dappFee = 10; //prev: 10 -> 0.1% / 100-1 / 1000-10 / 10000 - 100%
+const testnetReceiver = '0x2B75D8312cA463Dea9E80981b5c690f15E94Bd55'; //0x5d9B5dEF9E6549820d506084e3629f60f1fF6E96
+const myReceiver = '0x2B75D8312cA463Dea9E80981b5c690f15E94Bd55';
+const protocolFee = 10; //prev: 10 -> 0.1% / 100-1 / 1000-10 / 10000 - 100%
 const poolFeeUni = 500; //0.05%
 const defaultSlippage = 100; //5 -> 0.05%; / 100 -> 1%
 const revenueAmounts = [
-    10000000, //250 instead of 10000000
+    10000000, 
     50000000,
     100000000,
     500000000,
@@ -45,55 +43,103 @@ const tokenSymbol = 'OZL';
 
 
 const diamondABI = [
-    'function setTESTVAR2(uint256, bytes32 position_) public',
-    'function diamondCut(tuple(address facetAddress, uint8 action, bytes4[] functionSelectors)[] calldata _diamondCut, address _init, bytes calldata _calldata) external',
-    'function getOzelIndex() returns (uint256)',
-    'function getRegulatorCounter() returns (uint256)',
+    'function setTESTVAR2(uint256 num_, bytes32 position_) public',
+    'function diamondCut((address facetAddress, uint8 action, bytes4[] functionSelectors)[] _diamondCut, address _init, bytes _calldata) external',
+    'function getOzelIndex() external view returns (uint256)',
+    'function getRegulatorCounter() external view returns (uint256)',
     'function balanceOf(address account) view returns (uint256)',
     'function transfer(address recipient, uint256 amount) returns (bool)',
-    'function exchangeToUserToken(tuple(address user, address userToken, uint userSlippage) userDetails_) external payable',
-    'function withdrawUserShare(tuple(address user, address userToken, uint userSlippage) userDetails_, address receiver, uint shares_)',
+    'function exchangeToAccountToken(tuple(address user, address token, uint slippage, string name) accountDetails_) external payable',
+    'function withdrawUserShare(tuple(address user, address token, uint slippage, string name) accountDetails_, address receiver, uint shares_)',
     'function enableWithdrawals(bool state_) external',
     'function updateExecutorState(uint256 amount_, address user_, uint256 lockNum_) external payable',
     'function deposit(uint256 assets, address receiver, uint256 lockNum_) external payable returns (uint256 shares)',
-    'function executeFinalTrade(tuple(int128 tokenIn, int128 tokenOut, address baseToken, address userToken, address pool) swapDetails_, uint256 userSlippage, address user_, uint256 lockNum_) external payable',
+    'function executeFinalTrade(tuple(int128 tokenIn, int128 tokenOut, address baseToken, address token, address pool) swapDetails_, uint256 slippage, address user_, uint256 lockNum_) external payable',
     'function redeem(uint256 shares, address receiver, address owner, uint256 lockNum_) external returns (uint256 assets)',
     'function burn(address account, uint256 amount, uint256 lockNum_) external',
     'function modifyPaymentsAndVolumeExternally(address user_, uint256 newAmount_, uint256 lockNum_) external',
-    'function addTokenToDatabase(address newToken_) external',
+    'function addTokenToDatabase(tuple(int128 tokenIn, int128 tokenOut, address baseToken, address token, address pool) newSwap_) external',
     'function transferUserAllocation(address sender_, address receiver_, uint256 amount_, uint256 senderBalance_, uint256 lockNum_) external',
-    'function owner() external view returns (address owner_)'
+    'function owner() external view returns (address owner_)',
+    'function queryTokenDatabase(address token_) external view returns (bool)',
+    'function getAUM() external view returns (uint,uint)',
+    'function getTotalVolumeInETH() external view returns(uint)',
+    'function getTotalVolumeInUSD() external view returns(uint)',
+    'function getOzelBalances(address) external view returns (uint,uint)',
+    'function removeTokenFromDatabase((int128,int128,address,address,address)) external',
+    'function facetAddress(bytes4 _functionSelector) external view returns (address facetAddress_)',
+    'function getProtocolFee() external view returns(uint)'
 ];
 
 
+const proxyABIeth = [
+    'function setTestReturnContract(address testReturn_, bytes32 position_) public',
+    'function changeAccountSlippage(uint256 newSlippage_) external',
+    'function changeAccountToken(address newToken_)',
+    'function sendToArb(tuple(uint256 maxSubmissionCost, uint256 gasPriceBid, uint256 autoRedeem) varConfig_, tuple(address user, address token, uint256 slippage) accountDetails_)',
+    'function initialize((address,address,uint256,string), address beacon_)',
+    'function getAccountDetails() external view returns ((address,address,uint256,string))',
+    'function changeAccountTokenNSlippage(address,uint256) external',
+    'function withdrawETH_lastResort() external'
+];
 
+const factoryABI = [
+    'function createNewProxy(tuple(address user, address token, uint256 slippage, string name) accountDetails_) external returns(address)',
+    'function initialize(address beacon_)',
+    'function getImplementation() external view returns(address)',
+    'function upgradeTo(address newImplementation) external',
+    'function getOwner() external view returns(address)',
+    'function changeOwner(address newOwner_) external'
+];
 
+const opsL2 = {
+    gasLimit: ethers.BigNumber.from('25000000'),
+    gasPrice: ethers.BigNumber.from('25134698068') 
+};
 
+const opsL2_2 = {
+    gasLimit: ethers.BigNumber.from('5000000'),
+    gasPrice: ethers.BigNumber.from('40134698068')
+};
+
+const ops = {
+    gasLimit: ethers.BigNumber.from('30000000'),
+    gasPrice: ethers.BigNumber.from('10134698068') 
+};
 
 const signerX = new ethers.Wallet(process.env.PK);
-const l2Provider = new ethers.providers.JsonRpcProvider(process.env.ARB_TESTNET);
-const l1ProviderRinkeby = new ethers.providers.JsonRpcProvider(process.env.RINKEBY);
-const l2Signer = signerX.connect(l2Provider);
-const l1Signer = signerX.connect(l1ProviderRinkeby);
+const signerTestnet = new ethers.Wallet(process.env.PK_TESTNET);
+const l2Provider = new ethers.providers.JsonRpcProvider(process.env.ARBITRUM);
+const l1Provider = new ethers.providers.JsonRpcProvider(process.env.MAINNET);
 
-
+let l1Signer, l2Signer, l1SignerTestnet, l2SignerTestnet;
+let l1ProviderTestnet, l2ProviderTestnet;
 
 let network = 'arbitrum';
 switch(network) {
-    case 'rinkeby':
-        chainId = 421611;
-        pokeMeOpsAddr = '0x8c089073A9594a4FB03Fa99feee3effF0e2Bc58a';
+    case 'goerli':
+        pokeMeOpsAddr = '0xc1C6805B857Bef1f412519C4A842522431aFed39'; 
         hopBridge = '0xb8901acB165ed027E32754E0FFe830802919727f'; //no testnet
-        usdtAddrArb = '0x3B00Ef435fA4FcFF5C209a37d1f3dcff37c705aD';
-        inbox = '0x578BAde599406A8fE3d24Fd7f7211c0911F5B29e';
-        gelatoAddr = '0x0630d1b8c2df3f0a68df578d02075027a6397173';
+        inbox = '0x6BEbC4925716945D46F0Ec336D5C2564F419682C';
+        gelatoAddr = '0x683913B3A32ada4F8100458A3E1675425BdAa7DF';
         swapRouterUniAddr = nullAddr;
         chainlinkAggregatorAddr = nullAddr;
-        wethAddr = '0xc778417E063141139Fce010982780140Aa0cD5Ab';
-        usdcAddr = '0xeb8f08a975Ab53E34D8a0330E0D34de942C95926';
+        wethAddr = '0xB4FBF271143F4FBf7B91A5ded31805e42b2208d6';
+        usdcAddr = '0xd35CCeEAD182dcee0F148EbaC9447DA2c4D449c4';
+        mimAddr = '0x99D8a9C45b2ecA8864373A26D1459e3Dff1e17F3'; //mainnet
+        wbtcAddr = '0xC04B0d3107736C32e19F1c62b2aF67BE61d63a05';
+        usdtAddrArb = '0xe583769738b6dd4E7CAF8451050d1948BE717679';
+        fraxAddr = '0x92d43093959C7DDa89896418bCE9DE0B87879646';
+        
+        l1ProviderTestnet = new ethers.providers.JsonRpcProvider(process.env.GOERLI);
+        l1Signer = signerX.connect(l1ProviderTestnet);
+        l1SignerTestnet = signerTestnet.connect(l1ProviderTestnet);
+
+        l2ProviderTestnet = new ethers.providers.JsonRpcProvider(process.env.ARB_GOERLI);
+        l2Signer = signerX.connect(l2ProviderTestnet);
+        l2SignerTestnet = signerTestnet.connect(l2ProviderTestnet);
         break;
     case 'mainnet': 
-        chainId = 42161;
         pokeMeOpsAddr = '0xB3f5503f93d5Ef84b06993a1975B9D21B962892F'; 
         hopBridge = '0xb8901acB165ed027E32754E0FFe830802919727f'; 
         usdtAddrArb = '0xdAC17F958D2ee523a2206206994597C13D831ec7'; 
@@ -103,18 +149,20 @@ switch(network) {
         crvTricrypto = '0xc4AD29ba4B3c580e6D59105FFf484999997675Ff';
         wethAddr = '0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2'; 
         wbtcAddr = '0x2260FAC5E5542a773Aa44fBCfeDf7C193bc2C599';
-        renBtcAddr = '0xEB4C2781e4ebA804CE9a9803C67d0893436bB27D';
-        renPoolAddr = '0x93054188d876f558f4a66B2EF1d97d16eDf0895B';
         usdcAddr = '0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48';
         mimAddr = '0x99D8a9C45b2ecA8864373A26D1459e3Dff1e17F3';
-        mimPoolAddr = '0x5a6A4D54456819380173272A5E8E9B9904BdF41B'; //it differs from arb as 3crv to 2crv
-        crv2PoolAddr = '0xbEbc44782C7dB0a1A60Cb6fe97d0b483032FF1C7'; //crv3
+        mimPoolAddr = '0x5a6A4D54456819380173272A5E8E9B9904BdF41B'; 
+        crv2PoolAddr = '0xbEbc44782C7dB0a1A60Cb6fe97d0b483032FF1C7'; 
         yTricryptoPoolAddr = '';
         gelatoAddr = '0x3caca7b48d0573d793d3b0279b5f0029180e83b6';
         swapRouterUniAddr = '0xE592427A0AEce92De3Edee1F18E0157C05861564';
         chainlinkAggregatorAddr = '0x5f4eC3Df9cbd43714FE2740f5E3616155c5b8419';
         fraxAddr = '0x853d955aCEf822Db058eb8505911ED77F175b99e'; 
         deadAddr = '0x000000000000000000000000000000000000dEaD';
+
+        l1ProviderTestnet = new ethers.providers.JsonRpcProvider(process.env.GOERLI);
+        l2ProviderTestnet = new ethers.providers.JsonRpcProvider(process.env.ARB_GOERLI);
+
         break; 
     case 'arbitrum':
         pokeMeOpsAddr = '0xB3f5503f93d5Ef84b06993a1975B9D21B962892F'; 
@@ -126,8 +174,6 @@ switch(network) {
         crvTricrypto = '0x8e0B8c8BB9db49a46697F3a5Bb8A308e744821D2';
         wethAddr = '0x82aF49447D8a07e3bd95BD0d56f35241523fBab1';
         wbtcAddr = '0x2f2a2543B76A4166549F7aaB2e75Bef0aefC5B0f';
-        renBtcAddr = '0xDBf31dF14B66535aF65AaC99C32e9eA844e14501';
-        renPoolAddr = '0x3E01dD8a5E1fb3481F0F589056b428Fc308AF0Fb';
         usdcAddr = '0xFF970A61A04b1cA14834A43f5dE4533eBDDB5CC8';
         mimAddr = '0xFEa7a6a0B346362BF88A9e4A88416B77a57D6c2A';
         mimPoolAddr = '0x30dF229cefa463e991e29D42DB0bae2e122B2AC7';
@@ -139,6 +185,8 @@ switch(network) {
         deadAddr = '0x000000000000000000000000000000000000dEaD';
         chainlinkAggregatorAddr = '0x639fe6ab55c921f74e7fac1ee960c0b6293ba612';
         swapRouterUniAddr = '0xE592427A0AEce92De3Edee1F18E0157C05861564';
+        usxAddr = '0x641441c631e2F909700d2f41FD87F0aA6A6b4EDb';
+        dForcePoolAddr = '0x2ce5Fd6f6F4a159987eac99FF5158B7B62189Acf';
 } 
 
 
@@ -146,30 +194,27 @@ switch(network) {
 
 module.exports = {
     wbtcAddr,
-    renBtcAddr,
     wethAddr,
     usdcAddr,
     mimAddr,
     tricryptoAddr,
     crvTricrypto,
-    renPoolAddr,
     mimPoolAddr,
     crv2PoolAddr,
     yTricryptoPoolAddr,
     fraxPoolAddr,
     fraxAddr,
     ETH,
-    dappFee,
+    protocolFee,
     tokenName,
     tokenSymbol,
     defaultSlippage,
-    chainId,
     pokeMeOpsAddr,
     hopBridge,
     usdtAddrArb,
     inbox,
     signerX,
-    l2Provider,
+    l2ProviderTestnet,
     l2Signer,
     l1Signer,
     gelatoAddr,
@@ -179,6 +224,25 @@ module.exports = {
     chainlinkAggregatorAddr,
     deadAddr,
     revenueAmounts,
-    diamondABI
+    diamondABI,
+    usxAddr,
+    dForcePoolAddr,
+    l1ProviderTestnet,
+    l2Provider,
+    proxyABIeth,
+    factoryABI,
+    network,
+    ops,
+    testnetReceiver,
+    myReceiver,
+    signerTestnet,
+    l1SignerTestnet,
+    l2SignerTestnet,
+    l1Provider,
+    opsL2,
+    opsL2_2
 };
+
+
+
 

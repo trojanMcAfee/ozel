@@ -6,14 +6,11 @@ pragma solidity ^0.8.0;
 * EIP-2535 Diamonds: https://eips.ethereum.org/EIPS/eip-2535
 /******************************************************************************/
 
-import { IDiamondCut } from "../../interfaces/IDiamondCut.sol";
+import { IDiamondCut } from "../../interfaces/arbitrum/IDiamondCut.sol";
 import { LibDiamond } from "../../libraries/LibDiamond.sol";
-import '../AppStorage.sol';
 
-import 'hardhat/console.sol';
 
 contract DiamondCutFacet is IDiamondCut {
-    AppStorage s;
 
     /// @notice Add/replace/remove any number of functions and optionally execute
     ///         a function with delegatecall
@@ -28,31 +25,6 @@ contract DiamondCutFacet is IDiamondCut {
     ) external override {
         LibDiamond.enforceIsContractOwner();
         LibDiamond.diamondCut(_diamondCut, _init, _calldata);
-    }
-
-    function changeDappFee(uint baseUnits_) external {
-        LibDiamond.enforceIsContractOwner();
-        s.dappFee = baseUnits_;
-    }
-
-    function changeDefaultSlippage(uint baseUnits_) external {
-        LibDiamond.enforceIsContractOwner();
-        s.defaultSlippage = baseUnits_;
-    }
-
-    function enableWithdrawals(bool state_) external {
-        LibDiamond.enforceIsContractOwner();
-        s.isEnabled = state_;
-    }
-
-    function changeRevenueToken(address newToken_) external {
-        LibDiamond.enforceIsContractOwner();
-        s.revenueToken = newToken_;
-    }
-
-    function changeUniPoolFee(uint24 newPoolFee_) external {
-        LibDiamond.enforceIsContractOwner();
-        s.poolFee = newPoolFee_;
     }
 }
 

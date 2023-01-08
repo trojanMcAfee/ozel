@@ -5,11 +5,9 @@ pragma solidity ^0.8.0;
 * Author: Nick Mudge <nick@perfectabstractions.com> (https://twitter.com/mudgen)
 * EIP-2535 Diamonds: https://eips.ethereum.org/EIPS/eip-2535
 /******************************************************************************/
-import { IDiamondCut } from "../interfaces/IDiamondCut.sol";
-
+import { IDiamondCut } from "../interfaces/arbitrum/IDiamondCut.sol";
 import '@openzeppelin/contracts/token/ERC20/IERC20.sol';
 
-import 'hardhat/console.sol';
 
 library LibDiamond {
     bytes32 constant DIAMOND_STORAGE_POSITION = keccak256("diamond.standard.diamond.storage");
@@ -29,15 +27,14 @@ library LibDiamond {
         address[] addresses;
     }
 
-    struct VarsAndAddresses { //order this struct
+    struct VarsAndAddresses { 
         address[] contracts;
         address[] erc20s;
         address[] tokensDb;
-        uint[] appVars;
-        string[] ozlVars;
         address ETH;
+        uint[] appVars;
         uint[] revenueAmounts;
-        // address[] nonRevenueFacets;
+        string[] ozlVars;
     }
 
 
@@ -228,31 +225,12 @@ library LibDiamond {
         require(contractSize > 0, _errorMessage);
     }
 
-    function facetToCall(string memory funcSignature_) internal view returns(address, bytes4) {
-        bytes4 selector = bytes4(keccak256(bytes(funcSignature_)));
+    function callFacet(bytes memory data_) internal returns(bytes memory) {
         DiamondStorage storage ds = diamondStorage();
-        address facet = ds.selectorToFacetAndPosition[selector].facetAddress;
-        return (facet, selector);
-    }
-
-    function facetToCall(
-        string[] memory funcSignatures
-    ) internal view returns(address[] memory, bytes4[] memory) {
-        DiamondStorage storage ds = diamondStorage();
-        address[] memory facets = new address[](2);
-        bytes4[] memory selectors = new bytes4[](2);
-
-        uint length = funcSignatures.length;
-        for (uint i=0; i < length;) {
-            bytes4 selector = bytes4(keccak256(bytes(funcSignatures[i])));
-            address facet = ds.selectorToFacetAndPosition[selector].facetAddress;
-
-            facets[i] = facet;
-            selectors[i] = selector;
-            unchecked { ++i; }
-        }
-
-        return (facets, selectors);
+        address facet = ds.selectorToFacetAndPosition[bytes4(data_)].facetAddress;
+        (bool success, bytes memory data) = facet.delegatecall(data_);
+        require(success, 'LibDiamond: callFacet() failed');
+        return data;
     }
 
     function setNonRevenueFacets(address[] memory nonRevenueFacets_) internal {
@@ -263,6 +241,4 @@ library LibDiamond {
             unchecked { ++i; }
         }
     }
-
-
 }

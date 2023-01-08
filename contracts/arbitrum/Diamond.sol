@@ -9,39 +9,24 @@ pragma solidity ^0.8.0;
 /******************************************************************************/
 
 import { LibDiamond } from "../libraries/LibDiamond.sol";
-import { IDiamondCut } from "../interfaces/IDiamondCut.sol";
-import { IDiamondLoupe } from "../interfaces/IDiamondLoupe.sol";
-import { IERC173 } from "../interfaces/IERC173.sol";
-import './AppStorage.sol';
-// import './facets/RevenueFacet.sol';
-import '../Errors.sol';
-
-import 'hardhat/console.sol';
-
-
+import { IDiamondCut } from "../interfaces/arbitrum/IDiamondCut.sol";
 
 
 contract Diamond { 
-
-    AppStorage s;
-
 
     constructor(
         IDiamondCut.FacetCut[] memory _diamondCut, 
         address _contractOwner, 
         bytes memory _functionCall, 
-        address _init,
-        address[] memory nonRevenueFacets_ 
+        address _init
     ) payable {        
         LibDiamond.diamondCut(_diamondCut, _init, _functionCall);
         LibDiamond.setContractOwner(_contractOwner);
-        LibDiamond.setNonRevenueFacets(nonRevenueFacets_);
     }
-
 
     // Find facet for function that is called and execute the
     // function if a facet is found and return any value.
-    fallback() external payable { 
+    fallback() external payable virtual { 
         LibDiamond.DiamondStorage storage ds;
 
         bytes32 position = LibDiamond.DIAMOND_STORAGE_POSITION;
@@ -52,16 +37,9 @@ contract Diamond {
 
         address facet = ds.selectorToFacetAndPosition[msg.sig].facetAddress;
 
-        //with selector for checkRevenue()
-        _filterRevenueCheck(
-            facet, 
-            ds.nonRevenueFacets, 
-            ds.selectorToFacetAndPosition[0xbe795977].facetAddress 
-        );
-
         // get facet from function selector
-        require(facet != address(0), "Diamond: Function does not exist");
-        // Execute external function from facet using delegatecall and return any value.
+        require(facet != address(0), "ozDiamond: Function does not exist");
+        // Execute external function from facet using delegatecall and return any value. 
         assembly {
             // copy function selector and any arguments
             calldatacopy(0, 0, calldatasize())
@@ -81,30 +59,6 @@ contract Diamond {
     }
 
     receive() external payable {}
-
-
-    function _filterRevenueCheck(
-        address calledFacet_, 
-        address[] memory nonRevenueFacets_, 
-        address revenueFacet_
-    ) private {
-        bytes memory data = abi.encodeWithSignature('checkForRevenue()');
-        uint length = nonRevenueFacets_.length;
-        bool callFlag;
-
-        for (uint i=0; i < length;) {
-            if (calledFacet_ == nonRevenueFacets_[i]) {
-                callFlag = true;
-                break;
-            }
-            unchecked { ++i; }
-        }
-
-        if (!callFlag) {
-            (bool success, ) = revenueFacet_.delegatecall(data); 
-            require(success, 'OZLDiamond: _filterRevenueCheck() failed');
-        }
-    }
 }
 
 

@@ -18,11 +18,12 @@ const {
     usdcAddr,
     fraxAddr,
     defaultSlippage,
+    diamondABI
 } = require('../../scripts/state-vars.js');
 
 
 
-let userDetails;
+let accountDetails;
 let callerAddr;
 let ozelIndex;
 let deployedDiamond;
@@ -39,12 +40,12 @@ let iface, abi, selector;
  * It uses the ModExecutorFacet contract with hard-coded values in order to represent
  * a point in the future where the mechanism kicks in. 
  * 
- * The two main differences from the real implementation on ExecutorFacet is on
+ * The two main differences from the real implementation on ozExecutorFacet is on
  * line 133, 136 140 (from the Mod version) that uses much lower values in order to
  * show the workings of the mechanism.
  */
 
- describe('Ozel Index', async function () { 
+describe('Ozel Index', async function () { 
     this.timeout(100000000000000000000);
 
     before( async () => {
@@ -54,7 +55,6 @@ let iface, abi, selector;
             WETH,
             USDT,
             WBTC,
-            renBTC,
             USDC,
             MIM,
             FRAX,
@@ -67,10 +67,11 @@ let iface, abi, selector;
     
         getVarsForHelpers(deployedDiamond, ozlFacet);
 
-        userDetails = [
+        accountDetails = [
             callerAddr,
             fraxAddr,
-            defaultSlippage
+            defaultSlippage,
+            'myAccount'
         ];
 
         abi = ['function updateExecutorState(uint256 amount_, address user_, uint256 lockNum_) external payable'];
@@ -78,10 +79,11 @@ let iface, abi, selector;
         selector = iface.getSighash('updateExecutorState');
     });
 
+
     it('should successfully stabilize the index for OZL balances calculations / UpdateIndexV1 & balanceOf()', async () => {
-        await replaceForModVersion('UpdateIndexV1', false, selector, userDetails, false, true);
+        await replaceForModVersion('UpdateIndexV1', false, selector, accountDetails, false, true);
         
-        userDetails[1] = usdcAddr;
+        accountDetails[1] = usdcAddr;
         accounts = await hre.ethers.provider.listAccounts();
         signers = await hre.ethers.getSigners();
 
@@ -111,16 +113,16 @@ let iface, abi, selector;
             console.log(`tx #${i}`);
 
             if (j == 4) j = 0;
-            userDetails[0] = await signers[j].getAddress();
+            accountDetails[0] = await signers[j].getAddress();
 
-            await sendETH(userDetails, j); 
+            await sendETH(accountDetails, j, 'ozel index test'); 
 
             ozelIndex = formatEther(await getOzelIndex());
             if (i === 0) higherIndex = ozelIndex;
 
-            console.log('Ozel Index: ', ozelIndex);
+            console.log('Ozel Index: ', ozelIndex); 
 
-            a = await balanceOfOZL(accounts[0]);
+            a = await balanceOfOZL(accounts[0]); 
             console.log('OZL bal #0: ', a);
             b = await balanceOfOZL(accounts[1]);
             console.log('OZL bal #1: ', b);
@@ -128,17 +130,15 @@ let iface, abi, selector;
             console.log('OZL bal #2: ', c);
             d = await balanceOfOZL(accounts[3]);
             console.log('OZL bal #3: ', d);
+            
             const total = a + b + c + d;
             console.log('TOTAL: ', total);
 
             regulatorCounter = await getRegulatorCounter();
 
             assert(total <= 100 && total >= 99.85);
-            assert(ozelIndex > 0 && ozelIndex <= higherIndex);
+            assert(ozelIndex > 0 && Number(ozelIndex) <= Number(higherIndex));
             assert(regulatorCounter < 2 && regulatorCounter >= 0);
         }
     });
-
-
-
 });

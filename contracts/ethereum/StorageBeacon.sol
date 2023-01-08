@@ -1,93 +1,76 @@
 // SPDX-License-Identifier: GPL-2.0-or-later
-pragma solidity ^0.8.0;
+pragma solidity 0.8.14;
 
 
-import "@chainlink/contracts/src/v0.8/interfaces/AggregatorV3Interface.sol";
-import '@uniswap/v3-periphery/contracts/interfaces/ISwapRouter.sol';
 import "@openzeppelin/contracts/proxy/utils/Initializable.sol";
+import '@openzeppelin/contracts/token/ERC20/IERC20.sol';
 import '@openzeppelin/contracts/access/Ownable.sol';
+import '../interfaces/ethereum/IStorageBeacon.sol';
+import '../libraries/LibCommon.sol';
 import './ozUpgradeableBeacon.sol';
+import '../Errors.sol';
 
-import 'hardhat/console.sol';
 
-
-contract StorageBeacon is Initializable, Ownable { 
-
-    struct UserConfig {
-        address user;
-        address userToken;
-        uint userSlippage; 
-    }
-
-    struct FixedConfig {  
-        address inbox;
-        address ops;
-        address OZL;
-        address emitter;
-        address payable gelato;
-        address ETH; 
-        uint maxGas;
-    }
-
-    struct VariableConfig { 
-        uint maxSubmissionCost;
-        uint gasPriceBid;
-        uint autoRedeem;
-    }
-
-    struct EmergencyMode {
-        ISwapRouter swapRouter;
-        AggregatorV3Interface priceFeed; 
-        uint24 poolFee;
-        address tokenIn;
-        address tokenOut; 
-    }
+/**
+ * @title Main storage contract for the L1 side of the system.
+ * @notice It acts as a separate centralized beacon that functions query for state
+ * variables. It can be upgraded into different versions while keeping the older ones.
+ */
+contract StorageBeacon is IStorageBeacon, Initializable, Ownable { 
 
     FixedConfig fxConfig;
-    VariableConfig varConfig;
     EmergencyMode eMode;
 
-    mapping(address => bytes32) public taskIDs;
-    mapping(address => bool) public tokenDatabase;
-    mapping(address => bool) public proxyDatabase;
-    mapping(address => bool) private userDatabase;
-    mapping(uint => UserConfig) public idToUserDetails;
-    mapping(address => address) public proxyToUser; 
-    mapping(address => address[]) public userToProxy;
+    mapping(address => bytes32) taskIDs;
+    mapping(address => bool) tokenDatabase;
+    mapping(address => bool) userDatabase;
+    mapping(address => address[]) userToAccounts;
+    mapping(address => AccountConfig) public accountToDetails; 
+    mapping(bytes4 => bool) authorizedSelectors;
+    mapping(address => uint) accountToPayments;
 
-    uint private internalId;
+    address[] tokenDatabaseArray;
+
+    uint gasPriceBid;
 
     ozUpgradeableBeacon beacon;
 
     bool isEmitter;
 
+    event L2GasPriceChanged(uint newGasPriceBid);
 
+    /*///////////////////////////////////////////////////////////////
+                            Modifiers
+    //////////////////////////////////////////////////////////////*/
+
+    /// @dev Checks -using RolesAuthority- if the sender can call certain method
     modifier hasRole(bytes4 functionSig_) {
         require(beacon.canCall(msg.sender, address(this), functionSig_));
+        _;
+    }
+
+    /// @dev Only allows a call from an account/proxy created through ProxyFactory
+    modifier onlyAccount() {
+        if(accountToDetails[msg.sender].user == address(0)) revert NotAccount();
         _;
     }
 
 
     constructor(
         FixedConfig memory fxConfig_,
-        VariableConfig memory varConfig_,
         EmergencyMode memory eMode_,
-        address[] memory tokens
+        address[] memory tokens_,
+        bytes4[] memory selectors_,
+        uint gasPriceBid_
     ) {
         fxConfig = FixedConfig({
             inbox: fxConfig_.inbox,
             ops: fxConfig_.ops,
-            OZL: fxConfig_.OZL,
+            OZL: fxConfig_.OZL, //ozDiamond
             emitter: fxConfig_.emitter,
             gelato: payable(fxConfig_.gelato),
             ETH: fxConfig_.ETH, 
             maxGas: fxConfig_.maxGas
-        });
-
-        varConfig = VariableConfig({
-            maxSubmissionCost: varConfig_.maxSubmissionCost,
-            gasPriceBid: varConfig_.gasPriceBid,
-            autoRedeem: varConfig_.autoRedeem
         });
 
         eMode = EmergencyMode({
@@ -98,96 +81,159 @@ contract StorageBeacon is Initializable, Ownable {
             tokenOut: eMode_.tokenOut
         });
 
-        uint length = tokens.length;
+        uint length = tokens_.length;
         for (uint i=0; i < length;) {
-            tokenDatabase[tokens[i]] = true;
+            tokenDatabase[tokens_[i]] = true;
+            tokenDatabaseArray.push(tokens_[i]);
             unchecked { ++i; }
         }
+
+        for (uint i=0; i < selectors_.length;) {
+            authorizedSelectors[selectors_[i]] = true;
+            unchecked { ++i; }
+        }
+
+        gasPriceBid = gasPriceBid_;
     }
 
- 
 
-    //State changing functions
-    function issueUserID(UserConfig memory userDetails_) external hasRole(0x74e0ea7a) returns(uint id) {
-        idToUserDetails[internalId] = userDetails_;
-        id = internalId;
-        unchecked { ++internalId; }
-    }
-    
-    function saveUserProxy(address user_, address proxy_) external hasRole(0x68e540e5) {
-        userToProxy[user_].push(proxy_);
-        proxyToUser[proxy_] = user_;
-        proxyDatabase[proxy_] = true;
-        userDatabase[user_] = true;
-    }
+    /*///////////////////////////////////////////////////////////////
+                        State-changin functions
+    //////////////////////////////////////////////////////////////*/
 
-    function saveTaskId(address proxy_, bytes32 id_) external hasRole(0xf2034a69) {
-        taskIDs[proxy_] = id_;
+    /// @inheritdoc IStorageBeacon
+    function saveUserToDetails(
+        address account_, 
+        AccountConfig calldata acc_
+    ) external hasRole(0xcb05ce19) {
+        userToAccounts[acc_.user].push(account_);
+        accountToDetails[account_] = acc_;
+        if (!userDatabase[acc_.user]) userDatabase[acc_.user] = true;
     }
 
-    function changeVariableConfig(VariableConfig memory newVarConfig_) external onlyOwner {
-        varConfig = newVarConfig_;
+    /// @inheritdoc IStorageBeacon
+    function saveTaskId(address account_, bytes32 id_) external hasRole(0xf2034a69) {
+        taskIDs[account_] = id_;
     }
 
+    /// @inheritdoc IStorageBeacon
+    function changeGasPriceBid(uint newGasPriceBid_) external onlyOwner {
+        gasPriceBid = newGasPriceBid_;
+        emit L2GasPriceChanged(newGasPriceBid_);
+    }
+
+    /// @inheritdoc IStorageBeacon
     function addTokenToDatabase(address newToken_) external onlyOwner {
+        if (queryTokenDatabase(newToken_)) revert TokenAlreadyInDatabase(newToken_);
         tokenDatabase[newToken_] = true;
+        tokenDatabaseArray.push(newToken_);
     }
 
+    /// @inheritdoc IStorageBeacon
+    function removeTokenFromDatabase(address toRemove_) external onlyOwner {
+        if (!queryTokenDatabase(toRemove_)) revert TokenNotInDatabase(toRemove_);
+        tokenDatabase[toRemove_] = false;
+        LibCommon.remove(tokenDatabaseArray, toRemove_);
+    }
+
+    /// @inheritdoc IStorageBeacon
     function storeBeacon(address beacon_) external initializer { 
         beacon = ozUpgradeableBeacon(beacon_);
     }
 
-    function changeEmergencyMode(EmergencyMode memory newEmode_) external onlyOwner {
+    /// @inheritdoc IStorageBeacon
+    function changeEmergencyMode(EmergencyMode calldata newEmode_) external onlyOwner {
         eMode = newEmode_;
     }
 
-    function changeEmitterStatus(bool newStatus) external onlyOwner {
-        isEmitter = newStatus;
+    /// @inheritdoc IStorageBeacon
+    function changeEmitterStatus(bool newStatus_) external onlyOwner {
+        isEmitter = newStatus_;
+    }
+
+    /// @inheritdoc IStorageBeacon
+    function storeAccountPayment(address account_, uint payment_) external onlyAccount {
+        accountToPayments[account_] += payment_;
+    }
+
+    /// @inheritdoc IStorageBeacon
+    function addAuthorizedSelector(bytes4 selector_) external onlyOwner {
+        authorizedSelectors[selector_] = true;
     }
 
 
+    /*///////////////////////////////////////////////////////////////
+                            View functions
+    //////////////////////////////////////////////////////////////*/
 
-    //View functions
-    function getUserDetailsById(uint userId_) external view returns(UserConfig memory) {
-        return idToUserDetails[userId_];
+    /// @inheritdoc IStorageBeacon
+    function isSelectorAuthorized(bytes4 selector_) external view returns(bool) {
+        return authorizedSelectors[selector_];
     }
 
+    /// @inheritdoc IStorageBeacon
     function getFixedConfig() external view returns(FixedConfig memory) {
         return fxConfig;
     }
 
-    function getVariableConfig() external view returns(VariableConfig memory) {
-        return varConfig; 
+    /// @inheritdoc IStorageBeacon
+    function getGasPriceBid() external view returns(uint) {
+        return gasPriceBid; 
     }
-
+    
+    /// @inheritdoc IStorageBeacon
     function getEmergencyMode() external view returns(EmergencyMode memory) {
         return eMode;
     }
 
-    function getProxyByUser(address user_) external view returns(address[] memory) {
-        return userToProxy[user_];
-    } 
+    /// @inheritdoc IStorageBeacon
+    function getAccountsByUser(
+        address user_
+    ) external view returns(address[] memory, string[] memory) {
+        address[] memory accounts = userToAccounts[user_];
+        string[] memory names = new string[](accounts.length);
 
-    function getTaskID(address proxy_) external view returns(bytes32) {
-        return taskIDs[proxy_];
+        for (uint i=0; i < accounts.length;) {
+            names[i] = accountToDetails[accounts[i]].name;
+            unchecked { ++i; }
+        }
+        return (accounts, names);
     }
 
-    function getUserByProxy(address proxy_) external view returns(address) {
-        return proxyToUser[proxy_];
+    /// @inheritdoc IStorageBeacon
+    function getTaskID(address account_) external view returns(bytes32) {
+        return taskIDs[account_];
     }
 
-    function queryTokenDatabase(address token_) external view returns(bool) {
+    /// @inheritdoc IStorageBeacon
+    function getUserByAccount(address account_) external view returns(address) {
+        return accountToDetails[account_].user;
+    }
+
+    /// @dev If token_ exists in L1 database
+    function queryTokenDatabase(address token_) public view returns(bool) {
         return tokenDatabase[token_];
     }
-
+    
+    /// @inheritdoc IStorageBeacon
     function isUser(address user_) external view returns(bool) {
         return userDatabase[user_];
     }
 
+    /// @inheritdoc IStorageBeacon
     function getEmitterStatus() external view returns(bool) {
         return isEmitter;
     }
 
+    /// @inheritdoc IStorageBeacon
+    function getTokenDatabase() external view returns(address[] memory) {
+        return tokenDatabaseArray;
+    }
+
+    /// @inheritdoc IStorageBeacon
+    function getAccountPayments(address account_) external view returns(uint) {
+        return accountToPayments[account_];
+    }
 }
 
 

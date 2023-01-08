@@ -1,6 +1,6 @@
 const { ethers } = require("ethers");
 const assert = require('assert');
-const { parseEther } = ethers.utils;
+const { parseEther, formatEther } = ethers.utils;
 require('dotenv').config();
 
 const { err } = require('../errors.js');
@@ -12,28 +12,37 @@ const {
     sendETH,
     enableWithdrawals,
     deploy,
-    addTokenToDatabase
+    addTokenToDatabase,
+    queryTokenDatabase
 } = require('../../scripts/helpers-arb.js');
 
 const { 
-    renBtcAddr,
+    usdtAddrArb,
     usdcAddr,
     fraxAddr,
     defaultSlippage,
     nullAddr,
     deadAddr,
-    diamondABI
+    diamondABI,
+    usxAddr,
+    dForcePoolAddr,
+    ops,
+    protocolFee
 } = require('../../scripts/state-vars.js');
 
 
 
-let userDetails;
+let accountDetails;
 let callerAddr, caller2Addr;
 let deployedDiamond, ozlDiamond;
 let evilAmount, evilSwapDetails;
+let tokenSwap;
+let addFlag, totalVolume;
 
 
-
+/**
+ * Specific unit-tests for certain functions within Arbitrum contracts.
+ */
 describe('Unit testing', async function () {
     this.timeout(1000000);
 
@@ -44,7 +53,6 @@ describe('Unit testing', async function () {
             WETH,
             USDT,
             WBTC,
-            renBTC,
             USDC,
             MIM,
             FRAX,
@@ -52,193 +60,239 @@ describe('Unit testing', async function () {
             callerAddr, 
             caller2Addr,
             ozlFacet,
-            yvCrvTri
+            yvCrvTri,
+            USX
         } = deployedVars);
     
         getVarsForHelpers(deployedDiamond, ozlFacet);
 
-        userDetails = [
+        accountDetails = [
             callerAddr,
             fraxAddr,
-            defaultSlippage
+            defaultSlippage,
+            'myAccount'
         ];
 
         ozlDiamond = await hre.ethers.getContractAt(diamondABI, deployedDiamond.address);
+        evilAmount = parseEther('1000');
     });
 
     describe('OZLFacet', async () => { 
-        describe('exchangeToUserToken()', async () => {
+        describe('exchangeToAccountToken()', async () => {
             it('should fail with user as address(0)', async () => {
-                userDetails[0] = nullAddr;
+                accountDetails[0] = nullAddr;
                 await assert.rejects(async () => {
-                    await sendETH(userDetails);
+                    await sendETH(accountDetails);
                 }, {
                     name: 'Error',
-                    message: err().zeroAddress 
+                    message: (await err()).zeroAddress 
                 });
             });
     
-            it('should fail with userToken as address(0)', async () => {
-                userDetails[0] = callerAddr;
-                userDetails[1] = nullAddr;
+            it('should fail with account token as address(0)', async () => {
+                accountDetails[0] = callerAddr;
+                accountDetails[1] = nullAddr;
                 await assert.rejects(async () => {
-                    await sendETH(userDetails);
+                    await sendETH(accountDetails);
                 }, {
                     name: 'Error',
-                    message: err().zeroAddress 
+                    message: (await err()).zeroAddress 
                 });
             });
     
-            it('should fail with userSlippage as 0', async () => {
-                userDetails[1] = fraxAddr;
-                userDetails[2] = 0;
+            it('should fail with slippage as 0', async () => {
+                accountDetails[1] = fraxAddr;
+                accountDetails[2] = 0;
                 await assert.rejects(async () => {
-                    await sendETH(userDetails);
+                    await sendETH(accountDetails);
                 }, {
                     name: 'Error',
-                    message: err().zeroSlippage 
+                    message: (await err()).zeroSlippage 
                 });
             });
     
-            it('should fail when userToken is not in database', async () => {
-                userDetails[1] = deadAddr;
-                userDetails[2] = defaultSlippage;
+            it('should fail when account token is not in database', async () => {
+                accountDetails[1] = deadAddr;
+                accountDetails[2] = defaultSlippage;
                 await assert.rejects(async () => {
-                    await sendETH(userDetails);
+                    await sendETH(accountDetails);
                 }, {
                     name: 'Error',
-                    message: err().tokenNotFound 
+                    message: (await err(deadAddr)).tokenNotFound 
                 });
             });
     
             it('should fail when msg.value is equal to 0', async () => {
-                userDetails[1] = usdcAddr;
+                accountDetails[1] = usdcAddr;
                 await assert.rejects(async () => {
-                    await sendETH(userDetails, 'no value');
+                    await sendETH(accountDetails, 'no value');
                 }, {
                     name: 'Error',
-                    message: err().zeroMsgValue 
+                    message: (await err()).zeroMsgValue 
                 });
             });
         });
 
         describe('withdrawUserShare()', async () => {
+            beforeEach(async () => await enableWithdrawals(true));
+
             it('should fail with user as address(0)', async () => {
-                await enableWithdrawals(true);
-                userDetails[0] = nullAddr;
+                accountDetails[0] = nullAddr;
                 await assert.rejects(async () => {
-                    await withdrawShareOZL(userDetails, callerAddr, parseEther((await balanceOfOZL(callerAddr)).toString()));
+                    await withdrawShareOZL(accountDetails, callerAddr, parseEther((await balanceOfOZL(callerAddr)).toString()));
                 }, {
                     name: 'Error',
-                    message: err().zeroAddress 
+                    message: (await err()).zeroAddress 
                 });
             });
     
-            it('should fail with userToken as address(0)', async () => {
-                userDetails[0] = callerAddr;
-                userDetails[1] = nullAddr;
+            it('should fail with account token as address(0)', async () => {
+                accountDetails[0] = callerAddr;
+                accountDetails[1] = nullAddr;
                 await assert.rejects(async () => {
-                    await withdrawShareOZL(userDetails, callerAddr, parseEther((await balanceOfOZL(callerAddr)).toString()));
+                    await withdrawShareOZL(accountDetails, callerAddr, parseEther((await balanceOfOZL(callerAddr)).toString()));
                 }, {
                     name: 'Error',
-                    message: err().zeroAddress 
+                    message: (await err()).zeroAddress 
                 });
             });
     
-            it('should fail with userSlippage as 0', async () => {
-                userDetails[1] = fraxAddr;
-                userDetails[2] = 0;
+            it('should fail with account slippage as 0', async () => {
+                accountDetails[1] = fraxAddr;
+                accountDetails[2] = 0;
                 await assert.rejects(async () => {
-                    await withdrawShareOZL(userDetails, callerAddr, parseEther((await balanceOfOZL(callerAddr)).toString()));
+                    await withdrawShareOZL(accountDetails, callerAddr, parseEther((await balanceOfOZL(callerAddr)).toString()));
                 }, {
                     name: 'Error',
-                    message: err().zeroSlippage 
+                    message: (await err()).zeroSlippage 
                 });
             });
     
-            it('should fail when userToken is not in database', async () => {
-                userDetails[1] = deadAddr;
-                userDetails[2] = defaultSlippage;
+            it('should fail when account token is not in database', async () => {
+                accountDetails[1] = deadAddr;
+                accountDetails[2] = defaultSlippage;
                 await assert.rejects(async () => {
-                    await withdrawShareOZL(userDetails, callerAddr, parseEther((await balanceOfOZL(callerAddr)).toString()));
+                    await withdrawShareOZL(accountDetails, callerAddr, parseEther((await balanceOfOZL(callerAddr)).toString()));
                 }, {
                     name: 'Error',
-                    message: err().tokenNotFound 
+                    message: (await err(deadAddr)).tokenNotFound 
                 });
             });
 
             it('should fail with receiver as address(0)', async () => {
-                userDetails[1] = fraxAddr;
+                accountDetails[1] = fraxAddr;
                 await assert.rejects(async () => {
-                    await withdrawShareOZL(userDetails, nullAddr, parseEther((await balanceOfOZL(callerAddr)).toString()));
+                    await withdrawShareOZL(accountDetails, nullAddr, parseEther((await balanceOfOZL(callerAddr)).toString()));
                 }, {
                     name: 'Error',
-                    message: err().zeroAddress 
+                    message: (await err()).zeroAddress 
                 });
             });
 
             it('should fail with shares set as 0', async () => {
                 await assert.rejects(async () => {
-                    await withdrawShareOZL(userDetails, callerAddr, 0);
+                    await withdrawShareOZL(accountDetails, callerAddr, 0);
                 }, {
                     name: 'Error',
-                    message: err().zeroShares 
+                    message: (await err()).zeroShares 
                 });
             });
         });
 
-        describe('addTokenToDatabase()', async () => {
-            it('should allow the owner to add a new userToken to database', async () => {
-                await addTokenToDatabase(renBtcAddr);
+        describe('addTokenToDatabase() / removeTokenFromDatabase()', async () => {
+            beforeEach(async () => {
+                //dForcePool --> USX: 0 / USDT: 2 / USDC: 1
+                tokenSwap = [
+                    2,
+                    0,
+                    usdtAddrArb,
+                    usxAddr,
+                    dForcePoolAddr
+                ];
+                if (!addFlag) await addTokenToDatabase(tokenSwap);
             });
-    
-            it('should not allow an unauthorized user to add a new userToken to database', async () => {
+
+            afterEach(() => addFlag = true);
+
+            it('should allow the owner to add a new token (USX) to database / addTokenToDatabase()', async () => {
+                balanceUSX = await USX.balanceOf(callerAddr);
+                assert.equal(formatEther(balanceUSX), 0);
+                
+                accountDetails[1] = usxAddr;
+                await sendETH(accountDetails);
+                
+                balanceUSX = await USX.balanceOf(callerAddr);
+                assert(formatEther(balanceUSX) > 0)
+        
+                doesExist = await queryTokenDatabase(usxAddr);
+                assert(doesExist);
+            });
+
+            it('should not allow an unauthorized user to add a new token to database / addTokenToDatabase()', async () => {
+                tokenSwap[3] = deadAddr;
                 await assert.rejects(async () => {
-                    await addTokenToDatabase(deadAddr, 1);
+                    await addTokenToDatabase(tokenSwap, 1);
                 }, {
                     name: 'Error',
-                    message: err(2).notAuthorized 
+                    message: (await err(2)).notAuthorized 
+                });
+            });
+
+            it('should allow the owner to remove a token (USX) from the database / removeTokenFromDatabase()', async () => {
+                doesExist = await queryTokenDatabase(usxAddr);
+                assert(doesExist);
+
+                await ozlDiamond.removeTokenFromDatabase(tokenSwap);
+                doesExist = await queryTokenDatabase(usxAddr);
+                assert(!doesExist);
+            });
+
+            it('should not allow an unauthorized user to remove a token (USX) from the database / removeTokenFromDatabase()', async () => {
+                await assert.rejects(async () => {
+                    await addTokenToDatabase(tokenSwap, 1);
+                }, {
+                    name: 'Error',
+                    message: (await err(2)).notAuthorized 
                 });
             });
         });
     });
 
-    describe('ExecutorFacet', async () => { 
+    describe('ozExecutorFacet', async () => { 
         it('shout not allow an unauthorized user to run the function / updateExecutorState()', async () => {
-            evilAmount = parseEther('1000');
             await assert.rejects(async () => {
-                await ozlDiamond.updateExecutorState(evilAmount, deadAddr, 1);
+                await ozlDiamond.updateExecutorState(evilAmount, deadAddr, 1, ops);
             }, {
                 name: 'Error',
-                message: err().notAuthorized 
+                message: (await err(callerAddr)).notAuthorized
             });
         });
 
         it('shout not allow an unauthorized user to run the function / executeFinalTrade()', async () => {
             evilSwapDetails = [0, 0, deadAddr, deadAddr, deadAddr];
             await assert.rejects(async () => {
-                await ozlDiamond.executeFinalTrade(evilSwapDetails, 0, deadAddr, 2);
+                await ozlDiamond.executeFinalTrade(evilSwapDetails, 0, deadAddr, 2, ops);
             }, {
                 name: 'Error',
-                message: err().notAuthorized 
+                message: (await err(callerAddr)).notAuthorized
             });
         });
 
         it('shout not allow an unauthorized user to run the function / modifyPaymentsAndVolumeExternally()', async () => {
             await assert.rejects(async () => {
-                await ozlDiamond.modifyPaymentsAndVolumeExternally(caller2Addr, evilAmount, 5);
+                await ozlDiamond.modifyPaymentsAndVolumeExternally(caller2Addr, evilAmount, 5, ops);
             }, {
                 name: 'Error',
-                message: err().notAuthorized 
+                message: (await err(callerAddr)).notAuthorized
             });
         });
 
         it('shout not allow an unauthorized user to run the function / transferUserAllocation()', async () => {
             await assert.rejects(async () => {
-                await ozlDiamond.transferUserAllocation(deadAddr, deadAddr, evilAmount, evilAmount, 6);
+                await ozlDiamond.transferUserAllocation(deadAddr, deadAddr, evilAmount, evilAmount, 6, ops);
             }, {
                 name: 'Error',
-                message: err().notAuthorized 
+                message: (await err(callerAddr)).notAuthorized
             });
         });
     });
@@ -246,36 +300,64 @@ describe('Unit testing', async function () {
     describe('oz4626Facet', async () => { 
         it('shout not allow an unauthorized user to run the function / deposit()', async () => {
             await assert.rejects(async () => {
-                await ozlDiamond.deposit(evilAmount, deadAddr, 0);
+                await ozlDiamond.deposit(evilAmount, deadAddr, 0, ops);
             }, {
                 name: 'Error',
-                message: err().notAuthorized 
+                message: (await err(callerAddr)).notAuthorized
             });
         });
 
         it('shout not allow an unauthorized user to run the function / redeem()', async () => {
             await assert.rejects(async () => {
-                await ozlDiamond.redeem(evilAmount, caller2Addr, caller2Addr, 3);
+                await ozlDiamond.redeem(evilAmount, caller2Addr, caller2Addr, 3, ops);
             }, {
                 name: 'Error',
-                message: err().notAuthorized 
+                message: (await err(callerAddr)).notAuthorized
             });
         });
-
-
-
     });
 
     describe('oz20Facet', async () => { 
         it('shout not allow an unauthorized user to run the function / burn()', async () => {
             await assert.rejects(async () => {
-                await ozlDiamond.burn(caller2Addr, evilAmount, 4);
+                await ozlDiamond.burn(caller2Addr, evilAmount, 4, ops);
             }, {
                 name: 'Error',
-                message: err().notAuthorized 
+                message: (await err(callerAddr)).notAuthorized
             });
         });
     });
 
+    describe('ozLoupeFacet', async () => {
+        beforeEach(async () => {
+            accountDetails[1] = usdcAddr;
+            await sendETH(accountDetails);
+        });
 
+        it('should get the amount in USD of Assets Under Management / getAUM()', async () => {
+            const [ wethUM, valueUM]  = await ozlDiamond.getAUM(); 
+            assert(formatEther(valueUM) > 20);
+        });
+
+        it('should get the total volume in ETH / getTotalVolumeInETH()', async () => {
+            totalVolume = await ozlDiamond.getTotalVolumeInETH();
+            assert(formatEther(totalVolume) > 0);
+        });
+
+        it('should get the total volume in USD / getTotalVolumeInUSD()', async () => {
+            totalVolume = await ozlDiamond.getTotalVolumeInUSD();
+            assert(formatEther(totalVolume) > 0);
+        });
+
+        it('should get the Ozel balance in ETH and USD / getOzelBalances()', async () => {
+            const [ wethUserShare, usdUserShare ] = await ozlDiamond.getOzelBalances(accountDetails[0]);
+            assert(formatEther(wethUserShare) > 0);
+            assert(formatEther(usdUserShare) > 0);
+        });
+
+        it("should get the protocol's fee / getProtocolFee()", async () => {
+            const fee = await ozlDiamond.getProtocolFee();
+            assert.equal(Number(fee), protocolFee);
+        });
+    });
 });

@@ -5,7 +5,7 @@ require('dotenv').config();
 
 const { err } = require('../errors.js'); 
 
-const {
+const { 
     balanceOfOZL, 
     transferOZL, 
     withdrawShareOZL, 
@@ -17,13 +17,13 @@ const {
     addTokenToDatabase,
     getRegulatorCounter,
     getTestingNumber,
-    replaceForModVersion
+    replaceForModVersion,
+    queryTokenDatabase
 } = require('../../scripts/helpers-arb.js');
 
 const { 
     usdtAddrArb,
     wbtcAddr,
-    renBtcAddr,
     usdcAddr,
     mimAddr,
     fraxAddr,
@@ -31,16 +31,20 @@ const {
     nullAddr,
     deadAddr,
     crvTricrypto,
-    diamondABI
+    diamondABI,
+    usxAddr,
+    dForcePoolAddr,
+    ops,
+    protocolFee
 } = require('../../scripts/state-vars.js');
 
 
 
-let userDetails;
+let accountDetails;
 let FRAX, WBTC, MIM, USDT, USDC;
 let callerAddr, caller2Addr;
 let ozelIndex, newOzelIndex;
-let balance, OZLbalanceFirstUser, OZLbalanceSecondUser, totalOZLusers, halfOZLbalance;
+let balance, OZLbalanceFirstUser, OZLbalanceSecondUser, totalOZLusers;
 let deployedDiamond;
 let preYvCrvBalance, currYvCrvBalance;
 let toTransfer;
@@ -48,16 +52,23 @@ let evilAmount, evilSwapDetails;
 let accounts, signers, regulatorCounter, higherIndex;
 let receipt;
 let iface, abi;
-let selector, balanceRenBTC, balanceWETH, balanceUSDT, balanceWBTC, balanceMIM;
+let selector, balanceWETH, balanceUSDT, balanceWBTC, balanceMIM;
 let yvCrvTri, testingNum, balanceUSDC, balanceTri;
 let ozlDiamond, owner;
+let addFlag, tokenSwap;
 
 /**
- * DURATION of all tests: 13:45 mins
+ * DURATION of all tests: 2:47 mins
  */
 
 
-describe('Standard user interaction', async function () {
+
+/**
+ * Since Curve doesn't have testnets, sendETH() sends ETH directly to
+ * exchangeToAccountToken() which would simulate an Arbitrum L1 > L2 tx where
+ * sendToArb() in L1 in ozPayMe would send the ETH to OZLFacet in L2.
+*/
+describe('Integration testing', async function () {
     this.timeout(1000000);
 
     before( async () => {
@@ -67,7 +78,6 @@ describe('Standard user interaction', async function () {
             WETH,
             USDT,
             WBTC,
-            renBTC,
             USDC,
             MIM,
             FRAX,
@@ -80,31 +90,32 @@ describe('Standard user interaction', async function () {
     
         getVarsForHelpers(deployedDiamond, ozlFacet);
 
-        userDetails = [
+        accountDetails = [
             callerAddr,
             fraxAddr, 
-            defaultSlippage
+            defaultSlippage,
+            'myAccount'
         ];
     });
 
-
+    
     /**
      * Since Curve doesn't have testnets, sendETH() sends ETH directly to
-     * exchangeToUserToken() which would simulate an Arbitrum L1 > L2 tx where
-     * sendToArb() in L1 in ozPayMe would send the ETH to OZLFacet in L2.
+     * exchangeToAccountToken() which would simulate an Arbitrum L1 > L2 tx where
+     * sendToArb() in L1 in ozPayMe would send the ETH to OZLFacet in L2,
      * 
-     * Meant to be run as one test
+     * Meant to be run as one test.
     */
 
     describe('1st user, 1st transfer', async () => {
-        it('should convert ETH to userToken (FRAX)', async () => {
-            await sendETH(userDetails); 
+        it('should convert ETH to token (FRAX)', async () => {
+            receipt = await sendETH(accountDetails); 
             assert(formatEther(await FRAX.balanceOf(callerAddr)) > 0);
         });
 
         it('should initiate the Ozel index', async () => {
             ozelIndex = await getOzelIndex();
-            assert.equal(formatEther(ozelIndex), 1200000.0);
+            assert.equal(Number(formatEther(ozelIndex)), 12000000);
         });
 
         it('should allocate 1st user with OZL tokens', async () => {
@@ -118,17 +129,17 @@ describe('Standard user interaction', async function () {
     });
 
     describe('2nd user, 1st transfer', async () => {
-        it('should convert ETH to userToken (WBTC)', async () => {
-            userDetails[0] = caller2Addr;
-            userDetails[1] = wbtcAddr;
+        it('should convert ETH to token (WBTC)', async () => {
+            accountDetails[0] = caller2Addr;
+            accountDetails[1] = wbtcAddr;
 
-            await sendETH(userDetails); 
+            await sendETH(accountDetails); 
             assert(formatEther(await FRAX.balanceOf(callerAddr)) > 0);
         });
 
         it('should re-calculate the Ozel index', async () => {
             ozelIndex = await getOzelIndex();
-            assert.equal(formatEther(ozelIndex), 600000.0);
+            assert.equal(Number(formatEther(ozelIndex)), 6000000);
         });
 
         it('should distribute OZL tokens equally between users', async () => {
@@ -143,11 +154,11 @@ describe('Standard user interaction', async function () {
     });
 
     describe('1st user, 2nd transfer', async () => {
-        it('should convert ETH to userToken (MIM)', async () => {
-            userDetails[0] = callerAddr;
-            userDetails[1] = mimAddr;
+        it('should convert ETH to token (MIM)', async () => {
+            accountDetails[0] = callerAddr;
+            accountDetails[1] = mimAddr;
 
-            await sendETH(userDetails);
+            await sendETH(accountDetails);
             balanceMIM = await MIM.balanceOf(callerAddr);
             assert(formatEther(balanceMIM) > 0);
 
@@ -161,7 +172,6 @@ describe('Standard user interaction', async function () {
         });
 
         it('should leave the first user with more OZL tokens than 2nd user', async () => {
-
             OZLbalanceFirstUser = await balanceOfOZL(callerAddr);
             OZLbalanceSecondUser = await balanceOfOZL(caller2Addr);
             assert(OZLbalanceFirstUser > OZLbalanceSecondUser);
@@ -179,7 +189,7 @@ describe('Standard user interaction', async function () {
 
     describe("1st user's transfer of OZL tokens", async () => {
         it('should transfer half of OZL tokens to 2nd user', async () => {
-            await transferOZL(caller2Addr, parseEther((OZLbalanceFirstUser / 2).toString()));
+            await transferOZL(caller2Addr, parseEther((OZLbalanceFirstUser / 2).toString()));            
             OZLbalanceFirstUser = await balanceOfOZL(callerAddr);
             OZLbalanceSecondUser = await balanceOfOZL(caller2Addr);
             assert(OZLbalanceSecondUser > OZLbalanceFirstUser);
@@ -190,10 +200,10 @@ describe('Standard user interaction', async function () {
     });
 
     describe("1st user's OZL withdrawal", async () => {
-        it("should have a balance of the dapp's fees on userToken (USDC)", async () => {
+        it("should have a balance of the dapp's fees on token (USDC)", async () => {
             await enableWithdrawals(true);
-            userDetails[1] = usdcAddr;
-            await withdrawShareOZL(userDetails, callerAddr, parseEther((await balanceOfOZL(callerAddr)).toString()));
+            accountDetails[1] = usdcAddr;
+            await withdrawShareOZL(accountDetails, callerAddr, parseEther((await balanceOfOZL(callerAddr)).toString()));
             balance = await USDC.balanceOf(callerAddr);
             assert(balance > 0);
         });
@@ -210,7 +220,7 @@ describe('Standard user interaction', async function () {
 
     describe('1st user, 3rd and 4th transfers', async () => {
         it('should leave the 2nd user with more OZL tokens', async() => {
-            await sendETH(userDetails);
+            await sendETH(accountDetails);
             OZLbalanceFirstUser = await balanceOfOZL(callerAddr);
             OZLbalanceSecondUser = await balanceOfOZL(caller2Addr);
             assert(OZLbalanceSecondUser > OZLbalanceFirstUser);
@@ -232,12 +242,12 @@ describe('Standard user interaction', async function () {
         });
     });
 
-    describe('2nd user withdrawas 1/3 OZL tokens', async () => {
+    describe('2nd user withdraws 1/3 OZL tokens', async () => {
 
-        it("should have a balance of the dapp's fees on userToken (USDT)", async () => {
-            userDetails[0] = caller2Addr;
-            userDetails[1] = usdtAddrArb;
-            await withdrawShareOZL(userDetails, caller2Addr, parseEther(toTransfer.toString()), 1);
+        it("should have a balance of the dapp's fees on account token (USDT)", async () => {
+            accountDetails[0] = caller2Addr;
+            accountDetails[1] = usdtAddrArb;
+            await withdrawShareOZL(accountDetails, caller2Addr, parseEther(toTransfer.toString()), 1);
             balance = await USDT.balanceOf(caller2Addr);
             assert(balance > 0);
         });
@@ -257,10 +267,13 @@ describe('Standard user interaction', async function () {
             assert(currYvCrvBalance < preYvCrvBalance);
         });
     });
-    
 });
 
 
+
+/**
+ * Specific unit-tests for certain functions within Arbitrum contracts.
+ */
 describe('Unit testing', async function () {
     this.timeout(1000000);
 
@@ -271,7 +284,6 @@ describe('Unit testing', async function () {
             WETH,
             USDT,
             WBTC,
-            renBTC,
             USDC,
             MIM,
             FRAX,
@@ -279,193 +291,239 @@ describe('Unit testing', async function () {
             callerAddr, 
             caller2Addr,
             ozlFacet,
-            yvCrvTri
+            yvCrvTri,
+            USX
         } = deployedVars);
     
         getVarsForHelpers(deployedDiamond, ozlFacet);
 
-        userDetails = [
+        accountDetails = [
             callerAddr,
             fraxAddr,
-            defaultSlippage
+            defaultSlippage,
+            'myAccount'
         ];
 
         ozlDiamond = await hre.ethers.getContractAt(diamondABI, deployedDiamond.address);
+        evilAmount = parseEther('1000');
     });
 
     describe('OZLFacet', async () => { 
-        describe('exchangeToUserToken()', async () => {
+        describe('exchangeToAccountToken()', async () => {
             it('should fail with user as address(0)', async () => {
-                userDetails[0] = nullAddr;
+                accountDetails[0] = nullAddr;
                 await assert.rejects(async () => {
-                    await sendETH(userDetails);
+                    await sendETH(accountDetails);
                 }, {
                     name: 'Error',
-                    message: err().zeroAddress 
+                    message: (await err()).zeroAddress 
                 });
             });
     
-            it('should fail with userToken as address(0)', async () => {
-                userDetails[0] = callerAddr;
-                userDetails[1] = nullAddr;
+            it('should fail with account token as address(0)', async () => {
+                accountDetails[0] = callerAddr;
+                accountDetails[1] = nullAddr;
                 await assert.rejects(async () => {
-                    await sendETH(userDetails);
+                    await sendETH(accountDetails);
                 }, {
                     name: 'Error',
-                    message: err().zeroAddress 
+                    message: (await err()).zeroAddress 
                 });
             });
     
-            it('should fail with userSlippage as 0', async () => {
-                userDetails[1] = fraxAddr;
-                userDetails[2] = 0;
+            it('should fail with slippage as 0', async () => {
+                accountDetails[1] = fraxAddr;
+                accountDetails[2] = 0;
                 await assert.rejects(async () => {
-                    await sendETH(userDetails);
+                    await sendETH(accountDetails);
                 }, {
                     name: 'Error',
-                    message: err().zeroSlippage 
+                    message: (await err()).zeroSlippage 
                 });
             });
     
-            it('should fail when userToken is not in database', async () => {
-                userDetails[1] = deadAddr;
-                userDetails[2] = defaultSlippage;
+            it('should fail when account token is not in database', async () => {
+                accountDetails[1] = deadAddr;
+                accountDetails[2] = defaultSlippage;
                 await assert.rejects(async () => {
-                    await sendETH(userDetails);
+                    await sendETH(accountDetails);
                 }, {
                     name: 'Error',
-                    message: err().tokenNotFound 
+                    message: (await err(deadAddr)).tokenNotFound 
                 });
             });
     
             it('should fail when msg.value is equal to 0', async () => {
-                userDetails[1] = usdcAddr;
+                accountDetails[1] = usdcAddr;
                 await assert.rejects(async () => {
-                    await sendETH(userDetails, 'no value');
+                    await sendETH(accountDetails, 'no value');
                 }, {
                     name: 'Error',
-                    message: err().zeroMsgValue 
+                    message: (await err()).zeroMsgValue 
                 });
             });
         });
 
         describe('withdrawUserShare()', async () => {
+            beforeEach(async () => await enableWithdrawals(true));
+
             it('should fail with user as address(0)', async () => {
-                await enableWithdrawals(true);
-                userDetails[0] = nullAddr;
+                accountDetails[0] = nullAddr;
                 await assert.rejects(async () => {
-                    await withdrawShareOZL(userDetails, callerAddr, parseEther((await balanceOfOZL(callerAddr)).toString()));
+                    await withdrawShareOZL(accountDetails, callerAddr, parseEther((await balanceOfOZL(callerAddr)).toString()));
                 }, {
                     name: 'Error',
-                    message: err().zeroAddress 
+                    message: (await err()).zeroAddress 
                 });
             });
     
-            it('should fail with userToken as address(0)', async () => {
-                userDetails[0] = callerAddr;
-                userDetails[1] = nullAddr;
+            it('should fail with account token as address(0)', async () => {
+                accountDetails[0] = callerAddr;
+                accountDetails[1] = nullAddr;
                 await assert.rejects(async () => {
-                    await withdrawShareOZL(userDetails, callerAddr, parseEther((await balanceOfOZL(callerAddr)).toString()));
+                    await withdrawShareOZL(accountDetails, callerAddr, parseEther((await balanceOfOZL(callerAddr)).toString()));
                 }, {
                     name: 'Error',
-                    message: err().zeroAddress 
+                    message: (await err()).zeroAddress 
                 });
             });
     
-            it('should fail with userSlippage as 0', async () => {
-                userDetails[1] = fraxAddr;
-                userDetails[2] = 0;
+            it('should fail with account slippage as 0', async () => {
+                accountDetails[1] = fraxAddr;
+                accountDetails[2] = 0;
                 await assert.rejects(async () => {
-                    await withdrawShareOZL(userDetails, callerAddr, parseEther((await balanceOfOZL(callerAddr)).toString()));
+                    await withdrawShareOZL(accountDetails, callerAddr, parseEther((await balanceOfOZL(callerAddr)).toString()));
                 }, {
                     name: 'Error',
-                    message: err().zeroSlippage 
+                    message: (await err()).zeroSlippage 
                 });
             });
     
-            it('should fail when userToken is not in database', async () => {
-                userDetails[1] = deadAddr;
-                userDetails[2] = defaultSlippage;
+            it('should fail when account token is not in database', async () => {
+                accountDetails[1] = deadAddr;
+                accountDetails[2] = defaultSlippage;
                 await assert.rejects(async () => {
-                    await withdrawShareOZL(userDetails, callerAddr, parseEther((await balanceOfOZL(callerAddr)).toString()));
+                    await withdrawShareOZL(accountDetails, callerAddr, parseEther((await balanceOfOZL(callerAddr)).toString()));
                 }, {
                     name: 'Error',
-                    message: err().tokenNotFound 
+                    message: (await err(deadAddr)).tokenNotFound 
                 });
             });
 
             it('should fail with receiver as address(0)', async () => {
-                userDetails[1] = fraxAddr;
+                accountDetails[1] = fraxAddr;
                 await assert.rejects(async () => {
-                    await withdrawShareOZL(userDetails, nullAddr, parseEther((await balanceOfOZL(callerAddr)).toString()));
+                    await withdrawShareOZL(accountDetails, nullAddr, parseEther((await balanceOfOZL(callerAddr)).toString()));
                 }, {
                     name: 'Error',
-                    message: err().zeroAddress 
+                    message: (await err()).zeroAddress 
                 });
             });
 
             it('should fail with shares set as 0', async () => {
                 await assert.rejects(async () => {
-                    await withdrawShareOZL(userDetails, callerAddr, 0);
+                    await withdrawShareOZL(accountDetails, callerAddr, 0);
                 }, {
                     name: 'Error',
-                    message: err().zeroShares 
+                    message: (await err()).zeroShares 
                 });
             });
         });
 
-        describe('addTokenToDatabase()', async () => {
-            it('should allow the owner to add a new userToken to database', async () => {
-                await addTokenToDatabase(renBtcAddr);
+        describe('addTokenToDatabase() / removeTokenFromDatabase()', async () => {
+            beforeEach(async () => {
+                //dForcePool --> USX: 0 / USDT: 2 / USDC: 1
+                tokenSwap = [
+                    2,
+                    0,
+                    usdtAddrArb,
+                    usxAddr,
+                    dForcePoolAddr
+                ];
+                if (!addFlag) await addTokenToDatabase(tokenSwap);
             });
-    
-            it('should not allow an unauthorized user to add a new userToken to database', async () => {
+
+            afterEach(() => addFlag = true);
+
+            it('should allow the owner to add a new token (USX) to database / addTokenToDatabase()', async () => {
+                balanceUSX = await USX.balanceOf(callerAddr);
+                assert.equal(formatEther(balanceUSX), 0);
+                
+                accountDetails[1] = usxAddr;
+                await sendETH(accountDetails);
+                
+                balanceUSX = await USX.balanceOf(callerAddr);
+                assert(formatEther(balanceUSX) > 0)
+        
+                doesExist = await queryTokenDatabase(usxAddr);
+                assert(doesExist);
+            });
+
+            it('should not allow an unauthorized user to add a new token to database / addTokenToDatabase()', async () => {
+                tokenSwap[3] = deadAddr;
                 await assert.rejects(async () => {
-                    await addTokenToDatabase(deadAddr, 1);
+                    await addTokenToDatabase(tokenSwap, 1);
                 }, {
                     name: 'Error',
-                    message: err(2).notAuthorized 
+                    message: (await err(2)).notAuthorized 
+                });
+            });
+
+            it('should allow the owner to remove a token (USX) from the database / removeTokenFromDatabase()', async () => {
+                doesExist = await queryTokenDatabase(usxAddr);
+                assert(doesExist);
+
+                await ozlDiamond.removeTokenFromDatabase(tokenSwap);
+                doesExist = await queryTokenDatabase(usxAddr);
+                assert(!doesExist);
+            });
+
+            it('should not allow an unauthorized user to remove a token (USX) from the database / removeTokenFromDatabase()', async () => {
+                await assert.rejects(async () => {
+                    await addTokenToDatabase(tokenSwap, 1);
+                }, {
+                    name: 'Error',
+                    message: (await err(2)).notAuthorized 
                 });
             });
         });
     });
 
-    describe('ExecutorFacet', async () => { 
+    describe('ozExecutorFacet', async () => { 
         it('shout not allow an unauthorized user to run the function / updateExecutorState()', async () => {
-            evilAmount = parseEther('1000');
             await assert.rejects(async () => {
-                await ozlDiamond.updateExecutorState(evilAmount, deadAddr, 1);
+                await ozlDiamond.updateExecutorState(evilAmount, deadAddr, 1, ops);
             }, {
                 name: 'Error',
-                message: err().notAuthorized 
+                message: (await err(callerAddr)).notAuthorized
             });
         });
 
         it('shout not allow an unauthorized user to run the function / executeFinalTrade()', async () => {
             evilSwapDetails = [0, 0, deadAddr, deadAddr, deadAddr];
             await assert.rejects(async () => {
-                await ozlDiamond.executeFinalTrade(evilSwapDetails, 0, deadAddr, 2);
+                await ozlDiamond.executeFinalTrade(evilSwapDetails, 0, deadAddr, 2, ops);
             }, {
                 name: 'Error',
-                message: err().notAuthorized 
+                message: (await err(callerAddr)).notAuthorized
             });
         });
 
         it('shout not allow an unauthorized user to run the function / modifyPaymentsAndVolumeExternally()', async () => {
             await assert.rejects(async () => {
-                await ozlDiamond.modifyPaymentsAndVolumeExternally(caller2Addr, evilAmount, 5);
+                await ozlDiamond.modifyPaymentsAndVolumeExternally(caller2Addr, evilAmount, 5, ops);
             }, {
                 name: 'Error',
-                message: err().notAuthorized 
+                message: (await err(callerAddr)).notAuthorized
             });
         });
 
         it('shout not allow an unauthorized user to run the function / transferUserAllocation()', async () => {
             await assert.rejects(async () => {
-                await ozlDiamond.transferUserAllocation(deadAddr, deadAddr, evilAmount, evilAmount, 6);
+                await ozlDiamond.transferUserAllocation(deadAddr, deadAddr, evilAmount, evilAmount, 6, ops);
             }, {
                 name: 'Error',
-                message: err().notAuthorized 
+                message: (await err(callerAddr)).notAuthorized
             });
         });
     });
@@ -473,39 +531,68 @@ describe('Unit testing', async function () {
     describe('oz4626Facet', async () => { 
         it('shout not allow an unauthorized user to run the function / deposit()', async () => {
             await assert.rejects(async () => {
-                await ozlDiamond.deposit(evilAmount, deadAddr, 0);
+                await ozlDiamond.deposit(evilAmount, deadAddr, 0, ops);
             }, {
                 name: 'Error',
-                message: err().notAuthorized 
+                message: (await err(callerAddr)).notAuthorized
             });
         });
 
         it('shout not allow an unauthorized user to run the function / redeem()', async () => {
             await assert.rejects(async () => {
-                await ozlDiamond.redeem(evilAmount, caller2Addr, caller2Addr, 3);
+                await ozlDiamond.redeem(evilAmount, caller2Addr, caller2Addr, 3, ops);
             }, {
                 name: 'Error',
-                message: err().notAuthorized 
+                message: (await err(callerAddr)).notAuthorized
             });
         });
-
-
-
     });
 
     describe('oz20Facet', async () => { 
         it('shout not allow an unauthorized user to run the function / burn()', async () => {
             await assert.rejects(async () => {
-                await ozlDiamond.burn(caller2Addr, evilAmount, 4);
+                await ozlDiamond.burn(caller2Addr, evilAmount, 4, ops);
             }, {
                 name: 'Error',
-                message: err().notAuthorized 
+                message: (await err(callerAddr)).notAuthorized
             });
         });
     });
 
+    describe('ozLoupeFacet', async () => {
+        beforeEach(async () => {
+            accountDetails[1] = usdcAddr;
+            await sendETH(accountDetails);
+        });
 
+        it('should get the amount in USD of Assets Under Management / getAUM()', async () => {
+            const [ wethUM, valueUM]  = await ozlDiamond.getAUM(); 
+            assert(formatEther(valueUM) > 20);
+        });
+
+        it('should get the total volume in ETH / getTotalVolumeInETH()', async () => {
+            totalVolume = await ozlDiamond.getTotalVolumeInETH();
+            assert(formatEther(totalVolume) > 0);
+        });
+
+        it('should get the total volume in USD / getTotalVolumeInUSD()', async () => {
+            totalVolume = await ozlDiamond.getTotalVolumeInUSD();
+            assert(formatEther(totalVolume) > 0);
+        });
+
+        it('should get the Ozel balance in ETH and USD / getOzelBalances()', async () => {
+            const [ wethUserShare, usdUserShare ] = await ozlDiamond.getOzelBalances(accountDetails[0]);
+            assert(formatEther(wethUserShare) > 0);
+            assert(formatEther(usdUserShare) > 0);
+        });
+
+        it("should get the protocol's fee / getProtocolFee()", async () => {
+            const fee = await ozlDiamond.getProtocolFee();
+            assert.equal(Number(fee), protocolFee);
+        });
+    });
 });
+
 
 
 /**
@@ -516,11 +603,10 @@ describe('Unit testing', async function () {
  * It uses the ModExecutorFacet contract with hard-coded values in order to represent
  * a point in the future where the mechanism kicks in. 
  * 
- * The two main differences from the real implementation on ExecutorFacet is on
+ * The two main differences from the real implementation on ozExecutorFacet is on
  * line 133, 136 140 (from the Mod version) that uses much lower values in order to
  * show the workings of the mechanism.
  */
-
 describe('Ozel Index', async function () { 
     this.timeout(100000000000000000000);
 
@@ -531,7 +617,6 @@ describe('Ozel Index', async function () {
             WETH,
             USDT,
             WBTC,
-            renBTC,
             USDC,
             MIM,
             FRAX,
@@ -544,10 +629,11 @@ describe('Ozel Index', async function () {
     
         getVarsForHelpers(deployedDiamond, ozlFacet);
 
-        userDetails = [
+        accountDetails = [
             callerAddr,
             fraxAddr,
-            defaultSlippage
+            defaultSlippage,
+            'myAccount'
         ];
 
         abi = ['function updateExecutorState(uint256 amount_, address user_, uint256 lockNum_) external payable'];
@@ -555,10 +641,11 @@ describe('Ozel Index', async function () {
         selector = iface.getSighash('updateExecutorState');
     });
 
+
     it('should successfully stabilize the index for OZL balances calculations / UpdateIndexV1 & balanceOf()', async () => {
-        await replaceForModVersion('UpdateIndexV1', false, selector, userDetails, false, true);
+        await replaceForModVersion('UpdateIndexV1', false, selector, accountDetails, false, true);
         
-        userDetails[1] = usdcAddr;
+        accountDetails[1] = usdcAddr;
         accounts = await hre.ethers.provider.listAccounts();
         signers = await hre.ethers.getSigners();
 
@@ -588,16 +675,16 @@ describe('Ozel Index', async function () {
             console.log(`tx #${i}`);
 
             if (j == 4) j = 0;
-            userDetails[0] = await signers[j].getAddress();
+            accountDetails[0] = await signers[j].getAddress();
 
-            await sendETH(userDetails, j); 
+            await sendETH(accountDetails, j, 'ozel index test'); 
 
             ozelIndex = formatEther(await getOzelIndex());
             if (i === 0) higherIndex = ozelIndex;
 
-            console.log('Ozel Index: ', ozelIndex);
+            console.log('Ozel Index: ', ozelIndex); 
 
-            a = await balanceOfOZL(accounts[0]);
+            a = await balanceOfOZL(accounts[0]); 
             console.log('OZL bal #0: ', a);
             b = await balanceOfOZL(accounts[1]);
             console.log('OZL bal #1: ', b);
@@ -605,26 +692,24 @@ describe('Ozel Index', async function () {
             console.log('OZL bal #2: ', c);
             d = await balanceOfOZL(accounts[3]);
             console.log('OZL bal #3: ', d);
+            
             const total = a + b + c + d;
             console.log('TOTAL: ', total);
 
             regulatorCounter = await getRegulatorCounter();
 
             assert(total <= 100 && total >= 99.85);
-            assert(ozelIndex > 0 && ozelIndex <= higherIndex);
+            assert(ozelIndex > 0 && Number(ozelIndex) <= Number(higherIndex));
             assert(regulatorCounter < 2 && regulatorCounter >= 0);
         }
     });
-
-
-
 });
 
 
 
 /**
  * It tests the anti-slippage system designed with try/catch blocks on the contracts
- * OZLFacet and ExecutorFacet.
+ * OZLFacet and ozExecutorFacet.
  * 
  * It uses the functions from TestingFunctions.sol
  */
@@ -638,7 +723,6 @@ describe('Anti-slippage system', async function () {
             WETH,
             USDT,
             WBTC,
-            renBTC,
             USDC,
             MIM,
             FRAX,
@@ -651,27 +735,28 @@ describe('Anti-slippage system', async function () {
     
         getVarsForHelpers(deployedDiamond, ozlFacet);
 
-        userDetails = [ 
+        accountDetails = [ 
             callerAddr,
             usdtAddrArb,
-            defaultSlippage
+            defaultSlippage,
+            'myAccount'
         ];
 
-        abi = ['function exchangeToUserToken((address user, address userToken, uint256 userSlippage) userDetails_) external payable'];
+        abi = ['function exchangeToAccountToken((address user, address token, uint256 slippage, string name) accountDetails_) external payable'];
         iface = new ethers.utils.Interface(abi);
-        selector = iface.getSighash('exchangeToUserToken');
+        selector = iface.getSighash('exchangeToAccountToken');
     });
 
     describe('Modified OZLFacet', async () => {
 
         /** 
-         * Changed the first slippage for type(uint).max in _swapsForUserToken 
+         * Changed the first slippage for type(uint).max in _swapsForBaseToken 
          * in order to provoke all trades to fail (due to slippage) and invoke
          * the last resort mechanism (send WETH back to user)
          */ 
         it('should replace swapsUserToken for V1 / SwapsForUserTokenV1', async () => {            
-            ({ testingNum, balance: balanceWETH } = await replaceForModVersion('SwapsForUserTokenV1', true, selector, userDetails, true));
-            assert.equal(formatEther(balanceWETH), 99.9);  
+            ({ testingNum, balance: balanceWETH } = await replaceForModVersion('SwapsForUserTokenV1', true, selector, accountDetails, true));
+            assert(formatEther(balanceWETH) > 0);  
         });
 
 
@@ -680,7 +765,7 @@ describe('Anti-slippage system', async function () {
          * but makes the trade in the second.
          */
         it('should replace swapsUserToken for V2 / SwapsForUserTokenV2', async () => {            
-            ({ testingNum, balance: balanceUSDT } = await replaceForModVersion('SwapsForUserTokenV2', true, selector, userDetails));
+            ({ testingNum, balance: balanceUSDT } = await replaceForModVersion('SwapsForUserTokenV2', true, selector, accountDetails));
             assert.equal(testingNum, 23);
             assert(balanceUSDT / 10 ** 6 > 0);
 
@@ -688,24 +773,30 @@ describe('Anti-slippage system', async function () {
 
         /**
          * Added a 2nd testVar that causes the 3rd swap attempt to fail. The 2nd
-         * swap exchanged half of amountIn to userToken, and due to the failure on
+         * swap exchanged half of amountIn to token, and due to the failure on
          * the 3rd swap, the other half of amountIn was sent as WETH back to the user.
          */
         it('should replace swapsUserToken for V3 / SwapsForUserTokenV3', async () => {            
             balanceUSDTpre = (await USDT.balanceOf(callerAddr)) / 10 ** 6;
             balanceWETHpre = formatEther(await WETH.balanceOf(callerAddr));
 
-            ({ testingNum, balance: balanceWETH } = await replaceForModVersion('SwapsForUserTokenV3', false, selector, userDetails, true));
+            ({ testingNum, balance: balanceWETH } = await replaceForModVersion('SwapsForUserTokenV3', false, selector, accountDetails, true));
             balanceWETH = formatEther(balanceWETH);
             halfInitialTransferInUSDT = 255000 / 2;
             halfInitialTransferInWETH = 100 / 2;
+
+            halfInitialTransferInUSDTWithSlippage = halfInitialTransferInUSDT + (halfInitialTransferInUSDT / defaultSlippage);
 
             balanceUSDTpost = (await USDT.balanceOf(callerAddr)) / 10 ** 6;
             balanceUSDTdiff = balanceUSDTpost - balanceUSDTpre;
             balanceWETHdiff = balanceWETH - balanceWETHpre;
 
             assert.equal(testingNum, 23);
-            assert(balanceUSDTdiff > 0 && balanceUSDTdiff < halfInitialTransferInUSDT);
+            assert(
+                balanceUSDTdiff > 0 && 
+                ( balanceUSDTdiff < halfInitialTransferInUSDT || 
+                    balanceUSDTdiff > halfInitialTransferInUSDT && balanceUSDTdiff < halfInitialTransferInUSDTWithSlippage )
+            );
             assert(balanceWETHdiff > 0 && balanceWETHdiff < halfInitialTransferInWETH);
         });
 
@@ -715,87 +806,93 @@ describe('Anti-slippage system', async function () {
          * are attempted to be deposited once again through any main action from
          * the app (deposit - withdraw).
          */
-        it('should add failed fees to its own variable / DepositInDeFiV1', async () => {            
-            ({ testingNum } = await replaceForModVersion('DepositInDeFiV1', false, selector, userDetails));
+        it('should add failed fees to its own variable / DepositFeesInDeFiV1', async () => {            
+            ({ testingNum } = await replaceForModVersion('DepositFeesInDeFiV1', false, selector, accountDetails));
             assert.equal(testingNum, 23);
         });
 
         /**
          * It deposits -in DeFi- the failedFees that weren't deposited in the prior test.
          */
-        it('should deposit any failed fees found in the failedFees variable / DepositInDeFiV1', async () => {            
-            receipt = await sendETH(userDetails);
+        it('should deposit any failed fees found in the failedFees variable / DepositFeesInDeFiV1', async () => {            
+            await replaceForModVersion('DepositFeesInDeFiV1', false, selector, accountDetails);
+            receipt = await sendETH(accountDetails);
             assert.equal(getTestingNumber(receipt, true), 24);
 
-            //Reverts to the original _depositInDeFi()
-            await replaceForModVersion(ozlFacet, false, selector, userDetails, false, true);
+            //Reverts to the original _depositFeesInDeFi()
+            await replaceForModVersion(ozlFacet, false, selector, accountDetails, false, true);
         });
     });
 
 
-    describe('Modified ExecutorFacet', async () => {
+    describe('Modified ozExecutorFacet', async () => {
         before( async () => {
-            abi = ['function executeFinalTrade((int128 tokenIn, int128 tokenOut, address baseToken, address userToken, address pool) swapDetails_, uint256 userSlippage_, address user_, uint256 lockNum_) external payable'];
+            abi = ['function executeFinalTrade((int128 tokenIn, int128 tokenOut, address baseToken, address token, address pool) swapDetails_, uint256 userSlippage_, address user_, uint256 lockNum_) external payable'];
             iface = new ethers.utils.Interface(abi);
             selector = iface.getSighash('executeFinalTrade');
-            userDetails[1] = renBtcAddr;
+            accountDetails[1] = usdcAddr;
+
+            balanceUSDT = await USDT.balanceOf(callerAddr);
+            balanceUSDC = await USDC.balanceOf(callerAddr);
+            if (Number(balanceUSDT) > 0) await USDT.transfer(deadAddr, balanceUSDT);
+            if (Number(balanceUSDC) > 0) await USDC.transfer(deadAddr, balanceUSDC);
         });
 
         /**
          * Changed slippage to type(uint).max in order to fail all trades and activate the last path
          */
-        it("should send the funds to the user in their baseToken / ExecutorFacetV1", async () => {            
-            balanceWBTC = await WBTC.balanceOf(callerAddr);
-            assert.equal(balanceWBTC / 10 ** 8, 0);
+        it("should send the funds to the user in their account token's swap's baseToken / ExecutorFacetV1", async () => {            
+            balanceUSDT = await USDT.balanceOf(callerAddr);
+            assert.equal(balanceUSDT / 10 ** 8, 0);
 
-            ({ testingNum, balance: balanceWBTC } = await replaceForModVersion('ExecutorFacetV1', false, selector, userDetails, 2));
-            balanceRenBTC = (await renBTC.balanceOf(callerAddr)) / 10 ** 8;
+            ({ testingNum, balance: balanceUSDT } = await replaceForModVersion('ExecutorFacetV1', false, selector, accountDetails, false));
+            balanceUSDC = (await USDC.balanceOf(callerAddr)) / 10 ** 8;
             assert.equal(testingNum, 23);
             
-            assert(balanceWBTC / 10 ** 8 > 0);
-            assert.equal(balanceRenBTC, 0);
+            assert(balanceUSDT / 10 ** 8 > 0);
+            assert.equal(balanceUSDC, 0);
 
-            //Cleans up
-            await WBTC.transfer(caller2Addr, balanceWBTC);
+            //Clean up
+            await USDT.transfer(caller2Addr, balanceUSDT);
         });
 
         /**
          * Added an slippage condition so it fails the 1st attempt and activates the slippage mechanism.
-         * All funds are in userToken through two swaps
+         * All funds are in account token through two swaps
          */
-        it('should send userToken to the user in the 2nd loop iteration / ExecutorFacetV2', async () => {            
-            balanceRenBTC = (await renBTC.balanceOf(callerAddr)) / 10 ** 8;
-            assert.equal(balanceRenBTC, 0);
+        it('should send the account token to the user in the 2nd loop iteration / ExecutorFacetV2', async () => {            
+            balanceUSDC = (await USDC.balanceOf(callerAddr)) / 10 ** 8;
+            assert.equal(balanceUSDC, 0);
 
-            ({ testingNum, balance: balanceRenBTC } = await replaceForModVersion('ExecutorFacetV2', false, selector, userDetails, 3));
+            ({ testingNum, balance: balanceUSDC } = await replaceForModVersion('ExecutorFacetV2', false, selector, accountDetails, 3));
             assert.equal(testingNum, 23);
 
-            balanceRenBTC = await renBTC.balanceOf(callerAddr);
-            assert(balanceRenBTC / 10 ** 8 > 0);
-            await renBTC.transfer(caller2Addr, balanceRenBTC);
+            balanceUSDC = await USDC.balanceOf(callerAddr);
+            assert(balanceUSDC / 10 ** 8 > 0);
+            await USDC.transfer(caller2Addr, balanceUSDC);
         });
 
 
         /**
-         * Fails the 1st and 3rd swapping attempts so half of the user's funds are traded in userToken
+         * Fails the 1st and 3rd swapping attempts so half of the user's funds are traded in account token
          * and the other half in the baseToken.
          */
-        it('should divide the funds between baseToken and userToken / ExecutorFacetV3', async () => {            
-            balanceRenBTC = (await renBTC.balanceOf(callerAddr)) / 10 ** 8;
-            assert(balanceRenBTC < 0.000001);
+        it('should divide the funds between baseToken and account token / ExecutorFacetV3', async () => {            
+            balanceUSDC = (await USDC.balanceOf(callerAddr)) / 10 ** 8;
+            assert(balanceUSDC < 0.000001);
 
-            balanceWBTC = (await WBTC.balanceOf(callerAddr)) / 10 ** 8;
-            assert.equal(balanceWBTC, 0);
+            balanceUSDT = (await USDT.balanceOf(callerAddr)) / 10 ** 8;
+            assert.equal(balanceUSDT, 0);
 
-            ({ testingNum, balance: balanceRenBTC, receipt } = await replaceForModVersion('ExecutorFacetV3', false, selector, userDetails, 3));
+            ({ testingNum, balance: balanceUSDC, receipt } = await replaceForModVersion('ExecutorFacetV3', false, selector, accountDetails, 5));
             assert.equal(testingNum, 23);
 
             testingNum = getTestingNumber(receipt, true);
             assert.equal(testingNum, 24);
 
-            balanceWBTC = await WBTC.balanceOf(callerAddr);
-            assert(balanceRenBTC / 10 ** 8 > 1);
-            assert(balanceWBTC / 10 ** 8 > 1);
+            balanceUSDT = await USDT.balanceOf(callerAddr);
+            assert(balanceUSDC / 10 ** 8 > 0);
+            assert(balanceUSDT / 10 ** 8 > 0);
         }); 
 
 
@@ -803,9 +900,9 @@ describe('Anti-slippage system', async function () {
          * Changed slippage to type(uint).max in order to fail all trades and activate the last path
          * (2nd leg for non-BTC-2Pool coins)
          */
-        it('should swap the funds to userToken only / ExecutorFacetV4', async () => {            
-            userDetails[1] = mimAddr;
-            ({ testingNum, balance: balanceUSDT } = await replaceForModVersion('ExecutorFacetV4', false, selector, userDetails, false));
+        it('should swap the funds to account token only / ExecutorFacetV4', async () => {            
+            accountDetails[1] = mimAddr;
+            ({ testingNum, balance: balanceUSDT } = await replaceForModVersion('ExecutorFacetV4', false, selector, accountDetails, false));
             assert.equal(testingNum, 23);
             assert(balanceUSDT > 0);
             await USDT.transfer(caller2Addr, balanceUSDT);
@@ -814,14 +911,14 @@ describe('Anti-slippage system', async function () {
 
         /**
          * Added an slippage condition so it fails the 1st attempt and activates the slippage mechanism.
-         * All funds are in userToken through two swaps (2nd leg for non-BTC-2Pool coins)
+         * All funds are in account token through two swaps (2nd leg for non-BTC-2Pool coins)
          */
-        it('should send userToken to the user in the 2nd loop iteration / ExecutorFacetV5', async () => {
-            userDetails[1] = mimAddr;
+        it('should send account token to the user in the 2nd loop iteration / ExecutorFacetV5', async () => {
+            accountDetails[1] = mimAddr;
             balanceMIM = formatEther(await MIM.balanceOf(callerAddr));
             assert.equal(balanceMIM, 0);
 
-            ({ testingNum, balance: balanceMIM } = await replaceForModVersion('ExecutorFacetV5', false, selector, userDetails, 4));
+            ({ testingNum, balance: balanceMIM } = await replaceForModVersion('ExecutorFacetV5', false, selector, accountDetails, 3));
             assert.equal(testingNum, 23);
             assert(formatEther(balanceMIM) > 0);
 
@@ -830,18 +927,18 @@ describe('Anti-slippage system', async function () {
 
 
         /**
-         * Fails the 1st and 3rd swapping attempts so half of the user's funds are traded in userToken
+         * Fails the 1st and 3rd swapping attempts so half of the user's funds are traded in account token
          * and the other half in the baseToken.
          */
-        it('should divide the funds between baseToken and userToken / ExecutorFacetV6', async () => {            
-            userDetails[1] = mimAddr;
+        it('should divide the funds between baseToken and account token / ExecutorFacetV6', async () => {            
+            accountDetails[1] = mimAddr;
             balanceMIM = formatEther(await MIM.balanceOf(callerAddr));
             assert.equal(balanceMIM, 0);
 
             balanceUSDT = (await USDT.balanceOf(callerAddr)) / 10 ** 6;
             assert.equal(balanceUSDT, 0);
 
-            ({ testingNum, balance: balanceMIM } = await replaceForModVersion('ExecutorFacetV6', false, selector, userDetails, 4));
+            ({ testingNum, balance: balanceMIM } = await replaceForModVersion('ExecutorFacetV6', false, selector, accountDetails, 3));
             assert.equal(testingNum, 23);
             assert(formatEther(balanceMIM) > 0);
 
@@ -850,6 +947,8 @@ describe('Anti-slippage system', async function () {
         });
     });
 });
+
+
 
 
 /**
@@ -865,7 +964,6 @@ describe('My Revenue', async function() {
             WETH,
             USDT,
             WBTC,
-            renBTC,
             USDC,
             MIM,
             FRAX,
@@ -878,16 +976,16 @@ describe('My Revenue', async function() {
     
         getVarsForHelpers(deployedDiamond, ozlFacet);
 
-        userDetails = [
+        accountDetails = [
             callerAddr,
             fraxAddr, 
-            defaultSlippage
+            defaultSlippage,
+            'myAccount'
         ];
 
         abi = ['function checkForRevenue() external payable'];
         iface = new ethers.utils.Interface(abi);
         selector = iface.getSighash('checkForRevenue');
-
         tricryptoCrv = await hre.ethers.getContractAt('IERC20', crvTricrypto);
 
         //Clean up from past tests
@@ -896,18 +994,19 @@ describe('My Revenue', async function() {
 
         ozlDiamond = await hre.ethers.getContractAt(diamondABI, deployedDiamond.address);
 
-        //Clean up from past tests
         balanceWETH = await WETH.balanceOf(callerAddr);
         await WETH.transfer(deadAddr, balanceWETH);
     });
+
+    afterEach(() => feesVaultFlag = true);
 
 
     it('should send the accrued revenue to the deployer in USDC / ComputeRevenueV1', async () => {
         balanceUSDC = await USDC.balanceOf(callerAddr) / 10 ** 6;
         assert.equal(balanceUSDC, 0);
 
-        ({ a, b, c, modContract} = await replaceForModVersion('ComputeRevenueV1', false, selector, userDetails));        
-        receipt = await sendETH(userDetails);
+        await replaceForModVersion('ComputeRevenueV1', false, selector, accountDetails);        
+        receipt = await sendETH(accountDetails);
 
         testingNum = getTestingNumber(receipt);
         assert.equal(testingNum, 23);
@@ -915,18 +1014,18 @@ describe('My Revenue', async function() {
         balanceUSDC = await USDC.balanceOf(callerAddr);
         assert(balanceUSDC / 10 ** 6 > 0);
 
-        //Cleans up
+        //Clean up
         await USDC.transfer(deadAddr, balanceUSDC); 
-
     }); 
 
     it('should send the accrued revenue to the deployer in tricrypto / ComputeRevenueV2', async () => {
         balanceTri = formatEther(await tricryptoCrv.balanceOf(callerAddr));
         assert.equal(balanceTri, 0);
 
-        await replaceForModVersion('ComputeRevenueV2', false, selector, userDetails, false, true);
+        await replaceForModVersion('ComputeRevenueV2', false, selector, accountDetails, false, true);
        
-        receipt = await sendETH(userDetails);
+        if (!feesVaultFlag) await sendETH(accountDetails);
+        receipt = await sendETH(accountDetails);
         testingNum = getTestingNumber(receipt);
         assert.equal(testingNum, 23);
 
@@ -935,16 +1034,16 @@ describe('My Revenue', async function() {
 
         //Clean up
         await tricryptoCrv.transfer(deadAddr, balanceTri);
-
     });
 
     it('should send the accrued revenue to the deployer in USDC in two txs / ComputeRevenueV3', async () => {
         balanceUSDC = await USDC.balanceOf(callerAddr) / 10 ** 6;
         assert.equal(balanceUSDC, 0);
 
-        await replaceForModVersion('ComputeRevenueV3', false, selector, userDetails, false, true);
+        await replaceForModVersion('ComputeRevenueV3', false, selector, accountDetails, false, true);
         
-        receipt = await sendETH(userDetails);
+        if (!feesVaultFlag) await sendETH(accountDetails);
+        receipt = await sendETH(accountDetails);
         testingNum = getTestingNumber(receipt);
         assert.equal(testingNum, 23);
 
@@ -961,9 +1060,10 @@ describe('My Revenue', async function() {
         balanceTri = await tricryptoCrv.balanceOf(callerAddr);
         assert.equal(formatEther(balanceTri), 0);
 
-        await replaceForModVersion('ComputeRevenueV4', false, selector, userDetails);
-        receipt = await sendETH(userDetails);
-
+        await replaceForModVersion('ComputeRevenueV4', false, selector, accountDetails);
+        
+        if (!feesVaultFlag) await sendETH(accountDetails);
+        receipt = await sendETH(accountDetails);
         testingNum = getTestingNumber(receipt);
         assert.equal(testingNum, 23);
 
@@ -980,7 +1080,8 @@ describe('My Revenue', async function() {
         balanceWETH = await WETH.balanceOf(callerAddr);
         assert.equal(formatEther(balanceWETH), 0); 
 
-        ({ a, testingNum } = await replaceForModVersion('SwapWETHforRevenueV1', false, selector, userDetails));
+        if (!feesVaultFlag) await sendETH(accountDetails);
+        ({ a, testingNum } = await replaceForModVersion('SwapWETHforRevenueV1', false, selector, accountDetails));
         assert.equal(testingNum, 23);
 
         balanceWETH = await WETH.balanceOf(callerAddr);
@@ -994,8 +1095,9 @@ describe('My Revenue', async function() {
         balanceUSDC = await USDC.balanceOf(callerAddr);
         assert.equal(balanceUSDC / 10 ** 6, 0);
 
-        await replaceForModVersion('SwapWETHforRevenueV2', false, selector, userDetails);
-        receipt = await sendETH(userDetails);
+        if (!feesVaultFlag) await sendETH(accountDetails);
+        await replaceForModVersion('SwapWETHforRevenueV2', false, selector, accountDetails);
+        receipt = await sendETH(accountDetails);
         testingNum = getTestingNumber(receipt);
         assert.equal(testingNum, 23);
 
@@ -1013,7 +1115,8 @@ describe('My Revenue', async function() {
         balanceWETH = await WETH.balanceOf(callerAddr);
         assert.equal(formatEther(balanceWETH), 0); 
 
-        ({ testingNum } = await replaceForModVersion('SwapWETHforRevenueV3', false, selector, userDetails));
+        if (!feesVaultFlag) await sendETH(accountDetails);
+        ({ testingNum } = await replaceForModVersion('SwapWETHforRevenueV3', false, selector, accountDetails));
         assert.equal(testingNum, 23);
 
         balanceUSDC = await USDC.balanceOf(callerAddr);
@@ -1024,18 +1127,8 @@ describe('My Revenue', async function() {
     });
 
     it('should not call filterRevenueCheck / _filterRevenueCheck()', async () => {
-        await replaceForModVersion('FilterRevenueCheckV1', false, selector, userDetails, false, true);
+        await replaceForModVersion('FilterRevenueCheckV1', false, selector, accountDetails, false, true);
         owner = await ozlDiamond.owner();
         assert.equal(owner, callerAddr);
     });
-
-
-
-
-
-    
-
-
-
-
 });

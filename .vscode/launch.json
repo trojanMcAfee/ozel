@@ -11,7 +11,7 @@
             "skipFiles": [
                 "<node_internals>/**"
             ],
-            "program": "${workspaceFolder}/test/main-test.js"
+            "program": "${workspaceFolder}/scripts/event-listener.js"
         }
     ]
 }

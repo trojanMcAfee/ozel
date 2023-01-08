@@ -22,19 +22,19 @@ const {
 
 
 
-let userDetails, callerAddr, USDC;
+let accountDetails, callerAddr, USDC;
 let deployedDiamond, receipt;
 let iface, abi;
 let selector, balanceWETH;
 let testingNum, balanceUSDC, balanceTri;
-let ozlDiamond, owner;
+let ozlDiamond, owner, feesVaultFlag;
 
 
 
 /**
  * Tests the anti-slippage system used in RevenueFacet.sol
  */
- describe('My Revenue', async function() {
+describe('My Revenue', async function() {
     this.timeout(1000000);
 
     before( async () => {
@@ -44,7 +44,6 @@ let ozlDiamond, owner;
             WETH,
             USDT,
             WBTC,
-            renBTC,
             USDC,
             MIM,
             FRAX,
@@ -57,16 +56,16 @@ let ozlDiamond, owner;
     
         getVarsForHelpers(deployedDiamond, ozlFacet);
 
-        userDetails = [
+        accountDetails = [
             callerAddr,
             fraxAddr, 
-            defaultSlippage
+            defaultSlippage,
+            'myAccount'
         ];
 
         abi = ['function checkForRevenue() external payable'];
         iface = new ethers.utils.Interface(abi);
         selector = iface.getSighash('checkForRevenue');
-
         tricryptoCrv = await hre.ethers.getContractAt('IERC20', crvTricrypto);
 
         //Clean up from past tests
@@ -75,18 +74,19 @@ let ozlDiamond, owner;
 
         ozlDiamond = await hre.ethers.getContractAt(diamondABI, deployedDiamond.address);
 
-        //Clean up from past tests
         balanceWETH = await WETH.balanceOf(callerAddr);
         await WETH.transfer(deadAddr, balanceWETH);
     });
+
+    afterEach(() => feesVaultFlag = true);
 
 
     it('should send the accrued revenue to the deployer in USDC / ComputeRevenueV1', async () => {
         balanceUSDC = await USDC.balanceOf(callerAddr) / 10 ** 6;
         assert.equal(balanceUSDC, 0);
 
-        ({ a, b, c, modContract} = await replaceForModVersion('ComputeRevenueV1', false, selector, userDetails));        
-        receipt = await sendETH(userDetails);
+        await replaceForModVersion('ComputeRevenueV1', false, selector, accountDetails);        
+        receipt = await sendETH(accountDetails);
 
         testingNum = getTestingNumber(receipt);
         assert.equal(testingNum, 23);
@@ -94,18 +94,18 @@ let ozlDiamond, owner;
         balanceUSDC = await USDC.balanceOf(callerAddr);
         assert(balanceUSDC / 10 ** 6 > 0);
 
-        //Cleans up
+        //Clean up
         await USDC.transfer(deadAddr, balanceUSDC); 
-
     }); 
 
     it('should send the accrued revenue to the deployer in tricrypto / ComputeRevenueV2', async () => {
         balanceTri = formatEther(await tricryptoCrv.balanceOf(callerAddr));
         assert.equal(balanceTri, 0);
 
-        await replaceForModVersion('ComputeRevenueV2', false, selector, userDetails, false, true);
+        await replaceForModVersion('ComputeRevenueV2', false, selector, accountDetails, false, true);
        
-        receipt = await sendETH(userDetails);
+        if (!feesVaultFlag) await sendETH(accountDetails);
+        receipt = await sendETH(accountDetails);
         testingNum = getTestingNumber(receipt);
         assert.equal(testingNum, 23);
 
@@ -114,16 +114,16 @@ let ozlDiamond, owner;
 
         //Clean up
         await tricryptoCrv.transfer(deadAddr, balanceTri);
-
     });
 
     it('should send the accrued revenue to the deployer in USDC in two txs / ComputeRevenueV3', async () => {
         balanceUSDC = await USDC.balanceOf(callerAddr) / 10 ** 6;
         assert.equal(balanceUSDC, 0);
 
-        await replaceForModVersion('ComputeRevenueV3', false, selector, userDetails, false, true);
+        await replaceForModVersion('ComputeRevenueV3', false, selector, accountDetails, false, true);
         
-        receipt = await sendETH(userDetails);
+        if (!feesVaultFlag) await sendETH(accountDetails);
+        receipt = await sendETH(accountDetails);
         testingNum = getTestingNumber(receipt);
         assert.equal(testingNum, 23);
 
@@ -140,9 +140,10 @@ let ozlDiamond, owner;
         balanceTri = await tricryptoCrv.balanceOf(callerAddr);
         assert.equal(formatEther(balanceTri), 0);
 
-        await replaceForModVersion('ComputeRevenueV4', false, selector, userDetails);
-        receipt = await sendETH(userDetails);
-
+        await replaceForModVersion('ComputeRevenueV4', false, selector, accountDetails);
+        
+        if (!feesVaultFlag) await sendETH(accountDetails);
+        receipt = await sendETH(accountDetails);
         testingNum = getTestingNumber(receipt);
         assert.equal(testingNum, 23);
 
@@ -159,7 +160,8 @@ let ozlDiamond, owner;
         balanceWETH = await WETH.balanceOf(callerAddr);
         assert.equal(formatEther(balanceWETH), 0); 
 
-        ({ a, testingNum } = await replaceForModVersion('SwapWETHforRevenueV1', false, selector, userDetails));
+        if (!feesVaultFlag) await sendETH(accountDetails);
+        ({ a, testingNum } = await replaceForModVersion('SwapWETHforRevenueV1', false, selector, accountDetails));
         assert.equal(testingNum, 23);
 
         balanceWETH = await WETH.balanceOf(callerAddr);
@@ -173,8 +175,9 @@ let ozlDiamond, owner;
         balanceUSDC = await USDC.balanceOf(callerAddr);
         assert.equal(balanceUSDC / 10 ** 6, 0);
 
-        await replaceForModVersion('SwapWETHforRevenueV2', false, selector, userDetails);
-        receipt = await sendETH(userDetails);
+        if (!feesVaultFlag) await sendETH(accountDetails);
+        await replaceForModVersion('SwapWETHforRevenueV2', false, selector, accountDetails);
+        receipt = await sendETH(accountDetails);
         testingNum = getTestingNumber(receipt);
         assert.equal(testingNum, 23);
 
@@ -192,7 +195,8 @@ let ozlDiamond, owner;
         balanceWETH = await WETH.balanceOf(callerAddr);
         assert.equal(formatEther(balanceWETH), 0); 
 
-        ({ testingNum } = await replaceForModVersion('SwapWETHforRevenueV3', false, selector, userDetails));
+        if (!feesVaultFlag) await sendETH(accountDetails);
+        ({ testingNum } = await replaceForModVersion('SwapWETHforRevenueV3', false, selector, accountDetails));
         assert.equal(testingNum, 23);
 
         balanceUSDC = await USDC.balanceOf(callerAddr);
@@ -203,7 +207,7 @@ let ozlDiamond, owner;
     });
 
     it('should not call filterRevenueCheck / _filterRevenueCheck()', async () => {
-        await replaceForModVersion('FilterRevenueCheckV1', false, selector, userDetails, false, true);
+        await replaceForModVersion('FilterRevenueCheckV1', false, selector, accountDetails, false, true);
         owner = await ozlDiamond.owner();
         assert.equal(owner, callerAddr);
     });

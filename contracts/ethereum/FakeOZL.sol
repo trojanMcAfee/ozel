@@ -1,26 +1,116 @@
-// SPDX-License-Identifier: UNLICENSED
-pragma solidity ^0.8.0;
+// SPDX-License-Identifier: GPL-2.0-or-later
+pragma solidity 0.8.14;
 
+
+import '@openzeppelin/contracts/access/Ownable.sol';
 import './StorageBeacon.sol';
 
 
-contract FakeOZL {
+/**
+ * @title Dummy OZLFacet to simulate the one deployed in L2
+ * @notice Replicates the main view functions for testing the UI and 
+ * and the reception of ETH in L2.
+ */
+contract FakeOZL is Ownable {
 
-    address public user;
+    address user;
+    address deadUser;
+    address public receiver;
+    address immutable deadAddr = 0x000000000000000000000000000000000000dEaD;
+    address immutable nullAddr = 0x0000000000000000000000000000000000000000;
+
+    event DeadVariable(address user);
+
+    struct FakeOZLVars { 
+        uint totalVolumeInUSD;
+        uint totalVolumeInETH;
+        uint wethUM;
+        uint valueUM;
+        uint ozlBalance;
+        uint wethUserShare;
+        uint usdUserShare;
+    }
+
+    FakeOZLVars vars;
+
+    mapping(address => mapping(address => uint)) userBalances;
+
+    constructor(address receiver_, FakeOZLVars memory vars_) {
+        user = msg.sender;
+        receiver = receiver_;
+        vars = FakeOZLVars({
+            totalVolumeInUSD: vars_.totalVolumeInUSD,
+            totalVolumeInETH: vars_.totalVolumeInETH,
+            wethUM: vars_.wethUM,
+            valueUM: vars_.valueUM,
+            ozlBalance: vars_.ozlBalance,
+            wethUserShare: vars_.wethUserShare,
+            usdUserShare: vars_.usdUserShare
+        });
+
+        userBalances[msg.sender][msg.sender] = vars_.ozlBalance;
+        userBalances[msg.sender][deadAddr] = vars_.wethUserShare;
+        userBalances[msg.sender][nullAddr] = vars_.usdUserShare;
+    }
 
     receive() external payable {}
 
+    /*///////////////////////////////////////////////////////////////
+                    ozLoupeFacet's dummy methods
+    //////////////////////////////////////////////////////////////*/
 
-    function exchangeToUserToken(StorageBeacon.UserConfig memory userDetails_) external payable {
-        address x = 0x1cc12A3437B42bf100002d26da383C1b911F2B38;
+    function getTotalVolumeInUSD() external view returns(uint) {
+        return vars.totalVolumeInUSD;
+    }
 
-        if (address(this).balance > 0) {
-            (bool success, ) = x.call{value: address(this).balance}(""); 
-            require(success, 'ETH sent failed');
+    function getTotalVolumeInETH() external view returns(uint) {
+        return vars.totalVolumeInETH;
+    }
+
+    function getAUM() external view returns(uint, uint) {
+        return (vars.wethUM, vars.valueUM);
+    }
+
+    function balanceOf(address user_) external view returns(uint) {
+        return userBalances[user_][user_] == 0 ? userBalances[user][user] : 0;
+    }
+
+    function getOzelBalances(address user_) external view returns(uint, uint) {
+        if (userBalances[user_][user_] == 0) {
+            uint wethUserShare = userBalances[user][deadAddr];
+            uint usdUserShare = userBalances[user][nullAddr];
+            return (wethUserShare, usdUserShare);
+        } else {
+            return (0,0);
         }
+    }
 
-        user = userDetails_.user;
+    /*///////////////////////////////////////////////////////////////
+                              Helpers 
+    //////////////////////////////////////////////////////////////*/
+
+    function changeFakeOZLVars(FakeOZLVars memory newVars_) external onlyOwner {
+        vars = newVars_;
+        userBalances[msg.sender][msg.sender] = newVars_.ozlBalance;
+        userBalances[msg.sender][deadAddr] = newVars_.wethUserShare;
+        userBalances[msg.sender][nullAddr] = newVars_.usdUserShare;
     } 
 
+    function changeReceiver(address newReceiver_) external onlyOwner {
+        receiver = newReceiver_;
+    }
 
+    /*///////////////////////////////////////////////////////////////
+                    OZLFacet's main dummy method
+    //////////////////////////////////////////////////////////////*/
+
+    function exchangeToAccountToken(
+        StorageBeacon.AccountConfig memory acc_
+    ) external payable {
+        if (address(this).balance > 0) {
+            (bool success, ) = payable(receiver).call{value: address(this).balance}(""); 
+            require(success, 'ETH sent failed');
+        }
+        deadUser = acc_.user;
+    }
 }

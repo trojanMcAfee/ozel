@@ -1,0 +1,21 @@
+digraph "" {
+DiamondCutFacet -> IDiamondCut;
+DiamondCutFacet[shape="box"label=< <TABLE border="0"><TR><TD align="center"><B>DiamondCutFacet</B></TD></TR><TR><TD align="left"><I>Public Functions:</I></TD></TR><TR><TD align="left"><font color="#FFA500">    diamondCut(IDiamondCut.FacetCut[],address,bytes)</font></TD></TR></TABLE> >];
+
+ozCutFacet -> DiamondCutFacet;
+ozCutFacet[shape="box"label=< <TABLE border="0"><TR><TD align="center"><B>ozCutFacet</B></TD></TR><TR><TD align="left"><I>Public Functions:</I></TD></TR><TR><TD align="left">    changeProtocolFee(uint256)</TD></TR><TR><TD align="left">    changeDefaultSlippage(uint256)</TD></TR><TR><TD align="left">    enableWithdrawals(bool)</TD></TR><TR><TD align="left">    changeRevenueToken(address)</TD></TR><TR><TD align="left">    changeUniPoolFee(uint24)</TD></TR><TR><TD align="left"><I>Private Variables:</I></TD></TR><TR><TD align="left">    s</TD></TR></TABLE> >];
+
+IDiamondCut[shape="box"label=< <TABLE border="0"><TR><TD align="center"><B>IDiamondCut</B></TD></TR><TR><TD align="left"><I>Public Functions:</I></TD></TR><TR><TD align="left">    diamondCut(IDiamondCut.FacetCut[],address,bytes)</TD></TR></TABLE> >];
+
+LibDiamond[shape="box"label=< <TABLE border="0"><TR><TD align="center"><B>LibDiamond</B></TD></TR><TR><TD align="left"><I>Private Functions:</I></TD></TR><TR><TD align="left">    diamondStorage()</TD></TR><TR><TD align="left">    setContractOwner(address)</TD></TR><TR><TD align="left">    contractOwner()</TD></TR><TR><TD align="left">    enforceIsContractOwner()</TD></TR><TR><TD align="left">    diamondCut(IDiamondCut.FacetCut[],address,bytes)</TD></TR><TR><TD align="left">    addFunctions(address,bytes4[])</TD></TR><TR><TD align="left">    replaceFunctions(address,bytes4[])</TD></TR><TR><TD align="left">    removeFunctions(address,bytes4[])</TD></TR><TR><TD align="left">    addFacet(LibDiamond.DiamondStorage,address)</TD></TR><TR><TD align="left">    addFunction(LibDiamond.DiamondStorage,bytes4,uint96,address)</TD></TR><TR><TD align="left">    removeFunction(LibDiamond.DiamondStorage,address,bytes4)</TD></TR><TR><TD align="left">    initializeDiamondCut(address,bytes)</TD></TR><TR><TD align="left">    enforceHasContractCode(address,string)</TD></TR><TR><TD align="left">    callFacet(bytes)</TD></TR><TR><TD align="left">    setNonRevenueFacets(address[])</TD></TR><TR><TD align="left"><I>Private Variables:</I></TD></TR><TR><TD align="left">    DIAMOND_STORAGE_POSITION</TD></TR></TABLE> >];
+
+AggregatorV3Interface[shape="box"label=< <TABLE border="0"><TR><TD align="center"><B>AggregatorV3Interface</B></TD></TR><TR><TD align="left"><I>Public Functions:</I></TD></TR><TR><TD align="left">    decimals()</TD></TR><TR><TD align="left">    description()</TD></TR><TR><TD align="left">    version()</TD></TR><TR><TD align="left">    getRoundData(uint80)</TD></TR><TR><TD align="left">    latestRoundData()</TD></TR></TABLE> >];
+
+IERC20[shape="box"label=< <TABLE border="0"><TR><TD align="center"><B>IERC20</B></TD></TR><TR><TD align="left"><I>Public Functions:</I></TD></TR><TR><TD align="left">    totalSupply()</TD></TR><TR><TD align="left">    balanceOf(address)</TD></TR><TR><TD align="left">    transfer(address,uint256)</TD></TR><TR><TD align="left">    allowance(address,address)</TD></TR><TR><TD align="left">    approve(address,uint256)</TD></TR><TR><TD align="left">    transferFrom(address,address,uint256)</TD></TR></TABLE> >];
+
+IUniswapV3SwapCallback[shape="box"label=< <TABLE border="0"><TR><TD align="center"><B>IUniswapV3SwapCallback</B></TD></TR><TR><TD align="left"><I>Public Functions:</I></TD></TR><TR><TD align="left">    uniswapV3SwapCallback(int256,int256,bytes)</TD></TR></TABLE> >];
+
+ISwapRouter -> IUniswapV3SwapCallback;
+ISwapRouter[shape="box"label=< <TABLE border="0"><TR><TD align="center"><B>ISwapRouter</B></TD></TR><TR><TD align="left"><I>Public Functions:</I></TD></TR><TR><TD align="left">    exactInputSingle(ISwapRouter.ExactInputSingleParams)</TD></TR><TR><TD align="left">    exactInput(ISwapRouter.ExactInputParams)</TD></TR><TR><TD align="left">    exactOutputSingle(ISwapRouter.ExactOutputSingleParams)</TD></TR><TR><TD align="left">    exactOutput(ISwapRouter.ExactOutputParams)</TD></TR></TABLE> >];
+
+}

@@ -5,19 +5,17 @@ pragma solidity ^0.8.0;
 * EIP-2535 Diamonds: https://eips.ethereum.org/EIPS/eip-2535
 /******************************************************************************/
 
+import { IDiamondLoupe } from "../../interfaces/arbitrum/IDiamondLoupe.sol";
 import { LibDiamond } from  "../../libraries/LibDiamond.sol";
-import { IDiamondLoupe } from "../../interfaces/IDiamondLoupe.sol";
-import { IERC165 } from "../../interfaces/IERC165.sol";
+import { IERC165 } from "../../interfaces/arbitrum/IERC165.sol";
 
-contract DiamondLoupeFacet is IDiamondLoupe, IERC165 { //<------- put here the methods from GettersFacet ********
+
+
+contract DiamondLoupeFacet is IDiamondLoupe, IERC165 { 
+
     // Diamond Loupe Functions
     ////////////////////////////////////////////////////////////////////
     /// These functions are expected to be called frequently by tools.
-    //
-    // struct Facet {
-    //     address facetAddress;
-    //     bytes4[] functionSelectors;
-    // }
 
     /// @notice Gets all facets and their selectors.
     /// @return facets_ Facet

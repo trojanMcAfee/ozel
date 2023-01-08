@@ -1,0 +1,29 @@
+digraph "" {
+ozUpgradeableBeacon -> ozIUpgradeableBeacon [ label="1" ];
+ozUpgradeableBeacon -> UpgradeableBeacon [ label="2" ];
+ozUpgradeableBeacon[shape="box"label=< <TABLE border="0"><TR><TD align="center"><B>ozUpgradeableBeacon</B></TD></TR><TR><TD align="left"><I>Public Functions:</I></TD></TR><TR><TD align="left"><font color="#FFA500">    storageBeacon(uint256)</font></TD></TR><TR><TD align="left"><font color="#FFA500">    upgradeStorageBeacon(address)</font></TD></TR><TR><TD align="left"><font color="#FFA500">    setAuth(address)</font></TD></TR><TR><TD align="left"><font color="#FFA500">    canCall(address,address,bytes4)</font></TD></TR><TR><TD align="left"><I>Private Variables:</I></TD></TR><TR><TD align="left">    _storageBeacons</TD></TR><TR><TD align="left">    auth<font color="blue" POINT-SIZE="10"> (RolesAuthority)</font></TD></TR></TABLE> >];
+
+ozIUpgradeableBeacon[shape="box"label=< <TABLE border="0"><TR><TD align="center"><B>ozIUpgradeableBeacon</B></TD></TR><TR><TD align="left"><I>Public Functions:</I></TD></TR><TR><TD align="left">    storageBeacon(uint256)</TD></TR><TR><TD align="left">    upgradeStorageBeacon(address)</TD></TR><TR><TD align="left">    setAuth(address)</TD></TR><TR><TD align="left">    canCall(address,address,bytes4)</TD></TR></TABLE> >];
+
+Ownable -> Context;
+Ownable[shape="box"label=< <TABLE border="0"><TR><TD align="center"><B>Ownable</B></TD></TR><TR><TD align="left"><I>Public Functions:</I></TD></TR><TR><TD align="left">    owner()</TD></TR><TR><TD align="left">    renounceOwnership()</TD></TR><TR><TD align="left">    transferOwnership(address)</TD></TR><TR><TD align="left"><I>Private Functions:</I></TD></TR><TR><TD align="left">    _transferOwnership(address)</TD></TR><TR><TD align="left"><I>Modifiers:</I></TD></TR><TR><TD align="left">    onlyOwner()</TD></TR><TR><TD align="left"><I>Private Variables:</I></TD></TR><TR><TD align="left">    _owner</TD></TR></TABLE> >];
+
+IBeacon[shape="box"label=< <TABLE border="0"><TR><TD align="center"><B>IBeacon</B></TD></TR><TR><TD align="left"><I>Public Functions:</I></TD></TR><TR><TD align="left">    implementation()</TD></TR></TABLE> >];
+
+UpgradeableBeacon -> IBeacon [ label="1" ];
+UpgradeableBeacon -> Ownable [ label="2" ];
+UpgradeableBeacon[shape="box"label=< <TABLE border="0"><TR><TD align="center"><B>UpgradeableBeacon</B></TD></TR><TR><TD align="left"><I>Public Functions:</I></TD></TR><TR><TD align="left"><font color="#FFA500">    implementation()</font></TD></TR><TR><TD align="left">    upgradeTo(address)</TD></TR><TR><TD align="left"><I>Private Functions:</I></TD></TR><TR><TD align="left">    _setImplementation(address)</TD></TR><TR><TD align="left"><I>Private Variables:</I></TD></TR><TR><TD align="left">    _implementation</TD></TR></TABLE> >];
+
+Address[shape="box"label=< <TABLE border="0"><TR><TD align="center"><B>Address</B></TD></TR><TR><TD align="left"><I>Private Functions:</I></TD></TR><TR><TD align="left">    isContract(address)</TD></TR><TR><TD align="left">    sendValue(address,uint256)</TD></TR><TR><TD align="left">    functionCall(address,bytes)</TD></TR><TR><TD align="left">    functionCall(address,bytes,string)</TD></TR><TR><TD align="left">    functionCallWithValue(address,bytes,uint256)</TD></TR><TR><TD align="left">    functionCallWithValue(address,bytes,uint256,string)</TD></TR><TR><TD align="left">    functionStaticCall(address,bytes)</TD></TR><TR><TD align="left">    functionStaticCall(address,bytes,string)</TD></TR><TR><TD align="left">    functionDelegateCall(address,bytes)</TD></TR><TR><TD align="left">    functionDelegateCall(address,bytes,string)</TD></TR><TR><TD align="left">    verifyCallResult(bool,bytes,string)</TD></TR></TABLE> >];
+
+Context[shape="box"label=< <TABLE border="0"><TR><TD align="center"><B>Context</B></TD></TR><TR><TD align="left"><I>Private Functions:</I></TD></TR><TR><TD align="left">    _msgSender()</TD></TR><TR><TD align="left">    _msgData()</TD></TR></TABLE> >];
+
+Auth[shape="box"label=< <TABLE border="0"><TR><TD align="center"><B>Auth</B></TD></TR><TR><TD align="left"><I>Public Functions:</I></TD></TR><TR><TD align="left">    setAuthority(Authority)</TD></TR><TR><TD align="left">    setOwner(address)</TD></TR><TR><TD align="left"><I>Private Functions:</I></TD></TR><TR><TD align="left">    isAuthorized(address,bytes4)</TD></TR><TR><TD align="left"><I>Modifiers:</I></TD></TR><TR><TD align="left">    requiresAuth()</TD></TR><TR><TD align="left"><I>Public Variables:</I></TD></TR><TR><TD align="left">    owner</TD></TR><TR><TD align="left">    authority<font color="blue" POINT-SIZE="10"> (Authority)</font></TD></TR></TABLE> >];
+
+Authority[shape="box"label=< <TABLE border="0"><TR><TD align="center"><B>Authority</B></TD></TR><TR><TD align="left"><I>Public Functions:</I></TD></TR><TR><TD align="left">    canCall(address,address,bytes4)</TD></TR></TABLE> >];
+
+RolesAuthority -> Auth [ label="1" ];
+RolesAuthority -> Authority [ label="2" ];
+RolesAuthority[shape="box"label=< <TABLE border="0"><TR><TD align="center"><B>RolesAuthority</B></TD></TR><TR><TD align="left"><I>Public Functions:</I></TD></TR><TR><TD align="left">    doesUserHaveRole(address,uint8)</TD></TR><TR><TD align="left">    doesRoleHaveCapability(uint8,address,bytes4)</TD></TR><TR><TD align="left"><font color="#FFA500">    canCall(address,address,bytes4)</font></TD></TR><TR><TD align="left">    setPublicCapability(address,bytes4,bool)</TD></TR><TR><TD align="left">    setRoleCapability(uint8,address,bytes4,bool)</TD></TR><TR><TD align="left">    setUserRole(address,uint8,bool)</TD></TR><TR><TD align="left"><I>Public Variables:</I></TD></TR><TR><TD align="left">    getUserRoles</TD></TR><TR><TD align="left">    isCapabilityPublic</TD></TR><TR><TD align="left">    getRolesWithCapability</TD></TR></TABLE> >];
+
+}

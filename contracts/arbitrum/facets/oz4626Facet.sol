@@ -1,26 +1,28 @@
 // SPDX-License-Identifier: AGPL-3.0-only
-pragma solidity >=0.8.0;
+pragma solidity 0.8.14;
 
 
-import './oz20Facet.sol';
+import '@rari-capital/solmate/src/utils/FixedPointMathLib.sol';
 import '@openzeppelin/contracts/token/ERC20/IERC20.sol';
-import './ExecutorFacet.sol';
-import '../../libraries/FixedPointMathLib.sol';
-import '../../Errors.sol';
-import '../Modifiers.sol';
+import '@openzeppelin/contracts/utils/Address.sol';
 import { LibDiamond } from "../../libraries/LibDiamond.sol";
+import { ModifiersARB } from '../Modifiers.sol';
+import '../../Errors.sol';
+import './oz20Facet.sol';
 
-/// @notice Original source: Minimal ERC4626 tokenized Vault implementation.
-/// @author Original author: Solmate (https://github.com/Rari-Capital/solmate/blob/main/src/mixins/ERC4626.sol)
-contract oz4626Facet is Modifiers { 
+
+/**
+ * @title Custom implementation of Solmate's ERC4626 (https://github.com/Rari-Capital/solmate/blob/main/src/mixins/ERC4626.sol)
+ * @notice As with oz20Facet, a new version was created to fit the architecture
+ * of the system.
+ */
+contract oz4626Facet is ModifiersARB { 
 
     using FixedPointMathLib for uint256;
+    using Address for address;
+    
 
-    /*///////////////////////////////////////////////////////////////
-                                 EVENTS
-    //////////////////////////////////////////////////////////////*/
-
-    event Deposit(address indexed caller, address indexed owner, uint256 assets, uint256 shares);
+    event Deposit(address indexed caller, address indexed owner, uint256 assets);
 
     event Withdraw(
         address indexed caller,
@@ -32,30 +34,45 @@ contract oz4626Facet is Modifiers {
 
 
     /*///////////////////////////////////////////////////////////////
-                        DEPOSIT/WITHDRAWAL LOGIC
+                            Funding logic
     //////////////////////////////////////////////////////////////*/
 
+    /**
+     * @dev Forwards the amount transferred and the user to the methods in charge of
+     * the OZL rebase.
+     * @param assets ETH transferred to the account (which is actually WETH)
+     * @param receiver User
+     * @param lockNum_ Index of the bit which authorizes the function call
+     */
     function deposit(
         uint assets, 
         address receiver,
         uint lockNum_
-    ) external payable isAuthorized(lockNum_) noReentrancy(1) returns (uint256 shares) {
-        // Check for rounding error since we round down in previewDeposit.
-        require((shares = previewDeposit(assets)) != 0, "ZERO_SHARES");
+    ) external payable isAuthorized(lockNum_) noReentrancy(1) {
+        //Mutex bitmap lock
+        _toggleBit(1, 1); 
 
-        s.isAuth[1] = true;
-
-        (address facet, bytes4 selector) = LibDiamond.facetToCall('updateExecutorState(uint256,address,uint256)');
-
-        (bool success, ) = facet.delegatecall( 
-            abi.encodeWithSelector(selector, assets, receiver, 1)
+        bytes memory data = abi.encodeWithSignature(
+            'updateExecutorState(uint256,address,uint256)', 
+            assets, receiver, 1
         );
-        if(!success) revert CallFailed('oz4626Facet: Failed to update Manager');
 
-        emit Deposit(msg.sender, receiver, assets, shares);
+        LibDiamond.callFacet(data);
+
+        emit Deposit(msg.sender, receiver, assets);
     }
 
 
+    /**
+     * @notice Redeemption of AUM
+     * @dev Calls for the calculations of how much funds the user will receive in
+     * regards to the amount of OZL tokens held.
+     * @param shares Amount of OZL tokens
+     * @param receiver Receiver of assets
+     * @param owner Address that holds shares
+     * @param lockNum_ Index of the bit which authorizes the function call
+     * @return assets (Redeemed) Funds from AUM for the receiver, expressed in yvCurve-Tricrypto
+     */
     function redeem(
         uint shares,
         address receiver,
@@ -64,59 +81,52 @@ contract oz4626Facet is Modifiers {
     ) external isAuthorized(lockNum_) noReentrancy(6) returns (uint256 assets) {
         require((assets = previewRedeem(shares)) != 0, "ZERO_ASSETS");
 
-        s.isAuth[4] = true;
+        //Mutex bitmap lock
+        _toggleBit(1, 4);
 
-        (address facet, bytes4 selector) = LibDiamond.facetToCall('burn(address,uint256,uint256)');
-
-        (bool success, ) = facet.delegatecall( 
-            abi.encodeWithSelector(selector, owner, shares, 4)
+        bytes memory data = abi.encodeWithSignature(
+            'burn(address,uint256,uint256)', 
+            owner, shares, 4
         );
-        if(!success) revert CallFailed('oz4626Facet: redeem() failed');
+
+        LibDiamond.callFacet(data);
 
         emit Withdraw(msg.sender, receiver, owner, assets, shares);
     }
 
     /*///////////////////////////////////////////////////////////////
-                           ACCOUNTING LOGIC
+                           Accounting Logic
     //////////////////////////////////////////////////////////////*/
 
-    function convertToShares(uint256 assets) public view virtual returns (uint256) { 
-        return s.ozelIndex == 0 ? 
-            oz20Facet(s.oz20).totalSupply() : 
-                s.ozelIndex.mulDivDown(assets * 100, 10 ** 22);
-    }
-
-    function convertToAssets(uint256 shares) public view virtual returns (uint256) { 
+    /**
+     * @dev Calculates the amount of assets to receive based on an OZL balance
+     * @param shares OZL balance
+     * @return assets (Redeemed) Funds to receive
+     */
+    function convertToAssets(uint256 shares) public view returns (uint256) { 
         uint vaultBalance = IERC20(s.yTriPool).balanceOf(address(this));
         uint assets = shares.mulDivDown(vaultBalance, 100 * 1 ether); 
         return assets;
     }
 
-    function previewDeposit(uint256 assets) public view virtual returns (uint256) {
-        return convertToShares(assets);
-    }
-
-    function previewRedeem(uint256 shares) public view virtual returns (uint256) {
+    /// @dev Previews the amount of funds from AUM to receive
+    function previewRedeem(uint256 shares) public view returns (uint256) {
         return convertToAssets(shares);
     }
 
     /*///////////////////////////////////////////////////////////////
-                     DEPOSIT/WITHDRAWAL LIMIT LOGIC
+                        Funding limit logic
     //////////////////////////////////////////////////////////////*/
 
-    function maxDeposit(address) public view virtual returns (uint256) { 
+    function maxDeposit() public pure returns (uint256) { 
         return type(uint256).max;
     }
 
-    function maxMint(address) public view virtual returns (uint256) {
-        return type(uint256).max;
-    }
-
-    function maxWithdraw(address owner) public view virtual returns (uint256) {
+    function maxWithdraw(address owner) public view returns (uint256) {
         return convertToAssets(maxRedeem(owner));
     }
 
-    function maxRedeem(address owner) public view virtual returns (uint256) {
+    function maxRedeem(address owner) public view returns (uint256) {
         return oz20Facet(s.oz20).balanceOf(owner);
     }
 }

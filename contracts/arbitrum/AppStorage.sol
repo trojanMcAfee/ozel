@@ -1,20 +1,18 @@
 // SPDX-License-Identifier: GPL-2.0-or-later
-pragma solidity ^0.8.0;
+pragma solidity 0.8.14;
 
-import '@openzeppelin/contracts/token/ERC20/IERC20.sol';
 import "@chainlink/contracts/src/v0.8/interfaces/AggregatorV3Interface.sol";
 import '@uniswap/v3-periphery/contracts/interfaces/ISwapRouter.sol';
-import '../interfaces/IWETH.sol';
-import { LibDiamond } from "../libraries/LibDiamond.sol";
+import '@openzeppelin/contracts/token/ERC20/IERC20.sol';
 
 
-struct AppStorage {
+/**
+ * @notice Main storage structs
+ */
+struct AppStorage { 
     //Contracts
-    address OZL; 
     address tricrypto;
     address crvTricrypto; 
-    address getters;
-    address renPool;
     address mimPool;
     address crv2Pool;
     address yTriPool;
@@ -24,7 +22,6 @@ struct AppStorage {
     //ERC20s
     address USDT;
     address WBTC;
-    address renBTC;
     address USDC;
     address MIM;
     address WETH;
@@ -32,11 +29,11 @@ struct AppStorage {
     address ETH;
 
     //Token infrastructure
-    address oz46;
     address oz20;
+    OZLERC20 oz;
 
     //System config
-    uint dappFee;
+    uint protocolFee;
     uint defaultSlippage;
     mapping(address => bool) tokenDatabase;
 
@@ -47,20 +44,14 @@ struct AppStorage {
     uint failedFees;
     mapping(address => uint) usersPayments;
 
-    OZLERC20 oz;
-
     //Curve swaps config
-    TradeOps renSwap;
     TradeOps mimSwap;
     TradeOps usdcSwap;
     TradeOps fraxSwap;
     TradeOps[] swaps;
 
-    bool isEnabled;
-
     //Mutex locks
-    mapping(uint => bool) isLocked;
-    mapping(uint => bool) isAuth;
+    mapping(uint => uint) bitLocks;
 
     //Stabilizing mechanism (for ozelIndex)
     uint invariant;
@@ -78,29 +69,35 @@ struct AppStorage {
     address revenueToken;
     uint24 poolFee;
     uint[] revenueAmounts;
-    bytes revenueCalldata;
-    address revenue;
+
+    //Misc vars
+    bool isEnabled;
+    bytes checkForRevenueSelec;
 
 }
 
+/// @dev Reference for oz20Facet storage
 struct OZLERC20 {
     mapping(address => mapping(address => uint256)) allowances;
     string  name;
     string  symbol;
 }
 
+/// @dev Reference for swaps and the addition/removal of account tokens
 struct TradeOps {
     int128 tokenIn;
     int128 tokenOut;
     address baseToken;
-    address userToken;  
+    address token;  
     address pool;
 }
 
-struct UserConfig { 
+/// @dev Reference for the details of each account
+struct AccountConfig { 
     address user;
-    address userToken;
-    uint userSlippage; 
+    address token;
+    uint slippage; 
+    string name;
 }
 
 
