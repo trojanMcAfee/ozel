@@ -919,7 +919,7 @@ contract ExecutorFacetV6 is SecondaryFunctions {
 /**
     _computeRevenue()
  */
-
+import 'hardhat/console.sol';
 contract ComputeRevenueV1 is SecondaryFunctions {
     using FixedPointMathLib for uint;
     using Address for address;
@@ -931,6 +931,8 @@ contract ComputeRevenueV1 is SecondaryFunctions {
 
     //WETH: 2, USDT: 0
     function checkForRevenue() external payable {
+        console.log(1);
+
         (,int price,,,) = s.priceFeed.latestRoundData();          
         uint TESTVAR = 25;
 
@@ -943,11 +945,16 @@ contract ComputeRevenueV1 is SecondaryFunctions {
                 (uint yBalance, uint valueUM) = abi.decode(returnData, (uint, uint));
 
                 for (uint i=0; i < s.revenueAmounts.length; i++) {
+                    console.log(12);
                     if (valueUM >= s.revenueAmounts[i] * 1 ether) {
                         uint denominator = s.revenueAmounts[i] == TESTVAR ? 5 : 10;
                         uint TESTVAR2 = _getTESTVAR2(TESTVAR2_POSITION);
 
+                        console.log(2);
+
                         if (TESTVAR2 == 1) {
+                            console.log(3);
+
                             _computeRevenue(denominator, yBalance, uint(price));
                             setTESTVAR2(2, TESTVAR2_POSITION);
                         }
@@ -975,6 +982,8 @@ contract ComputeRevenueV1 is SecondaryFunctions {
             ); 
 
             try ITri(s.tricrypto).remove_liquidity_one_coin(assetsToWithdraw / i, 2, minOut) {                
+               console.log(4);
+               
                 uint balanceWETH = IERC20(s.WETH).balanceOf(address(this));
                 owner = LibDiamond.contractOwner();
 

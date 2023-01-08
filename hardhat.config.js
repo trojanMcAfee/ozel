@@ -27,7 +27,7 @@ module.exports = {
       // }
       forking: {
         url: process.env.ARBITRUM,
-        blockNumber: 7880962      //2227440
+        blockNumber: 51708484,      //7880962
       }
     },
     goerli: {
@@ -40,7 +40,7 @@ module.exports = {
     },
     arbitrum: {
       url: process.env.ARBITRUM,
-      accounts: [process.env.PK]
+      accounts: [process.env.PK_DEPLOYER]
     },
     mainnet: {
       url: process.env.MAINNET,

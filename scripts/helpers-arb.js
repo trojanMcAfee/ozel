@@ -232,6 +232,10 @@ async function deploy(n = 0) {
     console.log('Caller 2: ', caller2Addr);
     console.log('--');
 
+    // const [ signer ] = await hre.ethers.getSigners();
+    // const callerAddr = await signer.getAddress();
+    // console.log('caller addr: ', callerAddr);
+
     const WETH = await hre.ethers.getContractAt('IERC20', wethAddr);
     const USDT = await hre.ethers.getContractAt('IERC20', usdtAddrArb);
     const WBTC = await hre.ethers.getContractAt('IERC20', wbtcAddr);
@@ -353,6 +357,8 @@ async function deploy(n = 0) {
     };
 
 }
+
+// deploy();
 
 
 
