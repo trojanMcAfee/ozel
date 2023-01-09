@@ -470,6 +470,7 @@ let isAuthorized, newSelector;
             });
 
             it('should allow the owner to add a new token to the database / addTokenToDatabase()', async () => {
+                await storageBeacon.removeTokenFromDatabase(wbtcAddr);
                 await storageBeacon.addTokenToDatabase(wbtcAddr);
             });
 
@@ -484,6 +485,7 @@ let isAuthorized, newSelector;
 
             it('should allow the owner to add multiple tokens / addTokenToDatabase()', async () => {
                 await storageBeacon.removeTokenFromDatabase(usdcAddr);
+                await storageBeacon.removeTokenFromDatabase(mimAddr);
 
                 const  tokensDB_pre = await storageBeacon.getTokenDatabase();
                 assert(tokensDB_pre.length > 0);
@@ -566,7 +568,8 @@ let isAuthorized, newSelector;
             });
 
             it('should allow the owner to disable the Emitter / changeEmitterStatus()', async () => {
-                accountDetails[1] = usdcAddr;
+                await storageBeacon.queryTokenDatabase(usdcAddr) ? accountDetails[1] = usdcAddr : accountDetails[1] = usdtAddrArb;
+
                 newProxyAddr = await createProxy(proxyFactory, accountDetails);
                 await storageBeacon.changeEmitterStatus(true, ops);
                 await sendETH(newProxyAddr, 0.01)

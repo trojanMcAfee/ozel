@@ -29,7 +29,9 @@ const {
     ops,
     fraxAddr,
     proxyABIeth,
-    opsL2
+    opsL2,
+    mimAddr,
+    wbtcAddr
 } = require('./state-vars.js');
 
 
@@ -245,12 +247,14 @@ async function createProxy(factory, accountDetails) {
 }
 
 
-async function deploySystem(type, signerAddr) {
+async function deploySystem(type, signerAddr) { 
 
     let constrArgs = [ myReceiver, getFakeOZLVars() ];
 
     //Deploys the fake OZL on arbitrum testnet 
-    const [ fakeOZLaddr ] = await deployContract('FakeOZL', constrArgs);
+    const [ ozDiamondAddr ] = await deployContract('FakeOZL', constrArgs);
+    // const ozDiamondAddr = '0xAdc0DC1af7DF5ff763a6ce132f62B967b57E0951';
+
 
     //Calculate fees on L1 > L2 arbitrum tx
     const [ gasPriceBid, maxGas ] = await getArbitrumParams();
@@ -265,7 +269,7 @@ async function deploySystem(type, signerAddr) {
     const fxConfig = [
         inbox, 
         pokeMeOpsAddr,
-        fakeOZLaddr,
+        ozDiamondAddr,
         emitterAddr,
         gelatoAddr, 
         ETH,
@@ -284,7 +288,9 @@ async function deploySystem(type, signerAddr) {
     const tokensDatabase = [
         usdtAddrArb,
         usdcAddr,
-        fraxAddr
+        fraxAddr,
+        mimAddr,
+        wbtcAddr
     ];
 
     constrArgs = [
@@ -346,7 +352,7 @@ async function deploySystem(type, signerAddr) {
         storageBeaconAddr,
         emitter,
         emitterAddr,
-        fakeOZLaddr,
+        ozDiamondAddr,
         eMode,
         proxyFactoryAddr
     ];
