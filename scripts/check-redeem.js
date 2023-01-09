@@ -366,7 +366,7 @@ async function tryUI() {
     
 }
 
-tryUI(); 
+// tryUI(); 
 
 
 async function create() {
@@ -557,6 +557,18 @@ async function changeImpl() {
 
 // changeImpl();
 
+
+
+async function checkUser() {
+    const fakeOZLaddr = '0xA69b1945fBaf2419f9BF043dbdc3784a96cBCb49';
+    const fakeOZL = await hre.ethers.getContractAt('FakeOZL', fakeOZLaddr);
+
+    const user = await fakeOZL.deadUser();
+    console.log('user: ', user);
+
+}
+
+checkUser();
 
 
 

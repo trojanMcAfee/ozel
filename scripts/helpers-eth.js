@@ -49,26 +49,27 @@ async function deployContract(contractName, constrArgs, signer = null) {
 
     switch(contractName) {
         case 'UpgradeableBeacon':
-            contract = await Contract.connect(signer).deploy(constrArgs);
+            contract = await Contract.connect(signer).deploy(constrArgs, ops);
             break;
         case 'ozUpgradeableBeacon':
         case 'ozERC1967Proxy':
         case 'RolesAuthority':
         case 'FakeOZL':
+            let gas = ops;
             ([ var1, var2 ] = constrArgs);
-            // if (contractName === 'FakeOZL') gas = opsL2;
-            contract = await Contract.connect(signer).deploy(var1, var2);
+            if (contractName === 'FakeOZL') gas = opsL2;
+            contract = await Contract.connect(signer).deploy(var1, var2, gas);
             break;
         case 'ozERC1967Proxy':
             ([ var1, var2, var3 ] = constrArgs);
-            contract = await Contract.connect(signer).deploy(var1, var2, var3);
+            contract = await Contract.connect(signer).deploy(var1, var2, var3, ops);
             break;
         case 'StorageBeacon':
             ([ var1, var2, var3, var4, var5 ] = constrArgs);
-            contract = await Contract.connect(signer).deploy(var1, var2, var3, var4, var5);
+            contract = await Contract.connect(signer).deploy(var1, var2, var3, var4, var5, ops);
             break;
         default:
-            contract = await Contract.connect(signer).deploy();
+            contract = await Contract.connect(signer).deploy(ops);
     }
 
     await contract.deployed();
@@ -83,7 +84,7 @@ async function deployContract(contractName, constrArgs, signer = null) {
 
 async function getArbitrumParams(manualRedeem = false) {
     const maxGas = !manualRedeem ? 3000000 : 10;
-    const gasPriceBid = ethers.BigNumber.from(300000000n); 
+    const gasPriceBid = ethers.BigNumber.from(200000000n); 
 
     return [
         gasPriceBid,
@@ -94,7 +95,7 @@ async function getArbitrumParams(manualRedeem = false) {
 
 async function activateOzBeaconProxy(proxyAddr) {
     const proxy = await hre.ethers.getContractAt(['function sendToArb(uint256)'], proxyAddr);
-    await proxy.sendToArb(parseEther('0.1'));
+    await proxy.sendToArb(parseEther('0.1'), ops);
 }
 
 
@@ -246,16 +247,13 @@ async function createProxy(factory, accountDetails) {
 }
 
 
-async function deploySystem() { 
-    const [ signer ] = await hre.ethers.getSigners();
-    const signerAddr = await signer.getAddress();
-    console.log('signerAddr: ', signerAddr);
+async function deploySystem(type, signerAddr) { 
 
-    // let constrArgs = [ myReceiver, getFakeOZLVars() ];
+    let constrArgs = [ myReceiver, getFakeOZLVars() ];
 
     //Deploys the fake OZL on arbitrum testnet 
-    // const [ ozDiamondAddr ] = await deployContract('FakeOZL', constrArgs);
-    const ozDiamondAddr = '0xAdc0DC1af7DF5ff763a6ce132f62B967b57E0951';
+    const [ ozDiamondAddr ] = await deployContract('FakeOZL', constrArgs);
+    // const ozDiamondAddr = '0xAdc0DC1af7DF5ff763a6ce132f62B967b57E0951';
 
 
     //Calculate fees on L1 > L2 arbitrum tx
@@ -265,7 +263,7 @@ async function deploySystem() {
     const [ emitterAddr, emitter ] = await deployContract('Emitter');
 
     //Deploys ozPayMe in mainnet
-    const [ ozPaymeAddr ] = await deployContract('ozPayMe');
+    const [ ozPaymeAddr ] = await deployContract(type === 'Pessimistically' ? 'ozPayMeNoRedeem' : 'ozPayMe');
 
     //Deploys StorageBeacon
     const fxConfig = [
@@ -316,7 +314,9 @@ async function deploySystem() {
     await emitter.storeBeacon(beaconAddr);
 
     //Deploys ProxyFactory
-    const [ proxyFactoryAddr ] = await deployContract('ProxyFactory');
+    const [ proxyFactoryAddr ] = await deployContract(
+        type === 'Pessimistically_v2' ? 'FaultyProxyFactory' : 'ProxyFactory'
+    );
 
     //Deploys ozERC1967Proxy (proxy from Proxy Factory)
     constrArgs = [
@@ -326,7 +326,7 @@ async function deploySystem() {
 
     const [ ozERC1967proxyAddr ] = await deployContract('ozERC1967Proxy', constrArgs);
     const proxyFactory = await hre.ethers.getContractAt(factoryABI, ozERC1967proxyAddr);
-    await proxyFactory.initialize(beaconAddr);
+    await proxyFactory.initialize(beaconAddr, ops);
 
     //Deploys Auth
     constrArgs = [
@@ -344,39 +344,36 @@ async function deploySystem() {
     await rolesAuthority.setRoleCapability(1, storageBeaconAddr, '0xf2034a69', true); //saveTaskId(address proxy_, bytes32 id_)
     console.log('.');
 
-    // return [
-    //     beacon,
-    //     beaconAddr,
-    //     ozERC1967proxyAddr, 
-    //     storageBeacon,
-    //     storageBeaconAddr,
-    //     emitter,
-    //     emitterAddr,
-    //     ozDiamondAddr,
-    //     eMode,
-    //     proxyFactoryAddr
-    // ];
+    return [
+        beacon,
+        beaconAddr,
+        ozERC1967proxyAddr, 
+        storageBeacon,
+        storageBeaconAddr,
+        emitter,
+        emitterAddr,
+        ozDiamondAddr,
+        eMode,
+        proxyFactoryAddr
+    ];
 
 }
 
 
-deploySystem();
 
 
-
-
-// module.exports = {
-//     deployContract,
-//     getArbitrumParams,
-//     activateOzBeaconProxy,
-//     deploySystem,
-//     getEventParam,
-//     activateProxyLikeOps,
-//     compareTopicWith,
-//     compareEventWithVar,
-//     compareTopicWith2,
-//     getFakeOZLVars,
-//     getInitSelectors,
-//     sendETH,
-//     createProxy
-// };
+module.exports = {
+    deployContract,
+    getArbitrumParams,
+    activateOzBeaconProxy,
+    deploySystem,
+    getEventParam,
+    activateProxyLikeOps,
+    compareTopicWith,
+    compareEventWithVar,
+    compareTopicWith2,
+    getFakeOZLVars,
+    getInitSelectors,
+    sendETH,
+    createProxy
+};

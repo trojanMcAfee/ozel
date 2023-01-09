@@ -15,6 +15,7 @@ import '../interfaces/ethereum/ozIPayMe.sol';
 import '../interfaces/ethereum/IOps.sol';
 import '../interfaces/common/IWETH.sol';
 import './ozUpgradeableBeacon.sol';
+import './FakeOZL.sol';
 import './Emitter.sol';
 import '../Errors.sol';
 
@@ -100,7 +101,7 @@ contract ozPayMe is ozIPayMe, ReentrancyGuard, Initializable {
         bool isEmergency = false;
 
         bytes memory swapData = abi.encodeWithSelector(
-            OZLFacet(payable(fxConfig.OZL)).exchangeToAccountToken.selector, 
+            FakeOZL(payable(fxConfig.OZL)).exchangeToAccountToken.selector, 
             acc_
         );
         
