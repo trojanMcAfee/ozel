@@ -355,18 +355,18 @@ async function maink() {
 
 
 async function tryUI() {
-    const storageBeaconAddr = '0xDf2956dB0E0c283d2cd7eB27ecBDaBBdEe329516';
+    const storageBeaconAddr = '0xc1093efb13D8fc16916590056869Fc3C70f822EF';
     const storageBeacon = await hre.ethers.getContractAt('StorageBeacon', storageBeaconAddr);
     const test1 = '0xb1188BCb6D5049a6550E260d72FDc33706fdC843';
     const test4 = '0xF4b21C5988B1169343867E620129A6D2eB1Dc67f';
-    const test6 = '0xbBDdF64fCDBA834a486E81EeFe72a7f3513E28B1';
+    const test6 = '0x074B21836b849F37F5c91d35fb83f6CB108DE32E';
     
     const taskId = await storageBeacon.getTaskID(test6);
     console.log('taskId: ', taskId);
     
 }
 
-// tryUI(); 
+tryUI(); 
 
 
 async function create() {

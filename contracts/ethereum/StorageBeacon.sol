@@ -66,7 +66,7 @@ contract StorageBeacon is IStorageBeacon, Initializable, Ownable {
         fxConfig = FixedConfig({
             inbox: fxConfig_.inbox,
             ops: fxConfig_.ops,
-            OZL: fxConfig_.OZL, //ozDiamond
+            OZL: fxConfig_.OZL,
             emitter: fxConfig_.emitter,
             gelato: payable(fxConfig_.gelato),
             ETH: fxConfig_.ETH, 

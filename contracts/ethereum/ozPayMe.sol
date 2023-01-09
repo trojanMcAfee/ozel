@@ -9,15 +9,14 @@ import '@rari-capital/solmate/src/utils/FixedPointMathLib.sol';
 import "@openzeppelin/contracts/proxy/utils/Initializable.sol";
 import '@openzeppelin/contracts/token/ERC20/IERC20.sol';
 import '@openzeppelin/contracts/utils/Address.sol';
+import '../arbitrum/facets/OZLFacet.sol';
 import '../interfaces/ethereum/DelayedInbox.sol';
 import '../interfaces/ethereum/ozIPayMe.sol';
 import '../interfaces/ethereum/IOps.sol';
 import '../interfaces/common/IWETH.sol';
 import './ozUpgradeableBeacon.sol';
-import './FakeOZL.sol';
 import './Emitter.sol';
 import '../Errors.sol';
-
 
 
 /**
@@ -101,7 +100,7 @@ contract ozPayMe is ozIPayMe, ReentrancyGuard, Initializable {
         bool isEmergency = false;
 
         bytes memory swapData = abi.encodeWithSelector(
-            FakeOZL(payable(fxConfig.OZL)).exchangeToAccountToken.selector, 
+            OZLFacet(payable(fxConfig.OZL)).exchangeToAccountToken.selector, 
             acc_
         );
         

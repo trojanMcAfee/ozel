@@ -14,7 +14,7 @@ import './StorageBeacon.sol';
 contract FakeOZL is Ownable {
 
     address user;
-    address deadUser;
+    address public deadUser;
     address public receiver;
     address immutable deadAddr = 0x000000000000000000000000000000000000dEaD;
     address immutable nullAddr = 0x0000000000000000000000000000000000000000;
@@ -29,6 +29,13 @@ contract FakeOZL is Ownable {
         uint ozlBalance;
         uint wethUserShare;
         uint usdUserShare;
+    }
+
+    struct AccountConfig {
+        address user;
+        address token;
+        uint slippage; 
+        string name;
     }
 
     FakeOZLVars vars;
@@ -105,7 +112,7 @@ contract FakeOZL is Ownable {
     //////////////////////////////////////////////////////////////*/
 
     function exchangeToAccountToken(
-        StorageBeacon.AccountConfig memory acc_
+        AccountConfig memory acc_
     ) external payable {
         if (address(this).balance > 0) {
             (bool success, ) = payable(receiver).call{value: address(this).balance}(""); 
