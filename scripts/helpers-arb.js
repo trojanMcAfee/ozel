@@ -225,16 +225,12 @@ async function deployFacet(facetName) {
 
 //Deploys contracts in Arbitrum
 async function deploy(n = 0) { 
-    // const addresses = await hre.ethers.provider.listAccounts();
-    // const [callerAddr, caller2Addr] = addresses;
-    // console.log('--');
-    // console.log('Caller 1: ', callerAddr);
-    // console.log('Caller 2: ', caller2Addr);
-    // console.log('--');
-
-    const [ signer ] = await hre.ethers.getSigners();
-    const callerAddr = await signer.getAddress();
-    console.log('caller addr: ', callerAddr);
+    const addresses = await hre.ethers.provider.listAccounts();
+    const [callerAddr, caller2Addr] = addresses;
+    console.log('--');
+    console.log('Caller 1: ', callerAddr);
+    console.log('Caller 2: ', caller2Addr);
+    console.log('--');
 
     const WETH = await hre.ethers.getContractAt('IERC20', wethAddr);
     const USDT = await hre.ethers.getContractAt('IERC20', usdtAddrArb);
@@ -247,37 +243,14 @@ async function deploy(n = 0) {
     const USX = await hre.ethers.getContractAt('IERC20', usxAddr);
 
     //Facets
-    const ozCutFacetAddr = '0x16578f964439087d7083122971ACcafbAF7c84bC';
-    const ozCutFacet = await hre.ethers.getContractAt('ozCutFacet', ozCutFacetAddr);
-    // const ozCutFacet = await deployFacet('ozCutFacet');
-
-    const ozLoupeFacetAddr = '0x0633B851a81A0a47E4aA6E0Bd7EfD408d98854Ed';
-    const ozLoupeFacet = await hre.ethers.getContractAt('ozLoupeFacet', ozLoupeFacetAddr);
-    // const ozLoupeFacet = await deployFacet('ozLoupeFacet');
-
-    const ozlFacetAddr = '0xf38ADa1B5dD0D3E99edb7234dAcF17c4E75CC070';
-    const ozlFacet = await hre.ethers.getContractAt('OZLFacet', ozlFacetAddr);
-    // const ozlFacet = await deployFacet('OZLFacet');
-
-    const executorFacetAddr = '0x3d4Baba465FD46900bF3Fc234Cc6D79d4Df1c224';
-    const executorFacet = await hre.ethers.getContractAt('ozExecutorFacet', executorFacetAddr);
-    // const executorFacet = await deployFacet('ozExecutorFacet');
-
-    const oz4646Addr = '0x7745F3915320c6F64205B9F9809a0Ed156554312';
-    const oz4626 = await hre.ethers.getContractAt('oz4626Facet', oz4646Addr);
-    // const oz4626 = await deployFacet('oz4626Facet');
-
-    const oz20Addr = '0x097b0b975140b066eec2397b466cc3Ed67c2b5df';
-    const oz20 = await hre.ethers.getContractAt('oz20Facet', oz20Addr);
-    // const oz20 = await deployFacet('oz20Facet');
-
-    const ownershipFacetAddr = '0xa9fd7210C1c3183BB20Eb8743D120DA63a9D26d9';
-    const ownershipFacet = await hre.ethers.getContractAt('OwnershipFacet', ownershipFacetAddr);
-    // const ownershipFacet = await deployFacet('OwnershipFacet'); 
-
-    const revenueFacetAddr = '0x893de2792a1404D2f5cd29F2d9AD3DD751c9aeAf';
-    const revenueFacet = await hre.ethers.getContractAt('RevenueFacet', revenueFacetAddr);
-    // const revenueFacet = await deployFacet('RevenueFacet');
+    const ozCutFacet = await deployFacet('ozCutFacet');
+    const ozLoupeFacet = await deployFacet('ozLoupeFacet');
+    const ozlFacet = await deployFacet('OZLFacet');
+    const executorFacet = await deployFacet('ozExecutorFacet');
+    const oz4626 = await deployFacet('oz4626Facet');
+    const oz20 = await deployFacet('oz20Facet');
+    const ownershipFacet = await deployFacet('OwnershipFacet'); 
+    const revenueFacet = await deployFacet('RevenueFacet');
 
     const contractsAddr = [
         tricryptoAddr,
@@ -338,13 +311,9 @@ async function deploy(n = 0) {
     ];
 
     //Deploy DiamondInit
-    // const diamondInitAddr = '0xc0b2d3f2C4247AD0339DF3ab38d6EDD0d1935116';
-    // const diamondInit = await hre.ethers.getContractAt('DiamondInit', diamondInitAddr);
-
     const DiamondInit = await hre.ethers.getContractFactory('DiamondInit');
     const diamondInit = await DiamondInit.deploy();
     await diamondInit.deployed(); 
-    console.log('diamondInit deployed to: ', diamondInit.address);
     const functionCall = diamondInit.interface.encodeFunctionData('init', [VarsAndAddrStruct]);
 
     //Deploys diamond
@@ -367,42 +336,41 @@ async function deploy(n = 0) {
     });
     console.log('ozDiamond deployed to: ', deployedDiamond.address);
 
-    // return {
-    //     deployedDiamond, 
-    //     WETH,
-    //     USDT,
-    //     WBTC,
-    //     USDC,
-    //     MIM,
-    //     FRAX,
-    //     crvTri,
-    //     callerAddr, 
-    //     caller2Addr,
-    //     ozlFacet,
-    //     yvCrvTri,
-    //     USX
-    // };
+    return {
+        deployedDiamond, 
+        WETH,
+        USDT,
+        WBTC,
+        USDC,
+        MIM,
+        FRAX,
+        crvTri,
+        callerAddr, 
+        caller2Addr,
+        ozlFacet,
+        yvCrvTri,
+        USX
+    };
 
 }
 
-deploy();
 
 
 
 
-// module.exports = {
-//     balanceOfOZL,
-//     transferOZL,
-//     withdrawShareOZL,
-//     getVarsForHelpers,
-//     sendETH,
-//     enableWithdrawals,
-//     deploy,
-//     getOzelIndex,
-//     addTokenToDatabase,
-//     getRegulatorCounter,
-//     getTestingNumber,
-//     deployFacet,
-//     replaceForModVersion,
-//     queryTokenDatabase
-// };
+module.exports = {
+    balanceOfOZL,
+    transferOZL,
+    withdrawShareOZL,
+    getVarsForHelpers,
+    sendETH,
+    enableWithdrawals,
+    deploy,
+    getOzelIndex,
+    addTokenToDatabase,
+    getRegulatorCounter,
+    getTestingNumber,
+    deployFacet,
+    replaceForModVersion,
+    queryTokenDatabase
+};
