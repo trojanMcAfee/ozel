@@ -225,16 +225,16 @@ async function deployFacet(facetName) {
 
 //Deploys contracts in Arbitrum
 async function deploy(n = 0) { 
-    const addresses = await hre.ethers.provider.listAccounts();
-    const [callerAddr, caller2Addr] = addresses;
-    console.log('--');
-    console.log('Caller 1: ', callerAddr);
-    console.log('Caller 2: ', caller2Addr);
-    console.log('--');
+    // const addresses = await hre.ethers.provider.listAccounts();
+    // const [callerAddr, caller2Addr] = addresses;
+    // console.log('--');
+    // console.log('Caller 1: ', callerAddr);
+    // console.log('Caller 2: ', caller2Addr);
+    // console.log('--');
 
-    // const [ signer ] = await hre.ethers.getSigners();
-    // const callerAddr = await signer.getAddress();
-    // console.log('caller addr: ', callerAddr);
+    const [ signer ] = await hre.ethers.getSigners();
+    const callerAddr = await signer.getAddress();
+    console.log('caller addr: ', callerAddr);
 
     const WETH = await hre.ethers.getContractAt('IERC20', wethAddr);
     const USDT = await hre.ethers.getContractAt('IERC20', usdtAddrArb);
@@ -340,42 +340,42 @@ async function deploy(n = 0) {
     });
     console.log('ozDiamond deployed to: ', deployedDiamond.address);
 
-    return {
-        deployedDiamond, 
-        WETH,
-        USDT,
-        WBTC,
-        USDC,
-        MIM,
-        FRAX,
-        crvTri,
-        callerAddr, 
-        caller2Addr,
-        ozlFacet,
-        yvCrvTri,
-        USX
-    };
+    // return {
+    //     deployedDiamond, 
+    //     WETH,
+    //     USDT,
+    //     WBTC,
+    //     USDC,
+    //     MIM,
+    //     FRAX,
+    //     crvTri,
+    //     callerAddr, 
+    //     caller2Addr,
+    //     ozlFacet,
+    //     yvCrvTri,
+    //     USX
+    // };
 
 }
 
-// deploy();
+deploy();
 
 
 
 
-module.exports = {
-    balanceOfOZL,
-    transferOZL,
-    withdrawShareOZL,
-    getVarsForHelpers,
-    sendETH,
-    enableWithdrawals,
-    deploy,
-    getOzelIndex,
-    addTokenToDatabase,
-    getRegulatorCounter,
-    getTestingNumber,
-    deployFacet,
-    replaceForModVersion,
-    queryTokenDatabase
-};
+// module.exports = {
+//     balanceOfOZL,
+//     transferOZL,
+//     withdrawShareOZL,
+//     getVarsForHelpers,
+//     sendETH,
+//     enableWithdrawals,
+//     deploy,
+//     getOzelIndex,
+//     addTokenToDatabase,
+//     getRegulatorCounter,
+//     getTestingNumber,
+//     deployFacet,
+//     replaceForModVersion,
+//     queryTokenDatabase
+// };
