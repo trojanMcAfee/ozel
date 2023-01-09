@@ -338,13 +338,13 @@ async function deploy(n = 0) {
     ];
 
     //Deploy DiamondInit
-    const diamondInitAddr = '0xc0b2d3f2C4247AD0339DF3ab38d6EDD0d1935116';
-    const diamondInit = await hre.ethers.getContractAt('DiamondInit', diamondInitAddr);
+    // const diamondInitAddr = '0xc0b2d3f2C4247AD0339DF3ab38d6EDD0d1935116';
+    // const diamondInit = await hre.ethers.getContractAt('DiamondInit', diamondInitAddr);
 
-    // const DiamondInit = await hre.ethers.getContractFactory('DiamondInit');
-    // const diamondInit = await DiamondInit.deploy();
-    // await diamondInit.deployed(); 
-    // console.log('diamondInit deployed to: ', diamondInit.address);
+    const DiamondInit = await hre.ethers.getContractFactory('DiamondInit');
+    const diamondInit = await DiamondInit.deploy();
+    await diamondInit.deployed(); 
+    console.log('diamondInit deployed to: ', diamondInit.address);
     const functionCall = diamondInit.interface.encodeFunctionData('init', [VarsAndAddrStruct]);
 
     //Deploys diamond

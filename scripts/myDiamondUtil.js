@@ -90,7 +90,7 @@ const FacetCutAction = {
     for (let prop in overrides) {
       otherArgs.push(overrides[prop]);
     }
-    const deployedDiamond = await diamondFactory.deploy(...constructorArguments, ...otherArgs, opsL2)
+    const deployedDiamond = await diamondFactory.deploy(...constructorArguments, ...otherArgs)
     await deployedDiamond.deployed()
     const result = await deployedDiamond.deployTransaction.wait()
   
