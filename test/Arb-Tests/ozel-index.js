@@ -15,10 +15,8 @@ const {
 } = require('../../scripts/helpers-arb.js');
 
 const { 
-    usdcAddr,
-    fraxAddr,
     defaultSlippage,
-    diamondABI
+    tokensDatabaseL1
 } = require('../../scripts/state-vars.js');
 
 
@@ -69,7 +67,7 @@ describe('Ozel Index', async function () {
 
         accountDetails = [
             callerAddr,
-            fraxAddr,
+            tokensDatabaseL1.fraxAddr,
             defaultSlippage,
             'myAccount'
         ];
@@ -83,7 +81,7 @@ describe('Ozel Index', async function () {
     it('should successfully stabilize the index for OZL balances calculations / UpdateIndexV1 & balanceOf()', async () => {
         await replaceForModVersion('UpdateIndexV1', false, selector, accountDetails, false, true);
         
-        accountDetails[1] = usdcAddr;
+        accountDetails[1] = tokensDatabaseL1.usdcAddr;
         accounts = await hre.ethers.provider.listAccounts();
         signers = await hre.ethers.getSigners();
 
