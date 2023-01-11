@@ -75,7 +75,7 @@ describe('Integration testing', async function () {
      * Meant to be run as one test.
     */
 
-    xdescribe('1st user, 1st transfer', async () => {
+    describe('1st user, 1st transfer', async () => {
         it('should convert ETH to token (FRAX)', async () => {
             receipt = await sendETH(accountDetails); 
             assert(formatEther(await FRAX.balanceOf(callerAddr)) > 0);
@@ -96,7 +96,7 @@ describe('Integration testing', async function () {
         });
     });
 
-    xdescribe('2nd user, 1st transfer', async () => {
+    describe('2nd user, 1st transfer', async () => {
         it('should convert ETH to token (WBTC)', async () => {
             accountDetails[0] = caller2Addr;
             accountDetails[1] = tokensDatabaseL1.wbtcAddr;
@@ -121,7 +121,7 @@ describe('Integration testing', async function () {
         });
     });
 
-    xdescribe('1st user, 2nd transfer', async () => {
+    describe('1st user, 2nd transfer', async () => {
         it('should convert ETH to token (MIM)', async () => {
             accountDetails[0] = callerAddr;
             accountDetails[1] = tokensDatabaseL1.mimAddr;
@@ -155,7 +155,7 @@ describe('Integration testing', async function () {
         });
     });
 
-    xdescribe("1st user's transfer of OZL tokens", async () => {
+    describe("1st user's transfer of OZL tokens", async () => {
         it('should transfer half of OZL tokens to 2nd user', async () => {
             await transferOZL(caller2Addr, parseEther((OZLbalanceFirstUser / 2).toString()));            
             OZLbalanceFirstUser = await balanceOfOZL(callerAddr);
@@ -176,7 +176,7 @@ describe('Integration testing', async function () {
             assert(balance > 0);
         });
 
-        xit('should leave 2nd user with all OZL tokens', async () => {
+        it('should leave 2nd user with all OZL tokens', async () => {
             OZLbalanceFirstUser = await balanceOfOZL(callerAddr);
             OZLbalanceSecondUser = await balanceOfOZL(caller2Addr);
             ozelIndex = await getOzelIndex();
@@ -186,7 +186,7 @@ describe('Integration testing', async function () {
         });
     });
 
-    xdescribe('1st user, 3rd and 4th transfers', async () => {
+    describe('1st user, 3rd and 4th transfers', async () => {
         it('should leave the 2nd user with more OZL tokens', async() => {
             await sendETH(accountDetails);
             OZLbalanceFirstUser = await balanceOfOZL(callerAddr);
@@ -210,7 +210,7 @@ describe('Integration testing', async function () {
         });
     });
 
-    xdescribe('2nd user withdraws 1/3 OZL tokens', async () => {
+    describe('2nd user withdraws 1/3 OZL tokens', async () => {
 
         it("should have a balance of the dapp's fees on account token (USDT)", async () => {
             accountDetails[0] = caller2Addr;

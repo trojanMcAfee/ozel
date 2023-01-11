@@ -17,7 +17,6 @@ import './oz4626Facet.sol';
 import '../../Errors.sol';
 
 
-import 'hardhat/console.sol';
 /**
  * @title Entry L2 contract for swaps 
  * @notice Receiver of the bridge tx from L1 containing the account's ETH. 
@@ -79,7 +78,7 @@ contract OZLFacet is ModifiersARB { //IOZLFacet
 
     
     function withdrawUserShare(
-        AccountConfig calldata acc_,
+        AccountConfig memory acc_,
         address receiver_,
         uint shares_
     ) external onlyWhenEnabled filterDetails(acc_) { 
