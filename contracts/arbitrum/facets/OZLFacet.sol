@@ -42,8 +42,6 @@ contract OZLFacet is ModifiersARB { //IOZLFacet
     ) external payable noReentrancy(0) filterDetails(acc_) { 
         if (msg.value <= 0) revert CantBeZero('msg.value');
 
-        // if (!s.tokenDatabase[acc_.token]) acc_.token = s.tokenL1ToTokenL2[acc_.token];
-
         if (s.failedFees > 0) _depositFeesInDeFi(s.failedFees, true); 
 
         IWETH(s.WETH).deposit{value: msg.value}();
@@ -235,7 +233,6 @@ contract OZLFacet is ModifiersARB { //IOZLFacet
                         Token database config
     //////////////////////////////////////////////////////////////*/
 
-    
     function addTokenToDatabase(
         TradeOps calldata newSwap_, 
         LibDiamond.Token calldata token_

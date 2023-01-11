@@ -103,6 +103,7 @@ async function addTokenToDatabase(tokenSwap, token, signerIndex = 0) {
 async function removeTokenFromDatabase(tokenSwap, token, signerIndex = 0) {
     const signers = await hre.ethers.getSigners();
     const signer = signers[signerIndex];
+    if (ops.value) delete ops.value;
     await OZLDiamond.connect(signer).removeTokenFromDatabase(tokenSwap, token, ops);
 }
 
@@ -280,22 +281,6 @@ async function deploy(n = 0) {
         wethAddr,
         fraxAddr,
     ];
-
-    // const tokensDatabase = [
-    //     usdtAddrArb,
-    //     usdcAddr,
-    //     fraxAddr,
-    //     wbtcAddr,
-    //     mimAddr
-    // ];
-
-    // tokensDatabaseL1 = {
-    //     usdtAddr: '0xdAC17F958D2ee523a2206206994597C13D831ec7',
-    //     usdcAddr: '0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48',
-    //     fraxAddr: '0x853d955aCEf822Db058eb8505911ED77F175b99e',
-    //     wbtcAddr: '0x2260FAC5E5542a773Aa44fBCfeDf7C193bc2C599',
-    //     mimAddr: '0x5a6A4D54456819380173272A5E8E9B9904BdF41B'
-    // };
 
     const tokensDatabase = [
         [tokensDatabaseL1.usdtAddr, usdtAddrArb],
