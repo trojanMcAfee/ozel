@@ -59,7 +59,7 @@ const diamondABI = [
     'function redeem(uint256 shares, address receiver, address owner, uint256 lockNum_) external returns (uint256 assets)',
     'function burn(address account, uint256 amount, uint256 lockNum_) external',
     'function modifyPaymentsAndVolumeExternally(address user_, uint256 newAmount_, uint256 lockNum_) external',
-    'function addTokenToDatabase(tuple(int128 tokenIn, int128 tokenOut, address baseToken, address token, address pool) newSwap_) external',
+    'function addTokenToDatabase((int128 tokenIn, int128 tokenOut, address baseToken, address token, address pool) newSwap_, (address l1Address, address l2Address) token_) external',
     'function transferUserAllocation(address sender_, address receiver_, uint256 amount_, uint256 senderBalance_, uint256 lockNum_) external',
     'function owner() external view returns (address owner_)',
     'function queryTokenDatabase(address token_) external view returns (bool)',
@@ -67,7 +67,7 @@ const diamondABI = [
     'function getTotalVolumeInETH() external view returns(uint)',
     'function getTotalVolumeInUSD() external view returns(uint)',
     'function getOzelBalances(address) external view returns (uint,uint)',
-    'function removeTokenFromDatabase((int128,int128,address,address,address)) external',
+    'function removeTokenFromDatabase((int128,int128,address,address,address) swapToRemove_, (address l1Address, address l2Address) token_) external',
     'function facetAddress(bytes4 _functionSelector) external view returns (address facetAddress_)',
     'function getProtocolFee() external view returns(uint)'
 ];
@@ -194,7 +194,8 @@ switch(network) {
             usdcAddr: '0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48',
             fraxAddr: '0x853d955aCEf822Db058eb8505911ED77F175b99e',
             wbtcAddr: '0x2260FAC5E5542a773Aa44fBCfeDf7C193bc2C599',
-            mimAddr: '0x5a6A4D54456819380173272A5E8E9B9904BdF41B'
+            mimAddr: '0x5a6A4D54456819380173272A5E8E9B9904BdF41B',
+            usxAddr: '0x0a5E677a6A24b2F1A2Bf4F3bFfC443231d2fDEc8'
         };
 } 
 

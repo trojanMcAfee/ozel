@@ -13,7 +13,8 @@ const {
     enableWithdrawals,
     deploy,
     addTokenToDatabase,
-    queryTokenDatabase
+    queryTokenDatabase,
+    removeTokenFromDatabase
 } = require('../../scripts/helpers-arb.js');
 
 const { 
@@ -27,7 +28,8 @@ const {
     usxAddr,
     dForcePoolAddr,
     ops,
-    protocolFee
+    protocolFee,
+    tokensDatabaseL1
 } = require('../../scripts/state-vars.js');
 
 
@@ -36,7 +38,7 @@ let accountDetails;
 let callerAddr, caller2Addr;
 let deployedDiamond, ozlDiamond;
 let evilAmount, evilSwapDetails;
-let tokenSwap;
+let tokenSwap, token;
 let addFlag, totalVolume;
 
 
@@ -68,7 +70,7 @@ describe('Unit testing', async function () {
 
         accountDetails = [
             callerAddr,
-            fraxAddr,
+            tokensDatabaseL1.fraxAddr,
             defaultSlippage,
             'myAccount'
         ];
@@ -101,7 +103,7 @@ describe('Unit testing', async function () {
             });
     
             it('should fail with slippage as 0', async () => {
-                accountDetails[1] = fraxAddr;
+                accountDetails[1] = tokensDatabaseL1.fraxAddr;
                 accountDetails[2] = 0;
                 await assert.rejects(async () => {
                     await sendETH(accountDetails);
@@ -123,7 +125,7 @@ describe('Unit testing', async function () {
             });
     
             it('should fail when msg.value is equal to 0', async () => {
-                accountDetails[1] = usdcAddr;
+                accountDetails[1] = tokensDatabaseL1.usdcAddr;
                 await assert.rejects(async () => {
                     await sendETH(accountDetails, 'no value');
                 }, {
@@ -158,7 +160,7 @@ describe('Unit testing', async function () {
             });
     
             it('should fail with account slippage as 0', async () => {
-                accountDetails[1] = fraxAddr;
+                accountDetails[1] = tokensDatabaseL1.fraxAddr;
                 accountDetails[2] = 0;
                 await assert.rejects(async () => {
                     await withdrawShareOZL(accountDetails, callerAddr, parseEther((await balanceOfOZL(callerAddr)).toString()));
@@ -180,7 +182,7 @@ describe('Unit testing', async function () {
             });
 
             it('should fail with receiver as address(0)', async () => {
-                accountDetails[1] = fraxAddr;
+                accountDetails[1] = tokensDatabaseL1.fraxAddr;
                 await assert.rejects(async () => {
                     await withdrawShareOZL(accountDetails, nullAddr, parseEther((await balanceOfOZL(callerAddr)).toString()));
                 }, {
@@ -209,7 +211,9 @@ describe('Unit testing', async function () {
                     usxAddr,
                     dForcePoolAddr
                 ];
-                if (!addFlag) await addTokenToDatabase(tokenSwap);
+
+                token = [ tokensDatabaseL1.usxAddr, usxAddr ];
+                if (!addFlag) await addTokenToDatabase(tokenSwap, token);
             });
 
             afterEach(() => addFlag = true);
@@ -218,7 +222,7 @@ describe('Unit testing', async function () {
                 balanceUSX = await USX.balanceOf(callerAddr);
                 assert.equal(formatEther(balanceUSX), 0);
                 
-                accountDetails[1] = usxAddr;
+                accountDetails[1] = tokensDatabaseL1.usxAddr;
                 await sendETH(accountDetails);
                 
                 balanceUSX = await USX.balanceOf(callerAddr);
@@ -230,8 +234,10 @@ describe('Unit testing', async function () {
 
             it('should not allow an unauthorized user to add a new token to database / addTokenToDatabase()', async () => {
                 tokenSwap[3] = deadAddr;
+                token = token.map(token => token = deadAddr);
+
                 await assert.rejects(async () => {
-                    await addTokenToDatabase(tokenSwap, 1);
+                    await addTokenToDatabase(tokenSwap, token, 1);
                 }, {
                     name: 'Error',
                     message: (await err(2)).notAuthorized 
@@ -242,14 +248,16 @@ describe('Unit testing', async function () {
                 doesExist = await queryTokenDatabase(usxAddr);
                 assert(doesExist);
 
-                await ozlDiamond.removeTokenFromDatabase(tokenSwap);
+                token[0] = tokensDatabaseL1.usxAddr;
+                token[1] = usxAddr;
+                await removeTokenFromDatabase(tokenSwap, token);
                 doesExist = await queryTokenDatabase(usxAddr);
                 assert(!doesExist);
             });
 
             it('should not allow an unauthorized user to remove a token (USX) from the database / removeTokenFromDatabase()', async () => {
                 await assert.rejects(async () => {
-                    await addTokenToDatabase(tokenSwap, 1);
+                    await removeTokenFromDatabase(tokenSwap, token, 1);
                 }, {
                     name: 'Error',
                     message: (await err(2)).notAuthorized 
@@ -330,7 +338,7 @@ describe('Unit testing', async function () {
 
     describe('ozLoupeFacet', async () => {
         beforeEach(async () => {
-            accountDetails[1] = usdcAddr;
+            accountDetails[1] = tokensDatabaseL1.usdcAddr;
             await sendETH(accountDetails);
         });
 

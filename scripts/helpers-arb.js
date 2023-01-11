@@ -94,10 +94,16 @@ async function getOzelIndex() {
     return await OZLDiamond.getOzelIndex();
 }
 
-async function addTokenToDatabase(tokenSwap, signerIndex = 0) {
+async function addTokenToDatabase(tokenSwap, token, signerIndex = 0) {
     const signers = await hre.ethers.getSigners();
     const signer = signers[signerIndex];
-    await OZLDiamond.connect(signer).addTokenToDatabase(tokenSwap, ops);
+    await OZLDiamond.connect(signer).addTokenToDatabase(tokenSwap, token, ops);
+}
+
+async function removeTokenFromDatabase(tokenSwap, token, signerIndex = 0) {
+    const signers = await hre.ethers.getSigners();
+    const signer = signers[signerIndex];
+    await OZLDiamond.connect(signer).removeTokenFromDatabase(tokenSwap, token, ops);
 }
 
 
@@ -389,5 +395,6 @@ module.exports = {
     getTestingNumber,
     deployFacet,
     replaceForModVersion,
-    queryTokenDatabase
+    queryTokenDatabase,
+    removeTokenFromDatabase
 };

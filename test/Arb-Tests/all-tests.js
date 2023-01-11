@@ -92,7 +92,7 @@ describe('Integration testing', async function () {
 
         accountDetails = [
             callerAddr,
-            fraxAddr, 
+            tokensDatabaseL1.fraxAddr, 
             defaultSlippage,
             'myAccount'
         ];
@@ -131,7 +131,7 @@ describe('Integration testing', async function () {
     describe('2nd user, 1st transfer', async () => {
         it('should convert ETH to token (WBTC)', async () => {
             accountDetails[0] = caller2Addr;
-            accountDetails[1] = wbtcAddr;
+            accountDetails[1] = tokensDatabaseL1.wbtcAddr;
 
             await sendETH(accountDetails); 
             assert(formatEther(await FRAX.balanceOf(callerAddr)) > 0);
@@ -156,7 +156,7 @@ describe('Integration testing', async function () {
     describe('1st user, 2nd transfer', async () => {
         it('should convert ETH to token (MIM)', async () => {
             accountDetails[0] = callerAddr;
-            accountDetails[1] = mimAddr;
+            accountDetails[1] = tokensDatabaseL1.mimAddr;
 
             await sendETH(accountDetails);
             balanceMIM = await MIM.balanceOf(callerAddr);
@@ -202,7 +202,7 @@ describe('Integration testing', async function () {
     describe("1st user's OZL withdrawal", async () => {
         it("should have a balance of the dapp's fees on token (USDC)", async () => {
             await enableWithdrawals(true);
-            accountDetails[1] = usdcAddr;
+            accountDetails[1] = tokensDatabaseL1.usdcAddr;
             await withdrawShareOZL(accountDetails, callerAddr, parseEther((await balanceOfOZL(callerAddr)).toString()));
             balance = await USDC.balanceOf(callerAddr);
             assert(balance > 0);
@@ -246,7 +246,7 @@ describe('Integration testing', async function () {
 
         it("should have a balance of the dapp's fees on account token (USDT)", async () => {
             accountDetails[0] = caller2Addr;
-            accountDetails[1] = usdtAddrArb;
+            accountDetails[1] = tokensDatabaseL1.usdtAddr;
             await withdrawShareOZL(accountDetails, caller2Addr, parseEther(toTransfer.toString()), 1);
             balance = await USDT.balanceOf(caller2Addr);
             assert(balance > 0);

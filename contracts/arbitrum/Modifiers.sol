@@ -47,6 +47,7 @@ abstract contract ModifiersARB is Bits {
      * @param acc_ Details of account/proxy
      */
     modifier filterDetails(AccountConfig memory acc_) {
+        if (acc_.user == address(0) || acc_.token == address(0)) revert CantBeZero('address'); 
 
         if (!s.tokenDatabase[acc_.token] && _l1TokenCheck(acc_.token)) {
             revert TokenNotInDatabase(acc_.token);
@@ -54,7 +55,6 @@ abstract contract ModifiersARB is Bits {
             acc_.token = s.tokenL1ToTokenL2[acc_.token];
         }
 
-        if (acc_.user == address(0) || acc_.token == address(0)) revert CantBeZero('address'); 
         if (acc_.slippage <= 0) revert CantBeZero('slippage');
         if (bytes(acc_.name).length == 0) revert CantBeZero('name'); 
         if (bytes(acc_.name).length > 18) revert NameTooLong();
