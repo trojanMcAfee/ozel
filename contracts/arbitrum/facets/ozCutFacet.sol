@@ -56,4 +56,9 @@ contract ozCutFacet is DiamondCutFacet {
         s.poolFee = newPoolFee_;
         emit newUniPoolFee(newPoolFee_);
     }
+
+    function changel1Check(bool newState_) external {
+        LibDiamond.enforceIsContractOwner();
+        s.l1Check = newState_;
+    }
 }

@@ -75,6 +75,7 @@ struct AppStorage {
     bool isEnabled;
     bytes checkForRevenueSelec;
     address nullAddress;
+    bool l1Check;
 
 }
 

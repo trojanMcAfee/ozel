@@ -23,6 +23,7 @@ contract OZLFacetTest is ModifiersARB {
     using Address for address;
 
     event NewToken(address token); 
+    event TokenRemoved(address token);
     event DeadVariables(bool isRetry);
  
 
@@ -143,19 +144,32 @@ contract OZLFacetTest is ModifiersARB {
     }
 
 
-    function addTokenToDatabase(TradeOps memory newSwap_) external { 
+    function addTokenToDatabase(
+        TradeOps calldata newSwap_, 
+        LibDiamond.Token calldata token_
+    ) external { 
         LibDiamond.enforceIsContractOwner();
-        s.tokenDatabase[newSwap_.token] = true;
+        address l2Address = token_.l2Address;
+        if (s.tokenDatabase[l2Address]) revert TokenAlreadyInDatabase(l2Address);
+        
+        s.tokenDatabase[l2Address] = true;
+        s.tokenL1ToTokenL2[token_.l1Address] = l2Address;
         s.swaps.push(newSwap_);
-        emit NewToken(newSwap_.token);
+        emit NewToken(l2Address);
     }
 
-    function removeTokenFromDatabase(TradeOps memory swapToRemove_) external {
+    function removeTokenFromDatabase(
+        TradeOps calldata swapToRemove_, 
+        LibDiamond.Token calldata token_
+    ) external {
         LibDiamond.enforceIsContractOwner();
-        if(!s.tokenDatabase[swapToRemove_.token]) revert TokenNotInDatabase(swapToRemove_.token);
+        address l2Address = token_.l2Address;
+        if(!s.tokenDatabase[l2Address] && _l1TokenCheck(l2Address)) revert TokenNotInDatabase(l2Address);
 
-        s.tokenDatabase[swapToRemove_.token] = false;
+        s.tokenDatabase[l2Address] = false;
+        s.tokenL1ToTokenL2[token_.l1Address] = s.nullAddress;
         LibCommon.remove(s.swaps, swapToRemove_);
+        emit TokenRemoved(l2Address);
     }
 
 

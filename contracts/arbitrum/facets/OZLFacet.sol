@@ -17,32 +17,33 @@ import './oz4626Facet.sol';
 import '../../Errors.sol';
 
 
-
+import 'hardhat/console.sol';
 /**
  * @title Entry L2 contract for swaps 
  * @notice Receiver of the bridge tx from L1 containing the account's ETH. 
  * It's also in charge of conducting the core swaps, depositing the system's fees 
  * and token database config.
  */
-contract OZLFacet is IOZLFacet, ModifiersARB { 
+contract OZLFacet is ModifiersARB { //IOZLFacet
 
     using SafeERC20 for IERC20;
     using Address for address;
 
     event NewToken(address token);
+    event TokenRemoved(address token);
 
 
     /*///////////////////////////////////////////////////////////////
                                 Main
     //////////////////////////////////////////////////////////////*/  
 
-    /// @inheritdoc IOZLFacet
+    
     function exchangeToAccountToken(
-        AccountConfig calldata acc_
+        AccountConfig memory acc_
     ) external payable noReentrancy(0) filterDetails(acc_) { 
         if (msg.value <= 0) revert CantBeZero('msg.value');
 
-        if (!s.tokenDatabase[acc_.token]) acc_.token = s.tokenL1ToTokenL2[acc_.token];
+        // if (!s.tokenDatabase[acc_.token]) acc_.token = s.tokenL1ToTokenL2[acc_.token];
 
         if (s.failedFees > 0) _depositFeesInDeFi(s.failedFees, true); 
 
@@ -76,7 +77,7 @@ contract OZLFacet is IOZLFacet, ModifiersARB {
     }
 
 
-    /// @inheritdoc IOZLFacet
+    
     function withdrawUserShare(
         AccountConfig calldata acc_,
         address receiver_,
@@ -169,7 +170,7 @@ contract OZLFacet is IOZLFacet, ModifiersARB {
     function _swapsForBaseToken(
         uint amountIn_, 
         uint baseTokenOut_, 
-        AccountConfig calldata acc_
+        AccountConfig memory acc_
     ) private {
         IERC20(s.WETH).approve(s.tricrypto, amountIn_);
 
@@ -213,7 +214,7 @@ contract OZLFacet is IOZLFacet, ModifiersARB {
      * @dev Forwards the call for a final swap from base token to the account token
      * @param acc_ Details of the account
      */
-    function _tradeWithExecutor(AccountConfig calldata acc_) private { 
+    function _tradeWithExecutor(AccountConfig memory acc_) private { 
         _toggleBit(1, 2);
         uint length = s.swaps.length;
 
@@ -235,23 +236,34 @@ contract OZLFacet is IOZLFacet, ModifiersARB {
                         Token database config
     //////////////////////////////////////////////////////////////*/
 
-    /// @inheritdoc IOZLFacet
-    function addTokenToDatabase(TradeOps calldata newSwap_) external { 
+    
+    function addTokenToDatabase(
+        TradeOps calldata newSwap_, 
+        LibDiamond.Token calldata token_
+    ) external { 
         LibDiamond.enforceIsContractOwner();
-        if (s.tokenDatabase[newSwap_.token]) revert TokenAlreadyInDatabase(newSwap_.token);
+        address l2Address = token_.l2Address;
+        if (s.tokenDatabase[l2Address]) revert TokenAlreadyInDatabase(l2Address);
         
-        s.tokenDatabase[newSwap_.token] = true;
+        s.tokenDatabase[l2Address] = true;
+        s.tokenL1ToTokenL2[token_.l1Address] = l2Address;
         s.swaps.push(newSwap_);
-        emit NewToken(newSwap_.token);
+        emit NewToken(l2Address);
     }
 
-    /// @inheritdoc IOZLFacet
-    function removeTokenFromDatabase(TradeOps calldata swapToRemove_) external {
+    
+    function removeTokenFromDatabase(
+        TradeOps calldata swapToRemove_, 
+        LibDiamond.Token calldata token_
+    ) external {
         LibDiamond.enforceIsContractOwner();
-        if(!s.tokenDatabase[swapToRemove_.token]) revert TokenNotInDatabase(swapToRemove_.token);
+        address l2Address = token_.l2Address;
+        if(!s.tokenDatabase[l2Address] && _l1TokenCheck(l2Address)) revert TokenNotInDatabase(l2Address);
 
-        s.tokenDatabase[swapToRemove_.token] = false;
+        s.tokenDatabase[l2Address] = false;
+        s.tokenL1ToTokenL2[token_.l1Address] = s.nullAddress;
         LibCommon.remove(s.swaps, swapToRemove_);
+        emit TokenRemoved(l2Address);
     }
 
     /*///////////////////////////////////////////////////////////////
