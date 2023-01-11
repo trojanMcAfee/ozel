@@ -18,15 +18,12 @@ const {
     getRegulatorCounter,
     getTestingNumber,
     replaceForModVersion,
-    queryTokenDatabase
+    queryTokenDatabase,
+    removeTokenFromDatabase
 } = require('../../scripts/helpers-arb.js');
 
 const { 
     usdtAddrArb,
-    wbtcAddr,
-    usdcAddr,
-    mimAddr,
-    fraxAddr,
     defaultSlippage,
     nullAddr,
     deadAddr,
@@ -35,13 +32,14 @@ const {
     usxAddr,
     dForcePoolAddr,
     ops,
-    protocolFee
+    protocolFee,
+    tokensDatabaseL1
 } = require('../../scripts/state-vars.js');
 
 
 
 let accountDetails;
-let FRAX, WBTC, MIM, USDT, USDC;
+let FRAX, MIM, USDT, USDC;
 let callerAddr, caller2Addr;
 let ozelIndex, newOzelIndex;
 let balance, OZLbalanceFirstUser, OZLbalanceSecondUser, totalOZLusers;
@@ -52,7 +50,7 @@ let evilAmount, evilSwapDetails;
 let accounts, signers, regulatorCounter, higherIndex;
 let receipt;
 let iface, abi;
-let selector, balanceWETH, balanceUSDT, balanceWBTC, balanceMIM;
+let selector, balanceWETH, balanceUSDT, balanceMIM;
 let yvCrvTri, testingNum, balanceUSDC, balanceTri;
 let ozlDiamond, owner;
 let addFlag, tokenSwap;
@@ -984,7 +982,7 @@ describe('My Revenue', async function() {
 
         accountDetails = [
             callerAddr,
-            fraxAddr, 
+            tokensDatabaseL1.fraxAddr, 
             defaultSlippage,
             'myAccount'
         ];
