@@ -465,16 +465,6 @@ async function queryRedemption() {
     // console.log('redeemptions post: ', redemptions);
 }
 
-async function deployRedeem() {
-    const privateKey = process.env.PK_TESTNET;
-    const l2ProviderTestnet = new ethers.providers.JsonRpcProvider(process.env.ARB_GOERLI);
-    const l2Wallet = new Wallet(privateKey, l2ProviderTestnet);
-
-    const RedeemedHashes = await hre.ethers.getContractFactory('RedeemedHashes');
-    const redeemedHashes = await RedeemedHashes.connect(l2Wallet).deploy();
-    await redeemedHashes.deployed();
-    console.log('redeemedHashes deployed to: ', redeemedHashes.address);
-}
 
 // queryRedemption();
 
@@ -568,7 +558,22 @@ async function checkUser() {
 
 }
 
-checkUser();
+// checkUser();
+
+
+async function tryMain() {
+    const ozDiamondAddr = '0xAdc0DC1af7DF5ff763a6ce132f62B967b57E0951';
+    const ozDiamond = await hre.ethers.getContractAt(diamondABI, ozDiamondAddr);
+
+    const volETH = await ozDiamond.getTotalVolumeInETH();
+    console.log('ETH vol: ', formatEther(volETH));
+
+    const volUSD = await ozDiamond.getTotalVolumeInUSD();
+    console.log('USD vol: ', formatEther(volUSD));
+
+}
+
+tryMain();
 
 
 

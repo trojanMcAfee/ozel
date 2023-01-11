@@ -63,93 +63,86 @@ async function deployTestnet(testSigner = false, manualRedeem = false) {
         'test account'
     ];
     
-    // let constrArgs = [ receiver, getFakeOZLVars() ]; 
+    let constrArgs = [ receiver, getFakeOZLVars() ]; 
     
-    // //Deploys the fake OZL on arbitrum testnet 
-    // const [ fakeOZLaddr ] = await deployContract('FakeOZL', constrArgs, l2SignerTest); 
+    //Deploys the fake OZL on arbitrum testnet 
+    const [ fakeOZLaddr ] = await deployContract('FakeOZL', constrArgs, l2SignerTest); 
    
-    // //Calculate fees on L1 > L2 arbitrum tx 
-    // // manualRedeem = true; //**** comment in for manualRedeem ****
-    // const [ gasPriceBid, maxGas ] = await getArbitrumParams(manualRedeem);
+    //Calculate fees on L1 > L2 arbitrum tx 
+    // manualRedeem = true; //**** comment in for manualRedeem ****
+    const [ gasPriceBid, maxGas ] = await getArbitrumParams(manualRedeem);
 
-    // //Deploys Emitter
-    // const [ emitterAddr, emitter ] = await deployContract('Emitter', '', l1SignerTest);
+    //Deploys Emitter
+    const [ emitterAddr, emitter ] = await deployContract('Emitter', '', l1SignerTest);
 
-    // //Deploys ozPayMe in mainnet
-    // const [ ozPaymeAddr ] = await deployContract('ozPayMe', '', l1SignerTest);
+    //Deploys ozPayMe in mainnet
+    const [ ozPaymeAddr ] = await deployContract('ozPayMe', '', l1SignerTest);
 
     //Deploys StorageBeacon
-    // const fxConfig = [
-    //     inbox, 
-    //     pokeMeOpsAddr,
-    //     fakeOZLaddr,
-    //     emitterAddr,
-    //     gelatoAddr, 
-    //     ETH,
-    //     maxGas
-    // ];
+    const fxConfig = [
+        inbox, 
+        pokeMeOpsAddr,
+        fakeOZLaddr,
+        emitterAddr,
+        gelatoAddr, 
+        ETH,
+        maxGas
+    ];
 
-    // const eMode = [
-    //     swapRouterUniAddr,
-    //     chainlinkAggregatorAddr,
-    //     poolFeeUni,
-    //     wethAddr,
-    //     usdcAddr
-    // ];
+    const eMode = [
+        swapRouterUniAddr,
+        chainlinkAggregatorAddr,
+        poolFeeUni,
+        wethAddr,
+        usdcAddr
+    ];
 
 
-    // const tokensDatabase = [
-    //     mimAddr,
-    //     usdcAddr,
-    //     fraxAddr,
-    //     usdtAddrArb,
-    //     wbtcAddr
-    // ];
+    const tokensDatabase = [
+        mimAddr,
+        usdcAddr,
+        fraxAddr,
+        usdtAddrArb,
+        wbtcAddr
+    ];
 
-    // constrArgs = [
-    //     fxConfig,
-    //     eMode,
-    //     tokensDatabase,
-    //     getInitSelectors(),
-    //     gasPriceBid
-    // ]; 
+    constrArgs = [
+        fxConfig,
+        eMode,
+        tokensDatabase,
+        getInitSelectors(),
+        gasPriceBid
+    ]; 
 
-    // const [ storageBeaconAddr, storageBeacon ] = await deployContract('StorageBeacon', constrArgs, l1SignerTest);
+    const [ storageBeaconAddr, storageBeacon ] = await deployContract('StorageBeacon', constrArgs, l1SignerTest);
 
-    // //Deploys UpgradeableBeacon
-    // constrArgs = [
-    //     ozPaymeAddr,
-    //     storageBeaconAddr
-    // ];
+    //Deploys UpgradeableBeacon
+    constrArgs = [
+        ozPaymeAddr,
+        storageBeaconAddr
+    ];
 
-    // const [ beaconAddr, beacon ] = await deployContract('ozUpgradeableBeacon', constrArgs, l1SignerTest); 
-    // await storageBeacon.storeBeacon(beaconAddr, ops);
-    // console.log('beacon stored in StorageBeacon...')
-    // await emitter.storeBeacon(beaconAddr, ops);
-    // console.log('beacon stored in Emitter...');
+    const [ beaconAddr, beacon ] = await deployContract('ozUpgradeableBeacon', constrArgs, l1SignerTest); 
+    await storageBeacon.storeBeacon(beaconAddr, ops);
+    console.log('beacon stored in StorageBeacon...')
+    await emitter.storeBeacon(beaconAddr, ops);
+    console.log('beacon stored in Emitter...');
 
-    // //Deploys ProxyFactory
-    // const [proxyFactoryAddr] = await deployContract('ProxyFactory', '', l1SignerTest);
+    //Deploys ProxyFactory
+    const [proxyFactoryAddr] = await deployContract('ProxyFactory', '', l1SignerTest);
 
-    // //Deploys ozERC1967Proxy
-    // constrArgs = [
-    //     proxyFactoryAddr,
-    //     '0x'
-    // ];
+    //Deploys ozERC1967Proxy
+    constrArgs = [
+        proxyFactoryAddr,
+        '0x'
+    ];
 
-    // const [ ozERC1967proxyAddr ] = await deployContract('ozERC1967Proxy', constrArgs, l1SignerTest); 
+    const [ ozERC1967proxyAddr ] = await deployContract('ozERC1967Proxy', constrArgs, l1SignerTest); 
 
-    // const proxyFactory = await hre.ethers.getContractAt(factoryABI, ozERC1967proxyAddr);
-    // let tx = await proxyFactory.connect(l1SignerTest).initialize(beaconAddr, ops);
-    // let receipt = await tx.wait();
-    // console.log('initialize with hash: ', receipt.transactionHash);
-
-    const beaconAddr = '0x487d9deC8320F0adE8a9c4F9dcF47c6650a2C55d';
-    const beacon = await hre.ethers.getContractAt('ozUpgradeableBeacon', beaconAddr);
-    const ozERC1967proxyAddr = '0x4CB58e036738ACb4441a8FA69e560b4e7dAd41d6';
-    const storageBeaconAddr = '0xff0c43673ab95287E79131c13D2A4c48d8dE47De';
-    const proxyFactory = await hre.ethers.getContractAt('ProxyFactory', ozERC1967proxyAddr);
-    const storageBeacon = await hre.ethers.getContractAt('StorageBeacon', storageBeaconAddr);
+    const proxyFactory = await hre.ethers.getContractAt(factoryABI, ozERC1967proxyAddr);
+    let tx = await proxyFactory.connect(l1SignerTest).initialize(beaconAddr, ops);
+    let receipt = await tx.wait();
+    console.log('initialize with hash: ', receipt.transactionHash);
 
     //Deploys RedeemedHashes contract in L2
     const [ redeemedHashesAddr, redeemedHashes ] = await deployContract('RedeemedHashes', '', l2SignerTest); 
@@ -184,14 +177,14 @@ async function deployTestnet(testSigner = false, manualRedeem = false) {
     const taskId = await storageBeacon.getTaskID(newProxyAddr, ops);
     console.log('task id: ', taskId.toString());
 
-    // return [
-    //     storageBeacon,
-    //     emitterAddr,
-    //     newProxyAddr,
-    //     redeemedHashes,
-    //     proxyFactory,
-    //     accountDetails
-    // ];
+    return [
+        storageBeacon,
+        emitterAddr,
+        newProxyAddr,
+        redeemedHashes,
+        proxyFactory,
+        accountDetails
+    ];
 
 }
 
