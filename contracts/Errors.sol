@@ -45,3 +45,5 @@ error NameTooLong();
 /// @dev Thrown when the queried Gelato task is invalid
 /// @param taskId Gelato task
 error InvalidTask(bytes32 taskId);
+
+error L1TokenDisabled(address l1Token);

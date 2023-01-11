@@ -80,7 +80,7 @@ describe('Unit testing', async function () {
     });
 
     describe('OZLFacet', async () => { 
-        Xdescribe('exchangeToAccountToken()', async () => {
+        describe('exchangeToAccountToken()', async () => {
             it('should fail with user as address(0)', async () => {
                 accountDetails[0] = nullAddr;
                 await assert.rejects(async () => {
@@ -134,8 +134,8 @@ describe('Unit testing', async function () {
                 });
             });
 
-            it('should not allow a swap in normal condition with the l1Check disabled / exchangeToAccountToken() - changel1Check()', async () => {
-                await ozlDiamond.changel1Check(false);
+            it('should not allow a swap in normal condition with the l1Check disabled / exchangeToAccountToken() - changeL1Check()', async () => {
+                await ozlDiamond.changeL1Check(false);
                 ops.value = parseEther('1');
 
                 await assert.rejects(async () => {
@@ -146,13 +146,13 @@ describe('Unit testing', async function () {
                 });
 
                 //Clean up
-                await ozlDiamond.changel1Check(true);
+                await ozlDiamond.changeL1Check(true);
             });
 
             /**
              * This is test is for bridging is eliminated from the system, so the token checks are done exclusively for L2 addresses
              */
-            it('should allow a swap after disabling the l1Check and only adding an l2Address (without l1Address) / exchangeToAccountToken() - changel1Check()', async () => {
+            it('should allow a swap after disabling the l1Check and only adding an l2Address (without l1Address) / exchangeToAccountToken() - changeL1Check()', async () => {
                 tokenSwap = [
                     1,
                     0,
@@ -165,7 +165,7 @@ describe('Unit testing', async function () {
 
                 token[0] = nullAddr;
                 await addTokenToDatabase(tokenSwap, token);
-                await ozlDiamond.changel1Check(false);
+                await ozlDiamond.changeL1Check(false);
 
                 accountDetails[1] = usdcAddr;
                 ops.value = parseEther('1');
@@ -173,14 +173,14 @@ describe('Unit testing', async function () {
                 console.log(5);
 
                 //Clean up
-                await ozlDiamond.changel1Check(true);
+                await ozlDiamond.changeL1Check(true);
+                await removeTokenFromDatabase(tokenSwap, token);
+                token[0] = tokensDatabaseL1.usdcAddr;
+                await addTokenToDatabase(tokenSwap, token);
             });
-
-            
-
         });
 
-        xdescribe('withdrawUserShare()', async () => {
+        describe('withdrawUserShare()', async () => {
             beforeEach(async () => await enableWithdrawals(true));
 
             it('should fail with user as address(0)', async () => {
@@ -246,7 +246,7 @@ describe('Unit testing', async function () {
             });
         });
 
-        xdescribe('addTokenToDatabase() / removeTokenFromDatabase()', async () => {
+        describe('addTokenToDatabase() / removeTokenFromDatabase()', async () => {
             beforeEach(async () => {
                 //dForcePool --> USX: 0 / USDT: 2 / USDC: 1
                 tokenSwap = [
@@ -308,10 +308,35 @@ describe('Unit testing', async function () {
                     message: (await err(2)).notAuthorized 
                 });
             });
+
+            it('should not allow to add a new token with an L1 address when the l1Check has been disabled / addTokenToDatabase() - changeL1Check()', async () => {
+                await ozlDiamond.changeL1Check(false);
+
+                tokenSwap = [
+                    1,
+                    0,
+                    usdtAddrArb,
+                    usdcAddr,
+                    crv2PoolAddr
+                ];
+                token = [ tokensDatabaseL1.usdcAddr, usdcAddr ];
+                await removeTokenFromDatabase(tokenSwap, token);
+                
+                await assert.rejects(async () => {
+                    await addTokenToDatabase(tokenSwap, token);
+                }, {
+                    name: 'Error',
+                    message: (await err(token[0])).l1TokenDisabled 
+                });
+
+                //Clean up
+                await ozlDiamond.changeL1Check(true);
+                await addTokenToDatabase(tokenSwap, token);
+            });
         });
     });
 
-    xdescribe('ozExecutorFacet', async () => { 
+    describe('ozExecutorFacet', async () => { 
         it('shout not allow an unauthorized user to run the function / updateExecutorState()', async () => {
             await assert.rejects(async () => {
                 await ozlDiamond.updateExecutorState(evilAmount, deadAddr, 1, ops);
@@ -350,7 +375,7 @@ describe('Unit testing', async function () {
         });
     });
 
-    xdescribe('oz4626Facet', async () => { 
+    describe('oz4626Facet', async () => { 
         it('shout not allow an unauthorized user to run the function / deposit()', async () => {
             await assert.rejects(async () => {
                 await ozlDiamond.deposit(evilAmount, deadAddr, 0, ops);
@@ -370,7 +395,7 @@ describe('Unit testing', async function () {
         });
     });
 
-    xdescribe('oz20Facet', async () => { 
+    describe('oz20Facet', async () => { 
         it('shout not allow an unauthorized user to run the function / burn()', async () => {
             await assert.rejects(async () => {
                 await ozlDiamond.burn(caller2Addr, evilAmount, 4, ops);
@@ -381,7 +406,7 @@ describe('Unit testing', async function () {
         });
     });
 
-    xdescribe('ozLoupeFacet', async () => {
+    describe('ozLoupeFacet', async () => {
         beforeEach(async () => {
             accountDetails[1] = tokensDatabaseL1.usdcAddr;
             await sendETH(accountDetails);
@@ -414,7 +439,3 @@ describe('Unit testing', async function () {
         });
     });
 });
-
-
-
-//mark one l1Address as 0x00000 and test how it fails with s.l1Check true and how it passes when it's false

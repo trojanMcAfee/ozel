@@ -70,7 +70,7 @@ const diamondABI = [
     'function removeTokenFromDatabase((int128,int128,address,address,address) swapToRemove_, (address l1Address, address l2Address) token_) external',
     'function facetAddress(bytes4 _functionSelector) external view returns (address facetAddress_)',
     'function getProtocolFee() external view returns(uint)',
-    'function changel1Check(bool newState_) external'
+    'function changeL1Check(bool newState_) external'
 ];
 
 

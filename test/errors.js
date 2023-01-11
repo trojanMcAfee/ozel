@@ -26,7 +26,8 @@ async function err(n = 0) {
         zeroMsgValue: `VM Exception while processing transaction: reverted with custom error 'CantBeZero("msg.value")'`,
         zeroShares: `VM Exception while processing transaction: reverted with custom error 'CantBeZero("shares")'`,
         tokenInDatabase: `VM Exception while processing transaction: reverted with custom error 'TokenAlreadyInDatabase("${n}")'`,
-        invalidName: "VM Exception while processing transaction: reverted with custom error 'NameTooLong()'"
+        invalidName: "VM Exception while processing transaction: reverted with custom error 'NameTooLong()'",
+        l1TokenDisabled: `VM Exception while processing transaction: reverted with custom error 'L1TokenDisabled("${n}")'`
     };
     
 } 

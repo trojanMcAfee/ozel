@@ -239,10 +239,13 @@ contract OZLFacet is ModifiersARB { //IOZLFacet
     ) external { 
         LibDiamond.enforceIsContractOwner();
         address l2Address = token_.l2Address;
+        address l1Address = token_.l1Address;
+
         if (s.tokenDatabase[l2Address]) revert TokenAlreadyInDatabase(l2Address);
-        
+        if (!s.l1Check && l1Address != s.nullAddress) revert L1TokenDisabled(l1Address);
+
         s.tokenDatabase[l2Address] = true;
-        s.tokenL1ToTokenL2[token_.l1Address] = l2Address;
+        s.tokenL1ToTokenL2[l1Address] = l2Address;
         s.swaps.push(newSwap_);
         emit NewToken(l2Address);
     }
