@@ -54,7 +54,11 @@ contract DiamondInit {
         //Tokens database
         uint length = vars_.tokensDb.length;
         for (uint i=0; i < length;) {
-            s.tokenDatabase[vars_.tokensDb[i]] = true;
+            address l1Address = vars_.tokensDb[i].l1Address;
+            address l2Address = vars_.tokensDb[i].l2Address;
+
+            s.tokenDatabase[l2Address] = true;
+            s.tokenL1ToTokenL2[l1Address] = l2Address;
             unchecked { ++i; }
         }
 
@@ -106,6 +110,7 @@ contract DiamondInit {
 
         //Misc vars
         s.checkForRevenueSelec = abi.encodeWithSignature('checkForRevenue()');
+        s.nullAddress = 0x0000000000000000000000000000000000000000;
 
 
         // add your own state variables 

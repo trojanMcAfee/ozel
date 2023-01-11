@@ -36,6 +36,7 @@ struct AppStorage {
     uint protocolFee;
     uint defaultSlippage;
     mapping(address => bool) tokenDatabase;
+    mapping(address => address) tokenL1ToTokenL2;
 
     //Internal accounting vars
     uint totalVolume;
@@ -73,6 +74,7 @@ struct AppStorage {
     //Misc vars
     bool isEnabled;
     bytes checkForRevenueSelec;
+    address nullAddress;
 
 }
 

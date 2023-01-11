@@ -42,6 +42,8 @@ contract OZLFacet is IOZLFacet, ModifiersARB {
     ) external payable noReentrancy(0) filterDetails(acc_) { 
         if (msg.value <= 0) revert CantBeZero('msg.value');
 
+        if (!s.tokenDatabase[acc_.token]) acc_.token = s.tokenL1ToTokenL2[acc_.token];
+
         if (s.failedFees > 0) _depositFeesInDeFi(s.failedFees, true); 
 
         IWETH(s.WETH).deposit{value: msg.value}();

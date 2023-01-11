@@ -21,6 +21,7 @@ let pokeMeOpsAddr;
 let hopBridge;
 let inbox; 
 let gelatoAddr;
+let tokensDatabaseL1;
 const ETH = '0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE';
 const nullAddr = '0x0000000000000000000000000000000000000000';
 const testnetReceiver = '0x2B75D8312cA463Dea9E80981b5c690f15E94Bd55'; //0x5d9B5dEF9E6549820d506084e3629f60f1fF6E96
@@ -187,6 +188,14 @@ switch(network) {
         swapRouterUniAddr = '0xE592427A0AEce92De3Edee1F18E0157C05861564';
         usxAddr = '0x641441c631e2F909700d2f41FD87F0aA6A6b4EDb';
         dForcePoolAddr = '0x2ce5Fd6f6F4a159987eac99FF5158B7B62189Acf';
+
+        tokensDatabaseL1 = {
+            usdtAddr: '0xdAC17F958D2ee523a2206206994597C13D831ec7',
+            usdcAddr: '0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48',
+            fraxAddr: '0x853d955aCEf822Db058eb8505911ED77F175b99e',
+            wbtcAddr: '0x2260FAC5E5542a773Aa44fBCfeDf7C193bc2C599',
+            mimAddr: '0x5a6A4D54456819380173272A5E8E9B9904BdF41B'
+        };
 } 
 
 
@@ -240,7 +249,8 @@ module.exports = {
     l2SignerTestnet,
     l1Provider,
     opsL2,
-    opsL2_2
+    opsL2_2,
+    tokensDatabaseL1
 };
 
 

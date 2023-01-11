@@ -44,14 +44,23 @@ abstract contract ModifiersARB is Bits {
 
     /**
      * @dev Does primery checks on the details of an account
-     * @param accountDetails_ Details of account/proxy
+     * @param acc_ Details of account/proxy
      */
-    modifier filterDetails(AccountConfig memory accountDetails_) {
-        if (accountDetails_.user == address(0) || accountDetails_.token == address(0)) revert CantBeZero('address'); 
-        if (accountDetails_.slippage <= 0) revert CantBeZero('slippage');
-        if (bytes(accountDetails_.name).length == 0) revert CantBeZero('name'); 
-        if (bytes(accountDetails_.name).length > 18) revert NameTooLong();
-        if (!s.tokenDatabase[accountDetails_.token]) revert TokenNotInDatabase(accountDetails_.token);
+    modifier filterDetails(AccountConfig memory acc_) {
+        if (!s.tokenDatabase[acc_.token] && _l1TokenCheck(acc_.token)) revert TokenNotInDatabase(acc_.token);
+        if (acc_.user == address(0) || acc_.token == address(0)) revert CantBeZero('address'); 
+        if (acc_.slippage <= 0) revert CantBeZero('slippage');
+        if (bytes(acc_.name).length == 0) revert CantBeZero('name'); 
+        if (bytes(acc_.name).length > 18) revert NameTooLong();
         _;
+    }
+
+    function _l1TokenCheck(address token_) private returns(bool) {
+        if (s.l1Check) {
+            if (s.tokenL1ToTokenL2[token_] == s.nullAddress) return true;
+            return false;
+        } else {
+            return true;
+        }
     }
 }
