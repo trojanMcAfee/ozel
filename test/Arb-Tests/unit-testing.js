@@ -19,8 +19,6 @@ const {
 
 const { 
     usdtAddrArb,
-    usdcAddr,
-    fraxAddr,
     defaultSlippage,
     nullAddr,
     deadAddr,
