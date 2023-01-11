@@ -743,7 +743,7 @@ describe('Anti-slippage system', async function () {
 
         accountDetails = [ 
             callerAddr,
-            usdtAddrArb,
+            tokensDatabaseL1.usdtAddr,
             defaultSlippage,
             'myAccount'
         ];
@@ -836,7 +836,7 @@ describe('Anti-slippage system', async function () {
             abi = ['function executeFinalTrade((int128 tokenIn, int128 tokenOut, address baseToken, address token, address pool) swapDetails_, uint256 userSlippage_, address user_, uint256 lockNum_) external payable'];
             iface = new ethers.utils.Interface(abi);
             selector = iface.getSighash('executeFinalTrade');
-            accountDetails[1] = usdcAddr;
+            accountDetails[1] = tokensDatabaseL1.usdcAddr;
 
             balanceUSDT = await USDT.balanceOf(callerAddr);
             balanceUSDC = await USDC.balanceOf(callerAddr);
@@ -907,7 +907,7 @@ describe('Anti-slippage system', async function () {
          * (2nd leg for non-BTC-2Pool coins)
          */
         it('should swap the funds to account token only / ExecutorFacetV4', async () => {            
-            accountDetails[1] = mimAddr;
+            accountDetails[1] = tokensDatabaseL1.mimAddr;
             ({ testingNum, balance: balanceUSDT } = await replaceForModVersion('ExecutorFacetV4', false, selector, accountDetails, false));
             assert.equal(testingNum, 23);
             assert(balanceUSDT > 0);
@@ -920,7 +920,7 @@ describe('Anti-slippage system', async function () {
          * All funds are in account token through two swaps (2nd leg for non-BTC-2Pool coins)
          */
         it('should send account token to the user in the 2nd loop iteration / ExecutorFacetV5', async () => {
-            accountDetails[1] = mimAddr;
+            accountDetails[1] = tokensDatabaseL1.mimAddr;
             balanceMIM = formatEther(await MIM.balanceOf(callerAddr));
             assert.equal(balanceMIM, 0);
 
@@ -937,7 +937,7 @@ describe('Anti-slippage system', async function () {
          * and the other half in the baseToken.
          */
         it('should divide the funds between baseToken and account token / ExecutorFacetV6', async () => {            
-            accountDetails[1] = mimAddr;
+            accountDetails[1] = tokensDatabaseL1.mimAddr;
             balanceMIM = formatEther(await MIM.balanceOf(callerAddr));
             assert.equal(balanceMIM, 0);
 

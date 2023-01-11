@@ -13,11 +13,11 @@ const {
 } = require('../../scripts/helpers-arb.js');
 
 const { 
-    fraxAddr,
     defaultSlippage,
     deadAddr,
     crvTricrypto,
-    diamondABI
+    diamondABI,
+    tokensDatabaseL1
 } = require('../../scripts/state-vars.js');
 
 
@@ -58,7 +58,7 @@ describe('My Revenue', async function() {
 
         accountDetails = [
             callerAddr,
-            fraxAddr, 
+            tokensDatabaseL1.fraxAddr, 
             defaultSlippage,
             'myAccount'
         ];

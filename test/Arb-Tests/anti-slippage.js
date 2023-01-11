@@ -21,11 +21,11 @@ const {
 
 
 let accountDetails;
-let WBTC, MIM, USDT;
+let MIM, USDT;
 let callerAddr, caller2Addr;
 let deployedDiamond;
 let iface, abi, receipt;
-let selector, balanceRenBTC, balanceWETH, balanceUSDT, balanceWBTC, balanceMIM;
+let selector, balanceWETH, balanceUSDT, balanceMIM;
 let testingNum;
 
 
