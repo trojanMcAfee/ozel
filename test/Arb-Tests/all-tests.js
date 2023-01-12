@@ -33,7 +33,9 @@ const {
     dForcePoolAddr,
     ops,
     protocolFee,
-    tokensDatabaseL1
+    tokensDatabaseL1,
+    usdcAddr,
+    crv2PoolAddr
 } = require('../../scripts/state-vars.js');
 
 
@@ -360,6 +362,51 @@ describe('Unit testing', async function () {
                     message: (await err()).zeroMsgValue 
                 });
             });
+
+            it('should not allow a swap in normal condition with the l1Check disabled / exchangeToAccountToken() - changeL1Check()', async () => {
+                await ozlDiamond.changeL1Check(false);
+                ops.value = parseEther('1');
+
+                await assert.rejects(async () => {
+                    await ozlDiamond.exchangeToAccountToken(accountDetails, ops);
+                }, {
+                    name: 'Error',
+                    message: (await err(accountDetails[1])).tokenNotFound 
+                });
+
+                //Clean up
+                await ozlDiamond.changeL1Check(true);
+            });
+
+            /**
+             * This is test is for bridging is eliminated from the system, so the token checks are done exclusively for L2 addresses
+             */
+            it('should allow a swap after disabling the l1Check and only adding an l2Address (without l1Address) / exchangeToAccountToken() - changeL1Check()', async () => {
+                tokenSwap = [
+                    1,
+                    0,
+                    usdtAddrArb,
+                    usdcAddr,
+                    crv2PoolAddr
+                ];
+                token = [ tokensDatabaseL1.usdcAddr, usdcAddr ];
+                await removeTokenFromDatabase(tokenSwap, token);
+
+                token[0] = nullAddr;
+                await addTokenToDatabase(tokenSwap, token);
+                await ozlDiamond.changeL1Check(false);
+
+                accountDetails[1] = usdcAddr;
+                ops.value = parseEther('1');
+                await ozlDiamond.exchangeToAccountToken(accountDetails, ops);
+                console.log(5);
+
+                //Clean up
+                await ozlDiamond.changeL1Check(true);
+                await removeTokenFromDatabase(tokenSwap, token);
+                token[0] = tokensDatabaseL1.usdcAddr;
+                await addTokenToDatabase(tokenSwap, token);
+            });
         });
 
         describe('withdrawUserShare()', async () => {
@@ -489,6 +536,31 @@ describe('Unit testing', async function () {
                     name: 'Error',
                     message: (await err(2)).notAuthorized 
                 });
+            });
+
+            it('should not allow to add a new token with an L1 address when the l1Check has been disabled / addTokenToDatabase() - changeL1Check()', async () => {
+                await ozlDiamond.changeL1Check(false);
+
+                tokenSwap = [
+                    1,
+                    0,
+                    usdtAddrArb,
+                    usdcAddr,
+                    crv2PoolAddr
+                ];
+                token = [ tokensDatabaseL1.usdcAddr, usdcAddr ];
+                await removeTokenFromDatabase(tokenSwap, token);
+                
+                await assert.rejects(async () => {
+                    await addTokenToDatabase(tokenSwap, token);
+                }, {
+                    name: 'Error',
+                    message: (await err(token[0])).l1TokenDisabled 
+                });
+
+                //Clean up
+                await ozlDiamond.changeL1Check(true);
+                await addTokenToDatabase(tokenSwap, token);
             });
         });
     });

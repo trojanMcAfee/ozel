@@ -21,6 +21,7 @@ contract ozCutFacet is DiamondCutFacet {
     event newWithdrawalStatus(bool status);
     event newRevenueToken(address newToken);
     event newUniPoolFee(uint24 newPoolFee);
+    event l1CheckChanged(bool newState);
 
     /// @dev Changes the fee that the system charges per usage
     function changeProtocolFee(uint bps_) external {
@@ -60,5 +61,6 @@ contract ozCutFacet is DiamondCutFacet {
     function changeL1Check(bool newState_) external {
         LibDiamond.enforceIsContractOwner();
         s.l1Check = newState_;
+        emit l1CheckChanged(newState_);
     }
 }
