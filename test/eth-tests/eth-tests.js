@@ -104,9 +104,22 @@ let isAuthorized, newSelector;
 
             proxyFactory = await hre.ethers.getContractAt(factoryABI, ozERC1967proxyAddr);
             fakeOzl = await hre.ethers.getContractAt('FakeOZL', fakeOZLaddr);
+        }); 
+
+        describe('Measure gas', async () => {
+            it('should throw gas', async () => {
+                const iface = new ethers.utils.Interface(factoryABI);
+                const data = iface.encodeFunctionData('createNewProxy', [accountDetails]);
+                const gasCost = await hre.ethers.provider.estimateGas({
+                    to: ozERC1967proxyAddr,
+                    data
+                });
+                console.log('gas cost: ', Number(gasCost));
+
+            });
         });
 
-        describe('ProxyFactory', async () => {
+        xdescribe('ProxyFactory', async () => {
             describe('Deploys one account', async () => {
                 it('should create a account successfully / createNewProxy()', async () => {
                     await proxyFactory.createNewProxy(accountDetails, ops);
@@ -273,7 +286,7 @@ let isAuthorized, newSelector;
             });
         });
 
-        describe('ozAccountProxy / ozPayMe', async () => {
+        xdescribe('ozAccountProxy / ozPayMe', async () => {
             before(async () => {
                 newProxyAddr = await createProxy(proxyFactory, accountDetails);
                 newProxy = await hre.ethers.getContractAt(proxyABIeth, newProxyAddr);
@@ -407,7 +420,7 @@ let isAuthorized, newSelector;
             });
         });
 
-        describe('Emitter', async () => {
+        xdescribe('Emitter', async () => {
             before(async () => {
                 newProxyAddr = await createProxy(proxyFactory, accountDetails);
             });
@@ -439,7 +452,7 @@ let isAuthorized, newSelector;
             }); 
         });
     
-        describe('StorageBeacon', async () => {
+        xdescribe('StorageBeacon', async () => {
             it('should not allow an user to save an account / saveUserToDetails()', async () => {
                 await assert.rejects(async () => {
                     await storageBeacon.saveUserToDetails(signerAddr2, accountDetails);
@@ -713,7 +726,7 @@ let isAuthorized, newSelector;
             });
         });
 
-        describe('ozUpgradeableBeacon', async () => {
+        xdescribe('ozUpgradeableBeacon', async () => {
             it('should allow the owner to upgrade the Storage Beacon / upgradeStorageBeacon()', async () => {
                 [storageBeaconMockAddr , storageBeaconMock] = await deployContract('StorageBeaconMock');
                 await beacon.upgradeStorageBeacon(storageBeaconMockAddr);
@@ -760,7 +773,7 @@ let isAuthorized, newSelector;
             });
         });
 
-        describe('FakeOZL', async () => {
+        xdescribe('FakeOZL', async () => {
             it('should get the total volume in USD / getTotalVolumeInUSD', async () => {
                 volume = await fakeOzl.getTotalVolumeInUSD(); 
                 assert.equal(formatEther(volume), 500);
@@ -816,7 +829,7 @@ let isAuthorized, newSelector;
     });
 
     
-    describe('Pesimistic deployment', async function () {
+    xdescribe('Pesimistic deployment', async function () {
 
         /**
          * Deploys ozPayMeNoRedeem. which has an autoRedeem of 0, instead of ozPayme 

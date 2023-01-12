@@ -573,7 +573,24 @@ async function tryMain() {
 
 }
 
-tryMain();
+// tryMain();
+
+
+async function checkGas() {
+    const accountDetails = [
+        signerAddr,
+        usdtAddrArb,
+        defaultSlippage,
+        'my account'
+    ];
+    
+    const iface = new ethers.utils.Interface(factoryABI);
+    const calldata = iface.encodeFunctionData('createNewProxy', [accountDetails]);
+    const gasCost = await hre.ethers.provider.estimateGas({
+        to: 
+    });
+
+}
 
 
 
