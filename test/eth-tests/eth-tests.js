@@ -22,7 +22,8 @@ const {
     factoryABI,
     ops,
     mimAddr,
-    wbtcAddr
+    wbtcAddr,
+    myReceiver
  } = require('../../scripts/state-vars.js');
 
  const {
@@ -35,7 +36,8 @@ const {
     compareEventWithVar,
     compareTopicWith2,
     sendETH,
-    createProxy
+    createProxy,
+    getFakeOZLVars
  } = require('../../scripts/helpers-eth');
 
  const { err } = require('../errors.js');
@@ -60,7 +62,7 @@ const evilAmount = ethers.constants.MaxUint256;
 let preBalance, postBalance;
 let isExist, proxyFactory;
 let tx, receipt;
-let fakeOzl, volume;
+let fakeOzl, volume, ozDiamond;
 let names, proxies, slippage;
 let isAuthorized, newSelector;
 
@@ -681,6 +683,29 @@ let isAuthorized, newSelector;
     
                 await assert.rejects(async () => {
                     await storageBeacon.connect(signers[1]).addAuthorizedSelector(newSelector, ops);
+                }, {
+                    name: 'Error',
+                    message: (await err()).notOwner 
+                });
+            });
+
+            it('should get the current address of ozDiamond (aka fakeOZL in this case) / getDiamond()', async () => {
+                ozDiamond = await storageBeacon.getDiamond();
+                assert.equal(ozDiamond, fakeOzl.address);
+            });
+
+            it('should allow the onwer to change the stored address of ozDiamond/ changeDiamond()', async () => {
+                const constrArgs = [ myReceiver, getFakeOZLVars() ];
+                const [ newDiamondAddr ] = await deployContract('FakeOZL', constrArgs);
+                
+                await storageBeacon.changeDiamond(newDiamondAddr, ops);
+                ozDiamond = await storageBeacon.getDiamond();
+                assert.equal(newDiamondAddr, ozDiamond);
+            });
+
+            it('should not allow an unauthorized user to change the stored ozDiamond / changeDiamond()', async () => {
+                await assert.rejects(async () => {
+                    await storageBeacon.connect(signers[1]).changeDiamond(deadAddr, ops);
                 }, {
                     name: 'Error',
                     message: (await err()).notOwner 

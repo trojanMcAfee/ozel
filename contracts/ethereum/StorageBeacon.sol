@@ -38,6 +38,9 @@ contract StorageBeacon is IStorageBeacon, Initializable, Ownable {
     bool isEmitter;
 
     event L2GasPriceChanged(uint newGasPriceBid);
+    event DiamondChanged(address newDiamond);
+    event NewToken(address token);
+    event TokenRemoved(address token);
 
     /*///////////////////////////////////////////////////////////////
                             Modifiers
@@ -127,6 +130,7 @@ contract StorageBeacon is IStorageBeacon, Initializable, Ownable {
         if (queryTokenDatabase(newToken_)) revert TokenAlreadyInDatabase(newToken_);
         tokenDatabase[newToken_] = true;
         tokenDatabaseArray.push(newToken_);
+        emit NewToken(newToken_);
     }
 
     /// @inheritdoc IStorageBeacon
@@ -134,6 +138,7 @@ contract StorageBeacon is IStorageBeacon, Initializable, Ownable {
         if (!queryTokenDatabase(toRemove_)) revert TokenNotInDatabase(toRemove_);
         tokenDatabase[toRemove_] = false;
         LibCommon.remove(tokenDatabaseArray, toRemove_);
+        emit TokenRemoved(toRemove_);
     }
 
     /// @inheritdoc IStorageBeacon
@@ -159,6 +164,11 @@ contract StorageBeacon is IStorageBeacon, Initializable, Ownable {
     /// @inheritdoc IStorageBeacon
     function addAuthorizedSelector(bytes4 selector_) external onlyOwner {
         authorizedSelectors[selector_] = true;
+    }
+
+    function changeDiamond(address newDiamond_) external onlyOwner {
+        fxConfig.OZL = newDiamond_;
+        emit DiamondChanged(newDiamond_);
     }
 
 
@@ -233,6 +243,10 @@ contract StorageBeacon is IStorageBeacon, Initializable, Ownable {
     /// @inheritdoc IStorageBeacon
     function getAccountPayments(address account_) external view returns(uint) {
         return accountToPayments[account_];
+    }
+
+    function getDiamond() external view returns(address) {
+        return fxConfig.OZL;
     }
 }
 

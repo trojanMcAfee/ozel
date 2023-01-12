@@ -113,4 +113,8 @@ contract ozLoupeFacet is ozILoupeFacet, DiamondLoupeFacet {
     function getDefaultSlippage() external view returns(uint) {
         return s.defaultSlippage;
     }
+
+    function getL1CheckStatus() external view returns(bool) {
+        return s.l1Check;
+    }
 }
