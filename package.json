@@ -18,7 +18,6 @@
     "@uniswap/v2-periphery": "^1.1.0-beta.0",
     "@uniswap/v3-periphery": "^1.4.1",
     "axios": "^0.27.2",
-    "bn.js": "^5.2.0",
     "diamond-util": "^1.1.1",
     "dotenv": "^10.0.0",
     "hardhat": "^2.12.5",
