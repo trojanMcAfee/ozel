@@ -121,9 +121,10 @@ interface IStorageBeacon {
     /**
      * @dev Gets the Gelato task of an account/proxy
      * @param account_ Account
+     * @param owner_ Owner of the task
      * @return bytes32 Gelato Task ID
      */
-    function getTaskID(address account_) external view returns(bytes32);
+    function getTaskID(address account_, address owner_) external view returns(bytes32);
 
     /// @dev Gets the owner of an account
     function getUserByAccount(address account_) external view returns(address);
