@@ -27,8 +27,10 @@ contract StorageBeacon is IStorageBeacon, Initializable, Ownable {
 
 
     mapping(address => address[]) userToAccounts;
+
     struct Details {
         mapping(address => AccountConfig) accountToDetails;
+        address account;
     }
     mapping(address => Details[]) userToAccountsToDetails;
     mapping(address => AccountConfig) public accountToDetails; 
@@ -140,8 +142,9 @@ contract StorageBeacon is IStorageBeacon, Initializable, Ownable {
 
         Details storage deets = userToAccountsToDetails[acc_.user].push();
         deets.accountToDetails[account_] = acc_;
+        deets.account = account_;
 
-        if (!userDatabase[acc_.user]) userDatabase[acc_.user] = true;
+        // if (!userDatabase[acc_.user]) userDatabase[acc_.user] = true;
         taskIDs[account_] = taskId_;
 
         //-----
@@ -151,7 +154,6 @@ contract StorageBeacon is IStorageBeacon, Initializable, Ownable {
 
         // userToAccountsToDetails[acc_.user].push(new mapping(address => AccountConfig));
         // userToAccountsToDetails[acc_.user][0][account_] = acc_;
-
     }
 
     /// @inheritdoc IStorageBeacon
@@ -235,14 +237,59 @@ contract StorageBeacon is IStorageBeacon, Initializable, Ownable {
     function getAccountsByUser(
         address user_
     ) external view returns(address[] memory, string[] memory) {
-        address[] memory accounts = userToAccounts[user_];
+        Details[] storage accountsMap = userToAccountsToDetails[user_];
+        address[] memory accounts = new address[](accountsMap.length);
         string[] memory names = new string[](accounts.length);
 
-        for (uint i=0; i < accounts.length;) {
-            names[i] = accountToDetails[accounts[i]].name;
-            unchecked { ++i; }
+        for (uint i=0; i < accounts.length; i++) {
+            Details storage acc = accountsMap[i];
+            accounts[i] = acc.account;
+            names[i] = acc.accountToDetails[acc.account].name;
         }
+
         return (accounts, names);
+
+        //-------------
+        // Details[] storage accountsMap = userToAccountsToDetails[user_];
+        // address[] memory accounts = userToAccounts[user_];
+        // string[] memory names = new string[](accounts.length);
+
+        // for (uint i=0; i < accounts.length; i++) {
+        //     address acc = accounts[i];
+        //     Details storage accStruct = accountsMap[i];
+
+        //     AccountConfig memory accDetails = accStruct.accountToDetails[acc];
+        //     names[i] = accDetails.name;
+        // }
+
+        // return (accounts, names);
+
+        //------
+        // Details[] storage accountsMap = userToAccountsToDetails[user_];
+        // address x = accountsMap[0];
+
+        // address[] memory accounts = new address[](accountsMap.length);
+        // string[] memory names = new string[](accounts.length);
+    
+
+        // struct Details {
+        //     mapping(address => AccountConfig) accountToDetails;
+        // }
+        // mapping(address => Details[]) userToAccountsToDetails;
+
+        // for (uint i=0; i < accountsMap.length; i++) {
+        //     accountsMap[i].accountToDetails
+        // }
+
+        //--------
+        // address[] memory accounts = userToAccounts[user_];
+        // string[] memory names = new string[](accounts.length);
+
+        // for (uint i=0; i < accounts.length;) {
+        //     names[i] = accountToDetails[accounts[i]].name;
+        //     unchecked { ++i; }
+        // }
+        // return (accounts, names);
     }
 
     /// @inheritdoc IStorageBeacon
