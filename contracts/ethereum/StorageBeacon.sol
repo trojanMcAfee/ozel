@@ -141,7 +141,7 @@ contract StorageBeacon is IStorageBeacon, Initializable, Ownable {
         taskIDs[account_] = id_;
     }
 
-    function multicallSave(
+    function multiSave(
         address account_, 
         AccountConfig calldata acc_, 
         bytes32 taskId_

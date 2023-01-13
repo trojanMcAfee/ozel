@@ -42,7 +42,7 @@ contract ProxyFactory is IProxyFactory, ReentrancyGuard, Initializable, UUPSUpgr
         if (name.length > 18) revert NameTooLong();
         if (acc_.user == address(0) || token == address(0)) revert CantBeZero('address');
         if (acc_.slippage <= 0) revert CantBeZero('slippage');
-        if (!sBeacon.queryTokenDatabase(token)) revert TokenNotInDatabase(acc_.token);
+        if (!sBeacon.queryTokenDatabase(token)) revert TokenNotInDatabase(token);
 
         ozAccountProxy newAccount = new ozAccountProxy(
             beacon,
@@ -58,7 +58,7 @@ contract ProxyFactory is IProxyFactory, ReentrancyGuard, Initializable, UUPSUpgr
 
         bytes32 id = _startTask(address(newAccount), sBeacon.getFixedConfig().ops);
 
-        sBeacon.multicallSave(address(newAccount), acc_, id);
+        sBeacon.multiSave(address(newAccount), acc_, id);
 
         return address(newAccount);
     }
@@ -68,15 +68,14 @@ contract ProxyFactory is IProxyFactory, ReentrancyGuard, Initializable, UUPSUpgr
     //////////////////////////////////////////////////////////////*/
 
     /// @dev Creates the Gelato task of each proxy/account
-    function _startTask(address account_, address ops_) private returns(bytes32) { 
-        (bytes32 id) = IOps(ops_).createTaskNoPrepayment( 
+    function _startTask(address account_, address ops_) private returns(bytes32 id) { 
+        (id) = IOps(ops_).createTaskNoPrepayment( 
             account_,
             bytes4(abi.encodeWithSignature('sendToArb(uint256)')),
             account_,
             abi.encodeWithSignature('checker()'),
             0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE
         );
-        return id;
     }
 
     /// @dev Gets a version of the Storage Beacon
