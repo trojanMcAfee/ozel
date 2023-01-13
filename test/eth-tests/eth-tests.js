@@ -124,6 +124,7 @@ let isAuthorized, newSelector;
                 it('should create a account successfully / createNewProxy()', async () => {
                     await proxyFactory.createNewProxy(accountDetails, ops);
                     ([ proxies, names ] = await storageBeacon.getAccountsByUser(signerAddr));
+                    // await storageBeacon.getAccountsByUser(signerAddr);
 
                     newProxyAddr = proxies[0].toString(); 
                     const name = names[0].toString();
