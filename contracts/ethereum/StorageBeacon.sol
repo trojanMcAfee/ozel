@@ -146,21 +146,8 @@ contract StorageBeacon is IStorageBeacon, Initializable, Ownable {
         AccountConfig calldata acc_, 
         bytes32 taskId_
     ) external hasRole(0x0854b85f) {
-        // Details storage deets = userToAccountsToDetails[acc_.user].push();
-        // deets.accountToDetails[account_] = acc_;
-        // deets.account = account_;
-        // deets.taskId = taskId_;
-
-        //--------
         bytes memory data = abi.encode(account_, taskId_, acc_);
-        console.log('user: ', acc_.user);
-        console.log('toke: ', acc_.token);
-        console.log('slip: ', acc_.slippage);
-        console.logBytes32(taskId_);
-        console.log('task ^');
-        console.logBytes(data);
         userToPointers[acc_.user].push(SSTORE2.write(data));
-
     }
 
 
@@ -233,19 +220,6 @@ contract StorageBeacon is IStorageBeacon, Initializable, Ownable {
     function getAccountsByUser(
         address user_
     ) external view returns(address[] memory, string[] memory)  {
-        // Details[] storage accountsMap = userToAccountsToDetails[user_];
-        // address[] memory accounts = new address[](accountsMap.length);
-        // string[] memory names = new string[](accounts.length);
-
-        // for (uint i=0; i < accounts.length; i++) {
-        //     Details storage acc = accountsMap[i];
-        //     accounts[i] = acc.account;
-        //     names[i] = acc.accountToDetails[acc.account].name;
-        // }
-
-        // return (accounts, names);
-
-        //------
         address[] memory pointers = userToPointers[user_];
         address[] memory accounts = new address[](pointers.length);
         string[] memory names = new string[](pointers.length);
