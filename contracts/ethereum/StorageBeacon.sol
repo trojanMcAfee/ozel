@@ -10,7 +10,7 @@ import '../libraries/LibCommon.sol';
 import './ozUpgradeableBeacon.sol';
 import '../Errors.sol';
 
-
+import 'hardhat/console.sol';
 /**
  * @title Main storage contract for the L1 side of the system.
  * @notice It acts as a separate centralized beacon that functions query for state
@@ -117,6 +117,17 @@ contract StorageBeacon is IStorageBeacon, Initializable, Ownable {
     /// @inheritdoc IStorageBeacon
     function saveTaskId(address account_, bytes32 id_) external hasRole(0xf2034a69) {
         taskIDs[account_] = id_;
+    }
+
+    function multicallSave(
+        address account_, 
+        AccountConfig calldata acc_, 
+        bytes32 taskId_
+    ) external hasRole(0x0854b85f) {
+        userToAccounts[acc_.user].push(account_);
+        accountToDetails[account_] = acc_;
+        if (!userDatabase[acc_.user]) userDatabase[acc_.user] = true;
+        taskIDs[account_] = taskId_;
     }
 
     /// @inheritdoc IStorageBeacon

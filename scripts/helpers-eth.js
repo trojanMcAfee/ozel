@@ -342,6 +342,7 @@ async function deploySystem(type, signerAddr) {
 
     await rolesAuthority.setRoleCapability(1, storageBeaconAddr, '0xcb05ce19', true); //saveUserToDetails(address,(address,address,uint256,string))
     await rolesAuthority.setRoleCapability(1, storageBeaconAddr, '0xf2034a69', true); //saveTaskId(address proxy_, bytes32 id_)
+    await rolesAuthority.setRoleCapability(1, storageBeaconAddr, '0x0854b85f', true);
     console.log('.');
 
     return [
