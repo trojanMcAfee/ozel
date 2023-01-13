@@ -241,7 +241,7 @@ contract StorageBeacon is IStorageBeacon, Initializable, Ownable {
         Details[] storage deets = userToAccountsToDetails[owner_];
         for (uint i=0; i < deets.length; i++) {
             if (deets[i].account == account_) taskId = deets[i].taskId;
-        }
+        } // <----- fix
     }
 
     function getUserByAccount(address account_) external view returns(address) {

@@ -79,7 +79,7 @@ const proxyABIeth = [
     'function changeAccountSlippage(uint256 newSlippage_) external',
     'function changeAccountToken(address newToken_)',
     'function sendToArb(tuple(uint256 maxSubmissionCost, uint256 gasPriceBid, uint256 autoRedeem) varConfig_, tuple(address user, address token, uint256 slippage) accountDetails_)',
-    'function initialize((address,address,uint256,string), address beacon_)',
+    'function initialize((address,address,uint256,string),address,address)',
     'function getAccountDetails() external view returns ((address,address,uint256,string))',
     'function changeAccountTokenNSlippage(address,uint256) external',
     'function withdrawETH_lastResort() external'

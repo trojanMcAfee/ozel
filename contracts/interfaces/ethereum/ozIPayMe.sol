@@ -22,10 +22,10 @@ interface ozIPayMe {
     ) external payable;
 
     /// @dev Initializes the user account when being created in ProxyFactory.sol
-    function initialize(
-        IStorageBeacon.AccountConfig calldata accountDetails_, 
-        address beacon_
-    ) external;
+    // function initialize(
+    //     IStorageBeacon.AccountConfig calldata accountDetails_, 
+    //     address beacon_
+    // ) external;
 
     /**
      * @notice Changes the token of the account 

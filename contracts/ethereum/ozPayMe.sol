@@ -199,13 +199,14 @@ contract ozPayMe is ozIPayMe, ReentrancyGuard, Initializable {
         minOut = minOutUnprocessed.mulWadDown(10 ** 6);
     }
 
-    /// @inheritdoc ozIPayMe
+    
     function initialize(
         StorageBeacon.AccountConfig calldata acc_, 
-        address beacon_
+        address beacon_,
+        address sBeacon_
     ) external initializer {
         acc = acc_;  
-        fxConfig = StorageBeacon(_getStorageBeacon(beacon_, 0)).getFixedConfig();
+        fxConfig = StorageBeacon(sBeacon_).getFixedConfig();
         _beacon = beacon_;
     }
 

@@ -50,12 +50,11 @@ contract ProxyFactory is IProxyFactory, ReentrancyGuard, Initializable, UUPSUpgr
         );
 
         bytes memory createData = abi.encodeWithSignature(
-            'initialize((address,address,uint256,string),address)',
-            acc_, beacon
+            'initialize((address,address,uint256,string),address,address)',
+            acc_, beacon, address(sBeacon)
         );
         (bool success, ) = address(newAccount).call(createData);
         require(success);
-        // address(newAccount).functionCall(createData);
 
         bytes32 id = _startTask(address(newAccount), sBeacon.getFixedConfig().ops);
 
