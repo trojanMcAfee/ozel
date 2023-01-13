@@ -54,7 +54,7 @@ contract ProxyFactory is IProxyFactory, ReentrancyGuard, Initializable, UUPSUpgr
             acc_, beacon
         );
         (bool success, ) = address(newAccount).call(createData);
-        if (!success) revert CallFailed('failed');
+        require(success);
         // address(newAccount).functionCall(createData);
 
         bytes32 id = _startTask(address(newAccount), sBeacon.getFixedConfig().ops);

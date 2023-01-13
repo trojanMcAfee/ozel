@@ -24,8 +24,16 @@ contract StorageBeacon is IStorageBeacon, Initializable, Ownable {
     mapping(address => bytes32) taskIDs;
     mapping(address => bool) tokenDatabase;
     mapping(address => bool) userDatabase;
+
+
     mapping(address => address[]) userToAccounts;
+    struct Details {
+        mapping(address => AccountConfig) accountToDetails;
+    }
+    mapping(address => Details[]) userToAccountsToDetails;
     mapping(address => AccountConfig) public accountToDetails; 
+
+
     mapping(bytes4 => bool) authorizedSelectors;
     mapping(address => uint) accountToPayments;
 
@@ -124,10 +132,26 @@ contract StorageBeacon is IStorageBeacon, Initializable, Ownable {
         AccountConfig calldata acc_, 
         bytes32 taskId_
     ) external hasRole(0x0854b85f) {
-        userToAccounts[acc_.user].push(account_);
-        accountToDetails[account_] = acc_;
+        // userToAccounts[acc_.user].push(account_);
+        // accountToDetails[account_] = acc_;
+
+        // userToAccountsToDetails[acc_.user].push(Details({accountToDetails: new mapping(address => AccountConfig)}));
+        // userToAccountsToDetails[acc_.user][0].accountToDetails[account_] = acc_;
+
+        Details storage deets = userToAccountsToDetails[acc_.user].push();
+        deets.accountToDetails[account_] = acc_;
+
         if (!userDatabase[acc_.user]) userDatabase[acc_.user] = true;
         taskIDs[account_] = taskId_;
+
+        //-----
+        // mapping(address => address[]) userToAccounts;
+        // mapping(address => mapping(address => AccountConfig)[]) userToAccountsToDetails;
+        // mapping(address => AccountConfig) accountToDetails; 
+
+        // userToAccountsToDetails[acc_.user].push(new mapping(address => AccountConfig));
+        // userToAccountsToDetails[acc_.user][0][account_] = acc_;
+
     }
 
     /// @inheritdoc IStorageBeacon
