@@ -17,7 +17,7 @@ import './StorageBeacon.sol';
 contract ozAccountProxy is ReentrancyGuard, Initializable, BeaconProxy { 
 
     StorageBeacon.AccountConfig acc;
-    StorageBeacon.FixedConfig fxConfig;
+    address fxConfigPointer;
 
     address private beacon; 
 

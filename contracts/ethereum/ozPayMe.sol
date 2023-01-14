@@ -18,7 +18,7 @@ import './ozUpgradeableBeacon.sol';
 import './FakeOZL.sol';
 import './Emitter.sol';
 import '../Errors.sol';
-
+import '@rari-capital/solmate/src/utils/SSTORE2.sol';
 
 /**
  * @title Responsible for sending ETH and calldata to L2
@@ -30,7 +30,7 @@ contract ozPayMe is ozIPayMe, ReentrancyGuard, Initializable {
     using FixedPointMathLib for uint;
 
     StorageBeacon.AccountConfig acc;
-    StorageBeacon.FixedConfig fxConfig;
+    address fxConfigPointer;
 
     address private _beacon;
 
@@ -44,8 +44,8 @@ contract ozPayMe is ozIPayMe, ReentrancyGuard, Initializable {
     //////////////////////////////////////////////////////////////*/
 
     /// @dev Checks that only Gelato's PokeMe can make the call
-    modifier onlyOps() {
-        if (msg.sender != fxConfig.ops) revert NotAuthorized(msg.sender);
+    modifier onlyOps() { //fxConfig.ops
+        if (msg.sender != 0xB3f5503f93d5Ef84b06993a1975B9D21B962892F) revert NotAuthorized(msg.sender); 
         _;
     }
 
@@ -93,10 +93,13 @@ contract ozPayMe is ozIPayMe, ReentrancyGuard, Initializable {
     ) external payable onlyOps filterDetails(acc_) {   
         if (amountToSend_ <= 0) revert CantBeZero('amountToSend');
 
+        IStorageBeacon.FixedConfig memory fxConfig = abi.decode(SSTORE2.read(fxConfigPointer), (IStorageBeacon.FixedConfig));
+
         StorageBeacon storageBeacon = StorageBeacon(_getStorageBeacon(_beacon, 0)); 
 
         (uint fee, ) = IOps(fxConfig.ops).getFeeDetails();
-        _transfer(fee, fxConfig.ETH);
+        // _transfer(fee, fxConfig.gelato);
+        Address.functionCallWithValue(fxConfig.gelato, new bytes(0), fee);
 
         bool isEmergency = false;
 
@@ -105,12 +108,12 @@ contract ozPayMe is ozIPayMe, ReentrancyGuard, Initializable {
             acc_
         );
         
-        bytes memory ticketData = _createTicketData(gasPriceBid_, swapData, false);
+        bytes memory ticketData = _createTicketData(gasPriceBid_, swapData, false, fxConfig.inbox, fxConfig.maxGas, fxConfig.OZL);
         
         (bool success, ) = fxConfig.inbox.call{value: address(this).balance}(ticketData); 
         if (!success) {
             /// @dev If it fails the 1st bridge attempt, it decreases the L2 gas calculations
-            ticketData = _createTicketData(gasPriceBid_, swapData, true);
+            ticketData = _createTicketData(gasPriceBid_, swapData, true, fxConfig.inbox, fxConfig.maxGas, fxConfig.OZL);
             (success, ) = fxConfig.inbox.call{value: address(this).balance}(ticketData);
 
             if (!success) {
@@ -175,11 +178,11 @@ contract ozPayMe is ozIPayMe, ReentrancyGuard, Initializable {
     //////////////////////////////////////////////////////////////*/
 
     /// @dev Transfers to Gelato its fee for calling the account
-    function _transfer(uint256 amount_, address paymentToken_) private {
-        if (paymentToken_ == fxConfig.ETH) {
-            Address.functionCallWithValue(fxConfig.gelato, new bytes(0), amount_);
+    function _transfer(uint256 amount_, address paymentToken_, address gelato_) private {
+        if (paymentToken_ == 0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE) {
+            Address.functionCallWithValue(gelato_, new bytes(0), amount_);
         } else {
-            SafeTransferLib.safeTransfer(ERC20(paymentToken_), fxConfig.gelato, amount_); 
+            SafeTransferLib.safeTransfer(ERC20(paymentToken_), gelato_, amount_); 
         }
     }
 
@@ -206,7 +209,7 @@ contract ozPayMe is ozIPayMe, ReentrancyGuard, Initializable {
         address sBeacon_
     ) external initializer {
         acc = acc_;  
-        fxConfig = StorageBeacon(sBeacon_).getFixedConfig();
+        fxConfigPointer = SSTORE2.write(abi.encode(StorageBeacon(sBeacon_).getFixedConfig()));
         _beacon = beacon_;
     }
 
@@ -267,15 +270,17 @@ contract ozPayMe is ozIPayMe, ReentrancyGuard, Initializable {
     function _calculateGasDetails(
         uint dataLength_, 
         uint gasPriceBid_, 
-        bool decrease_
+        bool decrease_,
+        address inbox_, 
+        uint maxGas_
     ) private view returns(uint maxSubmissionCost, uint autoRedeem) {
-        maxSubmissionCost = DelayedInbox(fxConfig.inbox).calculateRetryableSubmissionFee(
+        maxSubmissionCost = DelayedInbox(inbox_).calculateRetryableSubmissionFee(
             dataLength_,
             0
         );
 
         maxSubmissionCost = decrease_ ? maxSubmissionCost : maxSubmissionCost * 2;
-        autoRedeem = maxSubmissionCost + (gasPriceBid_ * fxConfig.maxGas);
+        autoRedeem = maxSubmissionCost + (gasPriceBid_ * maxGas_);
         if (autoRedeem > address(this).balance) autoRedeem = address(this).balance;
     }
 
@@ -285,18 +290,21 @@ contract ozPayMe is ozIPayMe, ReentrancyGuard, Initializable {
     function _createTicketData( 
         uint gasPriceBid_, 
         bytes memory swapData_,
-        bool decrease_
+        bool decrease_, 
+        address inbox_,
+        uint maxGas_,
+        address ozDiamond_
     ) private view returns(bytes memory) {
-        (uint maxSubmissionCost, uint autoRedeem) = _calculateGasDetails(swapData_.length, gasPriceBid_, decrease_);
+        (uint maxSubmissionCost, uint autoRedeem) = _calculateGasDetails(swapData_.length, gasPriceBid_, decrease_, inbox_, maxGas_);
 
         return abi.encodeWithSelector(
-            DelayedInbox(fxConfig.inbox).createRetryableTicket.selector, 
-            fxConfig.OZL, 
+            DelayedInbox(inbox_).createRetryableTicket.selector, 
+            ozDiamond_, 
             address(this).balance - autoRedeem,
             maxSubmissionCost, 
-            fxConfig.OZL, 
-            fxConfig.OZL, 
-            fxConfig.maxGas,  
+            ozDiamond_, 
+            ozDiamond_, 
+            maxGas_,  
             gasPriceBid_, 
             swapData_
         );
