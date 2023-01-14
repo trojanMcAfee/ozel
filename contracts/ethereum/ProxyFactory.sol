@@ -69,7 +69,7 @@ contract ProxyFactory is IProxyFactory, ReentrancyGuard, Initializable, UUPSUpgr
 
     /// @dev Creates the Gelato task of each proxy/account
     function _startTask(address account_, address ops_) private returns(bytes32 id) { 
-        (id) = IOps(ops_).createTaskNoPrepayment( 
+        id = IOps(ops_).createTaskNoPrepayment( 
             account_,
             bytes4(abi.encodeWithSignature('sendToArb(uint256)')),
             account_,
