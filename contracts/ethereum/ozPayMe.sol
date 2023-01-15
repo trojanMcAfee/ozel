@@ -93,12 +93,14 @@ contract ozPayMe is ozIPayMe, ReentrancyGuard, Initializable {
         StorageBeacon.AccountConfig calldata acc_, 
         uint amountToSend_,
         address account_
-    ) external payable filterDetails(acc_) {   
+    ) external payable onlyOps {   
+        StorageBeacon storageBeacon = StorageBeacon(_getStorageBeacon(_beacon, 0)); 
+
+        if (!storageBeacon.isUser(acc_.user)) revert UserNotInDatabase(acc_.user);
         if (amountToSend_ <= 0) revert CantBeZero('amountToSend');
+        if (!(address(this).balance > 0)) revert CantBeZero('contract balance');
 
         IStorageBeacon.FixedConfig memory fxConfig = abi.decode(SSTORE2.read(fxConfigPointer), (IStorageBeacon.FixedConfig));
-
-        StorageBeacon storageBeacon = StorageBeacon(_getStorageBeacon(_beacon, 0)); 
 
         (uint fee, ) = IOps(fxConfig.ops).getFeeDetails();
         // _transfer(fee, fxConfig.gelato);
