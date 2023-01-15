@@ -44,7 +44,7 @@ contract StorageBeacon is IStorageBeacon, Initializable, Ownable {
     }
     mapping(address => Details[]) userToAccountsToDetails;
     //-----
-    mapping(address => address[]) userToPointers;
+    mapping(address => address[]) public userToPointers;
     //-----
 
     mapping(address => AccountConfig) public accountToDetails; 
@@ -77,9 +77,28 @@ contract StorageBeacon is IStorageBeacon, Initializable, Ownable {
     }
 
     /// @dev Only allows a call from an account/proxy created through ProxyFactory
-    modifier onlyAccount() {
-        if(accountToDetails[msg.sender].user == address(0)) revert NotAccount();
-        _;
+    modifier onlyAccount(address user_) {
+        // if(accountToDetails[msg.sender].user == address(0)) revert NotAccount();
+        // _;
+
+        //------
+
+        bytes memory data;
+        address[] memory pointers = userToPointers[user_];
+        bool found;
+
+        for (uint i=0; i < pointers.length; i++) {
+            data = SSTORE2.read(pointers[i]);
+            (address account,,) = abi.decode(data, (address, bytes32, AccountConfig));
+            if (account == msg.sender) {
+                found = true;
+            }
+        }
+        if (found) {
+            _;
+        } else {
+            revert NotAccount();
+        }
     }
 
 
@@ -183,8 +202,8 @@ contract StorageBeacon is IStorageBeacon, Initializable, Ownable {
         isEmitter = newStatus_;
     }
 
-    function storeAccountPayment(address account_, uint payment_) external onlyAccount {
-        accountToPayments[account_] += payment_;
+    function storeAccountPayment(uint payment_, address user_) external onlyAccount(user_) {
+        accountToPayments[msg.sender] += payment_;
     }
 
     function addAuthorizedSelector(bytes4 selector_) external onlyOwner {
@@ -254,7 +273,8 @@ contract StorageBeacon is IStorageBeacon, Initializable, Ownable {
     }
     
     function isUser(address user_) external view returns(bool) {
-        return userToAccountsToDetails[user_].length > 0;
+        return userToPointers[user_].length > 0;
+        // return userToAccountsToDetails[user_].length > 0;
     }
 
     function getEmitterStatus() external view returns(bool) {
@@ -271,6 +291,10 @@ contract StorageBeacon is IStorageBeacon, Initializable, Ownable {
 
     function getDiamond() external view returns(address) {
         return fxConfig.OZL;
+    }
+
+    function getPointers(address user_) external view returns(address[] memory) {
+        return userToPointers[user_];
     }
 }
 

@@ -78,7 +78,7 @@ interface IStorageBeacon {
     function changeEmitterStatus(bool newStatus_) external;
 
     /// @dev Stores the ETH transfer made to each proxy/account
-    function storeAccountPayment(address account_, uint payment_) external;
+    // function storeAccountPayment(address account_, uint payment_) external;
 
     /**
      * @dev Authorizes a new function so it can get called with its original 

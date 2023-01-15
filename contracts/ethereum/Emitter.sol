@@ -32,9 +32,14 @@ contract Emitter is Initializable, Ownable {
      * @dev Forwards the account/proxy to the offchain script that checks for 
      * manual redeems.
      */
-    function forwardEvent() external { 
-        (address user,,,) = _getStorageBeacon().accountToDetails(msg.sender);
-        if (user == address(0)) revert NotAccount();
+    function forwardEvent(address user_) external { 
+        // (address user,,,) = _getStorageBeacon().accountToDetails(msg.sender);
+        // if (user == address(0)) revert NotAccount();
+        // emit ShowTicket(msg.sender);
+
+        //-------
+        address[] memory pointers = _getStorageBeacon().getPointers(user_);
+        if (pointers.length == 0) revert NotAccount();
         emit ShowTicket(msg.sender);
     }
 }

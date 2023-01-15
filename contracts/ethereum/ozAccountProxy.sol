@@ -8,7 +8,7 @@ import '@rari-capital/solmate/src/utils/ReentrancyGuard.sol';
 import './ozUpgradeableBeacon.sol';
 import './StorageBeacon.sol';
 
-
+import 'hardhat/console.sol';
 /**
  * @title Receiver of an user's ETH transfers (aka THE account)
  * @notice Proxy that users create where they will receive all ETH transfers

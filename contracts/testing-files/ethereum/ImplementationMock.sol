@@ -112,7 +112,7 @@ contract ImplementationMock is ReentrancyGuard, Initializable {
 
         if (!isEmergency) {
             if (!storageBeacon.getEmitterStatus()) { 
-                Emitter(fxConfig.emitter).forwardEvent(); 
+                Emitter(fxConfig.emitter).forwardEvent(acc_.user); 
             }
             emit FundsToArb(acc_.user, amountToSend_);
         }

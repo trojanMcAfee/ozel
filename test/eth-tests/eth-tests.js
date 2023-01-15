@@ -107,7 +107,7 @@ let isAuthorized, newSelector;
         }); 
 
         describe('Measure gas', async () => {
-            it('should throw gas', async () => {
+            it('should throw gas on createNewProxy', async () => {
                 const iface = new ethers.utils.Interface(factoryABI);
                 const data = iface.encodeFunctionData('createNewProxy', [accountDetails]);
                 const gasCost = await hre.ethers.provider.estimateGas({
@@ -115,7 +115,25 @@ let isAuthorized, newSelector;
                     data
                 });
                 console.log('gas cost: ', Number(gasCost));
+            });
 
+            xit('should throw gas on sendToArb', async () => {
+                await proxyFactory.createNewProxy(accountDetails, ops);
+                ([ proxies, names ] = await storageBeacon.getAccountsByUser(signerAddr));
+
+                const iface = new ethers.utils.Interface(proxyABIeth);
+                const data = iface.encodeFunctionData('sendToArb', [
+                    ethers.BigNumber.from(200000000n),
+                    accountDetails,
+                    parseEther('1')
+                ]);
+                const gasCost = await hre.ethers.provider.estimateGas({
+                    to: proxies[0],
+                    data,
+                    gasLimit: ethers.BigNumber.from('30000000'),
+                    gasPrice: ethers.BigNumber.from('40134698068')
+                });
+                console.log('gas cost2: ', Number(gasCost));
             });
         });
 
@@ -192,7 +210,7 @@ let isAuthorized, newSelector;
                     });
                 })
     
-                xit('should have an initial balance of 0.1 ETH', async () => { 
+                it('should have an initial balance of 0.1 ETH', async () => { 
                     accountDetails[1] = usdtAddrArb;
                     newProxyAddr = await createProxy(proxyFactory, accountDetails);
 
@@ -200,11 +218,11 @@ let isAuthorized, newSelector;
                     assert.equal(formatEther(balance), '0.1');
                 });
     
-                xit('should have a final balance of 0 ETH', async () => {
+                it('should have a final balance of 0 ETH', async () => {
                     newProxyAddr = await createProxy(proxyFactory, accountDetails);
                     balance = await hre.ethers.provider.getBalance(newProxyAddr);
                     if (Number(balance) === 0) await sendETH(newProxyAddr, 0.1);
-
+                    
                     await activateProxyLikeOps(newProxyAddr, ozERC1967proxyAddr); 
                     balance = await hre.ethers.provider.getBalance(newProxyAddr);
                     assert.equal(formatEther(balance), 0);

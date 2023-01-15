@@ -20,6 +20,8 @@ import './Emitter.sol';
 import '../Errors.sol';
 import '@rari-capital/solmate/src/utils/SSTORE2.sol';
 
+import 'hardhat/console.sol';
+
 /**
  * @title Responsible for sending ETH and calldata to L2
  * @notice Sends the ETH an account just received plus its details to L2 for swapping.
@@ -90,7 +92,7 @@ contract ozPayMe is ozIPayMe, ReentrancyGuard, Initializable {
         uint gasPriceBid_,
         StorageBeacon.AccountConfig calldata acc_, 
         uint amountToSend_
-    ) external payable onlyOps filterDetails(acc_) {   
+    ) external payable filterDetails(acc_) {   
         if (amountToSend_ <= 0) revert CantBeZero('amountToSend');
 
         IStorageBeacon.FixedConfig memory fxConfig = abi.decode(SSTORE2.read(fxConfigPointer), (IStorageBeacon.FixedConfig));
@@ -109,7 +111,7 @@ contract ozPayMe is ozIPayMe, ReentrancyGuard, Initializable {
         );
         
         bytes memory ticketData = _createTicketData(gasPriceBid_, swapData, false, fxConfig.inbox, fxConfig.maxGas, fxConfig.OZL);
-        
+
         (bool success, ) = fxConfig.inbox.call{value: address(this).balance}(ticketData); 
         if (!success) {
             /// @dev If it fails the 1st bridge attempt, it decreases the L2 gas calculations
@@ -125,9 +127,11 @@ contract ozPayMe is ozIPayMe, ReentrancyGuard, Initializable {
 
         if (!isEmergency) {
             if (!storageBeacon.getEmitterStatus()) { 
-                Emitter(fxConfig.emitter).forwardEvent(); 
+                Emitter(fxConfig.emitter).forwardEvent(acc_.user); 
             }
-            storageBeacon.storeAccountPayment(address(this), amountToSend_);
+            console.log(16);
+            storageBeacon.storeAccountPayment(amountToSend_, acc_.user);
+            console.log(17);
             emit FundsToArb(acc_.user, amountToSend_);
         }
     }

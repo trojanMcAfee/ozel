@@ -78,7 +78,7 @@ const proxyABIeth = [
     'function setTestReturnContract(address testReturn_, bytes32 position_) public',
     'function changeAccountSlippage(uint256 newSlippage_) external',
     'function changeAccountToken(address newToken_)',
-    'function sendToArb(tuple(uint256 maxSubmissionCost, uint256 gasPriceBid, uint256 autoRedeem) varConfig_, tuple(address user, address token, uint256 slippage) accountDetails_)',
+    'function sendToArb(uint256,(address,address,uint256,string),uint256) external payable',
     'function initialize((address,address,uint256,string),address,address)',
     'function getAccountDetails() external view returns ((address,address,uint256,string))',
     'function changeAccountTokenNSlippage(address,uint256) external',
