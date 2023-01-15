@@ -17,7 +17,7 @@ import 'hardhat/console.sol';
 contract ozAccountProxy is ReentrancyGuard, Initializable, BeaconProxy { 
 
     StorageBeacon.AccountConfig acc;
-    address fxConfigPointer;
+    // address fxConfigPointer;
 
     address private beacon; 
 
@@ -55,7 +55,7 @@ contract ozAccountProxy is ReentrancyGuard, Initializable, BeaconProxy {
         bytes memory data; 
         StorageBeacon storageBeacon = _getStorageBeacon();
 
-        if ( getStorageBeacon().isSelectorAuthorized(bytes4(msg.data)) ) { 
+        if ( storageBeacon.isSelectorAuthorized(bytes4(msg.data)) ) { 
             data = msg.data;
         } else {
             uint amountToSend = abi.decode(msg.data[4:], (uint));

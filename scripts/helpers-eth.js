@@ -48,6 +48,10 @@ async function deployContract(contractName, constrArgs, signer = null) {
     const Contract = await hre.ethers.getContractFactory(contractName);
 
     switch(contractName) {
+        case 'ProxyFactory':
+            ([ var1 ] = constrArgs);
+            contract = await Contract.connect(signer).deploy(var1, ops);
+            break;
         case 'UpgradeableBeacon':
             contract = await Contract.connect(signer).deploy(constrArgs, ops);
             break;
@@ -67,6 +71,10 @@ async function deployContract(contractName, constrArgs, signer = null) {
         case 'StorageBeacon':
             ([ var1, var2, var3, var4, var5 ] = constrArgs);
             contract = await Contract.connect(signer).deploy(var1, var2, var3, var4, var5, ops);
+            break;
+        case 'ozPayMe':
+            ([ var1, var2, var3, var4, var5, var6 ] = constrArgs);
+            contract = await Contract.connect(signer).deploy(var1, var2, var3, var4, var5, var6, ops);
             break;
         default:
             contract = await Contract.connect(signer).deploy(ops);
@@ -264,7 +272,16 @@ async function deploySystem(type, signerAddr) {
     const [ emitterAddr, emitter ] = await deployContract('Emitter');
 
     //Deploys ozPayMe in mainnet
-    const [ ozPaymeAddr ] = await deployContract(type === 'Pessimistically' ? 'ozPayMeNoRedeem' : 'ozPayMe');
+    constrArgs = [
+        pokeMeOpsAddr,
+        gelatoAddr,
+        inbox,
+        emitterAddr,
+        ozDiamondAddr,
+        maxGas
+    ];
+
+    const [ ozPaymeAddr ] = await deployContract(type === 'Pessimistically' ? 'ozPayMeNoRedeem' : 'ozPayMe', constrArgs);
 
     //Deploys StorageBeacon
     const fxConfig = [
@@ -315,8 +332,10 @@ async function deploySystem(type, signerAddr) {
     await emitter.storeBeacon(beaconAddr);
 
     //Deploys ProxyFactory
+    constrArgs = [ pokeMeOpsAddr ]; 
+
     const [ proxyFactoryAddr ] = await deployContract(
-        type === 'Pessimistically_v2' ? 'FaultyProxyFactory' : 'ProxyFactory'
+        type === 'Pessimistically_v2' ? 'FaultyProxyFactory' : 'ProxyFactory', constrArgs
     );
 
     //Deploys ozERC1967Proxy (proxy from Proxy Factory)

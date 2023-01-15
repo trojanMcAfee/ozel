@@ -23,10 +23,15 @@ contract ProxyFactory is IProxyFactory, ReentrancyGuard, Initializable, UUPSUpgr
     using Address for address;
 
     address private beacon;
+    address immutable ops;
 
     modifier onlyOwner() {
         if(!(_getAdmin() == msg.sender)) revert NotAuthorized(msg.sender);
         _;
+    }
+
+    constructor(address ops_) {
+        ops = ops_;
     }
 
 
@@ -50,13 +55,13 @@ contract ProxyFactory is IProxyFactory, ReentrancyGuard, Initializable, UUPSUpgr
         );
 
         bytes memory createData = abi.encodeWithSignature(
-            'initialize((address,address,uint256,string),address,address)',
-            acc_, beacon, address(sBeacon)
+            'initialize((address,address,uint256,string),address)',
+            acc_, beacon
         );
         (bool success, ) = address(newAccount).call(createData);
         require(success);
 
-        bytes32 id = _startTask(address(newAccount), sBeacon.getFixedConfig().ops);
+        bytes32 id = _startTask(address(newAccount), ops);
 
         sBeacon.multiSave(address(newAccount), acc_, id);
 

@@ -25,6 +25,14 @@ interface IStorageBeacon {
         uint maxGas;
     }
 
+    struct FixedConfig2 {  
+        address ops;
+        address payable gelato;
+        address inbox;
+        address emitter;
+        uint maxGas;
+    }
+
     struct EmergencyMode {
         ISwapRouter swapRouter;
         AggregatorV3Interface priceFeed; 

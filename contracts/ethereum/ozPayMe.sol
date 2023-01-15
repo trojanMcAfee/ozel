@@ -32,14 +32,37 @@ contract ozPayMe is ozIPayMe, ReentrancyGuard, Initializable {
     using FixedPointMathLib for uint;
 
     StorageBeacon.AccountConfig acc;
-    address fxConfigPointer;
+    // address fxConfigPointer;
 
     address private _beacon;
+    address OZL;
+
+    address immutable ops;
+    address immutable gelato;
+    address immutable inbox;
+    address immutable emitter;
+    uint immutable maxGas;
 
     event FundsToArb(address indexed sender, uint amount);
     event EmergencyTriggered(address indexed sender, uint amount);
     event NewToken(address indexed user, address indexed newToken);
     event NewSlippage(address indexed user, uint indexed newSlippage);
+
+    constructor(
+        address ops_, 
+        address gelato_, 
+        address inbox_,
+        address emitter_,
+        address ozDiamond_,
+        uint maxGas_
+    ) {
+        ops = ops_;
+        gelato = gelato_;
+        inbox = inbox_;
+        emitter = emitter_;
+        OZL = ozDiamond_;
+        maxGas = maxGas_;
+    }
 
     /*///////////////////////////////////////////////////////////////
                               Modifiers
@@ -47,7 +70,7 @@ contract ozPayMe is ozIPayMe, ReentrancyGuard, Initializable {
 
     /// @dev Checks that only Gelato's PokeMe can make the call
     modifier onlyOps() { //fxConfig.ops
-        if (msg.sender != 0xB3f5503f93d5Ef84b06993a1975B9D21B962892F) revert NotAuthorized(msg.sender); 
+        if (msg.sender != ops) revert NotAuthorized(msg.sender); 
         _;
     }
 
@@ -100,26 +123,26 @@ contract ozPayMe is ozIPayMe, ReentrancyGuard, Initializable {
         if (amountToSend_ <= 0) revert CantBeZero('amountToSend');
         if (!(address(this).balance > 0)) revert CantBeZero('contract balance');
 
-        IStorageBeacon.FixedConfig memory fxConfig = abi.decode(SSTORE2.read(fxConfigPointer), (IStorageBeacon.FixedConfig));
+        // IStorageBeacon.FixedConfig memory fxConfig = abi.decode(SSTORE2.read(fxConfigPointer), (IStorageBeacon.FixedConfig));
 
-        (uint fee, ) = IOps(fxConfig.ops).getFeeDetails();
+        (uint fee, ) = IOps(ops).getFeeDetails();
         // _transfer(fee, fxConfig.gelato);
-        Address.functionCallWithValue(fxConfig.gelato, new bytes(0), fee);
+        Address.functionCallWithValue(gelato, new bytes(0), fee);
 
         bool isEmergency = false;
 
         bytes memory swapData = abi.encodeWithSelector(
-            FakeOZL(payable(fxConfig.OZL)).exchangeToAccountToken.selector, 
+            FakeOZL(payable(OZL)).exchangeToAccountToken.selector, 
             acc_, amountToSend_, account_
         );
         
-        bytes memory ticketData = _createTicketData(gasPriceBid_, swapData, false, fxConfig.inbox, fxConfig.maxGas, fxConfig.OZL);
+        bytes memory ticketData = _createTicketData(gasPriceBid_, swapData, false, inbox, maxGas, OZL);
 
-        (bool success, ) = fxConfig.inbox.call{value: address(this).balance}(ticketData); 
+        (bool success, ) = inbox.call{value: address(this).balance}(ticketData); 
         if (!success) {
             /// @dev If it fails the 1st bridge attempt, it decreases the L2 gas calculations
-            ticketData = _createTicketData(gasPriceBid_, swapData, true, fxConfig.inbox, fxConfig.maxGas, fxConfig.OZL);
-            (success, ) = fxConfig.inbox.call{value: address(this).balance}(ticketData);
+            ticketData = _createTicketData(gasPriceBid_, swapData, true, inbox, maxGas, OZL);
+            (success, ) = inbox.call{value: address(this).balance}(ticketData);
 
             if (!success) {
                 _runEmergencyMode();
@@ -130,7 +153,7 @@ contract ozPayMe is ozIPayMe, ReentrancyGuard, Initializable {
 
         if (!isEmergency) {
             if (!storageBeacon.getEmitterStatus()) { 
-                Emitter(fxConfig.emitter).forwardEvent(acc_.user); 
+                Emitter(emitter).forwardEvent(acc_.user); 
             }
             // storageBeacon.storeAccountPayment(amountToSend_, acc_.user);
             emit FundsToArb(acc_.user, amountToSend_);
@@ -210,11 +233,11 @@ contract ozPayMe is ozIPayMe, ReentrancyGuard, Initializable {
     
     function initialize(
         StorageBeacon.AccountConfig calldata acc_, 
-        address beacon_,
-        address sBeacon_
+        address beacon_
+        // address sBeacon_
     ) external initializer {
         acc = acc_;  
-        fxConfigPointer = SSTORE2.write(abi.encode(StorageBeacon(sBeacon_).getFixedConfig()));
+        // fxConfigPointer = SSTORE2.write(abi.encode(StorageBeacon(sBeacon_).getFixedConfig()));
         _beacon = beacon_;
     }
 
