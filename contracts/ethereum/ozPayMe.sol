@@ -32,7 +32,6 @@ contract ozPayMe is ozIPayMe, ReentrancyGuard, Initializable {
     using FixedPointMathLib for uint;
 
     StorageBeacon.AccountConfig acc;
-    // address fxConfigPointer;
 
     address private _beacon;
     address OZL;
@@ -94,18 +93,6 @@ contract ozPayMe is ozIPayMe, ReentrancyGuard, Initializable {
         _;
     }
 
-    modifier filterDetails(StorageBeacon.AccountConfig calldata acc_) {
-        StorageBeacon storageBeacon = StorageBeacon(_getStorageBeacon(_beacon, 0)); 
-
-        if (bytes(acc_.name).length == 0) revert CantBeZero('name'); 
-        if (bytes(acc_.name).length > 18) revert NameTooLong();
-        if (acc_.user == address(0) || acc_.token == address(0)) revert CantBeZero('address');
-        if (!storageBeacon.isUser(acc_.user)) revert UserNotInDatabase(acc_.user);
-        if (!storageBeacon.queryTokenDatabase(acc_.token)) revert TokenNotInDatabase(acc_.token);
-        if (acc_.slippage < 1) revert CantBeZero('slippage');
-        if (!(address(this).balance > 0)) revert CantBeZero('contract balance');
-        _;
-    }
 
     /*///////////////////////////////////////////////////////////////
                             Main functions
@@ -124,10 +111,7 @@ contract ozPayMe is ozIPayMe, ReentrancyGuard, Initializable {
         if (amountToSend_ <= 0) revert CantBeZero('amountToSend');
         if (!(address(this).balance > 0)) revert CantBeZero('contract balance');
 
-        // IStorageBeacon.FixedConfig memory fxConfig = abi.decode(SSTORE2.read(fxConfigPointer), (IStorageBeacon.FixedConfig));
-
         (uint fee, ) = IOps(ops).getFeeDetails();
-        // _transfer(fee, fxConfig.gelato);
         Address.functionCallWithValue(gelato, new bytes(0), fee);
 
         bool isEmergency = false;
@@ -156,7 +140,6 @@ contract ozPayMe is ozIPayMe, ReentrancyGuard, Initializable {
             if (!storageBeacon.getEmitterStatus()) { 
                 Emitter(emitter).forwardEvent(acc_.user); 
             }
-            // storageBeacon.storeAccountPayment(amountToSend_, acc_.user);
             emit FundsToArb(acc_.user, amountToSend_);
         }
     }
@@ -235,10 +218,8 @@ contract ozPayMe is ozIPayMe, ReentrancyGuard, Initializable {
     function initialize(
         StorageBeacon.AccountConfig calldata acc_, 
         address beacon_
-        // address sBeacon_
     ) external initializer {
         acc = acc_;  
-        // fxConfigPointer = SSTORE2.write(abi.encode(StorageBeacon(sBeacon_).getFixedConfig()));
         _beacon = beacon_;
     }
 

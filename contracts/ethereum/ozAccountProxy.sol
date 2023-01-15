@@ -17,7 +17,6 @@ import 'hardhat/console.sol';
 contract ozAccountProxy is ReentrancyGuard, Initializable, BeaconProxy { 
 
     StorageBeacon.AccountConfig acc;
-    // address fxConfigPointer;
 
     address private beacon; 
 
