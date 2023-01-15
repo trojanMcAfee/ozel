@@ -99,7 +99,8 @@ let isAuthorized, newSelector;
                 emitterAddr, 
                 fakeOZLaddr, 
                 eMode,
-                proxyFactoryAddr
+                proxyFactoryAddr,
+                ozPaymeAddr
             ] = await deploySystem('Optimistically', signerAddr));
 
             proxyFactory = await hre.ethers.getContractAt(factoryABI, ozERC1967proxyAddr);
@@ -118,8 +119,8 @@ let isAuthorized, newSelector;
             });
 
             xit('should throw gas on sendToArb', async () => {
-                await proxyFactory.createNewProxy(accountDetails, ops);
-                ([ proxies, names ] = await storageBeacon.getAccountsByUser(signerAddr));
+                // await proxyFactory.createNewProxy(accountDetails, ops);
+                // ([ proxies, names ] = await storageBeacon.getAccountsByUser(signerAddr));
 
                 const iface = new ethers.utils.Interface(proxyABIeth);
                 const data = iface.encodeFunctionData('sendToArb', [
