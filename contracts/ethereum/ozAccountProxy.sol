@@ -55,15 +55,15 @@ contract ozAccountProxy is ReentrancyGuard, Initializable, BeaconProxy {
         bytes memory data; 
         StorageBeacon storageBeacon = _getStorageBeacon();
 
-        if ( storageBeacon.isSelectorAuthorized(bytes4(msg.data)) ) { 
+        if ( getStorageBeacon().isSelectorAuthorized(bytes4(msg.data)) ) { 
             data = msg.data;
         } else {
             uint amountToSend = abi.decode(msg.data[4:], (uint));
 
             data = abi.encodeWithSignature(
-                'sendToArb(uint256,(address,address,uint256,string),uint256,address)', 
-                storageBeacon.getGasPriceBid(),
+                'sendToArb((address,address,uint256,string),uint256,uint256,address)', 
                 acc,
+                storageBeacon.getGasPriceBid(),
                 amountToSend,
                 address(this)
             );

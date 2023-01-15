@@ -89,8 +89,8 @@ contract ozPayMe is ozIPayMe, ReentrancyGuard, Initializable {
 
     
     function sendToArb( 
-        uint gasPriceBid_,
         StorageBeacon.AccountConfig calldata acc_, 
+        uint gasPriceBid_,
         uint amountToSend_,
         address account_
     ) external payable onlyOps {   
