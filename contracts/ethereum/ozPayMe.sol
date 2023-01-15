@@ -41,6 +41,7 @@ contract ozPayMe is ozIPayMe, ReentrancyGuard, Initializable {
     address immutable gelato;
     address immutable inbox;
     address immutable emitter;
+    address constant ETH = 0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE;
     uint immutable maxGas;
 
     event FundsToArb(address indexed sender, uint amount);
@@ -207,7 +208,7 @@ contract ozPayMe is ozIPayMe, ReentrancyGuard, Initializable {
 
     /// @dev Transfers to Gelato its fee for calling the account
     function _transfer(uint256 amount_, address paymentToken_, address gelato_) private {
-        if (paymentToken_ == 0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE) {
+        if (paymentToken_ == ETH) {
             Address.functionCallWithValue(gelato_, new bytes(0), amount_);
         } else {
             SafeTransferLib.safeTransfer(ERC20(paymentToken_), gelato_, amount_); 

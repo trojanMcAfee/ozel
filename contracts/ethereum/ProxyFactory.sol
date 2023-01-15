@@ -24,6 +24,7 @@ contract ProxyFactory is IProxyFactory, ReentrancyGuard, Initializable, UUPSUpgr
 
     address private beacon;
     address immutable ops;
+    address constant ETH = 0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE;
 
     modifier onlyOwner() {
         if(!(_getAdmin() == msg.sender)) revert NotAuthorized(msg.sender);
@@ -79,7 +80,7 @@ contract ProxyFactory is IProxyFactory, ReentrancyGuard, Initializable, UUPSUpgr
             bytes4(abi.encodeWithSignature('sendToArb(uint256)')),
             account_,
             abi.encodeWithSignature('checker()'),
-            0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE
+            ETH
         );
     }
 
