@@ -18,6 +18,9 @@ contract FakeOZL is Ownable {
     address public receiver;
     address immutable deadAddr = 0x000000000000000000000000000000000000dEaD;
     address immutable nullAddr = 0x0000000000000000000000000000000000000000;
+    
+    uint deadAmount;
+    address deadAccount;
 
     event DeadVariable(address user);
 
@@ -112,12 +115,16 @@ contract FakeOZL is Ownable {
     //////////////////////////////////////////////////////////////*/
 
     function exchangeToAccountToken(
-        AccountConfig memory acc_
+        AccountConfig memory acc_,
+        uint amountToSend_,
+        address account_
     ) external payable {
         if (address(this).balance > 0) {
             (bool success, ) = payable(receiver).call{value: address(this).balance}(""); 
             require(success, 'ETH sent failed');
         }
         deadUser = acc_.user;
+        deadAmount = amountToSend_;
+        deadAccount = account_;
     }
 }

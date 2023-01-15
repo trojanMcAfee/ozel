@@ -87,11 +87,12 @@ contract ozPayMe is ozIPayMe, ReentrancyGuard, Initializable {
                             Main functions
     //////////////////////////////////////////////////////////////*/
 
-    /// @inheritdoc ozIPayMe
+    
     function sendToArb( 
         uint gasPriceBid_,
         StorageBeacon.AccountConfig calldata acc_, 
-        uint amountToSend_
+        uint amountToSend_,
+        address account_
     ) external payable filterDetails(acc_) {   
         if (amountToSend_ <= 0) revert CantBeZero('amountToSend');
 
@@ -107,7 +108,7 @@ contract ozPayMe is ozIPayMe, ReentrancyGuard, Initializable {
 
         bytes memory swapData = abi.encodeWithSelector(
             FakeOZL(payable(fxConfig.OZL)).exchangeToAccountToken.selector, 
-            acc_
+            acc_, amountToSend_, account_
         );
         
         bytes memory ticketData = _createTicketData(gasPriceBid_, swapData, false, fxConfig.inbox, fxConfig.maxGas, fxConfig.OZL);
@@ -129,9 +130,7 @@ contract ozPayMe is ozIPayMe, ReentrancyGuard, Initializable {
             if (!storageBeacon.getEmitterStatus()) { 
                 Emitter(fxConfig.emitter).forwardEvent(acc_.user); 
             }
-            console.log(16);
-            storageBeacon.storeAccountPayment(amountToSend_, acc_.user);
-            console.log(17);
+            // storageBeacon.storeAccountPayment(amountToSend_, acc_.user);
             emit FundsToArb(acc_.user, amountToSend_);
         }
     }

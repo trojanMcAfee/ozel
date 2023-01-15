@@ -38,11 +38,14 @@ contract OZLFacet is ModifiersARB { //IOZLFacet
 
     
     function exchangeToAccountToken(
-        AccountConfig memory acc_
+        AccountConfig memory acc_,
+        uint amountToSend_,
+        address account_ //<--- check this with modifier
     ) external payable noReentrancy(0) filterDetails(acc_) { 
         if (msg.value <= 0) revert CantBeZero('msg.value');
-
         if (s.failedFees > 0) _depositFeesInDeFi(s.failedFees, true); 
+        
+        s.accountPayments[account_] += amountToSend_; //////
 
         IWETH(s.WETH).deposit{value: msg.value}();
         uint wethIn = IWETH(s.WETH).balanceOf(address(this));

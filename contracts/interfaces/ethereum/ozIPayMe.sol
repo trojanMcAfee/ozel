@@ -15,11 +15,11 @@ interface ozIPayMe {
      * @param accountDetails_ User configuration for swaps on L2
      * @param amountToSend_ Gross ETH amount being sent to L1
      */
-    function sendToArb( 
-        uint gasPriceBid_,
-        IStorageBeacon.AccountConfig calldata accountDetails_,
-        uint amountToSend_
-    ) external payable;
+    // function sendToArb( 
+    //     uint gasPriceBid_,
+    //     IStorageBeacon.AccountConfig calldata accountDetails_,
+    //     uint amountToSend_
+    // ) external payable;
 
     /// @dev Initializes the user account when being created in ProxyFactory.sol
     // function initialize(

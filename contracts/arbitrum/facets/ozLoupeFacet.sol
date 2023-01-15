@@ -117,4 +117,8 @@ contract ozLoupeFacet is ozILoupeFacet, DiamondLoupeFacet {
     function getL1CheckStatus() external view returns(bool) {
         return s.l1Check;
     }
+
+    function getAccountPayments(address account_) external view returns(uint) {
+        return s.accountPayments[account_];
+    }
 }

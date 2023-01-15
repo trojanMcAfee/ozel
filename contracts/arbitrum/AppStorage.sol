@@ -44,6 +44,7 @@ struct AppStorage {
     uint feesVault;
     uint failedFees;
     mapping(address => uint) usersPayments;
+    mapping(address => uint) accountPayments;
 
     //Curve swaps config
     TradeOps mimSwap;
@@ -71,7 +72,7 @@ struct AppStorage {
     uint24 poolFee;
     uint[] revenueAmounts;
 
-    //Misc vars
+    //Misc vars <---- order this later
     bool isEnabled;
     bytes checkForRevenueSelec;
     address nullAddress;

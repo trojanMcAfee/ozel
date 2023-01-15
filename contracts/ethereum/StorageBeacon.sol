@@ -46,8 +46,9 @@ contract StorageBeacon is IStorageBeacon, Initializable, Ownable {
     //-----
     mapping(address => address[]) public userToPointers;
     //-----
-
     mapping(address => AccountConfig) public accountToDetails; 
+    //------
+    mapping(address => mapping(address => address[])) userToAccountToPointers;
 
 
     mapping(bytes4 => bool) authorizedSelectors;
@@ -77,28 +78,31 @@ contract StorageBeacon is IStorageBeacon, Initializable, Ownable {
     }
 
     /// @dev Only allows a call from an account/proxy created through ProxyFactory
-    modifier onlyAccount(address user_) {
+    modifier onlyAccount(address user_, address account_) {
         // if(accountToDetails[msg.sender].user == address(0)) revert NotAccount();
         // _;
 
         //------
+        // bytes memory data;
+        // address[] memory pointers = userToPointers[user_];
+        // bool found;
 
-        bytes memory data;
-        address[] memory pointers = userToPointers[user_];
-        bool found;
+        // for (uint i=0; i < pointers.length; i++) {
+        //     data = SSTORE2.read(pointers[i]);
+        //     (address account,,) = abi.decode(data, (address, bytes32, AccountConfig));
+        //     if (account == msg.sender) {
+        //         found = true;
+        //     }
+        // }
+        // if (found) {
+        //     _;
+        // } else {
+        //     revert NotAccount();
+        // }
 
-        for (uint i=0; i < pointers.length; i++) {
-            data = SSTORE2.read(pointers[i]);
-            (address account,,) = abi.decode(data, (address, bytes32, AccountConfig));
-            if (account == msg.sender) {
-                found = true;
-            }
-        }
-        if (found) {
-            _;
-        } else {
-            revert NotAccount();
-        }
+        //------
+        if (userToAccountToPointers[user_][account_].length == 0) revert NotAccount();
+        _;
     }
 
 
@@ -167,8 +171,10 @@ contract StorageBeacon is IStorageBeacon, Initializable, Ownable {
     ) external hasRole(0x0854b85f) {
         bytes memory data = abi.encode(account_, taskId_, acc_);
         userToPointers[acc_.user].push(SSTORE2.write(data));
-    }
 
+        //------
+        // userToAccountToPointers[acc_.user][account_].push(SSTORE2.write(data));
+    }
 
 
     function changeGasPriceBid(uint newGasPriceBid_) external onlyOwner {
@@ -202,7 +208,7 @@ contract StorageBeacon is IStorageBeacon, Initializable, Ownable {
         isEmitter = newStatus_;
     }
 
-    function storeAccountPayment(uint payment_, address user_) external onlyAccount(user_) {
+    function storeAccountPayment(uint payment_, address user_) external onlyAccount(user_, msg.sender) { //onlyAccount(user_, msg.sender)
         accountToPayments[msg.sender] += payment_;
     }
 
