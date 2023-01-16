@@ -34,16 +34,15 @@ contract ozPayMe is ozIPayMe, ReentrancyGuard, Initializable {
     StorageBeacon.AccountConfig acc;
 
     address private _beacon;
-    address OZL;
+    address private immutable OZL;
 
-    address immutable ops;
-    address immutable gelato;
-    address immutable inbox;
-    address immutable emitter;
-    address constant ETH = 0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE;
-    uint immutable maxGas;
+    address private immutable ops;
+    address private immutable gelato;
+    address private immutable inbox;
+    address private immutable emitter;
+    address private constant ETH = 0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE;
+    uint private immutable maxGas;
 
-    event FundsToArb(address indexed sender, uint amount);
     event EmergencyTriggered(address indexed sender, uint amount);
     event NewToken(address indexed user, address indexed newToken);
     event NewSlippage(address indexed user, uint indexed newSlippage);
@@ -69,7 +68,7 @@ contract ozPayMe is ozIPayMe, ReentrancyGuard, Initializable {
     //////////////////////////////////////////////////////////////*/
 
     /// @dev Checks that only Gelato's PokeMe can make the call
-    modifier onlyOps() { //fxConfig.ops
+    modifier onlyOps() { 
         if (msg.sender != ops) revert NotAuthorized(msg.sender); 
         _;
     }
@@ -98,7 +97,6 @@ contract ozPayMe is ozIPayMe, ReentrancyGuard, Initializable {
                             Main functions
     //////////////////////////////////////////////////////////////*/
 
-    
     function sendToArb( 
         StorageBeacon.AccountConfig calldata acc_, 
         uint gasPriceBid_,
@@ -121,12 +119,12 @@ contract ozPayMe is ozIPayMe, ReentrancyGuard, Initializable {
             acc_, amountToSend_, account_
         );
         
-        bytes memory ticketData = _createTicketData(gasPriceBid_, swapData, false, inbox, maxGas, OZL);
+        bytes memory ticketData = _createTicketData(gasPriceBid_, swapData, false);
 
         (bool success, ) = inbox.call{value: address(this).balance}(ticketData); 
         if (!success) {
             /// @dev If it fails the 1st bridge attempt, it decreases the L2 gas calculations
-            ticketData = _createTicketData(gasPriceBid_, swapData, true, inbox, maxGas, OZL);
+            ticketData = _createTicketData(gasPriceBid_, swapData, true);
             (success, ) = inbox.call{value: address(this).balance}(ticketData);
 
             if (!success) {
@@ -140,7 +138,6 @@ contract ozPayMe is ozIPayMe, ReentrancyGuard, Initializable {
             if (!storageBeacon.getEmitterStatus()) { 
                 Emitter(emitter).forwardEvent(acc_.user); 
             }
-            emit FundsToArb(acc_.user, amountToSend_);
         }
     }
 
@@ -188,15 +185,6 @@ contract ozPayMe is ozIPayMe, ReentrancyGuard, Initializable {
     /*///////////////////////////////////////////////////////////////
                                Helpers
     //////////////////////////////////////////////////////////////*/
-
-    /// @dev Transfers to Gelato its fee for calling the account
-    function _transfer(uint256 amount_, address paymentToken_, address gelato_) private {
-        if (paymentToken_ == ETH) {
-            Address.functionCallWithValue(gelato_, new bytes(0), amount_);
-        } else {
-            SafeTransferLib.safeTransfer(ERC20(paymentToken_), gelato_, amount_); 
-        }
-    }
 
     /**
      * @dev Using the account slippage, calculates the minimum amount of tokens out.
@@ -280,17 +268,15 @@ contract ozPayMe is ozIPayMe, ReentrancyGuard, Initializable {
     function _calculateGasDetails(
         uint dataLength_, 
         uint gasPriceBid_, 
-        bool decrease_,
-        address inbox_, 
-        uint maxGas_
+        bool decrease_
     ) private view returns(uint maxSubmissionCost, uint autoRedeem) {
-        maxSubmissionCost = DelayedInbox(inbox_).calculateRetryableSubmissionFee(
+        maxSubmissionCost = DelayedInbox(inbox).calculateRetryableSubmissionFee(
             dataLength_,
             0
         );
 
         maxSubmissionCost = decrease_ ? maxSubmissionCost : maxSubmissionCost * 2;
-        autoRedeem = maxSubmissionCost + (gasPriceBid_ * maxGas_);
+        autoRedeem = maxSubmissionCost + (gasPriceBid_ * maxGas);
         if (autoRedeem > address(this).balance) autoRedeem = address(this).balance;
     }
 
@@ -300,21 +286,18 @@ contract ozPayMe is ozIPayMe, ReentrancyGuard, Initializable {
     function _createTicketData( 
         uint gasPriceBid_, 
         bytes memory swapData_,
-        bool decrease_, 
-        address inbox_,
-        uint maxGas_,
-        address ozDiamond_
+        bool decrease_
     ) private view returns(bytes memory) {
-        (uint maxSubmissionCost, uint autoRedeem) = _calculateGasDetails(swapData_.length, gasPriceBid_, decrease_, inbox_, maxGas_);
+        (uint maxSubmissionCost, uint autoRedeem) = _calculateGasDetails(swapData_.length, gasPriceBid_, decrease_);
 
         return abi.encodeWithSelector(
-            DelayedInbox(inbox_).createRetryableTicket.selector, 
-            ozDiamond_, 
+            DelayedInbox(inbox).createRetryableTicket.selector, 
+            OZL, 
             address(this).balance - autoRedeem,
             maxSubmissionCost, 
-            ozDiamond_, 
-            ozDiamond_, 
-            maxGas_,  
+            OZL, 
+            OZL, 
+            maxGas,  
             gasPriceBid_, 
             swapData_
         );
