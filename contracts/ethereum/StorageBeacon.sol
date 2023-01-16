@@ -29,30 +29,11 @@ contract StorageBeacon is IStorageBeacon, Initializable, Ownable {
 
     mapping(address => address[]) userToAccounts;
 
-    // struct AccountConfig {
-    //     address user;
-    //     address token;
-    //     uint slippage; 
-    //     string name;
-    // }
-
-    //-----
-    struct Details {
-        mapping(address => AccountConfig) accountToDetails;
-        address account;
-        bytes32 taskId;
-    }
-    mapping(address => Details[]) userToAccountsToDetails;
     //-----
     mapping(address => address[]) public userToPointers;
     //-----
-    mapping(address => AccountConfig) public accountToDetails; 
-    //------
-    mapping(address => mapping(address => address[])) userToAccountToPointers;
-
 
     mapping(bytes4 => bool) authorizedSelectors;
-    mapping(address => uint) accountToPayments;
 
     address[] tokenDatabaseArray;
 
@@ -74,34 +55,6 @@ contract StorageBeacon is IStorageBeacon, Initializable, Ownable {
     /// @dev Checks -using RolesAuthority- if the sender can call certain method
     modifier hasRole(bytes4 functionSig_) {
         require(beacon.canCall(msg.sender, address(this), functionSig_));
-        _;
-    }
-
-    /// @dev Only allows a call from an account/proxy created through ProxyFactory
-    modifier onlyAccount(address user_, address account_) {
-        // if(accountToDetails[msg.sender].user == address(0)) revert NotAccount();
-        // _;
-
-        //------
-        // bytes memory data;
-        // address[] memory pointers = userToPointers[user_];
-        // bool found;
-
-        // for (uint i=0; i < pointers.length; i++) {
-        //     data = SSTORE2.read(pointers[i]);
-        //     (address account,,) = abi.decode(data, (address, bytes32, AccountConfig));
-        //     if (account == msg.sender) {
-        //         found = true;
-        //     }
-        // }
-        // if (found) {
-        //     _;
-        // } else {
-        //     revert NotAccount();
-        // }
-
-        //------
-        if (userToAccountToPointers[user_][account_].length == 0) revert NotAccount();
         _;
     }
 
@@ -151,19 +104,6 @@ contract StorageBeacon is IStorageBeacon, Initializable, Ownable {
                         State-changin functions
     //////////////////////////////////////////////////////////////*/
 
-    function saveUserToDetails(
-        address account_, 
-        AccountConfig calldata acc_
-    ) external hasRole(0xcb05ce19) {
-        userToAccounts[acc_.user].push(account_);
-        accountToDetails[account_] = acc_;
-        if (!userDatabase[acc_.user]) userDatabase[acc_.user] = true;
-    }
-
-    function saveTaskId(address account_, bytes32 id_) external hasRole(0xf2034a69) {
-        taskIDs[account_] = id_;
-    }
-
     function multiSave(
         address account_, 
         AccountConfig calldata acc_, 
@@ -171,11 +111,7 @@ contract StorageBeacon is IStorageBeacon, Initializable, Ownable {
     ) external hasRole(0x0854b85f) {
         bytes memory data = abi.encode(account_, taskId_, acc_);
         userToPointers[acc_.user].push(SSTORE2.write(data));
-
-        //------
-        // userToAccountToPointers[acc_.user][account_].push(SSTORE2.write(data));
     }
-
 
     function changeGasPriceBid(uint newGasPriceBid_) external onlyOwner {
         gasPriceBid = newGasPriceBid_;
@@ -206,10 +142,6 @@ contract StorageBeacon is IStorageBeacon, Initializable, Ownable {
 
     function changeEmitterStatus(bool newStatus_) external onlyOwner {
         isEmitter = newStatus_;
-    }
-
-    function storeAccountPayment(uint payment_, address user_) external onlyAccount(user_, msg.sender) { //onlyAccount(user_, msg.sender)
-        accountToPayments[msg.sender] += payment_;
     }
 
     function addAuthorizedSelector(bytes4 selector_) external onlyOwner {
@@ -266,11 +198,7 @@ contract StorageBeacon is IStorageBeacon, Initializable, Ownable {
         Details[] storage deets = userToAccountsToDetails[owner_];
         for (uint i=0; i < deets.length; i++) {
             if (deets[i].account == account_) taskId = deets[i].taskId;
-        } // <----- fix
-    }
-
-    function getUserByAccount(address account_) external view returns(address) {
-        return accountToDetails[account_].user;
+        } // <----- fix *** here ****
     }
 
     /// @dev If token_ exists in L1 database
@@ -289,10 +217,6 @@ contract StorageBeacon is IStorageBeacon, Initializable, Ownable {
 
     function getTokenDatabase() external view returns(address[] memory) {
         return tokenDatabaseArray;
-    }
-
-    function getAccountPayments(address account_) external view returns(uint) {
-        return accountToPayments[account_];
     }
 
     function getDiamond() external view returns(address) {

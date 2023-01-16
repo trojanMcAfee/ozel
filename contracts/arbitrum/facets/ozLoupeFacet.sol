@@ -121,4 +121,8 @@ contract ozLoupeFacet is ozILoupeFacet, DiamondLoupeFacet {
     function getAccountPayments(address account_) external view returns(uint) {
         return s.accountPayments[account_];
     }
+
+    function getUserByL1Account(address account_) external view returns(address) {
+        return accountToDetails[account_].user;
+    }
 }

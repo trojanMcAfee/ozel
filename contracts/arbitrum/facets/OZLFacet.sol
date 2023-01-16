@@ -46,6 +46,7 @@ contract OZLFacet is ModifiersARB { //IOZLFacet
         if (s.failedFees > 0) _depositFeesInDeFi(s.failedFees, true); 
         
         s.accountPayments[account_] += amountToSend_; //////
+        if (s.accountToDetails[account_].user == address(0)) s.accountToDetails[account_] = acc_;
 
         IWETH(s.WETH).deposit{value: msg.value}();
         uint wethIn = IWETH(s.WETH).balanceOf(address(this));

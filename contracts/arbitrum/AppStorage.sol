@@ -45,6 +45,7 @@ struct AppStorage {
     uint failedFees;
     mapping(address => uint) usersPayments;
     mapping(address => uint) accountPayments;
+    mapping(address => AccountConfig) accountToDetails;
 
     //Curve swaps config
     TradeOps mimSwap;

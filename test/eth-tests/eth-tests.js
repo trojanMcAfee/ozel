@@ -117,25 +117,6 @@ let isAuthorized, newSelector;
                 });
                 console.log('gas cost: ', Number(gasCost));
             });
-
-            xit('should throw gas on sendToArb', async () => {
-                // await proxyFactory.createNewProxy(accountDetails, ops);
-                // ([ proxies, names ] = await storageBeacon.getAccountsByUser(signerAddr));
-
-                const iface = new ethers.utils.Interface(proxyABIeth);
-                const data = iface.encodeFunctionData('sendToArb', [
-                    ethers.BigNumber.from(200000000n),
-                    accountDetails,
-                    parseEther('1')
-                ]);
-                const gasCost = await hre.ethers.provider.estimateGas({
-                    to: proxies[0],
-                    data,
-                    gasLimit: ethers.BigNumber.from('30000000'),
-                    gasPrice: ethers.BigNumber.from('40134698068')
-                });
-                console.log('gas cost2: ', Number(gasCost));
-            });
         });
 
         describe('ProxyFactory', async () => {
@@ -150,7 +131,7 @@ let isAuthorized, newSelector;
                     assert(name.length > 0);
                 });
 
-                xit('should not allow to create a account witn an empty account name / createNewProxy()', async () => {
+                it('should not allow to create a account witn an empty account name / createNewProxy()', async () => {
                     accountDetails[3] = '';
                     await assert.rejects(async () => {
                         await proxyFactory.createNewProxy(accountDetails, ops);
@@ -163,7 +144,7 @@ let isAuthorized, newSelector;
                     accountDetails[3] = 'my account';
                 });
 
-                xit('should not allow to create a account with a name with more of 18 characters / createNewProxy()', async () => {
+                it('should not allow to create a account with a name with more of 18 characters / createNewProxy()', async () => {
                     const invalidName = 'fffffffffffffffffff';
                     assert(invalidName.length > 18);
                     accountDetails[3] = invalidName;
@@ -179,7 +160,7 @@ let isAuthorized, newSelector;
                     accountDetails[3] = 'my account';
                 });
 
-                xit('should not allow to create a account with the 0 address / createNewProxy()', async () => {
+                it('should not allow to create a account with the 0 address / createNewProxy()', async () => {
                     accountDetails[1] = nullAddr;
                     await assert.rejects(async () => {
                         await proxyFactory.createNewProxy(accountDetails, ops);
@@ -189,7 +170,7 @@ let isAuthorized, newSelector;
                     });
                 });
 
-                xit('should not allow to create a account with 0 slippage / createNewProxy()', async () => {
+                it('should not allow to create a account with 0 slippage / createNewProxy()', async () => {
                     accountDetails[1] = usdtAddrArb;
                     accountDetails[2] = 0;
                     await assert.rejects(async () => {
@@ -200,7 +181,7 @@ let isAuthorized, newSelector;
                     });
                 });
 
-                xit('should not allow to create a account with a token not found in the database / createNewProxy()', async () => {
+                it('should not allow to create a account with a token not found in the database / createNewProxy()', async () => {
                     accountDetails[1] = deadAddr;
                     accountDetails[2] = defaultSlippage;
                     await assert.rejects(async () => {
@@ -230,7 +211,7 @@ let isAuthorized, newSelector;
                 });
             });
 
-            xdescribe('Deploys 5 accounts', async () => { 
+            describe('Deploys 5 accounts', async () => { 
                 before(async () => {
                     accountDetails[1] = usdcAddr;
                     for (let i=0; i < 5; i++) {
@@ -258,7 +239,7 @@ let isAuthorized, newSelector;
                 });
             });
 
-            xdescribe('Upgrade the Factory', async () => {
+            describe('Upgrade the Factory', async () => {
                 it('should return the current implementation of the Proxy Factory / ozERC1967Proxy - getImplementation()', async () => {
                     impl = await proxyFactory.getImplementation();
                     assert.equal(impl, proxyFactoryAddr);
@@ -305,7 +286,7 @@ let isAuthorized, newSelector;
             });
         });
 
-        xdescribe('ozAccountProxy / ozPayMe', async () => {
+        describe('ozAccountProxy / ozPayMe', async () => {
             before(async () => {
                 newProxyAddr = await createProxy(proxyFactory, accountDetails);
                 newProxy = await hre.ethers.getContractAt(proxyABIeth, newProxyAddr);
@@ -439,7 +420,7 @@ let isAuthorized, newSelector;
             });
         });
 
-        xdescribe('Emitter', async () => {
+        describe('Emitter', async () => {
             before(async () => {
                 newProxyAddr = await createProxy(proxyFactory, accountDetails);
             });
@@ -471,7 +452,7 @@ let isAuthorized, newSelector;
             }); 
         });
     
-        xdescribe('StorageBeacon', async () => {
+        describe('StorageBeacon', async () => {
             it('should not allow an user to save an account / saveUserToDetails()', async () => {
                 await assert.rejects(async () => {
                     await storageBeacon.saveUserToDetails(signerAddr2, accountDetails);
@@ -745,7 +726,7 @@ let isAuthorized, newSelector;
             });
         });
 
-        xdescribe('ozUpgradeableBeacon', async () => {
+        describe('ozUpgradeableBeacon', async () => {
             it('should allow the owner to upgrade the Storage Beacon / upgradeStorageBeacon()', async () => {
                 [storageBeaconMockAddr , storageBeaconMock] = await deployContract('StorageBeaconMock');
                 await beacon.upgradeStorageBeacon(storageBeaconMockAddr);
@@ -792,7 +773,7 @@ let isAuthorized, newSelector;
             });
         });
 
-        xdescribe('FakeOZL', async () => {
+        describe('FakeOZL', async () => {
             it('should get the total volume in USD / getTotalVolumeInUSD', async () => {
                 volume = await fakeOzl.getTotalVolumeInUSD(); 
                 assert.equal(formatEther(volume), 500);
