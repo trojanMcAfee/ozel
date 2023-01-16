@@ -27,7 +27,8 @@ async function err(n = 0) {
         zeroShares: `VM Exception while processing transaction: reverted with custom error 'CantBeZero("shares")'`,
         tokenInDatabase: `VM Exception while processing transaction: reverted with custom error 'TokenAlreadyInDatabase("${n}")'`,
         invalidName: "VM Exception while processing transaction: reverted with custom error 'NameTooLong()'",
-        l1TokenDisabled: `VM Exception while processing transaction: reverted with custom error 'L1TokenDisabled("${n}")'`
+        l1TokenDisabled: `VM Exception while processing transaction: reverted with custom error 'L1TokenDisabled("${n}")'`,
+        noTaskId: `call revert exception [ See: https://links.ethers.org/v5-errors-CALL_EXCEPTION ] (method="getTaskID(address,address)", data="0xec0b769f", errorArgs=[], errorName="NoTaskId", errorSignature="NoTaskId()", reason=null, code=CALL_EXCEPTION, version=abi/5.7.0)`
     };
     
 } 

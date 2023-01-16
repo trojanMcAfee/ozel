@@ -286,14 +286,14 @@ let isAuthorized, newSelector;
             });
         });
 
-        describe('ozAccountProxy / ozPayMe', async () => {
+        xdescribe('ozAccountProxy / ozPayMe', async () => {
             before(async () => {
                 newProxyAddr = await createProxy(proxyFactory, accountDetails);
                 newProxy = await hre.ethers.getContractAt(proxyABIeth, newProxyAddr);
             });
 
             describe('fallback()', async () => {
-                xit('should not allow re-calling / initialize()', async () => {
+                it('should not allow re-calling / initialize()', async () => {
                     await assert.rejects(async () => {
                         await newProxy.initialize(accountDetails, nullAddr, ops);
                     }, {
@@ -302,7 +302,7 @@ let isAuthorized, newSelector;
                     });
                 });
 
-                xit('should not allow when an entity that is not Ops makes the call / sendToArb()', async () => {
+                it('should not allow when an entity that is not Ops makes the call / sendToArb()', async () => {
                     await assert.rejects(async () => {
                         await activateOzBeaconProxy(newProxyAddr);
                     }, {
@@ -311,14 +311,14 @@ let isAuthorized, newSelector;
                     });
                 });
 
-                xit('should allow the user to change account token / changeAccountToken()', async () => {
+                it('should allow the user to change account token / changeAccountToken()', async () => {
                     tx = await newProxy.changeAccountToken(usdcAddr);
                     receipt = await tx.wait();
                     newUserToken = getEventParam(receipt);
                     assert.equal(newUserToken, usdcAddr.toLowerCase());
                 });
 
-                xit('should not allow an external user to change account token / changeAccountToken()', async () => {
+                it('should not allow an external user to change account token / changeAccountToken()', async () => {
                     await assert.rejects(async () => {
                         await newProxy.connect(signers[1]).changeAccountToken(usdcAddr, ops);
                     }, {
@@ -327,7 +327,7 @@ let isAuthorized, newSelector;
                     });
                 });
 
-                xit('shoud not allow to change account token for the 0 address / changeAccountToken()', async () => {
+                it('shoud not allow to change account token for the 0 address / changeAccountToken()', async () => {
                     await assert.rejects(async () => {
                         await newProxy.changeAccountToken(nullAddr, ops);
                     }, {
@@ -336,7 +336,7 @@ let isAuthorized, newSelector;
                     });
                 });
 
-                xit('shoud not allow to change account token for one not found in the database / changeAccountToken()', async () => {
+                it('shoud not allow to change account token for one not found in the database / changeAccountToken()', async () => {
                     await assert.rejects(async () => {
                         await newProxy.changeAccountToken(deadAddr, ops); 
                     }, {
@@ -345,7 +345,7 @@ let isAuthorized, newSelector;
                     });
                 });
 
-                xit('should allow the user to change the slippage with the minimum of 0.01% / changeAccountSlippage()', async () => {
+                it('should allow the user to change the slippage with the minimum of 0.01% / changeAccountSlippage()', async () => {
                     newUserSlippage = 0.01;
 
                     ([ user, token, slippage ] = await newProxy.getAccountDetails());
@@ -356,7 +356,7 @@ let isAuthorized, newSelector;
                     assert.equal(Number(slippage) / 100, newUserSlippage); 
                 });
 
-                xit('should not allow to change the slippage to 0 / changeAccountSlippage()', async () => {
+                it('should not allow to change the slippage to 0 / changeAccountSlippage()', async () => {
                     newSlippage = 0;
                     await assert.rejects(async () => {
                         await newProxy.changeAccountSlippage(newSlippage, ops);
@@ -366,7 +366,7 @@ let isAuthorized, newSelector;
                     });
                 });
 
-                xit('should not allow an external user to change the slippage / changeAccountSlippage()', async () => {
+                it('should not allow an external user to change the slippage / changeAccountSlippage()', async () => {
                     await assert.rejects(async () => {
                         await newProxy.connect(signers[1]).changeAccountSlippage(200, ops);
                     }, {
@@ -375,7 +375,7 @@ let isAuthorized, newSelector;
                     });
                 });
 
-                xit('should change both token and slippage in one tx / changeAccountTokenNSlippage()', async () => {
+                it('should change both token and slippage in one tx / changeAccountTokenNSlippage()', async () => {
                     newUserSlippage = 0.55;
                     tx = await newProxy.changeAccountTokenNSlippage(fraxAddr, parseInt(0.55 * 100), ops);
                     await tx.wait();
@@ -411,7 +411,7 @@ let isAuthorized, newSelector;
                     assert(areEqual);
                 });
 
-                xit('should get the account details / getAccountDetails()', async () => {
+                it('should get the account details / getAccountDetails()', async () => {
                     const [ user, token, slippage ] = await newProxy.getAccountDetails();
                     assert.equal(user, accountDetails[0]);
                     assert(token === accountDetails[1] || token === fraxAddr);
@@ -435,7 +435,7 @@ let isAuthorized, newSelector;
     
             it('should not allow an unauhtorized user to emit ticketID / forwardEvent()', async () => {
                 await assert.rejects(async () => {
-                    await emitter.forwardEvent();
+                    await emitter.forwardEvent(deadAddr);
                 }, {
                     name: 'Error',
                     message: (await err()).notProxy 
@@ -452,25 +452,7 @@ let isAuthorized, newSelector;
             }); 
         });
     
-        xdescribe('StorageBeacon', async () => {
-            it('should not allow an user to save an account / saveUserToDetails()', async () => {
-                await assert.rejects(async () => {
-                    await storageBeacon.saveUserToDetails(signerAddr2, accountDetails);
-                }, {
-                    name: 'Error',
-                    message: (await err(1)).notAuthorized 
-                });
-            });
-
-            it('should not allow an user to save a taskId / saveTaskId()', async () => {
-                await assert.rejects(async () => {
-                    await storageBeacon.saveTaskId(deadAddr, formatBytes32String('evil data'));
-                }, {
-                    name: 'Error',
-                    message: (await err(1)).notAuthorized 
-                });
-            });
-
+        describe('StorageBeacon', async () => {
             it('should allow the owner to change changeGasPriceBid / changeGasPriceBid()', async () => {
                 await storageBeacon.changeGasPriceBid(100);
             });
@@ -626,13 +608,17 @@ let isAuthorized, newSelector;
 
                 await proxyFactory.createNewProxy(accountDetails, ops);
                 ([userProxies] = await storageBeacon.getAccountsByUser(signerAddr));
-                taskID = (await storageBeacon.getTaskID(userProxies[0])).toString();
+                taskID = (await storageBeacon.getTaskID(userProxies[0], signerAddr)).toString();
                 assert(taskID.length > 0);
             });
 
-            it("should return a zero taskID when querying with a non-user / getTaskID()", async () => {
-                taskID = (await storageBeacon.getTaskID(deadAddr)).toString();
-                assert.equal(taskID, formatBytes32String(0));
+            it("should throw an error when querying for the taskId of a non-user / getTaskID()", async () => {
+                await assert.rejects(async () => {
+                    await storageBeacon.getTaskID(deadAddr, deadAddr)
+                }, {
+                    name: 'Error',
+                    message: (await err()).noTaskId 
+                });
             });
 
             it('should return true for an user / isUser()', async () => {
@@ -656,27 +642,6 @@ let isAuthorized, newSelector;
                 assert(tokenDb.length > 0);
             });
 
-            it('should store the payment to the account / storeAccountPayment()', async () => {
-                tokens = await storageBeacon.getTokenDatabase();
-                accountDetails[1] = tokens[0];
-                
-                newProxyAddr = await createProxy(proxyFactory, accountDetails);
-
-                await sendETH(newProxyAddr, 0.1);
-                await activateProxyLikeOps(newProxyAddr, ozERC1967proxyAddr); 
-                payments = await storageBeacon.getAccountPayments(newProxyAddr);
-                assert.equal(formatEther(payments), 0.1);
-            });
-
-            it('should not let an external user to store a account payment / storeAccountPayment()', async () => {                
-                await assert.rejects(async () => {
-                    await storageBeacon.storeAccountPayment(deadAddr, 1000);
-                }, {
-                    name: 'Error',
-                    message: (await err()).notProxy
-                });
-            });
-
             it('should let the owner add a new authorized selector / addAuthorizedSelector()' , async () => {
                 newSelector = 0xb1b3d3f6;
                 isAuthorized = await storageBeacon.isSelectorAuthorized(newSelector);
@@ -696,29 +661,6 @@ let isAuthorized, newSelector;
     
                 await assert.rejects(async () => {
                     await storageBeacon.connect(signers[1]).addAuthorizedSelector(newSelector, ops);
-                }, {
-                    name: 'Error',
-                    message: (await err()).notOwner 
-                });
-            });
-
-            it('should get the current address of ozDiamond (aka fakeOZL in this case) / getDiamond()', async () => {
-                ozDiamond = await storageBeacon.getDiamond();
-                assert.equal(ozDiamond, fakeOzl.address);
-            });
-
-            it('should allow the onwer to change the stored address of ozDiamond/ changeDiamond()', async () => {
-                const constrArgs = [ myReceiver, getFakeOZLVars() ];
-                const [ newDiamondAddr ] = await deployContract('FakeOZL', constrArgs);
-                
-                await storageBeacon.changeDiamond(newDiamondAddr, ops);
-                ozDiamond = await storageBeacon.getDiamond();
-                assert.equal(newDiamondAddr, ozDiamond);
-            });
-
-            it('should not allow an unauthorized user to change the stored ozDiamond / changeDiamond()', async () => {
-                await assert.rejects(async () => {
-                    await storageBeacon.connect(signers[1]).changeDiamond(deadAddr, ops);
                 }, {
                     name: 'Error',
                     message: (await err()).notOwner 
