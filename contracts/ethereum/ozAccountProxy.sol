@@ -18,9 +18,9 @@ contract ozAccountProxy is ReentrancyGuard, Initializable, BeaconProxy {
 
     StorageBeacon.AccountConfig acc;
 
-    address private beacon; 
-
-    event FundsToArb(address indexed account, address indexed sender, uint amount);
+    event EmergencyTriggered(address indexed sender, uint amount);
+    event NewToken(address indexed user, address indexed newToken);
+    event NewSlippage(address indexed user, uint indexed newSlippage);
     
     constructor(
         address beacon_,
