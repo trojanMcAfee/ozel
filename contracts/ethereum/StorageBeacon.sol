@@ -19,7 +19,6 @@ import 'hardhat/console.sol';
  */
 contract StorageBeacon is IStorageBeacon, Initializable, Ownable {
 
-    FixedConfig fxConfig;
     EmergencyMode eMode;
 
     mapping(address => bytes32) taskIDs;
@@ -57,22 +56,11 @@ contract StorageBeacon is IStorageBeacon, Initializable, Ownable {
 
 
     constructor(
-        FixedConfig memory fxConfig_,
         EmergencyMode memory eMode_,
         address[] memory tokens_,
         bytes4[] memory selectors_,
         uint gasPriceBid_
     ) {
-        fxConfig = FixedConfig({
-            inbox: fxConfig_.inbox,
-            ops: fxConfig_.ops,
-            OZL: fxConfig_.OZL,
-            emitter: fxConfig_.emitter,
-            gelato: payable(fxConfig_.gelato),
-            ETH: fxConfig_.ETH, 
-            maxGas: fxConfig_.maxGas
-        });
-
         eMode = EmergencyMode({
             swapRouter: ISwapRouter(eMode_.swapRouter),
             priceFeed: AggregatorV3Interface(eMode_.priceFeed),
@@ -154,10 +142,6 @@ contract StorageBeacon is IStorageBeacon, Initializable, Ownable {
         return authorizedSelectors[selector_];
     }
 
-    function getFixedConfig() external view returns(FixedConfig memory) {
-        return fxConfig;
-    }
-
     function getGasPriceBid() external view returns(uint) {
         return gasPriceBid; 
     }
@@ -174,11 +158,6 @@ contract StorageBeacon is IStorageBeacon, Initializable, Ownable {
         string[] memory names = new string[](pointers.length);
 
         for (uint i=0; i < pointers.length;) {
-
-            // bytes memory data = SSTORE2.read(pointer);
-            // (address account, , AccountConfig memory acc) = 
-            //     abi.decode(data, (address, bytes32, AccountConfig));
-
             (address account,,string memory name) = _extractData(pointers[i]);
 
             accounts[i] = account;

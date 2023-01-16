@@ -37,7 +37,7 @@ contract ozPayMe is ozIPayMe, ReentrancyGuard, Initializable {
     address private immutable OZL;
 
     address private immutable ops;
-    address private immutable gelato;
+    address payable private immutable gelato;
     address private immutable inbox;
     address private immutable emitter;
     address private constant ETH = 0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE;
