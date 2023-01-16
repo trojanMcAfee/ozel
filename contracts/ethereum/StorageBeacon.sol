@@ -27,8 +27,6 @@ contract StorageBeacon is IStorageBeacon, Initializable, Ownable {
     mapping(address => bool) userDatabase;
 
 
-    mapping(address => address[]) userToAccounts;
-
     //-----
     mapping(address => address[]) public userToPointers;
     //-----
@@ -216,7 +214,6 @@ contract StorageBeacon is IStorageBeacon, Initializable, Ownable {
     
     function isUser(address user_) external view returns(bool) {
         return userToPointers[user_].length > 0;
-        // return userToAccountsToDetails[user_].length > 0;
     }
 
     function getEmitterStatus() external view returns(bool) {

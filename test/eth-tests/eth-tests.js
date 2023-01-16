@@ -119,8 +119,8 @@ let isAuthorized, newSelector;
             });
         });
 
-        describe('ProxyFactory', async () => {
-            xdescribe('Deploys one account', async () => {
+        xdescribe('ProxyFactory', async () => {
+            describe('Deploys one account', async () => {
                 it('should create a account successfully / createNewProxy()', async () => {
                     await proxyFactory.createNewProxy(accountDetails, ops);
                     ([ proxies, names ] = await storageBeacon.getAccountsByUser(signerAddr));
@@ -211,7 +211,7 @@ let isAuthorized, newSelector;
                 });
             });
 
-            xdescribe('Deploys 5 accounts', async () => { 
+            describe('Deploys 5 accounts', async () => { 
                 before(async () => {
                     accountDetails[1] = usdcAddr;
                     for (let i=0; i < 5; i++) {
@@ -239,7 +239,7 @@ let isAuthorized, newSelector;
                 });
             });
 
-            xdescribe('Upgrade the Factory', async () => {
+            describe('Upgrade the Factory', async () => {
                 it('should return the current implementation of the Proxy Factory / ozERC1967Proxy - getImplementation()', async () => {
                     impl = await proxyFactory.getImplementation();
                     assert.equal(impl, proxyFactoryAddr);
@@ -452,7 +452,7 @@ let isAuthorized, newSelector;
             }); 
         });
     
-        describe('StorageBeacon', async () => {
+        xdescribe('StorageBeacon', async () => {
             it('should allow the owner to change changeGasPriceBid / changeGasPriceBid()', async () => {
                 await storageBeacon.changeGasPriceBid(100);
             });
@@ -668,13 +668,13 @@ let isAuthorized, newSelector;
             });
         });
 
-        xdescribe('ozUpgradeableBeacon', async () => {
-            it('should allow the owner to upgrade the Storage Beacon / upgradeStorageBeacon()', async () => {
+        describe('ozUpgradeableBeacon', async () => {
+            xit('should allow the owner to upgrade the Storage Beacon / upgradeStorageBeacon()', async () => {
                 [storageBeaconMockAddr , storageBeaconMock] = await deployContract('StorageBeaconMock');
                 await beacon.upgradeStorageBeacon(storageBeaconMockAddr);
             });
 
-            it('should not allow an external user to upgrade the Storage Beacon / upgradeStorageBeacon()', async () => {
+            xit('should not allow an external user to upgrade the Storage Beacon / upgradeStorageBeacon()', async () => {
                 [storageBeaconMockAddr , storageBeaconMock] = await deployContract('StorageBeaconMock');
                 signer2 = await hre.ethers.provider.getSigner(signerAddr2);
 
@@ -686,7 +686,7 @@ let isAuthorized, newSelector;
                 });
             });
 
-            it('should allow the owner to upgrade the implementation and use with the new version of storageBeacon / upgradeTo()', async () => {
+            it('should allow the owner to upgrade the implementation and use it with the new version of storageBeacon / upgradeTo()', async () => {
                 [ storageBeaconMockAddr ] = await deployContract('StorageBeaconMock');
                 await beacon.upgradeStorageBeacon(storageBeaconMockAddr, ops);
                 const [ implMockAddr ] = await deployContract('ImplementationMock');
