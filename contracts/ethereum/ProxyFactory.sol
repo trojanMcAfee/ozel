@@ -22,17 +22,18 @@ contract ProxyFactory is IProxyFactory, ReentrancyGuard, Initializable, UUPSUpgr
 
     using Address for address;
 
-    address private beacon;
-    address immutable ops;
-    address constant ETH = 0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE;
+    address private immutable beacon;
+    address private immutable ops;
+    address private constant ETH = 0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE;
 
     modifier onlyOwner() {
         if(!(_getAdmin() == msg.sender)) revert NotAuthorized(msg.sender);
         _;
     }
 
-    constructor(address ops_) {
+    constructor(address ops_, address beacon_) {
         ops = ops_;
+        beacon = beacon_;
     }
 
 
@@ -90,8 +91,7 @@ contract ProxyFactory is IProxyFactory, ReentrancyGuard, Initializable, UUPSUpgr
     }
 
     /// @inheritdoc IProxyFactory
-    function initialize(address beacon_) external initializer {
-        beacon = beacon_;
+    function initialize() external initializer {
         _changeAdmin(msg.sender);
     }
 

@@ -18,7 +18,7 @@ interface IProxyFactory {
     ) external returns(address);
 
     /// @dev Initializer
-    function initialize(address beacon_) external;
+    function initialize() external;
 
     /**
      * @dev Gets the owner of Factory

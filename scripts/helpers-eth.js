@@ -48,10 +48,6 @@ async function deployContract(contractName, constrArgs, signer = null) {
     const Contract = await hre.ethers.getContractFactory(contractName);
 
     switch(contractName) {
-        case 'ProxyFactory':
-            ([ var1 ] = constrArgs);
-            contract = await Contract.connect(signer).deploy(var1, ops);
-            break;
         case 'UpgradeableBeacon':
             contract = await Contract.connect(signer).deploy(constrArgs, ops);
             break;
@@ -59,6 +55,7 @@ async function deployContract(contractName, constrArgs, signer = null) {
         case 'ozERC1967Proxy':
         case 'RolesAuthority':
         case 'FakeOZL':
+        case 'ProxyFactory':
             let gas = ops;
             ([ var1, var2 ] = constrArgs);
             if (contractName === 'FakeOZL') gas = opsL2;
@@ -332,7 +329,7 @@ async function deploySystem(type, signerAddr) {
     await emitter.storeBeacon(beaconAddr);
 
     //Deploys ProxyFactory
-    constrArgs = [ pokeMeOpsAddr ]; 
+    constrArgs = [ pokeMeOpsAddr, beaconAddr ]; 
 
     const [ proxyFactoryAddr ] = await deployContract(
         type === 'Pessimistically_v2' ? 'FaultyProxyFactory' : 'ProxyFactory', constrArgs
@@ -346,7 +343,7 @@ async function deploySystem(type, signerAddr) {
 
     const [ ozERC1967proxyAddr ] = await deployContract('ozERC1967Proxy', constrArgs);
     const proxyFactory = await hre.ethers.getContractAt(factoryABI, ozERC1967proxyAddr);
-    await proxyFactory.initialize(beaconAddr, ops);
+    await proxyFactory.initialize(ops);
 
     //Deploys Auth
     constrArgs = [
