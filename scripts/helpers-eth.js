@@ -70,6 +70,7 @@ async function deployContract(contractName, constrArgs, signer = null) {
             contract = await Contract.connect(signer).deploy(var1, var2, var3, var4, var5, ops);
             break;
         case 'ozPayMe':
+        case 'ImplementationMock':
             ([ var1, var2, var3, var4, var5, var6 ] = constrArgs);
             contract = await Contract.connect(signer).deploy(var1, var2, var3, var4, var5, var6, ops);
             break;
@@ -371,7 +372,8 @@ async function deploySystem(type, signerAddr) {
         emitterAddr,
         ozDiamondAddr,
         eMode,
-        proxyFactoryAddr
+        proxyFactoryAddr,
+        maxGas
     ];
 
 }

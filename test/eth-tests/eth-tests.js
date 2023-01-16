@@ -23,7 +23,9 @@ const {
     ops,
     mimAddr,
     wbtcAddr,
-    myReceiver
+    myReceiver,
+    gelatoAddr,
+    inbox
  } = require('../../scripts/state-vars.js');
 
  const {
@@ -62,7 +64,7 @@ const evilAmount = ethers.constants.MaxUint256;
 let preBalance, postBalance;
 let isExist, proxyFactory;
 let tx, receipt;
-let fakeOzl, volume, ozDiamond;
+let fakeOzl, volume, maxGas;
 let names, proxies, slippage;
 let isAuthorized, newSelector;
 
@@ -100,7 +102,7 @@ let isAuthorized, newSelector;
                 fakeOZLaddr, 
                 eMode,
                 proxyFactoryAddr,
-                ozPaymeAddr
+                maxGas
             ] = await deploySystem('Optimistically', signerAddr));
 
             proxyFactory = await hre.ethers.getContractAt(factoryABI, ozERC1967proxyAddr);
@@ -119,7 +121,7 @@ let isAuthorized, newSelector;
             });
         });
 
-        xdescribe('ProxyFactory', async () => {
+        describe('ProxyFactory', async () => {
             describe('Deploys one account', async () => {
                 it('should create a account successfully / createNewProxy()', async () => {
                     await proxyFactory.createNewProxy(accountDetails, ops);
@@ -286,7 +288,7 @@ let isAuthorized, newSelector;
             });
         });
 
-        xdescribe('ozAccountProxy / ozPayMe', async () => {
+        describe('ozAccountProxy / ozPayMe', async () => {
             before(async () => {
                 newProxyAddr = await createProxy(proxyFactory, accountDetails);
                 newProxy = await hre.ethers.getContractAt(proxyABIeth, newProxyAddr);
@@ -313,9 +315,8 @@ let isAuthorized, newSelector;
 
                 it('should allow the user to change account token / changeAccountToken()', async () => {
                     tx = await newProxy.changeAccountToken(usdcAddr);
-                    receipt = await tx.wait();
-                    newUserToken = getEventParam(receipt);
-                    assert.equal(newUserToken, usdcAddr.toLowerCase());
+                    accountDetails = await newProxy.getAccountDetails();
+                    assert.equal(accountDetails[1], usdcAddr);
                 });
 
                 it('should not allow an external user to change account token / changeAccountToken()', async () => {
@@ -420,7 +421,7 @@ let isAuthorized, newSelector;
             });
         });
 
-        xdescribe('Emitter', async () => {
+        describe('Emitter', async () => {
             before(async () => {
                 newProxyAddr = await createProxy(proxyFactory, accountDetails);
             });
@@ -452,7 +453,7 @@ let isAuthorized, newSelector;
             }); 
         });
     
-        xdescribe('StorageBeacon', async () => {
+        describe('StorageBeacon', async () => {
             it('should allow the owner to change changeGasPriceBid / changeGasPriceBid()', async () => {
                 await storageBeacon.changeGasPriceBid(100);
             });
@@ -669,12 +670,12 @@ let isAuthorized, newSelector;
         });
 
         describe('ozUpgradeableBeacon', async () => {
-            xit('should allow the owner to upgrade the Storage Beacon / upgradeStorageBeacon()', async () => {
+            it('should allow the owner to upgrade the Storage Beacon / upgradeStorageBeacon()', async () => {
                 [storageBeaconMockAddr , storageBeaconMock] = await deployContract('StorageBeaconMock');
                 await beacon.upgradeStorageBeacon(storageBeaconMockAddr);
             });
 
-            xit('should not allow an external user to upgrade the Storage Beacon / upgradeStorageBeacon()', async () => {
+            it('should not allow an external user to upgrade the Storage Beacon / upgradeStorageBeacon()', async () => {
                 [storageBeaconMockAddr , storageBeaconMock] = await deployContract('StorageBeaconMock');
                 signer2 = await hre.ethers.provider.getSigner(signerAddr2);
 
@@ -689,7 +690,15 @@ let isAuthorized, newSelector;
             it('should allow the owner to upgrade the implementation and use it with the new version of storageBeacon / upgradeTo()', async () => {
                 [ storageBeaconMockAddr ] = await deployContract('StorageBeaconMock');
                 await beacon.upgradeStorageBeacon(storageBeaconMockAddr, ops);
-                const [ implMockAddr ] = await deployContract('ImplementationMock');
+                constrArgs = [
+                    pokeMeOpsAddr,
+                    gelatoAddr,
+                    inbox,
+                    emitterAddr,
+                    fakeOZLaddr,
+                    maxGas
+                ];
+                const [ implMockAddr ] = await deployContract('ImplementationMock', constrArgs);
                 await beacon.upgradeTo(implMockAddr);
 
                 //execute a normal tx to the proxy and read from the new variable placed on implMock
@@ -715,7 +724,7 @@ let isAuthorized, newSelector;
             });
         });
 
-        xdescribe('FakeOZL', async () => {
+        describe('FakeOZL', async () => {
             it('should get the total volume in USD / getTotalVolumeInUSD', async () => {
                 volume = await fakeOzl.getTotalVolumeInUSD(); 
                 assert.equal(formatEther(volume), 500);
