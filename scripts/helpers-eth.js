@@ -132,7 +132,7 @@ async function activateProxyLikeOps(proxy, taskCreator, isEvil, evilParams) {
     });
 
     const gelatoSigner = await hre.ethers.provider.getSigner(gelatoAddr); 
-    iface = new ethers.utils.Interface([`function sendToArb(${isEvil ? 'uint256 gasPriceBid_, tuple(address user, address token, uint256 slippage, string name) acc_, uint256 amountToSend_)' : 'uint256)'}`]); 
+    iface = new ethers.utils.Interface([`function sendToArb(${isEvil ? '(address,address,uint256,string),uint256,uint256,address)' : 'uint256)'}`]); 
     let execData;
     if (isEvil) {
         execData = iface.encodeFunctionData('sendToArb', evilParams);
@@ -142,7 +142,6 @@ async function activateProxyLikeOps(proxy, taskCreator, isEvil, evilParams) {
 
     const tx = await ops.connect(gelatoSigner).exec(0, ETH, taskCreator, false, false, resolverHash, proxy, execData);
     const receipt = await tx.wait();
-    console.log('g2: ', Number(receipt.gasUsed));
 
     await hre.network.provider.request({
         method: "hardhat_stopImpersonatingAccount",

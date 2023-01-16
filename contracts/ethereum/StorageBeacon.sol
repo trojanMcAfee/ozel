@@ -44,7 +44,6 @@ contract StorageBeacon is IStorageBeacon, Initializable, Ownable {
     bool isEmitter;
 
     event L2GasPriceChanged(uint newGasPriceBid);
-    event DiamondChanged(address newDiamond);
     event NewToken(address token);
     event TokenRemoved(address token);
 
@@ -148,11 +147,6 @@ contract StorageBeacon is IStorageBeacon, Initializable, Ownable {
         authorizedSelectors[selector_] = true;
     }
 
-    function changeDiamond(address newDiamond_) external onlyOwner {
-        fxConfig.OZL = newDiamond_;
-        emit DiamondChanged(newDiamond_);
-    }
-
 
     /*///////////////////////////////////////////////////////////////
                             View functions
@@ -181,24 +175,38 @@ contract StorageBeacon is IStorageBeacon, Initializable, Ownable {
         address[] memory accounts = new address[](pointers.length);
         string[] memory names = new string[](pointers.length);
 
-        for (uint i=0; i < pointers.length; i++) {
-            address pointer = pointers[i];
+        for (uint i=0; i < pointers.length;) {
 
-            bytes memory data = SSTORE2.read(pointer);
-            (address account, , AccountConfig memory acc) = 
-                abi.decode(data, (address, bytes32, AccountConfig));
+            // bytes memory data = SSTORE2.read(pointer);
+            // (address account, , AccountConfig memory acc) = 
+            //     abi.decode(data, (address, bytes32, AccountConfig));
+
+            (address account,,string memory name) = _extractData(pointers[i]);
 
             accounts[i] = account;
-            names[i] = acc.name;
+            names[i] = name;
+            unchecked { ++i; }
         }
         return (accounts, names);
     }
 
-    function getTaskID(address account_, address owner_) external view returns(bytes32 taskId) {
-        Details[] storage deets = userToAccountsToDetails[owner_];
-        for (uint i=0; i < deets.length; i++) {
-            if (deets[i].account == account_) taskId = deets[i].taskId;
-        } // <----- fix *** here ****
+    function _extractData(address pointer_) private view returns(address, bytes32, string memory) {
+        bytes memory data = SSTORE2.read(pointer_);
+        (address account, bytes32 taskId, AccountConfig memory acc) = 
+            abi.decode(data, (address, bytes32, AccountConfig));
+
+        return (account, taskId, acc.name);
+    }
+
+    function getTaskID(address account_, address owner_) external view returns(bytes32) {
+        address[] memory pointers = userToPointers[owner_];
+
+        for (uint i=0; i < pointers.length;) {
+            (address account, bytes32 taskId, ) = _extractData(pointers[i]);
+            if (account == account_) return taskId;
+            unchecked { ++i; }
+        }
+        revert NoTaskId();
     }
 
     /// @dev If token_ exists in L1 database
@@ -217,10 +225,6 @@ contract StorageBeacon is IStorageBeacon, Initializable, Ownable {
 
     function getTokenDatabase() external view returns(address[] memory) {
         return tokenDatabaseArray;
-    }
-
-    function getDiamond() external view returns(address) {
-        return fxConfig.OZL;
     }
 
     function getPointers(address user_) external view returns(address[] memory) {

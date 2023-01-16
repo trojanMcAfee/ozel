@@ -47,3 +47,5 @@ error NameTooLong();
 error InvalidTask(bytes32 taskId);
 
 error L1TokenDisabled(address l1Token);
+
+error NoTaskId();

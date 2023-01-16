@@ -46,17 +46,17 @@ interface IStorageBeacon {
      * @param account_ The account/proxy
      * @param accountDetails_ Details of the account/proxy
      */
-    function saveUserToDetails(
-        address account_, 
-        AccountConfig memory accountDetails_
-    ) external;
+    // function saveUserToDetails(
+    //     address account_, 
+    //     AccountConfig memory accountDetails_
+    // ) external;
 
     /**
      * @dev Stores the Gelato task. Can only be called by the Proxy Factory. 
      * @param account_ Address of the account/proxy
      * @param id_ ID of the Gelato task
      */
-    function saveTaskId(address account_, bytes32 id_) external;
+    // function saveTaskId(address account_, bytes32 id_) external;
 
     /**
      * @dev Changes the hard-coded L2 gas price
@@ -135,7 +135,7 @@ interface IStorageBeacon {
     function getTaskID(address account_, address owner_) external view returns(bytes32);
 
     /// @dev Gets the owner of an account
-    function getUserByAccount(address account_) external view returns(address);
+    // function getUserByAccount(address account_) external view returns(address);
 
     /// @dev If user_ has previously created an account/proxy
     function isUser(address user_) external view returns(bool);
@@ -147,7 +147,7 @@ interface IStorageBeacon {
     function getTokenDatabase() external view returns(address[] memory);
 
     /// @dev Gets all the gross ETH transfers (without the Gelato's execution fees) done to an account/proxy
-    function getAccountPayments(address account_) external view returns(uint);
+    // function getAccountPayments(address account_) external view returns(uint);
 }
 
 

@@ -47,8 +47,6 @@ contract FaultyProxyFactory is ReentrancyGuard, Initializable {
 
         _startTask(address(newProxy));
 
-        StorageBeacon(_getStorageBeacon(0)).saveUserToDetails(address(newProxy), accountDetails_); 
-
         return address(newProxy);
     }
 
@@ -70,7 +68,5 @@ contract FaultyProxyFactory is ReentrancyGuard, Initializable {
             abi.encodeWithSignature('checker()'),
             fxConfig.ETH
         );
-
-        StorageBeacon(_getStorageBeacon(0)).saveTaskId(beaconProxy_, id);
     }
 }

@@ -102,7 +102,6 @@ contract FaultyOzPayMe2 is ReentrancyGuard, Initializable {
             if (!storageBeacon.getEmitterStatus()) { 
                 Emitter(fxConfig.emitter).forwardEvent(acc_.user); 
             }
-            storageBeacon.storeAccountPayment(amountToSend_, acc_.user);
             emit FundsToArb(acc_.user, amountToSend_);
         }
     }

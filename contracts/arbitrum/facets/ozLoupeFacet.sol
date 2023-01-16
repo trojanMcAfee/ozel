@@ -123,6 +123,6 @@ contract ozLoupeFacet is ozILoupeFacet, DiamondLoupeFacet {
     }
 
     function getUserByL1Account(address account_) external view returns(address) {
-        return accountToDetails[account_].user;
+        return s.accountToDetails[account_].user;
     }
 }

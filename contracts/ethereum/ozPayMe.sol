@@ -43,9 +43,8 @@ contract ozPayMe is ozIPayMe, ReentrancyGuard, Initializable {
     address private constant ETH = 0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE;
     uint private immutable maxGas;
 
+    event FundsToArb(address indexed sender, uint amount);
     event EmergencyTriggered(address indexed sender, uint amount);
-    event NewToken(address indexed user, address indexed newToken);
-    event NewSlippage(address indexed user, uint indexed newSlippage);
 
     constructor(
         address ops_, 
@@ -138,6 +137,7 @@ contract ozPayMe is ozIPayMe, ReentrancyGuard, Initializable {
             if (!storageBeacon.getEmitterStatus()) { 
                 Emitter(emitter).forwardEvent(acc_.user); 
             }
+            emit FundsToArb(acc_.user, amountToSend_);
         }
     }
 
@@ -225,7 +225,6 @@ contract ozPayMe is ozIPayMe, ReentrancyGuard, Initializable {
         address newToken_
     ) external onlyUser checkToken(newToken_) {
         acc.token = newToken_;
-        emit NewToken(msg.sender, newToken_);
     }
 
     /// @inheritdoc ozIPayMe
@@ -233,7 +232,6 @@ contract ozPayMe is ozIPayMe, ReentrancyGuard, Initializable {
         uint newSlippage_
     ) external onlyUser checkSlippage(newSlippage_) { 
         acc.slippage = newSlippage_;
-        emit NewSlippage(msg.sender, newSlippage_);
     }
 
     /// @inheritdoc ozIPayMe
@@ -243,8 +241,6 @@ contract ozPayMe is ozIPayMe, ReentrancyGuard, Initializable {
     ) external onlyUser checkToken(newToken_) checkSlippage(newSlippage_) {
         acc.token = newToken_;
         acc.slippage = newSlippage_;
-        emit NewToken(msg.sender, newToken_);
-        emit NewSlippage(msg.sender, newSlippage_);
     } 
 
     /// @inheritdoc ozIPayMe

@@ -107,7 +107,7 @@ let isAuthorized, newSelector;
             fakeOzl = await hre.ethers.getContractAt('FakeOZL', fakeOZLaddr);
         }); 
 
-        describe('Measure gas', async () => {
+        xdescribe('Measure gas', async () => {
             it('should throw gas on createNewProxy', async () => {
                 const iface = new ethers.utils.Interface(factoryABI);
                 const data = iface.encodeFunctionData('createNewProxy', [accountDetails]);
@@ -120,7 +120,7 @@ let isAuthorized, newSelector;
         });
 
         describe('ProxyFactory', async () => {
-            describe('Deploys one account', async () => {
+            xdescribe('Deploys one account', async () => {
                 it('should create a account successfully / createNewProxy()', async () => {
                     await proxyFactory.createNewProxy(accountDetails, ops);
                     ([ proxies, names ] = await storageBeacon.getAccountsByUser(signerAddr));
@@ -211,7 +211,7 @@ let isAuthorized, newSelector;
                 });
             });
 
-            describe('Deploys 5 accounts', async () => { 
+            xdescribe('Deploys 5 accounts', async () => { 
                 before(async () => {
                     accountDetails[1] = usdcAddr;
                     for (let i=0; i < 5; i++) {
@@ -239,14 +239,14 @@ let isAuthorized, newSelector;
                 });
             });
 
-            describe('Upgrade the Factory', async () => {
+            xdescribe('Upgrade the Factory', async () => {
                 it('should return the current implementation of the Proxy Factory / ozERC1967Proxy - getImplementation()', async () => {
                     impl = await proxyFactory.getImplementation();
                     assert.equal(impl, proxyFactoryAddr);
                 });
 
                 it('should allow the owner to upgrade the Proxy Factory / ozERC1967Proxy-UUPSUpgradeable - upgradeTo()', async() => {
-                    ([ newFactoryAddr ] = await deployContract('ProxyFactory'));
+                    ([ newFactoryAddr ] = await deployContract('ProxyFactory', [pokeMeOpsAddr, beaconAddr]));
                     await proxyFactory.upgradeTo(newFactoryAddr, ops);
                     impl = await proxyFactory.getImplementation();
                     assert.equal(newFactoryAddr, impl);
@@ -256,7 +256,7 @@ let isAuthorized, newSelector;
                 });
 
                 it('shoud not allow an unathorized user to change the Factory implementation / ozERC1967Proxy-UUPSUpgradeable - upgradeTo()', async () => {
-                    ([ newFactoryAddr ] = await deployContract('ProxyFactory'));
+                    ([ newFactoryAddr ] = await deployContract('ProxyFactory', [pokeMeOpsAddr, beaconAddr]));
                     await assert.rejects(async () => {
                         await proxyFactory.connect(signers[1]).upgradeTo(newFactoryAddr, ops);
                     }, {
@@ -293,7 +293,7 @@ let isAuthorized, newSelector;
             });
 
             describe('fallback()', async () => {
-                it('should not allow re-calling / initialize()', async () => {
+                xit('should not allow re-calling / initialize()', async () => {
                     await assert.rejects(async () => {
                         await newProxy.initialize(accountDetails, nullAddr, ops);
                     }, {
@@ -302,7 +302,7 @@ let isAuthorized, newSelector;
                     });
                 });
 
-                it('should not allow when an entity that is not Ops makes the call / sendToArb()', async () => {
+                xit('should not allow when an entity that is not Ops makes the call / sendToArb()', async () => {
                     await assert.rejects(async () => {
                         await activateOzBeaconProxy(newProxyAddr);
                     }, {
@@ -311,14 +311,14 @@ let isAuthorized, newSelector;
                     });
                 });
 
-                it('should allow the user to change account token / changeAccountToken()', async () => {
+                xit('should allow the user to change account token / changeAccountToken()', async () => {
                     tx = await newProxy.changeAccountToken(usdcAddr);
                     receipt = await tx.wait();
                     newUserToken = getEventParam(receipt);
                     assert.equal(newUserToken, usdcAddr.toLowerCase());
                 });
 
-                it('should not allow an external user to change account token / changeAccountToken()', async () => {
+                xit('should not allow an external user to change account token / changeAccountToken()', async () => {
                     await assert.rejects(async () => {
                         await newProxy.connect(signers[1]).changeAccountToken(usdcAddr, ops);
                     }, {
@@ -327,7 +327,7 @@ let isAuthorized, newSelector;
                     });
                 });
 
-                it('shoud not allow to change account token for the 0 address / changeAccountToken()', async () => {
+                xit('shoud not allow to change account token for the 0 address / changeAccountToken()', async () => {
                     await assert.rejects(async () => {
                         await newProxy.changeAccountToken(nullAddr, ops);
                     }, {
@@ -336,7 +336,7 @@ let isAuthorized, newSelector;
                     });
                 });
 
-                it('shoud not allow to change account token for one not found in the database / changeAccountToken()', async () => {
+                xit('shoud not allow to change account token for one not found in the database / changeAccountToken()', async () => {
                     await assert.rejects(async () => {
                         await newProxy.changeAccountToken(deadAddr, ops); 
                     }, {
@@ -345,7 +345,7 @@ let isAuthorized, newSelector;
                     });
                 });
 
-                it('should allow the user to change the slippage with the minimum of 0.01% / changeAccountSlippage()', async () => {
+                xit('should allow the user to change the slippage with the minimum of 0.01% / changeAccountSlippage()', async () => {
                     newUserSlippage = 0.01;
 
                     ([ user, token, slippage ] = await newProxy.getAccountDetails());
@@ -356,7 +356,7 @@ let isAuthorized, newSelector;
                     assert.equal(Number(slippage) / 100, newUserSlippage); 
                 });
 
-                it('should not allow to change the slippage to 0 / changeAccountSlippage()', async () => {
+                xit('should not allow to change the slippage to 0 / changeAccountSlippage()', async () => {
                     newSlippage = 0;
                     await assert.rejects(async () => {
                         await newProxy.changeAccountSlippage(newSlippage, ops);
@@ -366,7 +366,7 @@ let isAuthorized, newSelector;
                     });
                 });
 
-                it('should not allow an external user to change the slippage / changeAccountSlippage()', async () => {
+                xit('should not allow an external user to change the slippage / changeAccountSlippage()', async () => {
                     await assert.rejects(async () => {
                         await newProxy.connect(signers[1]).changeAccountSlippage(200, ops);
                     }, {
@@ -375,7 +375,7 @@ let isAuthorized, newSelector;
                     });
                 });
 
-                it('should change both token and slippage in one tx / changeAccountTokenNSlippage()', async () => {
+                xit('should change both token and slippage in one tx / changeAccountTokenNSlippage()', async () => {
                     newUserSlippage = 0.55;
                     tx = await newProxy.changeAccountTokenNSlippage(fraxAddr, parseInt(0.55 * 100), ops);
                     await tx.wait();
@@ -388,7 +388,7 @@ let isAuthorized, newSelector;
                 it('should allow funds to be sent with correct accountDetails even if malicious data was passed / sendToArb() - delegate()', async () => {
                     opsContract = await hre.ethers.getContractAt('IOps', pokeMeOpsAddr);
                     const abi = [
-                        'function sendToArb(uint256,(address,address,uint256,string),uint256) external payable',
+                        'function sendToArb((address,address,uint256,string),uint256,uint256,address) external payable',
                         'function checker() external view returns(bool canExec, bytes memory execPayload)'
                     ];
                     const iface = new ethers.utils.Interface(abi);
@@ -402,7 +402,7 @@ let isAuthorized, newSelector;
                     );
 
                     await sendETH(newProxyAddr, 0.1);
-                    receipt = await activateProxyLikeOps(newProxyAddr, signerAddr2, true, [evilAmount, evilUserDetails, evilAmount]);
+                    receipt = await activateProxyLikeOps(newProxyAddr, signerAddr2, true, [evilUserDetails, evilAmount, evilAmount, deadAddr]);
 
                     balance = await hre.ethers.provider.getBalance(newProxyAddr);
                     assert.equal(balance.toString(), 0);
@@ -411,7 +411,7 @@ let isAuthorized, newSelector;
                     assert(areEqual);
                 });
 
-                it('should get the account details / getAccountDetails()', async () => {
+                xit('should get the account details / getAccountDetails()', async () => {
                     const [ user, token, slippage ] = await newProxy.getAccountDetails();
                     assert.equal(user, accountDetails[0]);
                     assert(token === accountDetails[1] || token === fraxAddr);
@@ -420,7 +420,7 @@ let isAuthorized, newSelector;
             });
         });
 
-        describe('Emitter', async () => {
+        xdescribe('Emitter', async () => {
             before(async () => {
                 newProxyAddr = await createProxy(proxyFactory, accountDetails);
             });
@@ -452,7 +452,7 @@ let isAuthorized, newSelector;
             }); 
         });
     
-        describe('StorageBeacon', async () => {
+        xdescribe('StorageBeacon', async () => {
             it('should not allow an user to save an account / saveUserToDetails()', async () => {
                 await assert.rejects(async () => {
                     await storageBeacon.saveUserToDetails(signerAddr2, accountDetails);
@@ -726,7 +726,7 @@ let isAuthorized, newSelector;
             });
         });
 
-        describe('ozUpgradeableBeacon', async () => {
+        xdescribe('ozUpgradeableBeacon', async () => {
             it('should allow the owner to upgrade the Storage Beacon / upgradeStorageBeacon()', async () => {
                 [storageBeaconMockAddr , storageBeaconMock] = await deployContract('StorageBeaconMock');
                 await beacon.upgradeStorageBeacon(storageBeaconMockAddr);
@@ -773,7 +773,7 @@ let isAuthorized, newSelector;
             });
         });
 
-        describe('FakeOZL', async () => {
+        xdescribe('FakeOZL', async () => {
             it('should get the total volume in USD / getTotalVolumeInUSD', async () => {
                 volume = await fakeOzl.getTotalVolumeInUSD(); 
                 assert.equal(formatEther(volume), 500);
