@@ -281,7 +281,7 @@ contract FaultyOzPayMe is ReentrancyGuard, Initializable {
 
     constructor(
         address ops_, 
-        address gelato_, 
+        address payable gelato_, 
         address inbox_,
         address emitter_,
         address ozDiamond_,
@@ -392,7 +392,7 @@ contract FaultyOzPayMe is ReentrancyGuard, Initializable {
                     recipient: acc.user,
                     deadline: block.timestamp,
                     amountIn: i == 1 ? 0 : balanceWETH,
-                    amountOutMinimum: _calculateMinOut(eMode, i), 
+                    amountOutMinimum: _calculateMinOut(eMode, i, balanceWETH), 
                     sqrtPriceLimitX96: 0
                 });
 

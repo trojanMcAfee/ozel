@@ -44,11 +44,11 @@ contract ozPayMe is ozIPayMe, ReentrancyGuard, Initializable {
     uint private immutable maxGas;
 
     event FundsToArb(address indexed sender, uint amount);
-    event EmergencyTriggered(address indexed sender, uint amount); //<---- test if these events work if remove from ozAccount
+    event EmergencyTriggered(address indexed sender, uint amount); //<---- test if these events work if remove from ozAccount. Remove from FaultOzAccount test contract also
 
     constructor(
         address ops_, 
-        address gelato_, 
+        address payable gelato_, 
         address inbox_,
         address emitter_,
         address ozDiamond_,

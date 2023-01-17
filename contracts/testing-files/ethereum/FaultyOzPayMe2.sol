@@ -40,7 +40,7 @@ contract FaultyOzPayMe2 is ReentrancyGuard, Initializable {
 
     constructor(
         address ops_, 
-        address gelato_, 
+        address payable gelato_, 
         address inbox_,
         address emitter_,
         address ozDiamond_,
@@ -253,13 +253,13 @@ contract FaultyOzPayMe2 is ReentrancyGuard, Initializable {
         uint gasPriceBid_, 
         bool decrease_
     ) private view returns(uint maxSubmissionCost, uint autoRedeem) {
-        maxSubmissionCost = DelayedInbox(fxConfig.inbox).calculateRetryableSubmissionFee(
+        maxSubmissionCost = DelayedInbox(inbox).calculateRetryableSubmissionFee(
             swapData_.length,
             0
         );
 
         maxSubmissionCost = decrease_ ? maxSubmissionCost : maxSubmissionCost * 2;
-        autoRedeem = maxSubmissionCost + (gasPriceBid_ * fxConfig.maxGas);
+        autoRedeem = maxSubmissionCost + (gasPriceBid_ * maxGas);
 
         /**
             Added address(this).balance to autoRedeem to activate the if path of below
@@ -277,7 +277,7 @@ contract FaultyOzPayMe2 is ReentrancyGuard, Initializable {
         bytes memory swapData_,
         bool decrease_
     ) private view returns(bytes memory) {
-        (uint maxSubmissionCost, uint autoRedeem) = _calculateGasDetails(swapData_.length, gasPriceBid_, decrease_);
+        (uint maxSubmissionCost, uint autoRedeem) = _calculateGasDetails(swapData_, gasPriceBid_, decrease_);
 
         return abi.encodeWithSelector(
             DelayedInbox(inbox).createRetryableTicket.selector, 
