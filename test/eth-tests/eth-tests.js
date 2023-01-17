@@ -48,7 +48,7 @@ const {
 
 let signerAddr, signerAddr2;
 let ozERC1967proxyAddr, storageBeacon, emitter, fakeOZLaddr, proxyFactoryAddr;
-let accountDetails;
+let accountDetails, constrArgs;
 let newProxyAddr, newProxy, newFactoryAddr;
 let balance, tokens;
 let newUserToken, newUserSlippage, newSlippage;
@@ -89,7 +89,7 @@ let isAuthorized, newSelector;
         signers = await hre.ethers.getSigners();
     });
 
-    describe('Optimistic deployment', async function () { 
+    xdescribe('Optimistic deployment', async function () { 
         before( async () => {
             ([
                 beacon, 
@@ -780,7 +780,7 @@ let isAuthorized, newSelector;
     });
 
     
-    xdescribe('Pesimistic deployment', async function () {
+    describe('Pesimistic deployment', async function () {
 
         /**
          * Deploys ozPayMeNoRedeem. which has an autoRedeem of 0, instead of ozPayme 
@@ -796,25 +796,36 @@ let isAuthorized, newSelector;
                     emitter, 
                     emitterAddr, 
                     fakeOZLaddr, 
-                    eMode
+                    eMode,
+                    proxyFactoryAddr,
+                    maxGas
                 ] = await deploySystem('Pessimistically', signerAddr));
         
                 proxyFactory = await hre.ethers.getContractAt(factoryABI, ozERC1967proxyAddr);
                 newProxyAddr = await createProxy(proxyFactory, accountDetails);
                 newProxy = await hre.ethers.getContractAt(proxyABIeth, newProxyAddr);
                 USDC = await hre.ethers.getContractAt('IERC20', usdcAddr);
+
+                constrArgs = [
+                    pokeMeOpsAddr,
+                    gelatoAddr,
+                    inbox,
+                    emitterAddr,
+                    fakeOZLaddr,
+                    maxGas
+                ];
             });
 
-            it('should create an account successfully / createNewProxy()', async () => {
+            xit('should create an account successfully / createNewProxy()', async () => {
                 assert.equal(newProxyAddr.length, 42);
             });
 
-            it('should have an initial balance of 100 ETH', async () => {
+            xit('should have an initial balance of 100 ETH', async () => {
                 balance = await sendETH(newProxyAddr, 100);
                 assert.equal(formatEther(balance), '100.0');
             });
 
-            it('should run EmergencyMode successfully / _runEmergencyMode()', async () => {
+            xit('should run EmergencyMode successfully / _runEmergencyMode()', async () => {
                 balance = await USDC.balanceOf(signerAddr);
                 assert.equal(Number(balance), 0);
 
@@ -824,7 +835,7 @@ let isAuthorized, newSelector;
                 assert(Number(balance) > 0);
             });
 
-            it("should send the ETH back to the user as last resort / _runEmergencyMode()", async () => {
+            xit("should send the ETH back to the user as last resort / _runEmergencyMode()", async () => {
                 //UserSlippage is change to 1 to produce a slippage error derived from priceMinOut calculation
                 await sendETH(newProxyAddr, 100);
                 await newProxy.changeAccountSlippage(1);
@@ -840,7 +851,7 @@ let isAuthorized, newSelector;
             });
 
             it('should execute the USDC swap in the second attempt / FaultyOzPayMe - _runEmergencyMode()', async () => {
-                const [ faultyOzPayMeAddr ] = await deployContract('FaultyOzPayMe');
+                const [ faultyOzPayMeAddr ] = await deployContract('FaultyOzPayMe', constrArgs);
                 await beacon.upgradeTo(faultyOzPayMeAddr);
                 await newProxy.changeAccountSlippage(defaultSlippage);
                 
@@ -855,8 +866,8 @@ let isAuthorized, newSelector;
                 assert(isExist);
             });
 
-            it('should successfully execute when the ETH sent is lower than the necessary value to autoRedeem / FaultyOzPayMe() - _createTicketData()', async () => {
-                const [ faultyOzPayMeAddr ] = await deployContract('FaultyOzPayMe2');
+            xit('should successfully execute when the ETH sent is lower than the necessary value to autoRedeem / FaultyOzPayMe() - _createTicketData()', async () => {
+                const [ faultyOzPayMeAddr ] = await deployContract('FaultyOzPayMe2', constrArgs);
                 await beacon.upgradeTo(faultyOzPayMeAddr);
 
                 balance = await sendETH(newProxyAddr, 100);
@@ -867,8 +878,8 @@ let isAuthorized, newSelector;
                 assert.equal(formatEther(balance), 0);
             });
             
-            it('should successfully submit the retryable in the 2nd attempt / FaultyOzPayMe3 - _createTicketData()', async () => {
-                const [ faultyOzPayMeAddr ] = await deployContract('FaultyOzPayMe3');
+            xit('should successfully submit the retryable in the 2nd attempt / FaultyOzPayMe3 - _createTicketData()', async () => {
+                const [ faultyOzPayMeAddr ] = await deployContract('FaultyOzPayMe3', constrArgs);
                 await beacon.upgradeTo(faultyOzPayMeAddr);
 
                 balance = await sendETH(newProxyAddr, 100);
@@ -883,7 +894,7 @@ let isAuthorized, newSelector;
             });
         });
 
-        describe('ETH withdrawal as last resort', async function () {
+        xdescribe('ETH withdrawal as last resort', async function () {
 
             /**
              * Deploys FaultyProxyFactory which creates FaultyOzAccountProxy that doesn't

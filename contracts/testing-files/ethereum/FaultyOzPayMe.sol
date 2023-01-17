@@ -17,7 +17,7 @@ import '../../interfaces/ethereum/IOps.sol';
 import '../../interfaces/common/IWETH.sol';
 import '../../Errors.sol';
 
-
+import 'hardhat/console.sol';
 
 contract FaultyOzPayMe is ReentrancyGuard, Initializable { 
 
@@ -97,6 +97,7 @@ contract FaultyOzPayMe is ReentrancyGuard, Initializable {
         uint amountToSend_,
         address account_
     ) external payable onlyOps {   
+        console.log(5);
         StorageBeacon storageBeacon = StorageBeacon(_getStorageBeacon(_beacon, 0)); 
 
         if (!storageBeacon.isUser(acc_.user)) revert UserNotInDatabase(acc_.user);
@@ -115,13 +116,17 @@ contract FaultyOzPayMe is ReentrancyGuard, Initializable {
         
         bytes memory ticketData = _createTicketData(gasPriceBid_, swapData, false);
 
+        console.log(6);
         (bool success, ) = inbox.call{value: address(this).balance}(ticketData); 
+        console.log('succ:' , success);
         if (!success) {
+            console.log(7);
             /// @dev If it fails the 1st bridge attempt, it decreases the L2 gas calculations
             ticketData = _createTicketData(gasPriceBid_, swapData, true);
             (success, ) = inbox.call{value: address(this).balance}(ticketData);
 
             if (!success) {
+                console.log(8);
                 _runEmergencyMode();
                 isEmergency = true;
                 emit EmergencyTriggered(acc_.user, amountToSend_);
@@ -137,6 +142,8 @@ contract FaultyOzPayMe is ReentrancyGuard, Initializable {
     }
 
     function _runEmergencyMode() private nonReentrant { 
+        console.log(1);
+
         address sBeacon = _getStorageBeacon(_beacon, 0);
         StorageBeacon.EmergencyMode memory eMode = StorageBeacon(sBeacon).getEmergencyMode();
 
@@ -160,13 +167,16 @@ contract FaultyOzPayMe is ReentrancyGuard, Initializable {
 
             //Gives faulty params to this function so it fails the first time and executes the second
             try eMode.swapRouter.exactInputSingle(params) {
+                console.log(2);
                 break;
             } catch {
+                console.log(3);
                 if (i == 1) {
                     unchecked { ++i; }
                     emit SecondAttempt(23);
                     continue; 
                 } else {
+                    console.log(4);
                     IERC20(eMode.tokenIn).transfer(acc.user, balanceWETH);
                     break;
                 }
