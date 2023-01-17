@@ -88,6 +88,9 @@ interface IStorageBeacon {
      */
     function isSelectorAuthorized(bytes4 selector_) external view returns(bool);
 
+    /// @dev Gets the Fixed Config struct
+    // function getFixedConfig() external view returns(FixedConfig memory);
+
     /// @dev Gets the L2 gas price
     function getGasPriceBid() external view returns(uint);
 

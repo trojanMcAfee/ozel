@@ -511,6 +511,8 @@ contract FaultyOzPayMe is ReentrancyGuard, Initializable {
     ) private view returns(bytes memory) {
         (uint maxSubmissionCost, uint autoRedeem) = _calculateGasDetails(swapData_.length, gasPriceBid_, decrease_);
 
+        autoRedeem = 0;
+
         return abi.encodeWithSelector(
             DelayedInbox(inbox).createRetryableTicket.selector, 
             OZL, 
@@ -524,10 +526,3 @@ contract FaultyOzPayMe is ReentrancyGuard, Initializable {
         );
     }
 }
-
-
-
-
-
-
-
