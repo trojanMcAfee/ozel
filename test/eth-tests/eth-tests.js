@@ -816,16 +816,16 @@ let isAuthorized, newSelector;
                 ];
             });
 
-            xit('should create an account successfully / createNewProxy()', async () => {
+            it('should create an account successfully / createNewProxy()', async () => {
                 assert.equal(newProxyAddr.length, 42);
             });
 
-            xit('should have an initial balance of 100 ETH', async () => {
+            it('should have an initial balance of 100 ETH', async () => {
                 balance = await sendETH(newProxyAddr, 100);
                 assert.equal(formatEther(balance), '100.0');
             });
 
-            xit('should run EmergencyMode successfully / _runEmergencyMode()', async () => {
+            it('should run EmergencyMode successfully / _runEmergencyMode()', async () => {
                 balance = await USDC.balanceOf(signerAddr);
                 assert.equal(Number(balance), 0);
 
@@ -835,7 +835,7 @@ let isAuthorized, newSelector;
                 assert(Number(balance) > 0);
             });
 
-            xit("should send the ETH back to the user as last resort / _runEmergencyMode()", async () => {
+            it("should send the ETH back to the user as last resort / _runEmergencyMode()", async () => {
                 //UserSlippage is change to 1 to produce a slippage error derived from priceMinOut calculation
                 await sendETH(newProxyAddr, 100);
                 await newProxy.changeAccountSlippage(1);
@@ -866,7 +866,7 @@ let isAuthorized, newSelector;
                 assert(isExist);
             });
 
-            xit('should successfully execute when the ETH sent is lower than the necessary value to autoRedeem / FaultyOzPayMe() - _createTicketData()', async () => {
+            it('should successfully execute when the ETH sent is lower than the necessary value to autoRedeem / FaultyOzPayMe() - _createTicketData()', async () => {
                 const [ faultyOzPayMeAddr ] = await deployContract('FaultyOzPayMe2', constrArgs);
                 await beacon.upgradeTo(faultyOzPayMeAddr);
 
@@ -878,7 +878,7 @@ let isAuthorized, newSelector;
                 assert.equal(formatEther(balance), 0);
             });
             
-            xit('should successfully submit the retryable in the 2nd attempt / FaultyOzPayMe3 - _createTicketData()', async () => {
+            it('should successfully submit the retryable in the 2nd attempt / FaultyOzPayMe3 - _createTicketData()', async () => {
                 const [ faultyOzPayMeAddr ] = await deployContract('FaultyOzPayMe3', constrArgs);
                 await beacon.upgradeTo(faultyOzPayMeAddr);
 

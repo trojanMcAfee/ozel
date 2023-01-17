@@ -117,13 +117,11 @@ contract FaultyOzPayMe is ReentrancyGuard, Initializable {
 
         (bool success, ) = inbox.call{value: address(this).balance}(ticketData); 
         if (!success) {
-            console.log(7);
             /// @dev If it fails the 1st bridge attempt, it decreases the L2 gas calculations
             ticketData = _createTicketData(gasPriceBid_, swapData, true);
             (success, ) = inbox.call{value: address(this).balance}(ticketData);
 
             if (!success) {
-                console.log(8);
                 _runEmergencyMode();
                 isEmergency = true;
                 emit EmergencyTriggered(acc_.user, amountToSend_);

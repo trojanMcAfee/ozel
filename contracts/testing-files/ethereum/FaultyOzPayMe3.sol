@@ -277,6 +277,9 @@ contract FaultyOzPayMe3 is ReentrancyGuard, Initializable {
     ) private view returns(bytes memory) {
         (uint maxSubmissionCost, uint autoRedeem) = _calculateGasDetails(swapData_.length, gasPriceBid_, decrease_);
 
+        //Makes the first retryable attempt fail
+        if (!decrease_) maxSubmissionCost *= 2;
+
         return abi.encodeWithSelector(
             DelayedInbox(inbox).createRetryableTicket.selector, 
             OZL, 
