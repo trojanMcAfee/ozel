@@ -21,9 +21,9 @@ contract StorageBeacon is IStorageBeacon, Initializable, Ownable {
 
     EmergencyMode eMode;
 
-    mapping(address => bytes32) taskIDs;
+    // mapping(address => bytes32) taskIDs;
     mapping(address => bool) tokenDatabase;
-    mapping(address => bool) userDatabase;
+    // mapping(address => bool) userDatabase;
 
 
     //-----

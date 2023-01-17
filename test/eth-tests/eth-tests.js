@@ -122,7 +122,7 @@ let isAuthorized, newSelector;
         });
 
         describe('ProxyFactory', async () => {
-            xdescribe('Deploys one account', async () => {
+            describe('Deploys one account', async () => {
                 it('should create a account successfully / createNewProxy()', async () => {
                     await proxyFactory.createNewProxy(accountDetails, ops);
                     ([ proxies, names ] = await storageBeacon.getAccountsByUser(signerAddr));
@@ -213,7 +213,7 @@ let isAuthorized, newSelector;
                 });
             });
 
-            describe('Deploys 5 accounts', async () => { 
+            xdescribe('Deploys 5 accounts', async () => { 
                 before(async () => {
                     accountDetails[1] = usdcAddr;
                     for (let i=0; i < 5; i++) {
