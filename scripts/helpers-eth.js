@@ -66,8 +66,8 @@ async function deployContract(contractName, constrArgs, signer = null) {
             contract = await Contract.connect(signer).deploy(var1, var2, var3, ops);
             break;
         case 'StorageBeacon':
-            ([ var1, var2, var3, var4, var5 ] = constrArgs);
-            contract = await Contract.connect(signer).deploy(var1, var2, var3, var4, var5, ops);
+            ([ var1, var2, var3, var4 ] = constrArgs);
+            contract = await Contract.connect(signer).deploy(var1, var2, var3, var4, ops);
             break;
         case 'ozPayMe':
         case 'ImplementationMock':
@@ -281,16 +281,6 @@ async function deploySystem(type, signerAddr) {
     const [ ozPaymeAddr ] = await deployContract(type === 'Pessimistically' ? 'ozPayMeNoRedeem' : 'ozPayMe', constrArgs);
 
     //Deploys StorageBeacon
-    const fxConfig = [
-        inbox, 
-        pokeMeOpsAddr,
-        ozDiamondAddr,
-        emitterAddr,
-        gelatoAddr, 
-        ETH,
-        maxGas
-    ];
-
     const eMode = [
         swapRouterUniAddr,
         chainlinkAggregatorAddr,
@@ -309,7 +299,6 @@ async function deploySystem(type, signerAddr) {
     ];
 
     constrArgs = [
-        fxConfig,
         eMode,
         tokensDatabase,
         getInitSelectors(),

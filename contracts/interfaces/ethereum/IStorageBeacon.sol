@@ -15,24 +15,6 @@ interface IStorageBeacon {
         string name;
     }
 
-    struct FixedConfig {  
-        address inbox;
-        address ops;
-        address OZL;
-        address emitter;
-        address payable gelato;
-        address ETH; 
-        uint maxGas;
-    }
-
-    struct FixedConfig2 {  
-        address ops;
-        address payable gelato;
-        address inbox;
-        address emitter;
-        uint maxGas;
-    }
-
     struct EmergencyMode {
         ISwapRouter swapRouter;
         AggregatorV3Interface priceFeed; 
@@ -107,7 +89,7 @@ interface IStorageBeacon {
     function isSelectorAuthorized(bytes4 selector_) external view returns(bool);
 
     /// @dev Gets the Fixed Config struct
-    function getFixedConfig() external view returns(FixedConfig memory);
+    // function getFixedConfig() external view returns(FixedConfig memory);
 
     /// @dev Gets the L2 gas price
     function getGasPriceBid() external view returns(uint);

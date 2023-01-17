@@ -1,27 +1,27 @@
-// SPDX-License-Identifier: GPL-2.0-or-later
-pragma solidity 0.8.14;
+// // SPDX-License-Identifier: GPL-2.0-or-later
+// pragma solidity 0.8.14;
 
 
-import '@openzeppelin/contracts/proxy/beacon/BeaconProxy.sol';
-import "@openzeppelin/contracts/proxy/utils/Initializable.sol";
-import '@rari-capital/solmate/src/utils/ReentrancyGuard.sol';
-import '../../../ethereum/StorageBeacon.sol';
+// import '@openzeppelin/contracts/proxy/beacon/BeaconProxy.sol';
+// import "@openzeppelin/contracts/proxy/utils/Initializable.sol";
+// import '@rari-capital/solmate/src/utils/ReentrancyGuard.sol';
+// import '../../../ethereum/StorageBeacon.sol';
 
 
-contract FaultyOzAccountProxy is ReentrancyGuard, Initializable, BeaconProxy { 
+// contract FaultyOzAccountProxy is ReentrancyGuard, Initializable, BeaconProxy { 
 
-    StorageBeacon.AccountConfig accountDetails;
-    StorageBeacon.FixedConfig fxConfig;
+//     StorageBeacon.AccountConfig accountDetails;
+//     StorageBeacon.FixedConfig fxConfig;
 
-    address private beacon; 
+//     address private beacon; 
 
-    event FundsToArb(address indexed proxy, address indexed sender, uint amount);
+//     event FundsToArb(address indexed proxy, address indexed sender, uint amount);
     
-    constructor(
-        address beacon_,
-        bytes memory data_
-    ) BeaconProxy(beacon_, data_) {}                                    
+//     constructor(
+//         address beacon_,
+//         bytes memory data_
+//     ) BeaconProxy(beacon_, data_) {}                                    
 
 
-    receive() external payable override {}
-}
+//     receive() external payable override {}
+// }
