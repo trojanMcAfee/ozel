@@ -56,6 +56,7 @@ async function deployContract(contractName, constrArgs, signer = null) {
         case 'RolesAuthority':
         case 'FakeOZL':
         case 'ProxyFactory':
+        case 'FaultyProxyFactory':
             let gas = ops;
             ([ var1, var2 ] = constrArgs);
             if (contractName === 'FakeOZL') gas = opsL2;

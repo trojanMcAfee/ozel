@@ -89,7 +89,7 @@ let isAuthorized, newSelector;
         signers = await hre.ethers.getSigners();
     });
 
-    xdescribe('Optimistic deployment', async function () { 
+    describe('Optimistic deployment', async function () { 
         before( async () => {
             ([
                 beacon, 
@@ -109,7 +109,7 @@ let isAuthorized, newSelector;
             fakeOzl = await hre.ethers.getContractAt('FakeOZL', fakeOZLaddr);
         }); 
 
-        xdescribe('Measure gas', async () => {
+        describe('Measure gas', async () => {
             it('should throw gas on createNewProxy', async () => {
                 const iface = new ethers.utils.Interface(factoryABI);
                 const data = iface.encodeFunctionData('createNewProxy', [accountDetails]);
@@ -894,7 +894,7 @@ let isAuthorized, newSelector;
             });
         });
 
-        xdescribe('ETH withdrawal as last resort', async function () {
+        describe('ETH withdrawal as last resort', async function () {
 
             /**
              * Deploys FaultyProxyFactory which creates FaultyOzAccountProxy that doesn't
