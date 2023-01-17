@@ -4,8 +4,8 @@ pragma solidity 0.8.14;
 
 import '@uniswap/v3-periphery/contracts/interfaces/ISwapRouter.sol';
 import '@rari-capital/solmate/src/utils/ReentrancyGuard.sol';
-import '@rari-capital/solmate/src/utils/SafeTransferLib.sol';
 import '@rari-capital/solmate/src/utils/FixedPointMathLib.sol';
+import '@rari-capital/solmate/src/utils/SSTORE2.sol';
 import "@openzeppelin/contracts/proxy/utils/Initializable.sol";
 import '@openzeppelin/contracts/token/ERC20/IERC20.sol';
 import '@openzeppelin/contracts/utils/Address.sol';
@@ -18,7 +18,6 @@ import './ozUpgradeableBeacon.sol';
 import './FakeOZL.sol';
 import './Emitter.sol';
 import '../Errors.sol';
-import '@rari-capital/solmate/src/utils/SSTORE2.sol';
 
 import 'hardhat/console.sol';
 
@@ -34,17 +33,18 @@ contract ozPayMe is ozIPayMe, ReentrancyGuard, Initializable {
     StorageBeacon.AccountConfig acc;
 
     address private _beacon;
-    address private immutable OZL;
-
-    address private immutable ops;
+    
+    address private constant ETH = 0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE;
     address payable private immutable gelato;
+    address private immutable OZL;
+    address private immutable ops;
     address private immutable inbox;
     address private immutable emitter;
-    address private constant ETH = 0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE;
+
     uint private immutable maxGas;
 
     event FundsToArb(address indexed sender, uint amount);
-    event EmergencyTriggered(address indexed sender, uint amount); //<---- test if these events work if remove from ozAccount. Remove from FaultOzAccount test contract also
+    event EmergencyTriggered(address indexed sender, uint amount); 
 
     constructor(
         address ops_, 

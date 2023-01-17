@@ -33,14 +33,17 @@ contract Emitter is Initializable, Ownable {
      * manual redeems.
      */
     function forwardEvent(address user_) external { 
-        // (address user,,,) = _getStorageBeacon().accountToDetails(msg.sender);
-        // if (user == address(0)) revert NotAccount();
-        // emit ShowTicket(msg.sender);
-
-        //-------
         address[] memory pointers = _getStorageBeacon().getPointers(user_);
         if (pointers.length == 0) revert NotAccount();
-        emit ShowTicket(msg.sender);
+
+        (address[] memory accounts,) = _getStorageBeacon().getAccountsByUser(user_);
+        for (uint i=0; i < accounts.length; i++) {
+            if (accounts[i] == msg.sender) {
+                emit ShowTicket(msg.sender);
+                return;
+            }
+        }
+        revert NotAccount();
     }
 }
 

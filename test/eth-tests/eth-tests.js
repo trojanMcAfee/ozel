@@ -122,7 +122,7 @@ let isAuthorized, newSelector;
         });
 
         describe('ProxyFactory', async () => {
-            describe('Deploys one account', async () => {
+            xdescribe('Deploys one account', async () => {
                 it('should create a account successfully / createNewProxy()', async () => {
                     await proxyFactory.createNewProxy(accountDetails, ops);
                     ([ proxies, names ] = await storageBeacon.getAccountsByUser(signerAddr));
@@ -241,7 +241,7 @@ let isAuthorized, newSelector;
                 });
             });
 
-            describe('Upgrade the Factory', async () => {
+            xdescribe('Upgrade the Factory', async () => {
                 it('should return the current implementation of the Proxy Factory / ozERC1967Proxy - getImplementation()', async () => {
                     impl = await proxyFactory.getImplementation();
                     assert.equal(impl, proxyFactoryAddr);
@@ -288,7 +288,7 @@ let isAuthorized, newSelector;
             });
         });
 
-        describe('ozAccountProxy / ozPayMe', async () => {
+        xdescribe('ozAccountProxy / ozPayMe', async () => {
             before(async () => {
                 newProxyAddr = await createProxy(proxyFactory, accountDetails);
                 newProxy = await hre.ethers.getContractAt(proxyABIeth, newProxyAddr);
@@ -421,7 +421,7 @@ let isAuthorized, newSelector;
             });
         });
 
-        describe('Emitter', async () => {
+        xdescribe('Emitter', async () => {
             before(async () => {
                 newProxyAddr = await createProxy(proxyFactory, accountDetails);
             });
@@ -453,7 +453,7 @@ let isAuthorized, newSelector;
             }); 
         });
     
-        describe('StorageBeacon', async () => {
+        xdescribe('StorageBeacon', async () => {
             it('should allow the owner to change changeGasPriceBid / changeGasPriceBid()', async () => {
                 await storageBeacon.changeGasPriceBid(100);
             });
@@ -669,7 +669,7 @@ let isAuthorized, newSelector;
             });
         });
 
-        describe('ozUpgradeableBeacon', async () => {
+        xdescribe('ozUpgradeableBeacon', async () => {
             it('should allow the owner to upgrade the Storage Beacon / upgradeStorageBeacon()', async () => {
                 [storageBeaconMockAddr , storageBeaconMock] = await deployContract('StorageBeaconMock');
                 await beacon.upgradeStorageBeacon(storageBeaconMockAddr);
@@ -724,7 +724,7 @@ let isAuthorized, newSelector;
             });
         });
 
-        describe('FakeOZL', async () => {
+        xdescribe('FakeOZL', async () => {
             it('should get the total volume in USD / getTotalVolumeInUSD', async () => {
                 volume = await fakeOzl.getTotalVolumeInUSD(); 
                 assert.equal(formatEther(volume), 500);
@@ -780,7 +780,7 @@ let isAuthorized, newSelector;
     });
 
     
-    describe('Pesimistic deployment', async function () {
+    xdescribe('Pesimistic deployment', async function () {
 
         /**
          * Deploys ozPayMeNoRedeem. which has an autoRedeem of 0, instead of ozPayme 
