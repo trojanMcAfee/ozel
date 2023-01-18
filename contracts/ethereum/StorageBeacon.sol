@@ -86,7 +86,7 @@ contract StorageBeacon is IStorageBeacon, Initializable, Ownable {
 
 
     /*///////////////////////////////////////////////////////////////
-                        State-changin functions
+                        State-changing functions
     //////////////////////////////////////////////////////////////*/
 
     function multiSave(
@@ -95,6 +95,7 @@ contract StorageBeacon is IStorageBeacon, Initializable, Ownable {
         bytes32 taskId_
     ) external hasRole(0x0854b85f) {
         bytes memory data = abi.encode(account_, taskId_, acc_);
+        //try merging data with account, and then reading it account from it
         userToPointers[acc_.user].push(SSTORE2.write(data));
     }
 

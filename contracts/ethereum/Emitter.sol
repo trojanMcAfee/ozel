@@ -15,12 +15,14 @@ import '../Errors.sol';
  */
 contract Emitter is Initializable, Ownable {
     address private _beacon;
+    address ram;
 
     event ShowTicket(address indexed proxy);
 
     /// @dev Stores the beacon (ozUpgradableBeacon)
-    function storeBeacon(address beacon_) external initializer {
+    function storeBeacon(address beacon_, address random_) external initializer {
         _beacon = beacon_;
+        ram = random_;
     }
 
     /// @dev Gets the first version of the Storage Beacon

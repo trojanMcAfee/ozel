@@ -31,7 +31,8 @@ const {
     proxyABIeth,
     opsL2,
     mimAddr,
-    wbtcAddr
+    wbtcAddr,
+    deadAddr
 } = require('./state-vars.js');
 
 
@@ -321,7 +322,7 @@ async function deploySystem(type, signerAddr) {
 
     const [ beaconAddr, beacon ] = await deployContract('ozUpgradeableBeacon', constrArgs); 
     await storageBeacon.storeBeacon(beaconAddr);
-    await emitter.storeBeacon(beaconAddr);
+    await emitter.storeBeacon(beaconAddr, deadAddr);
 
     //Deploys ProxyFactory
     constrArgs = [ pokeMeOpsAddr, beaconAddr ]; 
