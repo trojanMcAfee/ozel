@@ -94,8 +94,31 @@ contract StorageBeacon is IStorageBeacon, Initializable, Ownable {
         AccountConfig calldata acc_, 
         bytes32 taskId_
     ) external hasRole(0x0854b85f) {
+        bytes20 user = bytes20(acc_.user);
+        bytes20 accAddr = bytes20(account_);
+        console.logBytes20(user);
+        console.log('bytes20 user ^');
+        console.logBytes20(accAddr);
+        console.log('bytes20 account ^');
+        
+        bytes16 user16 = bytes16(user);
+        bytes16 acc16 = bytes16(accAddr);
+        console.logBytes16(user16);
+        console.log('bytes16 user ^');
+        console.logBytes16(acc16);
+        console.log('bytes16 account ^');
+
+        bytes32 merge = bytes32 (uint256 (uint128 (user16)) << 128 | uint128 (acc16));
+        console.logBytes32(merge);
+        console.log('merge ^');
+
+
+
+        bytes memory data2 = abi.encodePacked(account_, acc_.user);
+        // console.logBytes(data2);
+
+        //---------
         bytes memory data = abi.encode(account_, taskId_, acc_);
-        //try merging data with account, and then reading it account from it
         userToPointers[acc_.user].push(SSTORE2.write(data));
     }
 
