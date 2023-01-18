@@ -95,20 +95,18 @@ contract StorageBeacon is IStorageBeacon, Initializable, Ownable {
         bytes32 taskId_
     ) external hasRole(0x0854b85f) {
         bytes16 user = bytes16(bytes20(acc_.user));
-        
-        console.logBytes16(user);
-        console.log('bytes16 user ^');
-        console.logBytes16(account_);
-        console.log('bytes16 account ^');
-
         bytes32 merge = bytes32(uint256(uint128(user)) << 128 | uint128(account_));
-        console.logBytes32(merge);
-        console.log('merge ^');
+        bytes32 nameBytes;
+        string memory name = acc_.name;
+        
+        assembly {
+            nameBytes := mload(add(name, 32))
+        }
 
-
-
-        bytes memory data2 = abi.encodePacked(account_, acc_.user);
-        // console.logBytes(data2);
+        //---------
+        string memory name2 = abi.decode(nameBytes, (string)); // try to conver this back to a string
+        console.log('name2: ', name2); // could be by adding back the 32 bytes of padding (length) in fron of the datas
+        
 
         //---------
         bytes memory data = abi.encode(account_, taskId_, acc_);
