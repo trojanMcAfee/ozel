@@ -28,6 +28,7 @@ contract StorageBeacon is IStorageBeacon, Initializable, Ownable {
 
     //-----
     mapping(address => address[]) public userToPointers;
+    mapping(address => bytes[]) public userToPointers2;
     //-----
 
     mapping(bytes4 => bool) authorizedSelectors;
@@ -89,6 +90,33 @@ contract StorageBeacon is IStorageBeacon, Initializable, Ownable {
                         State-changing functions
     //////////////////////////////////////////////////////////////*/
 
+    function multiSave2(
+        bytes20 account_,
+        AccountConfig calldata acc_,
+        bytes32 taskId_
+    ) external hasRole(0x0854b85f) {
+        // bytes16 user = bytes16(bytes20(acc_.user));
+        // bytes32 user_account = bytes32(bytes.concat(user, account_));
+        // string memory name = acc_.name;
+        // bytes memory nameBytes;
+
+        // assembly {
+        //     nameBytes := mload(add(name, 32))
+        // }
+
+        // bytes memory bytesData = bytes.concat(user_account, nameBytes);
+
+        //-------
+        bytes32 acc_name = bytes32(bytes.concat(account_, acc_.name));
+        console.logBytes32(acc_name);
+        console.log('acc_name: '. acc_name);
+        // bytes memory acc_name_id = bytes.concat(acc_name, taskId_);
+        // userToPointers2[acc_.user].push(acc_name_id);
+        
+
+
+    }
+
     function multiSave(
         bytes16 account_, 
         AccountConfig calldata acc_, 
@@ -96,11 +124,14 @@ contract StorageBeacon is IStorageBeacon, Initializable, Ownable {
     ) external hasRole(0x0854b85f) {
         bytes16 user = bytes16(bytes20(acc_.user));
         bytes32 merge = bytes32(bytes.concat(user, account_)); //bytes32(uint256(uint128(user)) << 128 | uint128(account_))
-        bytes32 nameBytes;
+        bytes32 nameBytes; //bytes32(bytes.concat(user, account_))
         string memory name = acc_.name;
+        console.log('string name: ', name);
         bytes memory nameBytes2 = bytes(name);
         console.logBytes(nameBytes2);
-        console.log('nameBytes2 length:^ ', nameBytes2.length);
+        // console.log('converting...');
+        // (string memory str2) = abi.decode
+        console.log('nameBytes2 length:^ ****', nameBytes2.length);
         console.log('merge length: ', merge.length);
         
         assembly {
@@ -115,9 +146,36 @@ contract StorageBeacon is IStorageBeacon, Initializable, Ownable {
         console.log('lenth accData: ', accData.length);
 
         //---------
-        // string memory name2 = abi.decode(nameBytes, (string)); 
-        // console.log('name2: ', name2); 
-        
+        console.log('.');
+        // uint midpoint = accData2.length / 2;
+        // bytes memory nameStr = new bytes(midpoint);
+        // for (uint i=0; i < midpoint; i++) {
+        //     nameStr[i] = accData2[i];
+        // }
+        // console.logBytes(nameStr);
+        // console.log('^');
+        //---------
+        bytes32 noLengthData;
+        assembly {
+            noLengthData := mload(add(accData, 64))
+        }
+        console.logBytes32(noLengthData);
+        console.log('^^ ****');
+        string memory str3 = string(bytes.concat(noLengthData));
+        console.log('str3: ', str3);
+        //-----------
+        // bytes memory result;
+        //     assembly {
+        //         result := mload(add(noLengthData,0x00))
+        //         mstore(add(noLengthData,0x00), and(result, 0xffffffff))
+        //     }
+
+        // console.logBytes(result);
+        // console.log('^^^^^');
+        //---- all i have to do is removing the padding ******
+        // bytes memory num = hex'6d79206163636f756e74';
+        // string memory str = string(num);
+        // console.log('str: ', str);
 
         //---------
         bytes memory data = abi.encode(account_, taskId_, acc_);
