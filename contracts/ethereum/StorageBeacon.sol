@@ -262,14 +262,8 @@ contract StorageBeacon is IStorageBeacon, Initializable, Ownable {
 
         for (uint i=0; i < length; i++) {
             bytes32 data32 = bytes32(userData[i]);
-
-            bytes memory nameBytes = new bytes(12);
-            for (uint j = 20; j < 32; j++) {
-                nameBytes[j - 20] = data32[j];
-            } 
-
             accounts[i] = address(bytes20(data32));
-            names[i] = string(nameBytes);
+            names[i] = string(bytes.concat(bytes12(data32<<160)));
         }
         return (accounts, names);
     }
