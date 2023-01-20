@@ -29,6 +29,7 @@ contract StorageBeacon is IStorageBeacon, Initializable, Ownable {
     //-----
     mapping(address => address[]) public userToPointers;
     mapping(address => bytes[]) userToPointers2;
+    mapping(bytes32 => bytes32[]) user_accToTaskId;
     //-----
 
     mapping(bytes4 => bool) authorizedSelectors;
@@ -89,15 +90,43 @@ contract StorageBeacon is IStorageBeacon, Initializable, Ownable {
     /*///////////////////////////////////////////////////////////////
                         State-changing functions
     //////////////////////////////////////////////////////////////*/
+    
+    struct AccData {
+        address[] accounts;
+        mapping(bytes32 => bytes32) acc_userToTask;
+    }
+    mapping(address => AccData) userToData;
 
     function multiSave(
         bytes20 account_,
         AccountConfig calldata acc_,
         bytes32 taskId_
     ) external hasRole(0x0854b85f) {
-        bytes32 acc_name = bytes32(bytes.concat(account_, bytes(acc_.name)));
-        bytes memory acc_name_id = bytes.concat(acc_name, taskId_);
-        userToPointers2[acc_.user].push(acc_name_id);
+        // bytes32 acc_name = bytes32(bytes.concat(account_, bytes(acc_.name)));
+        // bytes memory acc_name_id = bytes.concat(acc_name, taskId_);
+        // userToPointers2[acc_.user].push(acc_name_id);
+
+        // //------
+        // bytes16 user = bytes16(bytes20(acc_.user));
+        // bytes16 account = bytes16(account_);
+        // bytes32 user_account = bytes32(bytes.concat(user, account));
+        // user_accToTaskId[user_account].push(taskId_);
+
+        // //-------
+        bytes12 user12B = bytes12(bytes20(acc_.user));
+        bytes32 acc_b_user = bytes32(bytes.concat(account_, user12B));
+        // bytes memory task_name = bytes.concat(taskId_, bytes(acc_.name));
+
+        //-------
+        address user2 = acc_.user;
+        if (userToData[user2].acc_userToTask[bytes32(0)] == bytes32(0)) {
+            AccData storage data = userToData[user2];
+            data.accounts.push(address(account_));
+            data.acc_userToTask[acc_b_user] = taskId_;
+        }
+
+      
+       
     }
 
     function changeGasPriceBid(uint newGasPriceBid_) external onlyOwner {
@@ -167,6 +196,9 @@ contract StorageBeacon is IStorageBeacon, Initializable, Ownable {
             names[i] = string(bytes.concat(bytes12(data32<<160)));
         }
         return (accounts, names);
+
+        //---------
+        
     }
 
     function _extractData(address pointer_) private view returns(address, bytes32, string memory) {
