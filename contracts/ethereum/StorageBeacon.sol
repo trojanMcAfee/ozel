@@ -114,15 +114,22 @@ contract StorageBeacon is IStorageBeacon, Initializable, Ownable {
 
         // //-------
         bytes12 user12B = bytes12(bytes20(acc_.user));
-        bytes32 acc_b_user = bytes32(bytes.concat(account_, user12B));
+        bytes32 acc_user = bytes32(bytes.concat(account_, user12B));
         // bytes memory task_name = bytes.concat(taskId_, bytes(acc_.name));
 
         //-------
         address user2 = acc_.user;
-        if (userToData[user2].acc_userToTask[bytes32(0)] == bytes32(0)) {
+        if (userToData[user2].accounts.length) {
             AccData storage data = userToData[user2];
             data.accounts.push(address(account_));
-            data.acc_userToTask[acc_b_user] = taskId_;
+            data.acc_userToTask[acc_user] = taskId_;
+        } else {
+            userToData[user2].accounts.push(address(account_));
+
+            bytes12 user12B = bytes12(bytes20(acc_.user));
+            bytes32 acc_user = bytes32(bytes.concat(account_, user12B));
+
+            userData[user2].acc_userToTask[acc_user] = taskId_;
         }
 
       
@@ -198,6 +205,8 @@ contract StorageBeacon is IStorageBeacon, Initializable, Ownable {
         return (accounts, names);
 
         //---------
+        // AccData memory data = userToData[user_];
+        // data.accounts
         
     }
 
