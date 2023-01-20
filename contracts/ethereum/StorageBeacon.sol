@@ -93,7 +93,7 @@ contract StorageBeacon is IStorageBeacon, Initializable, Ownable {
     
     struct AccData {
         address[] accounts;
-        mapping(bytes32 => bytes32) acc_userToTask;
+        mapping(bytes32 => bytes) acc_userToTask_name;
     }
     mapping(address => AccData) userToData;
 
@@ -113,23 +113,33 @@ contract StorageBeacon is IStorageBeacon, Initializable, Ownable {
         // user_accToTaskId[user_account].push(taskId_);
 
         // //-------
-        bytes12 user12B = bytes12(bytes20(acc_.user));
-        bytes32 acc_user = bytes32(bytes.concat(account_, user12B));
+        bytes12 userFirst12 = bytes12(bytes20(acc_.user));
+        bytes32 acc_user = bytes32(bytes.concat(account_, userFirst12));
+        bytes memory task_name = bytes.concat(taskId_, bytes32(bytes(acc_.name)));
         // bytes memory task_name = bytes.concat(taskId_, bytes(acc_.name));
+        // console.logBytes(bytes(acc_.name));
+        // console.log('name in multiSave() ^^');
+        // console.logBytes(task_name);
+        // console.log('task_name in multiSave() ^');
+        // console.logBytes32(bytes32(bytes(acc_.name)));
+
+        // bytes32 variable2;
+        // assembly {
+        //     variable2 := mload(add(task_name, 64))
+        // }
+        // console.logBytes32(variable2);
+        // console.log('^^^');
+
 
         //-------
         address user2 = acc_.user;
-        if (userToData[user2].accounts.length) {
+        if (userToData[user2].accounts.length == 0) {
             AccData storage data = userToData[user2];
             data.accounts.push(address(account_));
-            data.acc_userToTask[acc_user] = taskId_;
+            data.acc_userToTask_name[acc_user] = task_name;
         } else {
             userToData[user2].accounts.push(address(account_));
-
-            bytes12 user12B = bytes12(bytes20(acc_.user));
-            bytes32 acc_user = bytes32(bytes.concat(account_, user12B));
-
-            userData[user2].acc_userToTask[acc_user] = taskId_;
+            userToData[user2].acc_userToTask_name[acc_user] = task_name;
         }
 
       
@@ -191,23 +201,38 @@ contract StorageBeacon is IStorageBeacon, Initializable, Ownable {
     function getAccountsByUser(
         address user_
     ) external view returns(address[] memory, string[] memory) {
-        bytes[] memory userData = userToPointers2[user_];
-        uint length = userData.length;
-        address[] memory accounts = new address[](length);
-        string[] memory names = new string[](length);
+        // bytes[] memory userData = userToPointers2[user_];
+        // uint length = userData.length;
+        // address[] memory accounts = new address[](length);
+        // string[] memory names = new string[](length);
 
-        for (uint i=0; i < length; i++) {
-            bytes32 data32 = bytes32(userData[i]);
+        // for (uint i=0; i < length; i++) {
+        //     bytes32 data32 = bytes32(userData[i]);
 
-            accounts[i] = address(bytes20(data32));
-            names[i] = string(bytes.concat(bytes12(data32<<160)));
-        }
-        return (accounts, names);
+        //     accounts[i] = address(bytes20(data32));
+        //     names[i] = string(bytes.concat(bytes12(data32<<160)));
+        // }
+        // return (accounts, names);
 
         //---------
-        // AccData memory data = userToData[user_];
-        // data.accounts
-        
+        AccData storage data = userToData[user_];
+        address[] memory accounts = data.accounts;
+        string[] memory names = new string[](accounts.length);
+        bytes12 userFirst12 = bytes12(bytes20(user_));
+
+        for (uint i=0; i < accounts.length; i++) {
+            bytes20 acc = bytes20(accounts[i]);
+            bytes32 acc_user = bytes32(bytes.concat(acc, userFirst12));
+            bytes memory task_name = data.acc_userToTask_name[acc_user];
+            bytes32 nameBytes;
+
+            assembly {
+                nameBytes := mload(add(task_name, 64))
+            }
+            names[i] = string(bytes.concat(nameBytes));
+        }
+
+        return (accounts, names);
     }
 
     function _extractData(address pointer_) private view returns(address, bytes32, string memory) {
@@ -235,7 +260,7 @@ contract StorageBeacon is IStorageBeacon, Initializable, Ownable {
     }
     
     function isUser(address user_) external view returns(bool) {
-        return userToPointers2[user_].length > 0;
+        return userToData[user_].accounts.length > 0;
     }
 
     function getEmitterStatus() external view returns(bool) {
@@ -246,8 +271,14 @@ contract StorageBeacon is IStorageBeacon, Initializable, Ownable {
         return tokenDatabaseArray;
     }
 
-    function getBytes(address user_) external view returns(bytes[] memory) {
-        return userToPointers2[user_];
+    // function getBytesMap(address user_) external view returns(AccData memory) {
+    //     return userToData[user_];
+    // }
+
+    function verify(address user_, bytes32 acc_user_) external view returns(bool) {
+        AccData storage data = userToData[user_];
+        bytes memory task_name = data.acc_userToTask_name[acc_user_];
+        return bytes32(task_name) != bytes32(0);
     }
 }
 
