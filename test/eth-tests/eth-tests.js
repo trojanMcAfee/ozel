@@ -194,7 +194,7 @@ let isAuthorized, newSelector;
                     });
                 })
     
-                xit('should have an initial balance of 0.1 ETH', async () => { 
+                it('should have an initial balance of 0.1 ETH', async () => { 
                     accountDetails[1] = usdtAddrArb;
                     newProxyAddr = await createProxy(proxyFactory, accountDetails);
 
@@ -202,7 +202,7 @@ let isAuthorized, newSelector;
                     assert.equal(formatEther(balance), '0.1');
                 });
     
-                xit('should have a final balance of 0 ETH', async () => {
+                it('should have a final balance of 0 ETH', async () => {
                     newProxyAddr = await createProxy(proxyFactory, accountDetails);
                     balance = await hre.ethers.provider.getBalance(newProxyAddr);
                     if (Number(balance) === 0) await sendETH(newProxyAddr, 0.1);

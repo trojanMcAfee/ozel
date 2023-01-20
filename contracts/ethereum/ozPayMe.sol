@@ -102,14 +102,17 @@ contract ozPayMe is ozIPayMe, ReentrancyGuard, Initializable {
         uint amountToSend_,
         address account_
     ) external payable onlyOps {   
+        console.log(1);
         StorageBeacon storageBeacon = StorageBeacon(_getStorageBeacon(_beacon, 0)); 
 
         if (!storageBeacon.isUser(acc_.user)) revert UserNotInDatabase(acc_.user);
         if (amountToSend_ <= 0) revert CantBeZero('amountToSend');
         if (!(address(this).balance > 0)) revert CantBeZero('contract balance');
+        console.log(3);
 
         (uint fee, ) = IOps(ops).getFeeDetails();
         Address.functionCallWithValue(gelato, new bytes(0), fee);
+        console.log(4);
 
         bool isEmergency = false;
 
@@ -117,9 +120,10 @@ contract ozPayMe is ozIPayMe, ReentrancyGuard, Initializable {
             FakeOZL(payable(OZL)).exchangeToAccountToken.selector, 
             acc_, amountToSend_, account_
         );
+        console.log(5);
         
         bytes memory ticketData = _createTicketData(gasPriceBid_, swapData, false);
-
+        console.log(2);
         (bool success, ) = inbox.call{value: address(this).balance}(ticketData); 
         if (!success) {
             /// @dev If it fails the 1st bridge attempt, it decreases the L2 gas calculations

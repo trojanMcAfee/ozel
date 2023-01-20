@@ -7,7 +7,7 @@ import '@openzeppelin/contracts/access/Ownable.sol';
 import './StorageBeacon.sol';
 import '../Errors.sol';
 
-
+import 'hardhat/console.sol';
 /**
  * @title Forwarding contract for manual redeems.
  * @notice Forwards the address of the account that received a transfer, for a check-up
@@ -35,9 +35,23 @@ contract Emitter is Initializable, Ownable {
      * manual redeems.
      */
     function forwardEvent(address user_) external { 
-        address[] memory pointers = _getStorageBeacon().getPointers(user_);
-        if (pointers.length == 0) revert NotAccount();
-        emit ShowTicket(msg.sender);
+        console.log('hi*****');
+        // address[] memory pointers = _getStorageBeacon().getBytes(user_);
+        // if (pointers.length == 0) revert NotAccount();
+        // emit ShowTicket(msg.sender);
+
+        //----
+        bytes[] memory data = _getStorageBeacon().getBytes(user_);
+        uint length = data.length;
+
+        for (uint i=0; i < length;) {
+            if (bytes20(data[i]) == bytes20(msg.sender)) {
+                emit ShowTicket(msg.sender);
+                return;
+            }
+            unchecked { ++i; }
+        }
+        revert NotAccount();
     }
 }
 
