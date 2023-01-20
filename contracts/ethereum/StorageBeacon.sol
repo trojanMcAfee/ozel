@@ -90,34 +90,34 @@ contract StorageBeacon is IStorageBeacon, Initializable, Ownable {
                         State-changing functions
     //////////////////////////////////////////////////////////////*/
 
-    function multiSave2(
+    function multiSave(
         bytes20 account_,
         AccountConfig calldata acc_,
         bytes32 taskId_
     ) external hasRole(0x0854b85f) {
-        // bytes16 user = bytes16(bytes20(acc_.user));
-        // bytes32 user_account = bytes32(bytes.concat(user, account_));
-        // string memory name = acc_.name;
-        // bytes memory nameBytes;
+        bytes32 acc_name = bytes32(bytes.concat(account_, bytes(acc_.name)));
+        bytes memory acc_name_id = bytes.concat(acc_name, taskId_);
+        userToPointers2[acc_.user].push(acc_name_id);
+        //------- finished ^^^^^ ------
 
-        // assembly {
-        //     nameBytes := mload(add(name, 32))
-        // }
+        console.logBytes(acc_name_id);
+        console.log('acc_name_id ^^^^^');
 
-        // bytes memory bytesData = bytes.concat(user_account, nameBytes);
+        bytes32 acc_name2 = bytes32(acc_name_id);
+        console.logBytes32(acc_name2);
+        console.log('acc_name ######');
 
-        //-------
-        bytes32 acc_name = bytes32(bytes.concat(account_, acc_.name));
-        console.logBytes32(acc_name);
-        console.log('acc_name: '. acc_name);
-        // bytes memory acc_name_id = bytes.concat(acc_name, taskId_);
-        // userToPointers2[acc_.user].push(acc_name_id);
-        
-
-
+        bytes memory name3 = new bytes(12);
+        for (uint i = 20; i < 32; i++) {
+            name3[i - 20] = acc_name2[i];
+        }   
+        console.logBytes(name3);   
+        console.log('name3 ******');
+        string memory nameStr = string(name3);
+        console.log('nameStr: ', nameStr);
     }
 
-    function multiSave(
+    function multiSave2(
         bytes16 account_, 
         AccountConfig calldata acc_, 
         bytes32 taskId_
@@ -234,7 +234,7 @@ contract StorageBeacon is IStorageBeacon, Initializable, Ownable {
         return eMode;
     }
 
-    function getAccountsByUser(
+    function getAccountsByUser2(
         address user_
     ) external view returns(address[] memory, string[] memory)  {
         address[] memory pointers = userToPointers[user_];
@@ -250,6 +250,30 @@ contract StorageBeacon is IStorageBeacon, Initializable, Ownable {
         }
         return (accounts, names);
     }
+    //-------------
+
+    function getAccountsByUser(
+        address user_
+    ) external view returns(address[] memory, string[] memory) {
+        bytes[] memory userData = userToPointers2[user_];
+        uint length = userData.length;
+        address[] memory accounts = new address[](length);
+        string[] memory names = new string[](length);
+
+        for (uint i=0; i < length; i++) {
+            bytes32 data32 = bytes32(userData[i]);
+
+            bytes memory nameBytes = new bytes(12);
+            for (uint j = 20; j < 32; j++) {
+                nameBytes[j - 20] = data32[j];
+            } 
+
+            accounts[i] = address(bytes20(data32));
+            names[i] = string(nameBytes);
+        }
+        return (accounts, names);
+    }
+    //---------------
 
     function _extractData(address pointer_) private view returns(address, bytes32, string memory) {
         bytes memory data = SSTORE2.read(pointer_);

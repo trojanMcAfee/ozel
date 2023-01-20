@@ -65,7 +65,7 @@ contract ProxyFactory is IProxyFactory, ReentrancyGuard, Initializable, UUPSUpgr
 
         bytes32 id = _startTask(address(newAccount), ops);
 
-        sBeacon.multiSave(bytes16(bytes20(address(newAccount))), acc_, id);
+        sBeacon.multiSave(bytes20(address(newAccount)), acc_, id);
 
         return address(newAccount);
     }
