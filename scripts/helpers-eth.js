@@ -245,10 +245,7 @@ async function sendETH(receiver, amount) {
 }
 
 async function createProxy(factory, accountDetails) {
-    // console.log(1);
-    // console.log('acou: ', accountDetails);
     const tx = await factory.createNewProxy(accountDetails, ops);
-    // console.log(2);
     const receipt = await tx.wait();
     return receipt.logs[0].address;
 }

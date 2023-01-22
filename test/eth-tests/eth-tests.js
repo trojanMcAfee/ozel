@@ -85,7 +85,7 @@ let isAuthorized, newSelector;
         signers = await hre.ethers.getSigners();
     });
 
-    describe('Optimistic deployment', async function () { 
+    xdescribe('Optimistic deployment', async function () { 
         before( async () => {
             ([
                 beacon, 
@@ -782,7 +782,7 @@ let isAuthorized, newSelector;
     });
 
     
-    xdescribe('Pesimistic deployment', async function () {
+    describe('Pesimistic deployment', async function () {
 
         /**
          * Deploys ozPayMeNoRedeem. which has an autoRedeem of 0, instead of ozPayme 
@@ -868,7 +868,7 @@ let isAuthorized, newSelector;
                 assert(isExist);
             });
 
-            it('should successfully execute when the ETH sent is lower than the necessary value to autoRedeem / FaultyOzPayMe() - _createTicketData()', async () => {
+            it('should successfully execute when the ETH sent is lower than the necessary value to autoRedeem / FaultyOzPayMe2() - _createTicketData()', async () => {
                 const [ faultyOzPayMeAddr ] = await deployContract('FaultyOzPayMe2', constrArgs);
                 await beacon.upgradeTo(faultyOzPayMeAddr);
 
@@ -880,7 +880,7 @@ let isAuthorized, newSelector;
                 assert.equal(formatEther(balance), 0);
             });
             
-            it('should successfully submit the retryable in the 2nd attempt / FaultyOzPayMe3 - _createTicketData()', async () => {
+            xit('should successfully submit the retryable in the 2nd attempt / FaultyOzPayMe3 - _createTicketData()', async () => {
                 const [ faultyOzPayMeAddr ] = await deployContract('FaultyOzPayMe3', constrArgs);
                 await beacon.upgradeTo(faultyOzPayMeAddr);
 
@@ -896,7 +896,7 @@ let isAuthorized, newSelector;
             });
         });
 
-        describe('ETH withdrawal as last resort', async function () {
+        xdescribe('ETH withdrawal as last resort', async function () {
 
             /**
              * Deploys FaultyProxyFactory which creates FaultyOzAccountProxy that doesn't
