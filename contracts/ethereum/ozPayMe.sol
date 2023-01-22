@@ -71,10 +71,11 @@ contract ozPayMe is ozIPayMe, ReentrancyGuard, Initializable {
         _;
     }
 
-    // modifier onlyUser() {
-    //     if (msg.sender != acc.user) revert NotAuthorized(msg.sender);
-    //     _;
-    // }
+    modifier onlyUser() {
+        (address user,,) = _extractData();
+        if (msg.sender != user) revert NotAuthorized(msg.sender);
+        _;
+    }
 
     /// @dev Checks that the token exists and that's not address(0)
     modifier checkToken(address newToken_) {
@@ -95,23 +96,26 @@ contract ozPayMe is ozIPayMe, ReentrancyGuard, Initializable {
                             Main functions
     //////////////////////////////////////////////////////////////*/
 
-    function _extract(bytes memory data_) private pure returns(address,uint16) {
+    function _extractData() private view returns(address,address,uint16) {
         bytes20 user;
+        bytes20 token;
         bytes2 slippage;
+        bytes memory data = dataForL2;
+
         assembly {
-            user := mload(add(data_, 32))
-            slippage := mload(add(data_, 72))
+            user := mload(add(data, 32))
+            token := mload(add(data, 52))
+            slippage := mload(add(data, 72))
         }
-        return (address(user), uint16(slippage));
+        return (address(user), address(token), uint16(slippage));
     }
 
     function sendToArb( 
         uint gasPriceBid_,
         uint amountToSend_,
-        address account_,
-        bytes memory dataForL2_
+        address account_
     ) external payable onlyOps {   
-        (address user, uint16 slippage) = _extract(dataForL2_);
+        (address user,,uint16 slippage) = _extractData();
 
         StorageBeacon storageBeacon = StorageBeacon(_getStorageBeacon(_beacon, 0)); 
 
@@ -126,7 +130,7 @@ contract ozPayMe is ozIPayMe, ReentrancyGuard, Initializable {
 
         bytes memory swapData = abi.encodeWithSelector(
             FakeOZL(payable(OZL)).exchangeToAccountToken.selector, 
-            dataForL2_, amountToSend_, account_
+            dataForL2, amountToSend_, account_
         );
         
         bytes memory ticketData = _createTicketData(gasPriceBid_, swapData, false);
@@ -232,35 +236,41 @@ contract ozPayMe is ozIPayMe, ReentrancyGuard, Initializable {
     //////////////////////////////////////////////////////////////*/
 
     
-    // function changeAccountToken(
-    //     address newToken_
-    // ) external checkToken(newToken_) { //onlyUser
-    //     acc.token = newToken_;
-    // }
+    function changeAccountToken(
+        address newToken_
+    ) external checkToken(newToken_) onlyUser { 
+        (address user,,uint16 slippage) = _extractData();
+        dataForL2 = bytes.concat(bytes20(user), bytes20(newToken_), bytes2(slippage));
+    }
 
     
-    // function changeAccountSlippage(
-    //     uint newSlippage_
-    // ) external checkSlippage(newSlippage_) { //onlyUser
-    //     acc.slippage = newSlippage_;
-    // }
+    function changeAccountSlippage(
+        uint16 newSlippage_
+    ) external checkSlippage(newSlippage_) onlyUser { 
+        (address user, address token,) = _extractData();
+        dataForL2 = bytes.concat(bytes20(user), bytes20(token), bytes2(newSlippage_));
+    }
 
     
-    // function changeAccountTokenNSlippage( //onlyUser
-    //     address newToken_, 
-    //     uint newSlippage_
-    // ) external checkToken(newToken_) checkSlippage(newSlippage_) {
-    //     acc.token = newToken_;
-    //     acc.slippage = newSlippage_;
-    // } 
+    function changeAccountTokenNSlippage( 
+        address newToken_, 
+        uint16 newSlippage_
+    ) external checkToken(newToken_) checkSlippage(newSlippage_) onlyUser {
+        (address user,,) = _extractData();
+        dataForL2 = bytes.concat(bytes20(user), bytes20(newToken_), bytes2(newSlippage_));
+    } 
 
-    
-    // function getAccountDetails() external view returns(StorageBeacon.AccountConfig memory) {
-    //     return acc;
-    // }
+
+    function getAccountDetails() external view returns(
+        address user, 
+        address token, 
+        uint16 slippage
+    ) {
+        (user, token, slippage) = _extractData();
+    }
 
     /// @inheritdoc ozIPayMe
-    function withdrawETH_lastResort() external { //onlyUser
+    function withdrawETH_lastResort() external onlyUser { 
         (bool success, ) = payable(msg.sender).call{value: address(this).balance}('');
         if (!success) revert CallFailed('ozPayMe: withdrawETH_lastResort failed');
     }

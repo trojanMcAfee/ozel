@@ -77,7 +77,7 @@ let isAuthorized, newSelector;
         accountDetails = [
             signerAddr,
             usdtAddrArb,
-            500, //defaultSlippage
+            defaultSlippage,
             'my account'
         ];
 
@@ -129,7 +129,7 @@ let isAuthorized, newSelector;
                     assert(name.length > 0);
                 });
 
-                xit('should not allow to create a account witn an empty account name / createNewProxy()', async () => {
+                it('should not allow to create a account witn an empty account name / createNewProxy()', async () => {
                     accountDetails[3] = '';
                     await assert.rejects(async () => {
                         await proxyFactory.createNewProxy(accountDetails, ops);
@@ -142,7 +142,7 @@ let isAuthorized, newSelector;
                     accountDetails[3] = 'my account';
                 });
 
-                xit('should not allow to create a account with a name with more of 18 characters / createNewProxy()', async () => {
+                it('should not allow to create a account with a name with more of 18 characters / createNewProxy()', async () => {
                     const invalidName = 'fffffffffffffffffff';
                     assert(invalidName.length > 18);
                     accountDetails[3] = invalidName;
@@ -158,7 +158,7 @@ let isAuthorized, newSelector;
                     accountDetails[3] = 'my account';
                 });
 
-                xit('should not allow to create a account with the 0 address / createNewProxy()', async () => {
+                it('should not allow to create a account with the 0 address / createNewProxy()', async () => {
                     accountDetails[1] = nullAddr;
                     await assert.rejects(async () => {
                         await proxyFactory.createNewProxy(accountDetails, ops);
@@ -168,7 +168,7 @@ let isAuthorized, newSelector;
                     });
                 });
 
-                xit('should not allow to create a account with 0 slippage / createNewProxy()', async () => {
+                it('should not allow to create a account with 0 slippage / createNewProxy()', async () => {
                     accountDetails[1] = usdtAddrArb;
                     accountDetails[2] = 0;
                     await assert.rejects(async () => {
@@ -179,7 +179,7 @@ let isAuthorized, newSelector;
                     });
                 });
 
-                xit('should not allow to create a account with a token not found in the database / createNewProxy()', async () => {
+                it('should not allow to create a account with a token not found in the database / createNewProxy()', async () => {
                     accountDetails[1] = deadAddr;
                     accountDetails[2] = defaultSlippage;
                     await assert.rejects(async () => {
@@ -190,7 +190,7 @@ let isAuthorized, newSelector;
                     });
                 })
     
-                xit('should have an initial balance of 0.1 ETH', async () => { 
+                it('should have an initial balance of 0.1 ETH', async () => { 
                     accountDetails[1] = usdtAddrArb;
                     newProxyAddr = await createProxy(proxyFactory, accountDetails);
 
@@ -209,7 +209,7 @@ let isAuthorized, newSelector;
                 });
             });
 
-            xdescribe('Deploys 5 accounts', async () => { 
+            describe('Deploys 5 accounts', async () => { 
                 before(async () => {
                     accountDetails[1] = usdcAddr;
                     for (let i=0; i < 5; i++) {
@@ -237,7 +237,7 @@ let isAuthorized, newSelector;
                 });
             });
 
-            xdescribe('Upgrade the Factory', async () => {
+            describe('Upgrade the Factory', async () => {
                 it('should return the current implementation of the Proxy Factory / ozERC1967Proxy - getImplementation()', async () => {
                     impl = await proxyFactory.getImplementation();
                     assert.equal(impl, proxyFactoryAddr);
@@ -284,7 +284,7 @@ let isAuthorized, newSelector;
             });
         });
 
-        xdescribe('ozAccountProxy / ozPayMe', async () => {
+        describe('ozAccountProxy / ozPayMe', async () => {
             before(async () => {
                 newProxyAddr = await createProxy(proxyFactory, accountDetails);
                 newProxy = await hre.ethers.getContractAt(proxyABIeth, newProxyAddr);
@@ -293,7 +293,7 @@ let isAuthorized, newSelector;
             describe('fallback()', async () => {
                 it('should not allow re-calling / initialize()', async () => {
                     await assert.rejects(async () => {
-                        await newProxy.initialize(accountDetails, nullAddr, ops);
+                        await newProxy.initialize(nullAddr, nullAddr, ops);
                     }, {
                         name: 'Error',
                         message: (await err()).alreadyInitialized 
@@ -349,7 +349,7 @@ let isAuthorized, newSelector;
                     tx = await newProxy.changeAccountSlippage(parseInt(newUserSlippage * 100), ops);
                     await tx.wait();
 
-                    ([ user, token, slippage, name ] = await newProxy.getAccountDetails());
+                    ([ user, token, slippage ] = await newProxy.getAccountDetails());
                     assert.equal(Number(slippage) / 100, newUserSlippage); 
                 });
 
@@ -417,8 +417,14 @@ let isAuthorized, newSelector;
             });
         });
 
-        xdescribe('Emitter', async () => {
+        describe('Emitter', async () => {
             before(async () => {
+                accountDetails = [
+                    signerAddr,
+                    usdtAddrArb,
+                    defaultSlippage,
+                    'my account'
+                ];
                 newProxyAddr = await createProxy(proxyFactory, accountDetails);
             });
 

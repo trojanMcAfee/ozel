@@ -76,12 +76,12 @@ const diamondABI = [
 
 const proxyABIeth = [
     'function setTestReturnContract(address testReturn_, bytes32 position_) public',
-    'function changeAccountSlippage(uint256 newSlippage_) external',
-    'function changeAccountToken(address newToken_)',
-    'function sendToArb(uint256,uint256,address,bytes) external payable',
+    'function changeAccountSlippage(uint16) external',
+    'function changeAccountToken(address) external',
+    'function sendToArb(uint256,uint256,address) external payable',
     'function initialize(address,bytes)',
-    'function getAccountDetails() external view returns ((address,address,uint256,string))',
-    'function changeAccountTokenNSlippage(address,uint256) external',
+    'function getAccountDetails() external view returns (address,address,uint16)',
+    'function changeAccountTokenNSlippage(address,uint16) external',
     'function withdrawETH_lastResort() external'
 ];
 
