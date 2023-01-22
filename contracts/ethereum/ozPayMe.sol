@@ -19,7 +19,6 @@ import './FakeOZL.sol';
 import './Emitter.sol';
 import '../Errors.sol';
 
-import 'hardhat/console.sol';
 
 /**
  * @title Responsible for sending ETH and calldata to L2
