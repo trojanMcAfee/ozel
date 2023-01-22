@@ -23,6 +23,11 @@ interface IStorageBeacon {
         address tokenOut; 
     }
 
+    struct AccData {
+        address[] accounts;
+        mapping(bytes32 => bytes) acc_userToTask_name;
+    }
+
     /**
      * @dev Saves and connects the address of the account to its details.
      * @param account_ The account/proxy
