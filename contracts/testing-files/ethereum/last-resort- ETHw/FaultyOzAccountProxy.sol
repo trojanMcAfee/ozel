@@ -10,7 +10,7 @@ import '../../../ethereum/StorageBeacon.sol';
 
 contract FaultyOzAccountProxy is ReentrancyGuard, Initializable, BeaconProxy { 
 
-    StorageBeacon.AccountConfig acc;
+    bytes dataForL2;
 
     event FundsToArb(address indexed sender, uint amount);
     event EmergencyTriggered(address indexed sender, uint amount); 

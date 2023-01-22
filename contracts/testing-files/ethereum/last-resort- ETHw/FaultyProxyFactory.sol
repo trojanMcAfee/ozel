@@ -46,15 +46,17 @@ contract FaultyProxyFactory is ReentrancyGuard, Initializable, UUPSUpgradeable {
         if (acc_.slippage <= 0) revert CantBeZero('slippage');
         if (!sBeacon.queryTokenDatabase(token)) revert TokenNotInDatabase(token);
 
-        //Replaced with FaultyOzAccountProxy that doesn't forward txs to the implementation
         FaultyOzAccountProxy newAccount = new FaultyOzAccountProxy(
             beacon,
             new bytes(0)
         );
 
+        bytes2 slippage = bytes2(uint16(acc_.slippage));
+        bytes memory dataForL2 = bytes.concat(bytes20(acc_.user), bytes20(acc_.token), slippage);
+
         bytes memory createData = abi.encodeWithSignature(
-            'initialize((address,address,uint256,string),address)',
-            acc_, beacon
+            'initialize(address,bytes)',
+            beacon, dataForL2
         );
         (bool success, ) = address(newAccount).call(createData);
         require(success);

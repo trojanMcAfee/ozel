@@ -85,7 +85,7 @@ let isAuthorized, newSelector;
         signers = await hre.ethers.getSigners();
     });
 
-    xdescribe('Optimistic deployment', async function () { 
+    describe('Optimistic deployment', async function () { 
         before( async () => {
             ([
                 beacon, 
@@ -880,7 +880,7 @@ let isAuthorized, newSelector;
                 assert.equal(formatEther(balance), 0);
             });
             
-            xit('should successfully submit the retryable in the 2nd attempt / FaultyOzPayMe3 - _createTicketData()', async () => {
+            it('should successfully submit the retryable in the 2nd attempt / FaultyOzPayMe3 - _createTicketData()', async () => {
                 const [ faultyOzPayMeAddr ] = await deployContract('FaultyOzPayMe3', constrArgs);
                 await beacon.upgradeTo(faultyOzPayMeAddr);
 
@@ -896,7 +896,7 @@ let isAuthorized, newSelector;
             });
         });
 
-        xdescribe('ETH withdrawal as last resort', async function () {
+        describe('ETH withdrawal as last resort', async function () {
 
             /**
              * Deploys FaultyProxyFactory which creates FaultyOzAccountProxy that doesn't
