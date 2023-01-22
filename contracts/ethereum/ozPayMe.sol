@@ -19,6 +19,8 @@ import './FakeOZL.sol';
 import './Emitter.sol';
 import '../Errors.sol';
 
+import '../libraries/LibCommon.sol';
+
 
 /**
  * @title Responsible for sending ETH and calldata to L2
@@ -28,6 +30,7 @@ import '../Errors.sol';
 contract ozPayMe is ozIPayMe, ReentrancyGuard, Initializable { 
 
     using FixedPointMathLib for uint;
+    using LibCommon for bytes;
 
     bytes dataForL2;
 
@@ -72,7 +75,7 @@ contract ozPayMe is ozIPayMe, ReentrancyGuard, Initializable {
     }
 
     modifier onlyUser() {
-        (address user,,) = _extractData();
+        (address user,,) = dataForL2.extract();
         if (msg.sender != user) revert NotAuthorized(msg.sender);
         _;
     }
@@ -96,26 +99,12 @@ contract ozPayMe is ozIPayMe, ReentrancyGuard, Initializable {
                             Main functions
     //////////////////////////////////////////////////////////////*/
 
-    function _extractData() private view returns(address,address,uint16) {
-        bytes20 user;
-        bytes20 token;
-        bytes2 slippage;
-        bytes memory data = dataForL2;
-
-        assembly {
-            user := mload(add(data, 32))
-            token := mload(add(data, 52))
-            slippage := mload(add(data, 72))
-        }
-        return (address(user), address(token), uint16(slippage));
-    }
-
     function sendToArb( 
         uint gasPriceBid_,
         uint amountToSend_,
         address account_
     ) external payable onlyOps {   
-        (address user,,uint16 slippage) = _extractData();
+        (address user,,uint16 slippage) = dataForL2.extract();
 
         StorageBeacon storageBeacon = StorageBeacon(_getStorageBeacon(_beacon, 0)); 
 
@@ -239,7 +228,7 @@ contract ozPayMe is ozIPayMe, ReentrancyGuard, Initializable {
     function changeAccountToken(
         address newToken_
     ) external checkToken(newToken_) onlyUser { 
-        (address user,,uint16 slippage) = _extractData();
+        (address user,,uint16 slippage) = dataForL2.extract();
         dataForL2 = bytes.concat(bytes20(user), bytes20(newToken_), bytes2(slippage));
     }
 
@@ -247,7 +236,7 @@ contract ozPayMe is ozIPayMe, ReentrancyGuard, Initializable {
     function changeAccountSlippage(
         uint16 newSlippage_
     ) external checkSlippage(newSlippage_) onlyUser { 
-        (address user, address token,) = _extractData();
+        (address user, address token,) = dataForL2.extract();
         dataForL2 = bytes.concat(bytes20(user), bytes20(token), bytes2(newSlippage_));
     }
 
@@ -256,7 +245,7 @@ contract ozPayMe is ozIPayMe, ReentrancyGuard, Initializable {
         address newToken_, 
         uint16 newSlippage_
     ) external checkToken(newToken_) checkSlippage(newSlippage_) onlyUser {
-        (address user,,) = _extractData();
+        (address user,,) = dataForL2.extract();
         dataForL2 = bytes.concat(bytes20(user), bytes20(newToken_), bytes2(newSlippage_));
     } 
 
@@ -266,7 +255,7 @@ contract ozPayMe is ozIPayMe, ReentrancyGuard, Initializable {
         address token, 
         uint16 slippage
     ) {
-        (user, token, slippage) = _extractData();
+        (user, token, slippage) = dataForL2.extract();
     }
 
     /// @inheritdoc ozIPayMe

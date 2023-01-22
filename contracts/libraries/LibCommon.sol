@@ -58,4 +58,18 @@ library LibCommon {
         delete swaps_[swaps_.length-1];
         swaps_.pop();
     }
+
+
+    function extract(bytes memory data_) internal pure returns(address,address,uint16) {
+        bytes20 user;
+        bytes20 token;
+        bytes2 slippage;
+
+        assembly {
+            user := mload(add(data_, 32))
+            token := mload(add(data_, 52))
+            slippage := mload(add(data_, 72))
+        }
+        return (address(user), address(token), uint16(slippage));
+    }
 }
