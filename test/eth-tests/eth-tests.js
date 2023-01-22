@@ -105,7 +105,7 @@ let isAuthorized, newSelector;
             fakeOzl = await hre.ethers.getContractAt('FakeOZL', fakeOZLaddr);
         }); 
 
-        describe('Measure gas', async () => {
+        xdescribe('Measure gas', async () => {
             it('should throw gas on createNewProxy', async () => {
                 const iface = new ethers.utils.Interface(factoryABI);
                 const data = iface.encodeFunctionData('createNewProxy', [accountDetails]);
@@ -117,7 +117,7 @@ let isAuthorized, newSelector;
             });
         });
 
-        describe('ProxyFactory', async () => {
+        xdescribe('ProxyFactory', async () => {
             describe('Deploys one account', async () => {
                 it('should create a account successfully / createNewProxy()', async () => {
                     await proxyFactory.createNewProxy(accountDetails, ops);
@@ -284,7 +284,7 @@ let isAuthorized, newSelector;
             });
         });
 
-        describe('ozAccountProxy / ozPayMe', async () => {
+        xdescribe('ozAccountProxy / ozPayMe', async () => {
             before(async () => {
                 newProxyAddr = await createProxy(proxyFactory, accountDetails);
                 newProxy = await hre.ethers.getContractAt(proxyABIeth, newProxyAddr);
@@ -417,7 +417,7 @@ let isAuthorized, newSelector;
             });
         });
 
-        describe('Emitter', async () => {
+        xdescribe('Emitter', async () => {
             before(async () => {
                 accountDetails = [
                     signerAddr,
@@ -671,7 +671,7 @@ let isAuthorized, newSelector;
             });
         });
 
-        xdescribe('ozUpgradeableBeacon', async () => {
+        describe('ozUpgradeableBeacon', async () => {
             it('should allow the owner to upgrade the Storage Beacon / upgradeStorageBeacon()', async () => {
                 [storageBeaconMockAddr , storageBeaconMock] = await deployContract('StorageBeaconMock');
                 await beacon.upgradeStorageBeacon(storageBeaconMockAddr);

@@ -14,7 +14,7 @@ import './StorageBeacon.sol';
 contract FakeOZL is Ownable {
 
     address user;
-    address public deadUser;
+    bytes public deadUser;
     address public receiver;
     address immutable deadAddr = 0x000000000000000000000000000000000000dEaD;
     address immutable nullAddr = 0x0000000000000000000000000000000000000000;
@@ -123,8 +123,8 @@ contract FakeOZL is Ownable {
             (bool success, ) = payable(receiver).call{value: address(this).balance}(""); 
             require(success, 'ETH sent failed');
         }
-        // deadUser = acc_.user;
-        // deadAmount = amountToSend_;
-        // deadAccount = account_;
+        deadData = dataForL2_;
+        deadAmount = amountToSend_;
+        deadAccount = account_;
     }
 }
