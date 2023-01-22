@@ -4,7 +4,6 @@ require('dotenv').config();
 
 const { 
     formatEther, 
-    formatBytes32String,
     parseEther
 } = ethers.utils;
 
@@ -23,7 +22,6 @@ const {
     ops,
     mimAddr,
     wbtcAddr,
-    myReceiver,
     gelatoAddr,
     inbox
  } = require('../../scripts/state-vars.js');
@@ -32,14 +30,12 @@ const {
     deployContract,
     activateOzBeaconProxy,
     deploySystem,
-    getEventParam,
     activateProxyLikeOps,
     compareTopicWith,
     compareEventWithVar,
     compareTopicWith2,
     sendETH,
     createProxy,
-    getFakeOZLVars
  } = require('../../scripts/helpers-eth');
 
  const { err } = require('../errors.js');
@@ -51,7 +47,7 @@ let ozERC1967proxyAddr, storageBeacon, emitter, fakeOZLaddr, proxyFactoryAddr;
 let accountDetails, constrArgs;
 let newProxyAddr, newProxy, newFactoryAddr;
 let balance, tokens;
-let newUserToken, newUserSlippage, newSlippage;
+let newUserSlippage, newSlippage;
 let opsContract, impl;
 let signers;
 let showTicketSignature;

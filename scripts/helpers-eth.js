@@ -1,14 +1,8 @@
-const { hexDataLength } = require('@ethersproject/bytes');
-const {
-    L1ToL2MessageGasEstimator,
-} = require('@arbitrum/sdk/dist/lib/message/L1ToL2MessageGasEstimator')
 const { ethers } = require('ethers');
 const { 
     hexStripZeros, 
     defaultAbiCoder: abiCoder,
     parseEther,
-    formatEther,
-    formatUnits
 } = ethers.utils;
 
 const { 
@@ -16,14 +10,12 @@ const {
     usdtAddrArb,
     usdcAddr,
     inbox,
-    l2ProviderTestnet,
     wethAddr,
     gelatoAddr,
     ETH,
     swapRouterUniAddr,
     poolFeeUni,
     chainlinkAggregatorAddr,
-    l1ProviderTestnet,
     factoryABI,
     myReceiver,
     ops,
@@ -32,7 +24,6 @@ const {
     opsL2,
     mimAddr,
     wbtcAddr,
-    deadAddr
 } = require('./state-vars.js');
 
 
