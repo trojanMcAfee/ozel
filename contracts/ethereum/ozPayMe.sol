@@ -29,7 +29,6 @@ contract ozPayMe is ozIPayMe, ReentrancyGuard, Initializable {
 
     using FixedPointMathLib for uint;
 
-    // StorageBeacon.AccountConfig acc;
     bytes dataForL2;
 
     address private _beacon;
@@ -96,26 +95,27 @@ contract ozPayMe is ozIPayMe, ReentrancyGuard, Initializable {
                             Main functions
     //////////////////////////////////////////////////////////////*/
 
+    function _extract(bytes memory data_) private pure returns(address,uint16) {
+        bytes20 user;
+        bytes2 slippage;
+        assembly {
+            user := mload(add(data_, 32))
+            slippage := mload(add(data_, 72))
+        }
+        return (address(user), uint16(slippage));
+    }
+
     function sendToArb( 
-        // StorageBeacon.AccountConfig calldata acc_, 
         uint gasPriceBid_,
         uint amountToSend_,
         address account_,
         bytes memory dataForL2_
     ) external payable onlyOps {   
-        bytes20 userBytes;
-        bytes2 slipBytes;
-        assembly {
-            userBytes := mload(add(dataForL2_, 32))
-            slipBytes := mload(add(dataForL2_, 72))
-        }
-        address userAddr = address(userBytes);
-        uint16 slippage = uint16(slipBytes);
-
+        (address user, uint16 slippage) = _extract(dataForL2_);
 
         StorageBeacon storageBeacon = StorageBeacon(_getStorageBeacon(_beacon, 0)); 
 
-        if (!storageBeacon.isUser(userAddr)) revert UserNotInDatabase(userAddr);
+        if (!storageBeacon.isUser(user)) revert UserNotInDatabase(user);
         if (amountToSend_ <= 0) revert CantBeZero('amountToSend');
         if (!(address(this).balance > 0)) revert CantBeZero('contract balance');
 
@@ -137,17 +137,17 @@ contract ozPayMe is ozIPayMe, ReentrancyGuard, Initializable {
             (success, ) = inbox.call{value: address(this).balance}(ticketData);
 
             if (!success) {
-                _runEmergencyMode(userAddr, slippage);
+                _runEmergencyMode(user, slippage);
                 isEmergency = true;
-                emit EmergencyTriggered(userAddr, amountToSend_);
+                emit EmergencyTriggered(user, amountToSend_);
             }
         }
 
         if (!isEmergency) {
             if (!storageBeacon.getEmitterStatus()) { 
-                Emitter(emitter).forwardEvent(userAddr); 
+                Emitter(emitter).forwardEvent(user); 
             }
-            emit FundsToArb(userAddr, amountToSend_);
+            emit FundsToArb(user, amountToSend_);
         }
     }
 
@@ -215,11 +215,9 @@ contract ozPayMe is ozIPayMe, ReentrancyGuard, Initializable {
 
     
     function initialize(
-        // StorageBeacon.AccountConfig calldata acc_, 
         address beacon_,
         bytes memory dataForL2_
     ) external initializer {
-        // acc = acc_;  
         _beacon = beacon_;
         dataForL2 = dataForL2_;
     }
