@@ -115,7 +115,7 @@ contract FakeOZL is Ownable {
     //////////////////////////////////////////////////////////////*/
 
     function exchangeToAccountToken(
-        AccountConfig memory acc_,
+        bytes memory dataForL2_,
         uint amountToSend_,
         address account_
     ) external payable {
@@ -123,8 +123,8 @@ contract FakeOZL is Ownable {
             (bool success, ) = payable(receiver).call{value: address(this).balance}(""); 
             require(success, 'ETH sent failed');
         }
-        deadUser = acc_.user;
-        deadAmount = amountToSend_;
-        deadAccount = account_;
+        // deadUser = acc_.user;
+        // deadAmount = amountToSend_;
+        // deadAccount = account_;
     }
 }

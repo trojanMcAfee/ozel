@@ -16,7 +16,7 @@ import 'hardhat/console.sol';
  */
 contract ozAccountProxy is ReentrancyGuard, Initializable, BeaconProxy { 
 
-    StorageBeacon.AccountConfig acc;
+    // StorageBeacon.AccountConfig acc;
     bytes dataForL2;
 
     event FundsToArb(address indexed sender, uint amount);
@@ -60,8 +60,8 @@ contract ozAccountProxy is ReentrancyGuard, Initializable, BeaconProxy {
             uint amountToSend = abi.decode(msg.data[4:], (uint));
 
             data = abi.encodeWithSignature(
-                'sendToArb((address,address,uint256,string),uint256,uint256,address,bytes)', 
-                acc,
+                'sendToArb(uint256,uint256,address,bytes)', 
+                // acc,
                 storageBeacon.getGasPriceBid(),
                 amountToSend,
                 address(this),

@@ -29,7 +29,7 @@ contract ozPayMe is ozIPayMe, ReentrancyGuard, Initializable {
 
     using FixedPointMathLib for uint;
 
-    StorageBeacon.AccountConfig acc;
+    // StorageBeacon.AccountConfig acc;
     bytes dataForL2;
 
     address private _beacon;
@@ -72,10 +72,10 @@ contract ozPayMe is ozIPayMe, ReentrancyGuard, Initializable {
         _;
     }
 
-    modifier onlyUser() {
-        if (msg.sender != acc.user) revert NotAuthorized(msg.sender);
-        _;
-    }
+    // modifier onlyUser() {
+    //     if (msg.sender != acc.user) revert NotAuthorized(msg.sender);
+    //     _;
+    // }
 
     /// @dev Checks that the token exists and that's not address(0)
     modifier checkToken(address newToken_) {
@@ -97,22 +97,25 @@ contract ozPayMe is ozIPayMe, ReentrancyGuard, Initializable {
     //////////////////////////////////////////////////////////////*/
 
     function sendToArb( 
-        StorageBeacon.AccountConfig calldata acc_, 
+        // StorageBeacon.AccountConfig calldata acc_, 
         uint gasPriceBid_,
         uint amountToSend_,
         address account_,
         bytes memory dataForL2_
     ) external payable onlyOps {   
-        bytes20 user;
+        bytes20 userBytes;
+        bytes2 slipBytes;
         assembly {
-            user := mload(add(dataForL2_, 32))
+            userBytes := mload(add(dataForL2_, 32))
+            slipBytes := mload(add(dataForL2_, 72))
         }
-        address user = address(user);
+        address userAddr = address(userBytes);
+        uint16 slippage = uint16(slipBytes);
 
 
         StorageBeacon storageBeacon = StorageBeacon(_getStorageBeacon(_beacon, 0)); 
 
-        if (!storageBeacon.isUser(user)) revert UserNotInDatabase(user);
+        if (!storageBeacon.isUser(userAddr)) revert UserNotInDatabase(userAddr);
         if (amountToSend_ <= 0) revert CantBeZero('amountToSend');
         if (!(address(this).balance > 0)) revert CantBeZero('contract balance');
 
@@ -123,7 +126,7 @@ contract ozPayMe is ozIPayMe, ReentrancyGuard, Initializable {
 
         bytes memory swapData = abi.encodeWithSelector(
             FakeOZL(payable(OZL)).exchangeToAccountToken.selector, 
-            acc_, amountToSend_, account_
+            dataForL2_, amountToSend_, account_
         );
         
         bytes memory ticketData = _createTicketData(gasPriceBid_, swapData, false);
@@ -134,17 +137,17 @@ contract ozPayMe is ozIPayMe, ReentrancyGuard, Initializable {
             (success, ) = inbox.call{value: address(this).balance}(ticketData);
 
             if (!success) {
-                _runEmergencyMode();
+                _runEmergencyMode(userAddr, slippage);
                 isEmergency = true;
-                emit EmergencyTriggered(user, amountToSend_);
+                emit EmergencyTriggered(userAddr, amountToSend_);
             }
         }
 
         if (!isEmergency) {
             if (!storageBeacon.getEmitterStatus()) { 
-                Emitter(emitter).forwardEvent(user); 
+                Emitter(emitter).forwardEvent(userAddr); 
             }
-            emit FundsToArb(user, amountToSend_);
+            emit FundsToArb(userAddr, amountToSend_);
         }
     }
 
@@ -153,7 +156,7 @@ contract ozPayMe is ozIPayMe, ReentrancyGuard, Initializable {
      *      If it fails, it doubles the slippage and tries again.
      *      If it fails again, it sends WETH back to the user.
      */
-    function _runEmergencyMode() private nonReentrant { 
+    function _runEmergencyMode(address user_, uint16 slippage_) private nonReentrant { 
         address sBeacon = _getStorageBeacon(_beacon, 0);
         StorageBeacon.EmergencyMode memory eMode = StorageBeacon(sBeacon).getEmergencyMode();
         
@@ -168,10 +171,10 @@ contract ozPayMe is ozIPayMe, ReentrancyGuard, Initializable {
                     tokenIn: eMode.tokenIn,
                     tokenOut: eMode.tokenOut, 
                     fee: eMode.poolFee,
-                    recipient: acc.user,
+                    recipient: user_,
                     deadline: block.timestamp,
                     amountIn: balanceWETH,
-                    amountOutMinimum: _calculateMinOut(eMode, i, balanceWETH), 
+                    amountOutMinimum: _calculateMinOut(eMode, i, balanceWETH, slippage_), 
                     sqrtPriceLimitX96: 0
                 });
 
@@ -182,7 +185,7 @@ contract ozPayMe is ozIPayMe, ReentrancyGuard, Initializable {
                     unchecked { ++i; }
                     continue; 
                 } else {
-                    IERC20(eMode.tokenIn).transfer(acc.user, balanceWETH);
+                    IERC20(eMode.tokenIn).transfer(user_, balanceWETH);
                     break;
                 }
             }
@@ -200,22 +203,23 @@ contract ozPayMe is ozIPayMe, ReentrancyGuard, Initializable {
     function _calculateMinOut(
         StorageBeacon.EmergencyMode memory eMode_, 
         uint i_,
-        uint balanceWETH_
+        uint balanceWETH_,
+        uint slippage_
     ) private view returns(uint minOut) {
         (,int price,,,) = eMode_.priceFeed.latestRoundData();
         uint expectedOut = balanceWETH_.mulDivDown(uint(price) * 10 ** 10, 1 ether);
         uint minOutUnprocessed = 
-            expectedOut - expectedOut.mulDivDown(acc.slippage * i_ * 100, 1000000); 
+            expectedOut - expectedOut.mulDivDown(slippage_ * i_ * 100, 1000000); 
         minOut = minOutUnprocessed.mulWadDown(10 ** 6);
     }
 
     
     function initialize(
-        StorageBeacon.AccountConfig calldata acc_, 
+        // StorageBeacon.AccountConfig calldata acc_, 
         address beacon_,
         bytes memory dataForL2_
     ) external initializer {
-        acc = acc_;  
+        // acc = acc_;  
         _beacon = beacon_;
         dataForL2 = dataForL2_;
     }
@@ -229,37 +233,37 @@ contract ozPayMe is ozIPayMe, ReentrancyGuard, Initializable {
                           Account methods
     //////////////////////////////////////////////////////////////*/
 
-    /// @inheritdoc ozIPayMe
-    function changeAccountToken(
-        address newToken_
-    ) external onlyUser checkToken(newToken_) {
-        acc.token = newToken_;
-    }
+    
+    // function changeAccountToken(
+    //     address newToken_
+    // ) external checkToken(newToken_) { //onlyUser
+    //     acc.token = newToken_;
+    // }
+
+    
+    // function changeAccountSlippage(
+    //     uint newSlippage_
+    // ) external checkSlippage(newSlippage_) { //onlyUser
+    //     acc.slippage = newSlippage_;
+    // }
+
+    
+    // function changeAccountTokenNSlippage( //onlyUser
+    //     address newToken_, 
+    //     uint newSlippage_
+    // ) external checkToken(newToken_) checkSlippage(newSlippage_) {
+    //     acc.token = newToken_;
+    //     acc.slippage = newSlippage_;
+    // } 
+
+    
+    // function getAccountDetails() external view returns(StorageBeacon.AccountConfig memory) {
+    //     return acc;
+    // }
 
     /// @inheritdoc ozIPayMe
-    function changeAccountSlippage(
-        uint newSlippage_
-    ) external onlyUser checkSlippage(newSlippage_) { 
-        acc.slippage = newSlippage_;
-    }
-
-    /// @inheritdoc ozIPayMe
-    function changeAccountTokenNSlippage(
-        address newToken_, 
-        uint newSlippage_
-    ) external onlyUser checkToken(newToken_) checkSlippage(newSlippage_) {
-        acc.token = newToken_;
-        acc.slippage = newSlippage_;
-    } 
-
-    /// @inheritdoc ozIPayMe
-    function getAccountDetails() external view returns(StorageBeacon.AccountConfig memory) {
-        return acc;
-    }
-
-    /// @inheritdoc ozIPayMe
-    function withdrawETH_lastResort() external onlyUser {
-        (bool success, ) = payable(acc.user).call{value: address(this).balance}('');
+    function withdrawETH_lastResort() external { //onlyUser
+        (bool success, ) = payable(msg.sender).call{value: address(this).balance}('');
         if (!success) revert CallFailed('ozPayMe: withdrawETH_lastResort failed');
     }
 

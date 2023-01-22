@@ -60,8 +60,8 @@ contract ProxyFactory is IProxyFactory, ReentrancyGuard, Initializable, UUPSUpgr
         bytes memory dataForL2 = bytes.concat(bytes20(acc_.user), bytes20(acc_.token), slippage);
 
         bytes memory createData = abi.encodeWithSignature(
-            'initialize((address,address,uint256,string),address,bytes)',
-            acc_, beacon, dataForL2
+            'initialize(address,bytes)',
+            beacon, dataForL2
         );
         (bool success, ) = address(newAccount).call(createData);
         require(success);
