@@ -3,11 +3,11 @@ pragma solidity 0.8.14;
 
 
 import '../ethereum/StorageBeacon.sol';
+import '../libraries/LibCommon.sol';
 import './AppStorage.sol';
 import './Bits.sol';
 import '../Errors.sol';
 
-import 'hardhat/console.sol';
 /**
  * @title Modifiers for the L2 contracts
  */
@@ -46,18 +46,17 @@ abstract contract ModifiersARB is Bits {
      * @dev Does primery checks on the details of an account
      * @param acc_ Details of account/proxy
      */
-    modifier filterDetails(AccountConfig memory acc_) {
-        if (acc_.user == address(0) || acc_.token == address(0)) revert CantBeZero('address'); 
+    modifier filterDetails(bytes memory accData_) {
+        (address user, address token, uint16 slippage) = LibCommon.extract(accData_);
+        if (user == address(0) || token == address(0)) revert CantBeZero('address'); 
 
-        if (!s.tokenDatabase[acc_.token] && _l1TokenCheck(acc_.token)) {
-            revert TokenNotInDatabase(acc_.token);
-        } else if (!s.tokenDatabase[acc_.token]) {
-            acc_.token = s.tokenL1ToTokenL2[acc_.token];
+        if (!s.tokenDatabase[token] && _l1TokenCheck(token)) {
+            revert TokenNotInDatabase(token);
+        } else if (!s.tokenDatabase[token]) {
+            token = s.tokenL1ToTokenL2[token];
         }
 
-        if (acc_.slippage <= 0) revert CantBeZero('slippage');
-        if (bytes(acc_.name).length == 0) revert CantBeZero('name'); 
-        if (bytes(acc_.name).length > 18) revert NameTooLong();
+        if (slippage <= 0) revert CantBeZero('slippage');
         _;
     }
 

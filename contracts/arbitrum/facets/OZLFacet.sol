@@ -36,17 +36,16 @@ contract OZLFacet is ModifiersARB { //IOZLFacet
                                 Main
     //////////////////////////////////////////////////////////////*/  
 
-    
     function exchangeToAccountToken(
-        AccountConfig memory acc_,
+        bytes memory accData_,
         uint amountToSend_,
         address account_ //<--- check this with modifier
-    ) external payable noReentrancy(0) filterDetails(acc_) { 
+    ) external payable noReentrancy(0) filterDetails(accData_) { 
         if (msg.value <= 0) revert CantBeZero('msg.value');
         if (s.failedFees > 0) _depositFeesInDeFi(s.failedFees, true); 
         
         s.accountPayments[account_] += amountToSend_; //////
-        if (s.accountToDetails[account_].user == address(0)) s.accountToDetails[account_] = acc_;
+        if (s.accountToDetails[account_].user == address(0)) s.accountToDetails[account_] = acc_; //fixing this
 
         IWETH(s.WETH).deposit{value: msg.value}();
         uint wethIn = IWETH(s.WETH).balanceOf(address(this));
