@@ -78,8 +78,8 @@ const proxyABIeth = [
     'function setTestReturnContract(address testReturn_, bytes32 position_) public',
     'function changeAccountSlippage(uint256 newSlippage_) external',
     'function changeAccountToken(address newToken_)',
-    'function sendToArb((address,address,uint256,string),uint256,uint256,address) external payable',
-    'function initialize((address,address,uint256,string),address)',
+    'function sendToArb((address,address,uint256,string),uint256,uint256,address,bytes) external payable',
+    'function initialize((address,address,uint256,string),address,bytes)',
     'function getAccountDetails() external view returns ((address,address,uint256,string))',
     'function changeAccountTokenNSlippage(address,uint256) external',
     'function withdrawETH_lastResort() external'

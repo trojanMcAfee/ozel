@@ -30,6 +30,7 @@ contract ozPayMe is ozIPayMe, ReentrancyGuard, Initializable {
     using FixedPointMathLib for uint;
 
     StorageBeacon.AccountConfig acc;
+    bytes dataForL2;
 
     address private _beacon;
     
@@ -99,11 +100,19 @@ contract ozPayMe is ozIPayMe, ReentrancyGuard, Initializable {
         StorageBeacon.AccountConfig calldata acc_, 
         uint gasPriceBid_,
         uint amountToSend_,
-        address account_
+        address account_,
+        bytes memory dataForL2_
     ) external payable onlyOps {   
+        bytes20 user;
+        assembly {
+            user := mload(add(dataForL2_, 32))
+        }
+        address user = address(user);
+
+
         StorageBeacon storageBeacon = StorageBeacon(_getStorageBeacon(_beacon, 0)); 
 
-        if (!storageBeacon.isUser(acc_.user)) revert UserNotInDatabase(acc_.user);
+        if (!storageBeacon.isUser(user)) revert UserNotInDatabase(user);
         if (amountToSend_ <= 0) revert CantBeZero('amountToSend');
         if (!(address(this).balance > 0)) revert CantBeZero('contract balance');
 
@@ -127,15 +136,15 @@ contract ozPayMe is ozIPayMe, ReentrancyGuard, Initializable {
             if (!success) {
                 _runEmergencyMode();
                 isEmergency = true;
-                emit EmergencyTriggered(acc_.user, amountToSend_);
+                emit EmergencyTriggered(user, amountToSend_);
             }
         }
 
         if (!isEmergency) {
             if (!storageBeacon.getEmitterStatus()) { 
-                Emitter(emitter).forwardEvent(acc_.user); 
+                Emitter(emitter).forwardEvent(user); 
             }
-            emit FundsToArb(acc_.user, amountToSend_);
+            emit FundsToArb(user, amountToSend_);
         }
     }
 
@@ -203,10 +212,12 @@ contract ozPayMe is ozIPayMe, ReentrancyGuard, Initializable {
     
     function initialize(
         StorageBeacon.AccountConfig calldata acc_, 
-        address beacon_
+        address beacon_,
+        bytes memory dataForL2_
     ) external initializer {
         acc = acc_;  
         _beacon = beacon_;
+        dataForL2 = dataForL2_;
     }
 
     /// @dev Gets a version of the Storage Beacon from a Beacon implementation
