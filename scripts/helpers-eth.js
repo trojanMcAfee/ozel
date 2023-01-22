@@ -149,7 +149,7 @@ async function activateProxyLikeOps(proxy, taskCreator, isEvil, evilParams) {
 
     const tx = await ops.connect(gelatoSigner).exec(0, ETH, taskCreator, false, false, resolverHash, proxy, execData);
     const receipt = await tx.wait();
-    console.log('g: ', Number(receipt.gasUsed));
+    // console.log('g: ', Number(receipt.gasUsed));
 
     await hre.network.provider.request({
         method: "hardhat_stopImpersonatingAccount",
@@ -322,7 +322,7 @@ async function deploySystem(type, signerAddr) {
 
     const [ beaconAddr, beacon ] = await deployContract('ozUpgradeableBeacon', constrArgs); 
     await storageBeacon.storeBeacon(beaconAddr);
-    await emitter.storeBeacon(beaconAddr, deadAddr);
+    await emitter.storeBeacon(beaconAddr);
 
     //Deploys ProxyFactory
     constrArgs = [ pokeMeOpsAddr, beaconAddr ]; 

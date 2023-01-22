@@ -235,23 +235,38 @@ contract StorageBeacon is IStorageBeacon, Initializable, Ownable {
         return (accounts, names);
     }
 
-    function _extractData(address pointer_) private view returns(address, bytes32, string memory) {
-        bytes memory data = SSTORE2.read(pointer_);
-        (address account, bytes32 taskId, AccountConfig memory acc) = 
-            abi.decode(data, (address, bytes32, AccountConfig));
+    // function _extractData(address pointer_) private view returns(address, bytes32, string memory) {
+    //     bytes memory data = SSTORE2.read(pointer_);
+    //     (address account, bytes32 taskId, AccountConfig memory acc) = 
+    //         abi.decode(data, (address, bytes32, AccountConfig));
 
-        return (account, taskId, acc.name);
-    }
+    //     return (account, taskId, acc.name);
+    // }
 
     function getTaskID(address account_, address owner_) external view returns(bytes32) {
-        address[] memory pointers = userToPointers[owner_];
+        // address[] memory pointers = userToPointers[owner_];
 
-        for (uint i=0; i < pointers.length;) {
-            (address account, bytes32 taskId, ) = _extractData(pointers[i]);
-            if (account == account_) return taskId;
-            unchecked { ++i; }
+        // for (uint i=0; i < pointers.length;) {
+        //     (address account, bytes32 taskId, ) = _extractData(pointers[i]);
+        //     if (account == account_) return taskId;
+        //     unchecked { ++i; }
+        // }
+        // revert NoTaskId();
+
+        //------
+        AccData storage data = userToData[owner_];
+        if (data.accounts.length == 0) revert UserNotInDatabase(owner_);
+
+        bytes32 acc_user = bytes32(bytes.concat(bytes20(account_), bytes12(bytes20(owner_))));
+        bytes memory task_name = data.acc_userToTask_name[acc_user];
+        bytes32 taskId;
+        assembly {
+            taskId := mload(add(task_name, 32))
         }
-        revert NoTaskId();
+
+        if (taskId == bytes32(0)) revert NoTaskId();
+
+        return taskId;
     }
 
     /// @dev If token_ exists in L1 database
