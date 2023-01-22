@@ -14,7 +14,7 @@ import './StorageBeacon.sol';
 contract FakeOZL is Ownable {
 
     address user;
-    bytes public deadUser;
+    bytes public deadData;
     address public receiver;
     address immutable deadAddr = 0x000000000000000000000000000000000000dEaD;
     address immutable nullAddr = 0x0000000000000000000000000000000000000000;

@@ -105,7 +105,7 @@ let isAuthorized, newSelector;
             fakeOzl = await hre.ethers.getContractAt('FakeOZL', fakeOZLaddr);
         }); 
 
-        xdescribe('Measure gas', async () => {
+        describe('Measure gas', async () => {
             it('should throw gas on createNewProxy', async () => {
                 const iface = new ethers.utils.Interface(factoryABI);
                 const data = iface.encodeFunctionData('createNewProxy', [accountDetails]);
@@ -117,7 +117,7 @@ let isAuthorized, newSelector;
             });
         });
 
-        xdescribe('ProxyFactory', async () => {
+        describe('ProxyFactory', async () => {
             describe('Deploys one account', async () => {
                 it('should create a account successfully / createNewProxy()', async () => {
                     await proxyFactory.createNewProxy(accountDetails, ops);
@@ -284,7 +284,7 @@ let isAuthorized, newSelector;
             });
         });
 
-        xdescribe('ozAccountProxy / ozPayMe', async () => {
+        describe('ozAccountProxy / ozPayMe', async () => {
             before(async () => {
                 newProxyAddr = await createProxy(proxyFactory, accountDetails);
                 newProxy = await hre.ethers.getContractAt(proxyABIeth, newProxyAddr);
@@ -417,7 +417,7 @@ let isAuthorized, newSelector;
             });
         });
 
-        xdescribe('Emitter', async () => {
+        describe('Emitter', async () => {
             before(async () => {
                 accountDetails = [
                     signerAddr,
@@ -455,7 +455,7 @@ let isAuthorized, newSelector;
             }); 
         });
     
-        xdescribe('StorageBeacon', async () => {
+        describe('StorageBeacon', async () => {
             it('should allow the owner to change changeGasPriceBid / changeGasPriceBid()', async () => {
                 await storageBeacon.changeGasPriceBid(100);
             });
@@ -726,7 +726,7 @@ let isAuthorized, newSelector;
             });
         });
 
-        xdescribe('FakeOZL', async () => {
+        describe('FakeOZL', async () => {
             it('should get the total volume in USD / getTotalVolumeInUSD', async () => {
                 volume = await fakeOzl.getTotalVolumeInUSD(); 
                 assert.equal(formatEther(volume), 500);
