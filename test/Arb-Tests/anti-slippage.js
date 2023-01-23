@@ -9,7 +9,8 @@ const {
     sendETH,
     deploy,
     getTestingNumber,
-    replaceForModVersion
+    replaceForModVersion,
+    getAccData
 } = require('../../scripts/helpers-arb.js');
 
 const { 
@@ -58,14 +59,15 @@ describe('Anti-slippage system', async function () {
     
         getVarsForHelpers(deployedDiamond, ozlFacet);
 
-        accountDetails = [ 
-            callerAddr,
-            tokensDatabaseL1.usdtAddr,
-            defaultSlippage,
-            'myAccount'
-        ];
+        // accountDetails = [ 
+        //     callerAddr,
+        //     tokensDatabaseL1.usdtAddr,
+        //     defaultSlippage,
+        //     'myAccount'
+        // ];
+        accountDetails = getAccData(callerAddr, tokensDatabaseL1.usdtAddr, defaultSlippage);
 
-        abi = ['function exchangeToAccountToken((address user, address token, uint256 slippage, string name) accountDetails_) external payable'];
+        abi = ['function exchangeToAccountToken(bytes,uint256,address) external payable'];
         iface = new ethers.utils.Interface(abi);
         selector = iface.getSighash('exchangeToAccountToken');
     });
