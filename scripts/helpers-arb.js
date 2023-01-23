@@ -4,7 +4,8 @@ const {
     defaultAbiCoder: abiCoder, 
     formatEther, 
     keccak256, 
-    toUtf8Bytes 
+    toUtf8Bytes,
+    solidityPack
 } = ethers.utils;
 
 const {
@@ -34,7 +35,8 @@ const {
     usxAddr,
     ops,
     opsL2,
-    tokensDatabaseL1
+    tokensDatabaseL1,
+    deadAddr
 } = require('./state-vars.js');
 
 
@@ -80,7 +82,7 @@ async function sendETH(accountDetails, signerIndex = 0, ozelIndex) {
     const signer = signers[signerIndex ? 0 : signerIndex];
     let value = ethers.utils.parseEther(signerIndex === 'no value' ? '0' : '10');
     value = ozelIndex === 'ozel index test' ? ethers.utils.parseEther('100') : value;
-    const tx = await OZLDiamond.connect(signer).exchangeToAccountToken(accountDetails, {
+    const tx = await OZLDiamond.connect(signer).exchangeToAccountToken(accountDetails, value, deadAddr, {
         value,
         gasLimit: ethers.BigNumber.from('5000000'),
         gasPrice: ethers.BigNumber.from('40134698068')
@@ -227,6 +229,14 @@ async function deployFacet(facetName) {
     await contract.deployed();
     console.log(`${facetName} deployed to: `, contract.address);
     return contract;
+}
+
+function getAccData(callerAddr, l1Address, slippage) {
+    return solidityPack(['address','address','uint16'], [
+        callerAddr,
+        l1Address, 
+        slippage
+    ]);
 }
 
 
@@ -381,5 +391,6 @@ module.exports = {
     deployFacet,
     replaceForModVersion,
     queryTokenDatabase,
-    removeTokenFromDatabase
+    removeTokenFromDatabase,
+    getAccData
 };

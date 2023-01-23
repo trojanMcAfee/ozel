@@ -50,8 +50,8 @@ const diamondABI = [
     'function getRegulatorCounter() external view returns (uint256)',
     'function balanceOf(address account) view returns (uint256)',
     'function transfer(address recipient, uint256 amount) returns (bool)',
-    'function exchangeToAccountToken(tuple(address user, address token, uint slippage, string name) accountDetails_) external payable',
-    'function withdrawUserShare(tuple(address user, address token, uint slippage, string name) accountDetails_, address receiver, uint shares_)',
+    'function exchangeToAccountToken(bytes,uint256,address) external payable',
+    'function withdrawUserShare(bytes,address,uint256) external',
     'function enableWithdrawals(bool state_) external',
     'function updateExecutorState(uint256 amount_, address user_, uint256 lockNum_) external payable',
     'function deposit(uint256 assets, address receiver, uint256 lockNum_) external payable returns (uint256 shares)',
@@ -117,7 +117,7 @@ const l1Provider = new ethers.providers.JsonRpcProvider(process.env.MAINNET);
 let l1Signer, l2Signer, l1SignerTestnet, l2SignerTestnet;
 let l1ProviderTestnet, l2ProviderTestnet;
 
-let network = 'mainnet';
+let network = 'arbitrum';
 switch(network) {
     case 'goerli':
         pokeMeOpsAddr = '0xc1C6805B857Bef1f412519C4A842522431aFed39'; 

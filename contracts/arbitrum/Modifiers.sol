@@ -44,11 +44,13 @@ abstract contract ModifiersARB is Bits {
 
     /**
      * @dev Does primery checks on the details of an account
-     * @param accData_ Details of account/proxy
+     * @param data_ Details of account/proxy
      */
-    function _filter(bytes memory accData_) internal returns(address, address, uint16) {
-        (address user, address token, uint16 slippage) = LibCommon.extract(accData_);
+    function _filter(bytes memory data_) internal view returns(address, address, uint) {
+        (address user, address token, uint16 slippage) = LibCommon.extract(data_);
+
         if (user == address(0) || token == address(0)) revert CantBeZero('address'); 
+        if (slippage <= 0) revert CantBeZero('slippage');
 
         if (!s.tokenDatabase[token] && _l1TokenCheck(token)) {
             revert TokenNotInDatabase(token);
@@ -56,8 +58,7 @@ abstract contract ModifiersARB is Bits {
             token = s.tokenL1ToTokenL2[token];
         }
 
-        if (slippage <= 0) revert CantBeZero('slippage');
-        return (user, token, slippage);
+        return (user, token, uint(slippage));
     }
 
     function _l1TokenCheck(address token_) internal view returns(bool) {

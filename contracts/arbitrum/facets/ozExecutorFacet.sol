@@ -14,14 +14,14 @@ import '../../interfaces/arbitrum/ozIExecutorFacet.sol';
  * @notice In charge of swapping to the account's stablecoin and modifying 
  * state for pegged OZL rebase
  */
-contract ozExecutorFacet is ozIExecutorFacet, ModifiersARB { 
+contract ozExecutorFacet is ModifiersARB { //ozIExecutorFacet
 
     using FixedPointMathLib for uint;
 
-    /// @inheritdoc ozIExecutorFacet
+    
     function executeFinalTrade( 
         TradeOps calldata swap_, 
-        uint16 slippage_,
+        uint slippage_,
         address user_,
         uint lockNum_
     ) external payable isAuthorized(lockNum_) noReentrancy(3) {
@@ -98,7 +98,7 @@ contract ozExecutorFacet is ozIExecutorFacet, ModifiersARB {
      */
     function calculateSlippage(
         uint amount_, 
-        uint16 basisPoint_
+        uint basisPoint_
     ) public pure returns(uint minAmountOut) {
         minAmountOut = amount_ - amount_.mulDivDown(basisPoint_, 10000);
     }
@@ -108,7 +108,7 @@ contract ozExecutorFacet is ozIExecutorFacet, ModifiersARB {
                     Updates state for OZL calculations
     //////////////////////////////////////////////////////////////*/
 
-    /// @inheritdoc ozIExecutorFacet
+    
     function updateExecutorState(
         uint amount_, 
         address user_,
@@ -148,7 +148,7 @@ contract ozExecutorFacet is ozIExecutorFacet, ModifiersARB {
         s.ozelIndex = s.indexFlag ? s.ozelIndex : s.ozelIndex * s.stabilizer;
     }
 
-    /// @inheritdoc ozIExecutorFacet
+    
     function modifyPaymentsAndVolumeExternally(
         address user_, 
         uint newAmount_,
@@ -160,7 +160,7 @@ contract ozExecutorFacet is ozIExecutorFacet, ModifiersARB {
     }
 
 
-    /// @inheritdoc ozIExecutorFacet
+    
     function transferUserAllocation( 
         address sender_, 
         address receiver_, 

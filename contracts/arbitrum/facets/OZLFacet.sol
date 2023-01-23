@@ -39,9 +39,9 @@ contract OZLFacet is ModifiersARB { //IOZLFacet
     function exchangeToAccountToken(
         bytes memory accData_,
         uint amountToSend_,
-        address account_ //<--- check this with modifier
+        address account_
     ) external payable noReentrancy(0) { 
-        (address user, address token, uint16 slippage) = _filter(accData_);
+        (address user, address token, uint slippage) = _filter(accData_);
 
         if (msg.value <= 0) revert CantBeZero('msg.value');
         if (s.failedFees > 0) _depositFeesInDeFi(s.failedFees, true); 
@@ -85,7 +85,7 @@ contract OZLFacet is ModifiersARB { //IOZLFacet
         address receiver_,
         uint shares_
     ) external onlyWhenEnabled { 
-        (address user, address token, uint16 slippage) = _filter(accData_);
+        (address user, address token, uint slippage) = _filter(accData_);
 
         if (receiver_ == address(0)) revert CantBeZero('address');
         if (shares_ <= 0) revert CantBeZero('shares');
@@ -176,7 +176,7 @@ contract OZLFacet is ModifiersARB { //IOZLFacet
     function _swapsForBaseToken(
         uint amountIn_, 
         uint baseTokenOut_, 
-        uint16 slippage_,
+        uint slippage_,
         address user_,
         address token_
     ) private {
@@ -224,14 +224,14 @@ contract OZLFacet is ModifiersARB { //IOZLFacet
      * @param user_ dgfdgfghfg
      * @param slippage_ gjgjgjgjgj  
      */
-    function _tradeWithExecutor(address token_, address user_, uint16 slippage_) private { 
+    function _tradeWithExecutor(address token_, address user_, uint slippage_) private { 
         _toggleBit(1, 2);
         uint length = s.swaps.length;
 
         for (uint i=0; i < length;) {
             if (s.swaps[i].token == token_) {
                 bytes memory data = abi.encodeWithSignature(
-                    'executeFinalTrade((int128,int128,address,address,address),uint16,address,uint256)', 
+                    'executeFinalTrade((int128,int128,address,address,address),uint256,address,uint256)', 
                     s.swaps[i], slippage_, user_, 2
                 );
 
