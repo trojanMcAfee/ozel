@@ -4,7 +4,7 @@ pragma solidity 0.8.14;
 
 import { TradeOps } from '../arbitrum/AppStorage.sol';
 
-
+import 'hardhat/console.sol';
 /**
  * @notice Library of common methods using in both L1 and L2 contracts
  */
@@ -60,16 +60,15 @@ library LibCommon {
     }
 
 
-    function extract(bytes memory data_) internal pure returns(address,address,uint16) {
-        bytes20 user;
-        bytes20 token;
-        bytes2 slippage;
-
+    function extract(bytes memory data_) internal pure returns(
+        address user, 
+        address token, 
+        uint16 slippage
+    ) {
         assembly {
-            user := mload(add(data_, 32))
-            token := mload(add(data_, 52))
-            slippage := mload(add(data_, 72))
+            user := shr(96, mload(add(data_, 32)))
+            token := shr(96, mload(add(data_, 52)))
+            slippage := and(0xff, mload(add(mload(data_), data_)))
         }
-        return (address(user), address(token), uint16(slippage));
     }
 }
