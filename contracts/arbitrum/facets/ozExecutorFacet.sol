@@ -21,7 +21,7 @@ contract ozExecutorFacet is ozIExecutorFacet, ModifiersARB {
     /// @inheritdoc ozIExecutorFacet
     function executeFinalTrade( 
         TradeOps calldata swap_, 
-        uint accountSlippage_,
+        uint16 slippage_,
         address user_,
         uint lockNum_
     ) external payable isAuthorized(lockNum_) noReentrancy(3) {
@@ -38,7 +38,7 @@ contract ozExecutorFacet is ozIExecutorFacet, ModifiersARB {
                 minOut = IMulCurv(pool).get_dy(
                     swap_.tokenIn, swap_.tokenOut, inBalance / i
                 );
-                slippage = calculateSlippage(minOut, accountSlippage_ * i);
+                slippage = calculateSlippage(minOut, slippage_ * i);
 
                 try IMulCurv(pool).exchange(
                     swap_.tokenIn, swap_.tokenOut, inBalance / i, slippage
@@ -64,7 +64,7 @@ contract ozExecutorFacet is ozIExecutorFacet, ModifiersARB {
                 minOut = IMulCurv(pool).get_dy_underlying(
                     swap_.tokenIn, swap_.tokenOut, inBalance / i
                 );
-                slippage = calculateSlippage(minOut, accountSlippage_ * i);
+                slippage = calculateSlippage(minOut, slippage_ * i);
                 
                 try IMulCurv(pool).exchange_underlying(
                     swap_.tokenIn, swap_.tokenOut, inBalance / i, slippage
@@ -98,7 +98,7 @@ contract ozExecutorFacet is ozIExecutorFacet, ModifiersARB {
      */
     function calculateSlippage(
         uint amount_, 
-        uint basisPoint_
+        uint16 basisPoint_
     ) public pure returns(uint minAmountOut) {
         minAmountOut = amount_ - amount_.mulDivDown(basisPoint_, 10000);
     }

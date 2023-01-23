@@ -45,7 +45,7 @@ struct AppStorage {
     uint failedFees;
     mapping(address => uint) usersPayments;
     mapping(address => uint) accountPayments;
-    mapping(address => AccountConfig) accountToDetails;
+    mapping(address => address) accountToUser;
 
     //Curve swaps config
     TradeOps mimSwap;
@@ -101,7 +101,7 @@ struct TradeOps {
 struct AccountConfig { 
     address user;
     address token;
-    uint slippage; 
+    uint16 slippage; 
     string name;
 }
 
