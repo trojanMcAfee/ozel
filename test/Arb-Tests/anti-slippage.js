@@ -90,7 +90,7 @@ describe('Anti-slippage system', async function () {
          * Added a condition so it failes the first attempt due to slippage
          * but makes the trade in the second.
          */
-        it('should replace swapsUserToken for V2 / SwapsForUserTokenV2', async () => {            
+        xit('should replace swapsUserToken for V2 / SwapsForUserTokenV2', async () => {            
             ({ testingNum, balance: balanceUSDT } = await replaceForModVersion('SwapsForUserTokenV2', true, selector, accountDetails));
             assert.equal(testingNum, 23);
             assert(balanceUSDT / 10 ** 6 > 0);
@@ -102,7 +102,7 @@ describe('Anti-slippage system', async function () {
          * swap exchanged half of amountIn to token, and due to the failure on
          * the 3rd swap, the other half of amountIn was sent as WETH back to the user.
          */
-        xit('should replace swapsUserToken for V3 / SwapsForUserTokenV3', async () => {            
+        it('should replace swapsUserToken for V3 / SwapsForUserTokenV3', async () => {            
             balanceUSDTpre = (await USDT.balanceOf(callerAddr)) / 10 ** 6;
             balanceWETHpre = formatEther(await WETH.balanceOf(callerAddr));
 
