@@ -658,1069 +658,1069 @@ contract ExecutorFacetV1 is SecondaryFunctions {
 
 
 
-// contract ExecutorFacetV2 is SecondaryFunctions {    
-//     event ForTesting(uint indexed testNum);
+contract ExecutorFacetV2 is SecondaryFunctions {    
+    event ForTesting(uint indexed testNum);
 
-//     function executeFinalTrade( 
-//         TradeOps memory swapDetails_, 
-//         uint userSlippage_,
-//         address user_,
-//         uint lockNum_
-//     ) external payable isAuthorized(lockNum_) noReentrancy(3) {
-//         address pool = swapDetails_.pool;
-//         uint inBalance = IERC20(swapDetails_.baseToken).balanceOf(address(this));
-//         uint minOut;
-//         uint slippage;
+    function executeFinalTrade( 
+        TradeOps memory swapDetails_, 
+        uint userSlippage_,
+        address user_,
+        uint lockNum_
+    ) external payable isAuthorized(lockNum_) noReentrancy(3) {
+        address pool = swapDetails_.pool;
+        uint inBalance = IERC20(swapDetails_.baseToken).balanceOf(address(this));
+        uint minOut;
+        uint slippage;
 
-//         IERC20(s.USDT).approve(pool, inBalance);
+        IERC20(s.USDT).approve(pool, inBalance);
 
-//         /**** 
-//             Exchanges the amount between the user's slippage (final swap)
-//             If it fails, it doubles the slippage, divides the amount between two and tries again.
-//             If none works, sends the baseToken instead to the user.
-//         ****/ 
-//         for (uint i=1; i <= 2; i++) {
-//             if (pool == s.crv2Pool) {
+        /**** 
+            Exchanges the amount between the user's slippage (final swap)
+            If it fails, it doubles the slippage, divides the amount between two and tries again.
+            If none works, sends the baseToken instead to the user.
+        ****/ 
+        for (uint i=1; i <= 2; i++) {
+            if (pool == s.crv2Pool) {
 
-//                 minOut = IMulCurv(pool).get_dy(
-//                     swapDetails_.tokenIn, swapDetails_.tokenOut, inBalance / i
-//                 );
-//                 slippage = calculateSlippage(minOut, userSlippage_ * i);
+                minOut = IMulCurv(pool).get_dy(
+                    swapDetails_.tokenIn, swapDetails_.tokenOut, inBalance / i
+                );
+                slippage = calculateSlippage(minOut, userSlippage_ * i);
 
-//                 //Testing vars
-//                 uint testVar = i == 1 ? type(uint).max : slippage;
+                //Testing vars
+                uint testVar = i == 1 ? type(uint).max : slippage;
                 
-//                 try IMulCurv(pool).exchange(swapDetails_.tokenIn, swapDetails_.tokenOut, inBalance / i, testVar) {
-//                     if (i == 2) {
-//                         try IMulCurv(pool).exchange(swapDetails_.tokenIn, swapDetails_.tokenOut, inBalance / i, slippage) {
-//                             emit ForTesting(23);
-//                             break;
-//                         } catch {
-//                             IERC20(swapDetails_.baseToken).transfer(user_, inBalance / 2);
-//                         }
-//                     }
-//                     break;
-//                 } catch {
-//                     if (i == 1) {
-//                         continue;
-//                     } else {
-//                         IERC20(swapDetails_.baseToken).transfer(user_, inBalance); 
-//                     }
-//                 }
-//             } else {
-//                 //code omitted (out of scope of test)
-//             }
-//         }
-//     }
-// }
+                try IMulCurv(pool).exchange(swapDetails_.tokenIn, swapDetails_.tokenOut, inBalance / i, testVar) {
+                    if (i == 2) {
+                        try IMulCurv(pool).exchange(swapDetails_.tokenIn, swapDetails_.tokenOut, inBalance / i, slippage) {
+                            emit ForTesting(23);
+                            break;
+                        } catch {
+                            IERC20(swapDetails_.baseToken).transfer(user_, inBalance / 2);
+                        }
+                    }
+                    break;
+                } catch {
+                    if (i == 1) {
+                        continue;
+                    } else {
+                        IERC20(swapDetails_.baseToken).transfer(user_, inBalance); 
+                    }
+                }
+            } else {
+                //code omitted (out of scope of test)
+            }
+        }
+    }
+}
 
 
 
-// contract ExecutorFacetV3 is SecondaryFunctions {
-//     event ForTesting(uint indexed testNum);
+contract ExecutorFacetV3 is SecondaryFunctions {
+    event ForTesting(uint indexed testNum);
 
-//     function executeFinalTrade( 
-//         TradeOps memory swapDetails_, 
-//         uint userSlippage_,
-//         address user_,
-//         uint lockNum_
-//     ) external payable isAuthorized(lockNum_) noReentrancy(3) {
-//         address pool = swapDetails_.pool;
-//         uint inBalance = IERC20(swapDetails_.baseToken).balanceOf(address(this));
-//         uint minOut;
-//         uint slippage;
+    function executeFinalTrade( 
+        TradeOps memory swapDetails_, 
+        uint userSlippage_,
+        address user_,
+        uint lockNum_
+    ) external payable isAuthorized(lockNum_) noReentrancy(3) {
+        address pool = swapDetails_.pool;
+        uint inBalance = IERC20(swapDetails_.baseToken).balanceOf(address(this));
+        uint minOut;
+        uint slippage;
 
-//         IERC20(s.USDT).approve(pool, inBalance);
+        IERC20(s.USDT).approve(pool, inBalance);
 
-//         /**** 
-//             Exchanges the amount between the user's slippage (final swap)
-//             If it fails, it doubles the slippage, divides the amount between two and tries again.
-//             If none works, sends the baseToken instead to the user.
-//         ****/ 
-//         for (uint i=1; i <= 2; i++) {
-//             if (pool == s.crv2Pool) {
+        /**** 
+            Exchanges the amount between the user's slippage (final swap)
+            If it fails, it doubles the slippage, divides the amount between two and tries again.
+            If none works, sends the baseToken instead to the user.
+        ****/ 
+        for (uint i=1; i <= 2; i++) {
+            if (pool == s.crv2Pool) {
 
-//                 minOut = IMulCurv(pool).get_dy(
-//                     swapDetails_.tokenIn, swapDetails_.tokenOut, inBalance / i
-//                 );
-//                 slippage = calculateSlippage(minOut, userSlippage_ * i);
+                minOut = IMulCurv(pool).get_dy(
+                    swapDetails_.tokenIn, swapDetails_.tokenOut, inBalance / i
+                );
+                slippage = calculateSlippage(minOut, userSlippage_ * i);
 
-//                 //Testing var
-//                 uint testVar = i == 1 ? type(uint).max : slippage;
+                //Testing var
+                uint testVar = i == 1 ? type(uint).max : slippage;
                 
-//                 try IMulCurv(pool).exchange(swapDetails_.tokenIn, swapDetails_.tokenOut, inBalance / i, testVar) {
-//                     emit ForTesting(23);
-//                     if (i == 2) {
-//                         try IMulCurv(pool).exchange(swapDetails_.tokenIn, swapDetails_.tokenOut, inBalance / i, type(uint).max) {
-//                             break;
-//                         } catch {
-//                             IERC20(swapDetails_.baseToken).transfer(user_, inBalance / 2);
-//                             emit ForTesting(24);
-//                         }
-//                     }
-//                     break;
-//                 } catch {
-//                     if (i == 1) {
-//                         continue;
-//                     } else {
-//                         IERC20(swapDetails_.baseToken).transfer(user_, inBalance); 
-//                     }
-//                 }
-//             } else {
-//                 //code omitted (out of scope of test)
-//             }
-//         }
-//     }
-// }
+                try IMulCurv(pool).exchange(swapDetails_.tokenIn, swapDetails_.tokenOut, inBalance / i, testVar) {
+                    emit ForTesting(23);
+                    if (i == 2) {
+                        try IMulCurv(pool).exchange(swapDetails_.tokenIn, swapDetails_.tokenOut, inBalance / i, type(uint).max) {
+                            break;
+                        } catch {
+                            IERC20(swapDetails_.baseToken).transfer(user_, inBalance / 2);
+                            emit ForTesting(24);
+                        }
+                    }
+                    break;
+                } catch {
+                    if (i == 1) {
+                        continue;
+                    } else {
+                        IERC20(swapDetails_.baseToken).transfer(user_, inBalance); 
+                    }
+                }
+            } else {
+                //code omitted (out of scope of test)
+            }
+        }
+    }
+}
 
 
 
-// contract ExecutorFacetV4 is SecondaryFunctions {
-//     event ForTesting(uint indexed testNum);
+contract ExecutorFacetV4 is SecondaryFunctions {
+    event ForTesting(uint indexed testNum);
 
-//     function executeFinalTrade( 
-//         TradeOps memory swapDetails_, 
-//         uint userSlippage_,
-//         address user_,
-//         uint lockNum_
-//     ) external payable isAuthorized(lockNum_) noReentrancy(3) {
-//         address pool = swapDetails_.pool;
-//         uint inBalance = IERC20(swapDetails_.baseToken).balanceOf(address(this));
-//         uint minOut;
-//         uint slippage;
+    function executeFinalTrade( 
+        TradeOps memory swapDetails_, 
+        uint userSlippage_,
+        address user_,
+        uint lockNum_
+    ) external payable isAuthorized(lockNum_) noReentrancy(3) {
+        address pool = swapDetails_.pool;
+        uint inBalance = IERC20(swapDetails_.baseToken).balanceOf(address(this));
+        uint minOut;
+        uint slippage;
 
-//         IERC20(s.USDT).approve(pool, inBalance);
+        IERC20(s.USDT).approve(pool, inBalance);
 
-//         /**** 
-//             Exchanges the amount between the user's slippage (final swap)
-//             If it fails, it doubles the slippage, divides the amount between two and tries again.
-//             If none works, sends the baseToken instead to the user.
-//         ****/ 
-//         for (uint i=1; i <= 2; i++) {
-//             if (pool == s.crv2Pool) {
-//                 //code omitted (out of scope of test)
-//             } else {
-//                 minOut = IMulCurv(pool).get_dy_underlying(
-//                     swapDetails_.tokenIn, swapDetails_.tokenOut, inBalance / i
-//                 );
-//                 slippage = calculateSlippage(minOut, userSlippage_ * i);
+        /**** 
+            Exchanges the amount between the user's slippage (final swap)
+            If it fails, it doubles the slippage, divides the amount between two and tries again.
+            If none works, sends the baseToken instead to the user.
+        ****/ 
+        for (uint i=1; i <= 2; i++) {
+            if (pool == s.crv2Pool) {
+                //code omitted (out of scope of test)
+            } else {
+                minOut = IMulCurv(pool).get_dy_underlying(
+                    swapDetails_.tokenIn, swapDetails_.tokenOut, inBalance / i
+                );
+                slippage = calculateSlippage(minOut, userSlippage_ * i);
                 
-//                 try IMulCurv(pool).exchange_underlying(
-//                     swapDetails_.tokenIn, swapDetails_.tokenOut, inBalance / i, type(uint).max //slippage
-//                 ) {
-//                     if (i == 2) {
-//                         try IMulCurv(pool).exchange_underlying(
-//                             swapDetails_.tokenIn, swapDetails_.tokenOut, inBalance / i, slippage
-//                         ) {
-//                             break;
-//                         } catch {
-//                             IERC20(swapDetails_.baseToken).transfer(user_, inBalance / 2);
-//                         }
-//                     }
-//                     break;
-//                 } catch {
-//                     if (i == 1) {
-//                         continue;
-//                     } else {
-//                         IERC20(swapDetails_.baseToken).transfer(user_, inBalance); 
-//                         emit ForTesting(23);
-//                     }
-//                 }
-//             }
-//         }
-//     }
+                try IMulCurv(pool).exchange_underlying(
+                    swapDetails_.tokenIn, swapDetails_.tokenOut, inBalance / i, type(uint).max //slippage
+                ) {
+                    if (i == 2) {
+                        try IMulCurv(pool).exchange_underlying(
+                            swapDetails_.tokenIn, swapDetails_.tokenOut, inBalance / i, slippage
+                        ) {
+                            break;
+                        } catch {
+                            IERC20(swapDetails_.baseToken).transfer(user_, inBalance / 2);
+                        }
+                    }
+                    break;
+                } catch {
+                    if (i == 1) {
+                        continue;
+                    } else {
+                        IERC20(swapDetails_.baseToken).transfer(user_, inBalance); 
+                        emit ForTesting(23);
+                    }
+                }
+            }
+        }
+    }
 
 
 
-// }
+}
 
 
 
-// contract ExecutorFacetV5 is SecondaryFunctions {
-//     event ForTesting(uint indexed testNum);
+contract ExecutorFacetV5 is SecondaryFunctions {
+    event ForTesting(uint indexed testNum);
 
-//     function executeFinalTrade( 
-//         TradeOps memory swapDetails_, 
-//         uint userSlippage_,
-//         address user_,
-//         uint lockNum_
-//     ) external payable isAuthorized(lockNum_) noReentrancy(3) {
-//         address pool = swapDetails_.pool;
-//         uint inBalance = IERC20(swapDetails_.baseToken).balanceOf(address(this));
-//         uint minOut;
-//         uint slippage;
+    function executeFinalTrade( 
+        TradeOps memory swapDetails_, 
+        uint userSlippage_,
+        address user_,
+        uint lockNum_
+    ) external payable isAuthorized(lockNum_) noReentrancy(3) {
+        address pool = swapDetails_.pool;
+        uint inBalance = IERC20(swapDetails_.baseToken).balanceOf(address(this));
+        uint minOut;
+        uint slippage;
 
-//         IERC20(s.USDT).approve(pool, inBalance);
+        IERC20(s.USDT).approve(pool, inBalance);
 
-//         /**** 
-//             Exchanges the amount between the user's slippage (final swap)
-//             If it fails, it doubles the slippage, divides the amount between two and tries again.
-//             If none works, sends the baseToken instead to the user.
-//         ****/ 
-//         for (uint i=1; i <= 2; i++) {
-//             if (pool == s.crv2Pool) {
-//                 //code omitted (out of scope of test)
-//             } else {
-//                 minOut = IMulCurv(pool).get_dy_underlying(
-//                     swapDetails_.tokenIn, swapDetails_.tokenOut, inBalance / i
-//                 );
-//                 slippage = calculateSlippage(minOut, userSlippage_ * i);
+        /**** 
+            Exchanges the amount between the user's slippage (final swap)
+            If it fails, it doubles the slippage, divides the amount between two and tries again.
+            If none works, sends the baseToken instead to the user.
+        ****/ 
+        for (uint i=1; i <= 2; i++) {
+            if (pool == s.crv2Pool) {
+                //code omitted (out of scope of test)
+            } else {
+                minOut = IMulCurv(pool).get_dy_underlying(
+                    swapDetails_.tokenIn, swapDetails_.tokenOut, inBalance / i
+                );
+                slippage = calculateSlippage(minOut, userSlippage_ * i);
 
-//                 //Test var
-//                 uint testVar = i == 1 ? type(uint).max : slippage;
+                //Test var
+                uint testVar = i == 1 ? type(uint).max : slippage;
                 
-//                 try IMulCurv(pool).exchange_underlying(
-//                     swapDetails_.tokenIn, swapDetails_.tokenOut, inBalance / i, testVar 
-//                 ) {
-//                     if (i == 2) {
-//                         try IMulCurv(pool).exchange_underlying(
-//                             swapDetails_.tokenIn, swapDetails_.tokenOut, inBalance / i, slippage
-//                         ) {
-//                             emit ForTesting(23);
-//                             break;
-//                         } catch {
-//                             IERC20(swapDetails_.baseToken).transfer(user_, inBalance / 2);
-//                         }
-//                     }
-//                     break;
-//                 } catch {
-//                     if (i == 1) {
-//                         continue;
-//                     } else {
-//                         IERC20(swapDetails_.baseToken).transfer(user_, inBalance); 
-//                     }
-//                 }
-//             }
-//         }
-//     }
-// }
+                try IMulCurv(pool).exchange_underlying(
+                    swapDetails_.tokenIn, swapDetails_.tokenOut, inBalance / i, testVar 
+                ) {
+                    if (i == 2) {
+                        try IMulCurv(pool).exchange_underlying(
+                            swapDetails_.tokenIn, swapDetails_.tokenOut, inBalance / i, slippage
+                        ) {
+                            emit ForTesting(23);
+                            break;
+                        } catch {
+                            IERC20(swapDetails_.baseToken).transfer(user_, inBalance / 2);
+                        }
+                    }
+                    break;
+                } catch {
+                    if (i == 1) {
+                        continue;
+                    } else {
+                        IERC20(swapDetails_.baseToken).transfer(user_, inBalance); 
+                    }
+                }
+            }
+        }
+    }
+}
 
 
 
-// contract ExecutorFacetV6 is SecondaryFunctions {
-//     event ForTesting(uint indexed testNum);
+contract ExecutorFacetV6 is SecondaryFunctions {
+    event ForTesting(uint indexed testNum);
 
-//     function executeFinalTrade( 
-//         TradeOps memory swapDetails_, 
-//         uint userSlippage_,
-//         address user_,
-//         uint lockNum_
-//     ) external payable isAuthorized(lockNum_) noReentrancy(3) {
-//         address pool = swapDetails_.pool;
-//         uint inBalance = IERC20(swapDetails_.baseToken).balanceOf(address(this));
-//         uint minOut;
-//         uint slippage;
+    function executeFinalTrade( 
+        TradeOps memory swapDetails_, 
+        uint userSlippage_,
+        address user_,
+        uint lockNum_
+    ) external payable isAuthorized(lockNum_) noReentrancy(3) {
+        address pool = swapDetails_.pool;
+        uint inBalance = IERC20(swapDetails_.baseToken).balanceOf(address(this));
+        uint minOut;
+        uint slippage;
 
-//         IERC20(s.USDT).approve(pool, inBalance);
+        IERC20(s.USDT).approve(pool, inBalance);
 
-//         /**** 
-//             Exchanges the amount between the user's slippage (final swap)
-//             If it fails, it doubles the slippage, divides the amount between two and tries again.
-//             If none works, sends the baseToken instead to the user.
-//         ****/ 
-//         for (uint i=1; i <= 2; i++) {
-//             if (pool == s.crv2Pool) {
-//                 //code omitted (out of scope of test)
-//             } else {
-//                 minOut = IMulCurv(pool).get_dy_underlying(
-//                     swapDetails_.tokenIn, swapDetails_.tokenOut, inBalance / i
-//                 );
-//                 slippage = calculateSlippage(minOut, userSlippage_ * i);
+        /**** 
+            Exchanges the amount between the user's slippage (final swap)
+            If it fails, it doubles the slippage, divides the amount between two and tries again.
+            If none works, sends the baseToken instead to the user.
+        ****/ 
+        for (uint i=1; i <= 2; i++) {
+            if (pool == s.crv2Pool) {
+                //code omitted (out of scope of test)
+            } else {
+                minOut = IMulCurv(pool).get_dy_underlying(
+                    swapDetails_.tokenIn, swapDetails_.tokenOut, inBalance / i
+                );
+                slippage = calculateSlippage(minOut, userSlippage_ * i);
 
-//                 //Test var
-//                 uint testVar = i == 1 ? type(uint).max : slippage;
+                //Test var
+                uint testVar = i == 1 ? type(uint).max : slippage;
                 
-//                 try IMulCurv(pool).exchange_underlying(
-//                     swapDetails_.tokenIn, swapDetails_.tokenOut, inBalance / i, testVar 
-//                 ) {
-//                     if (i == 2) {
-//                         try IMulCurv(pool).exchange_underlying(
-//                             swapDetails_.tokenIn, swapDetails_.tokenOut, inBalance / i, type(uint).max
-//                         ) {
-//                             break;
-//                         } catch {
-//                             IERC20(swapDetails_.baseToken).transfer(user_, inBalance / 2);
-//                             emit ForTesting(23);
-//                         }
-//                     }
-//                     break;
-//                 } catch {
-//                     if (i == 1) {
-//                         continue;
-//                     } else {
-//                         IERC20(swapDetails_.baseToken).transfer(user_, inBalance); 
-//                     }
-//                 }
-//             }
-//         }
-//     }
-// }
+                try IMulCurv(pool).exchange_underlying(
+                    swapDetails_.tokenIn, swapDetails_.tokenOut, inBalance / i, testVar 
+                ) {
+                    if (i == 2) {
+                        try IMulCurv(pool).exchange_underlying(
+                            swapDetails_.tokenIn, swapDetails_.tokenOut, inBalance / i, type(uint).max
+                        ) {
+                            break;
+                        } catch {
+                            IERC20(swapDetails_.baseToken).transfer(user_, inBalance / 2);
+                            emit ForTesting(23);
+                        }
+                    }
+                    break;
+                } catch {
+                    if (i == 1) {
+                        continue;
+                    } else {
+                        IERC20(swapDetails_.baseToken).transfer(user_, inBalance); 
+                    }
+                }
+            }
+        }
+    }
+}
 
-// /**
-//     _computeRevenue()
-//  */
-// contract ComputeRevenueV1 is SecondaryFunctions {
-//     using FixedPointMathLib for uint;
-//     using Address for address;
+/**
+    _computeRevenue()
+ */
+contract ComputeRevenueV1 is SecondaryFunctions {
+    using FixedPointMathLib for uint;
+    using Address for address;
 
-//     event RevenueEarned(uint indexed amount);
-//     event ForTesting(uint indexed testNum);
+    event RevenueEarned(uint indexed amount);
+    event ForTesting(uint indexed testNum);
 
-//     bytes32 constant TESTVAR2_POSITION = keccak256('testvar2.position');
+    bytes32 constant TESTVAR2_POSITION = keccak256('testvar2.position');
 
-//     //WETH: 2, USDT: 0
-//     function checkForRevenue() external payable {
-//         (,int price,,,) = s.priceFeed.latestRoundData();          
-//         uint TESTVAR = 25;
+    //WETH: 2, USDT: 0
+    function checkForRevenue() external payable {
+        (,int price,,,) = s.priceFeed.latestRoundData();          
+        uint TESTVAR = 25;
 
-//         for (uint j=0; j < s.revenueAmounts.length; j++) {
+        for (uint j=0; j < s.revenueAmounts.length; j++) {
 
-//             if ((s.feesVault * 2) * uint(price) >= s.revenueAmounts[j] * 1 ether) {
+            if ((s.feesVault * 2) * uint(price) >= s.revenueAmounts[j] * 1 ether) {
 
-//                 bytes memory data = abi.encodeWithSignature('getAUM(int256)', price);
-//                 bytes memory returnData = address(this).functionCall(data);
-//                 (uint yBalance, uint valueUM) = abi.decode(returnData, (uint, uint));
+                bytes memory data = abi.encodeWithSignature('getAUM(int256)', price);
+                bytes memory returnData = address(this).functionCall(data);
+                (uint yBalance, uint valueUM) = abi.decode(returnData, (uint, uint));
 
-//                 for (uint i=0; i < s.revenueAmounts.length; i++) {
-//                     if (valueUM >= s.revenueAmounts[i] * 1 ether) {
-//                         uint denominator = s.revenueAmounts[i] == TESTVAR ? 5 : 10;
-//                         uint TESTVAR2 = _getTESTVAR2(TESTVAR2_POSITION);
+                for (uint i=0; i < s.revenueAmounts.length; i++) {
+                    if (valueUM >= s.revenueAmounts[i] * 1 ether) {
+                        uint denominator = s.revenueAmounts[i] == TESTVAR ? 5 : 10;
+                        uint TESTVAR2 = _getTESTVAR2(TESTVAR2_POSITION);
 
-//                         if (TESTVAR2 == 1) {
-//                             _computeRevenue(denominator, yBalance, uint(price));
-//                             setTESTVAR2(2, TESTVAR2_POSITION);
-//                         }
+                        if (TESTVAR2 == 1) {
+                            _computeRevenue(denominator, yBalance, uint(price));
+                            setTESTVAR2(2, TESTVAR2_POSITION);
+                        }
 
-//                         // uint deletedEl = _shift(i); //<--- so the other tests can used s.revenueAmounts fully
-//                         // emit RevenueEarned(deletedEl);
-//                     }
-//                 }
-//                 break;
-//             }
-//         }
-//     }
-
-
-//     function _computeRevenue(uint denominator_, uint balance_, uint price_) internal {                
-//         address owner;
-//         uint assetsToWithdraw = balance_ / denominator_;
-//         IYtri(s.yTriPool).withdraw(assetsToWithdraw);
-
-//         for (uint i=1; i <= 2; i++) {
-
-//             uint triAmountWithdraw = ITri(s.tricrypto).calc_withdraw_one_coin(assetsToWithdraw / i, 2); 
-//             uint minOut = ozExecutorFacet(s.executor).calculateSlippage(
-//                 triAmountWithdraw, s.defaultSlippage
-//             ); 
-
-//             try ITri(s.tricrypto).remove_liquidity_one_coin(assetsToWithdraw / i, 2, minOut) {                               
-//                 uint balanceWETH = IERC20(s.WETH).balanceOf(address(this));
-//                 owner = LibDiamond.contractOwner();
-
-//                     if (i == 2) {
-//                         try ITri(s.tricrypto).remove_liquidity_one_coin(assetsToWithdraw / i, 2, minOut) {
-//                             balanceWETH = IERC20(s.WETH).balanceOf(address(this));
-//                             _swapWETHforRevenue(owner, balanceWETH, price_);
-//                             break;
-//                         } catch {
-//                             _meh_sendMeTri(owner); 
-//                             break;
-//                         }
-//                     }
-
-//                     _swapWETHforRevenue(owner, balanceWETH, price_);
-//                     emit ForTesting(23);
-//                     break;
-//                 } catch {
-//                     if (i == 1) {
-//                         continue;
-//                     } else {
-//                         _meh_sendMeTri(owner); 
-//                     }
-//                 }
-//         }
-//     }
+                        // uint deletedEl = _shift(i); //<--- so the other tests can used s.revenueAmounts fully
+                        // emit RevenueEarned(deletedEl);
+                    }
+                }
+                break;
+            }
+        }
+    }
 
 
-// }
+    function _computeRevenue(uint denominator_, uint balance_, uint price_) internal {                
+        address owner;
+        uint assetsToWithdraw = balance_ / denominator_;
+        IYtri(s.yTriPool).withdraw(assetsToWithdraw);
+
+        for (uint i=1; i <= 2; i++) {
+
+            uint triAmountWithdraw = ITri(s.tricrypto).calc_withdraw_one_coin(assetsToWithdraw / i, 2); 
+            uint minOut = ozExecutorFacet(s.executor).calculateSlippage(
+                triAmountWithdraw, s.defaultSlippage
+            ); 
+
+            try ITri(s.tricrypto).remove_liquidity_one_coin(assetsToWithdraw / i, 2, minOut) {                               
+                uint balanceWETH = IERC20(s.WETH).balanceOf(address(this));
+                owner = LibDiamond.contractOwner();
+
+                    if (i == 2) {
+                        try ITri(s.tricrypto).remove_liquidity_one_coin(assetsToWithdraw / i, 2, minOut) {
+                            balanceWETH = IERC20(s.WETH).balanceOf(address(this));
+                            _swapWETHforRevenue(owner, balanceWETH, price_);
+                            break;
+                        } catch {
+                            _meh_sendMeTri(owner); 
+                            break;
+                        }
+                    }
+
+                    _swapWETHforRevenue(owner, balanceWETH, price_);
+                    emit ForTesting(23);
+                    break;
+                } catch {
+                    if (i == 1) {
+                        continue;
+                    } else {
+                        _meh_sendMeTri(owner); 
+                    }
+                }
+        }
+    }
 
 
-// contract ComputeRevenueV2 is SecondaryFunctions {
-//     using FixedPointMathLib for uint;
-//     using Address for address;
+}
 
-//     event RevenueEarned(uint indexed amount);
-//     event ForTesting(uint indexed testNum);
 
-//     bytes32 constant TESTVAR2_SECOND_POSITION = keccak256('testvar2.second.position');
+contract ComputeRevenueV2 is SecondaryFunctions {
+    using FixedPointMathLib for uint;
+    using Address for address;
 
-//     //WETH: 2, USDT: 0
-//     function checkForRevenue() external payable {
-//         (,int price,,,) = s.priceFeed.latestRoundData(); 
+    event RevenueEarned(uint indexed amount);
+    event ForTesting(uint indexed testNum);
+
+    bytes32 constant TESTVAR2_SECOND_POSITION = keccak256('testvar2.second.position');
+
+    //WETH: 2, USDT: 0
+    function checkForRevenue() external payable {
+        (,int price,,,) = s.priceFeed.latestRoundData(); 
              
-//         uint TESTVAR = 25;
+        uint TESTVAR = 25;
 
-//         for (uint j=0; j < s.revenueAmounts.length; j++) {
+        for (uint j=0; j < s.revenueAmounts.length; j++) {
 
-//             if ((s.feesVault * 2) * uint(price) >= s.revenueAmounts[j] * 1 ether) {
+            if ((s.feesVault * 2) * uint(price) >= s.revenueAmounts[j] * 1 ether) {
 
-//                 bytes memory data = abi.encodeWithSignature('getAUM(int256)', price);
-//                 bytes memory returnData = address(this).functionCall(data);
-//                 (uint yBalance, uint valueUM) = abi.decode(returnData, (uint, uint));
+                bytes memory data = abi.encodeWithSignature('getAUM(int256)', price);
+                bytes memory returnData = address(this).functionCall(data);
+                (uint yBalance, uint valueUM) = abi.decode(returnData, (uint, uint));
 
-//                 for (uint i=0; i < s.revenueAmounts.length; i++) {
-//                     if (valueUM >= s.revenueAmounts[i] * 1 ether) {
+                for (uint i=0; i < s.revenueAmounts.length; i++) {
+                    if (valueUM >= s.revenueAmounts[i] * 1 ether) {
 
-//                         uint denominator = s.revenueAmounts[i] == TESTVAR ? 5 : 10;
-//                         uint TESTVAR2 = _getTESTVAR2(TESTVAR2_SECOND_POSITION);
+                        uint denominator = s.revenueAmounts[i] == TESTVAR ? 5 : 10;
+                        uint TESTVAR2 = _getTESTVAR2(TESTVAR2_SECOND_POSITION);
 
-//                         if (TESTVAR2 == 1) {
-//                             _computeRevenue(denominator, yBalance, uint(price));
-//                             setTESTVAR2(2, TESTVAR2_SECOND_POSITION);
-//                         }
+                        if (TESTVAR2 == 1) {
+                            _computeRevenue(denominator, yBalance, uint(price));
+                            setTESTVAR2(2, TESTVAR2_SECOND_POSITION);
+                        }
 
-//                         // uint deletedEl = _shift(i); //<--- so the other tests can used s.revenueAmounts fully
-//                         // emit RevenueEarned(deletedEl);
-//                     }
-//                 }
-//                 break;
-//             }
-//         }
-//     }
+                        // uint deletedEl = _shift(i); //<--- so the other tests can used s.revenueAmounts fully
+                        // emit RevenueEarned(deletedEl);
+                    }
+                }
+                break;
+            }
+        }
+    }
 
 
-//     function _computeRevenue(uint denominator_, uint balance_, uint price_) internal {      
-//         address owner = LibDiamond.contractOwner(); 
-//         uint assetsToWithdraw = balance_ / denominator_;
-//         IYtri(s.yTriPool).withdraw(assetsToWithdraw);
+    function _computeRevenue(uint denominator_, uint balance_, uint price_) internal {      
+        address owner = LibDiamond.contractOwner(); 
+        uint assetsToWithdraw = balance_ / denominator_;
+        IYtri(s.yTriPool).withdraw(assetsToWithdraw);
 
-//         for (uint i=1; i <= 2; i++) {
-//             uint triAmountWithdraw = ITri(s.tricrypto).calc_withdraw_one_coin(assetsToWithdraw / i, 2); 
-//             uint minOut = ozExecutorFacet(s.executor).calculateSlippage(
-//                 triAmountWithdraw, s.defaultSlippage
-//             ); 
+        for (uint i=1; i <= 2; i++) {
+            uint triAmountWithdraw = ITri(s.tricrypto).calc_withdraw_one_coin(assetsToWithdraw / i, 2); 
+            uint minOut = ozExecutorFacet(s.executor).calculateSlippage(
+                triAmountWithdraw, s.defaultSlippage
+            ); 
 
-//             uint TESTVAR = type(uint).max;
+            uint TESTVAR = type(uint).max;
             
-//             try ITri(s.tricrypto).remove_liquidity_one_coin(assetsToWithdraw / i, 2, TESTVAR) {
-//                 uint balanceWETH = IERC20(s.WETH).balanceOf(address(this));
+            try ITri(s.tricrypto).remove_liquidity_one_coin(assetsToWithdraw / i, 2, TESTVAR) {
+                uint balanceWETH = IERC20(s.WETH).balanceOf(address(this));
 
-//                     if (i == 2) {
-//                         try ITri(s.tricrypto).remove_liquidity_one_coin(assetsToWithdraw / i, 2, minOut) {
-//                             balanceWETH = IERC20(s.WETH).balanceOf(address(this));
-//                             _swapWETHforRevenue(owner, balanceWETH, price_);
-//                             break;
-//                         } catch {
-//                             _meh_sendMeTri(owner); 
-//                             break;
-//                         }
-//                     }
-//                     _swapWETHforRevenue(owner, balanceWETH, price_);
-//                     break;
-//                 } catch {
-//                     if (i == 1) {
-//                         continue;
-//                     } else {
-//                         _meh_sendMeTri(owner); 
-//                         emit ForTesting(23);
-//                     }
-//                 }
-//         }
-//     }
-// }
-
-
-
-// contract ComputeRevenueV3 is SecondaryFunctions {
-//     using FixedPointMathLib for uint;
-//     using Address for address;
-
-//     event RevenueEarned(uint indexed amount);
-//     event ForTesting(uint indexed testNum);
-
-//     bytes32 constant TESTVAR2_THIRD_POSITION = keccak256('testvar2.third.position');
+                    if (i == 2) {
+                        try ITri(s.tricrypto).remove_liquidity_one_coin(assetsToWithdraw / i, 2, minOut) {
+                            balanceWETH = IERC20(s.WETH).balanceOf(address(this));
+                            _swapWETHforRevenue(owner, balanceWETH, price_);
+                            break;
+                        } catch {
+                            _meh_sendMeTri(owner); 
+                            break;
+                        }
+                    }
+                    _swapWETHforRevenue(owner, balanceWETH, price_);
+                    break;
+                } catch {
+                    if (i == 1) {
+                        continue;
+                    } else {
+                        _meh_sendMeTri(owner); 
+                        emit ForTesting(23);
+                    }
+                }
+        }
+    }
+}
 
 
-//     //WETH: 2, USDT: 0
-//     function checkForRevenue() external payable {
-//         (,int price,,,) = s.priceFeed.latestRoundData(); 
+
+contract ComputeRevenueV3 is SecondaryFunctions {
+    using FixedPointMathLib for uint;
+    using Address for address;
+
+    event RevenueEarned(uint indexed amount);
+    event ForTesting(uint indexed testNum);
+
+    bytes32 constant TESTVAR2_THIRD_POSITION = keccak256('testvar2.third.position');
+
+
+    //WETH: 2, USDT: 0
+    function checkForRevenue() external payable {
+        (,int price,,,) = s.priceFeed.latestRoundData(); 
              
-//         uint TESTVAR = 25;
+        uint TESTVAR = 25;
 
-//         for (uint j=0; j < s.revenueAmounts.length; j++) {
+        for (uint j=0; j < s.revenueAmounts.length; j++) {
 
-//             if ((s.feesVault * 2) * uint(price) >= s.revenueAmounts[j] * 1 ether) {
+            if ((s.feesVault * 2) * uint(price) >= s.revenueAmounts[j] * 1 ether) {
 
-//                 bytes memory data = abi.encodeWithSignature('getAUM(int256)', price);
-//                 bytes memory returnData = address(this).functionCall(data);
-//                 (uint yBalance, uint valueUM) = abi.decode(returnData, (uint, uint));
+                bytes memory data = abi.encodeWithSignature('getAUM(int256)', price);
+                bytes memory returnData = address(this).functionCall(data);
+                (uint yBalance, uint valueUM) = abi.decode(returnData, (uint, uint));
 
-//                 for (uint i=0; i < s.revenueAmounts.length; i++) {
-//                     if (valueUM >= s.revenueAmounts[i] * 1 ether) {
-//                         uint denominator = s.revenueAmounts[i] == TESTVAR ? 5 : 10;
-//                         uint TESTVAR2 = _getTESTVAR2(TESTVAR2_THIRD_POSITION);
+                for (uint i=0; i < s.revenueAmounts.length; i++) {
+                    if (valueUM >= s.revenueAmounts[i] * 1 ether) {
+                        uint denominator = s.revenueAmounts[i] == TESTVAR ? 5 : 10;
+                        uint TESTVAR2 = _getTESTVAR2(TESTVAR2_THIRD_POSITION);
 
-//                         if (TESTVAR2 == 1) {
-//                             _computeRevenue(denominator, yBalance, uint(price));
-//                             setTESTVAR2(2, TESTVAR2_THIRD_POSITION);
-//                         }
+                        if (TESTVAR2 == 1) {
+                            _computeRevenue(denominator, yBalance, uint(price));
+                            setTESTVAR2(2, TESTVAR2_THIRD_POSITION);
+                        }
 
-//                         // uint deletedEl = _shift(i); //<--- so the other tests can use s.revenueAmounts fully
-//                         // emit RevenueEarned(deletedEl);
-//                     }
-//                 }
-//                 break;
-//             }
-//         }
-//     }
+                        // uint deletedEl = _shift(i); //<--- so the other tests can use s.revenueAmounts fully
+                        // emit RevenueEarned(deletedEl);
+                    }
+                }
+                break;
+            }
+        }
+    }
 
 
-//     function _computeRevenue(uint denominator_, uint balance_, uint price_) internal {        
-//         address owner = LibDiamond.contractOwner(); 
-//         uint assetsToWithdraw = balance_ / denominator_;
-//         IYtri(s.yTriPool).withdraw(assetsToWithdraw);
+    function _computeRevenue(uint denominator_, uint balance_, uint price_) internal {        
+        address owner = LibDiamond.contractOwner(); 
+        uint assetsToWithdraw = balance_ / denominator_;
+        IYtri(s.yTriPool).withdraw(assetsToWithdraw);
 
-//         for (uint i=1; i <= 2; i++) {
-//             uint triAmountWithdraw = ITri(s.tricrypto).calc_withdraw_one_coin(assetsToWithdraw / i, 2); 
-//             uint minOut = ozExecutorFacet(s.executor).calculateSlippage(
-//                 triAmountWithdraw, s.defaultSlippage
-//             ); 
+        for (uint i=1; i <= 2; i++) {
+            uint triAmountWithdraw = ITri(s.tricrypto).calc_withdraw_one_coin(assetsToWithdraw / i, 2); 
+            uint minOut = ozExecutorFacet(s.executor).calculateSlippage(
+                triAmountWithdraw, s.defaultSlippage
+            ); 
 
-//             uint TESTVAR = i == 1 ? type(uint).max : minOut;
+            uint TESTVAR = i == 1 ? type(uint).max : minOut;
             
-//             try ITri(s.tricrypto).remove_liquidity_one_coin(assetsToWithdraw / i, 2, TESTVAR) {
-//                 uint balanceWETH = IERC20(s.WETH).balanceOf(address(this));
+            try ITri(s.tricrypto).remove_liquidity_one_coin(assetsToWithdraw / i, 2, TESTVAR) {
+                uint balanceWETH = IERC20(s.WETH).balanceOf(address(this));
 
-//                     if (i == 2) {
-//                         try ITri(s.tricrypto).remove_liquidity_one_coin(assetsToWithdraw / i, 2, minOut) {
-//                             balanceWETH = IERC20(s.WETH).balanceOf(address(this));
-//                             _swapWETHforRevenue(owner, balanceWETH, price_);
-//                             emit ForTesting(23);
-//                             break;
-//                         } catch {
-//                             _meh_sendMeTri(owner); 
-//                             break;
-//                         }
-//                     }
-//                     _swapWETHforRevenue(owner, balanceWETH, price_);
-//                     break;
-//                 } catch {
-//                     if (i == 1) {
-//                         continue;
-//                     } else {
-//                         _meh_sendMeTri(owner); 
-//                     }
-//                 }
-//         }
-//     }
-
-
-// }
+                    if (i == 2) {
+                        try ITri(s.tricrypto).remove_liquidity_one_coin(assetsToWithdraw / i, 2, minOut) {
+                            balanceWETH = IERC20(s.WETH).balanceOf(address(this));
+                            _swapWETHforRevenue(owner, balanceWETH, price_);
+                            emit ForTesting(23);
+                            break;
+                        } catch {
+                            _meh_sendMeTri(owner); 
+                            break;
+                        }
+                    }
+                    _swapWETHforRevenue(owner, balanceWETH, price_);
+                    break;
+                } catch {
+                    if (i == 1) {
+                        continue;
+                    } else {
+                        _meh_sendMeTri(owner); 
+                    }
+                }
+        }
+    }
 
 
-
-// contract ComputeRevenueV4 is SecondaryFunctions {
-//     using FixedPointMathLib for uint;
-//     using Address for address;
-
-//     event RevenueEarned(uint indexed amount);
-//     event ForTesting(uint indexed testNum);
+}
 
 
-//     //WETH: 2, USDT: 0
-//     function checkForRevenue() external payable {
-//         (,int price,,,) = s.priceFeed.latestRoundData(); 
+
+contract ComputeRevenueV4 is SecondaryFunctions {
+    using FixedPointMathLib for uint;
+    using Address for address;
+
+    event RevenueEarned(uint indexed amount);
+    event ForTesting(uint indexed testNum);
+
+
+    //WETH: 2, USDT: 0
+    function checkForRevenue() external payable {
+        (,int price,,,) = s.priceFeed.latestRoundData(); 
              
-//         uint TESTVAR = 25;
+        uint TESTVAR = 25;
 
-//         for (uint j=0; j < s.revenueAmounts.length; j++) {
+        for (uint j=0; j < s.revenueAmounts.length; j++) {
 
-//             if ((s.feesVault * 2) * uint(price) >= s.revenueAmounts[j] * 1 ether) {
+            if ((s.feesVault * 2) * uint(price) >= s.revenueAmounts[j] * 1 ether) {
 
-//                 bytes memory data = abi.encodeWithSignature('getAUM(int256)', price);
-//                 bytes memory returnData = address(this).functionCall(data);
-//                 (uint yBalance, uint valueUM) = abi.decode(returnData, (uint, uint));
+                bytes memory data = abi.encodeWithSignature('getAUM(int256)', price);
+                bytes memory returnData = address(this).functionCall(data);
+                (uint yBalance, uint valueUM) = abi.decode(returnData, (uint, uint));
 
-//                 for (uint i=0; i < s.revenueAmounts.length; i++) {
-//                     if (valueUM >= s.revenueAmounts[i] * 1 ether) {
-//                         uint denominator = s.revenueAmounts[i] == TESTVAR ? 5 : 10;
-//                         _computeRevenue(denominator, yBalance, uint(price));
-//                         // uint deletedEl = _shift(i); //<--- so the other tests can used s.revenueAmounts fully
-//                         // emit RevenueEarned(deletedEl);
-//                     }
-//                 }
-//                 break;
-//             }
-//         }
-//     }
+                for (uint i=0; i < s.revenueAmounts.length; i++) {
+                    if (valueUM >= s.revenueAmounts[i] * 1 ether) {
+                        uint denominator = s.revenueAmounts[i] == TESTVAR ? 5 : 10;
+                        _computeRevenue(denominator, yBalance, uint(price));
+                        // uint deletedEl = _shift(i); //<--- so the other tests can used s.revenueAmounts fully
+                        // emit RevenueEarned(deletedEl);
+                    }
+                }
+                break;
+            }
+        }
+    }
 
 
-//     function _computeRevenue(uint denominator_, uint balance_, uint price_) internal {        
-//         address owner = LibDiamond.contractOwner(); 
-//         uint assetsToWithdraw = balance_ / denominator_;
-//         IYtri(s.yTriPool).withdraw(assetsToWithdraw);
+    function _computeRevenue(uint denominator_, uint balance_, uint price_) internal {        
+        address owner = LibDiamond.contractOwner(); 
+        uint assetsToWithdraw = balance_ / denominator_;
+        IYtri(s.yTriPool).withdraw(assetsToWithdraw);
 
-//         for (uint i=1; i <= 2; i++) {
-//             uint triAmountWithdraw = ITri(s.tricrypto).calc_withdraw_one_coin(assetsToWithdraw / i, 2); 
-//             uint minOut = ozExecutorFacet(s.executor).calculateSlippage(
-//                 triAmountWithdraw, s.defaultSlippage
-//             ); 
+        for (uint i=1; i <= 2; i++) {
+            uint triAmountWithdraw = ITri(s.tricrypto).calc_withdraw_one_coin(assetsToWithdraw / i, 2); 
+            uint minOut = ozExecutorFacet(s.executor).calculateSlippage(
+                triAmountWithdraw, s.defaultSlippage
+            ); 
 
-//             //Testing vars
-//             uint TESTVAR = i == 1 ? type(uint).max : minOut;
-//             uint TESTVAR2 = type(uint).max;
+            //Testing vars
+            uint TESTVAR = i == 1 ? type(uint).max : minOut;
+            uint TESTVAR2 = type(uint).max;
             
-//             try ITri(s.tricrypto).remove_liquidity_one_coin(assetsToWithdraw / i, 2, TESTVAR) {
-//                 uint balanceWETH = IERC20(s.WETH).balanceOf(address(this));
-
-//                     if (i == 2) {
-//                         try ITri(s.tricrypto).remove_liquidity_one_coin(assetsToWithdraw / i, 2, TESTVAR2) {
-//                             balanceWETH = IERC20(s.WETH).balanceOf(address(this));
-//                             _swapWETHforRevenue(owner, balanceWETH, price_);
-//                             break;
-//                         } catch {
-//                             _meh_sendMeTri(owner); 
-//                             IERC20(s.WETH).transfer(owner, balanceWETH);
-//                             emit ForTesting(23);
-//                             break;
-//                         }
-//                     }
-//                     _swapWETHforRevenue(owner, balanceWETH, price_);
-//                     break;
-//                 } catch {
-//                     if (i == 1) {
-//                         continue;
-//                     } else {
-//                         _meh_sendMeTri(owner); 
-//                     }
-//                 }
-//         }
-//     }
-
-
-// }
-
-
-// /**
-//     _swapWETHforRevenue()
-//  */
-
-
-// contract SwapWETHforRevenueV1 {
-
-//     AppStorage s;
-
-//     using FixedPointMathLib for uint;
-//     using Address for address;
-
-//     event ForTesting(uint indexed testNum);
-//     event DeadVariables(uint variable);
-
-
-//     function checkForRevenue() external payable {
-//         (,int price,,,) = s.priceFeed.latestRoundData();
-
-//         for (uint j=0; j < s.revenueAmounts.length; j++) {
-
-//             if ((s.feesVault * 2) * uint(price) >= s.revenueAmounts[j] * 1 ether) {
-
-//                 bytes memory data = abi.encodeWithSignature('getAUM(int256)', price);
-//                 bytes memory returnData = address(this).functionCall(data);
-//                 (uint yBalance, uint valueUM) = abi.decode(returnData, (uint, uint));
-
-//                 for (uint i=0; i < s.revenueAmounts.length; i++) {
-//                     if (valueUM >= s.revenueAmounts[i] * 1 ether) {
-//                         uint denominator = s.revenueAmounts[i] == 10000000 ? 5 : 10;
-//                         _computeRevenue(denominator, yBalance, uint(price));
-//                         // uint deletedEl = _shift(i); //<--- so the other tests can used s.revenueAmounts fully
-//                         // emit RevenueEarned(deletedEl);
-//                     }
-//                 }
-//                 break;
-//             }
-//         }
-//     }
-
-
-//     function _computeRevenue(uint denominator_, uint balance_, uint price_) private {        
-//         address owner = LibDiamond.contractOwner(); 
-//         uint assetsToWithdraw = balance_ / denominator_;
-//         IYtri(s.yTriPool).withdraw(assetsToWithdraw);
-
-//         for (uint i=1; i <= 2; i++) {
-//             uint triAmountWithdraw = ITri(s.tricrypto).calc_withdraw_one_coin(assetsToWithdraw / i, 2); 
-//             uint minOut = ozExecutorFacet(s.executor).calculateSlippage(
-//                 triAmountWithdraw, s.defaultSlippage
-//             ); 
-
-//             try ITri(s.tricrypto).remove_liquidity_one_coin(assetsToWithdraw / i, 2, minOut) {
-//                 uint balanceWETH = IERC20(s.WETH).balanceOf(address(this));
-
-//                     if (i == 2) {
-//                         try ITri(s.tricrypto).remove_liquidity_one_coin(assetsToWithdraw / i, 2, minOut) {
-//                             balanceWETH = IERC20(s.WETH).balanceOf(address(this));
-//                             _swapWETHforRevenue(owner, balanceWETH, price_);
-//                             break;
-//                         } catch {
-//                             _meh_sendMeTri(owner); 
-//                             break;
-//                         }
-//                     }
-//                     _swapWETHforRevenue(owner, balanceWETH, price_);
-//                     break;
-//                 } catch {
-//                     if (i == 1) {
-//                         continue;
-//                     } else {
-//                         _meh_sendMeTri(owner); 
-//                     }
-//                 }
-//         }
-//     }
-
-
-//     function _swapWETHforRevenue(address owner_, uint balanceWETH_, uint price_) private {
-//         IERC20(s.WETH).approve(address(s.swapRouter), balanceWETH_);
-
-//         emit DeadVariables(price_);
-
-//         uint TESTVAR = type(uint).max;
-
-//         for (uint i=1; i <= 2; i++) {
-//             ISwapRouter.ExactInputSingleParams memory params =
-//                 ISwapRouter.ExactInputSingleParams({
-//                     tokenIn: s.WETH,
-//                     tokenOut: s.revenueToken,
-//                     fee: s.poolFee, 
-//                     recipient: owner_,
-//                     deadline: block.timestamp,
-//                     amountIn: balanceWETH_ / i,
-//                     amountOutMinimum: TESTVAR, 
-//                     sqrtPriceLimitX96: 0
-//                 });
-
-//             try s.swapRouter.exactInputSingle(params) {
-//                 if (i == 2) {
-//                     try s.swapRouter.exactInputSingle(params) {
-//                         break;
-//                     } catch {
-//                         IERC20(s.WETH).transfer(owner_, balanceWETH_ / i);
-//                     }
-//                 }
-//                 break;
-//             } catch {
-//                 if (i == 1) {
-//                     continue; 
-//                 } else {
-//                     IERC20(s.WETH).transfer(owner_, balanceWETH_);
-//                     emit ForTesting(23);
-//                 }
-//             }
-//         }
-//     }
-
-
-//     function _meh_sendMeTri(address owner_) private {
-//         uint balanceTri = IERC20(s.crvTricrypto).balanceOf(address(this));
-//         IERC20(s.crvTricrypto).transfer(owner_, balanceTri);
-//     }
-
-//     function _shift(uint i_) private returns(uint) {
-//         uint element = s.revenueAmounts[i_];
-//         s.revenueAmounts[i_] = s.revenueAmounts[s.revenueAmounts.length - 1];
-//         delete s.revenueAmounts[s.revenueAmounts.length - 1];
-//         s.revenueAmounts.pop();
-//         return element;
-//     }
-// }
-
-
-
-// contract SwapWETHforRevenueV2 {
-
-//     AppStorage s;
-
-//     using FixedPointMathLib for uint;
-//     using Address for address;
-
-//     event ForTesting(uint indexed testNum);
-
-
-//     function checkForRevenue() external payable {
-//         (,int price,,,) = s.priceFeed.latestRoundData();
-
-//         for (uint j=0; j < s.revenueAmounts.length; j++) {
-
-//             if ((s.feesVault * 2) * uint(price) >= s.revenueAmounts[j] * 1 ether) { 
-
-//                 bytes memory data = abi.encodeWithSignature('getAUM(int256)', price);
-//                 bytes memory returnData = address(this).functionCall(data);
-//                 (uint yBalance, uint valueUM) = abi.decode(returnData, (uint, uint));
-
-//                 for (uint i=0; i < s.revenueAmounts.length; i++) {
-//                     if (valueUM >= s.revenueAmounts[i] * 1 ether) {
-//                         uint denominator = s.revenueAmounts[i] == 10000000 ? 5 : 10;
-//                         _computeRevenue(denominator, yBalance, uint(price));
-//                         // uint deletedEl = _shift(i); //<--- so the other tests can used s.revenueAmounts fully
-//                         // emit RevenueEarned(deletedEl);
-//                     }
-//                 }
-//                 break;
-//             }
-//         }
-//     }
-
-
-//     function _computeRevenue(uint denominator_, uint balance_, uint price_) private {                
-//         address owner = LibDiamond.contractOwner(); 
-//         uint assetsToWithdraw = balance_ / denominator_;
-//         IYtri(s.yTriPool).withdraw(assetsToWithdraw);
-
-//         for (uint i=1; i <= 2; i++) {
-//             uint triAmountWithdraw = ITri(s.tricrypto).calc_withdraw_one_coin(assetsToWithdraw / i, 2); 
-//             uint minOut = ozExecutorFacet(s.executor).calculateSlippage(
-//                 triAmountWithdraw, s.defaultSlippage
-//             ); 
-
-//             try ITri(s.tricrypto).remove_liquidity_one_coin(assetsToWithdraw / i, 2, minOut) {
-//                 uint balanceWETH = IERC20(s.WETH).balanceOf(address(this));
-
-//                     if (i == 2) {
-//                         try ITri(s.tricrypto).remove_liquidity_one_coin(assetsToWithdraw / i, 2, minOut) {
-//                             balanceWETH = IERC20(s.WETH).balanceOf(address(this));
-//                             _swapWETHforRevenue(owner, balanceWETH, price_);
-//                             break;
-//                         } catch {
-//                             _meh_sendMeTri(owner); 
-//                             break;
-//                         }
-//                     }
-//                     _swapWETHforRevenue(owner, balanceWETH, price_);
-//                     break;
-//                 } catch {
-//                     if (i == 1) {
-//                         continue;
-//                     } else {
-//                         _meh_sendMeTri(owner); 
-//                     }
-//                 }
-//         }
-//     }
-
-
-//     function _swapWETHforRevenue(address owner_, uint balanceWETH_, uint price_) private {        
-//         IERC20(s.WETH).approve(address(s.swapRouter), balanceWETH_);
-
-//         for (uint i=1; i <= 2; i++) {
-//             uint TESTVAR = i == 1 ? type(uint).max : (_calculateMinOut(balanceWETH_, i, price_) / i);
-
-//             ISwapRouter.ExactInputSingleParams memory params =
-//                 ISwapRouter.ExactInputSingleParams({
-//                     tokenIn: s.WETH,
-//                     tokenOut: s.revenueToken,
-//                     fee: s.poolFee, 
-//                     recipient: owner_,
-//                     deadline: block.timestamp,
-//                     amountIn: balanceWETH_ / i,
-//                     amountOutMinimum: TESTVAR, 
-//                     sqrtPriceLimitX96: 0
-//                 });
-
-//             try s.swapRouter.exactInputSingle(params) {
-//                 if (i == 2) {
-//                     try s.swapRouter.exactInputSingle(params) {
-//                         emit ForTesting(23);
-//                         break;
-//                     } catch {
-//                         IERC20(s.WETH).transfer(owner_, balanceWETH_ / i);
-//                     }
-//                 }
-//                 break;
-//             } catch {
-//                 if (i == 1) {
-//                     continue; 
-//                 } else {
-//                     IERC20(s.WETH).transfer(owner_, balanceWETH_);
-//                 }
-//             }
-//         }
-//     }
-
-//     function _meh_sendMeTri(address owner_) private {
-//         uint balanceTri = IERC20(s.crvTricrypto).balanceOf(address(this));
-//         IERC20(s.crvTricrypto).transfer(owner_, balanceTri);
-//     }
-
-
-//     function _calculateMinOut(uint balanceWETH_, uint i_, uint price_) private view returns(uint minOut) {
-//         uint expectedOut = balanceWETH_.mulDivDown(price_ * 10 ** 10, 1 ether);
-//         uint minOutUnprocessed = 
-//             expectedOut - expectedOut.mulDivDown(s.defaultSlippage * i_ * 100, 1000000); 
-//         minOut = minOutUnprocessed.mulWadDown(10 ** 6);
-//     }
-
-
-//     function _shift(uint i_) private returns(uint) {
-//         uint element = s.revenueAmounts[i_];
-//         s.revenueAmounts[i_] = s.revenueAmounts[s.revenueAmounts.length - 1];
-//         delete s.revenueAmounts[s.revenueAmounts.length - 1];
-//         s.revenueAmounts.pop();
-//         return element;
-//     }
-// }
-
-
-
-// contract SwapWETHforRevenueV3 {
-
-//     AppStorage s;
-
-//     using FixedPointMathLib for uint;
-//     using Address for address;
-
-//     event RevenueEarned(uint indexed amount);
-//     event ForTesting(uint indexed testNum);
-
-
-//     function checkForRevenue() external payable {
-//         (,int price,,,) = s.priceFeed.latestRoundData();
-
-//         for (uint j=0; j < s.revenueAmounts.length; j++) {
-
-//             if ((s.feesVault * 2) * uint(price) >= s.revenueAmounts[j] * 1 ether) {
+            try ITri(s.tricrypto).remove_liquidity_one_coin(assetsToWithdraw / i, 2, TESTVAR) {
+                uint balanceWETH = IERC20(s.WETH).balanceOf(address(this));
+
+                    if (i == 2) {
+                        try ITri(s.tricrypto).remove_liquidity_one_coin(assetsToWithdraw / i, 2, TESTVAR2) {
+                            balanceWETH = IERC20(s.WETH).balanceOf(address(this));
+                            _swapWETHforRevenue(owner, balanceWETH, price_);
+                            break;
+                        } catch {
+                            _meh_sendMeTri(owner); 
+                            IERC20(s.WETH).transfer(owner, balanceWETH);
+                            emit ForTesting(23);
+                            break;
+                        }
+                    }
+                    _swapWETHforRevenue(owner, balanceWETH, price_);
+                    break;
+                } catch {
+                    if (i == 1) {
+                        continue;
+                    } else {
+                        _meh_sendMeTri(owner); 
+                    }
+                }
+        }
+    }
+
+
+}
+
+
+/**
+    _swapWETHforRevenue()
+ */
+
+
+contract SwapWETHforRevenueV1 {
+
+    AppStorage s;
+
+    using FixedPointMathLib for uint;
+    using Address for address;
+
+    event ForTesting(uint indexed testNum);
+    event DeadVariables(uint variable);
+
+
+    function checkForRevenue() external payable {
+        (,int price,,,) = s.priceFeed.latestRoundData();
+
+        for (uint j=0; j < s.revenueAmounts.length; j++) {
+
+            if ((s.feesVault * 2) * uint(price) >= s.revenueAmounts[j] * 1 ether) {
+
+                bytes memory data = abi.encodeWithSignature('getAUM(int256)', price);
+                bytes memory returnData = address(this).functionCall(data);
+                (uint yBalance, uint valueUM) = abi.decode(returnData, (uint, uint));
+
+                for (uint i=0; i < s.revenueAmounts.length; i++) {
+                    if (valueUM >= s.revenueAmounts[i] * 1 ether) {
+                        uint denominator = s.revenueAmounts[i] == 10000000 ? 5 : 10;
+                        _computeRevenue(denominator, yBalance, uint(price));
+                        // uint deletedEl = _shift(i); //<--- so the other tests can used s.revenueAmounts fully
+                        // emit RevenueEarned(deletedEl);
+                    }
+                }
+                break;
+            }
+        }
+    }
+
+
+    function _computeRevenue(uint denominator_, uint balance_, uint price_) private {        
+        address owner = LibDiamond.contractOwner(); 
+        uint assetsToWithdraw = balance_ / denominator_;
+        IYtri(s.yTriPool).withdraw(assetsToWithdraw);
+
+        for (uint i=1; i <= 2; i++) {
+            uint triAmountWithdraw = ITri(s.tricrypto).calc_withdraw_one_coin(assetsToWithdraw / i, 2); 
+            uint minOut = ozExecutorFacet(s.executor).calculateSlippage(
+                triAmountWithdraw, s.defaultSlippage
+            ); 
+
+            try ITri(s.tricrypto).remove_liquidity_one_coin(assetsToWithdraw / i, 2, minOut) {
+                uint balanceWETH = IERC20(s.WETH).balanceOf(address(this));
+
+                    if (i == 2) {
+                        try ITri(s.tricrypto).remove_liquidity_one_coin(assetsToWithdraw / i, 2, minOut) {
+                            balanceWETH = IERC20(s.WETH).balanceOf(address(this));
+                            _swapWETHforRevenue(owner, balanceWETH, price_);
+                            break;
+                        } catch {
+                            _meh_sendMeTri(owner); 
+                            break;
+                        }
+                    }
+                    _swapWETHforRevenue(owner, balanceWETH, price_);
+                    break;
+                } catch {
+                    if (i == 1) {
+                        continue;
+                    } else {
+                        _meh_sendMeTri(owner); 
+                    }
+                }
+        }
+    }
+
+
+    function _swapWETHforRevenue(address owner_, uint balanceWETH_, uint price_) private {
+        IERC20(s.WETH).approve(address(s.swapRouter), balanceWETH_);
+
+        emit DeadVariables(price_);
+
+        uint TESTVAR = type(uint).max;
+
+        for (uint i=1; i <= 2; i++) {
+            ISwapRouter.ExactInputSingleParams memory params =
+                ISwapRouter.ExactInputSingleParams({
+                    tokenIn: s.WETH,
+                    tokenOut: s.revenueToken,
+                    fee: s.poolFee, 
+                    recipient: owner_,
+                    deadline: block.timestamp,
+                    amountIn: balanceWETH_ / i,
+                    amountOutMinimum: TESTVAR, 
+                    sqrtPriceLimitX96: 0
+                });
+
+            try s.swapRouter.exactInputSingle(params) {
+                if (i == 2) {
+                    try s.swapRouter.exactInputSingle(params) {
+                        break;
+                    } catch {
+                        IERC20(s.WETH).transfer(owner_, balanceWETH_ / i);
+                    }
+                }
+                break;
+            } catch {
+                if (i == 1) {
+                    continue; 
+                } else {
+                    IERC20(s.WETH).transfer(owner_, balanceWETH_);
+                    emit ForTesting(23);
+                }
+            }
+        }
+    }
+
+
+    function _meh_sendMeTri(address owner_) private {
+        uint balanceTri = IERC20(s.crvTricrypto).balanceOf(address(this));
+        IERC20(s.crvTricrypto).transfer(owner_, balanceTri);
+    }
+
+    function _shift(uint i_) private returns(uint) {
+        uint element = s.revenueAmounts[i_];
+        s.revenueAmounts[i_] = s.revenueAmounts[s.revenueAmounts.length - 1];
+        delete s.revenueAmounts[s.revenueAmounts.length - 1];
+        s.revenueAmounts.pop();
+        return element;
+    }
+}
+
+
+
+contract SwapWETHforRevenueV2 {
+
+    AppStorage s;
+
+    using FixedPointMathLib for uint;
+    using Address for address;
+
+    event ForTesting(uint indexed testNum);
+
+
+    function checkForRevenue() external payable {
+        (,int price,,,) = s.priceFeed.latestRoundData();
+
+        for (uint j=0; j < s.revenueAmounts.length; j++) {
+
+            if ((s.feesVault * 2) * uint(price) >= s.revenueAmounts[j] * 1 ether) { 
+
+                bytes memory data = abi.encodeWithSignature('getAUM(int256)', price);
+                bytes memory returnData = address(this).functionCall(data);
+                (uint yBalance, uint valueUM) = abi.decode(returnData, (uint, uint));
+
+                for (uint i=0; i < s.revenueAmounts.length; i++) {
+                    if (valueUM >= s.revenueAmounts[i] * 1 ether) {
+                        uint denominator = s.revenueAmounts[i] == 10000000 ? 5 : 10;
+                        _computeRevenue(denominator, yBalance, uint(price));
+                        // uint deletedEl = _shift(i); //<--- so the other tests can used s.revenueAmounts fully
+                        // emit RevenueEarned(deletedEl);
+                    }
+                }
+                break;
+            }
+        }
+    }
+
+
+    function _computeRevenue(uint denominator_, uint balance_, uint price_) private {                
+        address owner = LibDiamond.contractOwner(); 
+        uint assetsToWithdraw = balance_ / denominator_;
+        IYtri(s.yTriPool).withdraw(assetsToWithdraw);
+
+        for (uint i=1; i <= 2; i++) {
+            uint triAmountWithdraw = ITri(s.tricrypto).calc_withdraw_one_coin(assetsToWithdraw / i, 2); 
+            uint minOut = ozExecutorFacet(s.executor).calculateSlippage(
+                triAmountWithdraw, s.defaultSlippage
+            ); 
+
+            try ITri(s.tricrypto).remove_liquidity_one_coin(assetsToWithdraw / i, 2, minOut) {
+                uint balanceWETH = IERC20(s.WETH).balanceOf(address(this));
+
+                    if (i == 2) {
+                        try ITri(s.tricrypto).remove_liquidity_one_coin(assetsToWithdraw / i, 2, minOut) {
+                            balanceWETH = IERC20(s.WETH).balanceOf(address(this));
+                            _swapWETHforRevenue(owner, balanceWETH, price_);
+                            break;
+                        } catch {
+                            _meh_sendMeTri(owner); 
+                            break;
+                        }
+                    }
+                    _swapWETHforRevenue(owner, balanceWETH, price_);
+                    break;
+                } catch {
+                    if (i == 1) {
+                        continue;
+                    } else {
+                        _meh_sendMeTri(owner); 
+                    }
+                }
+        }
+    }
+
+
+    function _swapWETHforRevenue(address owner_, uint balanceWETH_, uint price_) private {        
+        IERC20(s.WETH).approve(address(s.swapRouter), balanceWETH_);
+
+        for (uint i=1; i <= 2; i++) {
+            uint TESTVAR = i == 1 ? type(uint).max : (_calculateMinOut(balanceWETH_, i, price_) / i);
+
+            ISwapRouter.ExactInputSingleParams memory params =
+                ISwapRouter.ExactInputSingleParams({
+                    tokenIn: s.WETH,
+                    tokenOut: s.revenueToken,
+                    fee: s.poolFee, 
+                    recipient: owner_,
+                    deadline: block.timestamp,
+                    amountIn: balanceWETH_ / i,
+                    amountOutMinimum: TESTVAR, 
+                    sqrtPriceLimitX96: 0
+                });
+
+            try s.swapRouter.exactInputSingle(params) {
+                if (i == 2) {
+                    try s.swapRouter.exactInputSingle(params) {
+                        emit ForTesting(23);
+                        break;
+                    } catch {
+                        IERC20(s.WETH).transfer(owner_, balanceWETH_ / i);
+                    }
+                }
+                break;
+            } catch {
+                if (i == 1) {
+                    continue; 
+                } else {
+                    IERC20(s.WETH).transfer(owner_, balanceWETH_);
+                }
+            }
+        }
+    }
+
+    function _meh_sendMeTri(address owner_) private {
+        uint balanceTri = IERC20(s.crvTricrypto).balanceOf(address(this));
+        IERC20(s.crvTricrypto).transfer(owner_, balanceTri);
+    }
+
+
+    function _calculateMinOut(uint balanceWETH_, uint i_, uint price_) private view returns(uint minOut) {
+        uint expectedOut = balanceWETH_.mulDivDown(price_ * 10 ** 10, 1 ether);
+        uint minOutUnprocessed = 
+            expectedOut - expectedOut.mulDivDown(s.defaultSlippage * i_ * 100, 1000000); 
+        minOut = minOutUnprocessed.mulWadDown(10 ** 6);
+    }
+
+
+    function _shift(uint i_) private returns(uint) {
+        uint element = s.revenueAmounts[i_];
+        s.revenueAmounts[i_] = s.revenueAmounts[s.revenueAmounts.length - 1];
+        delete s.revenueAmounts[s.revenueAmounts.length - 1];
+        s.revenueAmounts.pop();
+        return element;
+    }
+}
+
+
+
+contract SwapWETHforRevenueV3 {
+
+    AppStorage s;
+
+    using FixedPointMathLib for uint;
+    using Address for address;
+
+    event RevenueEarned(uint indexed amount);
+    event ForTesting(uint indexed testNum);
+
+
+    function checkForRevenue() external payable {
+        (,int price,,,) = s.priceFeed.latestRoundData();
+
+        for (uint j=0; j < s.revenueAmounts.length; j++) {
+
+            if ((s.feesVault * 2) * uint(price) >= s.revenueAmounts[j] * 1 ether) {
                 
-//                 bytes memory data = abi.encodeWithSignature('getAUM(int256)', price);
-//                 bytes memory returnData = address(this).functionCall(data);
-//                 (uint yBalance, uint valueUM) = abi.decode(returnData, (uint, uint));
+                bytes memory data = abi.encodeWithSignature('getAUM(int256)', price);
+                bytes memory returnData = address(this).functionCall(data);
+                (uint yBalance, uint valueUM) = abi.decode(returnData, (uint, uint));
 
-//                 for (uint i=0; i < s.revenueAmounts.length; i++) {
-//                     if (valueUM >= s.revenueAmounts[i] * 1 ether) {
-//                         uint denominator = s.revenueAmounts[i] == 10000000 ? 5 : 10;
-//                         _computeRevenue(denominator, yBalance, uint(price));
-//                         uint deletedEl = _shift(i);
-//                         emit RevenueEarned(deletedEl);
-//                     }
-//                 }
-//                 break;
-//             }
-//         }
-//     }
-
-
-//     function _computeRevenue(uint denominator_, uint balance_, uint price_) private {        
-//         address owner = LibDiamond.contractOwner(); 
-//         uint assetsToWithdraw = balance_ / denominator_;
-//         IYtri(s.yTriPool).withdraw(assetsToWithdraw);
-
-//         for (uint i=1; i <= 2; i++) {
-//             uint triAmountWithdraw = ITri(s.tricrypto).calc_withdraw_one_coin(assetsToWithdraw / i, 2); 
-//             uint minOut = ozExecutorFacet(s.executor).calculateSlippage(
-//                 triAmountWithdraw, s.defaultSlippage
-//             ); 
-
-//             try ITri(s.tricrypto).remove_liquidity_one_coin(assetsToWithdraw / i, 2, minOut) {
-//                 uint balanceWETH = IERC20(s.WETH).balanceOf(address(this));
-
-//                     if (i == 2) {
-//                         try ITri(s.tricrypto).remove_liquidity_one_coin(assetsToWithdraw / i, 2, minOut) {
-//                             balanceWETH = IERC20(s.WETH).balanceOf(address(this));
-//                             _swapWETHforRevenue(owner, balanceWETH, price_);
-//                             break;
-//                         } catch {
-//                             _meh_sendMeTri(owner); 
-//                             break;
-//                         }
-//                     }
-//                     _swapWETHforRevenue(owner, balanceWETH, price_);
-//                     break;
-//                 } catch {
-//                     if (i == 1) {
-//                         continue;
-//                     } else {
-//                         _meh_sendMeTri(owner); 
-//                     }
-//                 }
-//         }
-//     }
+                for (uint i=0; i < s.revenueAmounts.length; i++) {
+                    if (valueUM >= s.revenueAmounts[i] * 1 ether) {
+                        uint denominator = s.revenueAmounts[i] == 10000000 ? 5 : 10;
+                        _computeRevenue(denominator, yBalance, uint(price));
+                        uint deletedEl = _shift(i);
+                        emit RevenueEarned(deletedEl);
+                    }
+                }
+                break;
+            }
+        }
+    }
 
 
-//     function _swapWETHforRevenue(address owner_, uint balanceWETH_, uint price_) private {        
-//         IERC20(s.WETH).approve(address(s.swapRouter), balanceWETH_);
+    function _computeRevenue(uint denominator_, uint balance_, uint price_) private {        
+        address owner = LibDiamond.contractOwner(); 
+        uint assetsToWithdraw = balance_ / denominator_;
+        IYtri(s.yTriPool).withdraw(assetsToWithdraw);
 
-//         for (uint i=1; i <= 2; i++) {
-//             uint TESTVAR = i == 1 ? type(uint).max : (_calculateMinOut(balanceWETH_, i, price_) / i);
-//             uint TESTVAR2 = type(uint).max;
+        for (uint i=1; i <= 2; i++) {
+            uint triAmountWithdraw = ITri(s.tricrypto).calc_withdraw_one_coin(assetsToWithdraw / i, 2); 
+            uint minOut = ozExecutorFacet(s.executor).calculateSlippage(
+                triAmountWithdraw, s.defaultSlippage
+            ); 
 
-//             ISwapRouter.ExactInputSingleParams memory params =
-//                 ISwapRouter.ExactInputSingleParams({
-//                     tokenIn: s.WETH,
-//                     tokenOut: s.revenueToken,
-//                     fee: s.poolFee, 
-//                     recipient: owner_,
-//                     deadline: block.timestamp,
-//                     amountIn: balanceWETH_ / i,
-//                     amountOutMinimum: TESTVAR, 
-//                     sqrtPriceLimitX96: 0
-//                 });
+            try ITri(s.tricrypto).remove_liquidity_one_coin(assetsToWithdraw / i, 2, minOut) {
+                uint balanceWETH = IERC20(s.WETH).balanceOf(address(this));
 
-//             try s.swapRouter.exactInputSingle(params) {
-//                 if (i == 2) {
-//                     params.amountOutMinimum = TESTVAR2;
-//                     try s.swapRouter.exactInputSingle(params) {
-//                         break;
-//                     } catch {
-//                         IERC20(s.WETH).transfer(owner_, balanceWETH_ / i);
-//                         emit ForTesting(23);
-//                     }
-//                 }
-//                 break;
-//             } catch {
-//                 if (i == 1) {
-//                     continue; 
-//                 } else {
-//                     IERC20(s.WETH).transfer(owner_, balanceWETH_);
-//                 }
-//             }
-//         }
-//     }
-
-//     function _meh_sendMeTri(address owner_) private {
-//         uint balanceTri = IERC20(s.crvTricrypto).balanceOf(address(this));
-//         IERC20(s.crvTricrypto).transfer(owner_, balanceTri);
-//     }
+                    if (i == 2) {
+                        try ITri(s.tricrypto).remove_liquidity_one_coin(assetsToWithdraw / i, 2, minOut) {
+                            balanceWETH = IERC20(s.WETH).balanceOf(address(this));
+                            _swapWETHforRevenue(owner, balanceWETH, price_);
+                            break;
+                        } catch {
+                            _meh_sendMeTri(owner); 
+                            break;
+                        }
+                    }
+                    _swapWETHforRevenue(owner, balanceWETH, price_);
+                    break;
+                } catch {
+                    if (i == 1) {
+                        continue;
+                    } else {
+                        _meh_sendMeTri(owner); 
+                    }
+                }
+        }
+    }
 
 
-//     function _calculateMinOut(uint balanceWETH_, uint i_, uint price_) private view returns(uint minOut) {
-//         uint expectedOut = balanceWETH_.mulDivDown(price_ * 10 ** 10, 1 ether);
-//         uint minOutUnprocessed = 
-//             expectedOut - expectedOut.mulDivDown(s.defaultSlippage * i_ * 100, 1000000); 
-//         minOut = minOutUnprocessed.mulWadDown(10 ** 6);
-//     }
+    function _swapWETHforRevenue(address owner_, uint balanceWETH_, uint price_) private {        
+        IERC20(s.WETH).approve(address(s.swapRouter), balanceWETH_);
+
+        for (uint i=1; i <= 2; i++) {
+            uint TESTVAR = i == 1 ? type(uint).max : (_calculateMinOut(balanceWETH_, i, price_) / i);
+            uint TESTVAR2 = type(uint).max;
+
+            ISwapRouter.ExactInputSingleParams memory params =
+                ISwapRouter.ExactInputSingleParams({
+                    tokenIn: s.WETH,
+                    tokenOut: s.revenueToken,
+                    fee: s.poolFee, 
+                    recipient: owner_,
+                    deadline: block.timestamp,
+                    amountIn: balanceWETH_ / i,
+                    amountOutMinimum: TESTVAR, 
+                    sqrtPriceLimitX96: 0
+                });
+
+            try s.swapRouter.exactInputSingle(params) {
+                if (i == 2) {
+                    params.amountOutMinimum = TESTVAR2;
+                    try s.swapRouter.exactInputSingle(params) {
+                        break;
+                    } catch {
+                        IERC20(s.WETH).transfer(owner_, balanceWETH_ / i);
+                        emit ForTesting(23);
+                    }
+                }
+                break;
+            } catch {
+                if (i == 1) {
+                    continue; 
+                } else {
+                    IERC20(s.WETH).transfer(owner_, balanceWETH_);
+                }
+            }
+        }
+    }
+
+    function _meh_sendMeTri(address owner_) private {
+        uint balanceTri = IERC20(s.crvTricrypto).balanceOf(address(this));
+        IERC20(s.crvTricrypto).transfer(owner_, balanceTri);
+    }
 
 
-//     function _shift(uint i_) private returns(uint) {
-//         uint element = s.revenueAmounts[i_];
-//         s.revenueAmounts[i_] = s.revenueAmounts[s.revenueAmounts.length - 1];
-//         delete s.revenueAmounts[s.revenueAmounts.length - 1];
-//         s.revenueAmounts.pop();
-//         return element;
-//     }
-// }
+    function _calculateMinOut(uint balanceWETH_, uint i_, uint price_) private view returns(uint minOut) {
+        uint expectedOut = balanceWETH_.mulDivDown(price_ * 10 ** 10, 1 ether);
+        uint minOutUnprocessed = 
+            expectedOut - expectedOut.mulDivDown(s.defaultSlippage * i_ * 100, 1000000); 
+        minOut = minOutUnprocessed.mulWadDown(10 ** 6);
+    }
 
 
-// /**
-//     _filterRevenueCheck()
-//  */
+    function _shift(uint i_) private returns(uint) {
+        uint element = s.revenueAmounts[i_];
+        s.revenueAmounts[i_] = s.revenueAmounts[s.revenueAmounts.length - 1];
+        delete s.revenueAmounts[s.revenueAmounts.length - 1];
+        s.revenueAmounts.pop();
+        return element;
+    }
+}
 
-// contract FilterRevenueCheckV1 {
-//     using FixedPointMathLib for uint;
 
-//     event ForTesting(uint indexed testNum);
+/**
+    _filterRevenueCheck()
+ */
 
-//     function checkForRevenue() external payable {
-//         emit ForTesting(23);
-//     }
-// }
+contract FilterRevenueCheckV1 {
+    using FixedPointMathLib for uint;
+
+    event ForTesting(uint indexed testNum);
+
+    function checkForRevenue() external payable {
+        emit ForTesting(23);
+    }
+}
 
 
 

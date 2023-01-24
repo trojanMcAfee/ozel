@@ -801,15 +801,9 @@ describe('Anti-slippage system', async function () {
         } = deployedVars);
     
         getVarsForHelpers(deployedDiamond, ozlFacet);
+        accountDetails = getAccData(callerAddr, tokensDatabaseL1.usdtAddr, defaultSlippage);
 
-        accountDetails = [ 
-            callerAddr,
-            tokensDatabaseL1.usdtAddr,
-            defaultSlippage,
-            'myAccount'
-        ];
-
-        abi = ['function exchangeToAccountToken((address user, address token, uint256 slippage, string name) accountDetails_) external payable'];
+        abi = ['function exchangeToAccountToken(bytes,uint256,address) external payable'];
         iface = new ethers.utils.Interface(abi);
         selector = iface.getSighash('exchangeToAccountToken');
     });
@@ -824,6 +818,7 @@ describe('Anti-slippage system', async function () {
         it('should replace swapsUserToken for V1 / SwapsForUserTokenV1', async () => {            
             ({ testingNum, balance: balanceWETH } = await replaceForModVersion('SwapsForUserTokenV1', true, selector, accountDetails, true));
             assert(formatEther(balanceWETH) > 0);  
+            assert.equal(testingNum, 23);
         });
 
 
@@ -897,7 +892,7 @@ describe('Anti-slippage system', async function () {
             abi = ['function executeFinalTrade((int128 tokenIn, int128 tokenOut, address baseToken, address token, address pool) swapDetails_, uint256 userSlippage_, address user_, uint256 lockNum_) external payable'];
             iface = new ethers.utils.Interface(abi);
             selector = iface.getSighash('executeFinalTrade');
-            accountDetails[1] = tokensDatabaseL1.usdcAddr;
+            accountDetails = getAccData(callerAddr, tokensDatabaseL1.usdcAddr, defaultSlippage);
 
             balanceUSDT = await USDT.balanceOf(callerAddr);
             balanceUSDC = await USDC.balanceOf(callerAddr);
@@ -967,8 +962,9 @@ describe('Anti-slippage system', async function () {
          * Changed slippage to type(uint).max in order to fail all trades and activate the last path
          * (2nd leg for non-BTC-2Pool coins)
          */
-        it('should swap the funds to account token only / ExecutorFacetV4', async () => {            
-            accountDetails[1] = tokensDatabaseL1.mimAddr;
+        it('should swap the funds to account token only / ExecutorFacetV4', async () => {   
+            accountDetails = getAccData(callerAddr, tokensDatabaseL1.mimAddr, defaultSlippage);
+            
             ({ testingNum, balance: balanceUSDT } = await replaceForModVersion('ExecutorFacetV4', false, selector, accountDetails, false));
             assert.equal(testingNum, 23);
             assert(balanceUSDT > 0);
@@ -981,7 +977,8 @@ describe('Anti-slippage system', async function () {
          * All funds are in account token through two swaps (2nd leg for non-BTC-2Pool coins)
          */
         it('should send account token to the user in the 2nd loop iteration / ExecutorFacetV5', async () => {
-            accountDetails[1] = tokensDatabaseL1.mimAddr;
+            accountDetails = getAccData(callerAddr, tokensDatabaseL1.mimAddr, defaultSlippage);
+            
             balanceMIM = formatEther(await MIM.balanceOf(callerAddr));
             assert.equal(balanceMIM, 0);
 
@@ -998,7 +995,7 @@ describe('Anti-slippage system', async function () {
          * and the other half in the baseToken.
          */
         it('should divide the funds between baseToken and account token / ExecutorFacetV6', async () => {            
-            accountDetails[1] = tokensDatabaseL1.mimAddr;
+            accountDetails = getAccData(callerAddr, tokensDatabaseL1.mimAddr, defaultSlippage);
             balanceMIM = formatEther(await MIM.balanceOf(callerAddr));
             assert.equal(balanceMIM, 0);
 
