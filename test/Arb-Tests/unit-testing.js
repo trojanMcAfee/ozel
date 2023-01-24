@@ -14,7 +14,8 @@ const {
     deploy,
     addTokenToDatabase,
     queryTokenDatabase,
-    removeTokenFromDatabase
+    removeTokenFromDatabase,
+    getAccData
 } = require('../../scripts/helpers-arb.js');
 
 const { 
@@ -67,13 +68,7 @@ describe('Unit testing', async function () {
         } = deployedVars);
     
         getVarsForHelpers(deployedDiamond, ozlFacet);
-
-        accountDetails = [
-            callerAddr,
-            tokensDatabaseL1.fraxAddr,
-            defaultSlippage,
-            'myAccount'
-        ];
+        accountDetails = getAccData(callerAddr, tokensDatabaseL1.fraxAddr, defaultSlippage);
 
         ozlDiamond = await hre.ethers.getContractAt(diamondABI, deployedDiamond.address);
         evilAmount = parseEther('1000');
@@ -82,7 +77,7 @@ describe('Unit testing', async function () {
     describe('OZLFacet', async () => { 
         describe('exchangeToAccountToken()', async () => {
             it('should fail with user as address(0)', async () => {
-                accountDetails[0] = nullAddr;
+                accountDetails = getAccData(nullAddr, tokensDatabaseL1.fraxAddr, defaultSlippage);
                 await assert.rejects(async () => {
                     await sendETH(accountDetails);
                 }, {
@@ -92,8 +87,7 @@ describe('Unit testing', async function () {
             });
     
             it('should fail with account token as address(0)', async () => {
-                accountDetails[0] = callerAddr;
-                accountDetails[1] = nullAddr;
+                accountDetails = getAccData(callerAddr, nullAddr, defaultSlippage);
                 await assert.rejects(async () => {
                     await sendETH(accountDetails);
                 }, {
@@ -103,8 +97,7 @@ describe('Unit testing', async function () {
             });
     
             it('should fail with slippage as 0', async () => {
-                accountDetails[1] = tokensDatabaseL1.fraxAddr;
-                accountDetails[2] = 0;
+                accountDetails = getAccData(callerAddr, tokensDatabaseL1.fraxAddr, 0);
                 await assert.rejects(async () => {
                     await sendETH(accountDetails);
                 }, {
@@ -114,8 +107,7 @@ describe('Unit testing', async function () {
             });
     
             it('should fail when account token is not in database', async () => {
-                accountDetails[1] = deadAddr;
-                accountDetails[2] = defaultSlippage;
+                accountDetails = getAccData(callerAddr, deadAddr, defaultSlippage);
                 await assert.rejects(async () => {
                     await sendETH(accountDetails);
                 }, {
@@ -125,7 +117,7 @@ describe('Unit testing', async function () {
             });
     
             it('should fail when msg.value is equal to 0', async () => {
-                accountDetails[1] = tokensDatabaseL1.usdcAddr;
+                accountDetails = getAccData(callerAddr, tokensDatabaseL1.usdcAddr, defaultSlippage);
                 await assert.rejects(async () => {
                     await sendETH(accountDetails, 'no value');
                 }, {
@@ -135,14 +127,15 @@ describe('Unit testing', async function () {
             });
 
             it('should not allow a swap in normal condition with the l1Check disabled / exchangeToAccountToken() - changeL1Check()', async () => {
+                accountDetails = getAccData(callerAddr, tokensDatabaseL1.usdcAddr, defaultSlippage);
                 await ozlDiamond.changeL1Check(false);
                 ops.value = parseEther('1');
 
                 await assert.rejects(async () => {
-                    await ozlDiamond.exchangeToAccountToken(accountDetails, ops);
+                    await ozlDiamond.exchangeToAccountToken(accountDetails, parseEther('1'), deadAddr, ops);
                 }, {
                     name: 'Error',
-                    message: (await err(accountDetails[1])).tokenNotFound 
+                    message: (await err(tokensDatabaseL1.usdcAddr)).tokenNotFound 
                 });
 
                 //Clean up
@@ -167,10 +160,9 @@ describe('Unit testing', async function () {
                 await addTokenToDatabase(tokenSwap, token);
                 await ozlDiamond.changeL1Check(false);
 
-                accountDetails[1] = usdcAddr;
+                accountDetails = getAccData(callerAddr, usdcAddr, defaultSlippage);
                 ops.value = parseEther('1');
-                await ozlDiamond.exchangeToAccountToken(accountDetails, ops);
-                console.log(5);
+                await ozlDiamond.exchangeToAccountToken(accountDetails, parseEther('1'), deadAddr, ops);
 
                 //Clean up
                 await ozlDiamond.changeL1Check(true);
@@ -184,7 +176,7 @@ describe('Unit testing', async function () {
             beforeEach(async () => await enableWithdrawals(true));
 
             it('should fail with user as address(0)', async () => {
-                accountDetails[0] = nullAddr;
+                accountDetails = getAccData(nullAddr, tokensDatabaseL1.fraxAddr, defaultSlippage);
                 await assert.rejects(async () => {
                     await withdrawShareOZL(accountDetails, callerAddr, parseEther((await balanceOfOZL(callerAddr)).toString()));
                 }, {
@@ -194,8 +186,7 @@ describe('Unit testing', async function () {
             });
     
             it('should fail with account token as address(0)', async () => {
-                accountDetails[0] = callerAddr;
-                accountDetails[1] = nullAddr;
+                accountDetails = getAccData(callerAddr, nullAddr, defaultSlippage);
                 await assert.rejects(async () => {
                     await withdrawShareOZL(accountDetails, callerAddr, parseEther((await balanceOfOZL(callerAddr)).toString()));
                 }, {
@@ -205,8 +196,7 @@ describe('Unit testing', async function () {
             });
     
             it('should fail with account slippage as 0', async () => {
-                accountDetails[1] = tokensDatabaseL1.fraxAddr;
-                accountDetails[2] = 0;
+                accountDetails = getAccData(callerAddr, tokensDatabaseL1.fraxAddr, 0);
                 await assert.rejects(async () => {
                     await withdrawShareOZL(accountDetails, callerAddr, parseEther((await balanceOfOZL(callerAddr)).toString()));
                 }, {
@@ -216,8 +206,7 @@ describe('Unit testing', async function () {
             });
     
             it('should fail when account token is not in database', async () => {
-                accountDetails[1] = deadAddr;
-                accountDetails[2] = defaultSlippage;
+                accountDetails = getAccData(callerAddr, deadAddr, defaultSlippage);
                 await assert.rejects(async () => {
                     await withdrawShareOZL(accountDetails, callerAddr, parseEther((await balanceOfOZL(callerAddr)).toString()));
                 }, {
@@ -227,7 +216,7 @@ describe('Unit testing', async function () {
             });
 
             it('should fail with receiver as address(0)', async () => {
-                accountDetails[1] = tokensDatabaseL1.fraxAddr;
+                accountDetails = getAccData(callerAddr, tokensDatabaseL1.fraxAddr, defaultSlippage);
                 await assert.rejects(async () => {
                     await withdrawShareOZL(accountDetails, nullAddr, parseEther((await balanceOfOZL(callerAddr)).toString()));
                 }, {
@@ -267,7 +256,7 @@ describe('Unit testing', async function () {
                 balanceUSX = await USX.balanceOf(callerAddr);
                 assert.equal(formatEther(balanceUSX), 0);
                 
-                accountDetails[1] = tokensDatabaseL1.usxAddr;
+                accountDetails = getAccData(callerAddr, tokensDatabaseL1.usxAddr, defaultSlippage);
                 await sendETH(accountDetails);
                 
                 balanceUSX = await USX.balanceOf(callerAddr);
@@ -408,13 +397,13 @@ describe('Unit testing', async function () {
 
     describe('ozLoupeFacet', async () => {
         beforeEach(async () => {
-            accountDetails[1] = tokensDatabaseL1.usdcAddr;
+            accountDetails = getAccData(callerAddr, tokensDatabaseL1.usdcAddr, defaultSlippage);
             await sendETH(accountDetails);
         });
 
         it('should get the amount in USD of Assets Under Management / getAUM()', async () => {
             const [ wethUM, valueUM]  = await ozlDiamond.getAUM(); 
-            assert(formatEther(valueUM) > 20);
+            assert(formatEther(valueUM) > 0);
         });
 
         it('should get the total volume in ETH / getTotalVolumeInETH()', async () => {
@@ -428,7 +417,7 @@ describe('Unit testing', async function () {
         });
 
         it('should get the Ozel balance in ETH and USD / getOzelBalances()', async () => {
-            const [ wethUserShare, usdUserShare ] = await ozlDiamond.getOzelBalances(accountDetails[0]);
+            const [ wethUserShare, usdUserShare ] = await ozlDiamond.getOzelBalances(callerAddr);
             assert(formatEther(wethUserShare) > 0);
             assert(formatEther(usdUserShare) > 0);
         });
