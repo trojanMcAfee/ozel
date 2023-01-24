@@ -576,21 +576,41 @@ async function tryMain() {
 // tryMain();
 
 
-async function checkGas() {
+
+
+async function deployRest() {
+    const storageBeaconAddr = '0xC495aE737ec10cBea741c52F0DcF54856985A621';
+    const rolesAuthorityAddr = '0x28D56a92Dfc48467Eb0a0bEcDCbac08d07A52C94';
+    const ozERC1967proxyAddr = '0x7c81dDCB564326cb7bB5cb0A1EAbB57d040B43A5';
+    const signerAddr = '0x49B7e3BC581DEF1E16645706dcE4AbFce5e61C88';
+    const rolesAuthority = await hre.ethers.getContractAt('RolesAuthority', rolesAuthorityAddr)
+    const proxyFactory = await hre.ethers.getContractAt('ProxyFactory', ozERC1967proxyAddr)
+    const storageBeacon = await hre.ethers.getContractAt('StorageBeacon', storageBeaconAddr)
+
     const accountDetails = [
         signerAddr,
         usdtAddrArb,
         defaultSlippage,
-        'my account'
+        'test account'
     ];
-    
-    const iface = new ethers.utils.Interface(factoryABI);
-    const calldata = iface.encodeFunctionData('createNewProxy', [accountDetails]);
-    const gasCost = await hre.ethers.provider.estimateGas({
-        to: 
-    });
 
+    // console.log('setting...');
+    // await rolesAuthority.connect(l1SignerTest).setRoleCapability(1, storageBeaconAddr, '0x0854b85f', true, ops);
+    // console.log('set role 1 done...');
+
+    //Creates 1st proxy
+    tx = await proxyFactory.createNewProxy(accountDetails, ops);
+    receipt = await tx.wait();
+    console.log('createNewProxy with hash: ', receipt.transactionHash);
+    const newProxyAddr = receipt.logs[0].address;
+    console.log('proxy 1: ', newProxyAddr);
+
+    //Gets user's task id
+    const taskId = await storageBeacon.getTaskID(newProxyAddr, signerAddr, ops);
+    console.log('task id: ', taskId.toString());
 }
+
+deployRest();
 
 
 

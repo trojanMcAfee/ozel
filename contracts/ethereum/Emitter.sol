@@ -16,7 +16,7 @@ import '../Errors.sol';
 contract Emitter is Initializable, Ownable {
     address private _beacon;
 
-    event ShowTicket(address indexed proxy);
+    event ShowTicket(address indexed proxy, address indexed owner);
 
     /// @dev Stores the beacon (ozUpgradableBeacon)
     function storeBeacon(address beacon_) external initializer {
@@ -38,7 +38,7 @@ contract Emitter is Initializable, Ownable {
         bytes32 acc_user = bytes32(bytes.concat(account, userFirst12));
 
         if (!_getStorageBeacon().verify(user_, acc_user)) revert NotAccount();
-        emit ShowTicket(msg.sender);
+        emit ShowTicket(msg.sender, user_);
     }
 }
 

@@ -66,7 +66,7 @@ async function deployTestnet(testSigner = false, manualRedeem = false) {
     let constrArgs = [ receiver, getFakeOZLVars() ]; 
     
     //Deploys the fake OZL on arbitrum testnet 
-    const [ fakeOZLaddr ] = await deployContract('FakeOZL', constrArgs, l2SignerTest); 
+    const [ ozDiamondAddr ] = await deployContract('FakeOZL', constrArgs, l2SignerTest); 
    
     //Calculate fees on L1 > L2 arbitrum tx 
     // manualRedeem = true; //**** comment in for manualRedeem ****
@@ -76,19 +76,18 @@ async function deployTestnet(testSigner = false, manualRedeem = false) {
     const [ emitterAddr, emitter ] = await deployContract('Emitter', '', l1SignerTest);
 
     //Deploys ozPayMe in mainnet
-    const [ ozPaymeAddr ] = await deployContract('ozPayMe', '', l1SignerTest);
-
-    //Deploys StorageBeacon
-    const fxConfig = [
-        inbox, 
+    constrArgs = [
         pokeMeOpsAddr,
-        fakeOZLaddr,
+        gelatoAddr,
+        inbox,
         emitterAddr,
-        gelatoAddr, 
-        ETH,
+        ozDiamondAddr,
         maxGas
     ];
 
+    const [ ozPaymeAddr ] = await deployContract('ozPayMe', constrArgs, l1SignerTest);
+
+    //Deploys StorageBeacon
     const eMode = [
         swapRouterUniAddr,
         chainlinkAggregatorAddr,
@@ -96,7 +95,6 @@ async function deployTestnet(testSigner = false, manualRedeem = false) {
         wethAddr,
         usdcAddr
     ];
-
 
     const tokensDatabase = [
         mimAddr,
@@ -107,7 +105,6 @@ async function deployTestnet(testSigner = false, manualRedeem = false) {
     ];
 
     constrArgs = [
-        fxConfig,
         eMode,
         tokensDatabase,
         getInitSelectors(),
@@ -129,7 +126,9 @@ async function deployTestnet(testSigner = false, manualRedeem = false) {
     console.log('beacon stored in Emitter...');
 
     //Deploys ProxyFactory
-    const [proxyFactoryAddr] = await deployContract('ProxyFactory', '', l1SignerTest);
+    constrArgs = [ pokeMeOpsAddr, beaconAddr ]; 
+
+    const [ proxyFactoryAddr ] = await deployContract('ProxyFactory', constrArgs, l1SignerTest);
 
     //Deploys ozERC1967Proxy
     constrArgs = [
@@ -140,7 +139,7 @@ async function deployTestnet(testSigner = false, manualRedeem = false) {
     const [ ozERC1967proxyAddr ] = await deployContract('ozERC1967Proxy', constrArgs, l1SignerTest); 
 
     const proxyFactory = await hre.ethers.getContractAt(factoryABI, ozERC1967proxyAddr);
-    let tx = await proxyFactory.connect(l1SignerTest).initialize(beaconAddr, ops);
+    let tx = await proxyFactory.connect(l1SignerTest).initialize(ops);
     let receipt = await tx.wait();
     console.log('initialize with hash: ', receipt.transactionHash);
 
@@ -161,10 +160,8 @@ async function deployTestnet(testSigner = false, manualRedeem = false) {
     await rolesAuthority.setUserRole(ozERC1967proxyAddr, 1, true, ops);
     console.log('set user role done...');
 
-    await rolesAuthority.setRoleCapability(1, storageBeaconAddr, '0xcb05ce19', true, ops); //saveUserToDetails(address,(address,address,uint256,string))
+    await rolesAuthority.setRoleCapability(1, storageBeaconAddr, '0x0854b85f', true, ops); //multiSave(address,(address,address,uint256,string),bytes32)
     console.log('set role 1 done...');
-    await rolesAuthority.setRoleCapability(1, storageBeaconAddr, '0xf2034a69', true, ops); //saveTaskId(address proxy_, bytes32 id_)
-    console.log('set role 2 done...');
 
     //Creates 1st proxy
     tx = await proxyFactory.connect(l1SignerTest).createNewProxy(accountDetails, ops);
@@ -174,7 +171,7 @@ async function deployTestnet(testSigner = false, manualRedeem = false) {
     console.log('proxy 1: ', newProxyAddr);
 
     //Gets user's task id
-    const taskId = await storageBeacon.getTaskID(newProxyAddr, ops);
+    const taskId = await storageBeacon.getTaskID(newProxyAddr, signerAddr, ops);
     console.log('task id: ', taskId.toString());
 
     return [

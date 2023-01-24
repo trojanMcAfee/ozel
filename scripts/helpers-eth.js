@@ -259,7 +259,6 @@ async function deploySystem(type, signerAddr) {
     const [ ozDiamondAddr ] = await deployContract('FakeOZL', constrArgs);
     // const ozDiamondAddr = '0xAdc0DC1af7DF5ff763a6ce132f62B967b57E0951';
 
-
     //Calculate fees on L1 > L2 arbitrum tx
     const [ gasPriceBid, maxGas ] = await getArbitrumParams();
 
