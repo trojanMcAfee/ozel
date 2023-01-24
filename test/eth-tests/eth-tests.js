@@ -105,18 +105,6 @@ let isAuthorized, newSelector;
             fakeOzl = await hre.ethers.getContractAt('FakeOZL', fakeOZLaddr);
         }); 
 
-        describe('Measure gas', async () => {
-            it('should throw gas on createNewProxy', async () => {
-                const iface = new ethers.utils.Interface(factoryABI);
-                const data = iface.encodeFunctionData('createNewProxy', [accountDetails]);
-                const gasCost = await hre.ethers.provider.estimateGas({
-                    to: ozERC1967proxyAddr,
-                    data
-                });
-                console.log('gas cost: ', Number(gasCost));
-            });
-        });
-
         describe('ProxyFactory', async () => {
             describe('Deploys one account', async () => {
                 it('should create a account successfully / createNewProxy()', async () => {
@@ -209,7 +197,7 @@ let isAuthorized, newSelector;
                 });
             });
 
-            xdescribe('Deploys 5 accounts', async () => { 
+            describe('Deploys 5 accounts', async () => { 
                 before(async () => {
                     accountDetails[1] = usdcAddr;
                     for (let i=0; i < 5; i++) {
@@ -237,7 +225,7 @@ let isAuthorized, newSelector;
                 });
             });
 
-            xdescribe('Upgrade the Factory', async () => {
+            describe('Upgrade the Factory', async () => {
                 it('should return the current implementation of the Proxy Factory / ozERC1967Proxy - getImplementation()', async () => {
                     impl = await proxyFactory.getImplementation();
                     assert.equal(impl, proxyFactoryAddr);
@@ -284,7 +272,7 @@ let isAuthorized, newSelector;
             });
         });
 
-        xdescribe('ozAccountProxy / ozPayMe', async () => {
+        describe('ozAccountProxy / ozPayMe', async () => {
             before(async () => {
                 newProxyAddr = await createProxy(proxyFactory, accountDetails);
                 newProxy = await hre.ethers.getContractAt(proxyABIeth, newProxyAddr);
@@ -417,7 +405,7 @@ let isAuthorized, newSelector;
             });
         });
 
-        xdescribe('Emitter', async () => {
+        describe('Emitter', async () => {
             before(async () => {
                 accountDetails = [
                     signerAddr,
@@ -455,7 +443,7 @@ let isAuthorized, newSelector;
             }); 
         });
     
-        xdescribe('StorageBeacon', async () => {
+        describe('StorageBeacon', async () => {
             it('should allow the owner to change changeGasPriceBid / changeGasPriceBid()', async () => {
                 await storageBeacon.changeGasPriceBid(100);
             });
@@ -671,7 +659,7 @@ let isAuthorized, newSelector;
             });
         });
 
-        xdescribe('ozUpgradeableBeacon', async () => {
+        describe('ozUpgradeableBeacon', async () => {
             it('should allow the owner to upgrade the Storage Beacon / upgradeStorageBeacon()', async () => {
                 [storageBeaconMockAddr , storageBeaconMock] = await deployContract('StorageBeaconMock');
                 await beacon.upgradeStorageBeacon(storageBeaconMockAddr);
@@ -726,7 +714,7 @@ let isAuthorized, newSelector;
             });
         });
 
-        xdescribe('FakeOZL', async () => {
+        describe('FakeOZL', async () => {
             it('should get the total volume in USD / getTotalVolumeInUSD', async () => {
                 volume = await fakeOzl.getTotalVolumeInUSD(); 
                 assert.equal(formatEther(volume), 500);
@@ -782,7 +770,7 @@ let isAuthorized, newSelector;
     });
 
     
-    xdescribe('Pesimistic deployment', async function () {
+    describe('Pesimistic deployment', async function () {
 
         /**
          * Deploys ozPayMeNoRedeem. which has an autoRedeem of 0, instead of ozPayme 
