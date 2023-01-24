@@ -293,8 +293,14 @@ describe('Unit testing', async function () {
         evilAmount = parseEther('1000');
     });
 
-    describe('OZLFacet', async () => { 
+    describe('OZLFacet', async () => {
         describe('exchangeToAccountToken()', async () => {
+            it('should get in accountPayments the exact amount of ETH sent to the account', async () => {
+                await sendETH(accountDetails);
+                const payments = await ozlDiamond.getAccountPayments(deadAddr);
+                assert.equal(formatEther(payments), 10);
+            });
+
             it('should fail with user as address(0)', async () => {
                 accountDetails = getAccData(nullAddr, tokensDatabaseL1.fraxAddr, defaultSlippage);
                 await assert.rejects(async () => {
@@ -644,6 +650,11 @@ describe('Unit testing', async function () {
         it("should get the protocol's fee / getProtocolFee()", async () => {
             const fee = await ozlDiamond.getProtocolFee();
             assert.equal(Number(fee), protocolFee);
+        });
+
+        it('should return the owner of the account / getUserByL1Account()', async () => {
+            const owner = await ozlDiamond.getUserByL1Account(deadAddr);
+            assert.equal(owner, callerAddr);
         });
     });
 });

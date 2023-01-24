@@ -4,7 +4,6 @@ pragma solidity 0.8.14;
 
 import '../ethereum/StorageBeacon.sol';
 import '../libraries/LibCommon.sol';
-import './AppStorage.sol';
 import './Bits.sol';
 import '../Errors.sol';
 

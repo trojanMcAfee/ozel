@@ -10,7 +10,7 @@ import '../libraries/LibCommon.sol';
 import './ozUpgradeableBeacon.sol';
 import '../Errors.sol';
 
-import 'hardhat/console.sol';
+
 /**
  * @title Main storage contract for the L1 side of the system.
  * @notice It acts as a separate centralized beacon that functions query for state

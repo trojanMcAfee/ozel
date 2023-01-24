@@ -7,7 +7,7 @@ import '@openzeppelin/contracts/access/Ownable.sol';
 import './StorageBeacon.sol';
 import '../Errors.sol';
 
-import 'hardhat/console.sol';
+
 /**
  * @title Forwarding contract for manual redeems.
  * @notice Forwards the address of the account that received a transfer, for a check-up

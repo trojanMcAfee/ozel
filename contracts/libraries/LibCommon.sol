@@ -4,7 +4,7 @@ pragma solidity 0.8.14;
 
 import { TradeOps } from '../arbitrum/AppStorage.sol';
 
-import 'hardhat/console.sol';
+
 /**
  * @notice Library of common methods using in both L1 and L2 contracts
  */
