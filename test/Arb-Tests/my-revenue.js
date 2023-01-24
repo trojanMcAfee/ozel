@@ -9,7 +9,8 @@ const {
     sendETH,
     deploy,
     getTestingNumber,
-    replaceForModVersion
+    replaceForModVersion,
+    getAccData
 } = require('../../scripts/helpers-arb.js');
 
 const { 
@@ -55,13 +56,7 @@ describe('My Revenue', async function() {
         } = deployedVars);
     
         getVarsForHelpers(deployedDiamond, ozlFacet);
-
-        accountDetails = [
-            callerAddr,
-            tokensDatabaseL1.fraxAddr, 
-            defaultSlippage,
-            'myAccount'
-        ];
+        accountDetails = getAccData(callerAddr, tokensDatabaseL1.fraxAddr, defaultSlippage);
 
         abi = ['function checkForRevenue() external payable'];
         iface = new ethers.utils.Interface(abi);
