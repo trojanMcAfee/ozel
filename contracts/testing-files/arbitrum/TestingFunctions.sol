@@ -402,186 +402,196 @@ contract SwapsForUserTokenV3 is SecondaryFunctions {
 //     UpdateIndex()
 //  */
 
-// contract UpdateIndexV1 is ModifiersARB {
-//     using FixedPointMathLib for uint;
+contract UpdateIndexV1 is ModifiersARB {
+    using FixedPointMathLib for uint;
 
-//     function updateExecutorState(
-//         uint amount_, 
-//         address user_,
-//         uint lockNum_
-//     ) external payable isAuthorized(lockNum_) noReentrancy(2) {
-//         s.usersPayments[user_] += amount_;
-//         s.totalVolume += amount_;
-//         _updateIndex();
-//     }
-
-
-//     function _updateIndex() private { 
-//         uint oneETH = 1 ether; 
-//         if (s.totalVolume == 100 * oneETH) s.indexFlag = true;
-
-//         if (s.indexFlag) { 
-//             s.ozelIndex = 19984000000000000000;
-//             s.invariantRegulator = 8;
-//             s.indexRegulator = 3;
-//             s.totalVolume = 128200000000000000000000;
-
-//             s.usersPayments[0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266] = 32100 * 1 ether;
-//             s.usersPayments[0x70997970C51812dc3A010C7d01b50e0d17dc79C8] = 32000 * 1 ether;
-//             s.usersPayments[0x3C44CdDdB6a900fa2b585dd299e03d12FA4293BC] = 32000 * 1 ether;
-//             s.usersPayments[0x90F79bf6EB2c4f870365E785982E1f101E93b906] = 32000 * 1 ether;
-//             s.indexFlag = false;
-//         }
-
-//        if (s.ozelIndex < 237000 * oneETH && s.ozelIndex != 0) { 
-//             uint nextInQueueRegulator = s.invariantRegulator * 2;
-
-//             if (nextInQueueRegulator <= 16) { 
-//                 s.invariantRegulator = nextInQueueRegulator; 
-//                 s.indexRegulator++; 
-//             } else {
-//                 s.invariantRegulator /= (16 / 2); 
-//                 s.indexRegulator = 1; 
-//                 s.indexFlag = s.indexFlag ? false : true;
-//                 s.regulatorCounter++; 
-//             }
-//         } 
-
-//         s.ozelIndex = 
-//             s.totalVolume != 0 ? 
-//             oneETH.mulDivDown((s.invariant2 * s.invariantRegulator), s.totalVolume) * (s.invariant * s.invariantRegulator) : 
-//             0; 
-
-//         s.ozelIndex = s.indexFlag ? s.ozelIndex : s.ozelIndex * s.stabilizer;
-//     }
-// }
+    function updateExecutorState(
+        uint amount_, 
+        address user_,
+        uint lockNum_
+    ) external payable isAuthorized(lockNum_) noReentrancy(2) {
+        s.usersPayments[user_] += amount_;
+        s.totalVolume += amount_;
+        _updateIndex();
+    }
 
 
-// /**
-//     DepositFeesInDeFi()
-//  */
+    function _updateIndex() private { 
+        uint oneETH = 1 ether; 
+        if (s.totalVolume == 100 * oneETH) s.indexFlag = true;
 
-// contract DepositFeesInDeFiV1 is SecondaryFunctions {
-//     using SafeERC20 for IERC20;
+        if (s.indexFlag) { 
+            s.ozelIndex = 19984000000000000000;
+            s.invariantRegulator = 8;
+            s.indexRegulator = 3;
+            s.totalVolume = 128200000000000000000000;
 
-//     event ForTesting(uint indexed testNum);
+            s.usersPayments[0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266] = 32100 * 1 ether;
+            s.usersPayments[0x70997970C51812dc3A010C7d01b50e0d17dc79C8] = 32000 * 1 ether;
+            s.usersPayments[0x3C44CdDdB6a900fa2b585dd299e03d12FA4293BC] = 32000 * 1 ether;
+            s.usersPayments[0x90F79bf6EB2c4f870365E785982E1f101E93b906] = 32000 * 1 ether;
+            s.indexFlag = false;
+        }
 
-//     function exchangeToAccountToken(
-//         AccountConfig memory acc_
-//     ) external payable noReentrancy(0) filterDetails(acc_) { 
-//         if (msg.value <= 0) revert CantBeZero('msg.value');
+       if (s.ozelIndex < 237000 * oneETH && s.ozelIndex != 0) { 
+            uint nextInQueueRegulator = s.invariantRegulator * 2;
 
-//         if (s.failedFees > 0) _depositFeesInDeFi(s.failedFees, true);
+            if (nextInQueueRegulator <= 16) { 
+                s.invariantRegulator = nextInQueueRegulator; 
+                s.indexRegulator++; 
+            } else {
+                s.invariantRegulator /= (16 / 2); 
+                s.indexRegulator = 1; 
+                s.indexFlag = s.indexFlag ? false : true;
+                s.regulatorCounter++; 
+            }
+        } 
 
-//         IWETH(s.WETH).deposit{value: msg.value}();
-//         uint wethIn = IWETH(s.WETH).balanceOf(address(this));
-//         wethIn = s.failedFees == 0 ? wethIn : wethIn - s.failedFees;
+        s.ozelIndex = 
+            s.totalVolume != 0 ? 
+            oneETH.mulDivDown((s.invariant2 * s.invariantRegulator), s.totalVolume) * (s.invariant * s.invariantRegulator) : 
+            0; 
 
-//         //Mutex bitmap lock
-//         _toggleBit(1, 0);
+        s.ozelIndex = s.indexFlag ? s.ozelIndex : s.ozelIndex * s.stabilizer;
+    }
+}
 
-//         //Deposits in oz4626Facet
-//         bytes memory data = abi.encodeWithSignature(
-//             'deposit(uint256,address,uint256)', 
-//             wethIn, acc_.user, 0
-//         );
 
-//         LibDiamond.callFacet(data);
+/**
+    DepositFeesInDeFi()
+ */
 
-//         (uint netAmountIn, uint fee) = _getFee(wethIn);
+contract DepositFeesInDeFiV1 is SecondaryFunctions {
+    using SafeERC20 for IERC20;
 
-//         uint baseTokenOut = 
-//             acc_.token == s.WBTC ? 1 : 0;
+    event ForTesting(uint indexed testNum);
+    event DeadVars(address token);
 
-//         //Swaps WETH to token (Base: USDT-WBTC / Route: MIM-USDC-FRAX) 
-//         _swapsForBaseToken(
-//             netAmountIn, baseTokenOut, acc_
-//         );
+    function exchangeToAccountToken(
+        bytes memory accData_,
+        uint amountToSend_,
+        address account_
+    ) external payable noReentrancy(0) { 
+        (address user, address token, uint slippage) = _filter(accData_);
+
+        if (msg.value <= 0) revert CantBeZero('msg.value');
+        if (s.failedFees > 0) _depositFeesInDeFi(s.failedFees, true);
+
+        s.accountPayments[account_] += amountToSend_; 
+        if (s.accountToUser[account_] == address(0)) s.accountToUser[account_] = user;
+
+        IWETH(s.WETH).deposit{value: msg.value}();
+        uint wethIn = IWETH(s.WETH).balanceOf(address(this));
+        wethIn = s.failedFees == 0 ? wethIn : wethIn - s.failedFees;
+
+        //Mutex bitmap lock
+        _toggleBit(1, 0);
+
+        //Deposits in oz4626Facet
+        bytes memory data = abi.encodeWithSignature(
+            'deposit(uint256,address,uint256)', 
+            wethIn, user, 0
+        );
+
+        LibDiamond.callFacet(data);
+
+        (uint netAmountIn, uint fee) = _getFee(wethIn);
+
+        uint baseTokenOut = 
+            token == s.WBTC ? 1 : 0;
+
+        //Swaps WETH to token (Base: USDT-WBTC / Route: MIM-USDC-FRAX) 
+        _swapsForBaseToken(
+            netAmountIn, baseTokenOut, slippage, user, token
+        );
       
-//         uint toUser = IERC20(acc_.token).balanceOf(address(this));
-//         if (toUser > 0) IERC20(acc_.token).safeTransfer(acc_.user, toUser);
+        uint toUser = IERC20(token).balanceOf(address(this));
+        if (toUser > 0) IERC20(token).safeTransfer(user, toUser);
 
-//         _depositFeesInDeFi(fee, false);
-//     }
+        _depositFeesInDeFi(fee, false);
+    }
 
 
-//     function _swapsForBaseToken(
-//         uint amountIn_, 
-//         uint baseTokenOut_, 
-//         AccountConfig memory acc_
-//     ) private { 
-//         IERC20(s.WETH).approve(s.tricrypto, amountIn_);
+    function _swapsForBaseToken(
+        uint amountIn_, 
+        uint baseTokenOut_, 
+        uint slippage_,
+        address user_,
+        address token_
+    ) private { 
+        IERC20(s.WETH).approve(s.tricrypto, amountIn_);
+        emit DeadVars(token_);
 
-//         /**** 
-//             Exchanges the amount between the user's slippage. 
-//             If it fails, it doubles the slippage, divides the amount between two and tries again.
-//             If none works, sends the WETH back to the user.
-//         ****/ 
-//         for (uint i=1; i <= 2; i++) {
-//             uint minOut = ITri(s.tricrypto).get_dy(2, baseTokenOut_, amountIn_ / i);
-//             uint slippage = ozExecutorFacet(s.executor).calculateSlippage(minOut, acc_.slippage * i);
+        /**** 
+            Exchanges the amount between the user's slippage. 
+            If it fails, it doubles the slippage, divides the amount between two and tries again.
+            If none works, sends the WETH back to the user.
+        ****/ 
+        for (uint i=1; i <= 2; i++) {
+            uint minOut = ITri(s.tricrypto).get_dy(2, baseTokenOut_, amountIn_ / i);
+            uint slippage = ozExecutorFacet(s.executor).calculateSlippage(minOut, slippage_ * i);
             
-//             try ITri(s.tricrypto).exchange(2, baseTokenOut_, amountIn_ / i, slippage, false) {
-//                 if (i == 2) {
-//                     try ITri(s.tricrypto).exchange(2, baseTokenOut_, amountIn_ / i, slippage, false) {
-//                         break;
-//                     } catch {
-//                         IERC20(s.WETH).transfer(acc_.user, amountIn_ / 2); 
-//                         break;
-//                     }
-//                 }
-//                 break;
-//             } catch {
-//                 if (i == 1) {
-//                     continue;
-//                 } else {
-//                     IERC20(s.WETH).transfer(acc_.user, amountIn_); 
-//                 }
-//             }
-//         }
-//     }
+            try ITri(s.tricrypto).exchange(2, baseTokenOut_, amountIn_ / i, slippage, false) {
+                if (i == 2) {
+                    try ITri(s.tricrypto).exchange(2, baseTokenOut_, amountIn_ / i, slippage, false) {
+                        break;
+                    } catch {
+                        IERC20(s.WETH).transfer(user_, amountIn_ / 2); 
+                        break;
+                    }
+                }
+                break;
+            } catch {
+                if (i == 1) {
+                    continue;
+                } else {
+                    IERC20(s.WETH).transfer(user_, amountIn_); 
+                }
+            }
+        }
+    }
 
 
-//     function _depositFeesInDeFi(uint fee_, bool isRetry_) private { 
-//         //Deposit WETH in Curve Tricrypto pool
-//         (uint tokenAmountIn, uint[3] memory amounts) = _calculateTokenAmountCurve(fee_);
+    function _depositFeesInDeFi(uint fee_, bool isRetry_) private { 
+        //Deposit WETH in Curve Tricrypto pool
+        (uint tokenAmountIn, uint[3] memory amounts) = _calculateTokenAmountCurve(fee_);
 
-//         IERC20(s.WETH).approve(s.tricrypto, tokenAmountIn);
+        IERC20(s.WETH).approve(s.tricrypto, tokenAmountIn);
 
-//         for (uint i=1; i <= 2; i++) {
-//             uint minAmount = ozExecutorFacet(s.executor).calculateSlippage(tokenAmountIn, s.defaultSlippage * i);
+        for (uint i=1; i <= 2; i++) {
+            uint minAmount = ozExecutorFacet(s.executor).calculateSlippage(tokenAmountIn, s.defaultSlippage * i);
 
-//             //Testing variable
-//             uint testVar = isRetry_ ? minAmount : type(uint).max;
+            //Testing variable
+            uint testVar = isRetry_ ? minAmount : type(uint).max;
 
-//             try ITri(s.tricrypto).add_liquidity(amounts, testVar) { 
+            try ITri(s.tricrypto).add_liquidity(amounts, testVar) { 
 
-//                 //Deposit crvTricrypto in Yearn
-//                 IERC20(s.crvTricrypto).approve(
-//                     s.yTriPool, IERC20(s.crvTricrypto).balanceOf(address(this))
-//                 );
+                //Deposit crvTricrypto in Yearn
+                IERC20(s.crvTricrypto).approve(
+                    s.yTriPool, IERC20(s.crvTricrypto).balanceOf(address(this))
+                );
 
-//                 IYtri(s.yTriPool).deposit(IERC20(s.crvTricrypto).balanceOf(address(this)));
+                IYtri(s.yTriPool).deposit(IERC20(s.crvTricrypto).balanceOf(address(this)));
 
-//                 //Internal fees accounting
-//                 if (s.failedFees > 0) s.failedFees = 0;
-//                 s.feesVault += fee_;
+                //Internal fees accounting
+                if (s.failedFees > 0) s.failedFees = 0;
+                s.feesVault += fee_;
 
-//                 emit ForTesting(24);
-//                 break;
-//             } catch {
-//                 if (i == 1) {
-//                     continue;
-//                 } else {
-//                     if (!isRetry_) {
-//                         s.failedFees += fee_;
-//                         emit ForTesting(23);
-//                     } 
-//                 }
-//             }
-//         }
-//     }
-// }
+                emit ForTesting(24);
+                break;
+            } catch {
+                if (i == 1) {
+                    continue;
+                } else {
+                    if (!isRetry_) {
+                        s.failedFees += fee_;
+                        emit ForTesting(23);
+                    } 
+                }
+            }
+        }
+    }
+}
 
 
 // /**

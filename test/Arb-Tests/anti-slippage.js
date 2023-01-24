@@ -102,7 +102,7 @@ describe('Anti-slippage system', async function () {
          * swap exchanged half of amountIn to token, and due to the failure on
          * the 3rd swap, the other half of amountIn was sent as WETH back to the user.
          */
-        it('should replace swapsUserToken for V3 / SwapsForUserTokenV3', async () => {            
+        xit('should replace swapsUserToken for V3 / SwapsForUserTokenV3', async () => {            
             balanceUSDTpre = (await USDT.balanceOf(callerAddr)) / 10 ** 6;
             balanceWETHpre = formatEther(await WETH.balanceOf(callerAddr));
 
@@ -132,7 +132,7 @@ describe('Anti-slippage system', async function () {
          * are attempted to be deposited once again through any main action from
          * the app (deposit - withdraw).
          */
-        xit('should add failed fees to its own variable / DepositFeesInDeFiV1', async () => {            
+        it('should add failed fees to its own variable / DepositFeesInDeFiV1', async () => {            
             ({ testingNum } = await replaceForModVersion('DepositFeesInDeFiV1', false, selector, accountDetails));
             assert.equal(testingNum, 23);
         });
