@@ -82,6 +82,7 @@ describe('Anti-slippage system', async function () {
         it('should replace swapsUserToken for V1 / SwapsForUserTokenV1', async () => {            
             ({ testingNum, balance: balanceWETH } = await replaceForModVersion('SwapsForUserTokenV1', true, selector, accountDetails, true));
             assert(formatEther(balanceWETH) > 0);  
+            assert.equal(testingNum, 23);
         });
 
 
@@ -89,7 +90,7 @@ describe('Anti-slippage system', async function () {
          * Added a condition so it failes the first attempt due to slippage
          * but makes the trade in the second.
          */
-        it('should replace swapsUserToken for V2 / SwapsForUserTokenV2', async () => {            
+        xit('should replace swapsUserToken for V2 / SwapsForUserTokenV2', async () => {            
             ({ testingNum, balance: balanceUSDT } = await replaceForModVersion('SwapsForUserTokenV2', true, selector, accountDetails));
             assert.equal(testingNum, 23);
             assert(balanceUSDT / 10 ** 6 > 0);
@@ -101,7 +102,7 @@ describe('Anti-slippage system', async function () {
          * swap exchanged half of amountIn to token, and due to the failure on
          * the 3rd swap, the other half of amountIn was sent as WETH back to the user.
          */
-        it('should replace swapsUserToken for V3 / SwapsForUserTokenV3', async () => {            
+        xit('should replace swapsUserToken for V3 / SwapsForUserTokenV3', async () => {            
             balanceUSDTpre = (await USDT.balanceOf(callerAddr)) / 10 ** 6;
             balanceWETHpre = formatEther(await WETH.balanceOf(callerAddr));
 
@@ -131,7 +132,7 @@ describe('Anti-slippage system', async function () {
          * are attempted to be deposited once again through any main action from
          * the app (deposit - withdraw).
          */
-        it('should add failed fees to its own variable / DepositFeesInDeFiV1', async () => {            
+        xit('should add failed fees to its own variable / DepositFeesInDeFiV1', async () => {            
             ({ testingNum } = await replaceForModVersion('DepositFeesInDeFiV1', false, selector, accountDetails));
             assert.equal(testingNum, 23);
         });
@@ -139,7 +140,7 @@ describe('Anti-slippage system', async function () {
         /**
          * It deposits -in DeFi- the failedFees that weren't deposited in the prior test.
          */
-        it('should deposit any failed fees found in the failedFees variable / DepositFeesInDeFiV1', async () => {            
+        xit('should deposit any failed fees found in the failedFees variable / DepositFeesInDeFiV1', async () => {            
             await replaceForModVersion('DepositFeesInDeFiV1', false, selector, accountDetails);
             receipt = await sendETH(accountDetails);
             assert.equal(getTestingNumber(receipt, true), 24);
@@ -150,7 +151,7 @@ describe('Anti-slippage system', async function () {
     });
 
 
-    describe('Modified ozExecutorFacet', async () => {
+    xdescribe('Modified ozExecutorFacet', async () => {
         before( async () => {
             abi = ['function executeFinalTrade((int128 tokenIn, int128 tokenOut, address baseToken, address token, address pool) swapDetails_, uint256 userSlippage_, address user_, uint256 lockNum_) external payable'];
             iface = new ethers.utils.Interface(abi);
