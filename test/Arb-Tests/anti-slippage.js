@@ -79,7 +79,7 @@ describe('Anti-slippage system', async function () {
          * in order to provoke all trades to fail (due to slippage) and invoke
          * the last resort mechanism (send WETH back to user)
          */ 
-        it('should replace swapsUserToken for V1 / SwapsForUserTokenV1', async () => {            
+        xit('should replace swapsUserToken for V1 / SwapsForUserTokenV1', async () => {            
             ({ testingNum, balance: balanceWETH } = await replaceForModVersion('SwapsForUserTokenV1', true, selector, accountDetails, true));
             assert(formatEther(balanceWETH) > 0);  
             assert.equal(testingNum, 23);
@@ -90,7 +90,7 @@ describe('Anti-slippage system', async function () {
          * Added a condition so it failes the first attempt due to slippage
          * but makes the trade in the second.
          */
-        xit('should replace swapsUserToken for V2 / SwapsForUserTokenV2', async () => {            
+        it('should replace swapsUserToken for V2 / SwapsForUserTokenV2', async () => {            
             ({ testingNum, balance: balanceUSDT } = await replaceForModVersion('SwapsForUserTokenV2', true, selector, accountDetails));
             assert.equal(testingNum, 23);
             assert(balanceUSDT / 10 ** 6 > 0);

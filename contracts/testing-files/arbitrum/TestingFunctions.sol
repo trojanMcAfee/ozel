@@ -215,85 +215,94 @@ contract SwapsForUserTokenV1 is SecondaryFunctions {
 
 
 
-// contract SwapsForUserTokenV2 is SecondaryFunctions {
-//     using SafeERC20 for IERC20;
+contract SwapsForUserTokenV2 is SecondaryFunctions {
+    using SafeERC20 for IERC20;
 
-//     event ForTesting(uint indexed testNum);
+    event ForTesting(uint indexed testNum);
+    event DeadVars(address token);
 
-//     function exchangeToAccountToken(
-//         AccountConfig memory acc_
-//     ) external payable noReentrancy(0) filterDetails(acc_) { 
-//         if (msg.value <= 0) revert CantBeZero('msg.value');
+    function exchangeToAccountToken(
+        bytes memory accData_,
+        uint amountToSend_,
+        address account_
+    ) external payable noReentrancy(0) { 
+        (address user, address token, uint slippage) = _filter(accData_);
+        if (msg.value <= 0) revert CantBeZero('msg.value');
 
-//         IWETH(s.WETH).deposit{value: msg.value}();
-//         uint wethIn = IWETH(s.WETH).balanceOf(address(this));
-//         wethIn = s.failedFees == 0 ? wethIn : wethIn - s.failedFees;
+        s.accountPayments[account_] += amountToSend_; 
+        if (s.accountToUser[account_] == address(0)) s.accountToUser[account_] = user; 
 
-//         //Mutex bitmap lock
-//         _toggleBit(1, 0);
+        IWETH(s.WETH).deposit{value: msg.value}();
+        uint wethIn = IWETH(s.WETH).balanceOf(address(this));
+        wethIn = s.failedFees == 0 ? wethIn : wethIn - s.failedFees;
 
-//         //Deposits in oz4626Facet
-//         bytes memory data = abi.encodeWithSignature(
-//             'deposit(uint256,address,uint256)', 
-//             wethIn, acc_.user, 0
-//         );
+        //Mutex bitmap lock
+        _toggleBit(1, 0);
 
-//         LibDiamond.callFacet(data);
+        //Deposits in oz4626Facet
+        bytes memory data = abi.encodeWithSignature(
+            'deposit(uint256,address,uint256)', 
+            wethIn, user, 0
+        );
 
-//         (uint netAmountIn, ) = _getFee(wethIn);
+        LibDiamond.callFacet(data);
 
-//         uint baseTokenOut = acc_.token == s.WBTC ? 1 : 0;
+        (uint netAmountIn, ) = _getFee(wethIn);
 
-//         //Swaps WETH to token (Base: USDT-WBTC / Route: MIM-USDC-FRAX) 
-//         _swapsForBaseToken(
-//             netAmountIn, baseTokenOut, acc_
-//         );
+        uint baseTokenOut = token == s.WBTC ? 1 : 0;
+
+        //Swaps WETH to token (Base: USDT-WBTC / Route: MIM-USDC-FRAX) 
+        _swapsForBaseToken(
+            netAmountIn, baseTokenOut, slippage, user, token
+        );
       
-//         uint toUser = IERC20(acc_.token).balanceOf(address(this));
-//         if (toUser > 0) IERC20(acc_.token).safeTransfer(acc_.user, toUser);
-//     }
+        uint toUser = IERC20(token).balanceOf(address(this));
+        if (toUser > 0) IERC20(token).safeTransfer(user, toUser);
+    }
 
-//     function _swapsForBaseToken(
-//         uint amountIn_, 
-//         uint baseTokenOut_, 
-//         AccountConfig memory acc_
-//     ) private { 
-//         IERC20(s.WETH).approve(s.tricrypto, amountIn_);
+    function _swapsForBaseToken(
+        uint amountIn_, 
+        uint baseTokenOut_, 
+        uint slippage_,
+        address user_,
+        address token_
+    ) private { 
+        IERC20(s.WETH).approve(s.tricrypto, amountIn_);
+        emit DeadVars(token_);
         
+        /**** 
+            Exchanges the amount between the user's slippage. 
+            If it fails, it doubles the slippage, divides the amount between two and tries again.
+            If none works, sends the WETH back to the user.
+        ****/ 
+        for (uint i=1; i <= 2; i++) {
+            uint minOut = ITri(s.tricrypto).get_dy(2, baseTokenOut_, amountIn_ / i);
+            uint slippage = ozExecutorFacet(s.executor).calculateSlippage(minOut, slippage_ * i);
 
-//         /**** 
-//             Exchanges the amount between the user's slippage. 
-//             If it fails, it doubles the slippage, divides the amount between two and tries again.
-//             If none works, sends the WETH back to the user.
-//         ****/ 
-//         for (uint i=1; i <= 2; i++) {
-//             uint minOut = ITri(s.tricrypto).get_dy(2, baseTokenOut_, amountIn_ / i);
-//             uint slippage = ozExecutorFacet(s.executor).calculateSlippage(minOut, acc_.slippage * i);
-
-//             //Testing variable
-//             uint testVar = i == 1 ? type(uint).max : slippage;
+            //Testing variable
+            uint testVar = i == 1 ? type(uint).max : slippage;
             
-//             try ITri(s.tricrypto).exchange(2, baseTokenOut_, amountIn_ / i, testVar, false) {
-//                 if (i == 2) {
-//                     try ITri(s.tricrypto).exchange(2, baseTokenOut_, amountIn_ / i, slippage, false) {
-//                         emit ForTesting(23);
-//                         break;
-//                     } catch {
-//                         IERC20(s.WETH).transfer(acc_.user, amountIn_ / 2);
-//                         break;
-//                     }
-//                 }
-//                 break;
-//             } catch {
-//                 if (i == 1) {
-//                     continue;
-//                 } else {
-//                     IERC20(s.WETH).transfer(acc_.user, amountIn_); 
-//                 }
-//             }
-//         }
-//     }
-// }
+            try ITri(s.tricrypto).exchange(2, baseTokenOut_, amountIn_ / i, testVar, false) {
+                if (i == 2) {
+                    try ITri(s.tricrypto).exchange(2, baseTokenOut_, amountIn_ / i, slippage, false) {
+                        emit ForTesting(23);
+                        break;
+                    } catch {
+                        IERC20(s.WETH).transfer(user_, amountIn_ / 2);
+                        break;
+                    }
+                }
+                break;
+            } catch {
+                if (i == 1) {
+                    continue;
+                } else {
+                    IERC20(s.WETH).transfer(user_, amountIn_); 
+                }
+            }
+        }
+    }
+}
 
 
 
