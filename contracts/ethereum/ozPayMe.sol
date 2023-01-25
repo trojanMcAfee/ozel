@@ -16,6 +16,7 @@ import '../interfaces/ethereum/IOps.sol';
 import '../interfaces/common/IWETH.sol';
 import '../libraries/LibCommon.sol';
 import './ozUpgradeableBeacon.sol';
+import './ozMiddleware.sol';
 import './FakeOZL.sol';
 import './Emitter.sol';
 import '../Errors.sol';
@@ -42,6 +43,7 @@ contract ozPayMe is ozIPayMe, ReentrancyGuard, Initializable {
     address private immutable ops;
     address private immutable inbox;
     address private immutable emitter;
+    address private immutable middleware;
 
     uint private immutable maxGas;
 
@@ -54,6 +56,7 @@ contract ozPayMe is ozIPayMe, ReentrancyGuard, Initializable {
         address inbox_,
         address emitter_,
         address ozDiamond_,
+        address middleware_,
         uint maxGas_
     ) {
         ops = ops_;
@@ -61,6 +64,7 @@ contract ozPayMe is ozIPayMe, ReentrancyGuard, Initializable {
         inbox = inbox_;
         emitter = emitter_;
         OZL = ozDiamond_;
+        middleware = middleware_;
         maxGas = maxGas_;
     }
 
@@ -122,7 +126,8 @@ contract ozPayMe is ozIPayMe, ReentrancyGuard, Initializable {
         
         bytes memory ticketData = createTicketData(gasPriceBid_, swapData, false);
 
-        bool isEmergency = ozMiddleware(middleware).forwardCall(ticketData, user, slippage);
+        bool isEmergency = 
+            ozMiddleware(middleware).forwardCall{value: address(this).balance}(ticketData, user, slippage);
 
         if (!isEmergency) {
             if (!storageBeacon.getEmitterStatus()) { 
@@ -134,18 +139,18 @@ contract ozPayMe is ozIPayMe, ReentrancyGuard, Initializable {
         
         //----------------
 
-        (bool success, ) = inbox.call{value: address(this).balance}(ticketData); 
-        if (!success) {
-            /// @dev If it fails the 1st bridge attempt, it decreases the L2 gas calculations
-            ticketData = createTicketData(gasPriceBid_, swapData, true);
-            (success, ) = inbox.call{value: address(this).balance}(ticketData);
+        // (bool success, ) = inbox.call{value: address(this).balance}(ticketData); 
+        // if (!success) {
+        //     /// @dev If it fails the 1st bridge attempt, it decreases the L2 gas calculations
+        //     ticketData = createTicketData(gasPriceBid_, swapData, true);
+        //     (success, ) = inbox.call{value: address(this).balance}(ticketData);
 
-            if (!success) {
-                _runEmergencyMode(user, slippage);
-                isEmergency = true;
-                emit EmergencyTriggered(user, amountToSend_);
-            }
-        }
+        //     if (!success) {
+        //         _runEmergencyMode(user, slippage);
+        //         isEmergency = true;
+        //         emit EmergencyTriggered(user, amountToSend_);
+        //     }
+        // }
 
         // if (!isEmergency) {
         //     if (!storageBeacon.getEmitterStatus()) { 
@@ -160,11 +165,11 @@ contract ozPayMe is ozIPayMe, ReentrancyGuard, Initializable {
      *      If it fails, it doubles the slippage and tries again.
      *      If it fails again, it sends WETH back to the user.
      */
-    function runEmergencyMode(address user_, uint16 slippage_) external nonReentrant onlyAccount { 
+    function runEmergencyMode(address user_, uint16 slippage_) external payable nonReentrant onlyAccount { 
         address sBeacon = _getStorageBeacon(_beacon, 0);
         StorageBeacon.EmergencyMode memory eMode = StorageBeacon(sBeacon).getEmergencyMode();
         
-        IWETH(eMode.tokenIn).deposit{value: address(this).balance}();
+        IWETH(eMode.tokenIn).deposit{value: msg.value}();
         uint balanceWETH = IWETH(eMode.tokenIn).balanceOf(address(this));
 
         IERC20(eMode.tokenIn).approve(address(eMode.swapRouter), balanceWETH);

@@ -4,32 +4,23 @@ pragma solidity 0.8.14;
 
 import './ozPayMe.sol';
 import './StorageBeacon.sol';
+import '@openzeppelin/contracts/access/Ownable.sol';
+import '../Errors.sol';
 
 
-contract ozMiddleware {
+contract ozMiddleware is Ownable {
 
     address private immutable beacon;
+    address private payme;
 
     constructor(address beacon_) {
-        StorageBeacon(_getStorageBeacon(0)).
         beacon = beacon_;
     }
 
-    modifier onlyAccount() {
-        if ()
-
-        /**
-            Verify here if msg.sender is an account. Also used in runEmergency in ozPayMe.
-
-            Could use Emitter's verify(), and there might be a way to refactor verify() so
-            only acc_user is needed to verify if an account made the call...check this.
-
-            Seems like it's not possible since the user is necessary to pull AccData from the mapping.
-
-            If so, use sBeacon's verify() to check that msg.sender is an account.
-
-            Check the gas consumption of all of this.
-         */
+    modifier onlyAccount(address user_) {
+        bytes32 acc_user = bytes32(bytes.concat(msg.sender, bytes12(bytes20(user_)));
+        if (!_getStorageBeacon(0).verify(user_, bytes32 acc_user_)) revert NotAccount();
+        _;
     }
 
 
@@ -37,13 +28,13 @@ contract ozMiddleware {
         bytes memory ticketData_,
         address user_,
         uint16 slippage_
-    ) external onlyAccount returns(bool isEmergency) {
+    ) external payable onlyAccount(user_) returns(bool isEmergency) {
 
-        (bool success, ) = inbox.call{value: address(this).balance}(ticketData_); 
+        (bool success, ) = inbox.call{value: msg.value}(ticketData_); 
         if (!success) {
             /// @dev If it fails the 1st bridge attempt, it decreases the L2 gas calculations
             ticketData = ozPayMe(payme).createTicketData(gasPriceBid_, swapData, true);
-            (success, ) = inbox.call{value: address(this).balance}(ticketData);
+            (success, ) = inbox.call{value: msg.value}(ticketData);
 
             if (!success) {
                 bytes memory eData = abi.encodeWithSelector(
@@ -62,6 +53,10 @@ contract ozMiddleware {
     /// @dev Gets a version of the Storage Beacon
     function _getStorageBeacon(uint version_) private view returns(address) {
         return ozUpgradeableBeacon(beacon).storageBeacon(version_);
+    }
+
+    function setPayme(address newPayme_) external onlyOwner {
+        payme = newPayme_;
     }
 
 
