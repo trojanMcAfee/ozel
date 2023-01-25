@@ -58,6 +58,10 @@ contract ozCutFacet is DiamondCutFacet {
         emit newUniPoolFee(newPoolFee_);
     }
 
+    /**
+     * @dev Enables/disables the check for an L1 account token in
+     *      the entry call on exchangeToAccountToken of OZLFacet
+     */
     function changeL1Check(bool newState_) external {
         LibDiamond.enforceIsContractOwner();
         s.l1Check = newState_;

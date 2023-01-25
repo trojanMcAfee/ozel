@@ -35,10 +35,12 @@ const query = (taskId) => {
 
 
 process.on('message', async (msg) => {
-    const { proxy, storageBeaconAddr, redeemedHashesAddr } = msg;
+    let { proxy, storageBeaconAddr, redeemedHashesAddr } = msg;
+    ({ proxy, owner } = proxy);
+
     const storageBeacon = await hre.ethers.getContractAt('StorageBeacon', storageBeaconAddr);
 
-    let taskId = await storageBeacon.getTaskID(proxy);
+    let taskId = await storageBeacon.getTaskID(proxy, owner);
 
     //ETH has been sent out from the account/proxy by the Gelato call
     const balance = await hre.ethers.provider.getBalance(proxy);

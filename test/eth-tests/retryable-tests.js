@@ -44,10 +44,10 @@ async function runSetup() {
 }
 
 async function simulateDeployment() {
-    const storageBeaconAddr = '0xd7ED96eD862eCd10725De44770244269e2978b5E';
-    const redeemedHashesAddr = '0x9b482ed221e548a8cdB1B7177079Aef68D8AB298'; 
-    const emitterAddr = '0x124bd273D2007fb71151cb5e16e3Fc1557748147';
-    const newProxyAddr = '0xcA90E31fb005Eca302cdBd237d56C82A8D7183F0'; 
+    const storageBeaconAddr = '0x923F1A77B9F860E622492042edb840980B868Fe0';
+    const redeemedHashesAddr = '0xEbd24110595AEaAE06CD419eBBe0D4b7aAa5611b'; 
+    const emitterAddr = '0x23916341eC5d94f8719A7c79e0E778D1221daEFa';
+    const newProxyAddr = '0x85CAE8197d6dF67881764c6EeA55e664E6738235'; 
 
     return {
         StorageBeacon: storageBeaconAddr,
