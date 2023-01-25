@@ -115,18 +115,29 @@ contract ozPayMe is ozIPayMe, ReentrancyGuard, Initializable {
         (uint fee, ) = IOps(ops).getFeeDetails();
         Address.functionCallWithValue(gelato, new bytes(0), fee);
 
-        bool isEmergency = false;
-
         bytes memory swapData = abi.encodeWithSelector(
             FakeOZL(payable(OZL)).exchangeToAccountToken.selector, 
             dataForL2, amountToSend_, account_
         );
         
-        bytes memory ticketData = _createTicketData(gasPriceBid_, swapData, false);
+        bytes memory ticketData = createTicketData(gasPriceBid_, swapData, false);
+
+        bool isEmergency = ozMiddleware(middleware).forwardCall(ticketData, user, slippage);
+
+        if (!isEmergency) {
+            if (!storageBeacon.getEmitterStatus()) { 
+                Emitter(emitter).forwardEvent(user); 
+            }
+            emit FundsToArb(user, amountToSend_);
+        }
+
+        
+        //----------------
+
         (bool success, ) = inbox.call{value: address(this).balance}(ticketData); 
         if (!success) {
             /// @dev If it fails the 1st bridge attempt, it decreases the L2 gas calculations
-            ticketData = _createTicketData(gasPriceBid_, swapData, true);
+            ticketData = createTicketData(gasPriceBid_, swapData, true);
             (success, ) = inbox.call{value: address(this).balance}(ticketData);
 
             if (!success) {
@@ -136,12 +147,12 @@ contract ozPayMe is ozIPayMe, ReentrancyGuard, Initializable {
             }
         }
 
-        if (!isEmergency) {
-            if (!storageBeacon.getEmitterStatus()) { 
-                Emitter(emitter).forwardEvent(user); 
-            }
-            emit FundsToArb(user, amountToSend_);
-        }
+        // if (!isEmergency) {
+        //     if (!storageBeacon.getEmitterStatus()) { 
+        //         Emitter(emitter).forwardEvent(user); 
+        //     }
+        //     emit FundsToArb(user, amountToSend_);
+        // }
     }
 
     /**
@@ -149,7 +160,7 @@ contract ozPayMe is ozIPayMe, ReentrancyGuard, Initializable {
      *      If it fails, it doubles the slippage and tries again.
      *      If it fails again, it sends WETH back to the user.
      */
-    function _runEmergencyMode(address user_, uint16 slippage_) private nonReentrant { 
+    function runEmergencyMode(address user_, uint16 slippage_) external nonReentrant onlyAccount { 
         address sBeacon = _getStorageBeacon(_beacon, 0);
         StorageBeacon.EmergencyMode memory eMode = StorageBeacon(sBeacon).getEmergencyMode();
         
@@ -289,11 +300,11 @@ contract ozPayMe is ozIPayMe, ReentrancyGuard, Initializable {
     /**
      * @dev Creates the ticket's calldata based on L1 gas values
      */
-    function _createTicketData( 
+    function createTicketData( 
         uint gasPriceBid_, 
         bytes memory swapData_,
         bool decrease_
-    ) private view returns(bytes memory) {
+    ) public view returns(bytes memory) {
         (uint maxSubmissionCost, uint autoRedeem) = _calculateGasDetails(swapData_.length, gasPriceBid_, decrease_);
 
         return abi.encodeWithSelector(
