@@ -610,7 +610,30 @@ async function deployRest() {
     console.log('task id: ', taskId.toString());
 }
 
-deployRest();
+// deployRest();
+
+
+async function createAccount() {
+    const [ signer ] = await hre.ethers.getSigners();
+    const signerAddr = await signer.getAddress();
+
+    const ozERC1967proxyAddr = '0x65807f23057A3BA454f8430bCA2c399833f95ca1';
+    const proxyFactory = await hre.ethers.getContractAt('ProxyFactory', ozERC1967proxyAddr);
+
+    const accountDetails = [
+        signerAddr,
+        usdtAddrArb,
+        defaultSlippage,
+        'test account2'
+    ];
+
+    const tx = await proxyFactory.createNewProxy(accountDetails, ops);
+    const receipt = await tx.wait();
+    console.log('account created: ', receipt.transactionHash);
+    console.log('acc: ', receipt.logs[0].address);
+}
+
+createAccount();
 
 
 
