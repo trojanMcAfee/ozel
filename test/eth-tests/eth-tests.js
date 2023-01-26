@@ -105,6 +105,18 @@ let isAuthorized, newSelector;
             fakeOzl = await hre.ethers.getContractAt('FakeOZL', fakeOZLaddr);
         }); 
 
+        describe('Measure gas', async () => {
+            it('should throw gas on createNewProxy', async () => {
+                const iface = new ethers.utils.Interface(factoryABI);
+                const data = iface.encodeFunctionData('createNewProxy', [accountDetails]);
+                const gasCost = await hre.ethers.provider.estimateGas({
+                    to: ozERC1967proxyAddr,
+                    data
+                });
+                console.log('gas cost: ', Number(gasCost));
+            });
+        });
+
         describe('ProxyFactory', async () => {
             describe('Deploys one account', async () => {
                 it('should create a account successfully / createNewProxy()', async () => {
