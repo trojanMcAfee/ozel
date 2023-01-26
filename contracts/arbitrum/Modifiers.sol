@@ -8,7 +8,7 @@ import '../libraries/AddressAliasHelper.sol';
 import './Bits.sol';
 import '../Errors.sol';
 
-import 'hardhat/console.sol';
+
 /**
  * @title Modifiers for the L2 contracts
  */
@@ -45,7 +45,6 @@ abstract contract ModifiersARB is Bits {
 
     modifier onlyAuthorized() {
         address l1Address = AddressAliasHelper.undoL1ToL2Alias(msg.sender);
-        console.log('l1Addr: ', l1Address);
         if (!s.isAuthorized[l1Address]) revert NotAuthorized(msg.sender);
         _;
     }
