@@ -127,13 +127,15 @@ contract ozPayMe is ozIPayMe, ReentrancyGuard, Initializable {
         bytes memory ticketData = createTicketData(gasPriceBid_, swapData, false);
 
         bool isEmergency = 
-            ozMiddleware(middleware).forwardCall{value: address(this).balance}(ticketData, user, slippage);
+            ozMiddleware(middleware).forwardCall{value: address(this).balance}(ticketData, gasPriceBid_, swapData, user, slippage);
 
         if (!isEmergency) {
             if (!storageBeacon.getEmitterStatus()) { 
                 Emitter(emitter).forwardEvent(user); 
             }
             emit FundsToArb(user, amountToSend_);
+        } else {
+            emit EmergencyTriggered(user, amountToSend_);
         }
 
         
@@ -145,11 +147,11 @@ contract ozPayMe is ozIPayMe, ReentrancyGuard, Initializable {
         //     ticketData = createTicketData(gasPriceBid_, swapData, true);
         //     (success, ) = inbox.call{value: address(this).balance}(ticketData);
 
-        //     if (!success) {
-        //         _runEmergencyMode(user, slippage);
-        //         isEmergency = true;
-        //         emit EmergencyTriggered(user, amountToSend_);
-        //     }
+            // if (!success) {
+            //     _runEmergencyMode(user, slippage);
+            //     isEmergency = true;
+            //     emit EmergencyTriggered(user, amountToSend_);
+            // }
         // }
 
         // if (!isEmergency) {
@@ -160,67 +162,67 @@ contract ozPayMe is ozIPayMe, ReentrancyGuard, Initializable {
         // }
     }
 
-    /**
-     * @dev Runs the L1 emergency swap in Uniswap. 
-     *      If it fails, it doubles the slippage and tries again.
-     *      If it fails again, it sends WETH back to the user.
-     */
-    function runEmergencyMode(address user_, uint16 slippage_) external payable nonReentrant onlyAccount { 
-        address sBeacon = _getStorageBeacon(_beacon, 0);
-        StorageBeacon.EmergencyMode memory eMode = StorageBeacon(sBeacon).getEmergencyMode();
+    // /**
+    //  * @dev Runs the L1 emergency swap in Uniswap. 
+    //  *      If it fails, it doubles the slippage and tries again.
+    //  *      If it fails again, it sends WETH back to the user.
+    //  */
+    // function runEmergencyMode(address user_, uint16 slippage_) external payable nonReentrant onlyAccount { 
+    //     address sBeacon = _getStorageBeacon(_beacon, 0);
+    //     StorageBeacon.EmergencyMode memory eMode = StorageBeacon(sBeacon).getEmergencyMode();
         
-        IWETH(eMode.tokenIn).deposit{value: msg.value}();
-        uint balanceWETH = IWETH(eMode.tokenIn).balanceOf(address(this));
+    //     IWETH(eMode.tokenIn).deposit{value: msg.value}();
+    //     uint balanceWETH = IWETH(eMode.tokenIn).balanceOf(address(this));
 
-        IERC20(eMode.tokenIn).approve(address(eMode.swapRouter), balanceWETH);
+    //     IERC20(eMode.tokenIn).approve(address(eMode.swapRouter), balanceWETH);
 
-        for (uint i=1; i <= 2;) {
-            ISwapRouter.ExactInputSingleParams memory params =
-                ISwapRouter.ExactInputSingleParams({
-                    tokenIn: eMode.tokenIn,
-                    tokenOut: eMode.tokenOut, 
-                    fee: eMode.poolFee,
-                    recipient: user_,
-                    deadline: block.timestamp,
-                    amountIn: balanceWETH,
-                    amountOutMinimum: _calculateMinOut(eMode, i, balanceWETH, slippage_), 
-                    sqrtPriceLimitX96: 0
-                });
+    //     for (uint i=1; i <= 2;) {
+    //         ISwapRouter.ExactInputSingleParams memory params =
+    //             ISwapRouter.ExactInputSingleParams({
+    //                 tokenIn: eMode.tokenIn,
+    //                 tokenOut: eMode.tokenOut, 
+    //                 fee: eMode.poolFee,
+    //                 recipient: user_,
+    //                 deadline: block.timestamp,
+    //                 amountIn: balanceWETH,
+    //                 amountOutMinimum: _calculateMinOut(eMode, i, balanceWETH, slippage_), 
+    //                 sqrtPriceLimitX96: 0
+    //             });
 
-            try eMode.swapRouter.exactInputSingle(params) { 
-                break; 
-            } catch {
-                if (i == 1) {
-                    unchecked { ++i; }
-                    continue; 
-                } else {
-                    IERC20(eMode.tokenIn).transfer(user_, balanceWETH);
-                    break;
-                }
-            }
-        } 
-    }
+    //         try eMode.swapRouter.exactInputSingle(params) { 
+    //             break; 
+    //         } catch {
+    //             if (i == 1) {
+    //                 unchecked { ++i; }
+    //                 continue; 
+    //             } else {
+    //                 IERC20(eMode.tokenIn).transfer(user_, balanceWETH);
+    //                 break;
+    //             }
+    //         }
+    //     } 
+    // }
 
     /*///////////////////////////////////////////////////////////////
                                Helpers
     //////////////////////////////////////////////////////////////*/
 
-    /**
-     * @dev Using the account slippage, calculates the minimum amount of tokens out.
-     *      Uses the "i" variable from the parent loop to double the slippage, if necessary.
-     */
-    function _calculateMinOut(
-        StorageBeacon.EmergencyMode memory eMode_, 
-        uint i_,
-        uint balanceWETH_,
-        uint slippage_
-    ) private view returns(uint minOut) {
-        (,int price,,,) = eMode_.priceFeed.latestRoundData();
-        uint expectedOut = balanceWETH_.mulDivDown(uint(price) * 10 ** 10, 1 ether);
-        uint minOutUnprocessed = 
-            expectedOut - expectedOut.mulDivDown(slippage_ * i_ * 100, 1000000); 
-        minOut = minOutUnprocessed.mulWadDown(10 ** 6);
-    }
+    // /**
+    //  * @dev Using the account slippage, calculates the minimum amount of tokens out.
+    //  *      Uses the "i" variable from the parent loop to double the slippage, if necessary.
+    //  */
+    // function _calculateMinOut(
+    //     StorageBeacon.EmergencyMode memory eMode_, 
+    //     uint i_,
+    //     uint balanceWETH_,
+    //     uint slippage_
+    // ) private view returns(uint minOut) {
+    //     (,int price,,,) = eMode_.priceFeed.latestRoundData();
+    //     uint expectedOut = balanceWETH_.mulDivDown(uint(price) * 10 ** 10, 1 ether);
+    //     uint minOutUnprocessed = 
+    //         expectedOut - expectedOut.mulDivDown(slippage_ * i_ * 100, 1000000); 
+    //     minOut = minOutUnprocessed.mulWadDown(10 ** 6);
+    // }
 
     
     function initialize(

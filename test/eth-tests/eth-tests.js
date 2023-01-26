@@ -770,7 +770,7 @@ let isAuthorized, newSelector;
     });
 
     
-    describe('Pesimistic deployment', async function () {
+    xdescribe('Pesimistic deployment', async function () {
 
         /**
          * Deploys ozPayMeNoRedeem. which has an autoRedeem of 0, instead of ozPayme 

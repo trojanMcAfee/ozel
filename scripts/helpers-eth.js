@@ -40,8 +40,9 @@ async function deployContract(contractName, constrArgs, signer = null) {
     const Contract = await hre.ethers.getContractFactory(contractName);
 
     switch(contractName) {
-        case 'UpgradeableBeacon':
-            contract = await Contract.connect(signer).deploy(constrArgs, ops);
+        case 'ozMiddleware':
+            ([ var1 ] = constrArgs);
+            contract = await Contract.connect(signer).deploy(var1, ops);
             break;
         case 'ozUpgradeableBeacon':
         case 'ozERC1967Proxy':
@@ -62,7 +63,6 @@ async function deployContract(contractName, constrArgs, signer = null) {
             ([ var1, var2, var3, var4 ] = constrArgs);
             contract = await Contract.connect(signer).deploy(var1, var2, var3, var4, ops);
             break;
-        case 'ozPayMe':
         case 'ozPayMeNoRedeem':
         case 'ImplementationMock':
         case 'FaultyOzPayMe':
@@ -70,6 +70,10 @@ async function deployContract(contractName, constrArgs, signer = null) {
         case 'FaultyOzPayMe3':
             ([ var1, var2, var3, var4, var5, var6 ] = constrArgs);
             contract = await Contract.connect(signer).deploy(var1, var2, var3, var4, var5, var6, ops);
+            break;
+        case 'ozPayMe':
+            ([ var1, var2, var3, var4, var5, var6, v7 ] = constrArgs);
+            contract = await Contract.connect(signer).deploy(var1, var2, var3, var4, var5, var6, v7, ops);
             break;
         default:
             contract = await Contract.connect(signer).deploy(ops);
@@ -262,8 +266,13 @@ async function deploySystem(type, signerAddr) {
     //Calculate fees on L1 > L2 arbitrum tx
     const [ gasPriceBid, maxGas ] = await getArbitrumParams();
 
-    // Deploys Emitter
+    //Deploys Emitter
     const [ emitterAddr, emitter ] = await deployContract('Emitter');
+
+    //Deploys ozMiddleware
+    constrArgs = [ inbox ];
+
+    const [ ozMiddlewareAddr, ozMiddleware ] = await deployContract('ozMiddleware', constrArgs);
 
     //Deploys ozPayMe in mainnet
     constrArgs = [
@@ -272,6 +281,7 @@ async function deploySystem(type, signerAddr) {
         inbox,
         emitterAddr,
         ozDiamondAddr,
+        ozMiddlewareAddr,
         maxGas
     ];
 
@@ -313,6 +323,7 @@ async function deploySystem(type, signerAddr) {
     const [ beaconAddr, beacon ] = await deployContract('ozUpgradeableBeacon', constrArgs); 
     await storageBeacon.storeBeacon(beaconAddr);
     await emitter.storeBeacon(beaconAddr);
+    await ozMiddleware.setInit(ozPaymeAddr, beaconAddr);
 
     //Deploys ProxyFactory
     constrArgs = [ pokeMeOpsAddr, beaconAddr ]; 
