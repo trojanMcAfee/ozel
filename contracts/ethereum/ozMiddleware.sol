@@ -20,13 +20,11 @@ import '../libraries/LibCommon.sol';
 contract ozMiddleware is Ownable, ReentrancyGuard {
 
     using FixedPointMathLib for uint;
-    using LibDiamond for bytes;
 
     address private beacon;
 
     address private immutable inbox;
     address private immutable OZL;
-    
     uint private immutable maxGas;
 
     constructor(address inbox_, address ozDiamond_, uint maxGas_) {
@@ -35,23 +33,14 @@ contract ozMiddleware is Ownable, ReentrancyGuard {
         maxGas = maxGas_;
     }
 
-    // modifier onlyAccount(address user_) {
-    //     bytes32 acc_user = bytes32(bytes.concat(bytes20(msg.sender), bytes12(bytes20(user_))));
-    //     if (!StorageBeacon(_getStorageBeacon(0)).verify(user_, acc_user)) revert NotAccount();
-    //     _;
-    // }
-
 
     function forwardCall(
         uint gasPriceBid_,
-        // bytes memory swapData_,
-        // address user_,
-        // uint16 slippage_
         bytes memory dataForL2_,
         uint amountToSend_,
         address account_
     ) external payable returns(bool, bool, address) {
-        (address user,,uint16 slippage) = dataForL2_.extract();
+        (address user,,uint16 slippage) = LibCommon.extract(dataForL2_);
         bool isEmergency;
 
         StorageBeacon storageBeacon = StorageBeacon(_getStorageBeacon(0));

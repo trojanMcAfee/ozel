@@ -272,11 +272,8 @@ async function deploySystem(type, signerAddr) {
     constrArgs = [
         pokeMeOpsAddr,
         gelatoAddr,
-        // inbox,
         emitterAddr,
-        // ozDiamondAddr,
         ozMiddlewareAddr
-        // maxGas
     ];
 
     const [ ozPaymeAddr ] = await deployContract(type === 'Pessimistically' ? 'ozPayMeNoRedeem' : 'ozPayMe', constrArgs);
