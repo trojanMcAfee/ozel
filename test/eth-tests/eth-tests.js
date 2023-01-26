@@ -419,7 +419,7 @@ let isAuthorized, newSelector;
             it('should emit msg.sender (account) / forwardEvent()', async () => {
                 await sendETH(newProxyAddr, 0.1);
                 receipt = await activateProxyLikeOps(newProxyAddr, ozERC1967proxyAddr);
-                showTicketSignature = '0x6901520c999a000bb546b2316af0525bc22cc86be859f5dac839762f3d40e0aa';
+                showTicketSignature = '0xcf11d0d26b656b10f21ee8a8fe37defcb62d85e8dddabcbb05584e89fa0306d5'; //ShowTicket(address,address)
                 doesExist = compareTopicWith2(showTicketSignature, newProxyAddr, receipt);
                 assert(doesExist);
             });
