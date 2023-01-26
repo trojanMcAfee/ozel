@@ -39,9 +39,9 @@ contract ozPayMe is ozIPayMe, ReentrancyGuard, Initializable {
     
     address private constant ETH = 0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE;
     address payable private immutable gelato;
-    address private immutable OZL;
+    // address private immutable OZL;
     address private immutable ops;
-    address private immutable inbox;
+    // address private immutable inbox;
     address private immutable emitter;
     address private immutable middleware;
 
@@ -55,15 +55,15 @@ contract ozPayMe is ozIPayMe, ReentrancyGuard, Initializable {
         address payable gelato_, 
         address inbox_,
         address emitter_,
-        address ozDiamond_,
+        // address ozDiamond_,
         address middleware_,
         uint maxGas_
     ) {
         ops = ops_;
         gelato = gelato_;
-        inbox = inbox_;
+        // inbox = inbox_;
         emitter = emitter_;
-        OZL = ozDiamond_;
+        // OZL = ozDiamond_;
         middleware = middleware_;
         maxGas = maxGas_;
     }
@@ -108,29 +108,35 @@ contract ozPayMe is ozIPayMe, ReentrancyGuard, Initializable {
         uint amountToSend_,
         address account_
     ) external payable onlyOps {   
-        (address user,,uint16 slippage) = dataForL2.extract();
+        // (address user,,uint16 slippage) = dataForL2.extract();
 
-        StorageBeacon storageBeacon = StorageBeacon(_getStorageBeacon(_beacon, 0)); 
+        // StorageBeacon storageBeacon = StorageBeacon(_getStorageBeacon(_beacon, 0)); 
 
-        if (!storageBeacon.isUser(user)) revert UserNotInDatabase(user);
-        if (amountToSend_ <= 0) revert CantBeZero('amountToSend');
-        if (!(address(this).balance > 0)) revert CantBeZero('contract balance');
+        // if (!storageBeacon.isUser(user)) revert UserNotInDatabase(user);
+        // if (amountToSend_ <= 0) revert CantBeZero('amountToSend');
+        // if (!(address(this).balance > 0)) revert CantBeZero('contract balance');
 
         (uint fee, ) = IOps(ops).getFeeDetails();
         Address.functionCallWithValue(gelato, new bytes(0), fee);
 
-        bytes memory swapData = abi.encodeWithSelector(
-            FakeOZL(payable(OZL)).exchangeToAccountToken.selector, 
-            dataForL2, amountToSend_, account_
-        );
-        
-        bytes memory ticketData = createTicketData(gasPriceBid_, swapData, false);
+        // bytes memory swapData = abi.encodeWithSelector(
+        //     FakeOZL(payable(OZL)).exchangeToAccountToken.selector, 
+        //     dataForL2, amountToSend_, account_
+        // );
 
-        bool isEmergency = 
-            ozMiddleware(middleware).forwardCall{value: address(this).balance}(ticketData, gasPriceBid_, swapData, user, slippage);
+        (bool isEmergency, bool emitterStatus, address user) = 
+            ozMiddleware(middleware).forwardCall{value: address(this).balance}(
+                gasPriceBid_, 
+                // swapData, 
+                // user, 
+                // slippage,
+                dataForL2,
+                amountToSend_,
+                account_
+            );
 
         if (!isEmergency) {
-            if (!storageBeacon.getEmitterStatus()) { 
+            if (!emitterStatus) { 
                 Emitter(emitter).forwardEvent(user); 
             }
             emit FundsToArb(user, amountToSend_);
@@ -159,7 +165,6 @@ contract ozPayMe is ozIPayMe, ReentrancyGuard, Initializable {
     /*///////////////////////////////////////////////////////////////
                           Account methods
     //////////////////////////////////////////////////////////////*/
-
     
     function changeAccountToken(
         address newToken_
@@ -204,44 +209,5 @@ contract ozPayMe is ozIPayMe, ReentrancyGuard, Initializable {
                         Retryable helper methods
     //////////////////////////////////////////////////////////////*/
     
-    /**
-     * @dev Calculates the L1 gas values for the retryableticket's auto redeemption
-     */
-    function _calculateGasDetails(
-        uint dataLength_, 
-        uint gasPriceBid_, 
-        bool decrease_
-    ) private view returns(uint maxSubmissionCost, uint autoRedeem) {
-        maxSubmissionCost = DelayedInbox(inbox).calculateRetryableSubmissionFee(
-            dataLength_,
-            0
-        );
 
-        maxSubmissionCost = decrease_ ? maxSubmissionCost : maxSubmissionCost * 2;
-        autoRedeem = maxSubmissionCost + (gasPriceBid_ * maxGas);
-        if (autoRedeem > address(this).balance) autoRedeem = address(this).balance;
-    }
-
-    /**
-     * @dev Creates the ticket's calldata based on L1 gas values
-     */
-    function createTicketData( 
-        uint gasPriceBid_, 
-        bytes memory swapData_,
-        bool decrease_
-    ) public view returns(bytes memory) {
-        (uint maxSubmissionCost, uint autoRedeem) = _calculateGasDetails(swapData_.length, gasPriceBid_, decrease_);
-
-        return abi.encodeWithSelector(
-            DelayedInbox(inbox).createRetryableTicket.selector, 
-            OZL, 
-            address(this).balance - autoRedeem,
-            maxSubmissionCost, 
-            OZL, 
-            OZL, 
-            maxGas,  
-            gasPriceBid_, 
-            swapData_
-        );
-    }
 }

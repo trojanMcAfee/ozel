@@ -40,10 +40,6 @@ async function deployContract(contractName, constrArgs, signer = null) {
     const Contract = await hre.ethers.getContractFactory(contractName);
 
     switch(contractName) {
-        case 'ozMiddleware':
-            ([ var1 ] = constrArgs);
-            contract = await Contract.connect(signer).deploy(var1, ops);
-            break;
         case 'ozUpgradeableBeacon':
         case 'ozERC1967Proxy':
         case 'RolesAuthority':
@@ -56,10 +52,12 @@ async function deployContract(contractName, constrArgs, signer = null) {
             contract = await Contract.connect(signer).deploy(var1, var2, gas);
             break;
         case 'ozERC1967Proxy':
+        case 'ozMiddleware':
             ([ var1, var2, var3 ] = constrArgs);
             contract = await Contract.connect(signer).deploy(var1, var2, var3, ops);
             break;
         case 'StorageBeacon':
+        case 'ozPayMe':
             ([ var1, var2, var3, var4 ] = constrArgs);
             contract = await Contract.connect(signer).deploy(var1, var2, var3, var4, ops);
             break;
@@ -70,10 +68,6 @@ async function deployContract(contractName, constrArgs, signer = null) {
         case 'FaultyOzPayMe3':
             ([ var1, var2, var3, var4, var5, var6 ] = constrArgs);
             contract = await Contract.connect(signer).deploy(var1, var2, var3, var4, var5, var6, ops);
-            break;
-        case 'ozPayMe':
-            ([ var1, var2, var3, var4, var5, var6, v7 ] = constrArgs);
-            contract = await Contract.connect(signer).deploy(var1, var2, var3, var4, var5, var6, v7, ops);
             break;
         default:
             contract = await Contract.connect(signer).deploy(ops);
@@ -270,7 +264,7 @@ async function deploySystem(type, signerAddr) {
     const [ emitterAddr, emitter ] = await deployContract('Emitter');
 
     //Deploys ozMiddleware
-    constrArgs = [ inbox ];
+    constrArgs = [ inbox, ozDiamondAddr, maxGas ];
 
     const [ ozMiddlewareAddr, ozMiddleware ] = await deployContract('ozMiddleware', constrArgs);
 
@@ -278,11 +272,11 @@ async function deploySystem(type, signerAddr) {
     constrArgs = [
         pokeMeOpsAddr,
         gelatoAddr,
-        inbox,
+        // inbox,
         emitterAddr,
-        ozDiamondAddr,
-        ozMiddlewareAddr,
-        maxGas
+        // ozDiamondAddr,
+        ozMiddlewareAddr
+        // maxGas
     ];
 
     const [ ozPaymeAddr ] = await deployContract(type === 'Pessimistically' ? 'ozPayMeNoRedeem' : 'ozPayMe', constrArgs);
@@ -323,7 +317,7 @@ async function deploySystem(type, signerAddr) {
     const [ beaconAddr, beacon ] = await deployContract('ozUpgradeableBeacon', constrArgs); 
     await storageBeacon.storeBeacon(beaconAddr);
     await emitter.storeBeacon(beaconAddr);
-    await ozMiddleware.setInit(ozPaymeAddr, beaconAddr);
+    await ozMiddleware.setInit(beaconAddr);
 
     //Deploys ProxyFactory
     constrArgs = [ pokeMeOpsAddr, beaconAddr ]; 
