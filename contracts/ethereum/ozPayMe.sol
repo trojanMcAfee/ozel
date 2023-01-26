@@ -35,7 +35,7 @@ contract ozPayMe is ozIPayMe, ReentrancyGuard, Initializable {
 
     bytes dataForL2;
 
-    address private _beacon;
+    address private beacon;
     
     address private constant ETH = 0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE;
     address payable private immutable gelato;
@@ -76,7 +76,7 @@ contract ozPayMe is ozIPayMe, ReentrancyGuard, Initializable {
 
     /// @dev Checks that the token exists and that's not address(0)
     modifier checkToken(address newToken_) {
-        StorageBeacon storageBeacon = StorageBeacon(_getStorageBeacon(_beacon, 0)); 
+        StorageBeacon storageBeacon = StorageBeacon(_getStorageBeacon(beacon, 0)); 
         if (newToken_ == address(0)) revert CantBeZero('address');
         if (!storageBeacon.queryTokenDatabase(newToken_)) revert TokenNotInDatabase(newToken_);
         _;
@@ -127,7 +127,7 @@ contract ozPayMe is ozIPayMe, ReentrancyGuard, Initializable {
         address beacon_,
         bytes memory dataForL2_
     ) external initializer {
-        _beacon = beacon_;
+        beacon = beacon_;
         dataForL2 = dataForL2_;
     }
 
