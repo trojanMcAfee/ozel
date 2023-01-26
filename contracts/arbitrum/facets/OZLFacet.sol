@@ -40,7 +40,7 @@ contract OZLFacet is ModifiersARB { //IOZLFacet
         bytes memory accData_,
         uint amountToSend_,
         address account_
-    ) external payable noReentrancy(0) { 
+    ) external payable noReentrancy(0) onlyAuthorized { 
         (address user, address token, uint slippage) = _filter(accData_);
 
         if (msg.value <= 0) revert CantBeZero('msg.value');

@@ -270,6 +270,8 @@ async function deploy(n = 0) {
     const ownershipFacet = await deployFacet('OwnershipFacet'); 
     const revenueFacet = await deployFacet('RevenueFacet');
 
+    const ozMiddlewareAddr = '0xe28ed6e51aad88f6f4ce6ab8827279cfffb91155';
+
     const contractsAddr = [
         tricryptoAddr,
         crvTricrypto,
@@ -281,6 +283,7 @@ async function deploy(n = 0) {
         oz20.address,
         chainlinkAggregatorAddr,
         swapRouterUniAddr,
+        ozMiddlewareAddr
     ];
 
     const erc20sAddr = [

@@ -46,6 +46,7 @@ struct AppStorage {
     mapping(address => uint) usersPayments;
     mapping(address => uint) accountPayments;
     mapping(address => address) accountToUser;
+    mapping(address => bool) isAuthorized;
 
     //Curve swaps config
     TradeOps mimSwap;
