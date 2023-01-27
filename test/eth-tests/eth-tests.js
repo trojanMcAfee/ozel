@@ -85,7 +85,7 @@ let isAuthorized, newSelector;
         signers = await hre.ethers.getSigners();
     });
 
-    xdescribe('Optimistic deployment', async function () { 
+    describe('Optimistic deployment', async function () { 
         before( async () => {
             ([
                 beacon, 
@@ -812,7 +812,7 @@ let isAuthorized, newSelector;
     describe('Pesimistic deployment', async function () {
 
         /**
-         * Deploys ozPayMeNoRedeem. which has an autoRedeem of 0, instead of ozPayme 
+         * Deploys ozMiddleNoRedeem. which has an autoRedeem of 0, instead of ozMiddleware 
          */
         describe('ozAccountProxy / ozMiddleware', async () => {
             before( async () => {
@@ -845,16 +845,16 @@ let isAuthorized, newSelector;
                 ];
             });
 
-            xit('should create an account successfully / createNewProxy()', async () => {
+            it('should create an account successfully / createNewProxy()', async () => {
                 assert.equal(newProxyAddr.length, 42);
             });
 
-            xit('should have an initial balance of 100 ETH', async () => {
+            it('should have an initial balance of 100 ETH', async () => {
                 balance = await sendETH(newProxyAddr, 100);
                 assert.equal(formatEther(balance), '100.0');
             });
 
-            xit('should run EmergencyMode successfully / _runEmergencyMode()', async () => {
+            it('should run EmergencyMode successfully / _runEmergencyMode()', async () => {
                 balance = await USDC.balanceOf(signerAddr);
                 assert.equal(Number(balance), 0);
 
@@ -864,7 +864,7 @@ let isAuthorized, newSelector;
                 assert(Number(balance) > 0);
             });
 
-            xit("should send the ETH back to the user as last resort / _runEmergencyMode()", async () => {
+            it("should send the ETH back to the user as last resort / _runEmergencyMode()", async () => {
                 //UserSlippage is change to 1 to produce a slippage error derived from priceMinOut calculation
                 await sendETH(newProxyAddr, 100);
                 await newProxy.changeAccountSlippage(1);
@@ -879,7 +879,7 @@ let isAuthorized, newSelector;
                 await WETH.transfer(deadAddr, postBalance);
             });
 
-            xit('should execute the USDC swap in the second attempt / FaultyOzMiddle - _runEmergencyMode()', async () => {
+            it('should execute the USDC swap in the second attempt / FaultyOzMiddle - _runEmergencyMode()', async () => {
                 constrArgs = [ inbox, fakeOZLaddr, maxGas ];
                 const [ faultyOzMiddleAddr, faultyOzMiddle ] = await deployContract('FaultyOzMiddle', constrArgs);
                 await faultyOzMiddle.storeBeacon(beaconAddr);
@@ -905,7 +905,7 @@ let isAuthorized, newSelector;
                 assert(isExist);
             });
 
-            xit('should successfully execute when the ETH sent is lower than the necessary value to autoRedeem / FaultyOzMiddle2 - _createTicketData()', async () => {
+            it('should successfully execute when the ETH sent is lower than the necessary value to autoRedeem / FaultyOzMiddle2 - _createTicketData()', async () => {
                 constrArgs = [ inbox, fakeOZLaddr, maxGas ];
                 const [ faultyOzMiddleAddr, faultyOzMiddle ] = await deployContract('FaultyOzMiddle2', constrArgs);
                 await faultyOzMiddle.storeBeacon(beaconAddr);
@@ -953,7 +953,7 @@ let isAuthorized, newSelector;
             });
         });
 
-        xdescribe('ETH withdrawal as last resort', async function () {
+        describe('ETH withdrawal as last resort', async function () {
 
             /**
              * Deploys FaultyProxyFactory which creates FaultyOzAccountProxy that doesn't
