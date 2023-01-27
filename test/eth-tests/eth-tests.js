@@ -879,11 +879,21 @@ let isAuthorized, newSelector;
                 await WETH.transfer(deadAddr, postBalance);
             });
 
-            it('should execute the USDC swap in the second attempt / FaultyOzPayMe - _runEmergencyMode()', async () => {
-                const [ faultyOzPayMeAddr ] = await deployContract('FaultyOzPayMe', constrArgs);
-                await beacon.upgradeTo(faultyOzPayMeAddr);
-                await newProxy.changeAccountSlippage(defaultSlippage);
+            it('should execute the USDC swap in the second attempt / FaultyOzMiddle - _runEmergencyMode()', async () => {
+                constrArgs = [ inbox, fakeOZLaddr, maxGas ];
+                const [ faultyOzMiddleAddr, faultyOzMiddle ] = await deployContract('FaultyOzMiddle', constrArgs);
+                await faultyOzMiddle.storeBeacon(beaconAddr);
                 
+                constrArgs = [
+                    pokeMeOpsAddr,
+                    gelatoAddr,
+                    emitterAddr,
+                    faultyOzMiddleAddr
+                ];
+                const [ newPayMeAddr ] = await deployContract('ozPayMe', constrArgs);
+                await beacon.upgradeTo(newPayMeAddr);
+
+                await newProxy.changeAccountSlippage(defaultSlippage);
                 await sendETH(newProxyAddr, 100);
 
                 preBalance = await USDC.balanceOf(signerAddr);
