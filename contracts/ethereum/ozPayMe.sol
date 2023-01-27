@@ -22,7 +22,6 @@ import '../Errors.sol';
  */
 contract ozPayMe is ozIPayMe, ReentrancyGuard, Initializable { 
 
-    using FixedPointMathLib for uint;
     using LibCommon for bytes; 
 
     bytes dataForL2;

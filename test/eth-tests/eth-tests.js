@@ -722,10 +722,8 @@ let isAuthorized, newSelector;
                 constrArgs = [
                     pokeMeOpsAddr,
                     gelatoAddr,
-                    inbox,
                     emitterAddr,
-                    fakeOZLaddr,
-                    maxGas
+                    ozMiddleware.address
                 ];
                 const [ implMockAddr ] = await deployContract('ImplementationMock', constrArgs);
                 await beacon.upgradeTo(implMockAddr);
