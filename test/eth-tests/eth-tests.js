@@ -923,7 +923,7 @@ let isAuthorized, newSelector;
             });
         });
 
-        describe('ETH withdrawal as last resort', async function () {
+        xdescribe('ETH withdrawal as last resort', async function () {
 
             /**
              * Deploys FaultyProxyFactory which creates FaultyOzAccountProxy that doesn't

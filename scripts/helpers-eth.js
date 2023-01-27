@@ -58,10 +58,10 @@ async function deployContract(contractName, constrArgs, signer = null) {
             break;
         case 'StorageBeacon':
         case 'ozPayMe':
+        case 'ozPayMeNoRedeem':
             ([ var1, var2, var3, var4 ] = constrArgs);
             contract = await Contract.connect(signer).deploy(var1, var2, var3, var4, ops);
             break;
-        case 'ozPayMeNoRedeem':
         case 'ImplementationMock':
         case 'FaultyOzPayMe':
         case 'FaultyOzPayMe2':

@@ -2,22 +2,14 @@
 pragma solidity 0.8.14; 
 
 
-import '@uniswap/v3-periphery/contracts/interfaces/ISwapRouter.sol';
 import '@rari-capital/solmate/src/utils/ReentrancyGuard.sol';
-import '@rari-capital/solmate/src/utils/FixedPointMathLib.sol';
-import '@rari-capital/solmate/src/utils/SSTORE2.sol';
 import "@openzeppelin/contracts/proxy/utils/Initializable.sol";
-import '@openzeppelin/contracts/token/ERC20/IERC20.sol';
 import '@openzeppelin/contracts/utils/Address.sol';
-import '../arbitrum/facets/OZLFacet.sol';
-import '../interfaces/ethereum/DelayedInbox.sol';
 import '../interfaces/ethereum/ozIPayMe.sol';
 import '../interfaces/ethereum/IOps.sol';
-import '../interfaces/common/IWETH.sol';
 import '../libraries/LibCommon.sol';
 import './ozUpgradeableBeacon.sol';
 import './ozMiddleware.sol';
-import './FakeOZL.sol';
 import './Emitter.sol';
 import '../Errors.sol';
 
