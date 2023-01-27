@@ -44,10 +44,14 @@ async function runSetup() {
 }
 
 async function simulateDeployment() {
-    const storageBeaconAddr = '0x923F1A77B9F860E622492042edb840980B868Fe0';
-    const redeemedHashesAddr = '0xEbd24110595AEaAE06CD419eBBe0D4b7aAa5611b'; 
-    const emitterAddr = '0x23916341eC5d94f8719A7c79e0E778D1221daEFa';
-    const newProxyAddr = '0x85CAE8197d6dF67881764c6EeA55e664E6738235'; 
+    /**
+     * Addresses with auto-redeem = 0 which would make it fail,
+     * entailing manual redeeme. 
+     */
+    const storageBeaconAddr = '0xFdD4010f648cc90071fFF48F016Ae69454de275F';
+    const redeemedHashesAddr = '0x494C027bd5f8a6ecC7a86695A9d50f2A43602600'; 
+    const emitterAddr = '0x74df65210351AE6860749E74d65a9B8aEfe1eaBB';
+    const newProxyAddr = '0x6efcC2704EEE13351Ae35Ba0A336A4Db326C95A2'; 
 
     return {
         StorageBeacon: storageBeaconAddr,

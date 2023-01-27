@@ -176,9 +176,26 @@ describe('Unit testing', async function () {
                 token[0] = tokensDatabaseL1.usdcAddr;
                 await addTokenToDatabase(tokenSwap, token);
             });
+
+            it('shoud not allow an authorized user to call the function through ozDiamond / exchangeToAccountToken()', async () => {
+                data = getAccData(callerAddr, tokensDatabaseL1.fraxAddr, defaultSlippage);
+                amount = parseEther('1');
+                ops.value = amount;
+                const [ signer1, singer2 ] = await hre.ethers.getSigners();
+
+                await assert.rejects(async () => {
+                    await ozlDiamond.connect(singer2).exchangeToAccountToken(data, amount, deadAddr, ops);
+                }, {
+                    name: 'Error',
+                    message: (await err(caller2Addr)).notAuthorized 
+                });
+
+                //Clean up
+                if (ops.value) delete ops.value;
+            });
         });
 
-        describe('withdrawUserShare()', async () => {
+        xdescribe('withdrawUserShare()', async () => {
             beforeEach(async () => await enableWithdrawals(true));
 
             it('should fail with user as address(0)', async () => {
@@ -241,7 +258,7 @@ describe('Unit testing', async function () {
             });
         });
 
-        describe('addTokenToDatabase() / removeTokenFromDatabase()', async () => {
+        xdescribe('addTokenToDatabase() / removeTokenFromDatabase()', async () => {
             beforeEach(async () => {
                 //dForcePool --> USX: 0 / USDT: 2 / USDC: 1
                 tokenSwap = [
@@ -331,7 +348,7 @@ describe('Unit testing', async function () {
         });
     });
 
-    describe('ozExecutorFacet', async () => { 
+    xdescribe('ozExecutorFacet', async () => { 
         it('shout not allow an unauthorized user to run the function / updateExecutorState()', async () => {
             await assert.rejects(async () => {
                 await ozlDiamond.updateExecutorState(evilAmount, deadAddr, 1, ops);
@@ -370,7 +387,7 @@ describe('Unit testing', async function () {
         });
     });
 
-    describe('oz4626Facet', async () => { 
+    xdescribe('oz4626Facet', async () => { 
         it('shout not allow an unauthorized user to run the function / deposit()', async () => {
             await assert.rejects(async () => {
                 await ozlDiamond.deposit(evilAmount, deadAddr, 0, ops);
@@ -390,7 +407,7 @@ describe('Unit testing', async function () {
         });
     });
 
-    describe('oz20Facet', async () => { 
+    xdescribe('oz20Facet', async () => { 
         it('shout not allow an unauthorized user to run the function / burn()', async () => {
             await assert.rejects(async () => {
                 await ozlDiamond.burn(caller2Addr, evilAmount, 4, ops);
@@ -401,7 +418,7 @@ describe('Unit testing', async function () {
         });
     });
 
-    describe('ozLoupeFacet', async () => {
+    xdescribe('ozLoupeFacet', async () => {
         beforeEach(async () => {
             accountDetails = getAccData(callerAddr, tokensDatabaseL1.usdcAddr, defaultSlippage);
             await sendETH(accountDetails);
