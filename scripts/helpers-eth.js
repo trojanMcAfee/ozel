@@ -53,12 +53,12 @@ async function deployContract(contractName, constrArgs, signer = null) {
             break;
         case 'ozERC1967Proxy':
         case 'ozMiddleware':
+        case 'ozMiddleNoRedeem':
             ([ var1, var2, var3 ] = constrArgs);
             contract = await Contract.connect(signer).deploy(var1, var2, var3, ops);
             break;
         case 'StorageBeacon':
         case 'ozPayMe':
-        case 'ozPayMeNoRedeem':
             ([ var1, var2, var3, var4 ] = constrArgs);
             contract = await Contract.connect(signer).deploy(var1, var2, var3, var4, ops);
             break;
@@ -138,7 +138,7 @@ async function activateProxyLikeOps(proxy, taskCreator, isEvil, evilParams) {
 
     const tx = await ops.connect(gelatoSigner).exec(0, ETH, taskCreator, false, false, resolverHash, proxy, execData);
     const receipt = await tx.wait();
-    console.log('g: ', Number(receipt.gasUsed));
+    // console.log('g: ', Number(receipt.gasUsed));
 
     await hre.network.provider.request({
         method: "hardhat_stopImpersonatingAccount",
@@ -266,7 +266,7 @@ async function deploySystem(type, signerAddr) {
     //Deploys ozMiddleware
     constrArgs = [ inbox, ozDiamondAddr, maxGas ];
 
-    const [ ozMiddlewareAddr, ozMiddleware ] = await deployContract('ozMiddleware', constrArgs);
+    const [ ozMiddlewareAddr, ozMiddleware ] = await deployContract(type === 'Pessimistically' ? 'ozMiddleNoRedeem' : 'ozMiddleware', constrArgs);
 
     //Deploys ozPayMe in mainnet
     constrArgs = [
@@ -276,7 +276,7 @@ async function deploySystem(type, signerAddr) {
         ozMiddlewareAddr
     ];
 
-    const [ ozPaymeAddr ] = await deployContract(type === 'Pessimistically' ? 'ozPayMeNoRedeem' : 'ozPayMe', constrArgs);
+    const [ ozPaymeAddr ] = await deployContract('ozPayMe', constrArgs);
 
     //Deploys StorageBeacon
     const eMode = [
