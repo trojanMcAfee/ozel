@@ -183,7 +183,7 @@ contract ozMiddleware is Ownable, ReentrancyGuard {
         return ozUpgradeableBeacon(beacon).storageBeacon(version_);
     }
 
-    function setInit(address beacon_) external onlyOwner {
+    function storeBeacon(address beacon_) external onlyOwner {
         beacon = beacon_;
     }
 

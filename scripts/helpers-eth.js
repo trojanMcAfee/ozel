@@ -314,7 +314,7 @@ async function deploySystem(type, signerAddr) {
     const [ beaconAddr, beacon ] = await deployContract('ozUpgradeableBeacon', constrArgs); 
     await storageBeacon.storeBeacon(beaconAddr);
     await emitter.storeBeacon(beaconAddr);
-    await ozMiddleware.setInit(beaconAddr);
+    await ozMiddleware.storeBeacon(beaconAddr);
 
     //Deploys ProxyFactory
     constrArgs = [ pokeMeOpsAddr, beaconAddr ]; 
@@ -359,7 +359,8 @@ async function deploySystem(type, signerAddr) {
         ozDiamondAddr,
         eMode,
         proxyFactoryAddr,
-        maxGas
+        maxGas,
+        ozMiddleware
     ];
 
 }

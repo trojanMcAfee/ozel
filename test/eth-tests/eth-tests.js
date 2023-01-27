@@ -45,7 +45,7 @@ const {
 let signerAddr, signerAddr2;
 let ozERC1967proxyAddr, storageBeacon, emitter, fakeOZLaddr, proxyFactoryAddr;
 let accountDetails, constrArgs;
-let newProxyAddr, newProxy, newFactoryAddr;
+let newProxyAddr, newProxy, newFactoryAddr, ozMiddleware;
 let balance, tokens;
 let newUserSlippage, newSlippage;
 let opsContract, impl;
@@ -98,7 +98,8 @@ let isAuthorized, newSelector;
                 fakeOZLaddr, 
                 eMode,
                 proxyFactoryAddr,
-                maxGas
+                maxGas,
+                ozMiddleware
             ] = await deploySystem('Optimistically', signerAddr));
 
             proxyFactory = await hre.ethers.getContractAt(factoryABI, ozERC1967proxyAddr);
@@ -415,6 +416,32 @@ let isAuthorized, newSelector;
                     assert(Number(slippage) === accountDetails[2] || Number(slippage) / 100 === 0.55);
                 });
             });
+        });
+
+        describe('ozMiddleware', async () => {
+           it('should not let a non-account user to call the function / forwardCall()', async () => {
+            await assert.rejects(async () => {
+                await ozMiddleware.forwardCall(
+                    parseEther('1'),
+                    '0x',
+                    parseEther('1'),
+                    deadAddr
+                );
+            }, {
+                name: 'Error',
+                message: (await err(nullAddr)).userNotInDatabase 
+            });
+           }) 
+
+           it('should not let an unauthorized user set a new beacon / storeBeacon()', async () => {
+            const [ signer, signer1 ] = await hre.ethers.getSigners();
+            await assert.rejects(async () => {
+                await ozMiddleware.connect(signer1).storeBeacon(deadAddr);
+            }, {
+                name: 'Error',
+                message: (await err()).notOwner 
+            });
+           });
         });
 
         describe('Emitter', async () => {
