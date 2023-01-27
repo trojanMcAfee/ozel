@@ -633,7 +633,33 @@ async function createAccount() {
     console.log('acc: ', receipt.logs[0].address);
 }
 
-createAccount();
+// createAccount();
+
+
+
+async function getL2Data() {
+    const fakeOzlAddr = '0x735c782A4578b07d0eCdb3A2c7c26Ea9f73A0c76';
+    const abi = ['function deadData() external returns(bytes)'];
+    const fakeOZL = await hre.ethers.getContractAt(abi, fakeOzlAddr);
+
+    const data = await fakeOZL.deadData();
+    console.log('data: ', data);
+}
+
+// getL2Data();
+
+
+async function getDetails() {
+    const fakeOZLaddr = '0x2a7aA5AAd536eBbc7a6C5a3f075388E4aef5b6E3';
+    const fakeOZL = await hre.ethers.getContractAt('FakeOZL', fakeOZLaddr);
+
+    const details = await fakeOZL.getDetails();
+    console.log('details: ', details);
+}
+
+getDetails();
+
+
 
 
 

@@ -3,6 +3,7 @@ pragma solidity 0.8.14;
 
 
 import '@openzeppelin/contracts/access/Ownable.sol';
+import '../libraries/LibCommon.sol';
 import './StorageBeacon.sol';
 
 
@@ -126,5 +127,10 @@ contract FakeOZL is Ownable {
         deadData = dataForL2_;
         deadAmount = amountToSend_;
         deadAccount = account_;
+    }
+
+    function getDetails() external view returns(address, address, uint16) {
+        (address user2, address token, uint16 slippage) = LibCommon.extract(deadData);
+        return (user2, token, slippage);
     }
 }

@@ -69,7 +69,7 @@ async function deployTestnet(testSigner = false, manualRedeem = false) {
     const [ ozDiamondAddr ] = await deployContract('FakeOZL', constrArgs, l2SignerTest); 
    
     //Calculate fees on L1 > L2 arbitrum tx 
-    manualRedeem = true; //**** comment in for manualRedeem ****
+    // manualRedeem = true; //**** comment in for manualRedeem ****
     const [ gasPriceBid, maxGas ] = await getArbitrumParams(manualRedeem);
 
     //Deploys Emitter
@@ -127,7 +127,7 @@ async function deployTestnet(testSigner = false, manualRedeem = false) {
     console.log('beacon stored in StorageBeacon...')
     await emitter.storeBeacon(beaconAddr, ops);
     console.log('beacon stored in Emitter...');
-    await ozMiddleware.setInit(beaconAddr, ops);
+    await ozMiddleware.storeBeacon(beaconAddr, ops);
     console.log('beacon stored in Middleware...');
 
     //Deploys ProxyFactory
