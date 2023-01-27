@@ -905,7 +905,7 @@ let isAuthorized, newSelector;
                 assert(isExist);
             });
 
-            it('should successfully execute when the ETH sent is lower than the necessary value to autoRedeem / FaultyOzMiddle2 - _createTicketData()', async () => {
+            xit('should successfully execute when the ETH sent is lower than the necessary value to autoRedeem / FaultyOzMiddle2 - _createTicketData()', async () => {
                 constrArgs = [ inbox, fakeOZLaddr, maxGas ];
                 const [ faultyOzMiddleAddr, faultyOzMiddle ] = await deployContract('FaultyOzMiddle2', constrArgs);
                 await faultyOzMiddle.storeBeacon(beaconAddr);
@@ -927,9 +927,19 @@ let isAuthorized, newSelector;
                 assert.equal(formatEther(balance), 0);
             });
             
-            xit('should successfully submit the retryable in the 2nd attempt / FaultyOzPayMe3 - _createTicketData()', async () => {
-                const [ faultyOzPayMeAddr ] = await deployContract('FaultyOzPayMe3', constrArgs);
-                await beacon.upgradeTo(faultyOzPayMeAddr);
+            it('should successfully submit the retryable in the 2nd attempt / FaultyOzMiddle3 - _createTicketData()', async () => {
+                constrArgs = [ inbox, fakeOZLaddr, maxGas ];
+                const [ faultyOzMiddleAddr, faultyOzMiddle ] = await deployContract('FaultyOzMiddle3', constrArgs);
+                await faultyOzMiddle.storeBeacon(beaconAddr);
+
+                constrArgs = [
+                    pokeMeOpsAddr,
+                    gelatoAddr,
+                    emitterAddr,
+                    faultyOzMiddleAddr
+                ];
+                const [ newPayMeAddr ] = await deployContract('ozPayMe', constrArgs);
+                await beacon.upgradeTo(newPayMeAddr);
 
                 balance = await sendETH(newProxyAddr, 100);
                 assert.equal(formatEther(balance), 100);
