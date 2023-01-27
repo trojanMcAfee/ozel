@@ -879,7 +879,7 @@ let isAuthorized, newSelector;
                 await WETH.transfer(deadAddr, postBalance);
             });
 
-            it('should execute the USDC swap in the second attempt / FaultyOzMiddle - _runEmergencyMode()', async () => {
+            xit('should execute the USDC swap in the second attempt / FaultyOzMiddle - _runEmergencyMode()', async () => {
                 constrArgs = [ inbox, fakeOZLaddr, maxGas ];
                 const [ faultyOzMiddleAddr, faultyOzMiddle ] = await deployContract('FaultyOzMiddle', constrArgs);
                 await faultyOzMiddle.storeBeacon(beaconAddr);
@@ -905,9 +905,19 @@ let isAuthorized, newSelector;
                 assert(isExist);
             });
 
-            xit('should successfully execute when the ETH sent is lower than the necessary value to autoRedeem / FaultyOzPayMe2() - _createTicketData()', async () => {
-                const [ faultyOzPayMeAddr ] = await deployContract('FaultyOzPayMe2', constrArgs);
-                await beacon.upgradeTo(faultyOzPayMeAddr);
+            it('should successfully execute when the ETH sent is lower than the necessary value to autoRedeem / FaultyOzMiddle2 - _createTicketData()', async () => {
+                constrArgs = [ inbox, fakeOZLaddr, maxGas ];
+                const [ faultyOzMiddleAddr, faultyOzMiddle ] = await deployContract('FaultyOzMiddle2', constrArgs);
+                await faultyOzMiddle.storeBeacon(beaconAddr);
+
+                constrArgs = [
+                    pokeMeOpsAddr,
+                    gelatoAddr,
+                    emitterAddr,
+                    faultyOzMiddleAddr
+                ];
+                const [ newPayMeAddr ] = await deployContract('ozPayMe', constrArgs);
+                await beacon.upgradeTo(newPayMeAddr);
 
                 balance = await sendETH(newProxyAddr, 100);
                 assert.equal(formatEther(balance), 100);

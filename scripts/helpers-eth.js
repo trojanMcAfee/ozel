@@ -55,6 +55,7 @@ async function deployContract(contractName, constrArgs, signer = null) {
         case 'ozMiddleware':
         case 'ozMiddleNoRedeem':
         case 'FaultyOzMiddle':
+        case 'FaultyOzMiddle2':
             ([ var1, var2, var3 ] = constrArgs);
             contract = await Contract.connect(signer).deploy(var1, var2, var3, ops);
             break;
@@ -64,7 +65,6 @@ async function deployContract(contractName, constrArgs, signer = null) {
             contract = await Contract.connect(signer).deploy(var1, var2, var3, var4, ops);
             break;
         case 'ImplementationMock':
-        case 'FaultyOzPayMe2':
         case 'FaultyOzPayMe3':
             ([ var1, var2, var3, var4, var5, var6 ] = constrArgs);
             contract = await Contract.connect(signer).deploy(var1, var2, var3, var4, var5, var6, ops);
