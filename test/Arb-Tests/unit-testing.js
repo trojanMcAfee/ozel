@@ -195,7 +195,7 @@ describe('Unit testing', async function () {
             });
         });
 
-        xdescribe('withdrawUserShare()', async () => {
+        describe('withdrawUserShare()', async () => {
             beforeEach(async () => await enableWithdrawals(true));
 
             it('should fail with user as address(0)', async () => {
@@ -258,7 +258,7 @@ describe('Unit testing', async function () {
             });
         });
 
-        xdescribe('addTokenToDatabase() / removeTokenFromDatabase()', async () => {
+        describe('addTokenToDatabase() / removeTokenFromDatabase()', async () => {
             beforeEach(async () => {
                 //dForcePool --> USX: 0 / USDT: 2 / USDC: 1
                 tokenSwap = [
@@ -348,7 +348,7 @@ describe('Unit testing', async function () {
         });
     });
 
-    xdescribe('ozExecutorFacet', async () => { 
+    describe('ozExecutorFacet', async () => { 
         it('shout not allow an unauthorized user to run the function / updateExecutorState()', async () => {
             await assert.rejects(async () => {
                 await ozlDiamond.updateExecutorState(evilAmount, deadAddr, 1, ops);
@@ -387,7 +387,7 @@ describe('Unit testing', async function () {
         });
     });
 
-    xdescribe('oz4626Facet', async () => { 
+    describe('oz4626Facet', async () => { 
         it('shout not allow an unauthorized user to run the function / deposit()', async () => {
             await assert.rejects(async () => {
                 await ozlDiamond.deposit(evilAmount, deadAddr, 0, ops);
@@ -407,7 +407,7 @@ describe('Unit testing', async function () {
         });
     });
 
-    xdescribe('oz20Facet', async () => { 
+    describe('oz20Facet', async () => { 
         it('shout not allow an unauthorized user to run the function / burn()', async () => {
             await assert.rejects(async () => {
                 await ozlDiamond.burn(caller2Addr, evilAmount, 4, ops);
@@ -418,7 +418,7 @@ describe('Unit testing', async function () {
         });
     });
 
-    xdescribe('ozLoupeFacet', async () => {
+    describe('ozLoupeFacet', async () => {
         beforeEach(async () => {
             accountDetails = getAccData(callerAddr, tokensDatabaseL1.usdcAddr, defaultSlippage);
             await sendETH(accountDetails);
