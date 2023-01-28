@@ -69,6 +69,205 @@ let addFlag, tokenSwap;
  * exchangeToAccountToken() which would simulate an Arbitrum L1 > L2 tx where
  * sendToArb() in L1 in ozPayMe would send the ETH to OZLFacet in L2.
 */
+describe('Integration testing', async function () {
+    this.timeout(1000000);
+
+    before( async () => {
+        const deployedVars = await deploy();
+        ({
+            deployedDiamond, 
+            WETH,
+            USDT,
+            WBTC,
+            USDC,
+            MIM,
+            FRAX,
+            crvTri,
+            callerAddr, 
+            caller2Addr,
+            ozlFacet,
+            yvCrvTri
+        } = deployedVars);
+    
+        getVarsForHelpers(deployedDiamond, ozlFacet);
+        accountDetails = getAccData(callerAddr, tokensDatabaseL1.fraxAddr, defaultSlippage);
+
+        ozlDiamond = await hre.ethers.getContractAt(diamondABI, deployedDiamond.address);
+        await ozlDiamond.setAuthorizedCaller(callerAddr, true, ops);
+    });
+
+    
+    /**
+     * Since Curve doesn't have testnets, sendETH() sends ETH directly to
+     * exchangeToAccountToken() which would simulate an Arbitrum L1 > L2 tx where
+     * sendToArb() in L1 in ozPayMe would send the ETH to OZLFacet in L2,
+     * 
+     * Meant to be run as one test.
+    */
+
+    describe('1st user, 1st transfer', async () => {
+        it('should convert ETH to token (FRAX)', async () => {
+            receipt = await sendETH(accountDetails); 
+            assert(formatEther(await FRAX.balanceOf(callerAddr)) > 0);
+        });
+
+        it('should initiate the Ozel index', async () => {
+            ozelIndex = await getOzelIndex();
+            assert.equal(Number(formatEther(ozelIndex)), 12000000);
+        });
+
+        it('should allocate 1st user with OZL tokens', async () => {
+            assert.equal(await balanceOfOZL(callerAddr), 100.0);
+        });
+
+        it('should allocate OZLDiamond with yvCrvTricrypto tokens', async () => {
+            preYvCrvBalance = formatEther(await yvCrvTri.balanceOf(deployedDiamond.address));
+            assert(preYvCrvBalance > 0);
+        });
+    });
+
+    describe('2nd user, 1st transfer', async () => {
+        it('should convert ETH to token (WBTC)', async () => {
+            accountDetails = getAccData(caller2Addr, tokensDatabaseL1.wbtcAddr, defaultSlippage);
+
+            await sendETH(accountDetails); 
+            assert(formatEther(await FRAX.balanceOf(callerAddr)) > 0);
+        });
+
+        it('should re-calculate the Ozel index', async () => {
+            ozelIndex = await getOzelIndex();
+            assert.equal(Number(formatEther(ozelIndex)), 6000000);
+        });
+
+        it('should distribute OZL tokens equally between users', async () => {
+            assert.equal(await balanceOfOZL(callerAddr), 50.0);
+            assert.equal(await balanceOfOZL(caller2Addr), 50.0);
+        });
+
+        it('should add more yvCrvTricrypto tokens to OZLDiamond', async () => {
+            currYvCrvBalance = formatEther(await yvCrvTri.balanceOf(deployedDiamond.address));
+            assert(currYvCrvBalance > preYvCrvBalance);
+        });
+    });
+
+    describe('1st user, 2nd transfer', async () => {
+        it('should convert ETH to token (MIM)', async () => {
+            accountDetails = getAccData(callerAddr, tokensDatabaseL1.mimAddr, defaultSlippage);
+
+            await sendETH(accountDetails);
+            balanceMIM = await MIM.balanceOf(callerAddr);
+            assert(formatEther(balanceMIM) > 0);
+
+            //Cleans up by sending all MIM to another user
+            await MIM.transfer(caller2Addr, balanceMIM);
+        });
+        
+        it('should decrease the Ozel index to its lowest level', async () => {
+            newOzelIndex = await getOzelIndex();
+            assert(newOzelIndex < ozelIndex);
+        });
+
+        it('should leave the first user with more OZL tokens than 2nd user', async () => {
+            OZLbalanceFirstUser = await balanceOfOZL(callerAddr);
+            OZLbalanceSecondUser = await balanceOfOZL(caller2Addr);
+            assert(OZLbalanceFirstUser > OZLbalanceSecondUser);
+
+            totalOZLusers = OZLbalanceFirstUser + OZLbalanceSecondUser;
+            assert(totalOZLusers <= 100 && totalOZLusers >= 99.9);
+        });
+
+        it("should increase yvCrvTricrypto's balance on OZLDiamond", async () => {
+            preYvCrvBalance = currYvCrvBalance;
+            currYvCrvBalance = formatEther(await yvCrvTri.balanceOf(deployedDiamond.address));
+            assert(currYvCrvBalance > preYvCrvBalance);
+        });
+    });
+
+    describe("1st user's transfer of OZL tokens", async () => {
+        it('should transfer half of OZL tokens to 2nd user', async () => {
+            await transferOZL(caller2Addr, parseEther((OZLbalanceFirstUser / 2).toString()));            
+            OZLbalanceFirstUser = await balanceOfOZL(callerAddr);
+            OZLbalanceSecondUser = await balanceOfOZL(caller2Addr);
+            assert(OZLbalanceSecondUser > OZLbalanceFirstUser);
+
+            totalOZLusers = OZLbalanceFirstUser + OZLbalanceSecondUser;
+            assert(totalOZLusers <= 100 && totalOZLusers >= 99.9);
+        });
+    });
+
+    describe("1st user's OZL withdrawal", async () => {
+        it("should have a balance of the dapp's fees on token (USDC)", async () => {
+            await enableWithdrawals(true);
+            accountDetails = getAccData(callerAddr, tokensDatabaseL1.usdcAddr, defaultSlippage);
+            await withdrawShareOZL(accountDetails, callerAddr, parseEther((await balanceOfOZL(callerAddr)).toString()));
+            balance = await USDC.balanceOf(callerAddr);
+            assert(balance > 0);
+        });
+
+        it('should leave 2nd user with all OZL tokens', async () => {
+            OZLbalanceFirstUser = await balanceOfOZL(callerAddr);
+            OZLbalanceSecondUser = await balanceOfOZL(caller2Addr);
+            ozelIndex = await getOzelIndex();
+
+            assert.equal(OZLbalanceFirstUser, 0);
+            assert.equal(OZLbalanceSecondUser, 100.0);
+        });
+    });
+
+    describe('1st user, 3rd and 4th transfers', async () => {
+        it('should leave the 2nd user with more OZL tokens', async() => {
+            await sendETH(accountDetails);
+            OZLbalanceFirstUser = await balanceOfOZL(callerAddr);
+            OZLbalanceSecondUser = await balanceOfOZL(caller2Addr);
+            assert(OZLbalanceSecondUser > OZLbalanceFirstUser);
+
+            totalOZLusers = OZLbalanceFirstUser + OZLbalanceSecondUser;
+            assert(totalOZLusers <= 100 && totalOZLusers >= 99.9);
+        });
+
+        it('should leave the 1st user with more OZL tokens after 2nd transfer 1/3', async () => {
+            toTransfer = await balanceOfOZL(caller2Addr) / 3;
+            await transferOZL(callerAddr, parseEther(toTransfer.toString()), 1);
+            OZLbalanceFirstUser = await balanceOfOZL(callerAddr);
+            OZLbalanceSecondUser = await balanceOfOZL(caller2Addr);
+            assert(OZLbalanceFirstUser > OZLbalanceSecondUser);
+
+            totalOZLusers = OZLbalanceFirstUser + OZLbalanceSecondUser;
+            assert(totalOZLusers <= 100 && totalOZLusers >= 99.9);
+
+        });
+    });
+
+    describe('2nd user withdraws 1/3 OZL tokens', async () => {
+        it("should have a balance of the dapp's fees on account token (USDT)", async () => {
+            accountDetails = getAccData(caller2Addr, tokensDatabaseL1.usdtAddr, defaultSlippage);
+            await withdrawShareOZL(accountDetails, caller2Addr, parseEther(toTransfer.toString()), 1);
+            balance = await USDT.balanceOf(caller2Addr);
+            assert(balance > 0);
+        });
+
+        it('leave 1st user with more OZL tokens', async () => {
+            OZLbalanceFirstUser = await balanceOfOZL(callerAddr);
+            OZLbalanceSecondUser = await balanceOfOZL(caller2Addr);
+            assert(OZLbalanceFirstUser > OZLbalanceSecondUser);
+
+            totalOZLusers = OZLbalanceFirstUser + OZLbalanceSecondUser;
+            assert(totalOZLusers <= 100 && totalOZLusers >= 99.9);
+        });
+
+        it('should leave OZLDiamond with a reduction on yvCrvTricrypto tokens', async () => {
+            preYvCrvBalance = currYvCrvBalance;
+            currYvCrvBalance = formatEther(await yvCrvTri.balanceOf(deployedDiamond.address));
+            assert(currYvCrvBalance < preYvCrvBalance);
+        });
+    });
+});
+
+
+
+/**
+ * Specific unit-tests for certain functions within Arbitrum contracts.
+ */
 describe('Unit testing', async function () {
     this.timeout(1000000);
 
@@ -90,10 +289,13 @@ describe('Unit testing', async function () {
             USX
         } = deployedVars);
     
+        ([ signer1, signer2 ] = await hre.ethers.getSigners());
+        
         getVarsForHelpers(deployedDiamond, ozlFacet);
         accountDetails = getAccData(callerAddr, tokensDatabaseL1.fraxAddr, defaultSlippage);
 
         ozlDiamond = await hre.ethers.getContractAt(diamondABI, deployedDiamond.address);
+        await ozlDiamond.setAuthorizedCaller(callerAddr, true, ops);
         evilAmount = parseEther('1000');
     });
 
@@ -204,10 +406,10 @@ describe('Unit testing', async function () {
                 data = getAccData(callerAddr, tokensDatabaseL1.fraxAddr, defaultSlippage);
                 amount = parseEther('1');
                 ops.value = amount;
-                const [ signer1, singer2 ] = await hre.ethers.getSigners();
+                const [ signer1, signer2 ] = await hre.ethers.getSigners();
 
                 await assert.rejects(async () => {
-                    await ozlDiamond.connect(singer2).exchangeToAccountToken(data, amount, deadAddr, ops);
+                    await ozlDiamond.connect(signer2).exchangeToAccountToken(data, amount, deadAddr, ops);
                 }, {
                     name: 'Error',
                     message: (await err(caller2Addr)).notAuthorized 
@@ -478,403 +680,48 @@ describe('Unit testing', async function () {
             assert.equal(owner, callerAddr);
         });
     });
-});
 
-
-
-/**
- * Specific unit-tests for certain functions within Arbitrum contracts.
- */
-describe('Unit testing', async function () {
-    this.timeout(1000000);
-
-    before( async () => {
-        const deployedVars = await deploy();
-        ({
-            deployedDiamond, 
-            WETH,
-            USDT,
-            WBTC,
-            USDC,
-            MIM,
-            FRAX,
-            crvTri,
-            callerAddr, 
-            caller2Addr,
-            ozlFacet,
-            yvCrvTri,
-            USX
-        } = deployedVars);
-    
-        getVarsForHelpers(deployedDiamond, ozlFacet);
-        accountDetails = getAccData(callerAddr, tokensDatabaseL1.fraxAddr, defaultSlippage);
-
-        ozlDiamond = await hre.ethers.getContractAt(diamondABI, deployedDiamond.address);
-        evilAmount = parseEther('1000');
-    });
-
-    describe('OZLFacet', async () => {
-        describe('exchangeToAccountToken()', async () => {
-            it('should get in accountPayments the exact amount of ETH sent to the account', async () => {
-                await sendETH(accountDetails);
-                const payments = await ozlDiamond.getAccountPayments(deadAddr);
-                assert.equal(formatEther(payments), 10);
-            });
-
-            it('should fail with user as address(0)', async () => {
-                accountDetails = getAccData(nullAddr, tokensDatabaseL1.fraxAddr, defaultSlippage);
-                await assert.rejects(async () => {
-                    await sendETH(accountDetails);
-                }, {
-                    name: 'Error',
-                    message: (await err()).zeroAddress 
-                });
-            });
-    
-            it('should fail with account token as address(0)', async () => {
-                accountDetails = getAccData(callerAddr, nullAddr, defaultSlippage);
-                await assert.rejects(async () => {
-                    await sendETH(accountDetails);
-                }, {
-                    name: 'Error',
-                    message: (await err()).zeroAddress 
-                });
-            });
-    
-            it('should fail with slippage as 0', async () => {
-                accountDetails = getAccData(callerAddr, tokensDatabaseL1.fraxAddr, 0);
-                await assert.rejects(async () => {
-                    await sendETH(accountDetails);
-                }, {
-                    name: 'Error',
-                    message: (await err()).zeroSlippage 
-                });
-            });
-    
-            it('should fail when account token is not in database', async () => {
-                accountDetails = getAccData(callerAddr, deadAddr, defaultSlippage);
-                await assert.rejects(async () => {
-                    await sendETH(accountDetails);
-                }, {
-                    name: 'Error',
-                    message: (await err(deadAddr)).tokenNotFound 
-                });
-            });
-    
-            it('should fail when msg.value is equal to 0', async () => {
-                accountDetails = getAccData(callerAddr, tokensDatabaseL1.usdcAddr, defaultSlippage);
-                await assert.rejects(async () => {
-                    await sendETH(accountDetails, 'no value');
-                }, {
-                    name: 'Error',
-                    message: (await err()).zeroMsgValue 
-                });
-            });
-
-            it('should not allow a swap in normal condition with the l1Check disabled / exchangeToAccountToken() - changeL1Check()', async () => {
-                accountDetails = getAccData(callerAddr, tokensDatabaseL1.usdcAddr, defaultSlippage);
-                await ozlDiamond.changeL1Check(false);
-                ops.value = parseEther('1');
-
-                await assert.rejects(async () => {
-                    await ozlDiamond.exchangeToAccountToken(accountDetails, parseEther('1'), deadAddr, ops);
-                }, {
-                    name: 'Error',
-                    message: (await err(tokensDatabaseL1.usdcAddr)).tokenNotFound 
-                });
-
-                //Clean up
-                await ozlDiamond.changeL1Check(true);
-            });
-
-            /**
-             * This is test is for bridging is eliminated from the system, so the token checks are done exclusively for L2 addresses
-             */
-            it('should allow a swap after disabling the l1Check and only adding an l2Address (without l1Address) / exchangeToAccountToken() - changeL1Check()', async () => {
-                tokenSwap = [
-                    1,
-                    0,
-                    usdtAddrArb,
-                    usdcAddr,
-                    crv2PoolAddr
-                ];
-                token = [ tokensDatabaseL1.usdcAddr, usdcAddr ];
-                await removeTokenFromDatabase(tokenSwap, token);
-
-                token[0] = nullAddr;
-                await addTokenToDatabase(tokenSwap, token);
-                await ozlDiamond.changeL1Check(false);
-
-                accountDetails = getAccData(callerAddr, usdcAddr, defaultSlippage);
-                ops.value = parseEther('1');
-                await ozlDiamond.exchangeToAccountToken(accountDetails, parseEther('1'), deadAddr, ops);
-
-                //Clean up
-                await ozlDiamond.changeL1Check(true);
-                await removeTokenFromDatabase(tokenSwap, token);
-                token[0] = tokensDatabaseL1.usdcAddr;
-                await addTokenToDatabase(tokenSwap, token);
-            });
-        });
-
-        describe('withdrawUserShare()', async () => {
-            beforeEach(async () => await enableWithdrawals(true));
-
-            it('should fail with user as address(0)', async () => {
-                accountDetails = getAccData(nullAddr, tokensDatabaseL1.fraxAddr, defaultSlippage);
-                await assert.rejects(async () => {
-                    await withdrawShareOZL(accountDetails, callerAddr, parseEther((await balanceOfOZL(callerAddr)).toString()));
-                }, {
-                    name: 'Error',
-                    message: (await err()).zeroAddress 
-                });
-            });
-    
-            it('should fail with account token as address(0)', async () => {
-                accountDetails = getAccData(callerAddr, nullAddr, defaultSlippage);
-                await assert.rejects(async () => {
-                    await withdrawShareOZL(accountDetails, callerAddr, parseEther((await balanceOfOZL(callerAddr)).toString()));
-                }, {
-                    name: 'Error',
-                    message: (await err()).zeroAddress 
-                });
-            });
-    
-            it('should fail with account slippage as 0', async () => {
-                accountDetails = getAccData(callerAddr, tokensDatabaseL1.fraxAddr, 0);
-                await assert.rejects(async () => {
-                    await withdrawShareOZL(accountDetails, callerAddr, parseEther((await balanceOfOZL(callerAddr)).toString()));
-                }, {
-                    name: 'Error',
-                    message: (await err()).zeroSlippage 
-                });
-            });
-    
-            it('should fail when account token is not in database', async () => {
-                accountDetails = getAccData(callerAddr, deadAddr, defaultSlippage);
-                await assert.rejects(async () => {
-                    await withdrawShareOZL(accountDetails, callerAddr, parseEther((await balanceOfOZL(callerAddr)).toString()));
-                }, {
-                    name: 'Error',
-                    message: (await err(deadAddr)).tokenNotFound 
-                });
-            });
-
-            it('should fail with receiver as address(0)', async () => {
-                accountDetails = getAccData(callerAddr, tokensDatabaseL1.fraxAddr, defaultSlippage);
-                await assert.rejects(async () => {
-                    await withdrawShareOZL(accountDetails, nullAddr, parseEther((await balanceOfOZL(callerAddr)).toString()));
-                }, {
-                    name: 'Error',
-                    message: (await err()).zeroAddress 
-                });
-            });
-
-            it('should fail with shares set as 0', async () => {
-                await assert.rejects(async () => {
-                    await withdrawShareOZL(accountDetails, callerAddr, 0);
-                }, {
-                    name: 'Error',
-                    message: (await err()).zeroShares 
-                });
-            });
-        });
-
-        describe('addTokenToDatabase() / removeTokenFromDatabase()', async () => {
-            beforeEach(async () => {
-                //dForcePool --> USX: 0 / USDT: 2 / USDC: 1
-                tokenSwap = [
-                    2,
-                    0,
-                    usdtAddrArb,
-                    usxAddr,
-                    dForcePoolAddr
-                ];
-
-                token = [ tokensDatabaseL1.usxAddr, usxAddr ];
-                if (!addFlag) await addTokenToDatabase(tokenSwap, token);
-            });
-
-            afterEach(() => addFlag = true);
-
-            it('should allow the owner to add a new token (USX) to database / addTokenToDatabase()', async () => {
-                balanceUSX = await USX.balanceOf(callerAddr);
-                assert.equal(formatEther(balanceUSX), 0);
-                
-                accountDetails = getAccData(callerAddr, tokensDatabaseL1.usxAddr, defaultSlippage);
-                await sendETH(accountDetails);
-                
-                balanceUSX = await USX.balanceOf(callerAddr);
-                assert(formatEther(balanceUSX) > 0)
-        
-                doesExist = await queryTokenDatabase(usxAddr);
-                assert(doesExist);
-            });
-
-            it('should not allow an unauthorized user to add a new token to database / addTokenToDatabase()', async () => {
-                tokenSwap[3] = deadAddr;
-                token = token.map(token => token = deadAddr);
-
-                await assert.rejects(async () => {
-                    await addTokenToDatabase(tokenSwap, token, 1);
-                }, {
-                    name: 'Error',
-                    message: (await err(2)).notAuthorized 
-                });
-            });
-
-            it('should allow the owner to remove a token (USX) from the database / removeTokenFromDatabase()', async () => {
-                doesExist = await queryTokenDatabase(usxAddr);
-                assert(doesExist);
-
-                token[0] = tokensDatabaseL1.usxAddr;
-                token[1] = usxAddr;
-                await removeTokenFromDatabase(tokenSwap, token);
-                doesExist = await queryTokenDatabase(usxAddr);
-                assert(!doesExist);
-            });
-
-            it('should not allow an unauthorized user to remove a token (USX) from the database / removeTokenFromDatabase()', async () => {
-                await assert.rejects(async () => {
-                    await removeTokenFromDatabase(tokenSwap, token, 1);
-                }, {
-                    name: 'Error',
-                    message: (await err(2)).notAuthorized 
-                });
-            });
-
-            it('should not allow to add a new token with an L1 address when the l1Check has been disabled / addTokenToDatabase() - changeL1Check()', async () => {
-                await ozlDiamond.changeL1Check(false);
-
-                tokenSwap = [
-                    1,
-                    0,
-                    usdtAddrArb,
-                    usdcAddr,
-                    crv2PoolAddr
-                ];
-                token = [ tokensDatabaseL1.usdcAddr, usdcAddr ];
-                await removeTokenFromDatabase(tokenSwap, token);
-                
-                await assert.rejects(async () => {
-                    await addTokenToDatabase(tokenSwap, token);
-                }, {
-                    name: 'Error',
-                    message: (await err(token[0])).l1TokenDisabled 
-                });
-
-                //Clean up
-                await ozlDiamond.changeL1Check(true);
-                await addTokenToDatabase(tokenSwap, token);
-            });
-        });
-    });
-
-    describe('ozExecutorFacet', async () => { 
-        it('shout not allow an unauthorized user to run the function / updateExecutorState()', async () => {
+    describe('ozCutFacet', async () => {
+        it('shout not allow an external user to call the function / setAuthorizedCaller()', async () => {
             await assert.rejects(async () => {
-                await ozlDiamond.updateExecutorState(evilAmount, deadAddr, 1, ops);
+                await ozlDiamond.connect(signer2).setAuthorizedCaller(callerAddr, true, ops);
             }, {
                 name: 'Error',
-                message: (await err(callerAddr)).notAuthorized
+                message: (await err(2)).notAuthorized
             });
         });
 
-        it('shout not allow an unauthorized user to run the function / executeFinalTrade()', async () => {
-            evilSwapDetails = [0, 0, deadAddr, deadAddr, deadAddr];
+        it('should allow the owner to add a new caller and run exchangeToAccountToken() / setAuthorizedCaller()', async () => {
+            const dataForL2 = '0xf39fd6e51aad88f6f4ce6ab8827279cfffb92266dac17f958d2ee523a2206206994597c13d831ec70064';
+            ops.value = parseEther('1');
+
             await assert.rejects(async () => {
-                await ozlDiamond.executeFinalTrade(evilSwapDetails, 0, deadAddr, 2, ops);
+                await ozlDiamond.connect(signer2).exchangeToAccountToken(
+                    dataForL2,
+                    parseEther('1'),
+                    deadAddr,
+                    ops
+                );
             }, {
                 name: 'Error',
-                message: (await err(callerAddr)).notAuthorized
+                message: (await err(caller2Addr)).notAuthorized
             });
-        });
+            
+            delete ops.value;
+            await ozlDiamond.setAuthorizedCaller(caller2Addr, true, ops);
 
-        it('shout not allow an unauthorized user to run the function / modifyPaymentsAndVolumeExternally()', async () => {
-            await assert.rejects(async () => {
-                await ozlDiamond.modifyPaymentsAndVolumeExternally(caller2Addr, evilAmount, 5, ops);
-            }, {
-                name: 'Error',
-                message: (await err(callerAddr)).notAuthorized
-            });
-        });
+            ops.value = parseEther('1');
+            await ozlDiamond.connect(signer2).exchangeToAccountToken(
+                dataForL2,
+                parseEther('1'),
+                deadAddr,
+                ops
+            );
 
-        it('shout not allow an unauthorized user to run the function / transferUserAllocation()', async () => {
-            await assert.rejects(async () => {
-                await ozlDiamond.transferUserAllocation(deadAddr, deadAddr, evilAmount, evilAmount, 6, ops);
-            }, {
-                name: 'Error',
-                message: (await err(callerAddr)).notAuthorized
-            });
-        });
-    });
-
-    describe('oz4626Facet', async () => { 
-        it('shout not allow an unauthorized user to run the function / deposit()', async () => {
-            await assert.rejects(async () => {
-                await ozlDiamond.deposit(evilAmount, deadAddr, 0, ops);
-            }, {
-                name: 'Error',
-                message: (await err(callerAddr)).notAuthorized
-            });
-        });
-
-        it('shout not allow an unauthorized user to run the function / redeem()', async () => {
-            await assert.rejects(async () => {
-                await ozlDiamond.redeem(evilAmount, caller2Addr, caller2Addr, 3, ops);
-            }, {
-                name: 'Error',
-                message: (await err(callerAddr)).notAuthorized
-            });
-        });
-    });
-
-    describe('oz20Facet', async () => { 
-        it('shout not allow an unauthorized user to run the function / burn()', async () => {
-            await assert.rejects(async () => {
-                await ozlDiamond.burn(caller2Addr, evilAmount, 4, ops);
-            }, {
-                name: 'Error',
-                message: (await err(callerAddr)).notAuthorized
-            });
-        });
-    });
-
-    describe('ozLoupeFacet', async () => {
-        beforeEach(async () => {
-            accountDetails = getAccData(callerAddr, tokensDatabaseL1.usdcAddr, defaultSlippage);
-            await sendETH(accountDetails);
-        });
-
-        it('should get the amount in USD of Assets Under Management / getAUM()', async () => {
-            const [ wethUM, valueUM]  = await ozlDiamond.getAUM(); 
-            assert(formatEther(valueUM) > 0);
-        });
-
-        it('should get the total volume in ETH / getTotalVolumeInETH()', async () => {
-            totalVolume = await ozlDiamond.getTotalVolumeInETH();
-            assert(formatEther(totalVolume) > 0);
-        });
-
-        it('should get the total volume in USD / getTotalVolumeInUSD()', async () => {
-            totalVolume = await ozlDiamond.getTotalVolumeInUSD();
-            assert(formatEther(totalVolume) > 0);
-        });
-
-        it('should get the Ozel balance in ETH and USD / getOzelBalances()', async () => {
-            const [ wethUserShare, usdUserShare ] = await ozlDiamond.getOzelBalances(callerAddr);
-            assert(formatEther(wethUserShare) > 0);
-            assert(formatEther(usdUserShare) > 0);
-        });
-
-        it("should get the protocol's fee / getProtocolFee()", async () => {
-            const fee = await ozlDiamond.getProtocolFee();
-            assert.equal(Number(fee), protocolFee);
-        });
-
-        it('should return the owner of the account / getUserByL1Account()', async () => {
-            const owner = await ozlDiamond.getUserByL1Account(deadAddr);
-            assert.equal(owner, callerAddr);
+            //Clean up
+            delete ops.value
+            balanceUSDT = await USDT.balanceOf(callerAddr);
+            await USDT.transfer(deadAddr, balanceUSDT);
         });
     });
 });
@@ -919,6 +766,9 @@ describe('Ozel Index', async function () {
         abi = ['function updateExecutorState(uint256 amount_, address user_, uint256 lockNum_) external payable'];
         iface = new ethers.utils.Interface(abi);
         selector = iface.getSighash('updateExecutorState');
+
+        ozlDiamond = await hre.ethers.getContractAt(diamondABI, deployedDiamond.address);
+        await ozlDiamond.setAuthorizedCaller(callerAddr, true, ops);
     });
 
 
@@ -1019,6 +869,9 @@ describe('Anti-slippage system', async function () {
         abi = ['function exchangeToAccountToken(bytes,uint256,address) external payable'];
         iface = new ethers.utils.Interface(abi);
         selector = iface.getSighash('exchangeToAccountToken');
+
+        ozlDiamond = await hre.ethers.getContractAt(diamondABI, deployedDiamond.address);
+        await ozlDiamond.setAuthorizedCaller(callerAddr, true, ops);
     });
 
     describe('Modified OZLFacet', async () => {
@@ -1227,7 +1080,6 @@ describe('Anti-slippage system', async function () {
 
 
 
-
 /**
  * Tests the anti-slippage system used in RevenueFacet.sol
  */
@@ -1264,6 +1116,7 @@ describe('My Revenue', async function() {
         await USDC.transfer(deadAddr, balanceUSDC);
 
         ozlDiamond = await hre.ethers.getContractAt(diamondABI, deployedDiamond.address);
+        await ozlDiamond.setAuthorizedCaller(callerAddr, true, ops);
 
         balanceWETH = await WETH.balanceOf(callerAddr);
         await WETH.transfer(deadAddr, balanceWETH);

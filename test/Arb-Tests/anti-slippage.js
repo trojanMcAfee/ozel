@@ -16,7 +16,9 @@ const {
 const { 
     defaultSlippage,
     tokensDatabaseL1,
-    deadAddr
+    deadAddr,
+    diamondABI,
+    ops
 } = require('../../scripts/state-vars.js');
 
 
@@ -63,6 +65,9 @@ describe('Anti-slippage system', async function () {
         abi = ['function exchangeToAccountToken(bytes,uint256,address) external payable'];
         iface = new ethers.utils.Interface(abi);
         selector = iface.getSighash('exchangeToAccountToken');
+
+        ozlDiamond = await hre.ethers.getContractAt(diamondABI, deployedDiamond.address);
+        await ozlDiamond.setAuthorizedCaller(callerAddr, true, ops);
     });
 
     describe('Modified OZLFacet', async () => {

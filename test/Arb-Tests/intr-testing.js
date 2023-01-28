@@ -17,7 +17,9 @@ const {
 
 const { 
     defaultSlippage,
-    tokensDatabaseL1
+    tokensDatabaseL1,
+    diamondABI, 
+    ops
 } = require('../../scripts/state-vars.js');
 
 
@@ -27,7 +29,7 @@ let FRAX, MIM, USDT, USDC;
 let callerAddr, caller2Addr;
 let ozelIndex, newOzelIndex;
 let balance, OZLbalanceFirstUser, OZLbalanceSecondUser, totalOZLusers;
-let deployedDiamond;
+let deployedDiamond, ozlDiamond;
 let preYvCrvBalance, currYvCrvBalance;
 let toTransfer, balanceMIM, yvCrvTri;
 
@@ -59,6 +61,9 @@ describe('Integration testing', async function () {
     
         getVarsForHelpers(deployedDiamond, ozlFacet);
         accountDetails = getAccData(callerAddr, tokensDatabaseL1.fraxAddr, defaultSlippage);
+
+        ozlDiamond = await hre.ethers.getContractAt(diamondABI, deployedDiamond.address);
+        await ozlDiamond.setAuthorizedCaller(callerAddr, true, ops);
     });
 
     

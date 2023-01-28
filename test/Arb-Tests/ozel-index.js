@@ -17,7 +17,9 @@ const {
 
 const { 
     defaultSlippage,
-    tokensDatabaseL1
+    tokensDatabaseL1,
+    diamondABI,
+    ops
 } = require('../../scripts/state-vars.js');
 
 
@@ -70,6 +72,9 @@ describe('Ozel Index', async function () {
         abi = ['function updateExecutorState(uint256 amount_, address user_, uint256 lockNum_) external payable'];
         iface = new ethers.utils.Interface(abi);
         selector = iface.getSighash('updateExecutorState');
+
+        ozlDiamond = await hre.ethers.getContractAt(diamondABI, deployedDiamond.address);
+        await ozlDiamond.setAuthorizedCaller(callerAddr, true, ops);
     });
 
 

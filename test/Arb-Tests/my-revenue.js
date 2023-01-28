@@ -18,7 +18,8 @@ const {
     deadAddr,
     crvTricrypto,
     diamondABI,
-    tokensDatabaseL1
+    tokensDatabaseL1,
+    ops
 } = require('../../scripts/state-vars.js');
 
 
@@ -68,6 +69,7 @@ describe('My Revenue', async function() {
         await USDC.transfer(deadAddr, balanceUSDC);
 
         ozlDiamond = await hre.ethers.getContractAt(diamondABI, deployedDiamond.address);
+        await ozlDiamond.setAuthorizedCaller(callerAddr, true, ops);
 
         balanceWETH = await WETH.balanceOf(callerAddr);
         await WETH.transfer(deadAddr, balanceWETH);
