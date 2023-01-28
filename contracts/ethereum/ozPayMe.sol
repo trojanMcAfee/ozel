@@ -81,9 +81,10 @@ contract ozPayMe is ozIPayMe, ReentrancyGuard, Initializable {
 
 
     /*///////////////////////////////////////////////////////////////
-                            Main functions
+                            Main function
     //////////////////////////////////////////////////////////////*/
 
+    //@inheritdoc ozIPayMe
     function sendToArb( 
         uint gasPriceBid_,
         uint amountToSend_,
@@ -114,6 +115,7 @@ contract ozPayMe is ozIPayMe, ReentrancyGuard, Initializable {
                                Helpers
     //////////////////////////////////////////////////////////////*/
     
+    //@inheritdoc ozIPayMe
     function initialize(
         address beacon_,
         bytes memory dataForL2_
@@ -131,6 +133,7 @@ contract ozPayMe is ozIPayMe, ReentrancyGuard, Initializable {
                           Account methods
     //////////////////////////////////////////////////////////////*/
     
+    //@inheritdoc ozIPayMe
     function changeAccountToken(
         address newToken_
     ) external checkToken(newToken_) onlyUser { 
@@ -138,7 +141,7 @@ contract ozPayMe is ozIPayMe, ReentrancyGuard, Initializable {
         dataForL2 = bytes.concat(bytes20(user), bytes20(newToken_), bytes2(slippage));
     }
 
-    
+    //@inheritdoc ozIPayMe
     function changeAccountSlippage(
         uint16 newSlippage_
     ) external checkSlippage(newSlippage_) onlyUser { 
@@ -146,7 +149,7 @@ contract ozPayMe is ozIPayMe, ReentrancyGuard, Initializable {
         dataForL2 = bytes.concat(bytes20(user), bytes20(token), bytes2(newSlippage_));
     }
 
-    
+    //@inheritdoc ozIPayMe
     function changeAccountTokenNSlippage( 
         address newToken_, 
         uint16 newSlippage_
@@ -155,7 +158,7 @@ contract ozPayMe is ozIPayMe, ReentrancyGuard, Initializable {
         dataForL2 = bytes.concat(bytes20(user), bytes20(newToken_), bytes2(newSlippage_));
     } 
 
-
+    //@inheritdoc ozIPayMe
     function getAccountDetails() external view returns(
         address user, 
         address token, 
@@ -169,10 +172,4 @@ contract ozPayMe is ozIPayMe, ReentrancyGuard, Initializable {
         (bool success, ) = payable(msg.sender).call{value: address(this).balance}('');
         if (!success) revert CallFailed('ozPayMe: withdrawETH_lastResort failed');
     }
-
-    /*///////////////////////////////////////////////////////////////
-                        Retryable helper methods
-    //////////////////////////////////////////////////////////////*/
-    
-
 }

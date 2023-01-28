@@ -31,19 +31,14 @@ interface IStorageBeacon {
     /**
      * @dev Saves and connects the address of the account to its details.
      * @param account_ The account/proxy
-     * @param accountDetails_ Details of the account/proxy
+     * @param acc_ Details of the account/proxy
+     * @param taskId_ Gelato's task id
      */
-    // function saveUserToDetails(
-    //     address account_, 
-    //     AccountConfig memory accountDetails_
-    // ) external;
-
-    /**
-     * @dev Stores the Gelato task. Can only be called by the Proxy Factory. 
-     * @param account_ Address of the account/proxy
-     * @param id_ ID of the Gelato task
-     */
-    // function saveTaskId(address account_, bytes32 id_) external;
+    function multiSave(
+        bytes20 account_,
+        AccountConfig calldata acc_,
+        bytes32 taskId_
+    ) external;
 
     /**
      * @dev Changes the hard-coded L2 gas price
@@ -133,8 +128,13 @@ interface IStorageBeacon {
     /// @dev Gets all the tokens in the database
     function getTokenDatabase() external view returns(address[] memory);
 
-    /// @dev Gets all the gross ETH transfers (without the Gelato's execution fees) done to an account/proxy
-    // function getAccountPayments(address account_) external view returns(uint);
+    /**
+     * @dev Verifies that an Account was created in Ozel
+     * @param user_ Owner of the Account to query
+     * @param acc_user_ Bytes20 made of the 20 bytes of the Account and 12 of the owner
+     * @return bool If the Account was created in Ozel
+     */
+     function verify(address user_, bytes32 acc_user_) external view returns(bool);
 }
 
 

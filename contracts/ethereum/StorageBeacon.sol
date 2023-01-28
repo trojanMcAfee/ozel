@@ -36,10 +36,6 @@ contract StorageBeacon is IStorageBeacon, Initializable, Ownable {
     event NewToken(address token);
     event TokenRemoved(address token);
 
-    /*///////////////////////////////////////////////////////////////
-                            Modifiers
-    //////////////////////////////////////////////////////////////*/
-
     /// @dev Checks -using RolesAuthority- if the sender can call certain method
     modifier hasRole(bytes4 functionSig_) {
         require(beacon.canCall(msg.sender, address(this), functionSig_));
@@ -81,6 +77,7 @@ contract StorageBeacon is IStorageBeacon, Initializable, Ownable {
                         State-changing functions
     //////////////////////////////////////////////////////////////*/
 
+    //@inheritdoc IStorageBeacon
     function multiSave(
         bytes20 account_,
         AccountConfig calldata acc_,
@@ -100,11 +97,13 @@ contract StorageBeacon is IStorageBeacon, Initializable, Ownable {
         }
     }
 
+    //@inheritdoc IStorageBeacon
     function changeGasPriceBid(uint newGasPriceBid_) external onlyOwner {
         gasPriceBid = newGasPriceBid_;
         emit L2GasPriceChanged(newGasPriceBid_);
     }
 
+    //@inheritdoc IStorageBeacon
     function addTokenToDatabase(address newToken_) external onlyOwner {
         if (queryTokenDatabase(newToken_)) revert TokenAlreadyInDatabase(newToken_);
         tokenDatabase[newToken_] = true;
@@ -112,6 +111,7 @@ contract StorageBeacon is IStorageBeacon, Initializable, Ownable {
         emit NewToken(newToken_);
     }
 
+    //@inheritdoc IStorageBeacon
     function removeTokenFromDatabase(address toRemove_) external onlyOwner {
         if (!queryTokenDatabase(toRemove_)) revert TokenNotInDatabase(toRemove_);
         tokenDatabase[toRemove_] = false;
@@ -119,18 +119,22 @@ contract StorageBeacon is IStorageBeacon, Initializable, Ownable {
         emit TokenRemoved(toRemove_);
     }
 
+    //@inheritdoc IStorageBeacon
     function storeBeacon(address beacon_) external initializer { 
         beacon = ozUpgradeableBeacon(beacon_);
     }
 
+    //@inheritdoc IStorageBeacon
     function changeEmergencyMode(EmergencyMode calldata newEmode_) external onlyOwner {
         eMode = newEmode_;
     }
 
+    //@inheritdoc IStorageBeacon
     function changeEmitterStatus(bool newStatus_) external onlyOwner {
         isEmitter = newStatus_;
     }
 
+    //@inheritdoc IStorageBeacon
     function addAuthorizedSelector(bytes4 selector_) external onlyOwner {
         authorizedSelectors[selector_] = true;
     }
@@ -140,18 +144,22 @@ contract StorageBeacon is IStorageBeacon, Initializable, Ownable {
                             View functions
     //////////////////////////////////////////////////////////////*/
 
+    //@inheritdoc IStorageBeacon
     function isSelectorAuthorized(bytes4 selector_) external view returns(bool) {
         return authorizedSelectors[selector_];
     }
 
+    //@inheritdoc IStorageBeacon
     function getGasPriceBid() external view returns(uint) {
         return gasPriceBid; 
     }
     
+        //@inheritdoc IStorageBeacon
     function getEmergencyMode() external view returns(EmergencyMode memory) {
         return eMode;
     }
 
+    //@inheritdoc IStorageBeacon
     function getAccountsByUser(
         address user_
     ) external view returns(address[] memory, string[] memory) {
@@ -173,6 +181,9 @@ contract StorageBeacon is IStorageBeacon, Initializable, Ownable {
         return (accounts, names);
     }
 
+    /**
+     * @dev Gets the bytes array compounded of the Account's name and its Gelato's task id
+     */
     function _getTask_Name(
         address account_, 
         address owner_,
@@ -183,7 +194,7 @@ contract StorageBeacon is IStorageBeacon, Initializable, Ownable {
         return task_name;
     }
 
-
+    //@inheritdoc IStorageBeacon
     function getTaskID(address account_, address owner_) external view returns(bytes32) {
         AccData storage data = userToData[owner_];
         if (data.accounts.length == 0) revert UserNotInDatabase(owner_);
@@ -203,18 +214,22 @@ contract StorageBeacon is IStorageBeacon, Initializable, Ownable {
         return tokenDatabase[token_];
     }
     
+    //@inheritdoc IStorageBeacon
     function isUser(address user_) external view returns(bool) {
         return userToData[user_].accounts.length > 0;
     }
 
+    //@inheritdoc IStorageBeacon
     function getEmitterStatus() external view returns(bool) {
         return isEmitter;
     }
 
+    //@inheritdoc IStorageBeacon
     function getTokenDatabase() external view returns(address[] memory) {
         return tokenDatabaseArray;
     }
 
+    //@inheritdoc IStorageBeacon
     function verify(address user_, bytes32 acc_user_) external view returns(bool) {
         AccData storage data = userToData[user_];
         bytes memory task_name = data.acc_userToTask_name[acc_user_];

@@ -9,9 +9,9 @@ import '../../interfaces/common/IWETH.sol';
 import '../../ethereum/Emitter.sol';
 import '../../ethereum/StorageBeacon.sol';
 import '../../ethereum/ozUpgradeableBeacon.sol';
+import '../../ethereum/ozMiddleware.sol';
 import './StorageBeaconMock.sol';
 import '../../Errors.sol';
-import '../../ethereum/ozMiddleware.sol';
 
 
 

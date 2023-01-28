@@ -14,9 +14,10 @@ import '../libraries/LibCommon.sol';
 import './StorageBeacon.sol';
 import './FakeOZL.sol';
 import '../Errors.sol';
+import '../interfaces/ethereum/ozIMiddleware.sol';
 
 
-contract ozMiddleware is Ownable, ReentrancyGuard {
+contract ozMiddleware is ozIMiddleware, Ownable, ReentrancyGuard {
 
     using FixedPointMathLib for uint;
 
@@ -33,6 +34,11 @@ contract ozMiddleware is Ownable, ReentrancyGuard {
     }
 
 
+    /*///////////////////////////////////////////////////////////////
+                              Main functions
+    //////////////////////////////////////////////////////////////*/
+
+    //@inheritdoc ozIMiddleware
     function forwardCall(
         uint gasPriceBid_,
         bytes memory dataForL2_,
@@ -72,7 +78,6 @@ contract ozMiddleware is Ownable, ReentrancyGuard {
         bool emitterStatus = storageBeacon.getEmitterStatus();
         return (isEmergency, emitterStatus, user);
     }
-
 
     /**
      * @dev Runs the L1 emergency swap in Uniswap. 
@@ -116,6 +121,10 @@ contract ozMiddleware is Ownable, ReentrancyGuard {
     }
 
 
+    /*///////////////////////////////////////////////////////////////
+                        Retryable helper methods
+    //////////////////////////////////////////////////////////////*/
+
     /**
      * @dev Creates the ticket's calldata based on L1 gas values
      */
@@ -139,7 +148,6 @@ contract ozMiddleware is Ownable, ReentrancyGuard {
         );
     }
 
-
     /**
      * @dev Calculates the L1 gas values for the retryableticket's auto redeemption
      */
@@ -158,7 +166,6 @@ contract ozMiddleware is Ownable, ReentrancyGuard {
         if (autoRedeem > msg.value) autoRedeem = msg.value;
     }
 
-
     /**
      * @dev Using the account slippage, calculates the minimum amount of tokens out.
      *      Uses the "i" variable from the parent loop to double the slippage, if necessary.
@@ -176,12 +183,16 @@ contract ozMiddleware is Ownable, ReentrancyGuard {
         minOut = minOutUnprocessed.mulWadDown(10 ** 6);
     }
 
+    /*///////////////////////////////////////////////////////////////
+                                Helpers
+    //////////////////////////////////////////////////////////////*/
 
     /// @dev Gets a version of the Storage Beacon
     function _getStorageBeacon(uint version_) private view returns(address) {
         return ozUpgradeableBeacon(beacon).storageBeacon(version_);
     }
 
+    /// @dev Stores the Beacon
     function storeBeacon(address beacon_) external onlyOwner {
         beacon = beacon_;
     }
