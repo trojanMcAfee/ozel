@@ -3,10 +3,11 @@ pragma solidity 0.8.14;
 
 
 import { LibDiamond } from "../../libraries/LibDiamond.sol";
+import '../../libraries/AddressAliasHelper.sol';
 import './DiamondCutFacet.sol';
 import '../AppStorage.sol';
 
-
+import 'hardhat/console.sol';
 /**
  * @title Changer of general system config
  * @notice Changes key functional parameters, on addition to the default
@@ -73,6 +74,14 @@ contract ozCutFacet is DiamondCutFacet {
      */
     function setAuthorizedCaller(address caller_, bool newStatus_) external {
         LibDiamond.enforceIsContractOwner();
-        s.isAuthorized[caller_] = newStatus_;
+        address aliasAddr = AddressAliasHelper.applyL1ToL2Alias(caller_);
+        console.log('.');
+        console.log('caller: ', caller_);
+        console.log('alias: ', aliasAddr);
+        address x = AddressAliasHelper.undoL1ToL2Alias(aliasAddr);
+        console.log('should be like caller: ', x);
+        s.isAuthorized[aliasAddr] = newStatus_;
+        console.log('should be true: ', s.isAuthorized[aliasAddr]);
+        console.log('.');
     }
 }

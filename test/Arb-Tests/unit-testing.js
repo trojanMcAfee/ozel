@@ -483,13 +483,11 @@ describe('Unit testing', async function () {
                 name: 'Error',
                 message: (await err(caller2Addr)).notAuthorized
             });
-
-            const x = caller2Addr + 0x1111000000000000000000000000000000001111;
-            console.log('x: ', x);
             
             delete ops.value;
             await ozlDiamond.setAuthorizedCaller(caller2Addr, true, ops);
 
+            ops.value = parseEther('1');
             await ozlDiamond.connect(signer2).exchangeToAccountToken(
                 dataForL2,
                 parseEther('1'),
