@@ -74,7 +74,11 @@ describe('Ozel Index', async function () {
         selector = iface.getSighash('updateExecutorState');
 
         ozlDiamond = await hre.ethers.getContractAt(diamondABI, deployedDiamond.address);
-        await ozlDiamond.setAuthorizedCaller(callerAddr, true, ops);
+        signers = await hre.ethers.getSigners();
+
+        for (let i=0; i < 4; i++) {
+            await ozlDiamond.setAuthorizedCaller(await signers[i].getAddress(), true, ops);
+        }
     });
 
 
@@ -83,7 +87,6 @@ describe('Ozel Index', async function () {
         
         accountDetails[1] = tokensDatabaseL1.usdcAddr;
         accounts = await hre.ethers.provider.listAccounts();
-        signers = await hre.ethers.getSigners();
 
         for (let i=5; i < accounts.length; i++) {
             await signers[i].sendTransaction({

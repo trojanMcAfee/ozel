@@ -692,36 +692,15 @@ describe('Unit testing', async function () {
         });
 
         it('should allow the owner to add a new caller and run exchangeToAccountToken() / setAuthorizedCaller()', async () => {
-            const dataForL2 = '0xf39fd6e51aad88f6f4ce6ab8827279cfffb92266dac17f958d2ee523a2206206994597c13d831ec70064';
-            ops.value = parseEther('1');
-
             await assert.rejects(async () => {
-                await ozlDiamond.connect(signer2).exchangeToAccountToken(
-                    dataForL2,
-                    parseEther('1'),
-                    deadAddr,
-                    ops
-                );
+                await sendETH(accountDetails, 1);
             }, {
                 name: 'Error',
                 message: (await err(caller2Addr)).notAuthorized
             });
             
-            delete ops.value;
             await ozlDiamond.setAuthorizedCaller(caller2Addr, true, ops);
-
-            ops.value = parseEther('1');
-            await ozlDiamond.connect(signer2).exchangeToAccountToken(
-                dataForL2,
-                parseEther('1'),
-                deadAddr,
-                ops
-            );
-
-            //Clean up
-            delete ops.value
-            balanceUSDT = await USDT.balanceOf(callerAddr);
-            await USDT.transfer(deadAddr, balanceUSDT);
+            await sendETH(accountDetails, 1);
         });
     });
 });
@@ -768,7 +747,11 @@ describe('Ozel Index', async function () {
         selector = iface.getSighash('updateExecutorState');
 
         ozlDiamond = await hre.ethers.getContractAt(diamondABI, deployedDiamond.address);
-        await ozlDiamond.setAuthorizedCaller(callerAddr, true, ops);
+        signers = await hre.ethers.getSigners();
+
+        for (let i=0; i < 4; i++) {
+            await ozlDiamond.setAuthorizedCaller(await signers[i].getAddress(), true, ops);
+        }
     });
 
 
@@ -777,7 +760,6 @@ describe('Ozel Index', async function () {
         
         accountDetails[1] = tokensDatabaseL1.usdcAddr;
         accounts = await hre.ethers.provider.listAccounts();
-        signers = await hre.ethers.getSigners();
 
         for (let i=5; i < accounts.length; i++) {
             await signers[i].sendTransaction({

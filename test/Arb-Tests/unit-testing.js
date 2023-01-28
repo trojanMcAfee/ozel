@@ -471,31 +471,15 @@ describe('Unit testing', async function () {
         });
 
         it('should allow the owner to add a new caller and run exchangeToAccountToken() / setAuthorizedCaller()', async () => {
-            const dataForL2 = '0xf39fd6e51aad88f6f4ce6ab8827279cfffb92266dac17f958d2ee523a2206206994597c13d831ec70064';
-            ops.value = parseEther('1');
-
             await assert.rejects(async () => {
-                await ozlDiamond.connect(signer2).exchangeToAccountToken(
-                    dataForL2,
-                    parseEther('1'),
-                    deadAddr,
-                    ops
-                );
+                await sendETH(accountDetails, 1);
             }, {
                 name: 'Error',
                 message: (await err(caller2Addr)).notAuthorized
             });
             
-            delete ops.value;
             await ozlDiamond.setAuthorizedCaller(caller2Addr, true, ops);
-
-            ops.value = parseEther('1');
-            await ozlDiamond.connect(signer2).exchangeToAccountToken(
-                dataForL2,
-                parseEther('1'),
-                deadAddr,
-                ops
-            );
+            await sendETH(accountDetails, 1);
         });
     });
 });

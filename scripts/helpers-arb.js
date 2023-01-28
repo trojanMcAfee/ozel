@@ -79,7 +79,7 @@ async function withdrawShareOZL(accountDetails, receiverAddr, balanceOZL, signer
 //Sends ETH to contracts (simulates ETH bridging) **** MAIN FUNCTION ****
 async function sendETH(accountDetails, signerIndex = 0, ozelIndex) {
     const signers = await hre.ethers.getSigners();
-    const signer = signers[signerIndex ? 0 : signerIndex];
+    const signer = signers[signerIndex === 0 || signerIndex === 'no value' ? 0 : signerIndex];
     let value = ethers.utils.parseEther(signerIndex === 'no value' ? '0' : '10');
     value = ozelIndex === 'ozel index test' ? ethers.utils.parseEther('100') : value;
     const tx = await OZLDiamond.connect(signer).exchangeToAccountToken(accountDetails, value, deadAddr, {
