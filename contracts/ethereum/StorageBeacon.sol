@@ -154,7 +154,7 @@ contract StorageBeacon is IStorageBeacon, Initializable, Ownable {
         return gasPriceBid; 
     }
     
-        //@inheritdoc IStorageBeacon
+    //@inheritdoc IStorageBeacon
     function getEmergencyMode() external view returns(EmergencyMode memory) {
         return eMode;
     }

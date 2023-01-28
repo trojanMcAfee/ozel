@@ -12,7 +12,9 @@ interface ozIMiddleware {
      * @param dataForL2_ Details of the Account to forward to L2
      * @param amountToSend_ ETH amount that account_ received
      * @param account_ Account
-     * @return (bool,bool,address) Values to check back in ozPayme
+     * @return bool If runEmergencyMode() was called
+     * @return bool The current status of forwarding from Emitter
+     * @return address The owner of the Account
      */
     function forwardCall(
         uint gasPriceBid_,

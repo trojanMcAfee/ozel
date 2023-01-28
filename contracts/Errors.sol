@@ -46,6 +46,9 @@ error NameTooLong();
 /// @param taskId Gelato task
 error InvalidTask(bytes32 taskId);
 
+/// @dev Thrown if an attempt to add a L1 token is done after it's been disabled
+/// @param l1Token L1 token address
 error L1TokenDisabled(address l1Token);
 
+/// @dev Thrown when a Gelato's task ID doesn't exist
 error NoTaskId();

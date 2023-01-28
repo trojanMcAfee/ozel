@@ -230,6 +230,15 @@ library LibDiamond {
         require(contractSize > 0, _errorMessage);
     }
 
+    /*///////////////////////////////////////////////////////////////
+                               Custom methods
+    //////////////////////////////////////////////////////////////*/
+
+    /**
+     * @dev Determines which facet to call depending on the selector
+     * @param data_ Calldata of function to call
+     * @return bytes Return data
+     */
     function callFacet(bytes memory data_) internal returns(bytes memory) {
         DiamondStorage storage ds = diamondStorage();
         address facet = ds.selectorToFacetAndPosition[bytes4(data_)].facetAddress;
@@ -238,6 +247,10 @@ library LibDiamond {
         return data;
     }
 
+    /**
+     * @dev Sets the facets that don't call for a revenue check (the owner's)
+     * @param nonRevenueFacets_ Facets that don't call for revenue check
+     */
     function setNonRevenueFacets(address[] memory nonRevenueFacets_) internal {
         DiamondStorage storage ds = diamondStorage();
         uint length = nonRevenueFacets_.length;

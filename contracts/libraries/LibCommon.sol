@@ -59,7 +59,13 @@ library LibCommon {
         swaps_.pop();
     }
 
-
+    /**
+     * @dev Extracts the details of an Account
+     * @param data_ Bytes array containing the details
+     * @return user Owner of the Account
+     * @return token Token of the Account
+     * @return slippage Slippage of the Account
+     */
     function extract(bytes memory data_) internal pure returns(
         address user, 
         address token, 
