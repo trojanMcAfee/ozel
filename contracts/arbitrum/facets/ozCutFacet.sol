@@ -75,13 +75,6 @@ contract ozCutFacet is DiamondCutFacet {
     function setAuthorizedCaller(address caller_, bool newStatus_) external {
         LibDiamond.enforceIsContractOwner();
         address aliasAddr = AddressAliasHelper.applyL1ToL2Alias(caller_);
-        console.log('.');
-        console.log('caller: ', caller_);
-        console.log('alias: ', aliasAddr);
-        address x = AddressAliasHelper.undoL1ToL2Alias(aliasAddr);
-        console.log('should be like caller: ', x);
         s.isAuthorized[aliasAddr] = newStatus_;
-        console.log('should be true: ', s.isAuthorized[aliasAddr]);
-        console.log('.');
     }
 }

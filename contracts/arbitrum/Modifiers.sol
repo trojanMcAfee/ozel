@@ -8,7 +8,7 @@ import '../libraries/AddressAliasHelper.sol';
 import './Bits.sol';
 import '../Errors.sol';
 
-import 'hardhat/console.sol';
+
 /**
  * @title Modifiers for the L2 contracts
  */
@@ -44,10 +44,7 @@ abstract contract ModifiersARB is Bits {
     }
 
     modifier onlyAuthorized() {
-        console.log('sender in mod - should be caller: ', msg.sender);
         address aliasAddr = AddressAliasHelper.applyL1ToL2Alias(msg.sender);
-        console.log('alisa in mod - should be alias: ', aliasAddr);
-        console.log('should be true: ', s.isAuthorized[aliasAddr]);
         if (!s.isAuthorized[aliasAddr]) revert NotAuthorized(msg.sender);
         _;
     }
