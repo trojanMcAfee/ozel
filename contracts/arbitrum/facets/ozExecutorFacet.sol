@@ -26,7 +26,10 @@ contract ozExecutorFacet is ozIExecutorFacet, ModifiersARB {
         uint lockNum_
     ) external payable isAuthorized(lockNum_) noReentrancy(3) {
         address pool = swap_.pool;
-        uint inBalance = IERC20(swap_.baseToken).balanceOf(address(this));
+        int128 tokenIn = swap_.tokenIn;
+        int128 tokenOut = swap_.tokenOut;
+        address baseToken = swap_.baseToken;
+        uint inBalance = IERC20(baseToken).balanceOf(address(this));
         uint minOut;
         uint slippage;
 
@@ -36,20 +39,20 @@ contract ozExecutorFacet is ozIExecutorFacet, ModifiersARB {
             if (pool == s.crv2Pool) {
                 
                 minOut = IMulCurv(pool).get_dy(
-                    swap_.tokenIn, swap_.tokenOut, inBalance / i
+                    tokenIn, tokenOut, inBalance / i
                 );
                 slippage = calculateSlippage(minOut, slippage_ * i);
 
                 try IMulCurv(pool).exchange(
-                    swap_.tokenIn, swap_.tokenOut, inBalance / i, slippage
+                    tokenIn, tokenOut, inBalance / i, slippage
                 ) {
                     if (i == 2) {
                         try IMulCurv(pool).exchange(
-                            swap_.tokenIn, swap_.tokenOut, inBalance / i, slippage
+                            tokenIn, tokenOut, inBalance / i, slippage
                         ) {
                             break;
                         } catch {
-                            IERC20(swap_.baseToken).transfer(user_, inBalance / 2); 
+                            IERC20(baseToken).transfer(user_, inBalance / 2); 
                         }
                     }
                     break;
@@ -57,25 +60,25 @@ contract ozExecutorFacet is ozIExecutorFacet, ModifiersARB {
                     if (i == 1) {
                         continue;
                     } else {
-                        IERC20(swap_.baseToken).transfer(user_, inBalance); 
+                        IERC20(baseToken).transfer(user_, inBalance); 
                     }
                 }
             } else {
                 minOut = IMulCurv(pool).get_dy_underlying(
-                    swap_.tokenIn, swap_.tokenOut, inBalance / i
+                    tokenIn, tokenOut, inBalance / i
                 );
                 slippage = calculateSlippage(minOut, slippage_ * i);
                 
                 try IMulCurv(pool).exchange_underlying(
-                    swap_.tokenIn, swap_.tokenOut, inBalance / i, slippage
+                    tokenIn, tokenOut, inBalance / i, slippage
                 ) {
                     if (i == 2) {
                         try IMulCurv(pool).exchange_underlying(
-                            swap_.tokenIn, swap_.tokenOut, inBalance / i, slippage
+                            tokenIn, tokenOut, inBalance / i, slippage
                         ) {
                             break;
                         } catch {
-                            IERC20(swap_.baseToken).transfer(user_, inBalance / 2);
+                            IERC20(baseToken).transfer(user_, inBalance / 2);
                         }
                     }
                     break;
@@ -83,7 +86,7 @@ contract ozExecutorFacet is ozIExecutorFacet, ModifiersARB {
                     if (i == 1) {
                         continue;
                     } else {
-                        IERC20(swap_.baseToken).transfer(user_, inBalance); 
+                        IERC20(baseToken).transfer(user_, inBalance); 
                     }
                 }
             }
