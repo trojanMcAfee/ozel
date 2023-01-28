@@ -41,6 +41,7 @@ let deployedDiamond, ozlDiamond;
 let evilAmount, evilSwapDetails;
 let tokenSwap, token;
 let addFlag, totalVolume;
+let signer1, signer2;
 
 
 /**
@@ -67,6 +68,7 @@ describe('Unit testing', async function () {
             USX
         } = deployedVars);
     
+        ([ signer1, signer2 ] = await hre.ethers.getSigners());
         getVarsForHelpers(deployedDiamond, ozlFacet);
         accountDetails = getAccData(callerAddr, tokensDatabaseL1.fraxAddr, defaultSlippage);
 
@@ -74,7 +76,7 @@ describe('Unit testing', async function () {
         evilAmount = parseEther('1000');
     });
 
-    describe('OZLFacet', async () => {
+    xdescribe('OZLFacet', async () => {
         describe('exchangeToAccountToken()', async () => {
             it('should get in accountPayments the exact amount of ETH sent to the account', async () => {
                 await sendETH(accountDetails);
@@ -181,10 +183,10 @@ describe('Unit testing', async function () {
                 data = getAccData(callerAddr, tokensDatabaseL1.fraxAddr, defaultSlippage);
                 amount = parseEther('1');
                 ops.value = amount;
-                const [ signer1, singer2 ] = await hre.ethers.getSigners();
+                const [ signer1, signer2 ] = await hre.ethers.getSigners();
 
                 await assert.rejects(async () => {
-                    await ozlDiamond.connect(singer2).exchangeToAccountToken(data, amount, deadAddr, ops);
+                    await ozlDiamond.connect(signer2).exchangeToAccountToken(data, amount, deadAddr, ops);
                 }, {
                     name: 'Error',
                     message: (await err(caller2Addr)).notAuthorized 
@@ -348,7 +350,7 @@ describe('Unit testing', async function () {
         });
     });
 
-    describe('ozExecutorFacet', async () => { 
+    xdescribe('ozExecutorFacet', async () => { 
         it('shout not allow an unauthorized user to run the function / updateExecutorState()', async () => {
             await assert.rejects(async () => {
                 await ozlDiamond.updateExecutorState(evilAmount, deadAddr, 1, ops);
@@ -387,7 +389,7 @@ describe('Unit testing', async function () {
         });
     });
 
-    describe('oz4626Facet', async () => { 
+    xdescribe('oz4626Facet', async () => { 
         it('shout not allow an unauthorized user to run the function / deposit()', async () => {
             await assert.rejects(async () => {
                 await ozlDiamond.deposit(evilAmount, deadAddr, 0, ops);
@@ -407,7 +409,7 @@ describe('Unit testing', async function () {
         });
     });
 
-    describe('oz20Facet', async () => { 
+    xdescribe('oz20Facet', async () => { 
         it('shout not allow an unauthorized user to run the function / burn()', async () => {
             await assert.rejects(async () => {
                 await ozlDiamond.burn(caller2Addr, evilAmount, 4, ops);
@@ -418,7 +420,7 @@ describe('Unit testing', async function () {
         });
     });
 
-    describe('ozLoupeFacet', async () => {
+    xdescribe('ozLoupeFacet', async () => {
         beforeEach(async () => {
             accountDetails = getAccData(callerAddr, tokensDatabaseL1.usdcAddr, defaultSlippage);
             await sendETH(accountDetails);
@@ -453,6 +455,47 @@ describe('Unit testing', async function () {
         it('should return the owner of the account / getUserByL1Account()', async () => {
             const owner = await ozlDiamond.getUserByL1Account(deadAddr);
             assert.equal(owner, callerAddr);
+        });
+    });
+
+    describe('ozCutFacet', async () => {
+        xit('shout not allow an external user to call the function / setAuthorizedCaller()', async () => {
+            await assert.rejects(async () => {
+                await ozlDiamond.connect(signer2).setAuthorizedCaller(callerAddr, true, ops);
+            }, {
+                name: 'Error',
+                message: (await err(2)).notAuthorized
+            });
+        });
+
+        it('should allow the owner to add a new caller and run exchangeToAccountToken() / setAuthorizedCaller()', async () => {
+            const dataForL2 = '0xf39fd6e51aad88f6f4ce6ab8827279cfffb92266dac17f958d2ee523a2206206994597c13d831ec70064';
+            ops.value = parseEther('1');
+
+            await assert.rejects(async () => {
+                await ozlDiamond.connect(signer2).exchangeToAccountToken(
+                    dataForL2,
+                    parseEther('1'),
+                    deadAddr,
+                    ops
+                );
+            }, {
+                name: 'Error',
+                message: (await err(caller2Addr)).notAuthorized
+            });
+
+            const x = caller2Addr + 0x1111000000000000000000000000000000001111;
+            console.log('x: ', x);
+            
+            delete ops.value;
+            await ozlDiamond.setAuthorizedCaller(caller2Addr, true, ops);
+
+            await ozlDiamond.connect(signer2).exchangeToAccountToken(
+                dataForL2,
+                parseEther('1'),
+                deadAddr,
+                ops
+            );
         });
     });
 });

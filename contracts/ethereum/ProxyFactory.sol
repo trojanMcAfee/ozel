@@ -12,7 +12,7 @@ import './ozUpgradeableBeacon.sol';
 import './ozAccountProxy.sol';
 import '../Errors.sol';
 
-
+import 'hardhat/console.sol';
 /**
  * @title Factory of user proxies (aka accounts)
  * @notice Creates the accounts where users will receive their ETH on L1. 
@@ -58,7 +58,7 @@ contract ProxyFactory is IProxyFactory, ReentrancyGuard, Initializable, UUPSUpgr
 
         bytes2 slippage = bytes2(uint16(acc_.slippage));
         bytes memory dataForL2 = bytes.concat(bytes20(acc_.user), bytes20(acc_.token), slippage);
-
+        console.logBytes(dataForL2);
         bytes memory createData = abi.encodeWithSignature(
             'initialize(address,bytes)',
             beacon, dataForL2

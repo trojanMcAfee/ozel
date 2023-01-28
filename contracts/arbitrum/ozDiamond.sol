@@ -74,7 +74,6 @@ contract ozDiamond is Diamond {
         }
 
         address facet = ds.selectorToFacetAndPosition[msg.sig].facetAddress;
-        
         _filterRevenueCheck(
             facet, 
             ds.nonRevenueFacets, 

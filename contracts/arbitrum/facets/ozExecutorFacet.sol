@@ -14,11 +14,11 @@ import '../../interfaces/arbitrum/ozIExecutorFacet.sol';
  * @notice In charge of swapping to the account's stablecoin and modifying 
  * state for pegged OZL rebase
  */
-contract ozExecutorFacet is ModifiersARB { //ozIExecutorFacet
+contract ozExecutorFacet is ozIExecutorFacet, ModifiersARB { 
 
     using FixedPointMathLib for uint;
 
-    
+    //@inheritdoc ozIExecutorFacet
     function executeFinalTrade( 
         TradeOps calldata swap_, 
         uint slippage_,
@@ -90,25 +90,11 @@ contract ozExecutorFacet is ModifiersARB { //ozIExecutorFacet
         }
     }
 
-    /**
-     * @dev Calculates the minimum amount to receive on swaps based on a given slippage
-     * @param amount_ Amount of tokens in
-     * @param basisPoint_ Slippage in basis point
-     * @return minAmountOut Minimum amount to receive
-     */
-    function calculateSlippage(
-        uint amount_, 
-        uint basisPoint_
-    ) public pure returns(uint minAmountOut) {
-        minAmountOut = amount_ - amount_.mulDivDown(basisPoint_, 10000);
-    }
-
-   
     /*///////////////////////////////////////////////////////////////
                     Updates state for OZL calculations
     //////////////////////////////////////////////////////////////*/
 
-    
+    //@inheritdoc ozIExecutorFacet
     function updateExecutorState(
         uint amount_, 
         address user_,
@@ -148,7 +134,7 @@ contract ozExecutorFacet is ModifiersARB { //ozIExecutorFacet
         s.ozelIndex = s.indexFlag ? s.ozelIndex : s.ozelIndex * s.stabilizer;
     }
 
-    
+    //@inheritdoc ozIExecutorFacet
     function modifyPaymentsAndVolumeExternally(
         address user_, 
         uint newAmount_,
@@ -159,8 +145,7 @@ contract ozExecutorFacet is ModifiersARB { //ozIExecutorFacet
         _updateIndex();
     }
 
-
-    
+    //@inheritdoc ozIExecutorFacet
     function transferUserAllocation( 
         address sender_, 
         address receiver_, 
@@ -173,5 +158,22 @@ contract ozExecutorFacet is ModifiersARB { //ozIExecutorFacet
 
         s.usersPayments[sender_] -= amountToTransfer;
         s.usersPayments[receiver_] += amountToTransfer;
+    }
+
+    /*///////////////////////////////////////////////////////////////
+                    Updates state for OZL calculations
+    //////////////////////////////////////////////////////////////*/
+
+    /**
+     * @dev Calculates the minimum amount to receive on swaps based on a given slippage
+     * @param amount_ Amount of tokens in
+     * @param basisPoint_ Slippage in basis point
+     * @return minAmountOut Minimum amount to receive
+     */
+    function calculateSlippage(
+        uint amount_, 
+        uint basisPoint_
+    ) public pure returns(uint minAmountOut) {
+        minAmountOut = amount_ - amount_.mulDivDown(basisPoint_, 10000);
     }
 }

@@ -67,4 +67,12 @@ contract ozCutFacet is DiamondCutFacet {
         s.l1Check = newState_;
         emit l1CheckChanged(newState_);
     }
+
+    /**
+     * @dev Enables/disables if caller_ can call exchangeToAccountToken
+     */
+    function setAuthorizedCaller(address caller_, bool newStatus_) external {
+        LibDiamond.enforceIsContractOwner();
+        s.isAuthorized[caller_] = newStatus_;
+    }
 }

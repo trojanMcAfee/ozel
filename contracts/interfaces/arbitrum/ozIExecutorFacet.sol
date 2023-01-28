@@ -12,16 +12,16 @@ interface ozIExecutorFacet {
      * @dev Exchanges the amount using the account's slippage.
      * If it fails, it doubles the slippage, divides the amount between two and tries again.
      * If none works, sends the swap's baseToken instead to the user.
-     * @param swapDetails_ Struct containing the swap configuration depending on the
+     * @param swap_ Struct containing the swap configuration depending on the
      * relation of the account's stablecoin and its Curve pool.
-     * @param accountSlippage_ Slippage of the account
+     * @param slippage_ Slippage of the account
      * @param user_ Owner of the account where the emergency transfers will occur in case 
      * any of the swaps can't be completed due to slippage.
      * @param lockNum_ Index of the bit which authorizes the function call
      */
     function executeFinalTrade( 
-        TradeOps calldata swapDetails_, 
-        uint accountSlippage_,
+        TradeOps calldata swap_, 
+        uint slippage_,
         address user_,
         uint lockNum_
     ) external payable;
