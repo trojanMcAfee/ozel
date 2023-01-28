@@ -43,6 +43,9 @@ abstract contract ModifiersARB is Bits {
         _;
     }
 
+    /**
+     * @dev Checks that the sender can call exchangeToAccountToken
+     */
     modifier onlyAuthorized() {
         address aliasAddr = AddressAliasHelper.applyL1ToL2Alias(msg.sender);
         if (!s.isAuthorized[aliasAddr]) revert NotAuthorized(msg.sender);
@@ -52,6 +55,9 @@ abstract contract ModifiersARB is Bits {
     /**
      * @dev Does primery checks on the details of an account
      * @param data_ Details of account/proxy
+     * @return address Owner of the Account
+     * @return address Token of the Account
+     * @return uint256 Slippage of the Account
      */
     function _filter(bytes memory data_) internal view returns(address, address, uint) {
         (address user, address token, uint16 slippage) = LibCommon.extract(data_);
@@ -68,6 +74,11 @@ abstract contract ModifiersARB is Bits {
         return (user, token, uint(slippage));
     }
 
+    /**
+     * @dev Checks if an L1 address exists in the database
+     * @param token_ L1 address
+     * @return bool Returns false if token_ exists
+     */
     function _l1TokenCheck(address token_) internal view returns(bool) {
         if (s.l1Check) {
             if (s.tokenL1ToTokenL2[token_] == s.nullAddress) return true;

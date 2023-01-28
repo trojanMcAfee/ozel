@@ -6,7 +6,7 @@ import './AppStorage.sol';
 
 
 /**
- * @notice Access control functions implemented on bitmaps
+ * @notice Access control methods implemented on bitmaps
  */
 abstract contract Bits {
 

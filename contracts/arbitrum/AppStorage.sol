@@ -47,7 +47,6 @@ struct AppStorage {
     mapping(address => uint) accountPayments;
     mapping(address => address) accountToUser;
     mapping(address => bool) isAuthorized;
-    // mapping(address => mapping(uint8 => bool)) isAuthorized;
 
     //Curve swaps config
     TradeOps mimSwap;
@@ -75,11 +74,11 @@ struct AppStorage {
     uint24 poolFee;
     uint[] revenueAmounts;
 
-    //Misc vars <---- order this later
+    //Misc vars
     bool isEnabled;
+    bool l1Check;
     bytes checkForRevenueSelec;
     address nullAddress;
-    bool l1Check;
 
 }
 
