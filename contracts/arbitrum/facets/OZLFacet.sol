@@ -23,7 +23,7 @@ import '../../Errors.sol';
  * It's also in charge of conducting the core swaps, depositing the system's fees 
  * and token database config.
  */
-contract OZLFacet is ModifiersARB { //IOZLFacet
+contract OZLFacet is IOZLFacet, ModifiersARB { 
 
     using SafeERC20 for IERC20;
     using Address for address;
@@ -33,9 +33,10 @@ contract OZLFacet is ModifiersARB { //IOZLFacet
 
 
     /*///////////////////////////////////////////////////////////////
-                                Main
+                                Main methods
     //////////////////////////////////////////////////////////////*/  
 
+    //@inheritdoc IOZLFacet.sol
     function exchangeToAccountToken(
         bytes memory accData_,
         uint amountToSend_,
@@ -79,7 +80,7 @@ contract OZLFacet is ModifiersARB { //IOZLFacet
     }
 
 
-    
+    //@inheritdoc IOZLFacet.sol
     function withdrawUserShare(
         bytes memory accData_,
         address receiver_,
@@ -169,9 +170,9 @@ contract OZLFacet is ModifiersARB { //IOZLFacet
     * to the next call.
     * @param amountIn_ amount of WETH being swapped
     * @param baseTokenOut_ Curve's token code to filter between the system's base token or the others 
-    * @param slippage_ Details of the account that initiated the L1 transfer
-    * @param user_ xxxxx
-    * @param token_ ffffff
+    * @param slippage_ Slippage of the Account
+    * @param user_ Owner of the Account
+    * @param token_ Token of the Account
     */
     function _swapsForBaseToken(
         uint amountIn_, 
@@ -220,9 +221,9 @@ contract OZLFacet is ModifiersARB { //IOZLFacet
 
     /**
      * @dev Forwards the call for a final swap from base token to the account token
-     * @param token_ Details of the account
-     * @param user_ dgfdgfghfg
-     * @param slippage_ gjgjgjgjgj  
+     * @param token_ Token of the Account
+     * @param user_ Owner of the Account
+     * @param slippage_ Slippage of the Account
      */
     function _tradeWithExecutor(address token_, address user_, uint slippage_) private { 
         _toggleBit(1, 2);
@@ -246,6 +247,7 @@ contract OZLFacet is ModifiersARB { //IOZLFacet
                         Token database config
     //////////////////////////////////////////////////////////////*/
 
+    //@inheritdoc IOZLFacet
     function addTokenToDatabase(
         TradeOps calldata newSwap_, 
         LibDiamond.Token calldata token_
@@ -263,7 +265,7 @@ contract OZLFacet is ModifiersARB { //IOZLFacet
         emit NewToken(l2Address);
     }
 
-    
+    //@inheritdoc IOZLFacet
     function removeTokenFromDatabase(
         TradeOps calldata swapToRemove_, 
         LibDiamond.Token calldata token_

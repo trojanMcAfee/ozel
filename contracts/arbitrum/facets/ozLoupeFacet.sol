@@ -114,14 +114,17 @@ contract ozLoupeFacet is ozILoupeFacet, DiamondLoupeFacet {
         return s.defaultSlippage;
     }
 
+    /// @inheritdoc ozILoupeFacet
     function getL1CheckStatus() external view returns(bool) {
         return s.l1Check;
     }
 
+    /// @inheritdoc ozILoupeFacet
     function getAccountPayments(address account_) external view returns(uint) {
         return s.accountPayments[account_];
     }
 
+    /// @inheritdoc ozILoupeFacet
     function getUserByL1Account(address account_) external view returns(address) {
         return s.accountToUser[account_];
     }

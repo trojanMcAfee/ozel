@@ -60,4 +60,23 @@ interface ozILoupeFacet {
      * @return uint256 Slippage of non-user swaps
      */
     function getDefaultSlippage() external view returns(uint);
+
+    /**
+     * @notice Checks if the entry call on exchangeToAccountToken has to check for an L1 address
+     * @return bool If the check needs to be done or not
+     */
+    function getL1CheckStatus() external view returns(bool);
+
+    /**
+     * @notice Get the total amount of ETH sent to an Account
+     * @return uint256 ETH amount
+     */
+    function getAccountPayments(address account_) external view returns(uint);
+
+    /**
+     * @notice Gets the owner of an Account
+     * @param account_ The Account
+     * @return address The address of the owner
+     */
+    function getUserByL1Account(address account_) external view returns(address);
 }
