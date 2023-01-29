@@ -10,7 +10,6 @@ import { ITri } from '../../interfaces/arbitrum/ICurve.sol';
 import '../../interfaces/arbitrum/IYtri.sol';
 import './ozExecutorFacet.sol';
 import '../AppStorage.sol';
-import '../ozDiamond.sol';
 
 
 /**

@@ -7,7 +7,7 @@ import '../../libraries/AddressAliasHelper.sol';
 import './DiamondCutFacet.sol';
 import '../AppStorage.sol';
 
-import 'hardhat/console.sol';
+
 /**
  * @title Changer of general system config
  * @notice Changes key functional parameters, on addition to the default

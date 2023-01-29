@@ -13,7 +13,6 @@ import '../../interfaces/arbitrum/IOZLFacet.sol';
 import '../../interfaces/arbitrum/IYtri.sol';
 import '../../interfaces/common/IWETH.sol';
 import './ozExecutorFacet.sol';
-import './oz4626Facet.sol';
 import '../../Errors.sol';
 
 

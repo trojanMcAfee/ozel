@@ -5,7 +5,6 @@ pragma solidity 0.8.14;
 import { LibDiamond } from "../libraries/LibDiamond.sol";
 import '@openzeppelin/contracts/utils/Address.sol';
 import './AppStorage.sol';
-import '../Errors.sol';
 import './Diamond.sol';
 
 

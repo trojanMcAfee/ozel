@@ -3,7 +3,6 @@ pragma solidity 0.8.14;
 
 import "@chainlink/contracts/src/v0.8/interfaces/AggregatorV3Interface.sol";
 import '@uniswap/v3-periphery/contracts/interfaces/ISwapRouter.sol';
-import '@openzeppelin/contracts/token/ERC20/IERC20.sol';
 
 
 /**
