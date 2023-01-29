@@ -5,7 +5,8 @@ const {
     formatEther, 
     keccak256, 
     toUtf8Bytes,
-    solidityPack
+    solidityPack,
+    parseEther
 } = ethers.utils;
 
 const {
@@ -240,6 +241,51 @@ function getAccData(callerAddr, l1Address, slippage) {
 }
 
 
+async function sendETHWithAlias(accountDetails, j, mySigner, ops, ozlDiamond) {
+    const caller2AliasAddr = '0x81aa7970c51812dc3a010c7d01b50e0d17dc8ad9';
+    const caller3AliasAddr = '0x4d55cdddb6a900fa2b585dd299e03d12fa42a4cd';
+    const caller4AliasAddr = '0xa2089bf6eb2c4f870365e785982e1f101e93ca17';
+    let callerInLine;
+
+    switch (j) {
+        case 1:
+            callerInLine = caller2AliasAddr;
+            break;
+        case 2:
+            callerInLine = caller3AliasAddr;
+            break;
+        case 3:
+            callerInLine = caller4AliasAddr;
+            break;
+    }
+
+    let value = parseEther('200');
+    ops.value = value;
+    ops.to = callerInLine;
+    await mySigner.sendTransaction(ops);
+    delete ops.to;
+    delete ops.value;
+    value = parseEther('100');
+
+    await hre.network.provider.request({
+        method: "hardhat_impersonateAccount",
+        params: [callerInLine],
+    });
+
+    const callerAlias = await hre.ethers.provider.getSigner(callerInLine);
+    ops.value = value;
+    await ozlDiamond.connect(callerAlias).exchangeToAccountToken(accountDetails, value, deadAddr, ops);
+
+    await hre.network.provider.request({
+        method: "hardhat_stopImpersonatingAccount",
+        params: [caller2AliasAddr],
+    });
+
+    //Clean up
+    delete ops.value;
+}
+
+
 
 //Deploys contracts in Arbitrum
 async function deploy(n = 0) { 
@@ -397,5 +443,6 @@ module.exports = {
     replaceForModVersion,
     queryTokenDatabase,
     removeTokenFromDatabase,
-    getAccData
+    getAccData,
+    sendETHWithAlias
 };

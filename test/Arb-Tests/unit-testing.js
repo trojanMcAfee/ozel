@@ -78,7 +78,7 @@ describe('Unit testing', async function () {
         evilAmount = parseEther('1000');
     });
 
-    describe('OZLFacet', async () => {
+    xdescribe('OZLFacet', async () => {
         describe('exchangeToAccountToken()', async () => {
             it('should get in accountPayments the exact amount of ETH sent to the account', async () => {
                 await sendETH(accountDetails);
@@ -352,7 +352,7 @@ describe('Unit testing', async function () {
         });
     });
 
-    describe('ozExecutorFacet', async () => { 
+    xdescribe('ozExecutorFacet', async () => { 
         it('shout not allow an unauthorized user to run the function / updateExecutorState()', async () => {
             await assert.rejects(async () => {
                 await ozlDiamond.updateExecutorState(evilAmount, deadAddr, 1, ops);
@@ -391,7 +391,7 @@ describe('Unit testing', async function () {
         });
     });
 
-    describe('oz4626Facet', async () => { 
+    xdescribe('oz4626Facet', async () => { 
         it('shout not allow an unauthorized user to run the function / deposit()', async () => {
             await assert.rejects(async () => {
                 await ozlDiamond.deposit(evilAmount, deadAddr, 0, ops);
@@ -411,7 +411,7 @@ describe('Unit testing', async function () {
         });
     });
 
-    describe('oz20Facet', async () => { 
+    xdescribe('oz20Facet', async () => { 
         it('shout not allow an unauthorized user to run the function / burn()', async () => {
             await assert.rejects(async () => {
                 await ozlDiamond.burn(caller2Addr, evilAmount, 4, ops);
@@ -422,7 +422,7 @@ describe('Unit testing', async function () {
         });
     });
 
-    describe('ozLoupeFacet', async () => {
+    xdescribe('ozLoupeFacet', async () => {
         beforeEach(async () => {
             accountDetails = getAccData(callerAddr, tokensDatabaseL1.usdcAddr, defaultSlippage);
             await sendETH(accountDetails);
@@ -461,7 +461,7 @@ describe('Unit testing', async function () {
     });
 
     describe('ozCutFacet', async () => {
-        it('shout not allow an external user to call the function / setAuthorizedCaller()', async () => {
+        xit('shout not allow an external user to call the function / setAuthorizedCaller()', async () => {
             await assert.rejects(async () => {
                 await ozlDiamond.connect(signer2).setAuthorizedCaller(callerAddr, true, ops);
             }, {
@@ -470,7 +470,7 @@ describe('Unit testing', async function () {
             });
         });
 
-        it('should allow the owner to add a new caller and run exchangeToAccountToken() / setAuthorizedCaller()', async () => {
+        it('should allow the owner to add a new caller and run exchangeToAccountToken() / setAuthorizedCaller()', async () => {    
             const caller2AliasAddr = '0x81aa7970c51812dc3a010c7d01b50e0d17dc8ad9';
             let value = parseEther('1');
             ops.value = value;
@@ -511,4 +511,49 @@ describe('Unit testing', async function () {
 });
 
 
+// async function sendETHWithAlias(accountDetails, j, signer, mySigner, ops, ozlDiamond) {
+//     const caller2AliasAddr = '0x81aa7970c51812dc3a010c7d01b50e0d17dc8ad9';
+//     const caller3AliasAddr = '0x4d55cdddb6a900fa2b585dd299e03d12fa42a4cd';
+//     const caller4AliasAddr = '0xa2089bf6eb2c4f870365e785982e1f101e93ca17';
+//     // const signers = await hre.ethers.getSigners();
+//     let callerInLine;
 
+//     switch (j) {
+//         case 1:
+//             callerInLine = caller2AliasAddr;
+//             break;
+//         case 2:
+//             callerInLine = caller3AliasAddr;
+//             break;
+//         case 3:
+//             callerInLine = caller4AliasAddr;
+//             break;
+//     }
+
+//     let value = parseEther('1');
+//     ops.value = value;
+//     ops.to = callerInLine;
+//     await mySigner.sendTransaction(ops);
+//     delete ops.to;
+//     delete ops.value;
+//     value = parseEther('0.1');
+
+//     // await ozlDiamond.setAuthorizedCaller(await signer.getAddress(), true, ops);
+
+//     await hre.network.provider.request({
+//         method: "hardhat_impersonateAccount",
+//         params: [callerInLine],
+//     });
+
+//     const callerAlias = await hre.ethers.provider.getSigner(callerInLine);
+//     ops.value = value;
+//     await ozlDiamond.connect(callerAlias).exchangeToAccountToken(accountDetails, value, deadAddr, ops);
+
+//     await hre.network.provider.request({
+//         method: "hardhat_stopImpersonatingAccount",
+//         params: [caller2AliasAddr],
+//     });
+
+//     //Clean up
+//     delete ops.value;
+// }

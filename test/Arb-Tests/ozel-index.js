@@ -12,14 +12,16 @@ const {
     getOzelIndex,
     getRegulatorCounter,
     replaceForModVersion,
-    getAccData
+    getAccData,
+    sendETHWithAlias
 } = require('../../scripts/helpers-arb.js');
 
 const { 
     defaultSlippage,
     tokensDatabaseL1,
     diamondABI,
-    ops
+    ops,
+    deadAddr
 } = require('../../scripts/state-vars.js');
 
 
@@ -116,9 +118,8 @@ describe('Ozel Index', async function () {
             if (j == 4) j = 0;
             accountDetails[0] = await signers[j].getAddress();
 
-            console.log(1);
-            await sendETH(accountDetails, j, 'ozel index test'); 
-            console.log(2);
+            // await sendETH(accountDetails, j, 'ozel index test'); //<---
+            await sendETHWithAlias(accountDetails, j, signers[1], ops, ozlDiamond);
 
             ozelIndex = formatEther(await getOzelIndex());
             if (i === 0) higherIndex = ozelIndex;
