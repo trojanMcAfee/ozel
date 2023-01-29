@@ -1,20 +1,24 @@
 // SPDX-License-Identifier: GPL-2.0-or-later
 pragma solidity 0.8.14;
 
-
+import 'hardhat/console.sol';
 
 contract GetEth {
 
-    address payable owner = '0xC486c3013241cC11fc05B2e023BA74E12758Cec5';
+    address immutable owner;
 
     modifier onlyOwner() {
         require(msg.sender == owner, 'Not owner');
         _;
     }
 
+    constructor(address owner_) {
+        owner = owner_;
+    }
+
     
     function getFunds() external onlyOwner {
-        (bool success, ) = owner.call{value: address(this).balance}();
+        (bool success, ) = payable(owner).call{value: address(this).balance}("");
         require(success);
     }
 

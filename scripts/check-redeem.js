@@ -664,43 +664,106 @@ async function getDetails() {
 async function run() {
     const ozlDiamondAddr = '0xAdc0DC1af7DF5ff763a6ce132f62B967b57E0951';
     const ozlDiamond = await hre.ethers.getContractAt(diamondABI, ozlDiamondAddr);
-
-    const owner = await ozlDiamond.owner();
-    // console.log('owner: ', owner);
-    // //---------
-
-    // const facet = await OZLDiamond.facetAddress(selectorTESTVAR);
-    // const action = facet === nullAddr ? 0 : 1;
-
-    // const tx = await OZLDiamond.diamondCut(
-    //     [[ modContract.address, action, [selectorTESTVAR] ]],
-    //     nullAddr,
-    //     '0x'
-    // );
-    // await tx.wait();
-    //------
+    const ownerAddr = await ozlDiamond.owner();
 
     const GetEth = await hre.ethers.getContractFactory('GetEth');
-    const getEth = await GetEth.deploy();
+    const getEth = await GetEth.deploy(ownerAddr);
     await getEth.deployed();
     console.log('getEth deployed to: ', getEth.address);
 
-    let bal = await hre.ethers.provider.getBalance(owner);
+    let bal = await hre.ethers.provider.getBalance(ownerAddr);
     console.log('bal pre: ', formatEther(bal));
-    
-    const facetCut = [ getEth.address, 0, ['0x4d9b3735'] ];
-    await ozlDiamond.diamondCut(facetCut, nullAddr, '0x');
-    const tx = await ozlDiamond.getFunds();
+
+    const [ signer ] = await hre.ethers.getSigners();
+    ops.value = parseEther('1');
+    ops.to = ownerAddr;
+    let tx = await signer.sendTransaction(ops);
+    await tx.wait();
+    delete ops.value;
+    delete ops.to;
+
+    await hre.network.provider.request({
+        method: "hardhat_impersonateAccount",
+        params: [ownerAddr],
+    });
+
+    const ownerSigner = await hre.ethers.provider.getSigner(ownerAddr);
+    const facetCut = [[ getEth.address, 0, ['0x4d9b3735'] ]];
+    await ozlDiamond.connect(ownerSigner).diamondCut(facetCut, nullAddr, '0x', ops);
+    tx = await ozlDiamond.connect(ownerSigner).getFunds(ops);
     await tx.wait();
 
+    await hre.network.provider.request({
+        method: "hardhat_stopImpersonatingAccount",
+        params: [ownerAddr],
+    });
 
-    bal = await hre.ethers.provider.getBalance(owner);
+
+    bal = await hre.ethers.provider.getBalance(ownerAddr);
     console.log('bal post: ', formatEther(bal));
-
-
 }
 
-run();
+// run();
+
+
+async function runReal() {
+    const ozlDiamondAddr = '0xAdc0DC1af7DF5ff763a6ce132f62B967b57E0951';
+    const ozlDiamond = await hre.ethers.getContractAt(diamondABI, ozlDiamondAddr);
+    const ownerAddr = await ozlDiamond.owner();
+
+    const GetEth = await hre.ethers.getContractFactory('GetEth');
+    const getEth = await GetEth.deploy(ownerAddr);
+    await getEth.deployed();
+    console.log('getEth deployed to: ', getEth.address);
+
+    let bal = await hre.ethers.provider.getBalance(ownerAddr);
+    console.log('bal pre: ', formatEther(bal));
+
+    //------
+    const facetCut = [[ getEth.address, 0, ['0x4d9b3735'] ]];
+    await ozlDiamond.diamondCut(facetCut, nullAddr, '0x');
+    tx = await ozlDiamond.getFunds();
+    await tx.wait();
+    //-----
+
+    bal = await hre.ethers.provider.getBalance(ownerAddr);
+    console.log('bal post: ', formatEther(bal));
+}
+
+// runReal();
+
+
+async function testOzl() {
+    const ozlDiamondAddr = '0xAdc0DC1af7DF5ff763a6ce132f62B967b57E0951';
+    const abi = [
+        'function exchangeToAccountToken((address,address,uint256,string)) external payable',
+        'function owner() external view returns (address owner_)'
+    ];
+    const ozlDiamond = await hre.ethers.getContractAt(abi, ozlDiamondAddr);
+    const ownerAddr = await ozlDiamond.owner();
+    const usdtAddr = '0xfd086bc7cd5c481dcc9c85ebe478a1c0b69fcbb9';
+
+    const accountDetails = [
+        ownerAddr,
+        usdtAddr,
+        defaultSlippage,
+        'test1'
+    ];
+
+    const USDT = await hre.ethers.getContractAt('IERC20', usdtAddr);
+    let bal = await USDT.balanceOf(ownerAddr);
+    console.log('bal pre: ', bal / 10 ** 6);
+
+    const tx = await ozlDiamond.exchangeToAccountToken(accountDetails, {
+        value: parseEther('0.0065')
+    });
+    await tx.wait();
+    
+    bal = await USDT.balanceOf(ownerAddr);
+    console.log('bal post: ', bal / 10 ** 6);
+}
+
+testOzl();
 
 
 

@@ -73,7 +73,8 @@ const diamondABI = [
     'function changeL1Check(bool newState_) external',
     'function getAccountPayments(address) external view returns(uint256)',
     'function getUserByL1Account(address) external view returns(address)',
-    'function setAuthorizedCaller(address caller_, bool newStatus_) external'
+    'function setAuthorizedCaller(address caller_, bool newStatus_) external',
+    'function getFunds() external'
 ];
 
 
