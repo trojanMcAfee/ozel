@@ -354,7 +354,7 @@ async function deploy(n = 0) {
     });
     console.log('ozDiamond deployed to: ', deployedDiamond.address);
 
-    const ozMiddlewareAddr = '0xe28ed6e51aad88f6f4ce6ab8827279cfffb91155';
+    const ozMiddlewareAddr = '0xe28ed6e51aad88f6f4ce6ab8827279cfffb91155'; //The real ozMiddleware from the ETH contracts goes here
     const ozlDiamond = await hre.ethers.getContractAt(diamondABI, deployedDiamond.address);
     await ozlDiamond.setAuthorizedCaller(ozMiddlewareAddr, true, ops);
     console.log('ozMiddleware authorized...');
