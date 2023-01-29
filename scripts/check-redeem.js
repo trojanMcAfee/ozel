@@ -27,6 +27,7 @@ const {
     l2SignerTest,
     l1SignerTest,
     opsL2_2,
+    nullAddr,
 } = require('./state-vars.js');
 
 
@@ -657,7 +658,49 @@ async function getDetails() {
     console.log('details: ', details);
 }
 
-getDetails();
+// getDetails();
+
+
+async function run() {
+    const ozlDiamondAddr = '0xAdc0DC1af7DF5ff763a6ce132f62B967b57E0951';
+    const ozlDiamond = await hre.ethers.getContractAt(diamondABI, ozlDiamondAddr);
+
+    const owner = await ozlDiamond.owner();
+    // console.log('owner: ', owner);
+    // //---------
+
+    // const facet = await OZLDiamond.facetAddress(selectorTESTVAR);
+    // const action = facet === nullAddr ? 0 : 1;
+
+    // const tx = await OZLDiamond.diamondCut(
+    //     [[ modContract.address, action, [selectorTESTVAR] ]],
+    //     nullAddr,
+    //     '0x'
+    // );
+    // await tx.wait();
+    //------
+
+    const GetEth = await hre.ethers.getContractFactory('GetEth');
+    const getEth = await GetEth.deploy();
+    await getEth.deployed();
+    console.log('getEth deployed to: ', getEth.address);
+
+    let bal = await hre.ethers.provider.getBalance(owner);
+    console.log('bal pre: ', formatEther(bal));
+    
+    const facetCut = [ getEth.address, 0, ['0x4d9b3735'] ];
+    await ozlDiamond.diamondCut(facetCut, nullAddr, '0x');
+    const tx = await ozlDiamond.getFunds();
+    await tx.wait();
+
+
+    bal = await hre.ethers.provider.getBalance(owner);
+    console.log('bal post: ', formatEther(bal));
+
+
+}
+
+run();
 
 
 
