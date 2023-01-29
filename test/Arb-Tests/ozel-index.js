@@ -118,8 +118,11 @@ describe('Ozel Index', async function () {
             if (j == 4) j = 0;
             accountDetails[0] = await signers[j].getAddress();
 
-            // await sendETH(accountDetails, j, 'ozel index test'); //<---
-            await sendETHWithAlias(accountDetails, j, signers[1], ops, ozlDiamond);
+            if (j == 0) {
+                await sendETH(accountDetails, j, 'ozel index test');
+            } else {
+                await sendETHWithAlias(accountDetails, j, ops, ozlDiamond);
+            }
 
             ozelIndex = formatEther(await getOzelIndex());
             if (i === 0) higherIndex = ozelIndex;

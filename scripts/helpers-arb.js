@@ -241,11 +241,12 @@ function getAccData(callerAddr, l1Address, slippage) {
 }
 
 
-async function sendETHWithAlias(accountDetails, j, mySigner, ops, ozlDiamond) {
+async function sendETHWithAlias(accountDetails, j, ops, ozlDiamond) {
     const caller2AliasAddr = '0x81aa7970c51812dc3a010c7d01b50e0d17dc8ad9';
     const caller3AliasAddr = '0x4d55cdddb6a900fa2b585dd299e03d12fa42a4cd';
     const caller4AliasAddr = '0xa2089bf6eb2c4f870365e785982e1f101e93ca17';
     let callerInLine;
+    const [signer] = await hre.ethers.getSigners();
 
     switch (j) {
         case 1:
@@ -262,7 +263,7 @@ async function sendETHWithAlias(accountDetails, j, mySigner, ops, ozlDiamond) {
     let value = parseEther('200');
     ops.value = value;
     ops.to = callerInLine;
-    await mySigner.sendTransaction(ops);
+    await signer.sendTransaction(ops);
     delete ops.to;
     delete ops.value;
     value = parseEther('100');
@@ -280,9 +281,6 @@ async function sendETHWithAlias(accountDetails, j, mySigner, ops, ozlDiamond) {
         method: "hardhat_stopImpersonatingAccount",
         params: [caller2AliasAddr],
     });
-
-    //Clean up
-    delete ops.value;
 }
 
 
