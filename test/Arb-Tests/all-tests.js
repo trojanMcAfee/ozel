@@ -692,15 +692,41 @@ describe('Unit testing', async function () {
         });
 
         it('should allow the owner to add a new caller and run exchangeToAccountToken() / setAuthorizedCaller()', async () => {
+            const caller2AliasAddr = '0x81aa7970c51812dc3a010c7d01b50e0d17dc8ad9';
+            let value = parseEther('1');
+            ops.value = value;
+            ops.to = caller2AliasAddr;
+            await signer1.sendTransaction(ops);
+            delete ops.to;
+            delete ops.value;
+            value = parseEther('0.1');
+
             await assert.rejects(async () => {
                 await sendETH(accountDetails, 1);
             }, {
                 name: 'Error',
                 message: (await err(caller2Addr)).notAuthorized
             });
-            
+
             await ozlDiamond.setAuthorizedCaller(caller2Addr, true, ops);
-            await sendETH(accountDetails, 1);
+
+            await hre.network.provider.request({
+                method: "hardhat_impersonateAccount",
+                params: [caller2AliasAddr],
+            });
+
+            const caller2Alias = await hre.ethers.provider.getSigner(caller2AliasAddr);
+
+            ops.value = value;
+            await ozlDiamond.connect(caller2Alias).exchangeToAccountToken(accountDetails, value, deadAddr, ops);
+            
+            await hre.network.provider.request({
+                method: "hardhat_stopImpersonatingAccount",
+                params: [caller2AliasAddr],
+            });
+
+            //Clean up
+            delete ops.value;
         });
     });
 });
