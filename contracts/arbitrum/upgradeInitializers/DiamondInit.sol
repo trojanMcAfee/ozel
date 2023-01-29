@@ -112,7 +112,6 @@ contract DiamondInit {
         s.checkForRevenueSelec = abi.encodeWithSignature('checkForRevenue()');
         s.nullAddress = 0x0000000000000000000000000000000000000000;
         s.l1Check = true;
-        s.isAuthorized[vars_.contracts[10]] = true;
 
 
         // add your own state variables 

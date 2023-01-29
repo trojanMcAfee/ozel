@@ -270,8 +270,6 @@ async function deploy(n = 0) {
     const ownershipFacet = await deployFacet('OwnershipFacet'); 
     const revenueFacet = await deployFacet('RevenueFacet');
 
-    const ozMiddlewareAddr = '0xe28ed6e51aad88f6f4ce6ab8827279cfffb91155';
-
     const contractsAddr = [
         tricryptoAddr,
         crvTricrypto,
@@ -282,8 +280,7 @@ async function deploy(n = 0) {
         executorFacet.address,
         oz20.address,
         chainlinkAggregatorAddr,
-        swapRouterUniAddr,
-        ozMiddlewareAddr
+        swapRouterUniAddr
     ];
 
     const erc20sAddr = [
@@ -356,6 +353,11 @@ async function deploy(n = 0) {
         }
     });
     console.log('ozDiamond deployed to: ', deployedDiamond.address);
+
+    const ozMiddlewareAddr = '0xe28ed6e51aad88f6f4ce6ab8827279cfffb91155';
+    const ozlDiamond = await hre.ethers.getContractAt(diamondABI, deployedDiamond.address);
+    await ozlDiamond.setAuthorizedCaller(ozMiddlewareAddr, true, ops);
+    console.log('ozMiddleware authorized...');
 
     return {
         deployedDiamond, 
