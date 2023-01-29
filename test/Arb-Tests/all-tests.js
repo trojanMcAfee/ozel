@@ -20,7 +20,8 @@ const {
     replaceForModVersion,
     queryTokenDatabase,
     removeTokenFromDatabase,
-    getAccData
+    getAccData,
+    sendETHWithAlias
 } = require('../../scripts/helpers-arb.js');
 
 const { 
@@ -815,7 +816,11 @@ describe('Ozel Index', async function () {
             if (j == 4) j = 0;
             accountDetails[0] = await signers[j].getAddress();
 
-            await sendETH(accountDetails, j, 'ozel index test'); 
+            if (j == 0) {
+                await sendETH(accountDetails, j, 'ozel index test');
+            } else {
+                await sendETHWithAlias(accountDetails, j, ops, ozlDiamond);
+            }
 
             ozelIndex = formatEther(await getOzelIndex());
             if (i === 0) higherIndex = ozelIndex;
@@ -840,6 +845,7 @@ describe('Ozel Index', async function () {
             assert(ozelIndex > 0 && Number(ozelIndex) <= Number(higherIndex));
             assert(regulatorCounter < 2 && regulatorCounter >= 0);
         }
+        delete ops.value;
     });
 });
 
