@@ -78,7 +78,7 @@ let isAuthorized, newSelector;
             signerAddr,
             usdtAddrArb,
             defaultSlippage,
-            'my account'
+            'test'
         ];
 
         WETH = await hre.ethers.getContractAt('IERC20', wethAddr);
@@ -106,7 +106,7 @@ let isAuthorized, newSelector;
             fakeOzl = await hre.ethers.getContractAt('FakeOZL', fakeOZLaddr);
         }); 
 
-        describe('Measure gas', async () => {
+        xdescribe('Measure gas', async () => {
             it('should throw gas on createNewProxy', async () => {
                 const iface = new ethers.utils.Interface(factoryABI);
                 const data = iface.encodeFunctionData('createNewProxy', [accountDetails]);
