@@ -27,7 +27,7 @@ const {
     l2SignerTest,
     l1SignerTest,
     opsL2_2,
-    nullAddr,
+    nullAddr
 } = require('./state-vars.js');
 
 
@@ -618,17 +618,17 @@ async function createAccount() {
     const [ signer ] = await hre.ethers.getSigners();
     const signerAddr = await signer.getAddress();
 
-    const ozERC1967proxyAddr = '0x65807f23057A3BA454f8430bCA2c399833f95ca1';
+    const ozERC1967proxyAddr = '0x6E015bc276EBA5eFaCee043A107e26079eFb9FE0';
     const proxyFactory = await hre.ethers.getContractAt('ProxyFactory', ozERC1967proxyAddr);
 
     const accountDetails = [
         signerAddr,
         usdtAddrArb,
         defaultSlippage,
-        'test account2'
+        'test account'
     ];
 
-    const tx = await proxyFactory.createNewProxy(accountDetails, ops);
+    const tx = await proxyFactory.createNewProxy(accountDetails);
     const receipt = await tx.wait();
     console.log('account created: ', receipt.transactionHash);
     console.log('acc: ', receipt.logs[0].address);
@@ -763,7 +763,87 @@ async function testOzl() {
     console.log('bal post: ', bal / 10 ** 6);
 }
 
-testOzl();
+// testOzl();
+
+
+async function checkFail() {
+    const data = '0x6d45fc25000000000000000000000000000000000000000000000000000000000000006000000000000000000000000000000000000000000000000000b1a2bc2ec500000000000000000000000000005cd39390e177fdb18bd8ee3caf7fbbd944549fd7000000000000000000000000000000000000000000000000000000000000002ac4d53d620d2ce9f0de3ec241d4b74dd36a2989a1dac17f958d2ee523a2206206994597c13d831ec7006400000000000000000000000000000000000000000000';
+    const ozlDiamondAddr = '0x6E015bc276EBA5eFaCee043A107e26079eFb9FE0';
+    const ozlDiamond = await hre.ethers.getContractAt(diamondABI, ozlDiamondAddr);
+    const [ signer ] = await hre.ethers.getSigners();
+    const signerAddr = '0xc4D53D620d2ce9f0DE3eC241d4B74DD36A2989a1';
+    const deployer2 = '0xe738696676571D9b74C81716E4aE797c2440d306';
+    const USDT = await hre.ethers.getContractAt('IERC20', usdtAddrArb);
+
+    let bal = await USDT.balanceOf(signerAddr);
+    console.log('bal pre: ', bal / 10 ** 6);
+
+    opsL2_2.value = parseEther('1');
+    opsL2_2.to = deployer2;
+    await signer.sendTransaction(opsL2_2);
+    delete opsL2_2.value;
+    delete opsL2_2.to;
+
+    //----------
+    await hre.network.provider.request({
+        method: "hardhat_impersonateAccount",
+        params: [deployer2],
+    });
+    const deployerSigner = await hre.ethers.provider.getSigner(deployer2);
+
+    const ozMiddlewareAddr = '0x894eac76AEFa45886aBEB3beaE37Bcf0A1911295'; 
+    await ozlDiamond.connect(deployerSigner).setAuthorizedCaller(ozMiddlewareAddr, true, opsL2_2);
+    console.log('middleware authorized...');
+    
+    await hre.network.provider.request({
+        method: "hardhat_stopImpersonatingAccount",
+        params: [deployer2],
+    });
+    //--------
+    const ozMiddleAlias = '0x9a5fac76aefa45886abeb3beae37bcf0a19123a6';
+    opsL2_2.to = ozMiddleAlias;
+    opsL2_2.value = parseEther('1');
+    await signer.sendTransaction(opsL2_2);
+    delete opsL2_2.value;
+    delete opsL2_2.to;
+
+    await hre.network.provider.request({
+        method: "hardhat_impersonateAccount",
+        params: [ozMiddleAlias],
+    });    
+    const middleAliasSigner = await hre.ethers.provider.getSigner(ozMiddleAlias);
+
+    opsL2_2.to = ozlDiamondAddr;
+    opsL2_2.data = data;
+    opsL2_2.value = parseEther('0.1');
+    const tx = await middleAliasSigner.sendTransaction(opsL2_2);
+    const receipt = await tx.wait();
+    console.log('tx hash: ', receipt.transactionHash);
+
+    await hre.network.provider.request({
+        method: "hardhat_stopImpersonatingAccount",
+        params: [ozMiddleAlias],
+    });
+
+    bal = await USDT.balanceOf(signerAddr);
+    console.log('bal post: ', bal / 10 ** 6);
+
+}
+
+// checkFail();
+
+
+async function approveMiddle() {
+    const ozlDiamondAddr = '0x6E015bc276EBA5eFaCee043A107e26079eFb9FE0';
+    const ozlDiamond = await hre.ethers.getContractAt(diamondABI, ozlDiamondAddr);    
+
+    const ozMiddlewareAddr = '0x894eac76AEFa45886aBEB3beaE37Bcf0A1911295'; 
+    const tx = await ozlDiamond.setAuthorizedCaller(ozMiddlewareAddr, true);
+    const receipt = await tx.wait();
+    console.log('middle approved: ', receipt.transactionHash);
+}
+
+approveMiddle();
 
 
 
