@@ -880,9 +880,9 @@ async function tryContr() {
 
 
 async function testGoerli() {
-    const factoryAddr = '0x4CB58e036738ACb4441a8FA69e560b4e7dAd41d6';
-    const sBeaconAddr = '0xff0c43673ab95287E79131c13D2A4c48d8dE47De';
-    const factory = await hre.ethers.getContractAt('ProxyFactory', factoryAddr);
+    const ozERC1967proxyAddr = '0x1AD597A75A4D4f237755f724b7043daEdb4D2d11';
+    const sBeaconAddr = '0x6648092b8b4C5D56B4e3Db93e17D2Ba739CC8e6C';
+    const factory = await hre.ethers.getContractAt('ProxyFactory', ozERC1967proxyAddr);
     const storageBeacon = await hre.ethers.getContractAt('StorageBeacon', sBeaconAddr);
     const [signer] = await hre.ethers.getSigners();
     const signerAddr = await signer.getAddress();
@@ -898,29 +898,30 @@ async function testGoerli() {
     // const [ proxies, names ] = await storageBeacon.getAccountsByUser(signerAddr, ops);
     // console.log('acc: ', proxies[0]);
 
-    const accountAddr = '0x263F44AcfDF7442a861d48BA50bbCdA56B364495'; //0xDa70cbbC456632cFd82A610E620daaBc5c65826c
+    const accountAddr = '0x98F4E881CA0Be7AcE072e2545c8c1309fB30378a'; //0xDa70cbbC456632cFd82A610E620daaBc5c65826c
     const account = await hre.ethers.getContractAt('ozPayMe', accountAddr);
 
     let details = await account.getAccountDetails();
-    console.log('slip pre: ', details.slippage);
+    console.log('slip pre - 100: ', details.slippage);
     console.log('token pre: ', details.token);
 
-    // let tx = await account.changeAccountToken(usdcAddr);
-    tx = await account.changeAccountSlippage(200);
+    let tx = await account.changeAccountToken(usdcAddr);
+    await tx.wait();
+    tx = await account.changeAccountSlippage(1);
     await tx.wait();
 
-    // details = await account.getAccountDetails();
-    // console.log('deets post: ', details.slippage);
-
-    // tx = await account.changeAccountTokenNSlippage(mimAddr, 100);
-    // await tx.wait();
-
     details = await account.getAccountDetails();
-    console.log('slip post: ', details.slippage);
+    console.log('slip post - 1: ', details.slippage);
     console.log('token post: ', details.token);
 
-    // details = await account.getAccountDetails();
-    // console.log('deets again: ', details);
+    tx = await account.changeAccountTokenNSlippage(mimAddr, 500);
+    await tx.wait();
+
+    details = await account.getAccountDetails();
+    console.log('slip post2 - 500: ', details.slippage);
+    console.log('token post2: ', details.token);
+
+   
 }
 
 testGoerli();
