@@ -74,7 +74,7 @@ library LibCommon {
         assembly {
             user := shr(96, mload(add(data_, 32)))
             token := shr(96, mload(add(data_, 52)))
-            slippage := and(0xff, mload(add(mload(data_), data_)))
+            slippage := and(0xfff, mload(add(mload(data_), data_)))
         }
     }
 }

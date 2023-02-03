@@ -344,13 +344,14 @@ let isAuthorized, newSelector;
                 });
 
                 it('should allow the user to change the slippage with the minimum of 0.01% / changeAccountSlippage()', async () => {
-                    newUserSlippage = 0.01;
+                    newUserSlippage = 0.01; 
 
                     ([ user, token, slippage ] = await newProxy.getAccountDetails());
                     tx = await newProxy.changeAccountSlippage(parseInt(newUserSlippage * 100), ops);
                     await tx.wait();
 
                     ([ user, token, slippage ] = await newProxy.getAccountDetails());
+
                     assert.equal(Number(slippage) / 100, newUserSlippage); 
                 });
 

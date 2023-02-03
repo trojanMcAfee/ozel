@@ -843,7 +843,89 @@ async function approveMiddle() {
     console.log('middle approved: ', receipt.transactionHash);
 }
 
-approveMiddle();
+// approveMiddle();
+
+
+async function tryContr() {
+    const ozDiamondAddr = '0x6E015bc276EBA5eFaCee043A107e26079eFb9FE0';
+    const ozDiamond = await hre.ethers.getContractAt(diamondABI, ozDiamondAddr);
+    const [signer] = await hre.ethers.getSigners();
+    const signerAddr = await signer.getAddress();
+    console.log('signerAddr: ', signerAddr);
+    const account = '0x5cD39390E177fDb18BD8EE3cAf7fbBD944549FD7';
+
+    const ethVol = await ozDiamond.getTotalVolumeInETH();
+    console.log('eth vol: ', formatEther(ethVol));
+
+    const ethUsd = await ozDiamond.getTotalVolumeInUSD();
+    console.log('usd vol: ', formatEther(ethUsd));
+
+    const [wethUM, usdUM] = await ozDiamond.getAUM();
+    console.log('wethUM: ', formatEther(wethUM));
+    console.log('usdUM: ', formatEther(usdUM));
+
+    const user = await ozDiamond.getUserByL1Account(account);
+    console.log('user: ', user);
+
+    const [wethShare, usdShare] = await ozDiamond.getOzelBalances(user);
+    console.log('wethShare: ', formatEther(wethShare));
+    console.log('usdShare: ', formatEther(usdShare));
+
+    const payments = await ozDiamond.getAccountPayments(account);
+    console.log('payments: ', formatEther(payments));
+
+}
+
+// tryContr();
+
+
+async function testGoerli() {
+    const factoryAddr = '0x4CB58e036738ACb4441a8FA69e560b4e7dAd41d6';
+    const sBeaconAddr = '0xff0c43673ab95287E79131c13D2A4c48d8dE47De';
+    const factory = await hre.ethers.getContractAt('ProxyFactory', factoryAddr);
+    const storageBeacon = await hre.ethers.getContractAt('StorageBeacon', sBeaconAddr);
+    const [signer] = await hre.ethers.getSigners();
+    const signerAddr = await signer.getAddress();
+
+    const accountDetails = [
+        signerAddr,
+        usdtAddrArb,
+        defaultSlippage,
+        'test'
+    ];
+
+    // await factory.createNewProxy(accountDetails);
+    // const [ proxies, names ] = await storageBeacon.getAccountsByUser(signerAddr, ops);
+    // console.log('acc: ', proxies[0]);
+
+    const accountAddr = '0x263F44AcfDF7442a861d48BA50bbCdA56B364495'; //0xDa70cbbC456632cFd82A610E620daaBc5c65826c
+    const account = await hre.ethers.getContractAt('ozPayMe', accountAddr);
+
+    let details = await account.getAccountDetails();
+    console.log('slip pre: ', details.slippage);
+    console.log('token pre: ', details.token);
+
+    // let tx = await account.changeAccountToken(usdcAddr);
+    tx = await account.changeAccountSlippage(200);
+    await tx.wait();
+
+    // details = await account.getAccountDetails();
+    // console.log('deets post: ', details.slippage);
+
+    // tx = await account.changeAccountTokenNSlippage(mimAddr, 100);
+    // await tx.wait();
+
+    details = await account.getAccountDetails();
+    console.log('slip post: ', details.slippage);
+    console.log('token post: ', details.token);
+
+    // details = await account.getAccountDetails();
+    // console.log('deets again: ', details);
+}
+
+testGoerli();
+
+
 
 
 
