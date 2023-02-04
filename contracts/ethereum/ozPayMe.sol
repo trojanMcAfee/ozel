@@ -36,6 +36,8 @@ contract ozPayMe is ozIPayMe, ReentrancyGuard, Initializable {
 
     event FundsToArb(address indexed sender, uint amount);
     event EmergencyTriggered(address indexed sender, uint amount); 
+    event NewToken(address indexed newToken);
+    event NewSlippage(uint16 indexed newSlippage);
 
     constructor(
         address ops_, 
@@ -139,6 +141,7 @@ contract ozPayMe is ozIPayMe, ReentrancyGuard, Initializable {
     ) external checkToken(newToken_) onlyUser { 
         (address user,,uint16 slippage) = dataForL2.extract();
         dataForL2 = bytes.concat(bytes20(user), bytes20(newToken_), bytes2(slippage));
+        emit NewToken(newToken_);
     }
 
     //@inheritdoc ozIPayMe
@@ -147,6 +150,7 @@ contract ozPayMe is ozIPayMe, ReentrancyGuard, Initializable {
     ) external checkSlippage(newSlippage_) onlyUser { 
         (address user, address token,) = dataForL2.extract();
         dataForL2 = bytes.concat(bytes20(user), bytes20(token), bytes2(newSlippage_));
+        emit NewSlippage(newSlippage_);
     }
 
     //@inheritdoc ozIPayMe
@@ -156,6 +160,8 @@ contract ozPayMe is ozIPayMe, ReentrancyGuard, Initializable {
     ) external checkToken(newToken_) checkSlippage(newSlippage_) onlyUser {
         (address user,,) = dataForL2.extract();
         dataForL2 = bytes.concat(bytes20(user), bytes20(newToken_), bytes2(newSlippage_));
+        emit NewToken(newToken_);
+        emit NewSlippage(newSlippage_);
     } 
 
     //@inheritdoc ozIPayMe
