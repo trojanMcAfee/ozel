@@ -16,13 +16,9 @@ contract FakeOZL is Ownable {
 
     address user;
     bytes public deadData;
-    address public receiver;
     address immutable deadAddr = 0x000000000000000000000000000000000000dEaD;
     address immutable nullAddr = 0x0000000000000000000000000000000000000000;
     
-    uint deadAmount;
-    address deadAccount;
-
     event DeadVariable(address user);
 
     struct FakeOZLVars { 
@@ -45,10 +41,10 @@ contract FakeOZL is Ownable {
     FakeOZLVars vars;
 
     mapping(address => mapping(address => uint)) userBalances;
+    mapping(address => uint) accountPayments;
 
-    constructor(address receiver_, FakeOZLVars memory vars_) {
+    constructor(FakeOZLVars memory vars_) {
         user = msg.sender;
-        receiver = receiver_;
         vars = FakeOZLVars({
             totalVolumeInUSD: vars_.totalVolumeInUSD,
             totalVolumeInETH: vars_.totalVolumeInETH,
@@ -107,10 +103,6 @@ contract FakeOZL is Ownable {
         userBalances[msg.sender][nullAddr] = newVars_.usdUserShare;
     } 
 
-    function changeReceiver(address newReceiver_) external onlyOwner {
-        receiver = newReceiver_;
-    }
-
     /*///////////////////////////////////////////////////////////////
                     OZLFacet's main dummy method
     //////////////////////////////////////////////////////////////*/
@@ -120,17 +112,22 @@ contract FakeOZL is Ownable {
         uint amountToSend_,
         address account_
     ) external payable {
+        deadData = dataForL2_;
+        accountPayments[account_] += amountToSend_;
+        (address user2,,) = getDetails();
+
         if (address(this).balance > 0) {
-            (bool success, ) = payable(receiver).call{value: address(this).balance}(""); 
+            (bool success, ) = payable(user2).call{value: address(this).balance}(""); 
             require(success, 'ETH sent failed');
         }
-        deadData = dataForL2_;
-        deadAmount = amountToSend_;
-        deadAccount = account_;
     }
 
-    function getDetails() external view returns(address, address, uint16) {
+    function getDetails() public view returns(address, address, uint16) {
         (address user2, address token, uint16 slippage) = LibCommon.extract(deadData);
         return (user2, token, slippage);
+    }
+
+    function getAccountPayments(address account_) external view returns(uint) {
+        return accountPayments[account_];
     }
 }

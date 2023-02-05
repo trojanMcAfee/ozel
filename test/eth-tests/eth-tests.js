@@ -798,12 +798,6 @@ let isAuthorized, newSelector;
                 balance = await fakeOzl.balanceOf(signerAddr2);
                 assert.equal(formatEther(balance), 750);
             });
-
-            it('allow the owner to change the receiver / changeReceiver()', async () => {
-                await fakeOzl.changeReceiver(deadAddr);
-                const receiver = await fakeOzl.receiver();
-                assert.equal(deadAddr, receiver);
-            });
         }); 
     });
 

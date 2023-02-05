@@ -40,16 +40,17 @@ async function deployContract(contractName, constrArgs, signer = null) {
     const Contract = await hre.ethers.getContractFactory(contractName);
 
     switch(contractName) {
+        case 'FakeOZL':
+            ([ var1 ] = constrArgs);
+            contract = await Contract.connect(signer).deploy(var1, opsL2);
+            break;
         case 'ozUpgradeableBeacon':
         case 'ozERC1967Proxy':
         case 'RolesAuthority':
-        case 'FakeOZL':
         case 'ProxyFactory':
         case 'FaultyProxyFactory':
-            let gas = ops;
             ([ var1, var2 ] = constrArgs);
-            if (contractName === 'FakeOZL') gas = opsL2;
-            contract = await Contract.connect(signer).deploy(var1, var2, gas);
+            contract = await Contract.connect(signer).deploy(var1, var2, ops);
             break;
         case 'ozERC1967Proxy':
         case 'ozMiddleware':
@@ -248,7 +249,7 @@ async function createProxy(factory, accountDetails) {
 
 async function deploySystem(type, signerAddr) { 
 
-    let constrArgs = [ myReceiver, getFakeOZLVars() ];
+    let constrArgs = [ getFakeOZLVars() ];
 
     //Deploys the fake OZL on arbitrum testnet 
     const [ ozDiamondAddr ] = await deployContract('FakeOZL', constrArgs);

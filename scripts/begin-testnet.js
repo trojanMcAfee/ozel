@@ -63,7 +63,7 @@ async function deployTestnet(testSigner = false, manualRedeem = false) {
         'test account'
     ];
     
-    let constrArgs = [ receiver, getFakeOZLVars() ]; 
+    let constrArgs = [ getFakeOZLVars() ]; 
     
     //Deploys the fake OZL on arbitrum testnet 
     const [ ozDiamondAddr ] = await deployContract('FakeOZL', constrArgs, l2SignerTest); 
