@@ -1,5 +1,6 @@
 require("@nomiclabs/hardhat-waffle");
 require("@nomiclabs/hardhat-ethers");
+require("@nomiclabs/hardhat-etherscan");
 require('dotenv').config();
 
 
@@ -45,6 +46,6 @@ module.exports = {
     mainnet: {
       url: process.env.MAINNET,
       accounts: [process.env.PK_DEPLOYER]
-    },
+    }
   }
 };
