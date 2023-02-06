@@ -8,3 +8,12 @@ And then running the container with:
 ```
 docker run -it dnyrm/ozel-test-mainnet:0.0.2
 ```
+//------
+For all arbitrum tests, you can pull this image:
+```
+docker pull dnyrm/ozel-testnet-arb-all:0.0.2
+```
+And run it with:
+```
+docker run -it dnyrm/ozel-testnet-arb-all:0.0.2
+```
