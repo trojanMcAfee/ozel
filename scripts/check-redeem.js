@@ -390,7 +390,7 @@ async function create() {
     console.log('newProxy: ', newProxyAddr);
 }
 
-// create();
+create();
 
 
 

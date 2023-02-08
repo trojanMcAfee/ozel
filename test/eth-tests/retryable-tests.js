@@ -1,7 +1,7 @@
-const { ethers } = require('ethers');
+const { ethers, Wallet } = require('ethers');
 const { parseEther, formatEther } = ethers.utils;
 const { startListening } = require('./listener-test/event-listener.js');
-const { ops, l1SignerTestnet } = require('../../scripts/state-vars.js');
+const { ops, l1SignerTestnet, l2ProviderTestnet } = require('../../scripts/state-vars.js');
 const { assert } = require("console");
 
 
@@ -66,6 +66,30 @@ async function simulateDeployment() {
 //////////////////////////////////////////////////////////////*/
 
 async function manualRedeem() {
+    const privateKey = process.env.PK_TESTNET; 
+    const pkReceiver = process.env.PK;
+    const l2Wallet = new Wallet(privateKey, l2ProviderTestnet);
+    const l2WalletReceiver = new Wallet(pkReceiver, l2ProviderTestnet);
+
+    const balance = await l2Wallet.getBalance();
+    const balanceReceiver = await l2WalletReceiver.getBalance();
+
+    if (formatEther(balance) < 0.02) {
+        if (formatEther(balanceReceiver) < 0.02) {
+            console.log('For running this test, these two addresses must have at least 0.05 ETH each. Add some in Arbitrum');
+            console.log('address 1: ', await l2Wallet.getAddress());
+            console.log('address 2: ', await l2WalletReceiver.getAddress());
+            return;
+        }
+        console.log('For running this test, this address must have at least 0.05 ETH. Add some in Arbitrum');
+        console.log('address: ', await l2Wallet.getAddress());
+        return;
+    } else if (formatEther(balanceReceiver) < 0.02) {
+        console.log('For running this test, this address must have at least 0.05 ETH. Add some in Arbitrum');
+        console.log('address: ', await l2WalletReceiver.getAddress());
+        return;
+    }
+
     console.log('******** START OF MANUAL REDEEM TEST ********');
     console.log('');
 
