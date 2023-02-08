@@ -371,15 +371,16 @@ async function tryUI() {
 
 
 async function create() {
-    const signerAddr = '0x0E743a1E37D691D8e52F7036375F3D148B4116ba';
-    const ozERC1967proxyAddr = '0xb2387018E77A9D08C207C78Ee65631F694a25C46';
+    const [signer] = await hre.ethers.getSigners();
+    const signerAddr = await signer.getAddress();
+    const ozERC1967proxyAddr = '0x700B76addEd3C4a13A1FdC6b6d995C6c2CaeFA51';
     const proxyFactory = await hre.ethers.getContractAt('ProxyFactory', ozERC1967proxyAddr);
 
     const accountDetails = [
         signerAddr,
         usdtAddrArb,
-        parseInt(0.5 * 100),
-        'test account'
+        defaultSlippage,
+        'test account2'
     ];
 
     const tx = await proxyFactory.createNewProxy(accountDetails, ops);
@@ -388,6 +389,8 @@ async function create() {
     const newProxyAddr = receipt.logs[0].address;
     console.log('newProxy: ', newProxyAddr);
 }
+
+// create();
 
 
 
@@ -924,7 +927,7 @@ async function testGoerli() {
    
 }
 
-testGoerli();
+// testGoerli();
 
 
 

@@ -13,8 +13,10 @@ const {
   myReceiver
 } = require('../../../scripts/state-vars.js');
 
-const privateKey = process.env.PK_TESTNET; //<---- replace this for a hard-coded private key
+const privateKey = process.env.PK_TESTNET; 
+const pkReceiver = process.env.PK;
 const l2Wallet = new Wallet(privateKey, l2ProviderTestnet);
+const l2WalletReceiver = new Wallet(pkReceiver, l2ProviderTestnet);
 const tasks = {}; 
 const URL = `https://api.thegraph.com/subgraphs/name/gelatodigital/poke-me-${network}`;
 const query = (taskId) => {
@@ -62,7 +64,7 @@ process.on('message', async (msg) => {
         let notInCheckedArray = tasks[taskId].alreadyCheckedHashes.indexOf(hash) === -1;
         if (!notInCheckedArray) continue parent;
 
-        let [ message, wasRedeemed ] = await checkHash(hash);
+        let [ message, wasRedeemed ] = await checkHash(hash, `${i+1}/${executions.length}`);
 
         wasRedeemed ? tasks[taskId].alreadyCheckedHashes.push(hash) : await redeemHash(message, hash, taskId, redeemedHashesAddr);
     }
@@ -81,8 +83,8 @@ process.on('message', async (msg) => {
         console.log('******** END OF MANUAL REDEEM TEST ********');
 
         opsL2_2.to = myReceiver;
-        opsL2_2.value = parseEther(balance.toString());
-        const tx = await l2Wallet.sendTransaction(opsL2_2); 
+        opsL2_2.value = parseEther((balance / 4).toString());
+        const tx = await l2WalletReceiver.sendTransaction(opsL2_2); 
         await tx.wait();
     }
 
@@ -90,9 +92,9 @@ process.on('message', async (msg) => {
 });
 
 
-async function checkHash(hash) { 
+async function checkHash(hash, count) { 
     console.log('');
-    console.log(`Checking tx: ${hash}`);
+    console.log(`Checking tx ${count}: ${hash}`);
     const receipt = await l1ProviderTestnet.getTransactionReceipt(hash);
     const l1Receipt = new L1TransactionReceipt(receipt);
     const messages = await l1Receipt.getL1ToL2Messages(l2Wallet);

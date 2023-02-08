@@ -48,10 +48,10 @@ async function simulateDeployment() {
      * Addresses with auto-redeem = 0 which would make it fail,
      * entailing manual redeeme. 
      */
-    const storageBeaconAddr = '0xFdD4010f648cc90071fFF48F016Ae69454de275F';
-    const redeemedHashesAddr = '0x494C027bd5f8a6ecC7a86695A9d50f2A43602600'; 
-    const emitterAddr = '0x74df65210351AE6860749E74d65a9B8aEfe1eaBB';
-    const newProxyAddr = '0x6efcC2704EEE13351Ae35Ba0A336A4Db326C95A2'; 
+    const storageBeaconAddr = '0x5B2380C2a61F24de00fC9BCd5F83cA9F69Ad021b';
+    const redeemedHashesAddr = '0xCAACF638aAe6aa100805AA80c3d6755aD1E83196'; 
+    const emitterAddr = '0x532deA73312b1435686B2469A230CbE8cCA617E6';
+    const newProxyAddr = '0xbd30801d44C3D2241b7bAB57AbbAfdF1345E0ACA'; 
 
     return {
         StorageBeacon: storageBeaconAddr,
