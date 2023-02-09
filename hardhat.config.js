@@ -20,7 +20,7 @@ module.exports = {
     },
     goerli: {
       url: process.env.GOERLI,
-      accounts: [process.env.PK]
+      accounts: [process.env.PK_TESTNET]
     },
     arb_goerli: {
       url: process.env.ARB_GOERLI,

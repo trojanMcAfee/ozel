@@ -77,7 +77,8 @@ process.on('message', async (msg) => {
     console.log(`Waiting for funds on L2 (takes ~10 minutes due to Goerli's finalization issue; current time: ${new Date().toTimeString()})`);
 
     async function waitingForFunds() { //i think who receives the funds is 
-        const balance = formatEther(await l2ProviderTestnet.getBalance(testnetReceiver)); //signerTest
+        const balance = formatEther(await l2ProviderTestnet.getBalance(await l2WalletReceiver.getAddress())); 
+        console.log('l2WalletReceiver: ', await l2WalletReceiver.getAddress());
         console.log('L2 balance: ', balance);
         assert(balance > 0.09);
         console.log('Contract in L2 received the ETH');

@@ -28,7 +28,8 @@ const {
     l1SignerTest,
     opsL2_2,
     nullAddr,
-    l2SignerTestnet
+    l2SignerTestnet,
+    l1SignerTestnet
 } = require('./state-vars.js');
 
 
@@ -113,7 +114,7 @@ async function main3() {
     const factoryProxy = await hre.ethers.getContractAt(factoryABI, factoryProxyAddr);
     console.log('Proxy Factory: ', factoryProxy.address);
 
-    const tx = await factoryProxy.createNewProxy(accountDetails);
+    const tx = await factoryProxy.connect(signerTestnet).createNewProxy(accountDetails);
     const receipt = await tx.wait();
 
     console.log('receipt: ', receipt);
@@ -372,6 +373,9 @@ async function tryUI() {
 
 
 async function create() {
+    const pkReceiver = process.env.PK_TESTNET;
+    const l1WalletReceiver = new Wallet(pkReceiver, l1ProviderTestnet);
+
     const [signer] = await hre.ethers.getSigners();
     const signerAddr = await signer.getAddress();
     const ozERC1967proxyAddr = '0x700B76addEd3C4a13A1FdC6b6d995C6c2CaeFA51';
