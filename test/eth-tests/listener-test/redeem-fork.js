@@ -9,7 +9,6 @@ const {
   network,
   opsL2_2,
   l2ProviderTestnet,
-  testnetReceiver,
   myReceiver,
   l2SignerTest
 } = require('../../../scripts/state-vars.js');
@@ -76,7 +75,7 @@ process.on('message', async (msg) => {
     setTimeout(waitingForFunds, 60000);
     console.log(`Waiting for funds on L2 (takes ~10 minutes due to Goerli's finalization issue; current time: ${new Date().toTimeString()})`);
 
-    async function waitingForFunds() { //i think who receives the funds is 
+    async function waitingForFunds() { 
         const balance = formatEther(await l2ProviderTestnet.getBalance(await l2WalletReceiver.getAddress())); 
         console.log('l2WalletReceiver: ', await l2WalletReceiver.getAddress());
         console.log('L2 balance: ', balance);

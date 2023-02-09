@@ -1,7 +1,12 @@
 const { ethers, Wallet } = require('ethers');
 const { parseEther, formatEther } = ethers.utils;
 const { startListening } = require('./listener-test/event-listener.js');
-const { ops, l1SignerTestnet, l2ProviderTestnet } = require('../../scripts/state-vars.js');
+const { 
+    ops, 
+    l1SignerTestnet, 
+    l2ProviderTestnet, 
+    l1ProviderTestnet 
+} = require('../../scripts/state-vars.js');
 const { assert } = require("console");
 
 
@@ -68,27 +73,27 @@ async function simulateDeployment() {
 async function manualRedeem() {
     const privateKey = process.env.PK_TESTNET; 
     const pkReceiver = process.env.PK;
-    const l2Wallet = new Wallet(privateKey, l2ProviderTestnet);
+    const l1Wallet = new Wallet(privateKey, l1ProviderTestnet);
     const l2WalletReceiver = new Wallet(pkReceiver, l2ProviderTestnet);
 
-    const balance = await l2Wallet.getBalance();
-    const balanceReceiver = await l2WalletReceiver.getBalance();
+    const balanceSignerTestL1 = await l1Wallet.getBalance();
+    const balanceOtherAccL2 = await l2WalletReceiver.getBalance();
 
-    // if (formatEther(balance) < 0.02) {
-    //     if (formatEther(balanceReceiver) < 0.02) {
-    //         console.log('For running this test, these two addresses must have at least 0.05 ETH each. Add some in Arbitrum');
-    //         console.log('address 1: ', await l2Wallet.getAddress());
-    //         console.log('address 2: ', await l2WalletReceiver.getAddress());
-    //         return;
-    //     }
-    //     console.log('For running this test, this address must have at least 0.05 ETH. Add some in Arbitrum');
-    //     console.log('address: ', await l2Wallet.getAddress());
-    //     return;
-    // } else if (formatEther(balanceReceiver) < 0.02) {
-    //     console.log('For running this test, this address must have at least 0.05 ETH. Add some in Arbitrum');
-    //     console.log('address: ', await l2WalletReceiver.getAddress());
-    //     return;
-    // }
+    if (formatEther(balanceSignerTestL1) < 0.5) {
+        if (formatEther(balanceOtherAccL2) < 0.03) {
+            console.log('For running this test, at least address 1 must have 0.5 ETH in Goerli and address 2 0.03 ETH in Arbitrum-Goerli. Add some.');
+            console.log(`address 1 - current ${formatEther(await l1Wallet.getBalance())} ETH: `, await l1Wallet.getAddress());
+            console.log(`address 2 - current ${formatEther(await l2WalletReceiver.getBalance())} ETH: `, await l2WalletReceiver.getAddress());
+            return;
+        }
+        console.log('For running this test, address 1 must have 0.4 ETH in Goerli at least. Add some.');
+        console.log(`address 1 - current ${formatEther(await l1Wallet.getBalance())} ETH: `, await l1Wallet.getAddress());
+        return;
+    } else if (formatEther(balanceOtherAccL2) < 0.03) {
+        console.log('For running this test, address 2 must have 0.03 ETH in Arbitrum-Goerli at least. Add some.');
+        console.log(`address 2 - current ${formatEther(await l2WalletReceiver.getBalance())} ETH: `, await l2WalletReceiver.getAddress());
+        return;
+    }
 
     console.log('******** START OF MANUAL REDEEM TEST ********');
     console.log('');
