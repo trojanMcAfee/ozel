@@ -390,7 +390,7 @@ async function create() {
     console.log('newProxy: ', newProxyAddr);
 }
 
-create();
+// create();
 
 
 
@@ -451,7 +451,7 @@ async function lastPart() {
 
 
 async function queryRedemption() {
-    const redeemedHashesAddr = '0x82ab905466713465B4b7e29afb13853225124b0c';
+    const redeemedHashesAddr = '0xCAACF638aAe6aa100805AA80c3d6755aD1E83196';
     const taskId = '0xd8205fbb448f4f449809ef0170ad97b7e889506dcbd5866a29dfaae28063edc5';
     const hash = '0xac2106eb7a949d185e6476c693c0b1ef9e15c7f4f46a687c294865c87cc33499';
     const redeemedHashes = await hre.ethers.getContractAt('RedeemedHashes', redeemedHashesAddr);
@@ -506,7 +506,7 @@ async function stressTest() {
 
 async function checkMessage() {
     const l2Wallet = new Wallet(process.env.PK, l2ProviderTestnet);
-    const hash = '0x070d9f470e597c1bde4f79e177d13cf1c6dfa62016a5fc6f91e73e1b6345f609';
+    const hash = '0x2799f977389b39b897b0c74837a57a8f86c997f103760ef4cde6118932cbfbd7';
 
     const receipt = await l1ProviderTestnet.getTransactionReceipt(hash);
     const l1Receipt = new L1TransactionReceipt(receipt);
@@ -519,7 +519,7 @@ async function checkMessage() {
     console.log('was: ', wasRedeemed);
 }
 
-// checkMessage();
+checkMessage();
 
 
 async function checkPayments() {
