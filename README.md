@@ -42,3 +42,24 @@ For running each one, pull the image of the test you'd like to run from DockerHu
 
 The name of each image represents the JS file of the test. They can be found on the `tests` folder. 
 
+# Goerli
+
+This one tests the purpose of the Akash deployments. 
+
+When bridging ETH from L1 to L2, if the L2 gas price supplied -when creating a retryable ticket- is not enough, the transaction won't get auto-redeemed so a manual redeem is necessary in L2. 
+
+The Akash deployments are in charge of that manual redeem in case it's necessary for a transaction. The Docker image `ozel-test-goerli-manual:0.0.1` has contracts that simulate this manual redemption. The same commands apply for running the test:
+
+   `docker pull dnyrm/ozel-test-goerli-manual:0.0.1`
+   
+   `docker run -it dnyrm/ozel-test-goerli-manual:0.0.1`
+   
+Goerli could be unstable due to the fact that the chain sometimes doesn't have enough voters or they don't vote on time to make a block finalized, so there might be delays in the confirmation of a transaction, more specifically in these two logs of the test:
+- `Waiting for the status of the message from Goerli...`
+- `Waiting for funds on L2...  `
+
+Moreover, for the test to run smoothly, there are two addresses that must have a specific amount of GoerliETH and Arbitrum-GoerliETH. In case this requirement is not met, a warning message will be logged. 
+
+
+
+
