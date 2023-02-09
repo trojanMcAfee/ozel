@@ -16,7 +16,7 @@ Used tools:
 
 # Dockerized
 
-Tests are containerized in order to isolate specific environments for the correct functioning of each scenario, such as Hardhat fork, block number, state variables, accounts, among others. These are divided as:
+Tests are containerized in order to isolate specific environments for the correct functioning of each scenario, such as fork, block number, state variables, accounts, among others. These are divided as:
 * ### Ethereum:
   * `ozel-test-mainnet:0.0.2` --> For optimistic and pessimistic (aka failing) scenarios.
 * ### Arbitrum:
