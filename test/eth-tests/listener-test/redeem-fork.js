@@ -10,11 +10,12 @@ const {
   opsL2_2,
   l2ProviderTestnet,
   testnetReceiver,
-  myReceiver
+  myReceiver,
+  l2SignerTest
 } = require('../../../scripts/state-vars.js');
 
-const privateKey = process.env.PK_TESTNET; 
-const pkReceiver = process.env.PK;
+const privateKey = process.env.PK; 
+const pkReceiver = process.env.PK_TESTNET;
 const l2Wallet = new Wallet(privateKey, l2ProviderTestnet);
 const l2WalletReceiver = new Wallet(pkReceiver, l2ProviderTestnet);
 const tasks = {}; 
@@ -75,8 +76,8 @@ process.on('message', async (msg) => {
     setTimeout(waitingForFunds, 60000);
     console.log(`Waiting for funds on L2 (takes ~10 minutes due to Goerli's finalization issue; current time: ${new Date().toTimeString()})`);
 
-    async function waitingForFunds() { 
-        const balance = formatEther(await l2ProviderTestnet.getBalance(testnetReceiver));
+    async function waitingForFunds() { //i think who receives the funds is 
+        const balance = formatEther(await l2ProviderTestnet.getBalance(testnetReceiver)); //signerTest
         console.log('L2 balance: ', balance);
         assert(balance > 0.09);
         console.log('Contract in L2 received the ETH');
@@ -120,19 +121,21 @@ async function checkHash(hash, count) {
 async function redeemHash(message, hash, taskId, redeemedHashesAddr) {
     console.log('redeeming...');
     try {
-    let tx = await message.redeem(opsL2_2);
-    await tx.waitForRedeem();
+        let tx = await message.redeem(opsL2_2);
+        await tx.waitForRedeem();
 
-    console.log(`**** Hash: ${hash} redemeed ****`);
-    tasks[taskId].alreadyCheckedHashes.push(hash);
+        console.log(`**** Hash: ${hash} redemeed ****`);
+        tasks[taskId].alreadyCheckedHashes.push(hash);
 
-    const redeemedHashes = new ethers.Contract(redeemedHashesAddr, 'RedeemedHashes', l2ProviderTestnet);
-    tx = await redeemedHashes.connect(l2Wallet).storeRedemption(taskId, hash, opsL2_2);
-    await tx.wait();
+        const redeemedHashes = await hre.ethers.getContractAt('RedeemedHashes', redeemedHashesAddr, l2SignerTest);
+        tx = await redeemedHashes.connect(l2Wallet).storeRedemption(taskId, hash, opsL2_2);
+        await tx.wait();
 
-    const redemptions = await redeemedHashes.connect(l2Wallet).getTotalRedemptions();
-    assert(redemptions.length > 0);
-    } catch {}
+        const redemptions = await redeemedHashes.connect(l2Wallet).getTotalRedemptions();
+        assert(redemptions.length > 0);
+    } catch(error) {
+        console.log(error.message);
+    }
 }
 
 

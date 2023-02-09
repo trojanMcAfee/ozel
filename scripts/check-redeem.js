@@ -27,7 +27,8 @@ const {
     l2SignerTest,
     l1SignerTest,
     opsL2_2,
-    nullAddr
+    nullAddr,
+    l2SignerTestnet
 } = require('./state-vars.js');
 
 
@@ -380,7 +381,7 @@ async function create() {
         signerAddr,
         usdtAddrArb,
         defaultSlippage,
-        'test account2'
+        'test account4'
     ];
 
     const tx = await proxyFactory.createNewProxy(accountDetails, ops);
@@ -390,7 +391,7 @@ async function create() {
     console.log('newProxy: ', newProxyAddr);
 }
 
-// create();
+create();
 
 
 
@@ -519,7 +520,7 @@ async function checkMessage() {
     console.log('was: ', wasRedeemed);
 }
 
-checkMessage();
+// checkMessage();
 
 
 async function checkPayments() {
@@ -928,6 +929,17 @@ async function testGoerli() {
 }
 
 // testGoerli();
+
+
+async function checkRedeemContract() {
+    const redeemedHashesAddr = '0xCAACF638aAe6aa100805AA80c3d6755aD1E83196';
+    // const redeemedHashes = new ethers.Contract(redeemedHashesAddr, 'RedeemedHashes', l2ProviderTestnet);
+    const redeemedHashes = await hre.ethers.getContractAt('RedeemedHashes', redeemedHashesAddr, l2SignerTest);
+    console.log('addr: ', redeemedHashes.address);
+
+}
+
+// checkRedeemContract();
 
 
 
