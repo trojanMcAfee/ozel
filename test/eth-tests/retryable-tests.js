@@ -8,6 +8,7 @@ const {
     l1ProviderTestnet 
 } = require('../../scripts/state-vars.js');
 const { assert } = require("console");
+const { formatUnits } = require('ethers/lib/utils.js');
 
 
 /*///////////////////////////////////////////////////////////////
@@ -79,6 +80,16 @@ async function manualRedeem() {
 
     const balanceSignerTestL1 = await l1Wallet.getBalance();
     const balanceOtherAccL2 = await l2WalletReceiver.getBalance();
+
+    const currGasPrice = formatUnits(await hre.ethers.provider.getGasPrice(), 'gwei');
+    const testGasPrice = formatUnits(ops.gasPrice, 'gwei');
+
+    if (currGasPrice > testGasPrice) {
+        console.log('Gas price for test: ', testGasPrice);
+        console.log('Current gas price: ', currGasPrice);
+        console.log('Current gas price in Goerli is too high. Try again later.');
+        return;
+    }
 
     if (formatEther(balanceSignerTestL1) < 0.5) {
         if (formatEther(balanceOtherAccL2) < 0.03) {

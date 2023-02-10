@@ -262,7 +262,7 @@ async function main13() {
     console.log('count: ', Number(count));
 }
 
-main13();
+// main13();
 
 
 
@@ -944,6 +944,14 @@ async function checkRedeemContract() {
 }
 
 // checkRedeemContract();
+
+async function checkGas() {
+    const gasPrice = await hre.ethers.provider.getGasPrice();
+    console.log('gas: ', formatUnits(await hre.ethers.provider.getGasPrice(), 'gwei'));
+
+}
+
+checkGas();
 
 
 
