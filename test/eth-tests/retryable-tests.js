@@ -56,7 +56,7 @@ async function simulateDeployment() {
     const storageBeaconAddr = '0x5B2380C2a61F24de00fC9BCd5F83cA9F69Ad021b';
     const redeemedHashesAddr = '0xCAACF638aAe6aa100805AA80c3d6755aD1E83196'; 
     const emitterAddr = '0x532deA73312b1435686B2469A230CbE8cCA617E6';
-    const newProxyAddr = '0x37Dd1DEC49d5693523D2124C14A6710eD6D7a6c7'; 
+    const newProxyAddr = '0x3CfdA4B2b1E6160aA370bf51D2F3B3Ad7510655c'; 
 
     return {
         StorageBeacon: storageBeaconAddr,
@@ -86,7 +86,7 @@ async function manualRedeem() {
             console.log(`address 2 - current ${formatEther(await l2WalletReceiver.getBalance())} ETH: `, await l2WalletReceiver.getAddress());
             return;
         }
-        console.log('For running this test, address 1 must have 0.4 ETH in Goerli at least. Add some.');
+        console.log('For running this test, address 1 must have 0.5 ETH in Goerli at least. Add some.');
         console.log(`address 1 - current ${formatEther(await l1Wallet.getBalance())} ETH: `, await l1Wallet.getAddress());
         return;
     } else if (formatEther(balanceOtherAccL2) < 0.03) {
