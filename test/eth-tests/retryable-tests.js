@@ -15,6 +15,7 @@ const { assert } = require("console");
 //////////////////////////////////////////////////////////////*/
 
 async function sendETHandAssert(newProxyAddr) {
+    console.log('Sending ETH...');
     const value = 0.1;
     ops.to = newProxyAddr;
     ops.value = parseEther(value.toString());
@@ -81,16 +82,16 @@ async function manualRedeem() {
 
     if (formatEther(balanceSignerTestL1) < 0.5) {
         if (formatEther(balanceOtherAccL2) < 0.03) {
-            console.log('For running this test, at least address 1 must have 0.5 ETH in Goerli and address 2 0.03 ETH in Arbitrum-Goerli. Add some.');
+            console.log('For running this test, at least address 1 must have 0.5 ETH in Goerli and address 2 0.03 ETH in Arbitrum-Goerli. Add some and retry test.');
             console.log(`address 1 - current ${formatEther(await l1Wallet.getBalance())} ETH: `, await l1Wallet.getAddress());
             console.log(`address 2 - current ${formatEther(await l2WalletReceiver.getBalance())} ETH: `, await l2WalletReceiver.getAddress());
             return;
         }
-        console.log('For running this test, address 1 must have 0.5 ETH in Goerli at least. Add some.');
+        console.log('For running this test, address 1 must have 0.5 ETH in Goerli at least. Add some and retry test.');
         console.log(`address 1 - current ${formatEther(await l1Wallet.getBalance())} ETH: `, await l1Wallet.getAddress());
         return;
     } else if (formatEther(balanceOtherAccL2) < 0.03) {
-        console.log('For running this test, address 2 must have 0.03 ETH in Arbitrum-Goerli at least. Add some.');
+        console.log('For running this test, address 2 must have 0.03 ETH in Arbitrum-Goerli at least. Add some and retry test.');
         console.log(`address 2 - current ${formatEther(await l2WalletReceiver.getBalance())} ETH: `, await l2WalletReceiver.getAddress());
         return;
     }

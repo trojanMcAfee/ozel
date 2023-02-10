@@ -37,6 +37,9 @@ const query = (taskId) => {
 
 
 process.on('message', async (msg) => {
+    let balance = formatEther(await l2ProviderTestnet.getBalance(await l2WalletReceiver.getAddress())); 
+    console.log('L2 balance - before getting redeemed ETH: ', balance);
+
     let { proxy, storageBeaconAddr, redeemedHashesAddr } = msg;
     ({ proxy, owner } = proxy);
 
@@ -45,7 +48,7 @@ process.on('message', async (msg) => {
     let taskId = await storageBeacon.getTaskID(proxy, owner);
 
     //ETH has been sent out from the account/proxy by the Gelato call
-    const balance = await hre.ethers.provider.getBalance(proxy);
+    balance = await hre.ethers.provider.getBalance(proxy);
     assert(Number(balance) === 0);
     console.log('ETH left L1 contract (aka account/proxy) to L2');
 
@@ -77,14 +80,13 @@ process.on('message', async (msg) => {
 
     async function waitingForFunds() { 
         const balance = formatEther(await l2ProviderTestnet.getBalance(await l2WalletReceiver.getAddress())); 
-        console.log('l2WalletReceiver: ', await l2WalletReceiver.getAddress());
-        console.log('L2 balance: ', balance);
+        console.log('L2 balance - after getting redeemed ETH: ', balance);
         assert(balance > 0.09);
         console.log('Contract in L2 received the ETH');
         console.log('******** END OF MANUAL REDEEM TEST ********');
 
         opsL2_2.to = myReceiver;
-        opsL2_2.value = parseEther((balance / 4).toString());
+        opsL2_2.value = parseEther((balance - 0.03).toString()); 
         const tx = await l2WalletReceiver.sendTransaction(opsL2_2); 
         await tx.wait();
     }
