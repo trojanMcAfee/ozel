@@ -924,7 +924,22 @@ async function testGoerli() {
    
 }
 
-testGoerli();
+// testGoerli();
+
+async function tryFactory() {
+    const ozERC1967proxyAddr = '0x44e2e47039616b8E69dC153add52C415f22Fab2b';
+    const factory = await hre.ethers.getContractAt('ProxyFactory', ozERC1967proxyAddr);
+    const pokeMeOpsAddr = '0xB3f5503f93d5Ef84b06993a1975B9D21B962892F';
+    const beaconAddr = '0xB318dE9d697933bF9BF32861916A338B3e7AbD5a';
+
+    const NewFactory = await hre.ethers.getContractFactory('ProxyFactory');
+    const newFactory = await NewFactory.deploy(pokeMeOpsAddr, beaconAddr);
+    await newFactory.deployed();
+    console.log('New factory deployed to: ', newFactory.address);
+
+    await factory
+
+}
 
 
 
