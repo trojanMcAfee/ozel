@@ -48,7 +48,6 @@ contract ProxyFactory is IProxyFactory, ReentrancyGuard, Initializable, UUPSUpgr
         if (name.length == 0) revert CantBeZero('name'); 
         if (name.length > 18) revert NameTooLong();
         if (acc_.user == address(0) || token == address(0)) revert CantBeZero('address');
-        // if (acc_.slippage <= 0) revert CantBeZero('slippage');
         if (acc_.slippage < 1 || acc_.slippage > 500) revert CantBeZero('slippage');
         if (!sBeacon.queryTokenDatabase(token)) revert TokenNotInDatabase(token);
 

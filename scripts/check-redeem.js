@@ -931,15 +931,82 @@ async function tryFactory() {
     const factory = await hre.ethers.getContractAt('ProxyFactory', ozERC1967proxyAddr);
     const pokeMeOpsAddr = '0xB3f5503f93d5Ef84b06993a1975B9D21B962892F';
     const beaconAddr = '0xB318dE9d697933bF9BF32861916A338B3e7AbD5a';
+    const deployer2 = '0xe738696676571D9b74C81716E4aE797c2440d306';
+    const [signer] = await hre.ethers.getSigners();
+    const signerAddr = await signer.getAddress();
+
+    //-------
+    //trying with 6% for slippage
+    const slippage = 600;
+
+    const accountDetails = [
+        signerAddr,
+        usdtAddrArb,
+        slippage,
+        'test'
+    ];
+
+    let tx = await factory.createNewProxy(accountDetails);
+    const receipt = await tx.wait();
+    console.log('tx hash: ', receipt.transactionHash);
+
+    //-------
+    tx = await signer.sendTransaction({
+        to: deployer2,
+        value: parseEther('1')
+    });
+    await tx.wait();
 
     const NewFactory = await hre.ethers.getContractFactory('ProxyFactory');
     const newFactory = await NewFactory.deploy(pokeMeOpsAddr, beaconAddr);
     await newFactory.deployed();
     console.log('New factory deployed to: ', newFactory.address);
 
-    await factory
+    await hre.network.provider.request({
+        method: "hardhat_impersonateAccount",
+        params: [deployer2],
+    });
+
+    const deployerSigner = await hre.ethers.provider.getSigner(deployer2);
+
+    tx = await factory.connect(deployerSigner).upgradeTo(newFactory.address);
+    await tx.wait();
+    console.log('change successful...');
+
+    await hre.network.provider.request({
+        method: "hardhat_stopImpersonatingAccount",
+        params: [deployer2],
+    });
+
+    tx = await factory.createNewProxy(accountDetails);
+    await tx.wait();
 
 }
+
+// tryFactory();
+
+
+async function changeFactory() {
+    const pokeMeOpsAddr = '0xB3f5503f93d5Ef84b06993a1975B9D21B962892F';
+    const beaconAddr = '0xB318dE9d697933bF9BF32861916A338B3e7AbD5a';
+    console.log('deploying...');
+
+    const NewFactory = await hre.ethers.getContractFactory('ProxyFactory');
+    const newFactory = await NewFactory.deploy(pokeMeOpsAddr, beaconAddr);
+    await newFactory.deployed();
+    console.log('New factory deployed to: ', newFactory.address);
+
+    const ozERC1967proxyAddr = '0x44e2e47039616b8E69dC153add52C415f22Fab2b';
+    const factory = await hre.ethers.getContractAt('ProxyFactory', ozERC1967proxyAddr);
+
+    let tx = await factory.upgradeTo(newFactory.address);
+    await tx.wait();
+    console.log('change successful...');
+}
+
+changeFactory();
+
+//0.0743
 
 
 
