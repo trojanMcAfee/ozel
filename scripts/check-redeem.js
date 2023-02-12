@@ -395,7 +395,7 @@ async function create() {
     console.log('newProxy: ', newProxyAddr);
 }
 
-create();
+// create();
 
 
 
@@ -995,21 +995,25 @@ async function tryFactory() {
 
 
 async function changeFactory() {
-    const pokeMeOpsAddr = '0xB3f5503f93d5Ef84b06993a1975B9D21B962892F';
-    const beaconAddr = '0xB318dE9d697933bF9BF32861916A338B3e7AbD5a';
-    console.log('deploying...');
+    // const pokeMeOpsAddr = '0xc1C6805B857Bef1f412519C4A842522431aFed39';
+    // const beaconAddr = '0x6A5d86a06a3ba16ee6314E225478d5679559075a';
+    // console.log('deploying...');
 
-    const NewFactory = await hre.ethers.getContractFactory('ProxyFactory');
-    const newFactory = await NewFactory.deploy(pokeMeOpsAddr, beaconAddr);
-    await newFactory.deployed();
-    console.log('New factory deployed to: ', newFactory.address);
+    // const NewFactory = await hre.ethers.getContractFactory('ProxyFactory');
+    // const newFactory = await NewFactory.deploy(pokeMeOpsAddr, beaconAddr);
+    // await newFactory.deployed();
+    // console.log('New factory deployed to: ', newFactory.address);
 
-    const ozERC1967proxyAddr = '0x44e2e47039616b8E69dC153add52C415f22Fab2b';
+    const ozERC1967proxyAddr = '0xCd9d0217D624B6E45cAEf2de453e7bF4DcFFE710';
     const factory = await hre.ethers.getContractAt('ProxyFactory', ozERC1967proxyAddr);
+    const newFactoryAddr = '0x46cE86e77a1F3A3309D8BADc60014F7e30752023'; 
 
-    let tx = await factory.upgradeTo(newFactory.address);
+
+    let tx = await factory.upgradeTo(newFactoryAddr, ops);
     await tx.wait();
     console.log('change successful...');
+
+    //--------
 }
 
 changeFactory();
