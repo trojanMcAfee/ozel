@@ -58,7 +58,7 @@ async function simulateDeployment() {
     const storageBeaconAddr = '0x5B2380C2a61F24de00fC9BCd5F83cA9F69Ad021b';
     const redeemedHashesAddr = '0xCAACF638aAe6aa100805AA80c3d6755aD1E83196'; 
     const emitterAddr = '0x532deA73312b1435686B2469A230CbE8cCA617E6';
-    const newProxyAddr = '0x3CfdA4B2b1E6160aA370bf51D2F3B3Ad7510655c'; 
+    const newProxyAddr = '0x30B2E2CfcB4f8b2259D9d3ccfae0FF56877B66cC'; 
 
     return {
         StorageBeacon: storageBeaconAddr,

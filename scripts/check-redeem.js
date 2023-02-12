@@ -385,7 +385,7 @@ async function create() {
         signerAddr,
         usdtAddrArb,
         defaultSlippage,
-        'test account5'
+        'test account6'
     ];
 
     const tx = await proxyFactory.createNewProxy(accountDetails, ops);
@@ -395,7 +395,7 @@ async function create() {
     console.log('newProxy: ', newProxyAddr);
 }
 
-// create();
+create();
 
 
 
@@ -951,7 +951,7 @@ async function checkGas() {
 
 }
 
-checkGas();
+// checkGas();
 
 
 
