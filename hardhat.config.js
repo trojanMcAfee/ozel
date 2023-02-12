@@ -33,19 +33,11 @@ module.exports = {
     },
     goerli: {
       url: process.env.GOERLI,
-      accounts: [process.env.PK]
+      accounts: [process.env.PK_TESTNET]
     },
     arb_goerli: {
       url: process.env.ARB_GOERLI,
       accounts: [process.env.PK]
-    },
-    arbitrum: {
-      url: process.env.ARBITRUM,
-      accounts: [process.env.PK_DEPLOYER]
-    },
-    mainnet: {
-      url: process.env.MAINNET,
-      accounts: [process.env.PK_DEPLOYER]
     }
   },
   etherscan: {

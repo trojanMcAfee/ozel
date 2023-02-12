@@ -1,8 +1,14 @@
-const { ethers } = require('ethers');
+const { ethers, Wallet } = require('ethers');
 const { parseEther, formatEther } = ethers.utils;
 const { startListening } = require('./listener-test/event-listener.js');
-const { ops, l1SignerTestnet } = require('../../scripts/state-vars.js');
+const { 
+    ops, 
+    l1SignerTestnet, 
+    l2ProviderTestnet, 
+    l1ProviderTestnet 
+} = require('../../scripts/state-vars.js');
 const { assert } = require("console");
+const { formatUnits } = require('ethers/lib/utils.js');
 
 
 /*///////////////////////////////////////////////////////////////
@@ -10,6 +16,7 @@ const { assert } = require("console");
 //////////////////////////////////////////////////////////////*/
 
 async function sendETHandAssert(newProxyAddr) {
+    console.log('Sending ETH...');
     const value = 0.1;
     ops.to = newProxyAddr;
     ops.value = parseEther(value.toString());
@@ -48,10 +55,10 @@ async function simulateDeployment() {
      * Addresses with auto-redeem = 0 which would make it fail,
      * entailing manual redeeme. 
      */
-    const storageBeaconAddr = '0xFdD4010f648cc90071fFF48F016Ae69454de275F';
-    const redeemedHashesAddr = '0x494C027bd5f8a6ecC7a86695A9d50f2A43602600'; 
-    const emitterAddr = '0x74df65210351AE6860749E74d65a9B8aEfe1eaBB';
-    const newProxyAddr = '0x6efcC2704EEE13351Ae35Ba0A336A4Db326C95A2'; 
+    const storageBeaconAddr = '0x5B2380C2a61F24de00fC9BCd5F83cA9F69Ad021b';
+    const redeemedHashesAddr = '0xCAACF638aAe6aa100805AA80c3d6755aD1E83196'; 
+    const emitterAddr = '0x532deA73312b1435686B2469A230CbE8cCA617E6';
+    const newProxyAddr = '0x3CfdA4B2b1E6160aA370bf51D2F3B3Ad7510655c'; 
 
     return {
         StorageBeacon: storageBeaconAddr,
@@ -66,6 +73,40 @@ async function simulateDeployment() {
 //////////////////////////////////////////////////////////////*/
 
 async function manualRedeem() {
+    const privateKey = process.env.PK_TESTNET; 
+    const pkReceiver = process.env.PK;
+    const l1Wallet = new Wallet(privateKey, l1ProviderTestnet);
+    const l2WalletReceiver = new Wallet(pkReceiver, l2ProviderTestnet);
+
+    const balanceSignerTestL1 = await l1Wallet.getBalance();
+    const balanceOtherAccL2 = await l2WalletReceiver.getBalance();
+
+    const currGasPrice = formatUnits(await hre.ethers.provider.getGasPrice(), 'gwei');
+    const testGasPrice = formatUnits(ops.gasPrice, 'gwei');
+
+    if (currGasPrice > testGasPrice) {
+        console.log('Gas price for test: ', testGasPrice);
+        console.log('Current gas price: ', currGasPrice);
+        console.log('Current gas price in Goerli is too high. Try again later.');
+        return;
+    }
+
+    if (formatEther(balanceSignerTestL1) < 0.5) {
+        if (formatEther(balanceOtherAccL2) < 0.03) {
+            console.log('For running this test, at least address 1 must have 0.5 ETH in Goerli and address 2 0.03 ETH in Arbitrum-Goerli. Add some and retry test.');
+            console.log(`address 1 - current ${formatEther(await l1Wallet.getBalance())} ETH: `, await l1Wallet.getAddress());
+            console.log(`address 2 - current ${formatEther(await l2WalletReceiver.getBalance())} ETH: `, await l2WalletReceiver.getAddress());
+            return;
+        }
+        console.log('For running this test, address 1 must have 0.5 ETH in Goerli at least. Add some and retry test.');
+        console.log(`address 1 - current ${formatEther(await l1Wallet.getBalance())} ETH: `, await l1Wallet.getAddress());
+        return;
+    } else if (formatEther(balanceOtherAccL2) < 0.03) {
+        console.log('For running this test, address 2 must have 0.03 ETH in Arbitrum-Goerli at least. Add some and retry test.');
+        console.log(`address 2 - current ${formatEther(await l2WalletReceiver.getBalance())} ETH: `, await l2WalletReceiver.getAddress());
+        return;
+    }
+
     console.log('******** START OF MANUAL REDEEM TEST ********');
     console.log('');
 

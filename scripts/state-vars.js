@@ -24,11 +24,11 @@ let gelatoAddr;
 let tokensDatabaseL1;
 const ETH = '0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE';
 const nullAddr = '0x0000000000000000000000000000000000000000';
-const testnetReceiver = '0x2B75D8312cA463Dea9E80981b5c690f15E94Bd55'; //0x5d9B5dEF9E6549820d506084e3629f60f1fF6E96
+const testnetReceiver = '0x49B7e3BC581DEF1E16645706dcE4AbFce5e61C88'; 
 const myReceiver = '0x2B75D8312cA463Dea9E80981b5c690f15E94Bd55';
-const protocolFee = 10; //prev: 10 -> 0.1% / 100-1 / 1000-10 / 10000 - 100%
-const poolFeeUni = 500; //0.05%
-const defaultSlippage = 100; //5 -> 0.05%; / 100 -> 1%
+const protocolFee = 10; 
+const poolFeeUni = 500; 
+const defaultSlippage = 100;
 const revenueAmounts = [
     10000000, 
     50000000,
@@ -110,7 +110,7 @@ const opsL2_2 = {
 
 const ops = {
     gasLimit: ethers.BigNumber.from('30000000'),
-    gasPrice: ethers.BigNumber.from('15134698068') 
+    gasPrice: ethers.BigNumber.from('10134698068') 
 };
 
 const signerX = new ethers.Wallet(process.env.PK);
@@ -121,7 +121,7 @@ const l1Provider = new ethers.providers.JsonRpcProvider(process.env.MAINNET);
 let l1Signer, l2Signer, l1SignerTestnet, l2SignerTestnet;
 let l1ProviderTestnet, l2ProviderTestnet;
 
-let network = 'mainnet';
+let network = 'goerli';
 switch(network) {
     case 'goerli':
         pokeMeOpsAddr = '0xc1C6805B857Bef1f412519C4A842522431aFed39'; 

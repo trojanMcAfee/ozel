@@ -46,7 +46,6 @@ async function startListening(storageBeaconAddr, emitterAddr, redeemedHashesAddr
     });
 }
 
-//add an if saying that tests won't run if there's not enough goerli ETH
 
 module.exports = {
     startListening
