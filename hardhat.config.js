@@ -17,19 +17,19 @@ module.exports = {
   },
   networks: {
     hardhat: {
-      forking: {
-        url: process.env.MAINNET,
-        blockNumber: 16612926    // 14689661 - 14.689.661 gas: 1,106 (passing) ETH bal: 5.188593275449158
-        /**
-         * 15823986 (block of all tests)
-         * gelato changed some internal contracts - do eth tests with a recent block 
-         * 14.688.951 (block of baseFee 7,8k)
-         */
-      }
       // forking: {
-      //   url: process.env.ARBITRUM, //56347631
-      //   blockNumber: 56830170,      
+      //   url: process.env.MAINNET,
+      //   blockNumber: 16612926    // 14689661 - 14.689.661 gas: 1,106 (passing) ETH bal: 5.188593275449158
+      //   /**
+      //    * 15823986 (block of all tests)
+      //    * gelato changed some internal contracts - do eth tests with a recent block 
+      //    * 14.688.951 (block of baseFee 7,8k)
+      //    */
       // }
+      forking: {
+        url: process.env.ARBITRUM, //56830170
+        blockNumber: 60363546,      
+      }
     },
     goerli: {
       url: process.env.GOERLI,

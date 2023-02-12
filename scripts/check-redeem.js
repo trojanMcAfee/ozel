@@ -1016,7 +1016,7 @@ async function changeFactory() {
     //--------
 }
 
-changeFactory();
+// changeFactory();
 
 //0.0743
 
@@ -1037,6 +1037,39 @@ async function checkGas() {
 }
 
 // checkGas();
+
+
+async function checkMim() {
+    const data = '0x6d45fc25000000000000000000000000000000000000000000000000000000000000006000000000000000000000000000000000000000000000000006f05b59d3b20000000000000000000000000000ae6f4029ce1c3093990f26489be58f5fd68751a6000000000000000000000000000000000000000000000000000000000000002a9c1241606dafbaee46dfadf3b0decd0b653f342e99d8a9c45b2eca8864373a26d1459e3dff1e17f3003200000000000000000000000000000000000000000000';
+    const ozMiddlewareAddr = '0x3164a03cDbbf607Db19a366416113f7f74341B56';
+    const ozDiamondAddr = '0x7D1f13Dd05E6b0673DC3D0BFa14d40A74Cfa3EF2';
+    const ozMiddleAlias = '0x9a5fac76aefa45886abeb3beae37bcf0a19123a6';
+    const [signer] = await hre.ethers.getSigners();
+
+    opsL2_2.value = parseEther('1');
+    opsL2_2.to = ozMiddlewareAddr;
+    await signer.sendTransaction(opsL2_2);
+    delete opsL2_2.value;
+
+    await hre.network.provider.request({
+        method: "hardhat_impersonateAccount",
+        params: [ozMiddlewareAddr],
+    });
+
+    const middleSigner = await hre.ethers.provider.getSigner(ozMiddlewareAddr);
+    opsL2_2.to = ozDiamondAddr
+    opsL2_2.data = data;
+    const tx = await middleSigner.sendTransaction(opsL2_2);
+    const receipt = await tx.wait();
+    console.log('hash: ', receipt.transactionHash);
+
+    await hre.network.provider.request({
+        method: "hardhat_stopImpersonatingAccount",
+        params: [ozMiddlewareAddr],
+    });
+}
+
+checkMim();
 
 
 
