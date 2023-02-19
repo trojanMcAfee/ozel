@@ -2,50 +2,34 @@
 pragma solidity 0.8.14;
 
 
-import '@openzeppelin/contracts/proxy/beacon/BeaconProxy.sol';
 import "@openzeppelin/contracts/proxy/utils/Initializable.sol";
-import '@rari-capital/solmate/src/utils/ReentrancyGuard.sol';
-import './ozUpgradeableBeacon.sol';
-import './StorageBeacon.sol';
+import '@openzeppelin/contracts/proxy/Proxy.sol';
 
 
-/**
- * @title Receiver of an user's ETH transfers (aka THE account)
- * @notice Proxy that users create where they will receive all ETH transfers
- * sent to them, which would be converted to the stablecoin of their choosing.
- */
-contract ozAccountProxy is ReentrancyGuard, Initializable, BeaconProxy { 
+contract ozAccountL2 is Proxy, Initializable {
 
-    bytes dataForL2;
-    
-    constructor(
-        address beacon_,
-        bytes memory data_
-    ) BeaconProxy(beacon_, data_) {}                                    
+    bytes accData;
 
+    address private constant OZL = 0x7D1f13Dd05E6b0673DC3D0BFa14d40A74Cfa3EF2;
 
-    receive() external payable override {}
+    //--------
 
-
-    /// @dev Gets the first version of StorageBeacon
-    function _getStorageBeacon() private view returns(StorageBeacon) {
-        return StorageBeacon(ozUpgradeableBeacon(_beacon()).storageBeacon(0));
-    }
-
-    /// @dev Gelato checker for autonomous calls
     function checker() external view returns(bool canExec, bytes memory execPayload) { 
         uint amountToSend = address(this).balance;
         if (amountToSend > 0) canExec = true;
         execPayload = abi.encodeWithSignature('sendToArb(uint256)', amountToSend); 
     }
 
-  
-    /**
-     * @notice Forwards payload to the implementation
-     * @dev Queries between the authorized selectors. If true, the original calldata is kept in the forwarding.
-     * If false, it changes the payload to the account details and forwards that, along L2 gas price. 
-     * @param implementation Address of the implementation connected to each account
-     */
+    function _implementation() internal pure override returns(address) {
+        return OZL;
+    }
+
+    function initialize(bytes memory accData_) external initializer {
+        accData = accData_;
+    }
+
+    //-------
+
     function _delegate(address implementation) internal override { 
         bytes memory data; 
         StorageBeacon storageBeacon = _getStorageBeacon();
@@ -75,10 +59,5 @@ contract ozAccountProxy is ReentrancyGuard, Initializable, BeaconProxy {
             }
         }
     }
+
 }
-
-
-
-
-
-

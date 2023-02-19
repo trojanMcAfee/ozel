@@ -79,6 +79,9 @@ struct AppStorage {
     bytes checkForRevenueSelec;
     address nullAddress;
 
+    /*///////////////////////////////////////////////////////////////
+                            v1.1 Upgrade
+    //////////////////////////////////////////////////////////////*/
 }
 
 /// @dev Reference for oz20Facet storage
