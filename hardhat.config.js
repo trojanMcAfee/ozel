@@ -19,15 +19,10 @@ module.exports = {
     hardhat: {
       // forking: {
       //   url: process.env.MAINNET,
-      //   blockNumber: 16612926    // 14689661 - 14.689.661 gas: 1,106 (passing) ETH bal: 5.188593275449158
-      //   /**
-      //    * 15823986 (block of all tests)
-      //    * gelato changed some internal contracts - do eth tests with a recent block 
-      //    * 14.688.951 (block of baseFee 7,8k)
-      //    */
+      //   blockNumber: 16612926  
       // }
       forking: {
-        url: process.env.ARBITRUM, //56830170
+        url: process.env.ARBITRUM, 
         blockNumber: 60363546,      
       }
     },
@@ -45,8 +40,6 @@ module.exports = {
     }
   },
   etherscan: {
-    // Your API key for Etherscan
-    // Obtain one at https://etherscan.io/
     apiKey: ""
   }
 };
