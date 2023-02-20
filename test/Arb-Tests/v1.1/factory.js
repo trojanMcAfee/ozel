@@ -91,11 +91,12 @@ describe('v1.1 tests', async function () {
             method: "hardhat_stopImpersonatingAccount",
             params: [ownerAddr],
         });
+
     });
 
     describe('ozProxyFactoryFacet', async () => {
         it('should create a account successfully / createNewProxy()', async () => {
-            await factory.createNewProxy(accountDetails, ops);
+            await ozlDiamond.createNewProxy(accountDetails, ops);
             // ([ proxies, names ] = await storageBeacon.getAccountsByUser(signerAddr));
 
             // newProxyAddr = proxies[0].toString(); 

@@ -2,17 +2,17 @@
 pragma solidity 0.8.14;
 
 
-import '@rari-capital/solmate/src/utils/ReentrancyGuard.sol';
 import "@openzeppelin/contracts/utils/Address.sol";
+import { ModifiersARB } from '../Modifiers.sol';
 import '../../interfaces/ethereum/IOps.sol';
 import './ozAccountL2.sol';
-import '../AppStorage.sol';
+import { AccountConfig, AccData } from '../AppStorage.sol';
 import '../../Errors.sol';
 
 
-contract ozProxyFactoryFacet is ReentrancyGuard {
+contract ozProxyFactoryFacet is ModifiersARB {
 
-    AppStorage s;
+    // AppStorage s;
 
     address private immutable ops;
 
@@ -23,7 +23,7 @@ contract ozProxyFactoryFacet is ReentrancyGuard {
 
     function createNewProxy(
         AccountConfig calldata acc_
-    ) external nonReentrant returns(address) {
+    ) external noReentrancy(0) returns(address) {
         bytes calldata name = bytes(acc_.name);
         address token = acc_.token;
 
