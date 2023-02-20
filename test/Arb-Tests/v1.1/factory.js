@@ -2,7 +2,6 @@ const { ethers } = require("ethers");
 const assert = require('assert');
 const { parseEther, formatEther } = ethers.utils;
 
-
 const { err } = require('../../errors'); 
 
 const { 
@@ -108,10 +107,87 @@ describe('v1.1 tests', async function () {
 
             newProxyAddr = proxies[0].toString(); 
             const name = names[0].toString();
-            console.log('acc: ', newProxyAddr);
-            console.log('name: ', name);
             assert.equal(newProxyAddr.length, 42);
             assert(name.length > 0);
+        });
+
+        it('should not allow to create a account witn an empty account name / createNewProxy()', async () => {
+            accountDetails[3] = '';
+            await assert.rejects(async () => {
+                await ozlDiamond.createNewProxy(accountDetails, ops);
+            }, {
+                name: 'Error',
+                message: (await err()).zeroName 
+            });
+
+            //Clean up
+            accountDetails[3] = 'my account';
+        });
+
+        it('should not allow to create a account with a name with more of 18 characters / createNewProxy()', async () => {
+            const invalidName = 'fffffffffffffffffff';
+            assert(invalidName.length > 18);
+            accountDetails[3] = invalidName;
+
+            await assert.rejects(async () => {
+                await ozlDiamond.createNewProxy(accountDetails, ops);
+            }, {
+                name: 'Error',
+                message: (await err()).invalidName 
+            });
+
+            //Clean up
+            accountDetails[3] = 'my account';
+        });
+
+        it('should not allow to create a account with the 0 address / createNewProxy()', async () => {
+            accountDetails[1] = nullAddr;
+            await assert.rejects(async () => {
+                await ozlDiamond.createNewProxy(accountDetails, ops);
+            }, {
+                name: 'Error',
+                message: (await err()).zeroAddress 
+            });
+        });
+
+        it('should not allow to create a account with 0 slippage / createNewProxy()', async () => {
+            accountDetails[1] = usdtAddrArb;
+            accountDetails[2] = 0;
+            await assert.rejects(async () => {
+                await ozlDiamond.createNewProxy(accountDetails, ops);
+            }, {
+                name: 'Error',
+                message: (await err()).zeroSlippage
+            });
+        });
+
+        it('should not allow to create an account with an slippage of more than 5% / createNewProxy()', async () => {
+            accountDetails[2] = 501;
+            await assert.rejects(async () => {
+                await ozlDiamond.createNewProxy(accountDetails, ops);
+            }, {
+                name: 'Error',
+                message: (await err()).zeroSlippage
+            });
+        });
+
+        it('should not allow to create a account with a token not found in the database / createNewProxy()', async () => {
+            accountDetails[1] = deadAddr;
+            accountDetails[2] = defaultSlippage;
+            await assert.rejects(async () => {
+                await ozlDiamond.createNewProxy(accountDetails, ops);
+            }, {
+                name: 'Error',
+                message: (await err(deadAddr)).tokenNotFound
+            });
+        })
+
+        xit('should have an initial balance of 0.1 ETH', async () => { 
+            accountDetails[1] = usdtAddrArb;
+            newProxyAddr = await createProxy(proxyFactory, accountDetails);
+
+            balance = await sendETH(newProxyAddr, 0.1);
+            assert.equal(formatEther(balance), '0.1');
         });
 
         
