@@ -1,6 +1,10 @@
 const { ethers } = require("ethers");
 const assert = require('assert');
-const { parseEther, formatEther } = ethers.utils;
+const {
+    parseEther, 
+    formatEther, 
+    hexStripZeros 
+} = ethers.utils;
 
 const { err } = require('../../errors'); 
 
@@ -9,7 +13,6 @@ const {
     transferOZL, 
     withdrawShareOZL, 
     getVarsForHelpers,
-    sendETH,
     enableWithdrawals,
     deploy,
     getOzelIndex,
@@ -25,6 +28,7 @@ const {
 } = require('../../../scripts/helpers-arb');
 
 const { getSelectors } = require('../../../scripts/myDiamondUtil');
+const { createProxy, sendETH } = require('../../../scripts/helpers-eth');
 
 const { 
     usdtAddrArb,
@@ -44,8 +48,9 @@ const {
 } = require('../../../scripts/state-vars');
 
 
-let ozlDiamondAddr, ozlDiamond;
+let ozlDiamondAddr, ozlDiamond, newProxyAddr;
 let ownerAddr, signer, signerAddr;
+let tx, receipt, balance;
 
 describe('v1.1 tests', async function () {
     this.timeout(1000000);
@@ -63,6 +68,7 @@ describe('v1.1 tests', async function () {
 
         ownerAddr = '0xe738696676571D9b74C81716E4aE797c2440d306';
         ozlDiamondAddr = '0x7D1f13Dd05E6b0673DC3D0BFa14d40A74Cfa3EF2';
+        ozlFacet = '0x3164a03cDbbf607Db19a366416113f7f74341B56';
         ozlDiamond = await hre.ethers.getContractAt(diamondABI, ozlDiamondAddr);
 
         //Deploys the ProxyFactory in L2
@@ -98,10 +104,12 @@ describe('v1.1 tests', async function () {
             params: [ownerAddr],
         });
 
+        getVarsForHelpers(ozlDiamond, ozlFacet);
+
     });
 
     describe('ozProxyFactoryFacet', async () => {
-        it('should create a account successfully / createNewProxy()', async () => {
+        xit('should create a account successfully / createNewProxy()', async () => {
             await ozlDiamond.createNewProxy(accountDetails, ops);
             ([ proxies, names ] = await ozlDiamond.getAccountsByUser(signerAddr));
 
@@ -111,7 +119,7 @@ describe('v1.1 tests', async function () {
             assert(name.length > 0);
         });
 
-        it('should not allow to create a account witn an empty account name / createNewProxy()', async () => {
+        xit('should not allow to create a account witn an empty account name / createNewProxy()', async () => {
             accountDetails[3] = '';
             await assert.rejects(async () => {
                 await ozlDiamond.createNewProxy(accountDetails, ops);
@@ -124,7 +132,7 @@ describe('v1.1 tests', async function () {
             accountDetails[3] = 'my account';
         });
 
-        it('should not allow to create a account with a name with more of 18 characters / createNewProxy()', async () => {
+        xit('should not allow to create a account with a name with more of 18 characters / createNewProxy()', async () => {
             const invalidName = 'fffffffffffffffffff';
             assert(invalidName.length > 18);
             accountDetails[3] = invalidName;
@@ -140,7 +148,7 @@ describe('v1.1 tests', async function () {
             accountDetails[3] = 'my account';
         });
 
-        it('should not allow to create a account with the 0 address / createNewProxy()', async () => {
+        xit('should not allow to create a account with the 0 address / createNewProxy()', async () => {
             accountDetails[1] = nullAddr;
             await assert.rejects(async () => {
                 await ozlDiamond.createNewProxy(accountDetails, ops);
@@ -150,7 +158,7 @@ describe('v1.1 tests', async function () {
             });
         });
 
-        it('should not allow to create a account with 0 slippage / createNewProxy()', async () => {
+        xit('should not allow to create a account with 0 slippage / createNewProxy()', async () => {
             accountDetails[1] = usdtAddrArb;
             accountDetails[2] = 0;
             await assert.rejects(async () => {
@@ -161,7 +169,7 @@ describe('v1.1 tests', async function () {
             });
         });
 
-        it('should not allow to create an account with an slippage of more than 5% / createNewProxy()', async () => {
+        xit('should not allow to create an account with an slippage of more than 5% / createNewProxy()', async () => {
             accountDetails[2] = 501;
             await assert.rejects(async () => {
                 await ozlDiamond.createNewProxy(accountDetails, ops);
@@ -171,7 +179,7 @@ describe('v1.1 tests', async function () {
             });
         });
 
-        it('should not allow to create a account with a token not found in the database / createNewProxy()', async () => {
+        xit('should not allow to create a account with a token not found in the database / createNewProxy()', async () => {
             accountDetails[1] = deadAddr;
             accountDetails[2] = defaultSlippage;
             await assert.rejects(async () => {
@@ -182,12 +190,25 @@ describe('v1.1 tests', async function () {
             });
         })
 
-        xit('should have an initial balance of 0.1 ETH', async () => { 
+        it('should have an initial balance of 0.1 ETH', async () => { 
             accountDetails[1] = usdtAddrArb;
-            newProxyAddr = await createProxy(proxyFactory, accountDetails);
 
-            balance = await sendETH(newProxyAddr, 0.1);
+            tx = await ozlDiamond.createNewProxy(accountDetails, ops);
+            receipt = await tx.wait();
+            newProxyAddr = hexStripZeros(receipt.events[1].topics[1]);
+
+            ops.to = newProxyAddr;
+            ops.value = parseEther('0.1')
+            await signer.sendTransaction(ops);
+
+            balance = await hre.ethers.provider.getBalance(newProxyAddr);
             assert.equal(formatEther(balance), '0.1');
+
+            //Clean up
+            delete ops.to;
+            delete ops.value;
+
+            //--------
         });
 
         

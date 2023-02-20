@@ -40,6 +40,8 @@ contract ozAccountL2 is Initializable, Proxy {
 
     //--------
 
+    receive() external payable override {}
+
     function checker() external view returns(bool canExec, bytes memory execPayload) { 
         uint amountToSend = address(this).balance;
         if (amountToSend > 0) canExec = true;

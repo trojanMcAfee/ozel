@@ -75,7 +75,7 @@ const diamondABI = [
     'function getUserByL1Account(address) external view returns(address)',
     'function setAuthorizedCaller(address caller_, bool newStatus_) external',
     'function getFunds() external',
-    'function createNewProxy((address,address,uint16,string)) external returns(address)',
+    'function createNewProxy((address,address,uint16,string)) external',
     'function getAccountsByUser(address) external view returns(address[],string[])'
 ];
 
@@ -124,7 +124,7 @@ const l1Provider = new ethers.providers.JsonRpcProvider(process.env.MAINNET);
 let l1Signer, l2Signer, l1SignerTestnet, l2SignerTestnet;
 let l1ProviderTestnet, l2ProviderTestnet;
 
-let network = 'arbitrum';
+let network = 'mainnet';
 switch(network) {
     case 'goerli':
         pokeMeOpsAddr = '0xc1C6805B857Bef1f412519C4A842522431aFed39'; 

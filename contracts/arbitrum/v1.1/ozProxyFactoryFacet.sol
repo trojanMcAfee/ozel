@@ -14,6 +14,8 @@ contract ozProxyFactoryFacet is ModifiersARB {
 
     address private immutable ops;
 
+    event AccountCreated(address indexed account);
+
     constructor(address ops_) {
         ops = ops_;
     }
@@ -21,7 +23,7 @@ contract ozProxyFactoryFacet is ModifiersARB {
 
     function createNewProxy(
         AccountConfig calldata acc_
-    ) external noReentrancy(0) returns(address) {
+    ) external noReentrancy(0) {
         bytes calldata name = bytes(acc_.name);
         address token = acc_.token;
 
@@ -46,7 +48,9 @@ contract ozProxyFactoryFacet is ModifiersARB {
 
         _multiSave(bytes20(address(newAccount)), acc_, id);
 
-        return address(newAccount);
+        emit AccountCreated(address(newAccount));
+
+        // return address(newAccount);
     }
 
 
