@@ -1,4 +1,3 @@
-const { formatEther } = require('ethers/lib/utils.js');
 const { 
     getArbitrumParams,
     getFakeOZLVars,

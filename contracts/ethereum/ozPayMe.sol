@@ -77,7 +77,7 @@ contract ozPayMe is ozIPayMe, ReentrancyGuard, Initializable {
 
     /// @dev Checks that the new slippage is more than 1 basis point
     modifier checkSlippage(uint newSlippage_) {
-        if (newSlippage_ < 1) revert CantBeZero('slippage');
+        if (newSlippage_ < 1 || newSlippage_ > 500) revert CantBeZero('slippage');
         _;
     }
 
