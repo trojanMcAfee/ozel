@@ -134,6 +134,8 @@ async function activateProxyLikeOps(proxy, taskCreator, isEvil, evilParams) {
         execData = iface.encodeFunctionData('sendToArb', [ethers.FixedNumber.from('0.1')]); 
     }
 
+    // console.log('execData: ', execData);
+
     const tx = await ops.connect(gelatoSigner).exec(0, ETH, taskCreator, false, false, resolverHash, proxy, execData);
     const receipt = await tx.wait();
     // console.log('g: ', Number(receipt.gasUsed));
