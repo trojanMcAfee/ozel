@@ -2,13 +2,15 @@
 pragma solidity 0.8.14;
 
 
+import '@rari-capital/solmate/src/utils/ReentrancyGuard.sol';
+import "@openzeppelin/contracts/utils/Address.sol";
 import '../../interfaces/ethereum/IOps.sol';
 import '../ozAccountL2.sol';
 import '../AppStorage.sol';
 import '../../Errors.sol';
 
 
-contract ozProxyFactoryFacet {
+contract ozProxyFactoryFacet is ReentrancyGuard {
 
     AppStorage s;
 
@@ -29,7 +31,7 @@ contract ozProxyFactoryFacet {
         if (name.length > 18) revert NameTooLong();
         if (acc_.user == address(0) || token == address(0)) revert CantBeZero('address');
         if (acc_.slippage < 1 || acc_.slippage > 500) revert CantBeZero('slippage');
-        if (!s.tokenDatabase[Token]) revert TokenNotInDatabase(token);
+        if (!s.tokenDatabase[token]) revert TokenNotInDatabase(token);
 
         ozAccountL2 newAccount = new ozAccountL2();
 
@@ -40,8 +42,7 @@ contract ozProxyFactoryFacet {
             'initialize(bytes)',
             accData
         );
-        (bool success, ) = address(newAccount).call(createData);
-        require(success);
+        Address.functionCall(address(newAccount), createData);
 
         bytes32 id = _startTask(address(newAccount));
 
@@ -72,13 +73,13 @@ contract ozProxyFactoryFacet {
         bytes32 acc_user = bytes32(bytes.concat(account_, bytes12(bytes20(user))));
         bytes memory task_name = bytes.concat(taskId_, bytes32(bytes(acc_.name)));
 
-        if (userToData[user].accounts.length == 0) {
-            AccData storage data = userToData[user];
+        if (s.userToData[user].accounts.length == 0) {
+            AccData storage data = s.userToData[user];
             data.accounts.push(address(account_));
             data.acc_userToTask_name[acc_user] = task_name;
         } else {
-            userToData[user].accounts.push(address(account_));
-            userToData[user].acc_userToTask_name[acc_user] = task_name;
+            s.userToData[user].accounts.push(address(account_));
+            s.userToData[user].acc_userToTask_name[acc_user] = task_name;
         }
     }
 

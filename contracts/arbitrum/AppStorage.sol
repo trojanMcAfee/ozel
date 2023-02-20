@@ -82,6 +82,8 @@ struct AppStorage {
     /*///////////////////////////////////////////////////////////////
                             v1.1 Upgrade
     //////////////////////////////////////////////////////////////*/
+
+    mapping(address => AccData) userToData;
 }
 
 /// @dev Reference for oz20Facet storage
@@ -106,6 +108,12 @@ struct AccountConfig {
     address token;
     uint16 slippage; 
     string name;
+}
+
+
+struct AccData {
+    address[] accounts;
+    mapping(bytes32 => bytes) acc_userToTask_name;
 }
 
 

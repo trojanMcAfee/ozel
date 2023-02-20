@@ -1,6 +1,5 @@
 /* global ethers */
 
-const { opsL2 } = require('./state-vars.js');
 
 const FacetCutAction = {
     Add: 0,
@@ -392,4 +391,5 @@ const FacetCutAction = {
   exports.deploy = deploy
   exports.inFacets = inFacets
   exports.upgrade = upgrade
+  exports.getSelectors = getSelectors;
   
