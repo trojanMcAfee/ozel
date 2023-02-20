@@ -5,7 +5,7 @@ pragma solidity 0.8.14;
 import '@rari-capital/solmate/src/utils/ReentrancyGuard.sol';
 import "@openzeppelin/contracts/utils/Address.sol";
 import '../../interfaces/ethereum/IOps.sol';
-import '../ozAccountL2.sol';
+import './ozAccountL2.sol';
 import '../AppStorage.sol';
 import '../../Errors.sol';
 

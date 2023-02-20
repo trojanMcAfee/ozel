@@ -134,7 +134,7 @@ async function fixSlippageMainnet() {
 
 }
 
-fixSlippageMainnet();
+fixSlippageMainnet(); //check it's on mainnet on hardhat.config and check state-vars.js
 
 
 

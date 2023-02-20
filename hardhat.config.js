@@ -17,14 +17,14 @@ module.exports = {
   },
   networks: {
     hardhat: {
-      forking: {
-        url: process.env.MAINNET,
-        blockNumber: 16669921  
-      }
       // forking: {
-      //   url: process.env.ARBITRUM, 
-      //   blockNumber: 62573060,      
+      //   url: process.env.MAINNET,
+      //   blockNumber: 16669921  
       // }
+      forking: {
+        url: process.env.ARBITRUM, 
+        blockNumber: 62573060,      
+      }
     },
     goerli: {
       url: process.env.GOERLI,

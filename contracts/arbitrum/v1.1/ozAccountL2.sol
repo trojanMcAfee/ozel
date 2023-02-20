@@ -4,8 +4,8 @@ pragma solidity 0.8.14;
 
 import "@openzeppelin/contracts/proxy/utils/Initializable.sol";
 import '@openzeppelin/contracts/proxy/Proxy.sol';
-import '../libraries/LibCommon.sol';
-import '../Errors.sol';
+import '../../libraries/LibCommon.sol';
+import '../../Errors.sol';
 
 
 contract ozAccountL2 is Initializable, Proxy {
