@@ -106,40 +106,38 @@ async function fixSlippage() {
 // fixSlippage();
 
 
-async function testUpgrade() {
-    await fixSlippage();
+async function fixSlippageMainnet() {
+    const deployer2 = '0xe738696676571D9b74C81716E4aE797c2440d306';
+    const beaconAddr = '0xB318dE9d697933bF9BF32861916A338B3e7AbD5a';
+    const emitterAddr = '0xd986Ac35f3aD549794DBc70F33084F746b58b534';
+    const ozMiddlewareAddr = '0x3164a03cDbbf607Db19a366416113f7f74341B56';
+    const beacon = await hre.ethers.getContractAt('ozUpgradeableBeacon', beaconAddr);
 
-    const ozERC1967proxyAddr = '0x44e2e47039616b8E69dC153add52C415f22Fab2b';
-    const factory = await hre.ethers.getContractAt('ProxyFactory', ozERC1967proxyAddr);
-    const [ signer ] = await hre.ethers.getSigners();
-    const signerAddr = await signer.getAddress();
-    const storageBeaconAddr = '0x53A64483Ad7Ca5169F26A8f796B710aCAdEb8f0C';
-    const storageBeacon = await hre.ethers.getContractAt('StorageBeacon', storageBeaconAddr);
-
-    accountDetails = [
-        signerAddr,
-        usdtAddrArb,
-        defaultSlippage,
-        'test'
+    const constrArgs = [
+        pokeMeOpsAddr,
+        gelatoAddr,
+        emitterAddr,
+        ozMiddlewareAddr
     ];
 
-    let tx = await factory.createNewProxy(accountDetails, ops);
-    let receipt = await tx.wait();
-    console.log('Account created in: ', receipt.transactionHash);
+    const [ newPaymeAddr ] = await deployContract('ozPayMe', constrArgs);
 
-    const [ proxies ] = await storageBeacon.getAccountsByUser(signerAddr);
-    const account = proxies[0].toString(); 
-    await sendETH(account, 0.1);
+    let impl = await beacon.implementation();
+    console.log('impl pre: ', impl);
 
-    let balance = await hre.ethers.provider.getBalance(account);
-    console.log('bal pre: ', formatEther(balance));
-    await activateProxyLikeOps(account, ozERC1967proxyAddr); 
-    balance = await hre.ethers.provider.getBalance(account);
-    console.log('bal post: ', formatEther(balance));
+    let tx = await beacon.upgradeTo(newPaymeAddr);
+    const receipt = await tx.wait();
+    console.log('Upgrade done with: ', receipt.transactionHash);
+
+    impl = await beacon.implementation();
+    console.log('impl post: ', impl);
 
 }
 
-// testUpgrade();
+fixSlippageMainnet();
+
+
+
 
 
 async function fixSlippageGoerli() {
