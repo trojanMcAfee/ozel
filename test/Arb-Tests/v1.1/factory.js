@@ -21,7 +21,8 @@ const {
     queryTokenDatabase,
     removeTokenFromDatabase,
     getAccData,
-    sendETHWithAlias
+    sendETHWithAlias,
+    deployFacet
 } = require('../../../scripts/helpers-arb');
 
 const { getSelectors } = require('../../../scripts/myDiamondUtil');
@@ -45,7 +46,7 @@ const {
 
 
 let ozlDiamondAddr, ozlDiamond;
-let factory, ownerAddr, signer, signerAddr;
+let ownerAddr, signer, signerAddr;
 
 describe('v1.1 tests', async function () {
     this.timeout(1000000);
@@ -67,11 +68,14 @@ describe('v1.1 tests', async function () {
 
         //Deploys the ProxyFactory in L2
         const Factory = await hre.ethers.getContractFactory('ozProxyFactoryFacet');
-        factory = await Factory.deploy(pokeMeOpsAddr);
+        const factory = await Factory.deploy(pokeMeOpsAddr);
         await factory.deployed();
         console.log('ozProxyFactoryFacet deployed to: ', factory.address);
 
-        //It adds it to ozDiamond
+        //Deploys ozLoupeFacetV1_1 in L2
+        const newLoupe = await deployFacet('ozLoupeFacetV1_1');
+
+        //Adds them to ozDiamond
         ops.value = parseEther('3');
         ops.to = ownerAddr;
         await signer.sendTransaction(ops);
@@ -84,7 +88,10 @@ describe('v1.1 tests', async function () {
         });
     
         const ownerSigner = await hre.ethers.provider.getSigner(ownerAddr);
-        const facetCut = [[ factory.address, 0, getSelectors(factory) ]];
+        const facetCut = [
+            [ factory.address, 0, getSelectors(factory) ],
+            [ newLoupe.address, 0, getSelectors(newLoupe) ]
+        ];
         await ozlDiamond.connect(ownerSigner).diamondCut(facetCut, nullAddr, '0x');
 
         await hre.network.provider.request({
@@ -97,12 +104,14 @@ describe('v1.1 tests', async function () {
     describe('ozProxyFactoryFacet', async () => {
         it('should create a account successfully / createNewProxy()', async () => {
             await ozlDiamond.createNewProxy(accountDetails, ops);
-            // ([ proxies, names ] = await storageBeacon.getAccountsByUser(signerAddr));
+            ([ proxies, names ] = await ozlDiamond.getAccountsByUser(signerAddr));
 
-            // newProxyAddr = proxies[0].toString(); 
-            // const name = names[0].toString();
-            // assert.equal(newProxyAddr.length, 42);
-            // assert(name.length > 0);
+            newProxyAddr = proxies[0].toString(); 
+            const name = names[0].toString();
+            console.log('acc: ', newProxyAddr);
+            console.log('name: ', name);
+            assert.equal(newProxyAddr.length, 42);
+            assert(name.length > 0);
         });
 
         

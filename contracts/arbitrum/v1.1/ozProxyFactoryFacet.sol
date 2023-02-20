@@ -12,8 +12,6 @@ import '../../Errors.sol';
 
 contract ozProxyFactoryFacet is ModifiersARB {
 
-    // AppStorage s;
-
     address private immutable ops;
 
     constructor(address ops_) {
