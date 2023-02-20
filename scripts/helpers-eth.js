@@ -104,26 +104,16 @@ function getEventParam(receipt) {
 
 
 async function activateProxyLikeOps(proxy, taskCreator, isEvil, evilParams) { 
-    console.log(1);
     await hre.network.provider.request({
         method: "hardhat_impersonateAccount",
         params: [pokeMeOpsAddr],
     });
 
-    console.log(2);
-
     const opsSigner = await hre.ethers.provider.getSigner(pokeMeOpsAddr);
-    console.log(3);
     let iface = new ethers.utils.Interface(['function checker()']);
-    console.log(4);
     const resolverData = iface.encodeFunctionData('checker');
-    console.log(5);
     const ops = await hre.ethers.getContractAt('IOps', pokeMeOpsAddr);
-    console.log(6);
-    console.log('resolverData: ', resolverData);
-    console.log('proxy: ', proxy);
     const resolverHash = await ops.connect(opsSigner).getResolverHash(proxy, resolverData);
-    console.log(7);
 
     await hre.network.provider.request({
         method: "hardhat_stopImpersonatingAccount",
@@ -143,8 +133,6 @@ async function activateProxyLikeOps(proxy, taskCreator, isEvil, evilParams) {
     } else {
         execData = iface.encodeFunctionData('sendToArb', [ethers.FixedNumber.from('0.1')]); 
     }
-
-    console.log('execData: ', execData);
 
     const tx = await ops.connect(gelatoSigner).exec(0, ETH, taskCreator, false, false, resolverHash, proxy, execData);
     const receipt = await tx.wait();

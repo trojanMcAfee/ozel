@@ -71,7 +71,7 @@ async function fixSlippage() {
     console.log('impl pre: ', impl);
     //--------
 
-    constrArgs = [
+    const constrArgs = [
         pokeMeOpsAddr,
         gelatoAddr,
         emitterAddr,
@@ -139,4 +139,34 @@ async function testUpgrade() {
 
 }
 
-testUpgrade();
+// testUpgrade();
+
+
+async function fixSlippageGoerli() {
+    const beaconAddr = '0x6A5d86a06a3ba16ee6314E225478d5679559075a';
+    const beacon = await hre.ethers.getContractAt('ozUpgradeableBeacon', beaconAddr);
+    const newOwner = '0xe7858016db2548359ef3a8212AcD5b08D9BAe8d8';
+    const emitterAddr = '0x3b5f3a90fb6179Ae2471497cb83f3bF8F866aaaD';
+    const ozMiddlewareAddr = '0x938Dc5298D505B06B5Ba542e461c665923eD0519';
+
+    const constrArgs = [
+        pokeMeOpsAddr,
+        gelatoAddr,
+        emitterAddr,
+        ozMiddlewareAddr
+    ];
+
+    console.log('deploying...');
+    const [ newPaymeAddr ] = await deployContract('ozPayMe', constrArgs);
+    let impl = await beacon.implementation();
+    console.log('impl old: ', impl);
+
+    let tx = await beacon.upgradeTo(newPaymeAddr);
+    let receipt = await tx.wait();
+    console.log('Beacon upgraded: ', receipt.transactionHash);
+    impl = await beacon.implementation();
+    console.log('impl new: ', impl);
+
+}
+
+fixSlippageGoerli();
