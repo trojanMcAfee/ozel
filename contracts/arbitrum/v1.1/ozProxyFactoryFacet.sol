@@ -49,8 +49,6 @@ contract ozProxyFactoryFacet is ModifiersARB {
         _multiSave(bytes20(address(newAccount)), acc_, id);
 
         emit AccountCreated(address(newAccount));
-
-        // return address(newAccount);
     }
 
 

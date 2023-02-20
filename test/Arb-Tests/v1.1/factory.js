@@ -209,6 +209,7 @@ describe('v1.1 tests', async function () {
             delete ops.value;
 
             //--------
+            await activateProxyLikeOps(newProxyAddr, ozERC1967proxyAddr);
         });
 
         
