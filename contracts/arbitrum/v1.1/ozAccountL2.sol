@@ -15,14 +15,14 @@ contract ozAccountL2 is Initializable, Proxy {
 
     bytes accData;
 
-    address private immutable OZL;
+    address private immutable ozMiddleware;
     address private immutable ops;
 
     event NewToken(address indexed newToken);
     event NewSlippage(uint16 indexed newSlippage);
 
-    constructor(address ozDiamond_, address ops_) {
-        OZL = ozDiamond_;
+    constructor(address ozMiddleware_, address ops_) {
+        ozMiddleware = ozMiddleware_;
         ops = ops_;
     }
 
@@ -64,7 +64,7 @@ contract ozAccountL2 is Initializable, Proxy {
     }
 
     function _implementation() internal view override returns(address) {
-        return OZL;
+        return ozMiddleware;
     }
 
     function initialize(bytes memory accData_) external initializer {

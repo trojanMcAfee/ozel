@@ -14,11 +14,13 @@ import 'hardhat/console.sol';
 contract ozProxyFactoryFacet is ModifiersARB {
 
     address private immutable ops;
+    address private immutable ozMiddleware;
 
     event AccountCreated(address indexed account);
 
-    constructor(address ops_) {
+    constructor(address ops_, address ozMiddleware_) {
         ops = ops_;
+        ozMiddleware = ozMiddleware_;
     }
 
 
@@ -36,7 +38,7 @@ contract ozProxyFactoryFacet is ModifiersARB {
 
         // console.log('address(this): ', address(this));
 
-        ozAccountL2 newAccount = new ozAccountL2(address(this), ops);
+        ozAccountL2 newAccount = new ozAccountL2(ozMiddleware, ops);
 
         bytes2 slippage = bytes2(uint16(acc_.slippage));
         bytes memory accData = bytes.concat(bytes20(acc_.user), bytes20(acc_.token), slippage);

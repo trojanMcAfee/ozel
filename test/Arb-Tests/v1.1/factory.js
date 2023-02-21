@@ -142,9 +142,15 @@ describe('v1.1 tests', async function () {
         accData = getAccData(callerAddr, usdtAddrArb, defaultSlippage);
 
         //----------
+        //Deploys ozMiddleware
+        const OzMiddle = await hre.ethers.getContractFactory('ozMiddlewareL2');
+        const ozMiddle = await OzMiddle.deploy(deployedDiamond.address);
+        await ozMiddle.deployed();
+        console.log('ozMiddlewareL2 deployed to: ', ozMiddle.address);
+
         //Deploys the ProxyFactory in L2
         const Factory = await hre.ethers.getContractFactory('ozProxyFactoryFacet');
-        const factory = await Factory.deploy(pokeMeOpsAddr);
+        const factory = await Factory.deploy(pokeMeOpsAddr, ozMiddle.address);
         await factory.deployed();
         console.log('ozProxyFactoryFacet deployed to: ', factory.address);
 
@@ -159,8 +165,8 @@ describe('v1.1 tests', async function () {
         await ozlDiamond.diamondCut(facetCut, nullAddr, '0x');
 
         //Set authorized caller
-        const undoAliasAddrPokeMeL2 = '0xa2e4503f93d5ef84b06993a1975b9d21b962781e';
-        await ozlDiamond.setAuthorizedCaller(undoAliasAddrPokeMeL2, true);
+        const undoAliasAddrOzMiddleL2 = '0x73d974d481ee0a5332c457a4d796187f6ba66eda';
+        await ozlDiamond.setAuthorizedCaller(undoAliasAddrOzMiddleL2, true);
 
     });
 
