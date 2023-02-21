@@ -2,28 +2,36 @@
 pragma solidity 0.8.14;
 
 
+import '@openzeppelin/contracts/proxy/beacon/BeaconProxy.sol';
 import "@openzeppelin/contracts/proxy/utils/Initializable.sol";
-import '@openzeppelin/contracts/proxy/Proxy.sol';
+// import '@openzeppelin/contracts/proxy/Proxy.sol';
 // import '@openzeppelin/contracts/utils/Address.sol';
 import '../../libraries/LibCommon.sol';
 import '../../Errors.sol';
+import 'hardhat/console.sol';
 
 
-contract ozAccountL2 is Initializable, Proxy {
+contract ozAccountProxyL2 is Initializable, BeaconProxy {
 
     using LibCommon for bytes; 
 
     bytes accData;
 
-    address private immutable ozMiddleware;
+    // address private immutable ozMiddleware;
     address private immutable ops;
+    address private immutable beacon;
 
     event NewToken(address indexed newToken);
     event NewSlippage(uint16 indexed newSlippage);
 
-    constructor(address ozMiddleware_, address ops_) {
-        ozMiddleware = ozMiddleware_;
+    constructor(
+        // address ozMiddleware_, 
+        address ops_,
+        address beacon_
+    ) BeaconProxy(beacon_, new bytes(0)) {
+        // ozMiddleware = ozMiddleware_;
         ops = ops_;
+        beacon = beacon_;
     }
 
     //----------
@@ -59,13 +67,11 @@ contract ozAccountL2 is Initializable, Proxy {
             amountToSend,
             address(this)
         );
-
-        // execPayload = abi.encodeWithSignature('exchangeToAccountToken(bytes,uint256,address)', amountToSend); 
     }
 
-    function _implementation() internal view override returns(address) {
-        return ozMiddleware;
-    }
+    // function _implementation() internal view override returns(address) {
+    //     return ozMiddleware;
+    // }
 
     function initialize(bytes memory accData_) external initializer {
         accData = accData_;
@@ -73,34 +79,18 @@ contract ozAccountL2 is Initializable, Proxy {
 
     //-------
 
-    fallback() external payable override {
+    // fallback() external payable override {
+    //     if (msg.sender != ops) revert NotAuthorized(msg.sender);
+    //     (bool success, ) = _implementation().call{value: address(this).balance}(msg.data);
+    //     require(success);
+    // }
+
+    function _delegate(address implementation) internal override {
+        console.log('impl in ozAccount: ', implementation);
         if (msg.sender != ops) revert NotAuthorized(msg.sender);
-        (bool success, ) = _implementation().call{value: address(this).balance}(msg.data);
+        (bool success, ) = implementation.call{value: address(this).balance}(msg.data);
         require(success);
     }
-
-    // function _delegate(address implementation) internal override { 
-    //     Address.functionCall{value: address(this).balance}(implementation, msg.data);
-
-    //     // bytes memory data = abi.encodeWithSignature(
-    //     //     'exchangeToAccountToken(bytes,uint256,address)', 
-    //     //     accData,
-    //     //     address(this).balance,
-    //     //     address(this)
-    //     // );
-
-    //     // assembly {
-    //     //     let result := delegatecall(gas(), implementation, add(data, 32), mload(data), 0, 0)
-    //     //     returndatacopy(0, 0, returndatasize())
-    //     //     switch result
-    //     //     case 0 {
-    //     //         revert(0, returndatasize())
-    //     //     }
-    //     //     default {
-    //     //         return(0, returndatasize())
-    //     //     }
-    //     // }
-    // }
 
     //---------
     function changeToken(

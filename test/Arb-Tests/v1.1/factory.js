@@ -148,9 +148,15 @@ describe('v1.1 tests', async function () {
         await ozMiddle.deployed();
         console.log('ozMiddlewareL2 deployed to: ', ozMiddle.address);
 
+        //Deploys ozUpgradeableBeaconL2
+        const Beacon = await hre.ethers.getContractFactory('UpgradeableBeacon');
+        const beacon = await Beacon.deploy(ozMiddle.address);
+        await beacon.deployed();
+        console.log('UpgradeableBeacon in L2 deployed to: ', beacon.address);
+
         //Deploys the ProxyFactory in L2
         const Factory = await hre.ethers.getContractFactory('ozProxyFactoryFacet');
-        const factory = await Factory.deploy(pokeMeOpsAddr, ozMiddle.address);
+        const factory = await Factory.deploy(pokeMeOpsAddr, beacon.address);
         await factory.deployed();
         console.log('ozProxyFactoryFacet deployed to: ', factory.address);
 

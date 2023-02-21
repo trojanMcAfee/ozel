@@ -24,6 +24,7 @@ contract ozMiddlewareL2 {
         uint amountToSend_,
         address account_
     ) external payable {
+        assert(account_ == msg.sender);
         (address user,,) = LibCommon.extract(accData_);
 
         bytes32 acc_user = bytes32(bytes.concat(bytes20(msg.sender), bytes12(bytes20(user))));
@@ -41,7 +42,7 @@ contract ozMiddlewareL2 {
     }
 
 
-    function _verify(address user_, bytes32 acc_user_) private returns(bool) {
+    function _verify(address user_, bytes32 acc_user_) private view returns(bool) {
         bytes memory task_name = ozLoupeFacetV1_1(OZL).getTask_Name(user_, acc_user_);
         return bytes32(task_name) != bytes32(0);
     }

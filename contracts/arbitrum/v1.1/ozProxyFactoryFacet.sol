@@ -5,7 +5,7 @@ pragma solidity 0.8.14;
 import "@openzeppelin/contracts/utils/Address.sol";
 import { ModifiersARB } from '../Modifiers.sol';
 import '../../interfaces/ethereum/IOps.sol';
-import './ozAccountL2.sol';
+import './ozAccountProxyL2.sol';
 import { AccountConfig, AccData } from '../AppStorage.sol';
 import '../../Errors.sol';
 
@@ -14,13 +14,13 @@ import 'hardhat/console.sol';
 contract ozProxyFactoryFacet is ModifiersARB {
 
     address private immutable ops;
-    address private immutable ozMiddleware;
+    address private immutable beacon;
 
     event AccountCreated(address indexed account);
 
-    constructor(address ops_, address ozMiddleware_) {
+    constructor(address ops_, address beacon_) {
         ops = ops_;
-        ozMiddleware = ozMiddleware_;
+        beacon = beacon_;
     }
 
 
@@ -36,9 +36,7 @@ contract ozProxyFactoryFacet is ModifiersARB {
         if (acc_.slippage < 1 || acc_.slippage > 500) revert CantBeZero('slippage');
         if (!s.tokenDatabase[token]) revert TokenNotInDatabase(token);
 
-        // console.log('address(this): ', address(this));
-
-        ozAccountL2 newAccount = new ozAccountL2(ozMiddleware, ops);
+        ozAccountProxyL2 newAccount = new ozAccountProxyL2(beacon, ops);
 
         bytes2 slippage = bytes2(uint16(acc_.slippage));
         bytes memory accData = bytes.concat(bytes20(acc_.user), bytes20(acc_.token), slippage);
@@ -48,11 +46,6 @@ contract ozProxyFactoryFacet is ModifiersARB {
             accData
         );
         Address.functionCall(address(newAccount), createData);
-        //-----
-        // bytes memory idData = abi.encodeWithSignature('_startTask(address)', address(newAccount));
-        // bytes memory returnData = Address.functionCall(address(this), idData);
-        // bytes32 id = abi.decode(returnData, (bytes32));
-        //-----
 
         bytes32 id = _startTask(address(newAccount));
 
