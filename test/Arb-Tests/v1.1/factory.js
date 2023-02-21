@@ -252,7 +252,7 @@ describe('v1.1 tests', async function () {
             tx = await ozlDiamond.createNewProxy(accountDetails, ops);
             receipt = await tx.wait();
             newProxyAddr = hexStripZeros(receipt.events[1].topics[1]);
-            console.log('account: ', newProxyAddr);
+            console.log('account in test.js: ', newProxyAddr);
 
             ops.to = newProxyAddr;
             ops.value = parseEther('0.1')

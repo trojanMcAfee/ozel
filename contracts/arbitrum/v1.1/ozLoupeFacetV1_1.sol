@@ -41,6 +41,11 @@ contract ozLoupeFacetV1_1 {
         return task_name;
     }
 
+    function getBytesAccData(address user_) external returns(AccData memory) {
+        return s.userToData[user_];
+    }
+
+
 
     
 }

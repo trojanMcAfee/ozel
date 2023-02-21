@@ -4,6 +4,7 @@ pragma solidity 0.8.14;
 
 import "@openzeppelin/contracts/proxy/utils/Initializable.sol";
 import '@openzeppelin/contracts/proxy/Proxy.sol';
+// import '@openzeppelin/contracts/utils/Address.sol';
 import '../../libraries/LibCommon.sol';
 import '../../Errors.sol';
 
@@ -15,12 +16,14 @@ contract ozAccountL2 is Initializable, Proxy {
     bytes accData;
 
     address private immutable OZL;
+    address private immutable ops;
 
     event NewToken(address indexed newToken);
     event NewSlippage(uint16 indexed newSlippage);
 
-    constructor(address ozDiamond_) {
+    constructor(address ozDiamond_, address ops_) {
         OZL = ozDiamond_;
+        ops = ops_;
     }
 
     //----------
@@ -70,28 +73,34 @@ contract ozAccountL2 is Initializable, Proxy {
 
     //-------
 
-    function _delegate(address implementation) internal override { 
-        Address.functionCall(implementation, msg.data);
-
-        // bytes memory data = abi.encodeWithSignature(
-        //     'exchangeToAccountToken(bytes,uint256,address)', 
-        //     accData,
-        //     address(this).balance,
-        //     address(this)
-        // );
-
-        // assembly {
-        //     let result := delegatecall(gas(), implementation, add(data, 32), mload(data), 0, 0)
-        //     returndatacopy(0, 0, returndatasize())
-        //     switch result
-        //     case 0 {
-        //         revert(0, returndatasize())
-        //     }
-        //     default {
-        //         return(0, returndatasize())
-        //     }
-        // }
+    fallback() external payable override {
+        if (msg.sender != ops) revert NotAuthorized(msg.sender);
+        (bool success, ) = _implementation().call{value: address(this).balance}(msg.data);
+        require(success);
     }
+
+    // function _delegate(address implementation) internal override { 
+    //     Address.functionCall{value: address(this).balance}(implementation, msg.data);
+
+    //     // bytes memory data = abi.encodeWithSignature(
+    //     //     'exchangeToAccountToken(bytes,uint256,address)', 
+    //     //     accData,
+    //     //     address(this).balance,
+    //     //     address(this)
+    //     // );
+
+    //     // assembly {
+    //     //     let result := delegatecall(gas(), implementation, add(data, 32), mload(data), 0, 0)
+    //     //     returndatacopy(0, 0, returndatasize())
+    //     //     switch result
+    //     //     case 0 {
+    //     //         revert(0, returndatasize())
+    //     //     }
+    //     //     default {
+    //     //         return(0, returndatasize())
+    //     //     }
+    //     // }
+    // }
 
     //---------
     function changeToken(

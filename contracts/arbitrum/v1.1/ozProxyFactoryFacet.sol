@@ -36,7 +36,7 @@ contract ozProxyFactoryFacet is ModifiersARB {
 
         // console.log('address(this): ', address(this));
 
-        ozAccountL2 newAccount = new ozAccountL2(address(this));
+        ozAccountL2 newAccount = new ozAccountL2(address(this), ops);
 
         bytes2 slippage = bytes2(uint16(acc_.slippage));
         bytes memory accData = bytes.concat(bytes20(acc_.user), bytes20(acc_.token), slippage);
@@ -67,7 +67,7 @@ contract ozProxyFactoryFacet is ModifiersARB {
         console.log('address(this): ', address(this));
         
         id = IOps(ops).createTaskNoPrepayment( 
-            address(this), //account_
+            account_, //account_
             bytes4(abi.encodeWithSignature('exchangeToAccountToken(bytes,uint256,address)')),
             account_,
             abi.encodeWithSignature('checker()'),

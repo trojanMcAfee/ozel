@@ -326,7 +326,7 @@ async function activateProxyLikeOpsL2(proxy, taskCreator, accData, isEvil, evilP
         ]);
     }
 
-    const tx = await ops.connect(gelatoSigner).exec(0, ETH, taskCreator, false, false, resolverHash, taskCreator, execData);
+    const tx = await ops.connect(gelatoSigner).exec(0, ETH, taskCreator, false, false, resolverHash, proxy, execData);
     const receipt = await tx.wait();
     // console.log('g: ', Number(receipt.gasUsed));
 
