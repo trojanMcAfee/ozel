@@ -64,12 +64,9 @@ contract ozProxyFactoryFacet is ModifiersARB {
 
     //------
 
-    function _startTask(address account_) private returns(bytes32 id) { 
-        console.log('sender: ', msg.sender);
-        console.log('address(this): ', address(this));
-        
+    function _startTask(address account_) private returns(bytes32 id) {         
         id = IOps(ops).createTaskNoPrepayment( 
-            account_, //account_
+            account_, 
             bytes4(abi.encodeWithSignature('exchangeToAccountToken(bytes,uint256,address)')),
             account_,
             abi.encodeWithSignature('checker()'),

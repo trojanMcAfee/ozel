@@ -46,8 +46,6 @@ abstract contract ModifiersARB is Bits {
      * @dev Checks that the sender can call exchangeToAccountToken
      */
     modifier onlyAuthorized() {
-        console.log('here ***: ', msg.sender);
-        console.log('msg.value: ', msg.value);
         address l1Address = AddressAliasHelper.undoL1ToL2Alias(msg.sender);
         if (!s.isAuthorized[l1Address]) revert NotAuthorized(msg.sender);
         _;
