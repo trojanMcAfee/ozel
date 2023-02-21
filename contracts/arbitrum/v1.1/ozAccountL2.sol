@@ -14,10 +14,14 @@ contract ozAccountL2 is Initializable, Proxy {
 
     bytes accData;
 
-    address private constant OZL = 0x7D1f13Dd05E6b0673DC3D0BFa14d40A74Cfa3EF2;
+    address private immutable OZL;
 
     event NewToken(address indexed newToken);
     event NewSlippage(uint16 indexed newSlippage);
+
+    constructor(address ozDiamond_) {
+        OZL = ozDiamond_;
+    }
 
     //----------
 
@@ -45,10 +49,18 @@ contract ozAccountL2 is Initializable, Proxy {
     function checker() external view returns(bool canExec, bytes memory execPayload) { 
         uint amountToSend = address(this).balance;
         if (amountToSend > 0) canExec = true;
-        execPayload = abi.encodeWithSignature('exchangeToAccountToken(bytes,uint256,address)', amountToSend); 
+
+        execPayload = abi.encodeWithSignature(
+            'exchangeToAccountToken(bytes,uint256,address)', 
+            accData,
+            amountToSend,
+            address(this)
+        );
+
+        // execPayload = abi.encodeWithSignature('exchangeToAccountToken(bytes,uint256,address)', amountToSend); 
     }
 
-    function _implementation() internal pure override returns(address) {
+    function _implementation() internal view override returns(address) {
         return OZL;
     }
 
@@ -59,25 +71,26 @@ contract ozAccountL2 is Initializable, Proxy {
     //-------
 
     function _delegate(address implementation) internal override { 
+        Address.functionCall(implementation, msg.data);
 
-        bytes memory data = abi.encodeWithSignature(
-            'exchangeToAccountToken(bytes,uint256,address)', 
-            accData,
-            address(this).balance,
-            address(this)
-        );
+        // bytes memory data = abi.encodeWithSignature(
+        //     'exchangeToAccountToken(bytes,uint256,address)', 
+        //     accData,
+        //     address(this).balance,
+        //     address(this)
+        // );
 
-        assembly {
-            let result := delegatecall(gas(), implementation, add(data, 32), mload(data), 0, 0)
-            returndatacopy(0, 0, returndatasize())
-            switch result
-            case 0 {
-                revert(0, returndatasize())
-            }
-            default {
-                return(0, returndatasize())
-            }
-        }
+        // assembly {
+        //     let result := delegatecall(gas(), implementation, add(data, 32), mload(data), 0, 0)
+        //     returndatacopy(0, 0, returndatasize())
+        //     switch result
+        //     case 0 {
+        //         revert(0, returndatasize())
+        //     }
+        //     default {
+        //         return(0, returndatasize())
+        //     }
+        // }
     }
 
     //---------

@@ -24,7 +24,8 @@ const {
     removeTokenFromDatabase,
     getAccData,
     sendETHWithAlias,
-    deployFacet
+    deployFacet,
+    activateProxyLikeOpsL2
 } = require('../../../scripts/helpers-arb');
 
 const { getSelectors } = require('../../../scripts/myDiamondUtil');
@@ -50,12 +51,84 @@ const {
 
 let ozlDiamondAddr, ozlDiamond, newProxyAddr;
 let ownerAddr, signer, signerAddr;
-let tx, receipt, balance;
+let tx, receipt, balance, accData;
 
 describe('v1.1 tests', async function () {
     this.timeout(1000000);
 
+    // before(async () => {
+        // ([ signer ] = await hre.ethers.getSigners());
+        // signerAddr = await signer.getAddress();
+
+        // accountDetails = [
+        //     signerAddr,
+        //     usdtAddrArb,
+        //     defaultSlippage,
+        //     'test'
+        // ];
+
+    //     ownerAddr = '0xe738696676571D9b74C81716E4aE797c2440d306';
+    //     ozlDiamondAddr = '0x7D1f13Dd05E6b0673DC3D0BFa14d40A74Cfa3EF2';
+    //     ozlFacet = '0x3164a03cDbbf607Db19a366416113f7f74341B56';
+    //     ozlDiamond = await hre.ethers.getContractAt(diamondABI, ozlDiamondAddr);
+
+    //     //Deploys the ProxyFactory in L2
+    //     const Factory = await hre.ethers.getContractFactory('ozProxyFactoryFacet');
+    //     const factory = await Factory.deploy(pokeMeOpsAddr);
+    //     await factory.deployed();
+    //     console.log('ozProxyFactoryFacet deployed to: ', factory.address);
+
+    //     //Deploys ozLoupeFacetV1_1 in L2
+    //     const newLoupe = await deployFacet('ozLoupeFacetV1_1');
+
+    //     //Adds them to ozDiamond
+    //     ops.value = parseEther('3');
+    //     ops.to = ownerAddr;
+    //     await signer.sendTransaction(ops);
+    //     delete ops.value;
+    //     delete ops.to;
+
+    //     await hre.network.provider.request({
+    //         method: "hardhat_impersonateAccount",
+    //         params: [ownerAddr],
+    //     });
+    
+    //     const ownerSigner = await hre.ethers.provider.getSigner(ownerAddr);
+    //     const facetCut = [
+    //         [ factory.address, 0, getSelectors(factory) ],
+    //         [ newLoupe.address, 0, getSelectors(newLoupe) ]
+    //     ];
+    //     await ozlDiamond.connect(ownerSigner).diamondCut(facetCut, nullAddr, '0x');
+
+    //     await hre.network.provider.request({
+    //         method: "hardhat_stopImpersonatingAccount",
+    //         params: [ownerAddr],
+    //     });
+
+    //     getVarsForHelpers(ozlDiamond, ozlFacet);
+
+    // });
+
     before(async () => {
+        const deployedVars = await deploy();
+        ({
+            deployedDiamond, 
+            WETH,
+            USDT,
+            WBTC,
+            USDC,
+            MIM,
+            FRAX,
+            crvTri,
+            callerAddr, 
+            caller2Addr,
+            ozlFacet,
+            yvCrvTri
+        } = deployedVars);
+    
+        getVarsForHelpers(deployedDiamond, ozlFacet);
+        ozlDiamond = await hre.ethers.getContractAt(diamondABI, deployedDiamond.address);
+
         ([ signer ] = await hre.ethers.getSigners());
         signerAddr = await signer.getAddress();
 
@@ -66,11 +139,9 @@ describe('v1.1 tests', async function () {
             'test'
         ];
 
-        ownerAddr = '0xe738696676571D9b74C81716E4aE797c2440d306';
-        ozlDiamondAddr = '0x7D1f13Dd05E6b0673DC3D0BFa14d40A74Cfa3EF2';
-        ozlFacet = '0x3164a03cDbbf607Db19a366416113f7f74341B56';
-        ozlDiamond = await hre.ethers.getContractAt(diamondABI, ozlDiamondAddr);
+        accData = getAccData(callerAddr, usdtAddrArb, defaultSlippage);
 
+        //----------
         //Deploys the ProxyFactory in L2
         const Factory = await hre.ethers.getContractFactory('ozProxyFactoryFacet');
         const factory = await Factory.deploy(pokeMeOpsAddr);
@@ -81,30 +152,15 @@ describe('v1.1 tests', async function () {
         const newLoupe = await deployFacet('ozLoupeFacetV1_1');
 
         //Adds them to ozDiamond
-        ops.value = parseEther('3');
-        ops.to = ownerAddr;
-        await signer.sendTransaction(ops);
-        delete ops.value;
-        delete ops.to;
-
-        await hre.network.provider.request({
-            method: "hardhat_impersonateAccount",
-            params: [ownerAddr],
-        });
-    
-        const ownerSigner = await hre.ethers.provider.getSigner(ownerAddr);
         const facetCut = [
             [ factory.address, 0, getSelectors(factory) ],
             [ newLoupe.address, 0, getSelectors(newLoupe) ]
         ];
-        await ozlDiamond.connect(ownerSigner).diamondCut(facetCut, nullAddr, '0x');
+        await ozlDiamond.diamondCut(facetCut, nullAddr, '0x');
 
-        await hre.network.provider.request({
-            method: "hardhat_stopImpersonatingAccount",
-            params: [ownerAddr],
-        });
-
-        getVarsForHelpers(ozlDiamond, ozlFacet);
+        //Set authorized caller
+        const undoAliasAddrPokeMeL2 = '0xa2e4503f93d5ef84b06993a1975b9d21b962781e';
+        await ozlDiamond.setAuthorizedCaller(undoAliasAddrPokeMeL2, true);
 
     });
 
@@ -196,6 +252,7 @@ describe('v1.1 tests', async function () {
             tx = await ozlDiamond.createNewProxy(accountDetails, ops);
             receipt = await tx.wait();
             newProxyAddr = hexStripZeros(receipt.events[1].topics[1]);
+            console.log('account: ', newProxyAddr);
 
             ops.to = newProxyAddr;
             ops.value = parseEther('0.1')
@@ -209,7 +266,10 @@ describe('v1.1 tests', async function () {
             delete ops.value;
 
             //--------
-            await activateProxyLikeOps(newProxyAddr, ozERC1967proxyAddr);
+            await activateProxyLikeOpsL2(newProxyAddr, ozlDiamond.address, accData);
+
+            balance = await hre.ethers.provider.getBalance(newProxyAddr);
+            assert.equal(formatEther(balance), 0);
         });
 
         

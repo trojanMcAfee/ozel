@@ -1,5 +1,7 @@
 const myDiamondUtil = require('./myDiamondUtil.js');
 const assert = require('assert');
+const { ethers } = require('hardhat');
+
 const { 
     defaultAbiCoder: abiCoder, 
     formatEther, 
@@ -37,7 +39,9 @@ const {
     ops,
     opsL2,
     tokensDatabaseL1,
-    deadAddr
+    deadAddr,
+    pokeMeOpsAddr,
+    gelatoAddr
 } = require('./state-vars.js');
 
 
@@ -284,6 +288,58 @@ async function sendETHWithAlias(accountDetails, j, ops, ozlDiamond) {
 }
 
 
+async function activateProxyLikeOpsL2(proxy, taskCreator, accData, isEvil, evilParams) {
+    await hre.network.provider.request({
+        method: "hardhat_impersonateAccount",
+        params: [pokeMeOpsAddr],
+    });
+
+    const opsSigner = await hre.ethers.provider.getSigner(pokeMeOpsAddr);
+    let iface = new ethers.utils.Interface(['function checker()']);
+    const resolverData = iface.encodeFunctionData('checker');
+    const ops = await hre.ethers.getContractAt('IOps', pokeMeOpsAddr);
+    const resolverHash = await ops.connect(opsSigner).getResolverHash(proxy, resolverData);
+
+    await hre.network.provider.request({
+        method: "hardhat_stopImpersonatingAccount",
+        params: [pokeMeOpsAddr],
+    });
+
+    await hre.network.provider.request({
+        method: "hardhat_impersonateAccount",
+        params: [gelatoAddr],
+    });
+
+    const gelatoSigner = await hre.ethers.provider.getSigner(gelatoAddr); 
+    iface = new ethers.utils.Interface([`function exchangeToAccountToken(bytes,uint256,address)`]); 
+    // iface = new ethers.utils.Interface([`function sendToArb(${isEvil ? '(address,address,uint256,string),uint256,uint256,address)' : 'uint256)'}`]); 
+    let execData;
+    if (isEvil) {
+        execData = iface.encodeFunctionData('sendToArb', evilParams);
+    } else {
+        // execData = iface.encodeFunctionData('sendToArb', [ethers.FixedNumber.from('0.1')]); 
+        //------
+        execData = iface.encodeFunctionData('exchangeToAccountToken', [
+            accData,
+            ethers.FixedNumber.from('0.1'),
+            proxy
+        ]);
+    }
+
+    const tx = await ops.connect(gelatoSigner).exec(0, ETH, taskCreator, false, false, resolverHash, taskCreator, execData);
+    const receipt = await tx.wait();
+    // console.log('g: ', Number(receipt.gasUsed));
+
+    await hre.network.provider.request({
+        method: "hardhat_stopImpersonatingAccount",
+        params: [gelatoAddr],
+    });
+
+    return receipt;
+
+}
+
+
 
 //Deploys contracts in Arbitrum
 async function deploy(n = 0) { 
@@ -442,5 +498,6 @@ module.exports = {
     queryTokenDatabase,
     removeTokenFromDatabase,
     getAccData,
-    sendETHWithAlias
+    sendETHWithAlias,
+    activateProxyLikeOpsL2
 };

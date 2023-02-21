@@ -9,6 +9,7 @@ import './ozAccountL2.sol';
 import { AccountConfig, AccData } from '../AppStorage.sol';
 import '../../Errors.sol';
 
+import 'hardhat/console.sol';
 
 contract ozProxyFactoryFacet is ModifiersARB {
 
@@ -33,7 +34,9 @@ contract ozProxyFactoryFacet is ModifiersARB {
         if (acc_.slippage < 1 || acc_.slippage > 500) revert CantBeZero('slippage');
         if (!s.tokenDatabase[token]) revert TokenNotInDatabase(token);
 
-        ozAccountL2 newAccount = new ozAccountL2();
+        // console.log('address(this): ', address(this));
+
+        ozAccountL2 newAccount = new ozAccountL2(address(this));
 
         bytes2 slippage = bytes2(uint16(acc_.slippage));
         bytes memory accData = bytes.concat(bytes20(acc_.user), bytes20(acc_.token), slippage);
@@ -43,6 +46,11 @@ contract ozProxyFactoryFacet is ModifiersARB {
             accData
         );
         Address.functionCall(address(newAccount), createData);
+        //-----
+        // bytes memory idData = abi.encodeWithSignature('_startTask(address)', address(newAccount));
+        // bytes memory returnData = Address.functionCall(address(this), idData);
+        // bytes32 id = abi.decode(returnData, (bytes32));
+        //-----
 
         bytes32 id = _startTask(address(newAccount));
 
@@ -55,8 +63,11 @@ contract ozProxyFactoryFacet is ModifiersARB {
     //------
 
     function _startTask(address account_) private returns(bytes32 id) { 
+        console.log('sender: ', msg.sender);
+        console.log('address(this): ', address(this));
+        
         id = IOps(ops).createTaskNoPrepayment( 
-            account_,
+            address(this), //account_
             bytes4(abi.encodeWithSignature('exchangeToAccountToken(bytes,uint256,address)')),
             account_,
             abi.encodeWithSignature('checker()'),
@@ -82,8 +93,5 @@ contract ozProxyFactoryFacet is ModifiersARB {
             s.userToData[user].acc_userToTask_name[acc_user] = task_name;
         }
     }
-
-
-
 
 }
