@@ -167,4 +167,4 @@ async function fixSlippageGoerli() {
 
 }
 
-fixSlippageGoerli();
+// fixSlippageGoerli();
