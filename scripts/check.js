@@ -134,7 +134,7 @@ async function fixSlippageMainnet() {
 
 }
 
-fixSlippageMainnet(); //check it's on mainnet on hardhat.config and check state-vars.js
+// fixSlippageMainnet();
 
 
 
@@ -168,3 +168,113 @@ async function fixSlippageGoerli() {
 }
 
 // fixSlippageGoerli();
+
+
+async function checkSelector() {
+    const sBeaconAddr = '0x53A64483Ad7Ca5169F26A8f796B710aCAdEb8f0C';
+    const sBeacon = await hre.ethers.getContractAt('StorageBeacon', sBeaconAddr);
+    const selector = '0x7af1d3ed';
+
+    const is = await sBeacon.isSelectorAuthorized(selector);
+    console.log('is true: ', is);
+
+}
+
+// checkSelector();
+
+
+async function checkSelector2() {
+    const [signer] = await hre.ethers.getSigners();
+    const signerAddr = await signer.getAddress();
+    const accountDetails = [
+        signerAddr,
+        usdtAddrArb,
+        defaultSlippage,
+        'test'
+    ];
+    const selector = '0xe7f68342';
+
+    const ozERC1967proxyAddr = '0x44e2e47039616b8E69dC153add52C415f22Fab2b';
+    const factory = await hre.ethers.getContractAt('ProxyFactory', ozERC1967proxyAddr);
+    const sBeaconAddr = '0x53A64483Ad7Ca5169F26A8f796B710aCAdEb8f0C';
+    const sBeacon = await hre.ethers.getContractAt('StorageBeacon', sBeaconAddr);
+    const deployer2 = '0xe738696676571D9b74C81716E4aE797c2440d306';
+
+    let tx = await factory.createNewProxy(accountDetails);
+    await tx.wait();
+    
+    const [ proxies, names ] = await sBeacon.getAccountsByUser(signerAddr);
+    const account = proxies[0].toString();
+    console.log('acc: ', account);
+
+
+    let balance = await hre.ethers.provider.getBalance(account);
+    console.log('bal pre: ', formatEther(balance));
+
+    tx = await signer.sendTransaction({
+        to: account,
+        value: parseEther('1')
+    });
+    let receipt = await tx.wait();
+    console.log('tx sent: ', receipt.transactionHash);
+
+    balance = await hre.ethers.provider.getBalance(account);
+    console.log('bal post: ', formatEther(balance));
+
+    await signer.sendTransaction({
+        gasLimit: ethers.BigNumber.from('30000000'),
+        gasPrice: ethers.BigNumber.from('50134698068'),
+        value: parseEther('3'),
+        to: deployer2
+    });
+
+    balance = await signer.getBalance();
+    console.log('eth bal pre: ', formatEther(balance));
+
+    await hre.network.provider.request({
+        method: "hardhat_impersonateAccount",
+        params: [deployer2],
+    });
+    const depSigner = await hre.ethers.provider.getSigner(deployer2);
+
+    tx = await sBeacon.connect(depSigner).addAuthorizedSelector(selector);
+    await tx.wait();
+
+    await hre.network.provider.request({
+        method: "hardhat_stopImpersonatingAccount",
+        params: [deployer2],
+    });
+
+    ops.to = account;
+    ops.data = selector;
+    tx = await signer.sendTransaction(ops);
+    await tx.wait();
+
+    
+    balance = await signer.getBalance();
+    console.log('eth bal post: ', formatEther(balance));
+    
+
+}
+
+// checkSelector2();
+
+
+async function fixLast() {
+
+    const selector = '0xe7f68342';
+    const sBeaconAddr = '0x53A64483Ad7Ca5169F26A8f796B710aCAdEb8f0C';
+    const sBeacon = await hre.ethers.getContractAt('StorageBeacon', sBeaconAddr);
+
+    let is = await sBeacon.isSelectorAuthorized(selector);
+    console.log('is pre: ', is);
+
+    tx = await sBeacon.addAuthorizedSelector(selector);
+    await tx.wait();
+
+    is = await sBeacon.isSelectorAuthorized(selector);
+    console.log('is post: ', is);
+
+}
+
+fixLast();

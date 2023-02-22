@@ -34,4 +34,9 @@ contract ozLoupeFacetV1_1 {
     function getTask_Name(address user_, bytes32 acc_user_) public view returns(bytes memory) {
         return s.userToData[user_].acc_userToTask_name[acc_user_];
     }
+
+
+    function isSelectorAuthorized(bytes4 selector_) external view returns(bool) {
+        return s.authorizedSelectors[selector_];
+    }
 }

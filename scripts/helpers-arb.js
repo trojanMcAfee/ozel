@@ -41,7 +41,8 @@ const {
     tokensDatabaseL1,
     deadAddr,
     pokeMeOpsAddr,
-    gelatoAddr
+    gelatoAddr,
+    accountL2ABI
 } = require('./state-vars.js');
 
 
@@ -288,6 +289,25 @@ async function sendETHWithAlias(accountDetails, j, ops, ozlDiamond) {
 }
 
 
+function getInitSelectors() {
+    const iface = new ethers.utils.Interface(accountL2ABI);
+    const selectors = [];
+    const methods = [
+        'changeToken',
+        'changeSlippage',
+        'getDetails',
+        'changeTokenNSlippage',
+        'withdrawETH_lastResort'
+    ];
+
+    for (let i=0; i < methods.length; i++) {
+        selectors.push(iface.getSighash(methods[i]));
+    }
+    
+    return selectors;
+}
+
+
 async function activateProxyLikeOpsL2(proxy, taskCreator, accData, isEvil, evilParams) {
     await hre.network.provider.request({
         method: "hardhat_impersonateAccount",
@@ -499,5 +519,6 @@ module.exports = {
     removeTokenFromDatabase,
     getAccData,
     sendETHWithAlias,
-    activateProxyLikeOpsL2
+    activateProxyLikeOpsL2,
+    getInitSelectors
 };

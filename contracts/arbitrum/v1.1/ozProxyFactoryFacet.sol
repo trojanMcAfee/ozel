@@ -8,6 +8,7 @@ import '../../interfaces/ethereum/IOps.sol';
 import './ozAccountProxyL2.sol';
 import { AccountConfig, AccData } from '../AppStorage.sol';
 import '../../Errors.sol';
+import '../../libraries/LibDiamond.sol';
 
 import 'hardhat/console.sol';
 
@@ -36,7 +37,8 @@ contract ozProxyFactoryFacet is ModifiersARB {
         if (acc_.slippage < 1 || acc_.slippage > 500) revert CantBeZero('slippage');
         if (!s.tokenDatabase[token]) revert TokenNotInDatabase(token);
 
-        ozAccountProxyL2 newAccount = new ozAccountProxyL2(beacon, ops);
+        console.log('address(this) in factory: ', address(this));
+        ozAccountProxyL2 newAccount = new ozAccountProxyL2(beacon, ops, address(this));
 
         bytes2 slippage = bytes2(uint16(acc_.slippage));
         bytes memory accData = bytes.concat(bytes20(acc_.user), bytes20(acc_.token), slippage);
@@ -84,6 +86,11 @@ contract ozProxyFactoryFacet is ModifiersARB {
             s.userToData[user].accounts.push(address(account_));
             s.userToData[user].acc_userToTask_name[acc_user] = task_name;
         }
+    }
+
+    function authorizeSelector(bytes4 selector_, bool status_) external {
+        LibDiamond.enforceIsContractOwner();
+        s.authorizedSelectors[selector_] = status_;
     }
 
 }

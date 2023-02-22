@@ -19,7 +19,7 @@ module.exports = {
     hardhat: {
       // forking: {
       //   url: process.env.MAINNET,
-      //   blockNumber: 16669921 //15823986
+      //   blockNumber: 15823986 //15823986 - 16669921 - 16685999
       // }
       forking: {
         url: process.env.ARBITRUM, 
@@ -44,6 +44,6 @@ module.exports = {
     }
   },
   etherscan: {
-    apiKey: "PKMQZ1HYE2PQSXFS5PEZNVB6F2GIUYHD9A"
+    apiKey: ""
   }
 };

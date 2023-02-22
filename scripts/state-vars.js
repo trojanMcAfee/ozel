@@ -101,6 +101,14 @@ const factoryABI = [
     'function changeOwner(address newOwner_) external'
 ];
 
+const accountL2ABI = [
+    'function changeToken(address) external',
+    'function changeSlippage(uint16) external',
+    'function changeTokenNSlippage(address,uint16) external',
+    'function getDetails() external view',
+    'function withdrawETH_lastResort() external'
+];
+
 const opsL2 = {
     gasLimit: ethers.BigNumber.from('25000000'),
     gasPrice: ethers.BigNumber.from('25134698068') 
@@ -113,7 +121,7 @@ const opsL2_2 = {
 
 const ops = {
     gasLimit: ethers.BigNumber.from('30000000'),
-    gasPrice: ethers.BigNumber.from('10134698068') 
+    gasPrice: ethers.BigNumber.from('50134698068') 
 };
 
 const signerX = new ethers.Wallet(process.env.PK);
@@ -259,7 +267,8 @@ module.exports = {
     l1Provider,
     opsL2,
     opsL2_2,
-    tokensDatabaseL1
+    tokensDatabaseL1,
+    accountL2ABI
 };
 
 

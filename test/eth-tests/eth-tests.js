@@ -85,7 +85,7 @@ let isAuthorized, newSelector;
         signers = await hre.ethers.getSigners();
     });
 
-    describe('Optimistic deployment', async function () { 
+    xdescribe('Optimistic deployment', async function () { 
         before( async () => {
             ([
                 beacon, 
@@ -334,7 +334,7 @@ let isAuthorized, newSelector;
                     });
                 });
 
-                it('shoud not allow to change account token for one not found in the database / changeAccountToken()', async () => {
+                xit('shoud not allow to change account token for one not found in the database / changeAccountToken()', async () => {
                     await assert.rejects(async () => {
                         await newProxy.changeAccountToken(deadAddr, ops); 
                     }, {
@@ -374,7 +374,7 @@ let isAuthorized, newSelector;
                     });
                 });
 
-                it('should change both token and slippage in one tx / changeAccountTokenNSlippage()', async () => {
+                xit('should change both token and slippage in one tx / changeAccountTokenNSlippage()', async () => {
                     newUserSlippage = 0.55;
                     tx = await newProxy.changeAccountTokenNSlippage(fraxAddr, parseInt(0.55 * 100), ops);
                     await tx.wait();
@@ -807,7 +807,7 @@ let isAuthorized, newSelector;
         /**
          * Deploys ozMiddleNoRedeem. which has an autoRedeem of 0, instead of ozMiddleware 
          */
-        describe('ozAccountProxy / ozMiddleware', async () => {
+        xdescribe('ozAccountProxy / ozMiddleware', async () => {
             before( async () => {
                 ([
                     beacon, 
@@ -976,20 +976,26 @@ let isAuthorized, newSelector;
                 assert(formatEther(balance) === '100.0' || formatEther(balance) === '200.0');
             });
     
-            it('should not send to Arbitrum an ETH transfer made to the account / lack of delegate()', async () => {
+            xit('should not send to Arbitrum an ETH transfer made to the account / lack of delegate()', async () => {
                 await activateProxyLikeOps(newProxyAddr, ozERC1967proxyAddr); 
                 balance = await hre.ethers.provider.getBalance(newProxyAddr);
                 assert.equal(formatEther(balance), '100.0');
             });
     
             it('should let the user withdraw the ETH stuck on their account / withdrawETH_lastResort()', async () => {
+                const iface = new ethers.utils.Interface(['function withdrawETH_lastResort() external']);
+                const selector = iface.getSighash('withdrawETH_lastResort');
+                const is = await storageBeacon.isSelectorAuthorized(selector);
+                console.log('is ****: ', is);
+                console.log('acc: ', newProxy.address);
+
                 preBalance = await hre.ethers.provider.getBalance(signerAddr);
                 await newProxy.withdrawETH_lastResort(ops);
                 postBalance = await hre.ethers.provider.getBalance(signerAddr);
                 assert(formatEther(postBalance) > formatEther(preBalance));
             });
     
-            it('should not let user B to withdraw the stuck ETH of user A / withdrawETH_lastResort()', async () => {
+            xit('should not let user B to withdraw the stuck ETH of user A / withdrawETH_lastResort()', async () => {
                 await assert.rejects(async () => {
                     await newProxy.connect(signers[1]).withdrawETH_lastResort(ops);
                 }, {

@@ -25,7 +25,8 @@ const {
     getAccData,
     sendETHWithAlias,
     deployFacet,
-    activateProxyLikeOpsL2
+    activateProxyLikeOpsL2,
+    getInitSelectors
 } = require('../../../scripts/helpers-arb');
 
 const { getSelectors } = require('../../../scripts/myDiamondUtil');
@@ -45,7 +46,8 @@ const {
     tokensDatabaseL1,
     usdcAddr,
     crv2PoolAddr,
-    pokeMeOpsAddr
+    pokeMeOpsAddr,
+    accountL2ABI
 } = require('../../../scripts/state-vars');
 
 
@@ -163,12 +165,20 @@ describe('v1.1 tests', async function () {
         //Deploys ozLoupeFacetV1_1 in L2
         const newLoupe = await deployFacet('ozLoupeFacetV1_1');
 
-        //Adds them to ozDiamond
+        //Deploys the init upgrade
+        const Init = await hre.ethers.getContractFactory('InitUpgradeV1_1');
+        const init = await Init.deploy();
+        await init.deployed();
+        console.log('InitUpgradeV1_1 deployed to: ', init.address);
+
+        const functionCall = init.interface.encodeFunctionData('init', [getInitSelectors()]);
+
+        //Adds factory and loupeV1.1 to ozDiamond
         const facetCut = [
             [ factory.address, 0, getSelectors(factory) ],
             [ newLoupe.address, 0, getSelectors(newLoupe) ]
         ];
-        await ozlDiamond.diamondCut(facetCut, nullAddr, '0x');
+        await ozlDiamond.diamondCut(facetCut, init.address, functionCall);
 
         //Set authorized caller
         const undoAliasAddrOzMiddleL2 = '0x73d974d481ee0a5332c457a4d796187f6ba66eda';
