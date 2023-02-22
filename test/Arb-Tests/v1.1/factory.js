@@ -152,7 +152,7 @@ describe('v1.1 tests', async function () {
         const Beacon = await hre.ethers.getContractFactory('UpgradeableBeacon');
         const beacon = await Beacon.deploy(ozMiddle.address);
         await beacon.deployed();
-        console.log('UpgradeableBeacon in L2 deployed to: ', beacon.address);
+        console.log('ozUpgradeableBeacon in L2 deployed to: ', beacon.address);
 
         //Deploys the ProxyFactory in L2
         const Factory = await hre.ethers.getContractFactory('ozProxyFactoryFacet');
@@ -263,7 +263,7 @@ describe('v1.1 tests', async function () {
 
             tx = await ozlDiamond.createNewProxy(accountDetails, ops);
             receipt = await tx.wait();
-            newProxyAddr = hexStripZeros(receipt.events[1].topics[1]);
+            newProxyAddr = hexStripZeros(receipt.events[0].address);
 
             ops.to = newProxyAddr;
             ops.value = parseEther('0.1')

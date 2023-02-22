@@ -26,8 +26,8 @@ contract ozAccountProxyL2 is Initializable, BeaconProxy {
 
     constructor(
         // address ozMiddleware_, 
-        address ops_,
-        address beacon_
+        address beacon_,
+        address ops_
     ) BeaconProxy(beacon_, new bytes(0)) {
         // ozMiddleware = ozMiddleware_;
         ops = ops_;
@@ -69,9 +69,7 @@ contract ozAccountProxyL2 is Initializable, BeaconProxy {
         );
     }
 
-    // function _implementation() internal view override returns(address) {
-    //     return ozMiddleware;
-    // }
+   
 
     function initialize(bytes memory accData_) external initializer {
         accData = accData_;
@@ -79,14 +77,7 @@ contract ozAccountProxyL2 is Initializable, BeaconProxy {
 
     //-------
 
-    // fallback() external payable override {
-    //     if (msg.sender != ops) revert NotAuthorized(msg.sender);
-    //     (bool success, ) = _implementation().call{value: address(this).balance}(msg.data);
-    //     require(success);
-    // }
-
     function _delegate(address implementation) internal override {
-        console.log('impl in ozAccount: ', implementation);
         if (msg.sender != ops) revert NotAuthorized(msg.sender);
         (bool success, ) = implementation.call{value: address(this).balance}(msg.data);
         require(success);
