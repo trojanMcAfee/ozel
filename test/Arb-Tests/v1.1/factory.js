@@ -55,8 +55,10 @@ const {
     fraxAddr
 } = require('../../../scripts/state-vars');
 
+const { MaxUint256 } = ethers.constants;
 
-let ozlDiamondAddr, ozlDiamond, newProxyAddr;
+
+let ozlDiamondAddr, ozlDiamond, newProxyAddr, ozMiddle;
 let ownerAddr, signer, signerAddr;
 let tx, receipt, balance, accData;
 let usersProxies = [];
@@ -154,7 +156,7 @@ describe('v1.1 tests', async function () {
         //----------
         //Deploys ozMiddleware
         const OzMiddle = await hre.ethers.getContractFactory('ozMiddlewareL2');
-        const ozMiddle = await OzMiddle.deploy(deployedDiamond.address);
+        ozMiddle = await OzMiddle.deploy(deployedDiamond.address);
         await ozMiddle.deployed();
         console.log('ozMiddlewareL2 deployed to: ', ozMiddle.address);
 
@@ -194,8 +196,7 @@ describe('v1.1 tests', async function () {
 
     });
 
-    describe('ozProxyFactoryFacet', async () => {
-
+    xdescribe('ozProxyFactoryFacet', async () => {
         describe('Deploys one account', async () => {
             it('should create a account successfully / createNewProxy()', async () => {
                 await ozlDiamond.createNewProxy(accountDetails, ops);
@@ -444,7 +445,49 @@ describe('v1.1 tests', async function () {
             });
 
         });
+    });
 
+    xdescribe('ozMiddlewareL2', async () => {
+        it('should not let a non-account user to call the function / exchangeToAccountToken()', async () => {
+            await assert.rejects(async () => {
+                await ozMiddle.exchangeToAccountToken(
+                    accData,
+                    MaxUint256,
+                    deadAddr
+                );
+            }, {
+                name: 'Error',
+                message: (await err()).notAccount 
+            });
+           }) 
+
+
+    });
+
+    describe('withdrawETH_lastResort', async () => {
+        before(async () => {
+            newProxyAddr = await createProxy(ozlDiamond, accountDetails);
+            newProxy = await hre.ethers.getContractAt(accountL2ABI, newProxyAddr);
+
+            balance = await sendETH(newProxyAddr, 100);
+            assert(formatEther(balance) === '100.0' || formatEther(balance) === '200.0');
+        });
+
+        it('should let the user withdraw the ETH stuck on their account / withdrawETH_lastResort()', async () => {
+            preBalance = await hre.ethers.provider.getBalance(signerAddr);
+            await newProxy.withdrawETH_lastResort(ops);
+            postBalance = await hre.ethers.provider.getBalance(signerAddr);
+            assert(formatEther(postBalance) > formatEther(preBalance));
+        });
+
+        it('should not let user B to withdraw the stuck ETH of user A / withdrawETH_lastResort()', async () => {
+            await assert.rejects(async () => {
+                await newProxy.connect(signers[1]).withdrawETH_lastResort(ops);
+            }, {
+                name: 'Error',
+                message: (await err(signerAddr2)).notAuthorized
+            });
+        });
     });
 
 

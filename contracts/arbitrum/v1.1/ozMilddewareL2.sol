@@ -55,17 +55,18 @@ contract ozMiddlewareL2 is Initializable {
         uint amountToSend_,
         address account_
     ) external payable {
-        assert(account_ == msg.sender);
         (address user,,) = LibCommon.extract(accData_);
 
         bytes32 acc_user = bytes32(bytes.concat(bytes20(msg.sender), bytes12(bytes20(user))));
         if (!_verify(user, acc_user)) revert NotAccount();
 
         (address[] memory accounts,) = ozLoupeFacetV1_1(OZL).getAccountsByUser(user);
-        if (accounts.length == 0) revert UserNotInDatabase(user);
+        assert(accounts.length > 0);
 
         if (amountToSend_ <= 0) revert CantBeZero('amountToSend');
         if (!(msg.value > 0)) revert CantBeZero('contract balance');
+
+        assert(account_ == msg.sender);
 
         (bool success,) = OZL.call{value: msg.value}(msg.data);
         require(success);

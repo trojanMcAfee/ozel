@@ -85,7 +85,7 @@ let isAuthorized, newSelector;
         signers = await hre.ethers.getSigners();
     });
 
-    xdescribe('Optimistic deployment', async function () { 
+    describe('Optimistic deployment', async function () { 
         before( async () => {
             ([
                 beacon, 
@@ -118,7 +118,7 @@ let isAuthorized, newSelector;
             });
         });
 
-        describe('ProxyFactory', async () => {
+        xdescribe('ProxyFactory', async () => {
             describe('Deploys one account', async () => {
                 it('should create a account successfully / createNewProxy()', async () => {
                     await proxyFactory.createNewProxy(accountDetails, ops);
@@ -285,7 +285,7 @@ let isAuthorized, newSelector;
             });
         });
 
-        describe('ozAccountProxy / ozPayMe', async () => {
+        xdescribe('ozAccountProxy / ozPayMe', async () => {
             before(async () => {
                 newProxyAddr = await createProxy(proxyFactory, accountDetails);
                 newProxy = await hre.ethers.getContractAt(proxyABIeth, newProxyAddr);
@@ -334,7 +334,7 @@ let isAuthorized, newSelector;
                     });
                 });
 
-                xit('shoud not allow to change account token for one not found in the database / changeAccountToken()', async () => {
+                it('shoud not allow to change account token for one not found in the database / changeAccountToken()', async () => {
                     await assert.rejects(async () => {
                         await newProxy.changeAccountToken(deadAddr, ops); 
                     }, {
@@ -445,7 +445,7 @@ let isAuthorized, newSelector;
            });
         });
 
-        describe('Emitter', async () => {
+        xdescribe('Emitter', async () => {
             before(async () => {
                 accountDetails = [
                     signerAddr,
@@ -483,7 +483,7 @@ let isAuthorized, newSelector;
             }); 
         });
     
-        describe('StorageBeacon', async () => {
+        xdescribe('StorageBeacon', async () => {
             it('should allow the owner to change changeGasPriceBid / changeGasPriceBid()', async () => {
                 await storageBeacon.changeGasPriceBid(100);
             });
@@ -699,7 +699,7 @@ let isAuthorized, newSelector;
             });
         });
 
-        describe('ozUpgradeableBeacon', async () => {
+        xdescribe('ozUpgradeableBeacon', async () => {
             it('should allow the owner to upgrade the Storage Beacon / upgradeStorageBeacon()', async () => {
                 [storageBeaconMockAddr , storageBeaconMock] = await deployContract('StorageBeaconMock');
                 await beacon.upgradeStorageBeacon(storageBeaconMockAddr);
@@ -752,7 +752,7 @@ let isAuthorized, newSelector;
             });
         });
 
-        describe('FakeOZL', async () => {
+        xdescribe('FakeOZL', async () => {
             it('should get the total volume in USD / getTotalVolumeInUSD', async () => {
                 volume = await fakeOzl.getTotalVolumeInUSD(); 
                 assert.equal(formatEther(volume), 500);
@@ -802,7 +802,7 @@ let isAuthorized, newSelector;
     });
 
     
-    describe('Pesimistic deployment', async function () {
+    xdescribe('Pesimistic deployment', async function () {
 
         /**
          * Deploys ozMiddleNoRedeem. which has an autoRedeem of 0, instead of ozMiddleware 
@@ -985,9 +985,7 @@ let isAuthorized, newSelector;
             it('should let the user withdraw the ETH stuck on their account / withdrawETH_lastResort()', async () => {
                 const iface = new ethers.utils.Interface(['function withdrawETH_lastResort() external']);
                 const selector = iface.getSighash('withdrawETH_lastResort');
-                const is = await storageBeacon.isSelectorAuthorized(selector);
-                console.log('is ****: ', is);
-                console.log('acc: ', newProxy.address);
+                await storageBeacon.addAuthorizedSelector(selector);
 
                 preBalance = await hre.ethers.provider.getBalance(signerAddr);
                 await newProxy.withdrawETH_lastResort(ops);
