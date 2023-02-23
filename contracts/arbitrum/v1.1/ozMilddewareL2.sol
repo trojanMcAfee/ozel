@@ -7,6 +7,7 @@ import '../../Errors.sol';
 // import '../ozDiamond.sol';
 import './ozLoupeFacetV1_1.sol';
 import { AccData } from '../AppStorage.sol';
+import '../facets/ozLoupeFacet.sol';
 
 import 'hardhat/console.sol';
 
@@ -34,7 +35,7 @@ contract ozMiddlewareL2 {
 
     modifier checkToken(address newToken_) {
         if (newToken_ == address(0)) revert CantBeZero('address');
-        // if (!storageBeacon.queryTokenDatabase(newToken_)) revert TokenNotInDatabase(newToken_); //do this with calling to address(this).queryToken...
+        if (!ozLoupeFacet(OZL).queryTokenDatabase(newToken_)) revert TokenNotInDatabase(newToken_);
         _;
     }
 

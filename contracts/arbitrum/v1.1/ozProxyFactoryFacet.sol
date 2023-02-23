@@ -37,7 +37,6 @@ contract ozProxyFactoryFacet is ModifiersARB {
         if (acc_.slippage < 1 || acc_.slippage > 500) revert CantBeZero('slippage');
         if (!s.tokenDatabase[token]) revert TokenNotInDatabase(token);
 
-        console.log('address(this) in factory: ', address(this));
         ozAccountProxyL2 newAccount = new ozAccountProxyL2(beacon, ops, address(this));
 
         bytes2 slippage = bytes2(uint16(acc_.slippage));
