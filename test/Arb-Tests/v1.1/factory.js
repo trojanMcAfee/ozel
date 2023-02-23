@@ -30,7 +30,11 @@ const {
 } = require('../../../scripts/helpers-arb');
 
 const { getSelectors } = require('../../../scripts/myDiamondUtil');
-const { createProxy, sendETH } = require('../../../scripts/helpers-eth');
+const { 
+    createProxy, 
+    sendETH,
+    activateOzBeaconProxy
+} = require('../../../scripts/helpers-eth');
 
 const { 
     usdtAddrArb,
@@ -47,7 +51,8 @@ const {
     usdcAddr,
     crv2PoolAddr,
     pokeMeOpsAddr,
-    accountL2ABI
+    accountL2ABI,
+    fraxAddr
 } = require('../../../scripts/state-vars');
 
 
@@ -55,6 +60,7 @@ let ozlDiamondAddr, ozlDiamond, newProxyAddr;
 let ownerAddr, signer, signerAddr;
 let tx, receipt, balance, accData;
 let usersProxies = [];
+let signers, signerAddr2;
 
 describe('v1.1 tests', async function () {
     this.timeout(1000000);
@@ -132,8 +138,9 @@ describe('v1.1 tests', async function () {
         getVarsForHelpers(deployedDiamond, ozlFacet);
         ozlDiamond = await hre.ethers.getContractAt(diamondABI, deployedDiamond.address);
 
+        signers = await hre.ethers.getSigners();
         ([ signer ] = await hre.ethers.getSigners());
-        signerAddr = await signer.getAddress();
+        ([signerAddr, signerAddr2 ] = await hre.ethers.provider.listAccounts());
 
         accountDetails = [
             signerAddr,
@@ -190,7 +197,7 @@ describe('v1.1 tests', async function () {
     describe('ozProxyFactoryFacet', async () => {
 
         describe('Deploys one account', async () => {
-            xit('should create a account successfully / createNewProxy()', async () => {
+            it('should create a account successfully / createNewProxy()', async () => {
                 await ozlDiamond.createNewProxy(accountDetails, ops);
                 ([ proxies, names ] = await ozlDiamond.getAccountsByUser(signerAddr));
 
@@ -200,7 +207,7 @@ describe('v1.1 tests', async function () {
                 assert(name.length > 0);
             });
 
-            xit('should not allow to create a account witn an empty account name / createNewProxy()', async () => {
+            it('should not allow to create a account witn an empty account name / createNewProxy()', async () => {
                 accountDetails[3] = '';
                 await assert.rejects(async () => {
                     await ozlDiamond.createNewProxy(accountDetails, ops);
@@ -213,7 +220,7 @@ describe('v1.1 tests', async function () {
                 accountDetails[3] = 'my account';
             });
 
-            xit('should not allow to create a account with a name with more of 18 characters / createNewProxy()', async () => {
+            it('should not allow to create a account with a name with more of 18 characters / createNewProxy()', async () => {
                 const invalidName = 'fffffffffffffffffff';
                 assert(invalidName.length > 18);
                 accountDetails[3] = invalidName;
@@ -229,7 +236,7 @@ describe('v1.1 tests', async function () {
                 accountDetails[3] = 'my account';
             });
 
-            xit('should not allow to create a account with the 0 address / createNewProxy()', async () => {
+            it('should not allow to create a account with the 0 address / createNewProxy()', async () => {
                 accountDetails[1] = nullAddr;
                 await assert.rejects(async () => {
                     await ozlDiamond.createNewProxy(accountDetails, ops);
@@ -239,7 +246,7 @@ describe('v1.1 tests', async function () {
                 });
             });
 
-            xit('should not allow to create a account with 0 slippage / createNewProxy()', async () => {
+            it('should not allow to create a account with 0 slippage / createNewProxy()', async () => {
                 accountDetails[1] = usdtAddrArb;
                 accountDetails[2] = 0;
                 await assert.rejects(async () => {
@@ -250,7 +257,7 @@ describe('v1.1 tests', async function () {
                 });
             });
 
-            xit('should not allow to create an account with an slippage of more than 5% / createNewProxy()', async () => {
+            it('should not allow to create an account with an slippage of more than 5% / createNewProxy()', async () => {
                 accountDetails[2] = 501;
                 await assert.rejects(async () => {
                     await ozlDiamond.createNewProxy(accountDetails, ops);
@@ -260,7 +267,7 @@ describe('v1.1 tests', async function () {
                 });
             });
 
-            xit('should not allow to create a account with a token not found in the database / createNewProxy()', async () => {
+            it('should not allow to create a account with a token not found in the database / createNewProxy()', async () => {
                 accountDetails[1] = deadAddr;
                 accountDetails[2] = defaultSlippage;
                 await assert.rejects(async () => {
@@ -307,7 +314,7 @@ describe('v1.1 tests', async function () {
             });
         });
 
-        xdescribe('Deploys 5 accounts', async () => { 
+        describe('Deploys 5 accounts', async () => { 
             before(async () => {
                 accountDetails[1] = usdcAddr;
                 for (let i=0; i < 5; i++) {
@@ -357,6 +364,83 @@ describe('v1.1 tests', async function () {
                     name: 'Error',
                     message: (await err()).alreadyInitialized 
                 });
+            });
+
+            it('should not allow when an entity that is not Ops makes the call / _delegate()', async () => {
+                await assert.rejects(async () => {
+                    await activateOzBeaconProxy(newProxyAddr);
+                }, {
+                    name: 'Error',
+                    message: (await err(signerAddr)).notAuthorized 
+                });
+            });
+
+            it('should not allow an external user to change account token / changeToken()', async () => {
+                await assert.rejects(async () => {
+                    await newProxy.connect(signers[1]).changeToken(usdcAddr, ops);
+                }, {
+                    name: 'Error',
+                    message: (await err(signerAddr2)).notAuthorized 
+                });
+            });
+
+            it('shoud not allow to change account token for the 0 address / changeToken()', async () => {
+                await assert.rejects(async () => {
+                    await newProxy.changeToken(nullAddr, ops);
+                }, {
+                    name: 'Error',
+                    message: (await err()).zeroAddress
+                });
+            });
+
+            it('shoud not allow to change account token for one not found in the database / changeToken()', async () => {
+                await assert.rejects(async () => {
+                    await newProxy.changeToken(deadAddr, ops); 
+                }, {
+                    name: 'Error',
+                    message: (await err(deadAddr)).tokenNotFound
+                });
+            });
+
+            it('should allow the user to change the slippage with the minimum of 0.01% / changeSlippage()', async () => {
+                newUserSlippage = 0.01; 
+
+                ([ user, token, slippage ] = await newProxy.getDetails());
+                tx = await newProxy.changeSlippage(parseInt(newUserSlippage * 100), ops);
+                await tx.wait();
+
+                ([ user, token, slippage ] = await newProxy.getDetails());
+
+                assert.equal(Number(slippage) / 100, newUserSlippage); 
+            });
+
+            it('should not allow to change the slippage to 0 / changeSlippage()', async () => {
+                newSlippage = 0;
+                await assert.rejects(async () => {
+                    await newProxy.changeSlippage(newSlippage, ops);
+                }, {
+                    name: 'Error',
+                    message: (await err(newSlippage)).zeroSlippage
+                });
+            });
+
+            it('should not allow an external user to change the slippage / changeSlippage()', async () => {
+                await assert.rejects(async () => {
+                    await newProxy.connect(signers[1]).changeSlippage(200, ops);
+                }, {
+                    name: 'Error',
+                    message: (await err(signerAddr2)).notAuthorized
+                });
+            });
+
+            it('should change both token and slippage in one tx / changeTokenNSlippage()', async () => {
+                newUserSlippage = 0.55;
+                tx = await newProxy.changeTokenNSlippage(fraxAddr, parseInt(0.55 * 100), ops);
+                await tx.wait();
+
+                const [ user, token, slippage ] = await newProxy.getDetails();
+                assert.equal(token, fraxAddr);
+                assert.equal(Number(slippage) / 100, newUserSlippage); 
             });
 
         });

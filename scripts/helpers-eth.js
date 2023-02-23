@@ -24,7 +24,8 @@ const {
     opsL2,
     mimAddr,
     wbtcAddr,
-    network
+    network,
+    deadAddr
 } = require('./state-vars.js');
 
 
@@ -94,8 +95,14 @@ async function getArbitrumParams(manualRedeem = false) {
 
 
 async function activateOzBeaconProxy(proxyAddr) {
-    const proxy = await hre.ethers.getContractAt(['function sendToArb(uint256)'], proxyAddr);
-    await proxy.sendToArb(parseEther('0.1'), ops);
+    const abi = [
+        'function sendToArb(uint256)',
+        'function exchangeToAccountToken(bytes,uint256,address)'
+    ];
+    const proxy = await hre.ethers.getContractAt(abi, proxyAddr);
+    network !== 'arbitrum' ? 
+        await proxy.sendToArb(parseEther('0.1'), ops) :
+        await proxy.exchangeToAccountToken('0x', 1, deadAddr, ops);
 }
 
 

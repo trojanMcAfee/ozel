@@ -14,7 +14,6 @@ import './Emitter.sol';
 import '../Errors.sol';
 
 
-import 'hardhat/console.sol';
 /**
  * @title Responsible for sending ETH and calldata to L2
  * @notice Sends the ETH an account just received plus its details to L2 for swapping.
@@ -175,8 +174,6 @@ contract ozPayMe is ozIPayMe, ReentrancyGuard, Initializable {
 
     /// @inheritdoc ozIPayMe
     function withdrawETH_lastResort() external onlyUser { 
-        console.log('here');
-        console.log('address(this): ', address(this));
         (bool success, ) = payable(msg.sender).call{value: address(this).balance}('');
         if (!success) revert CallFailed('ozPayMe: withdrawETH_lastResort failed');
     }

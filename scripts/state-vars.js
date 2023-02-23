@@ -105,7 +105,7 @@ const accountL2ABI = [
     'function changeToken(address) external',
     'function changeSlippage(uint16) external',
     'function changeTokenNSlippage(address,uint16) external',
-    'function getDetails() external view',
+    'function getDetails() external view returns(address,address,uint16)',
     'function withdrawETH_lastResort() external',
     'function initialize(bytes) external'
 ];
