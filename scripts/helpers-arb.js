@@ -297,7 +297,8 @@ function getInitSelectors() {
         'changeSlippage',
         'getDetails',
         'changeTokenNSlippage',
-        'withdrawETH_lastResort'
+        'withdrawETH_lastResort',
+        'initialize'
     ];
 
     for (let i=0; i < methods.length; i++) {

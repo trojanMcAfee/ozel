@@ -8,10 +8,11 @@ import '../../Errors.sol';
 import './ozLoupeFacetV1_1.sol';
 import { AccData } from '../AppStorage.sol';
 import '../facets/ozLoupeFacet.sol';
+import "@openzeppelin/contracts/proxy/utils/Initializable.sol";
 
 import 'hardhat/console.sol';
 
-contract ozMiddlewareL2 {
+contract ozMiddlewareL2 is Initializable {
 
     using LibCommon for bytes;
 
@@ -42,6 +43,10 @@ contract ozMiddlewareL2 {
     modifier checkSlippage(uint newSlippage_) {
         if (newSlippage_ < 1 || newSlippage_ > 500) revert CantBeZero('slippage');
         _;
+    }
+
+    function initialize(bytes memory accData_) external initializer {
+        accData = accData_;
     }
     //----------
 

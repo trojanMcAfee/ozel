@@ -24,6 +24,7 @@ const {
     opsL2,
     mimAddr,
     wbtcAddr,
+    network
 } = require('./state-vars.js');
 
 
@@ -243,9 +244,14 @@ async function sendETH(receiver, amount) {
 async function createProxy(factory, accountDetails) {
     const tx = await factory.createNewProxy(accountDetails, ops);
     const receipt = await tx.wait();
-    return receipt.logs[0].address;
+    return network !== 'arbitrum' ? receipt.logs[0].address : receipt.events[0].address;;
 }
 
+// async function createProxy(factory, accountDetails) {
+//     const tx = await factory.createNewProxy(accountDetails, ops);
+//     const receipt = await tx.wait();
+//     return receipt.logs[0].address;
+// }
 
 async function deploySystem(type, signerAddr) { 
 

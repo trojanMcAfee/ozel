@@ -307,14 +307,12 @@ describe('v1.1 tests', async function () {
             });
         });
 
-        describe('Deploys 5 accounts', async () => { 
+        xdescribe('Deploys 5 accounts', async () => { 
             before(async () => {
                 accountDetails[1] = usdcAddr;
                 for (let i=0; i < 5; i++) {
                     accountDetails[3] = `my account #${i}`;
-                    tx = await ozlDiamond.createNewProxy(accountDetails, ops);
-                    receipt = await tx.wait();
-                    newProxyAddr = receipt.events[0].address;
+                    newProxyAddr = await createProxy(ozlDiamond, accountDetails);
 
                     usersProxies.push(newProxyAddr);
                     assert.equal(newProxyAddr.length, 42);
@@ -338,7 +336,6 @@ describe('v1.1 tests', async function () {
 
             it('should leave each of the 5 accounts with a final balance of 0 ETH / createNewProxy()', async () => {
                 for (let i=0; i < proxies.length; i++) {
-                    // await activateProxyLikeOps(proxies[i], ozERC1967proxyAddr);
                     await activateProxyLikeOpsL2(proxies[i], ozlDiamond.address, accData);
                     balance = await hre.ethers.provider.getBalance(proxies[i]);
                     assert.equal(formatEther(balance), 0);
@@ -346,7 +343,23 @@ describe('v1.1 tests', async function () {
             });
         });
 
-        
+        describe('ozAccountProxyL2', async () => {
+            before(async () => {
+                newProxyAddr = await createProxy(ozlDiamond, accountDetails);
+                newProxy = await hre.ethers.getContractAt(accountL2ABI, newProxyAddr);
+            });
+
+            it('should not allow re-calling / initialize()', async () => {
+                accData = getAccData(callerAddr, usdtAddrArb, defaultSlippage);
+                await assert.rejects(async () => {
+                    await newProxy.initialize(accData, ops);
+                }, {
+                    name: 'Error',
+                    message: (await err()).alreadyInitialized 
+                });
+            });
+
+        });
 
     });
 

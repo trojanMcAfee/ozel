@@ -3,7 +3,7 @@ pragma solidity 0.8.14;
 
 
 import '@openzeppelin/contracts/proxy/beacon/BeaconProxy.sol';
-import "@openzeppelin/contracts/proxy/utils/Initializable.sol";
+// import "@openzeppelin/contracts/proxy/utils/Initializable.sol";
 // import '@openzeppelin/contracts/proxy/Proxy.sol';
 import '@openzeppelin/contracts/utils/Address.sol';
 import '../../libraries/LibCommon.sol';
@@ -13,7 +13,7 @@ import './ozLoupeFacetV1_1.sol';
 import 'hardhat/console.sol';
 
 
-contract ozAccountProxyL2 is Initializable, BeaconProxy {
+contract ozAccountProxyL2 is BeaconProxy {
 
     // using LibCommon for bytes; 
 
@@ -54,9 +54,9 @@ contract ozAccountProxyL2 is Initializable, BeaconProxy {
 
    
 
-    function initialize(bytes memory accData_) external initializer {
-        accData = accData_;
-    }
+    // function initialize(bytes memory accData_) external initializer {
+    //     accData = accData_;
+    // }
 
     //-------
 
