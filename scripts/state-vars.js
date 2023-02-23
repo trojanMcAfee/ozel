@@ -76,7 +76,8 @@ const diamondABI = [
     'function setAuthorizedCaller(address caller_, bool newStatus_) external',
     'function getFunds() external',
     'function createNewProxy((address,address,uint16,string)) external',
-    'function getAccountsByUser(address) external view returns(address[],string[])'
+    'function getAccountsByUser(address) external view returns(address[],string[])',
+    'function authorizeSelector(bytes4, bool) external'
 ];
 
 

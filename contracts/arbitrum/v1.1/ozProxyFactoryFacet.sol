@@ -14,6 +14,8 @@ import 'hardhat/console.sol';
 
 contract ozProxyFactoryFacet is ModifiersARB {
 
+    using Address for address;
+
     address private immutable ops;
     address private immutable beacon;
 
@@ -46,7 +48,7 @@ contract ozProxyFactoryFacet is ModifiersARB {
             'initialize(bytes)',
             accData
         );
-        Address.functionCall(address(newAccount), createData);
+        address(newAccount).functionCall(createData);
 
         bytes32 id = _startTask(address(newAccount));
 
