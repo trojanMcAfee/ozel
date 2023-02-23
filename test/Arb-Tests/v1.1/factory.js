@@ -196,7 +196,7 @@ describe('v1.1 tests', async function () {
 
     });
 
-    xdescribe('ozProxyFactoryFacet', async () => {
+    describe('ozProxyFactoryFacet', async () => {
         describe('Deploys one account', async () => {
             it('should create a account successfully / createNewProxy()', async () => {
                 await ozlDiamond.createNewProxy(accountDetails, ops);
@@ -447,7 +447,7 @@ describe('v1.1 tests', async function () {
         });
     });
 
-    xdescribe('ozMiddlewareL2', async () => {
+    describe('ozMiddlewareL2', async () => {
         it('should not let a non-account user to call the function / exchangeToAccountToken()', async () => {
             await assert.rejects(async () => {
                 await ozMiddle.exchangeToAccountToken(
