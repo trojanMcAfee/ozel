@@ -463,49 +463,49 @@ describe('v1.1 tests', async function () {
         });
     });
 
-    /**
-     * This test is meant to be ran as one.
-     */
-    xdescribe('OZL balance', async () => {
-        before(async () => {
-            accountDetails[0] = signerAddr;
-            newProxyAddr = await createProxy(ozlDiamond, accountDetails);
-        });
+    // /**
+    //  * This test is meant to be ran as one.
+    //  */
+    // xdescribe('OZL balance', async () => {
+    //     before(async () => {
+    //         accountDetails[0] = signerAddr;
+    //         newProxyAddr = await createProxy(ozlDiamond, accountDetails);
+    //     });
 
-        it('should correctly calculate OZL balance for an user when using an L2 Account', async () => {
-            balance = await hre.ethers.provider.getBalance(newProxyAddr);
-            if (Number(balance) === 0) await sendETH(newProxyAddr, 0.1);
+    //     it('should correctly calculate OZL balance for an user when using an L2 Account', async () => {
+    //         balance = await hre.ethers.provider.getBalance(newProxyAddr);
+    //         if (Number(balance) === 0) await sendETH(newProxyAddr, 0.1);
             
-            await activateProxyLikeOpsL2(newProxyAddr, ozlDiamond.address, accData);
-            balance = await hre.ethers.provider.getBalance(newProxyAddr);
-            assert.equal(formatEther(balance), 0);
+    //         await activateProxyLikeOpsL2(newProxyAddr, ozlDiamond.address, accData);
+    //         balance = await hre.ethers.provider.getBalance(newProxyAddr);
+    //         assert.equal(formatEther(balance), 0);
 
-            balance = await ozlDiamond.balanceOf(signerAddr);
-            assert(formatEther(balance) > 99.99 && formatEther(balance) <= 100);
-        });
+    //         balance = await ozlDiamond.balanceOf(signerAddr);
+    //         assert(formatEther(balance) > 99.99 && formatEther(balance) <= 100);
+    //     });
 
-        it('should convert ETH to token (WBTC) and properly calculate OZL balances', async () => {
-            accountDetails[0] = signerAddr2;
-            accountDetails[1] = wbtcAddr;
-            newProxyAddr = await createProxy(ozlDiamond, accountDetails);
-            accData = getAccData(signerAddr2, wbtcAddr, defaultSlippage);
+    //     it('should convert ETH to token (WBTC) and properly calculate OZL balances', async () => {
+    //         accountDetails[0] = signerAddr2;
+    //         accountDetails[1] = wbtcAddr;
+    //         newProxyAddr = await createProxy(ozlDiamond, accountDetails);
+    //         accData = getAccData(signerAddr2, wbtcAddr, defaultSlippage);
 
-            balance = await hre.ethers.provider.getBalance(newProxyAddr);
-            if (Number(balance) === 0) await sendETH(newProxyAddr, 0.1);
-            balance = await hre.ethers.provider.getBalance(newProxyAddr);
-            assert.equal(formatEther(balance), 0.1);
+    //         balance = await hre.ethers.provider.getBalance(newProxyAddr);
+    //         if (Number(balance) === 0) await sendETH(newProxyAddr, 0.1);
+    //         balance = await hre.ethers.provider.getBalance(newProxyAddr);
+    //         assert.equal(formatEther(balance), 0.1);
 
-            await activateProxyLikeOpsL2(newProxyAddr, ozlDiamond.address, accData);
-            balance = await hre.ethers.provider.getBalance(newProxyAddr);
-            assert.equal(formatEther(balance), 0);
+    //         await activateProxyLikeOpsL2(newProxyAddr, ozlDiamond.address, accData);
+    //         balance = await hre.ethers.provider.getBalance(newProxyAddr);
+    //         assert.equal(formatEther(balance), 0);
 
-            assert(formatEther(await WBTC.balanceOf(signerAddr2)) > 0);
+    //         assert(formatEther(await WBTC.balanceOf(signerAddr2)) > 0);
 
-            const balanceUser1 = await ozlDiamond.balanceOf(signerAddr);
-            const balanceUser2 = await ozlDiamond.balanceOf(signerAddr2);
-            assert.equal(formatEther(balanceUser1), 50.0);
-            assert.equal(formatEther(balanceUser2), 50.0);
-        });
-    });
+    //         const balanceUser1 = await ozlDiamond.balanceOf(signerAddr);
+    //         const balanceUser2 = await ozlDiamond.balanceOf(signerAddr2);
+    //         assert.equal(formatEther(balanceUser1), 50.0);
+    //         assert.equal(formatEther(balanceUser2), 50.0);
+    //     });
+    // });
 
 });
