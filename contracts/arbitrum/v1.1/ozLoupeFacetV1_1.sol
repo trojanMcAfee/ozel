@@ -3,6 +3,7 @@ pragma solidity 0.8.14;
 
 
 import '../AppStorage.sol';
+import '../../Errors.sol';
 
 
 contract ozLoupeFacetV1_1 {
@@ -28,6 +29,21 @@ contract ozLoupeFacetV1_1 {
         }
 
         return (accounts, names);
+    }
+
+    function getTaskID(address account_, address owner_) external view returns(bytes32) {
+        AccData storage data = s.userToData[owner_];
+        if (data.accounts.length == 0) revert UserNotInDatabase(owner_);
+
+        bytes32 acc_user = bytes32(bytes.concat(bytes20(account_), bytes12(bytes20(owner_))));
+        bytes memory task_name = getTask_Name(owner_, acc_user);
+        bytes32 taskId;
+        assembly {
+            taskId := mload(add(task_name, 32))
+        }
+
+        if (taskId == bytes32(0)) revert NoTaskId();
+        return taskId;
     }
 
 

@@ -78,7 +78,8 @@ const diamondABI = [
     'function createNewProxy((address,address,uint16,string)) external',
     'function getAccountsByUser(address) external view returns(address[],string[])',
     'function authorizeSelector(bytes4, bool) external',
-    'function facetAddresses() external view returns (address[])'
+    'function facetAddresses() external view returns (address[])',
+    'function getTaskID(address,address) external view returns(bytes32)'
 ];
 
 
