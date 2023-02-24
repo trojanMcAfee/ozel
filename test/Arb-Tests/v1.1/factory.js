@@ -62,7 +62,8 @@ let ozlDiamondAddr, ozlDiamond, newProxyAddr, ozMiddle;
 let ownerAddr, signer, signerAddr;
 let tx, receipt, balance, accData;
 let usersProxies = [];
-let signers, signerAddr2;
+let signers, signerAddr2, beacon;
+let facetCut;
 
 describe('v1.1 tests', async function () {
     this.timeout(1000000);
@@ -162,7 +163,7 @@ describe('v1.1 tests', async function () {
 
         //Deploys ozUpgradeableBeaconL2
         const Beacon = await hre.ethers.getContractFactory('UpgradeableBeacon');
-        const beacon = await Beacon.deploy(ozMiddle.address);
+        beacon = await Beacon.deploy(ozMiddle.address);
         await beacon.deployed();
         console.log('ozUpgradeableBeacon in L2 deployed to: ', beacon.address);
 
@@ -184,7 +185,7 @@ describe('v1.1 tests', async function () {
         const functionCall = init.interface.encodeFunctionData('init', [getInitSelectors()]);
 
         //Adds factory and loupeV1.1 to ozDiamond
-        const facetCut = [
+        facetCut = [
             [ factory.address, 0, getSelectors(factory) ],
             [ newLoupe.address, 0, getSelectors(newLoupe) ]
         ];
@@ -336,6 +337,28 @@ describe('v1.1 tests', async function () {
                     balance = await hre.ethers.provider.getBalance(proxies[i]);
                     assert.equal(formatEther(balance), 0);
                 }
+            });
+        });
+
+        describe('Upgrade the factory', async () => {
+            it('should upgrade the factory', async () => {
+                const NewFactory = await hre.ethers.getContractFactory('ozProxyFactoryFacet');
+                const newFactory = await NewFactory.deploy(pokeMeOpsAddr, beacon.address);
+                await newFactory.deployed();
+                console.log('New ProxyFactoryL2 deployed to: ', newFactory.address);
+
+                facetCut = [ [ newFactory.address, 1, getSelectors(newFactory) ] ];
+                tx = await ozlDiamond.diamondCut(facetCut, nullAddr, '0x');
+                await tx.wait();
+
+                const facets = await ozlDiamond.facetAddresses();
+                for (let i=0; i < facets.length; i++) {
+                    if (facets[i] === newFactory.address) {
+                        assert(true);
+                        return;
+                    }
+                }
+                assert(false);
             });
         });
     });
