@@ -10,7 +10,7 @@ import { AccData } from '../AppStorage.sol';
 import '../facets/ozLoupeFacet.sol';
 import "@openzeppelin/contracts/proxy/utils/Initializable.sol";
 
-import 'hardhat/console.sol';
+// import 'hardhat/console.sol';
 
 contract ozMiddlewareL2 is Initializable {
 
@@ -118,5 +118,4 @@ contract ozMiddlewareL2 is Initializable {
         (bool success, ) = payable(msg.sender).call{value: address(this).balance}('');
         if (!success) revert CallFailed('ozPayMe: withdrawETH_lastResort failed');
     }
-
 }

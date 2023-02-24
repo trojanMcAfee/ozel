@@ -38,7 +38,7 @@ async function deployContract(contractName, constrArgs, signer = null) {
         [ signer1 ] = await hre.ethers.getSigners();
         signer = signer1;
     }
-    
+        
     const Contract = await hre.ethers.getContractFactory(contractName);
 
     switch(contractName) {

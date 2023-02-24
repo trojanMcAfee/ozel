@@ -26,7 +26,8 @@ const {
     sendETHWithAlias,
     deployFacet,
     activateProxyLikeOpsL2,
-    getInitSelectors
+    getInitSelectors,
+    deployV1_1
 } = require('../../../scripts/helpers-arb');
 
 const { getSelectors } = require('../../../scripts/myDiamondUtil');
@@ -71,59 +72,6 @@ let factory, factoryAddr, constrArgs, beaconAddr;
 describe('v1.1 tests', async function () {
     this.timeout(1000000);
 
-    // before(async () => {
-        // ([ signer ] = await hre.ethers.getSigners());
-        // signerAddr = await signer.getAddress();
-
-        // accountDetails = [
-        //     signerAddr,
-        //     usdtAddrArb,
-        //     defaultSlippage,
-        //     'test'
-        // ];
-
-    //     ownerAddr = '0xe738696676571D9b74C81716E4aE797c2440d306';
-    //     ozlDiamondAddr = '0x7D1f13Dd05E6b0673DC3D0BFa14d40A74Cfa3EF2';
-    //     ozlFacet = '0x3164a03cDbbf607Db19a366416113f7f74341B56';
-    //     ozlDiamond = await hre.ethers.getContractAt(diamondABI, ozlDiamondAddr);
-
-    //     //Deploys the ProxyFactory in L2
-    //     const Factory = await hre.ethers.getContractFactory('ozProxyFactoryFacet');
-    //     const factory = await Factory.deploy(pokeMeOpsAddr);
-    //     await factory.deployed();
-    //     console.log('ozProxyFactoryFacet deployed to: ', factory.address);
-
-    //     //Deploys ozLoupeFacetV1_1 in L2
-    //     const newLoupe = await deployFacet('ozLoupeFacetV1_1');
-
-    //     //Adds them to ozDiamond
-    //     ops.value = parseEther('3');
-    //     ops.to = ownerAddr;
-    //     await signer.sendTransaction(ops);
-    //     delete ops.value;
-    //     delete ops.to;
-
-    //     await hre.network.provider.request({
-    //         method: "hardhat_impersonateAccount",
-    //         params: [ownerAddr],
-    //     });
-    
-    //     const ownerSigner = await hre.ethers.provider.getSigner(ownerAddr);
-    //     const facetCut = [
-    //         [ factory.address, 0, getSelectors(factory) ],
-    //         [ newLoupe.address, 0, getSelectors(newLoupe) ]
-    //     ];
-    //     await ozlDiamond.connect(ownerSigner).diamondCut(facetCut, nullAddr, '0x');
-
-    //     await hre.network.provider.request({
-    //         method: "hardhat_stopImpersonatingAccount",
-    //         params: [ownerAddr],
-    //     });
-
-    //     getVarsForHelpers(ozlDiamond, ozlFacet);
-
-    // });
-
     before(async () => {
         const deployedVars = await deploy();
         ({
@@ -158,50 +106,35 @@ describe('v1.1 tests', async function () {
         accData = getAccData(callerAddr, usdtAddrArb, defaultSlippage);
 
         //----------
-        //Deploys ozMiddleware
-        // const OzMiddle = await hre.ethers.getContractFactory('ozMiddlewareL2');
-        // ozMiddle = await OzMiddle.deploy(deployedDiamond.address);
-        // await ozMiddle.deployed();
-        // console.log('ozMiddlewareL2 deployed to: ', ozMiddle.address);
-        ([ ozMiddlewareAddr, ozMiddleware ] = await deployContract('ozMiddlewareL2', [deployedDiamond.address]));
+        ([ ozMiddleware, beacon ] = await deployV1_1(ozlDiamond));
 
-        //Deploys ozUpgradeableBeaconL2
-        // const Beacon = await hre.ethers.getContractFactory('UpgradeableBeacon');
-        // beacon = await Beacon.deploy(ozMiddle.address);
-        // await beacon.deployed();
-        // console.log('ozUpgradeableBeacon in L2 deployed to: ', beacon.address);
-        ([ beaconAddr, beacon ] = await deployContract('UpgradeableBeacon', [ ozMiddlewareAddr ]));
+        // //Deploys ozMiddleware
+        // ([ ozMiddlewareAddr, ozMiddleware ] = await deployContract('ozMiddlewareL2', [deployedDiamond.address]));
 
-        //Deploys the ProxyFactory in L2
-        // const Factory = await hre.ethers.getContractFactory('ozProxyFactoryFacet');
-        // const factory = await Factory.deploy(pokeMeOpsAddr, beacon.address);
-        // await factory.deployed();
-        // console.log('ozProxyFactoryFacet deployed to: ', factory.address);
-        let constrArgs = [pokeMeOpsAddr, beaconAddr];
-        ([ factoryAddr, factory ] = await deployContract('ozProxyFactoryFacet', constrArgs));
+        // //Deploys ozUpgradeableBeaconL2
+        // ([ beaconAddr, beacon ] = await deployContract('UpgradeableBeacon', [ ozMiddlewareAddr ]));
 
-        //Deploys ozLoupeFacetV1_1 in L2
-        const newLoupe = await deployFacet('ozLoupeFacetV1_1');
+        // //Deploys the ProxyFactory in L2
+        // let constrArgs = [pokeMeOpsAddr, beaconAddr];
+        // ([ factoryAddr, factory ] = await deployContract('ozProxyFactoryFacet', constrArgs));
 
-        //Deploys the init upgrade
-        // const Init = await hre.ethers.getContractFactory('InitUpgradeV1_1');
-        // const init = await Init.deploy();
-        // await init.deployed();
-        // console.log('InitUpgradeV1_1 deployed to: ', init.address);
-        const [ innitAddr, init ] = await deployContract('InitUpgradeV1_1');
+        // //Deploys ozLoupeFacetV1_1 in L2
+        // const newLoupe = await deployFacet('ozLoupeFacetV1_1');
 
-        const functionCall = init.interface.encodeFunctionData('init', [getInitSelectors()]);
+        // //Deploys the init upgrade
+        // const [ innitAddr, init ] = await deployContract('InitUpgradeV1_1');
+        // const functionCall = init.interface.encodeFunctionData('init', [getInitSelectors()]);
 
-        //Adds factory and loupeV1.1 to ozDiamond
-        facetCut = [
-            [ factory.address, 0, getSelectors(factory) ],
-            [ newLoupe.address, 0, getSelectors(newLoupe) ]
-        ];
-        await ozlDiamond.diamondCut(facetCut, innitAddr, functionCall);
+        // //Adds factory and loupeV1.1 to ozDiamond
+        // facetCut = [
+        //     [ factory.address, 0, getSelectors(factory) ],
+        //     [ newLoupe.address, 0, getSelectors(newLoupe) ]
+        // ];
+        // await ozlDiamond.diamondCut(facetCut, innitAddr, functionCall);
 
-        //Set authorized caller
-        const undoAliasAddrOzMiddleL2 = '0x73d974d481ee0a5332c457a4d796187f6ba66eda';
-        await ozlDiamond.setAuthorizedCaller(undoAliasAddrOzMiddleL2, true);
+        // //Set authorized caller
+        // const undoAliasAddrOzMiddleL2 = '0x73d974d481ee0a5332c457a4d796187f6ba66eda';
+        // await ozlDiamond.setAuthorizedCaller(undoAliasAddrOzMiddleL2, true);
 
     });
 
@@ -350,7 +283,7 @@ describe('v1.1 tests', async function () {
 
         describe('Upgrade the factory', async () => {
             it('should upgrade the factory', async () => {
-                constrArgs = [pokeMeOpsAddr, beaconAddr];
+                constrArgs = [pokeMeOpsAddr, beacon.address];
                 const [ newFactoryAddr, newFactory ] = await deployContract('ozProxyFactoryFacet', constrArgs);
 
                 facetCut = [ [ newFactoryAddr, 1, getSelectors(newFactory) ] ];

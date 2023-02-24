@@ -45,6 +45,9 @@ const {
     accountL2ABI
 } = require('./state-vars.js');
 
+const { deployContract } = require('./helpers-eth');
+const { getSelectors } = require('./myDiamondUtil');
+
 
 let deployedDiamond;
 let ozlFacet;
@@ -361,6 +364,40 @@ async function activateProxyLikeOpsL2(proxy, taskCreator, accData, isEvil, evilP
 }
 
 
+async function deployV1_1(ozlDiamond) {
+
+    //Deploys ozMiddleware
+    ([ ozMiddlewareAddr, ozMiddleware ] = await deployContract('ozMiddlewareL2', [ozlDiamond.address]));
+
+    //Deploys ozUpgradeableBeaconL2
+    ([ beaconAddr, beacon ] = await deployContract('UpgradeableBeacon', [ ozMiddlewareAddr ]));
+
+    //Deploys the ProxyFactory in L2
+    let constrArgs = [pokeMeOpsAddr, beaconAddr];
+    ([ factoryAddr, factory ] = await deployContract('ozProxyFactoryFacet', constrArgs));
+
+    //Deploys ozLoupeFacetV1_1 in L2
+    const newLoupe = await deployFacet('ozLoupeFacetV1_1');
+
+    //Deploys the init upgrade
+    const [ innitAddr, init ] = await deployContract('InitUpgradeV1_1');
+    const functionCall = init.interface.encodeFunctionData('init', [getInitSelectors()]);
+
+    //Adds factory and loupeV1.1 to ozDiamond
+    facetCut = [
+        [ factory.address, 0, getSelectors(factory) ],
+        [ newLoupe.address, 0, getSelectors(newLoupe) ]
+    ];
+    await ozlDiamond.diamondCut(facetCut, innitAddr, functionCall);
+
+    //Set authorized caller
+    const undoAliasAddrOzMiddleL2 = '0x73d974d481ee0a5332c457a4d796187f6ba66eda';
+    await ozlDiamond.setAuthorizedCaller(undoAliasAddrOzMiddleL2, true);
+
+    return [ ozMiddleware, beacon ];
+}
+ 
+
 
 //Deploys contracts in Arbitrum
 async function deploy(n = 0) { 
@@ -521,5 +558,6 @@ module.exports = {
     getAccData,
     sendETHWithAlias,
     activateProxyLikeOpsL2,
-    getInitSelectors
+    getInitSelectors,
+    deployV1_1
 };
