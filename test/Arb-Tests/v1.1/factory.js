@@ -73,6 +73,9 @@ describe('v1.1 tests', async function () {
     this.timeout(1000000);
 
     before(async () => {
+        /**
+         * Deploys v1
+         */
         const deployedVars = await deploy();
         ({
             deployedDiamond, 
@@ -88,13 +91,23 @@ describe('v1.1 tests', async function () {
             ozlFacet,
             yvCrvTri
         } = deployedVars);
-    
+
         getVarsForHelpers(deployedDiamond, ozlFacet);
         ozlDiamond = await hre.ethers.getContractAt(diamondABI, deployedDiamond.address);
 
+        /**
+         * Deploys V1.1
+         */
+        ([ ozMiddleware, beacon ] = await deployV1_1(ozlDiamond));
+    
+        /**
+         * Rest of configuration
+         */
         signers = await hre.ethers.getSigners();
-        ([ signer ] = await hre.ethers.getSigners());
+        signer = signers[0];
         ([signerAddr, signerAddr2 ] = await hre.ethers.provider.listAccounts());
+
+        accData = getAccData(callerAddr, usdtAddrArb, defaultSlippage);
 
         accountDetails = [
             signerAddr,
@@ -102,40 +115,6 @@ describe('v1.1 tests', async function () {
             defaultSlippage,
             'test'
         ];
-
-        accData = getAccData(callerAddr, usdtAddrArb, defaultSlippage);
-
-        //----------
-        ([ ozMiddleware, beacon ] = await deployV1_1(ozlDiamond));
-
-        // //Deploys ozMiddleware
-        // ([ ozMiddlewareAddr, ozMiddleware ] = await deployContract('ozMiddlewareL2', [deployedDiamond.address]));
-
-        // //Deploys ozUpgradeableBeaconL2
-        // ([ beaconAddr, beacon ] = await deployContract('UpgradeableBeacon', [ ozMiddlewareAddr ]));
-
-        // //Deploys the ProxyFactory in L2
-        // let constrArgs = [pokeMeOpsAddr, beaconAddr];
-        // ([ factoryAddr, factory ] = await deployContract('ozProxyFactoryFacet', constrArgs));
-
-        // //Deploys ozLoupeFacetV1_1 in L2
-        // const newLoupe = await deployFacet('ozLoupeFacetV1_1');
-
-        // //Deploys the init upgrade
-        // const [ innitAddr, init ] = await deployContract('InitUpgradeV1_1');
-        // const functionCall = init.interface.encodeFunctionData('init', [getInitSelectors()]);
-
-        // //Adds factory and loupeV1.1 to ozDiamond
-        // facetCut = [
-        //     [ factory.address, 0, getSelectors(factory) ],
-        //     [ newLoupe.address, 0, getSelectors(newLoupe) ]
-        // ];
-        // await ozlDiamond.diamondCut(facetCut, innitAddr, functionCall);
-
-        // //Set authorized caller
-        // const undoAliasAddrOzMiddleL2 = '0x73d974d481ee0a5332c457a4d796187f6ba66eda';
-        // await ozlDiamond.setAuthorizedCaller(undoAliasAddrOzMiddleL2, true);
-
     });
 
     describe('ozProxyFactoryFacet', async () => {
