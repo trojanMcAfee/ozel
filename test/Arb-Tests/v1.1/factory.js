@@ -545,4 +545,23 @@ describe('v1.1 tests', async function () {
         });
     });
 
+    describe('OZL balance', async () => {
+        before(async () => {
+            accountDetails[0] = signerAddr;
+            newProxyAddr = await createProxy(ozlDiamond, accountDetails);
+        });
+
+        it('should correctly calculate OZL balance for an user when using an L2 Account', async () => {
+            balance = await hre.ethers.provider.getBalance(newProxyAddr);
+            if (Number(balance) === 0) await sendETH(newProxyAddr, 0.1);
+            
+            await activateProxyLikeOpsL2(newProxyAddr, ozlDiamond.address, accData);
+            balance = await hre.ethers.provider.getBalance(newProxyAddr);
+            assert.equal(formatEther(balance), 0);
+
+            balance = await ozlDiamond.balanceOf(signerAddr);
+            assert(formatEther(balance) > 99.99 && formatEther(balance) <= 100);
+        });
+    });
+
 });
