@@ -33,16 +33,18 @@ const {
 async function deployContract(contractName, constrArgs, signer = null) {
     let signer1;
     let var1, var2, var3, var4, var5;
-
+    
     if (!signer) {
         [ signer1 ] = await hre.ethers.getSigners();
         signer = signer1;
     }
-
+    
     const Contract = await hre.ethers.getContractFactory(contractName);
 
     switch(contractName) {
         case 'FakeOZL':
+        case 'ozMiddlewareL2':
+        case 'UpgradeableBeacon':
             ([ var1 ] = constrArgs);
             contract = await Contract.connect(signer).deploy(var1, opsL2);
             break;
@@ -51,6 +53,7 @@ async function deployContract(contractName, constrArgs, signer = null) {
         case 'RolesAuthority':
         case 'ProxyFactory':
         case 'FaultyProxyFactory':
+        case 'ozProxyFactoryFacet':
             ([ var1, var2 ] = constrArgs);
             contract = await Contract.connect(signer).deploy(var1, var2, ops);
             break;
@@ -254,11 +257,6 @@ async function createProxy(factory, accountDetails) {
     return network !== 'arbitrum' ? receipt.logs[0].address : receipt.events[0].address;;
 }
 
-// async function createProxy(factory, accountDetails) {
-//     const tx = await factory.createNewProxy(accountDetails, ops);
-//     const receipt = await tx.wait();
-//     return receipt.logs[0].address;
-// }
 
 async function deploySystem(type, signerAddr) { 
 

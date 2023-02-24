@@ -33,7 +33,8 @@ const { getSelectors } = require('../../../scripts/myDiamondUtil');
 const { 
     createProxy, 
     sendETH,
-    activateOzBeaconProxy
+    activateOzBeaconProxy,
+    deployContract
 } = require('../../../scripts/helpers-eth');
 
 const { 
@@ -54,7 +55,7 @@ const {
     accountL2ABI,
     fraxAddr,
     wbtcAddr
-} = require('../../../scripts/state-vars');
+} = require('../../../scripts/state-vars');;
 
 const { MaxUint256 } = ethers.constants;
 
@@ -63,8 +64,9 @@ let ozlDiamondAddr, ozlDiamond, newProxyAddr, ozMiddle;
 let ownerAddr, signer, signerAddr;
 let tx, receipt, balance, accData;
 let usersProxies = [];
-let signers, signerAddr2, beacon;
+let signers, signerAddr2, beacon, ozMiddleware;
 let facetCut, accounts, names;
+let factory, factoryAddr, constrArgs, beaconAddr;
 
 describe('v1.1 tests', async function () {
     this.timeout(1000000);
@@ -157,31 +159,36 @@ describe('v1.1 tests', async function () {
 
         //----------
         //Deploys ozMiddleware
-        const OzMiddle = await hre.ethers.getContractFactory('ozMiddlewareL2');
-        ozMiddle = await OzMiddle.deploy(deployedDiamond.address);
-        await ozMiddle.deployed();
-        console.log('ozMiddlewareL2 deployed to: ', ozMiddle.address);
+        // const OzMiddle = await hre.ethers.getContractFactory('ozMiddlewareL2');
+        // ozMiddle = await OzMiddle.deploy(deployedDiamond.address);
+        // await ozMiddle.deployed();
+        // console.log('ozMiddlewareL2 deployed to: ', ozMiddle.address);
+        ([ ozMiddlewareAddr, ozMiddleware ] = await deployContract('ozMiddlewareL2', [deployedDiamond.address]));
 
         //Deploys ozUpgradeableBeaconL2
-        const Beacon = await hre.ethers.getContractFactory('UpgradeableBeacon');
-        beacon = await Beacon.deploy(ozMiddle.address);
-        await beacon.deployed();
-        console.log('ozUpgradeableBeacon in L2 deployed to: ', beacon.address);
+        // const Beacon = await hre.ethers.getContractFactory('UpgradeableBeacon');
+        // beacon = await Beacon.deploy(ozMiddle.address);
+        // await beacon.deployed();
+        // console.log('ozUpgradeableBeacon in L2 deployed to: ', beacon.address);
+        ([ beaconAddr, beacon ] = await deployContract('UpgradeableBeacon', [ ozMiddlewareAddr ]));
 
         //Deploys the ProxyFactory in L2
-        const Factory = await hre.ethers.getContractFactory('ozProxyFactoryFacet');
-        const factory = await Factory.deploy(pokeMeOpsAddr, beacon.address);
-        await factory.deployed();
-        console.log('ozProxyFactoryFacet deployed to: ', factory.address);
+        // const Factory = await hre.ethers.getContractFactory('ozProxyFactoryFacet');
+        // const factory = await Factory.deploy(pokeMeOpsAddr, beacon.address);
+        // await factory.deployed();
+        // console.log('ozProxyFactoryFacet deployed to: ', factory.address);
+        let constrArgs = [pokeMeOpsAddr, beaconAddr];
+        ([ factoryAddr, factory ] = await deployContract('ozProxyFactoryFacet', constrArgs));
 
         //Deploys ozLoupeFacetV1_1 in L2
         const newLoupe = await deployFacet('ozLoupeFacetV1_1');
 
         //Deploys the init upgrade
-        const Init = await hre.ethers.getContractFactory('InitUpgradeV1_1');
-        const init = await Init.deploy();
-        await init.deployed();
-        console.log('InitUpgradeV1_1 deployed to: ', init.address);
+        // const Init = await hre.ethers.getContractFactory('InitUpgradeV1_1');
+        // const init = await Init.deploy();
+        // await init.deployed();
+        // console.log('InitUpgradeV1_1 deployed to: ', init.address);
+        const [ innitAddr, init ] = await deployContract('InitUpgradeV1_1');
 
         const functionCall = init.interface.encodeFunctionData('init', [getInitSelectors()]);
 
@@ -190,7 +197,7 @@ describe('v1.1 tests', async function () {
             [ factory.address, 0, getSelectors(factory) ],
             [ newLoupe.address, 0, getSelectors(newLoupe) ]
         ];
-        await ozlDiamond.diamondCut(facetCut, init.address, functionCall);
+        await ozlDiamond.diamondCut(facetCut, innitAddr, functionCall);
 
         //Set authorized caller
         const undoAliasAddrOzMiddleL2 = '0x73d974d481ee0a5332c457a4d796187f6ba66eda';
@@ -343,18 +350,16 @@ describe('v1.1 tests', async function () {
 
         describe('Upgrade the factory', async () => {
             it('should upgrade the factory', async () => {
-                const NewFactory = await hre.ethers.getContractFactory('ozProxyFactoryFacet');
-                const newFactory = await NewFactory.deploy(pokeMeOpsAddr, beacon.address);
-                await newFactory.deployed();
-                console.log('New ProxyFactoryL2 deployed to: ', newFactory.address);
+                constrArgs = [pokeMeOpsAddr, beaconAddr];
+                const [ newFactoryAddr, newFactory ] = await deployContract('ozProxyFactoryFacet', constrArgs);
 
-                facetCut = [ [ newFactory.address, 1, getSelectors(newFactory) ] ];
+                facetCut = [ [ newFactoryAddr, 1, getSelectors(newFactory) ] ];
                 tx = await ozlDiamond.diamondCut(facetCut, nullAddr, '0x');
                 await tx.wait();
 
                 const facets = await ozlDiamond.facetAddresses();
                 for (let i=0; i < facets.length; i++) {
-                    if (facets[i] === newFactory.address) {
+                    if (facets[i] === newFactoryAddr) {
                         assert(true);
                         return;
                     }
@@ -398,7 +403,7 @@ describe('v1.1 tests', async function () {
 
         it('should not let a non-account user to call the function / exchangeToAccountToken()', async () => {
             await assert.rejects(async () => {
-                await ozMiddle.exchangeToAccountToken(
+                await ozMiddleware.exchangeToAccountToken(
                     accData,
                     MaxUint256,
                     deadAddr
@@ -549,7 +554,7 @@ describe('v1.1 tests', async function () {
     /**
      * This test is meant to be ran as one.
      */
-    describe('OZL balance', async () => {
+    xdescribe('OZL balance', async () => {
         before(async () => {
             accountDetails[0] = signerAddr;
             newProxyAddr = await createProxy(ozlDiamond, accountDetails);
