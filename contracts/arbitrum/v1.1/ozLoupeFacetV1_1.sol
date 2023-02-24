@@ -18,8 +18,7 @@ contract ozLoupeFacetV1_1 {
         string[] memory names = new string[](accounts.length);
 
         for (uint i=0; i < accounts.length; i++) {
-            bytes32 acc_user = bytes32(bytes.concat(bytes20(accounts[i]), bytes12(bytes20(user_))));
-            bytes memory task_name = getTask_Name(user_, acc_user);
+            bytes memory task_name = getTask_Name(user_, accounts[i]);
             bytes32 nameBytes;
 
             assembly {
@@ -35,9 +34,9 @@ contract ozLoupeFacetV1_1 {
         AccData storage data = s.userToData[owner_];
         if (data.accounts.length == 0) revert UserNotInDatabase(owner_);
 
-        bytes32 acc_user = bytes32(bytes.concat(bytes20(account_), bytes12(bytes20(owner_))));
-        bytes memory task_name = getTask_Name(owner_, acc_user);
+        bytes memory task_name = getTask_Name(owner_, account_);
         bytes32 taskId;
+        
         assembly {
             taskId := mload(add(task_name, 32))
         }
@@ -47,8 +46,9 @@ contract ozLoupeFacetV1_1 {
     }
 
 
-    function getTask_Name(address user_, bytes32 acc_user_) public view returns(bytes memory) {
-        return s.userToData[user_].acc_userToTask_name[acc_user_];
+    function getTask_Name(address user_, address account_) public view returns(bytes memory) {
+        bytes32 acc_user = bytes32(bytes.concat(bytes20(account_), bytes12(bytes20(user_))));
+        return s.userToData[user_].acc_userToTask_name[acc_user];
     }
 
 

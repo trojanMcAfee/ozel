@@ -197,7 +197,7 @@ describe('v1.1 tests', async function () {
 
     });
 
-    xdescribe('ozProxyFactoryFacet', async () => {
+    describe('ozProxyFactoryFacet', async () => {
         describe('Deploys one account', async () => {
             it('should create a account successfully / createNewProxy()', async () => {
                 await ozlDiamond.createNewProxy(accountDetails, ops);
@@ -363,7 +363,7 @@ describe('v1.1 tests', async function () {
         });
     });
 
-    xdescribe('ozAccountProxyL2', async () => {
+    describe('ozAccountProxyL2', async () => {
         before(async () => {
             newProxyAddr = await createProxy(ozlDiamond, accountDetails);
             newProxy = await hre.ethers.getContractAt(accountL2ABI, newProxyAddr);
@@ -389,7 +389,7 @@ describe('v1.1 tests', async function () {
         });
     });
 
-    xdescribe('ozMiddlewareL2', async () => {
+    describe('ozMiddlewareL2', async () => {
         before(async () => {
             newProxyAddr = await createProxy(ozlDiamond, accountDetails);
             newProxy = await hre.ethers.getContractAt(accountL2ABI, newProxyAddr);
@@ -514,13 +514,14 @@ describe('v1.1 tests', async function () {
 
     describe('ozLoupeFacetV1_1', async () => {
         before(async () => {
+            accountDetails[0] = signerAddr2;
             for (let i=0; i < 3; i++) {
                 await createProxy(ozlDiamond, accountDetails);
             }
         });
 
         it('should get all the Accounts created by the user / getAccountsByUser()', async () => {
-            ([ accounts, names ] = await ozlDiamond.getAccountsByUser(signerAddr));
+            ([ accounts, names ] = await ozlDiamond.getAccountsByUser(signerAddr2));
             
             for (let i=0; i < accounts.length; i++) {
                 if (accounts[i] === nullAddr) assert(false);
@@ -530,13 +531,13 @@ describe('v1.1 tests', async function () {
         });
 
         it("should get all the Gelato task IDs, one for each Account / getTaskID()", async () => {
-            ([ accounts, names ] = await ozlDiamond.getAccountsByUser(signerAddr));
+            ([ accounts, names ] = await ozlDiamond.getAccountsByUser(signerAddr2));
             let taskId;
             const nullBytes32 = '0x0000000000000000000000000000000000000000000000000000000000000000';
             const tasks = [];
 
             for (let i=0; i < accounts.length; i++) {
-                taskId = await ozlDiamond.getTaskID(accounts[i], signerAddr);
+                taskId = await ozlDiamond.getTaskID(accounts[i], signerAddr2);
                 if (taskId === nullBytes32) assert(false);
                 tasks.push(taskId);
             }

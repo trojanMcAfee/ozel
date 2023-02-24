@@ -57,8 +57,7 @@ contract ozMiddlewareL2 is Initializable {
     ) external payable {
         (address user,,) = LibCommon.extract(accData_);
 
-        bytes32 acc_user = bytes32(bytes.concat(bytes20(msg.sender), bytes12(bytes20(user))));
-        if (!_verify(user, acc_user)) revert NotAccount();
+        if (!_verify(user, msg.sender)) revert NotAccount();
 
         (address[] memory accounts,) = ozLoupeFacetV1_1(OZL).getAccountsByUser(user);
         assert(accounts.length > 0);
@@ -73,8 +72,8 @@ contract ozMiddlewareL2 is Initializable {
     }
 
 
-    function _verify(address user_, bytes32 acc_user_) private view returns(bool) {
-        bytes memory task_name = ozLoupeFacetV1_1(OZL).getTask_Name(user_, acc_user_);
+    function _verify(address user_, address account_) private view returns(bool) {
+        bytes memory task_name = ozLoupeFacetV1_1(OZL).getTask_Name(user_, account_);
         return bytes32(task_name) != bytes32(0);
     }
 
