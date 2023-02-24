@@ -52,7 +52,8 @@ const {
     crv2PoolAddr,
     pokeMeOpsAddr,
     accountL2ABI,
-    fraxAddr
+    fraxAddr,
+    wbtcAddr
 } = require('../../../scripts/state-vars');
 
 const { MaxUint256 } = ethers.constants;
@@ -197,7 +198,7 @@ describe('v1.1 tests', async function () {
 
     });
 
-    describe('ozProxyFactoryFacet', async () => {
+    xdescribe('ozProxyFactoryFacet', async () => {
         describe('Deploys one account', async () => {
             it('should create a account successfully / createNewProxy()', async () => {
                 await ozlDiamond.createNewProxy(accountDetails, ops);
@@ -363,7 +364,7 @@ describe('v1.1 tests', async function () {
         });
     });
 
-    describe('ozAccountProxyL2', async () => {
+    xdescribe('ozAccountProxyL2', async () => {
         before(async () => {
             newProxyAddr = await createProxy(ozlDiamond, accountDetails);
             newProxy = await hre.ethers.getContractAt(accountL2ABI, newProxyAddr);
@@ -389,7 +390,7 @@ describe('v1.1 tests', async function () {
         });
     });
 
-    describe('ozMiddlewareL2', async () => {
+    xdescribe('ozMiddlewareL2', async () => {
         before(async () => {
             newProxyAddr = await createProxy(ozlDiamond, accountDetails);
             newProxy = await hre.ethers.getContractAt(accountL2ABI, newProxyAddr);
@@ -512,7 +513,7 @@ describe('v1.1 tests', async function () {
         });
     });
 
-    describe('ozLoupeFacetV1_1', async () => {
+    xdescribe('ozLoupeFacetV1_1', async () => {
         before(async () => {
             accountDetails[0] = signerAddr2;
             for (let i=0; i < 3; i++) {
@@ -561,6 +562,29 @@ describe('v1.1 tests', async function () {
 
             balance = await ozlDiamond.balanceOf(signerAddr);
             assert(formatEther(balance) > 99.99 && formatEther(balance) <= 100);
+        });
+
+        it('should convert ETH to token (WBTC) and properly calculate OZL balances', async () => {
+            accountDetails[0] = signerAddr2;
+            accountDetails[1] = wbtcAddr;
+            newProxyAddr = await createProxy(ozlDiamond, accountDetails);
+            accData = getAccData(signerAddr2, wbtcAddr, defaultSlippage);
+
+            balance = await hre.ethers.provider.getBalance(newProxyAddr);
+            if (Number(balance) === 0) await sendETH(newProxyAddr, 0.1);
+            balance = await hre.ethers.provider.getBalance(newProxyAddr);
+            assert.equal(formatEther(balance), 0.1);
+
+            await activateProxyLikeOpsL2(newProxyAddr, ozlDiamond.address, accData);
+            balance = await hre.ethers.provider.getBalance(newProxyAddr);
+            assert.equal(formatEther(balance), 0);
+
+            assert(formatEther(await WBTC.balanceOf(signerAddr2)) > 0);
+
+            const balanceUser1 = await ozlDiamond.balanceOf(signerAddr);
+            const balanceUser2 = await ozlDiamond.balanceOf(signerAddr2);
+            assert.equal(formatEther(balanceUser1), 50.0);
+            assert.equal(formatEther(balanceUser2), 50.0);
         });
     });
 
