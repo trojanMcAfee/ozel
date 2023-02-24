@@ -6,27 +6,23 @@ import '@openzeppelin/contracts/proxy/beacon/BeaconProxy.sol';
 import "@openzeppelin/contracts/proxy/utils/Initializable.sol";
 // import '@openzeppelin/contracts/proxy/Proxy.sol';
 import '@openzeppelin/contracts/utils/Address.sol';
-import '../../libraries/LibCommon.sol';
+// import '../../libraries/LibCommon.sol';
 import '../../Errors.sol';
 import './ozLoupeFacetV1_1.sol';
 
 import 'hardhat/console.sol';
 
 
-contract ozAccountProxyL2 is Initializable, BeaconProxy {
+contract ozAccountProxyL2 is BeaconProxy {
 
-    // using LibCommon for bytes; 
-
-    // bool private _initialized;
-    // bool private _initializing;
+    bool private _initialized;
+    bool private _initializing;
 
     bytes accData;
 
     address private immutable ops;
     address private immutable OZL;
 
-    // event NewToken(address indexed newToken);
-    // event NewSlippage(uint16 indexed newSlippage);
 
     constructor(
         address beacon_,
@@ -57,7 +53,6 @@ contract ozAccountProxyL2 is Initializable, BeaconProxy {
 
 
     //-------
-
     function _delegate(address implementation) internal override {
         if ( ozLoupeFacetV1_1(OZL).isSelectorAuthorized(bytes4(msg.data)) ) { 
             assembly {

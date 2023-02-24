@@ -70,7 +70,6 @@ contract ozMiddlewareL2 is Initializable {
 
         (bool success,) = OZL.call{value: msg.value}(msg.data);
         require(success);
-
     }
 
 

@@ -294,33 +294,19 @@ describe('v1.1 tests', async function () {
 
             it('should have an initial balance of 0.1 ETH', async () => { 
                 accountDetails[1] = usdtAddrArb;
+                newProxyAddr = await createProxy(ozlDiamond, accountDetails);
 
-                tx = await ozlDiamond.createNewProxy(accountDetails, ops);
-                receipt = await tx.wait();
-                newProxyAddr = hexStripZeros(receipt.events[0].address);
-
-                ops.to = newProxyAddr;
-                ops.value = parseEther('0.1')
-                await signer.sendTransaction(ops);
+                balance = await hre.ethers.provider.getBalance(newProxyAddr);
+                if (Number(balance) === 0) await sendETH(newProxyAddr, 0.1);
 
                 balance = await hre.ethers.provider.getBalance(newProxyAddr);
                 assert.equal(formatEther(balance), '0.1');
-
-                //Clean up
-                delete ops.to;
-                delete ops.value;
-
-                //--------
-                await activateProxyLikeOpsL2(newProxyAddr, ozlDiamond.address, accData);
-
-                balance = await hre.ethers.provider.getBalance(newProxyAddr);
-                assert.equal(formatEther(balance), 0);
             });
 
             it('should have a final balance of 0 ETH', async () => {
-                // newProxyAddr = await createProxy(proxyFactory, accountDetails);
-                // balance = await hre.ethers.provider.getBalance(newProxyAddr);
-                // if (Number(balance) === 0) await sendETH(newProxyAddr, 0.1);
+                newProxyAddr = await createProxy(ozlDiamond, accountDetails);
+                balance = await hre.ethers.provider.getBalance(newProxyAddr);
+                if (Number(balance) === 0) await sendETH(newProxyAddr, 0.1);
                 
                 await activateProxyLikeOpsL2(newProxyAddr, ozlDiamond.address, accData);
                 balance = await hre.ethers.provider.getBalance(newProxyAddr);
@@ -328,7 +314,7 @@ describe('v1.1 tests', async function () {
             });
         });
 
-        xdescribe('Deploys 5 accounts', async () => { 
+        describe('Deploys 5 accounts', async () => { 
             before(async () => {
                 accountDetails[1] = usdcAddr;
                 for (let i=0; i < 5; i++) {
@@ -341,22 +327,11 @@ describe('v1.1 tests', async function () {
                 ([ proxies, names ] = await ozlDiamond.getAccountsByUser(signerAddr));
             });
 
-            it('deploys 5 accounts with an initial balance of 100 ETH each / createNewProxy()', async () => {
+            it('deploys 5 accounts with an initial balance of 100 ETH each and a final balace of 0 / createNewProxy()', async () => {
                 for (let i=0; i < proxies.length; i++) {
-                    // balance = await sendETH(proxies[i], 100);
-
-                    tx = await signer.sendTransaction({
-                        to: proxies[i],
-                        value: parseEther('100')
-                    });
-                    await tx.wait();
-                    balance = await hre.ethers.provider.getBalance(proxies[i]);
+                    balance = await sendETH(proxies[i], 100);
                     assert(formatEther(balance) === '100.0' || formatEther(balance) === '100.1');
-                }
-            });
 
-            it('should leave each of the 5 accounts with a final balance of 0 ETH / createNewProxy()', async () => {
-                for (let i=0; i < proxies.length; i++) {
                     await activateProxyLikeOpsL2(proxies[i], ozlDiamond.address, accData);
                     balance = await hre.ethers.provider.getBalance(proxies[i]);
                     assert.equal(formatEther(balance), 0);
@@ -365,7 +340,7 @@ describe('v1.1 tests', async function () {
         });
     });
 
-    xdescribe('ozAccountProxyL2', async () => {
+    describe('ozAccountProxyL2', async () => {
         before(async () => {
             newProxyAddr = await createProxy(ozlDiamond, accountDetails);
             newProxy = await hre.ethers.getContractAt(accountL2ABI, newProxyAddr);
@@ -391,7 +366,12 @@ describe('v1.1 tests', async function () {
         });
     });
 
-    xdescribe('ozMiddlewareL2', async () => {
+    describe('ozMiddlewareL2', async () => {
+        before(async () => {
+            newProxyAddr = await createProxy(ozlDiamond, accountDetails);
+            newProxy = await hre.ethers.getContractAt(accountL2ABI, newProxyAddr);
+        });
+
         it('should not let a non-account user to call the function / exchangeToAccountToken()', async () => {
             await assert.rejects(async () => {
                 await ozMiddle.exchangeToAccountToken(
@@ -403,9 +383,9 @@ describe('v1.1 tests', async function () {
                 name: 'Error',
                 message: (await err()).notAccount 
             });
-           }) 
+        }) 
 
-           it('should not allow an external user to change account token / changeToken()', async () => {
+        it('should not allow an external user to change account token / changeToken()', async () => {
             await assert.rejects(async () => {
                 await newProxy.connect(signers[1]).changeToken(usdcAddr, ops);
             }, {
@@ -435,7 +415,6 @@ describe('v1.1 tests', async function () {
         it('should allow the user to change the slippage with the minimum of 0.01% / changeSlippage()', async () => {
             newUserSlippage = 0.01; 
 
-            ([ user, token, slippage ] = await newProxy.getDetails());
             tx = await newProxy.changeSlippage(parseInt(newUserSlippage * 100), ops);
             await tx.wait();
 
@@ -446,6 +425,16 @@ describe('v1.1 tests', async function () {
 
         it('should not allow to change the slippage to 0 / changeSlippage()', async () => {
             newSlippage = 0;
+            await assert.rejects(async () => {
+                await newProxy.changeSlippage(newSlippage, ops);
+            }, {
+                name: 'Error',
+                message: (await err(newSlippage)).zeroSlippage
+            });
+        });
+
+        it('should not allow to change the slippage to more than 5% / changeSlippage()', async () => {
+            newSlippage = 501;
             await assert.rejects(async () => {
                 await newProxy.changeSlippage(newSlippage, ops);
             }, {
@@ -472,33 +461,32 @@ describe('v1.1 tests', async function () {
             assert.equal(token, fraxAddr);
             assert.equal(Number(slippage) / 100, newUserSlippage); 
         });
-    });
 
-    xdescribe('withdrawETH_lastResort', async () => {
-        before(async () => {
-            newProxyAddr = await createProxy(ozlDiamond, accountDetails);
-            newProxy = await hre.ethers.getContractAt(accountL2ABI, newProxyAddr);
-
-            balance = await sendETH(newProxyAddr, 100);
-            assert(formatEther(balance) === '100.0' || formatEther(balance) === '200.0');
-        });
-
-        it('should let the user withdraw the ETH stuck on their account / withdrawETH_lastResort()', async () => {
-            preBalance = await hre.ethers.provider.getBalance(signerAddr);
-            await newProxy.withdrawETH_lastResort(ops);
-            postBalance = await hre.ethers.provider.getBalance(signerAddr);
-            assert(formatEther(postBalance) > formatEther(preBalance));
-        });
-
-        it('should not let user B to withdraw the stuck ETH of user A / withdrawETH_lastResort()', async () => {
-            await assert.rejects(async () => {
-                await newProxy.connect(signers[1]).withdrawETH_lastResort(ops);
-            }, {
-                name: 'Error',
-                message: (await err(signerAddr2)).notAuthorized
+        describe('withdrawETH_lastResort', async () => {
+            before(async () => {
+                newProxyAddr = await createProxy(ozlDiamond, accountDetails);
+                newProxy = await hre.ethers.getContractAt(accountL2ABI, newProxyAddr);
+    
+                balance = await sendETH(newProxyAddr, 100);
+                assert(formatEther(balance) === '100.0' || formatEther(balance) === '200.0');
+            });
+    
+            it('should let the user withdraw the ETH stuck on their account / withdrawETH_lastResort()', async () => {
+                preBalance = await hre.ethers.provider.getBalance(signerAddr);
+                await newProxy.withdrawETH_lastResort(ops);
+                postBalance = await hre.ethers.provider.getBalance(signerAddr);
+                assert(formatEther(postBalance) > formatEther(preBalance));
+            });
+    
+            it('should not let user B to withdraw the stuck ETH of user A / withdrawETH_lastResort()', async () => {
+                await assert.rejects(async () => {
+                    await newProxy.connect(signers[1]).withdrawETH_lastResort(ops);
+                }, {
+                    name: 'Error',
+                    message: (await err(signerAddr2)).notAuthorized
+                });
             });
         });
     });
-
 
 });
