@@ -198,7 +198,7 @@ describe('v1.1 tests', async function () {
 
     });
 
-    xdescribe('ozProxyFactoryFacet', async () => {
+    describe('ozProxyFactoryFacet', async () => {
         describe('Deploys one account', async () => {
             it('should create a account successfully / createNewProxy()', async () => {
                 await ozlDiamond.createNewProxy(accountDetails, ops);
@@ -364,7 +364,7 @@ describe('v1.1 tests', async function () {
         });
     });
 
-    xdescribe('ozAccountProxyL2', async () => {
+    describe('ozAccountProxyL2', async () => {
         before(async () => {
             newProxyAddr = await createProxy(ozlDiamond, accountDetails);
             newProxy = await hre.ethers.getContractAt(accountL2ABI, newProxyAddr);
@@ -390,7 +390,7 @@ describe('v1.1 tests', async function () {
         });
     });
 
-    xdescribe('ozMiddlewareL2', async () => {
+    describe('ozMiddlewareL2', async () => {
         before(async () => {
             newProxyAddr = await createProxy(ozlDiamond, accountDetails);
             newProxy = await hre.ethers.getContractAt(accountL2ABI, newProxyAddr);
@@ -513,7 +513,7 @@ describe('v1.1 tests', async function () {
         });
     });
 
-    xdescribe('ozLoupeFacetV1_1', async () => {
+    describe('ozLoupeFacetV1_1', async () => {
         before(async () => {
             accountDetails[0] = signerAddr2;
             for (let i=0; i < 3; i++) {
@@ -546,6 +546,9 @@ describe('v1.1 tests', async function () {
         });
     });
 
+    /**
+     * This test is meant to be ran as one.
+     */
     describe('OZL balance', async () => {
         before(async () => {
             accountDetails[0] = signerAddr;
