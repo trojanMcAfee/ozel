@@ -93,6 +93,7 @@ describe('With deployed OZL', async () => {
         ];
 
         accData = getAccData(testAcc, usdtAddrArb, defaultSlippage);
+        getVarsForHelpers(ozlDiamond, '');
 
         //-------
         ([signer] = await hre.ethers.getSigners());
@@ -119,23 +120,23 @@ describe('With deployed OZL', async () => {
         });
     });
 
-    it('ll ll ll', async () => {
-        const ozMiddleL2BeforeAlias = '0x95401dc811bb5740090279Ba06cfA8fcF6113778';
-        const undoAliasAddrOzMiddleL2 = '0x73d974d481ee0a5332c457a4d796187f6ba66eda'; //0x73d974d481ee0a5332c457a4d796187f6ba66eda
-        ([ balanceWETH, balanceUSD ] = await ozlDiamond.getOzelBalances(testAcc2));
-        ozlBalance = await ozlDiamond.balanceOf(testAcc2);
-        console.log('ozl bal testAcc2: ', formatEther(ozlBalance));
+    it('should properly calculate new Ozel balances in an L1 user after having used an L2 Account', async () => {
+        const ozlBalanceTestAcc2Pre = await balanceOfOZL(testAcc2);
+        console.log('ozl bal testAcc2 pre: ', ozlBalanceTestAcc2Pre);
 
-        ozlBalance = await ozlDiamond.balanceOf(testAcc);
-        console.log('ozl bal testAcc: ', formatEther(ozlBalance));
+        const ozlBalanceTestAccPre = await balanceOfOZL(testAcc);
+        console.log('ozl bal testAcc pre: ', ozlBalanceTestAccPre);
 
-        console.log('bal weth testAcc2: ', formatEther(balanceWETH));
-        console.log('bal usd testAcc2: ', formatEther(balanceUSD));
+        let totalOZL = ozlBalanceTestAcc2Pre + ozlBalanceTestAccPre;
+        console.log('total: ', totalOZL);
+        assert(totalOZL > 99.99 && totalOZL < 100);
+
+        const USDT = await hre.ethers.getContractAt('IERC20', usdtAddrArb);
+        const balanceUSDTpre = await USDT.balanceOf(testAcc);
+        console.log('usdt bal pre: ', balanceUSDTpre / 10 ** 6);
+        assert.equal(Number(balanceUSDTpre), 0);
 
         //-------------
-        // accountDetails[0] = testAcc;
-        // newProxyAddr = await createProxy(ozlDiamond, accountDetails);
-
         const value = parseEther('1');
         const iface = new ethers.utils.Interface(diamondABI);
         const encodedData = iface.encodeFunctionData('exchangeToAccountToken', [
@@ -150,37 +151,20 @@ describe('With deployed OZL', async () => {
         tx = await signer.sendTransaction(ops);
         await tx.wait();
 
-        //--------
-        // const [signer] = await hre.ethers.getSigners();
-        // ops.value = parseEther('11');
-        // ops.to = undoAliasAddrOzMiddleL2;
-        // tx = await signer.sendTransaction(ops);
-        // await tx.wait();
-        // console.log('eth sent out');
-        //-----
+        //--------------
+        const ozlBalanceTestAcc2Post = await balanceOfOZL(testAcc2);
+        console.log('ozl bal testAcc2 post: ', ozlBalanceTestAcc2Post);
 
-        // ops.to = ozlDiamond.address;
-        // ops.value = value;
-        // ops.data = encodedData;
+        const ozlBalanceTestAccPost = await balanceOfOZL(testAcc);
+        console.log('ozl bal testAcc post: ', ozlBalanceTestAccPost);
 
-        // await hre.network.provider.request({
-        //     method: "hardhat_impersonateAccount",
-        //     params: [undoAliasAddrOzMiddleL2],
-        // });
+        totalOZL = ozlBalanceTestAcc2Post + ozlBalanceTestAccPost;
+        console.log('total: ', totalOZL);
+        assert(totalOZL > 99.99 && totalOZL < 100);
 
-        // const accSigner = await hre.ethers.provider.getSigner(undoAliasAddrOzMiddleL2);
-        // console.log(11);
-        // tx = await accSigner.sendTransaction(ops);
-        // console.log(12);
-        // await tx.wait();
-
-        // await hre.network.provider.request({
-        //     method: "hardhat_stopImpersonatingAccount",
-        //     params: [undoAliasAddrOzMiddleL2],
-        // });
-
-        ozlBalance = await ozlDiamond.balanceOf(testAcc);
-        console.log('ozl bal testAcc - 2nd: ', formatEther(ozlBalance));
+        const balanceUSDTpost = await USDT.balanceOf(testAcc);
+        console.log('usdt bal post: ', balanceUSDTpost / 10 ** 6);
+        assert(Number(balanceUSDTpost) > 1600);
     });
 
 
