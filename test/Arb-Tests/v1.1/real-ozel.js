@@ -93,10 +93,35 @@ describe('With deployed OZL', async () => {
         ];
 
         accData = getAccData(testAcc, usdtAddrArb, defaultSlippage);
+
+        //-------
+        ([signer] = await hre.ethers.getSigners());
+        ops.value = parseEther('11');
+        ops.to = deployer2;
+        tx = await signer.sendTransaction(ops);
+        await tx.wait();
+        console.log('eth sent out');
+        delete ops.value;
+        delete ops.to;
+
+        await hre.network.provider.request({
+            method: "hardhat_impersonateAccount",
+            params: [deployer2],
+        });
+
+        const depSigner = await hre.ethers.provider.getSigner(deployer2);
+        const signerAddrUndoAlias = '0xe28ed6e51aad88f6f4ce6ab8827279cfffb91155';
+        await ozlDiamond.connect(depSigner).setAuthorizedCaller(signerAddrUndoAlias, true, ops);
+
+        await hre.network.provider.request({
+            method: "hardhat_stopImpersonatingAccount",
+            params: [deployer2],
+        });
     });
 
     it('ll ll ll', async () => {
-        const undoAliasAddrOzMiddleL2 = '0x73d974d481ee0a5332c457a4d796187f6ba66eda';
+        const ozMiddleL2BeforeAlias = '0x95401dc811bb5740090279Ba06cfA8fcF6113778';
+        const undoAliasAddrOzMiddleL2 = '0x73d974d481ee0a5332c457a4d796187f6ba66eda'; //0x73d974d481ee0a5332c457a4d796187f6ba66eda
         ([ balanceWETH, balanceUSD ] = await ozlDiamond.getOzelBalances(testAcc2));
         ozlBalance = await ozlDiamond.balanceOf(testAcc2);
         console.log('ozl bal testAcc2: ', formatEther(ozlBalance));
@@ -108,10 +133,10 @@ describe('With deployed OZL', async () => {
         console.log('bal usd testAcc2: ', formatEther(balanceUSD));
 
         //-------------
-        accountDetails[0] = testAcc;
-        newProxyAddr = await createProxy(ozlDiamond, accountDetails);
+        // accountDetails[0] = testAcc;
+        // newProxyAddr = await createProxy(ozlDiamond, accountDetails);
 
-        const value = parseEther('2');
+        const value = parseEther('1');
         const iface = new ethers.utils.Interface(diamondABI);
         const encodedData = iface.encodeFunctionData('exchangeToAccountToken', [
             accData,
@@ -119,31 +144,40 @@ describe('With deployed OZL', async () => {
             account
         ]);
 
-        //--------
-        const [signer] = await hre.ethers.getSigners();
-        ops.value = parseEther('11');
-        ops.to = undoAliasAddrOzMiddleL2;
+        ops.value = value;
+        ops.to = ozlDiamond.address;
+        ops.data = encodedData;
         tx = await signer.sendTransaction(ops);
         await tx.wait();
+
+        //--------
+        // const [signer] = await hre.ethers.getSigners();
+        // ops.value = parseEther('11');
+        // ops.to = undoAliasAddrOzMiddleL2;
+        // tx = await signer.sendTransaction(ops);
+        // await tx.wait();
+        // console.log('eth sent out');
         //-----
 
-        ops.to = ozlDiamond.address;
-        ops.value = value;
-        ops.data = encodedData;
+        // ops.to = ozlDiamond.address;
+        // ops.value = value;
+        // ops.data = encodedData;
 
-        await hre.network.provider.request({
-            method: "hardhat_impersonateAccount",
-            params: [undoAliasAddrOzMiddleL2],
-        });
+        // await hre.network.provider.request({
+        //     method: "hardhat_impersonateAccount",
+        //     params: [undoAliasAddrOzMiddleL2],
+        // });
 
-        const accSigner = await hre.ethers.provider.getSigner(undoAliasAddrOzMiddleL2);
-        tx = await accSigner.sendTransaction(ops);
-        await tx.wait();
+        // const accSigner = await hre.ethers.provider.getSigner(undoAliasAddrOzMiddleL2);
+        // console.log(11);
+        // tx = await accSigner.sendTransaction(ops);
+        // console.log(12);
+        // await tx.wait();
 
-        await hre.network.provider.request({
-            method: "hardhat_stopImpersonatingAccount",
-            params: [undoAliasAddrOzMiddleL2],
-        });
+        // await hre.network.provider.request({
+        //     method: "hardhat_stopImpersonatingAccount",
+        //     params: [undoAliasAddrOzMiddleL2],
+        // });
 
         ozlBalance = await ozlDiamond.balanceOf(testAcc);
         console.log('ozl bal testAcc - 2nd: ', formatEther(ozlBalance));

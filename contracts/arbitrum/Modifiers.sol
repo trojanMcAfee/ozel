@@ -18,6 +18,7 @@ abstract contract ModifiersARB is Bits {
      * @param index_ Index of the bit to be flipped 
      */
     modifier noReentrancy(uint index_) { 
+        console.log('sender: ', msg.sender);
         if (!(_getBit(0, index_))) revert NoReentrance();
         _toggleBit(0, index_);
         _;
