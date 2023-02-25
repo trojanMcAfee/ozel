@@ -85,7 +85,7 @@ describe('OZL balance', async function () {
     /**
      * This test is meant to be ran as one.
      */
-    describe('OZL balance', async () => {
+    describe('With new accounts', async () => {
         it('should correctly calculate OZL balance for an user when using an L2 Account', async () => {
             balance = await hre.ethers.provider.getBalance(newProxyAddr);
             if (Number(balance) === 0) await sendETH(newProxyAddr, 0.1);

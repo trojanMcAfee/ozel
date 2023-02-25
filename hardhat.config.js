@@ -23,7 +23,7 @@ module.exports = {
       // }
       forking: {
         url: process.env.ARBITRUM, 
-        blockNumber: 27546149, //57546149      
+        blockNumber: 64270951, //57546149 - 27546149      
       }
     },
     goerli: {

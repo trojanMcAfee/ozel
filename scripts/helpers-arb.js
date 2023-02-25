@@ -364,7 +364,7 @@ async function activateProxyLikeOpsL2(proxy, taskCreator, accData, isEvil, evilP
 }
 
 
-async function deployV1_1(ozlDiamond) {
+async function deployV1_1(ozlDiamond, deployer2) {
 
     //Deploys ozMiddleware
     ([ ozMiddlewareAddr, ozMiddleware ] = await deployContract('ozMiddlewareL2', [ozlDiamond.address]));
@@ -388,11 +388,39 @@ async function deployV1_1(ozlDiamond) {
         [ factory.address, 0, getSelectors(factory) ],
         [ newLoupe.address, 0, getSelectors(newLoupe) ]
     ];
-    await ozlDiamond.diamondCut(facetCut, innitAddr, functionCall);
+
+    const undoAliasAddrOzMiddleL2 = '0x73d974d481ee0a5332c457a4d796187f6ba66eda';
+
+    if (!deployer2) {
+        await ozlDiamond.diamondCut(facetCut, innitAddr, functionCall, ops);
+        await ozlDiamond.setAuthorizedCaller(undoAliasAddrOzMiddleL2, true, ops);
+    } else {
+        const [signer] = await hre.ethers.getSigners();
+        ops.value = parseEther('3');
+        ops.to = deployer2;
+        tx = await signer.sendTransaction(ops);
+        await tx.wait();
+        delete ops.value;
+        delete ops.to;
+
+        await hre.network.provider.request({
+            method: "hardhat_impersonateAccount",
+            params: [deployer2],
+        });
+
+        const deployerSigner = await hre.ethers.provider.getSigner(deployer2);
+        await ozlDiamond.connect(deployerSigner).diamondCut(facetCut, innitAddr, functionCall, ops);
+        await ozlDiamond.connect(deployerSigner).setAuthorizedCaller(undoAliasAddrOzMiddleL2, true, ops);
+
+        await hre.network.provider.request({
+            method: "hardhat_stopImpersonatingAccount",
+            params: [deployer2],
+        });
+    }
 
     //Set authorized caller
-    const undoAliasAddrOzMiddleL2 = '0x73d974d481ee0a5332c457a4d796187f6ba66eda';
-    await ozlDiamond.setAuthorizedCaller(undoAliasAddrOzMiddleL2, true);
+    // await ozlDiamond.setAuthorizedCaller(undoAliasAddrOzMiddleL2, true, ops);
+    console.log('done setup...');
 
     return [ ozMiddleware, beacon ];
 }
