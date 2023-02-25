@@ -360,7 +360,19 @@ async function activateProxyLikeOpsL2(proxy, taskCreator, accData, isEvil, evilP
     });
 
     return receipt;
+}
 
+
+async function sendETHOps(amount, receiver, data) {
+    const [signer] = await hre.ethers.getSigners();
+    ops.value = parseEther(amount);
+    ops.to = receiver;
+    
+    tx = await signer.sendTransaction(ops);
+    await tx.wait();
+    
+    delete ops.value;
+    delete ops.to;
 }
 
 
@@ -395,13 +407,7 @@ async function deployV1_1(ozlDiamond, deployer2) {
         await ozlDiamond.diamondCut(facetCut, innitAddr, functionCall, ops);
         await ozlDiamond.setAuthorizedCaller(undoAliasAddrOzMiddleL2, true, ops);
     } else {
-        const [signer] = await hre.ethers.getSigners();
-        ops.value = parseEther('3');
-        ops.to = deployer2;
-        tx = await signer.sendTransaction(ops);
-        await tx.wait();
-        delete ops.value;
-        delete ops.to;
+        await sendETHOps('3', deployer2);
 
         await hre.network.provider.request({
             method: "hardhat_impersonateAccount",
@@ -587,5 +593,6 @@ module.exports = {
     sendETHWithAlias,
     activateProxyLikeOpsL2,
     getInitSelectors,
-    deployV1_1
+    deployV1_1,
+    sendETHOps
 };

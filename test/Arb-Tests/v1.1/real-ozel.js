@@ -27,7 +27,8 @@ const {
     deployFacet,
     activateProxyLikeOpsL2,
     getInitSelectors,
-    deployV1_1
+    deployV1_1,
+    sendETHOps
 } = require('../../../scripts/helpers-arb');
 
 const { getSelectors } = require('../../../scripts/myDiamondUtil');
@@ -96,13 +97,7 @@ describe('With deployed OZL', async () => {
         getVarsForHelpers(ozlDiamond, '');
 
         //-------
-        ([signer] = await hre.ethers.getSigners());
-        ops.value = parseEther('11');
-        ops.to = deployer2;
-        tx = await signer.sendTransaction(ops);
-        await tx.wait();
-        delete ops.value;
-        delete ops.to;
+        await sendETHOps('11', deployer2);
 
         await hre.network.provider.request({
             method: "hardhat_impersonateAccount",
@@ -135,6 +130,7 @@ describe('With deployed OZL', async () => {
         const balanceUSDTpre = await USDT.balanceOf(testAcc);
         console.log('USDT balance account2 pre-tx: ', balanceUSDTpre / 10 ** 6);
         assert.equal(Number(balanceUSDTpre), 0);
+
         console.log('');
         console.log('***** Tx sent from account2 *****');
         console.log('');
