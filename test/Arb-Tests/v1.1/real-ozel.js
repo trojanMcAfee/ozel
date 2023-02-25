@@ -1,75 +1,27 @@
 const { ethers } = require("ethers");
 const assert = require('assert');
-const {
-    parseEther, 
-    formatEther, 
-    hexStripZeros 
-} = ethers.utils;
-
-const { err } = require('../../errors'); 
+const { parseEther } = ethers.utils;
 
 const { 
     balanceOfOZL, 
-    transferOZL, 
-    withdrawShareOZL, 
     getVarsForHelpers,
-    enableWithdrawals,
-    deploy,
-    getOzelIndex,
-    addTokenToDatabase,
-    getRegulatorCounter,
-    getTestingNumber,
-    replaceForModVersion,
-    queryTokenDatabase,
-    removeTokenFromDatabase,
     getAccData,
-    sendETHWithAlias,
-    deployFacet,
-    activateProxyLikeOpsL2,
-    getInitSelectors,
     deployV1_1,
     sendETHOps
 } = require('../../../scripts/helpers-arb');
 
-const { getSelectors } = require('../../../scripts/myDiamondUtil');
-
-const { 
-    createProxy, 
-    sendETH,
-    activateOzBeaconProxy,
-    deployContract
-} = require('../../../scripts/helpers-eth');
-
 const { 
     usdtAddrArb,
     defaultSlippage,
-    nullAddr,
-    deadAddr,
-    crvTricrypto,
     diamondABI,
-    usxAddr,
-    dForcePoolAddr,
-    ops,
-    protocolFee,
-    tokensDatabaseL1,
-    usdcAddr,
-    crv2PoolAddr,
-    pokeMeOpsAddr,
-    accountL2ABI,
-    fraxAddr,
-    wbtcAddr
+    ops
 } = require('../../../scripts/state-vars');;
 
-const { MaxUint256 } = ethers.constants;
 
-
-let ozlDiamondAddr, ozlDiamond, newProxyAddr, ozMiddle;
-let ownerAddr, signer, signerAddr;
-let tx, receipt, balance, accData;
-let usersProxies = [];
-let signers, signerAddr2, beacon, ozMiddleware;
-let facetCut, accounts, names, accountDetails;
-let factory, factoryAddr, constrArgs, beaconAddr;
+let ozlDiamondAddr, ozlDiamond;
+let signer, signerAddr;
+let tx, accData;
+let beacon, ozMiddleware;
 
 
 describe('With deployed OZL', async () => {
@@ -84,21 +36,22 @@ describe('With deployed OZL', async () => {
         signerAddr = testAcc;
         ([ signer ] = await hre.ethers.getSigners());
 
+        /**
+         * Deploys v1.1 upgrade
+         */
         ([ ozMiddleware, beacon ] = await deployV1_1(ozlDiamond, deployer2));
 
-        accountDetails = [
-            signerAddr,
-            usdtAddrArb,
-            defaultSlippage,
-            'test'
-        ];
-
+        
+        /**
+         * Internal config so the test succeeds
+         */
         accData = getAccData(testAcc, usdtAddrArb, defaultSlippage);
         getVarsForHelpers(ozlDiamond, '');
-
-        //-------
         await sendETHOps('11', deployer2);
 
+        /**
+         * Sets Hardhat's msg.sender as authorized in order to simulate Gelato's sender. 
+         */
         await hre.network.provider.request({
             method: "hardhat_impersonateAccount",
             params: [deployer2],
@@ -115,6 +68,9 @@ describe('With deployed OZL', async () => {
     });
 
     it('should properly calculate new Ozel balances in an L1 user after having used an L2 Account', async () => {
+        /**
+         * Calculates OZL balances pre-tx
+         */
         console.log('');
         const ozlBalanceTestAcc2Pre = await balanceOfOZL(testAcc2);
         console.log('OZL balance account1 pre-tx: ', ozlBalanceTestAcc2Pre);
@@ -135,7 +91,9 @@ describe('With deployed OZL', async () => {
         console.log('***** Tx sent from account2 *****');
         console.log('');
 
-        //-------------
+        /**
+         * Sends tx to ozDiamond that will trigger a re-calculation of OZL balances
+         */
         const value = parseEther('1');
         const iface = new ethers.utils.Interface(diamondABI);
         const encodedData = iface.encodeFunctionData('exchangeToAccountToken', [
@@ -150,7 +108,10 @@ describe('With deployed OZL', async () => {
         tx = await signer.sendTransaction(ops);
         await tx.wait();
 
-        //--------------
+        /**
+         * Re-calculates OZL balances and checks that the owner of 
+         * the receiving Account got their stablecoins (USDT in this case)
+         */
         const ozlBalanceTestAcc2Post = await balanceOfOZL(testAcc2);
         console.log('OZL balance account1 post-tx: ', ozlBalanceTestAcc2Post);
 
@@ -165,6 +126,4 @@ describe('With deployed OZL', async () => {
         console.log('USDT balance account2 post-tx: ', balanceUSDTpost / 10 ** 6);
         assert(Number(balanceUSDTpost) > 1600);
     });
-
-
 });
