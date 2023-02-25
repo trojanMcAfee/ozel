@@ -101,7 +101,6 @@ describe('With deployed OZL', async () => {
         ops.to = deployer2;
         tx = await signer.sendTransaction(ops);
         await tx.wait();
-        console.log('eth sent out');
         delete ops.value;
         delete ops.to;
 
@@ -121,20 +120,24 @@ describe('With deployed OZL', async () => {
     });
 
     it('should properly calculate new Ozel balances in an L1 user after having used an L2 Account', async () => {
+        console.log('');
         const ozlBalanceTestAcc2Pre = await balanceOfOZL(testAcc2);
-        console.log('ozl bal testAcc2 pre: ', ozlBalanceTestAcc2Pre);
+        console.log('OZL balance account1 pre-tx: ', ozlBalanceTestAcc2Pre);
 
         const ozlBalanceTestAccPre = await balanceOfOZL(testAcc);
-        console.log('ozl bal testAcc pre: ', ozlBalanceTestAccPre);
+        console.log('OZL balance account2 pre-tx: ', ozlBalanceTestAccPre);
 
         let totalOZL = ozlBalanceTestAcc2Pre + ozlBalanceTestAccPre;
-        console.log('total: ', totalOZL);
+        console.log('total OZL balance: ', totalOZL);
         assert(totalOZL > 99.99 && totalOZL < 100);
 
         const USDT = await hre.ethers.getContractAt('IERC20', usdtAddrArb);
         const balanceUSDTpre = await USDT.balanceOf(testAcc);
-        console.log('usdt bal pre: ', balanceUSDTpre / 10 ** 6);
+        console.log('USDT balance account2 pre-tx: ', balanceUSDTpre / 10 ** 6);
         assert.equal(Number(balanceUSDTpre), 0);
+        console.log('');
+        console.log('***** Tx sent from account2 *****');
+        console.log('');
 
         //-------------
         const value = parseEther('1');
@@ -153,17 +156,17 @@ describe('With deployed OZL', async () => {
 
         //--------------
         const ozlBalanceTestAcc2Post = await balanceOfOZL(testAcc2);
-        console.log('ozl bal testAcc2 post: ', ozlBalanceTestAcc2Post);
+        console.log('OZL balance account1 post-tx: ', ozlBalanceTestAcc2Post);
 
         const ozlBalanceTestAccPost = await balanceOfOZL(testAcc);
-        console.log('ozl bal testAcc post: ', ozlBalanceTestAccPost);
+        console.log('OZL balance account2 post-tx: ', ozlBalanceTestAccPost);
 
         totalOZL = ozlBalanceTestAcc2Post + ozlBalanceTestAccPost;
-        console.log('total: ', totalOZL);
+        console.log('total OZL balance: ', totalOZL);
         assert(totalOZL > 99.99 && totalOZL < 100);
 
         const balanceUSDTpost = await USDT.balanceOf(testAcc);
-        console.log('usdt bal post: ', balanceUSDTpost / 10 ** 6);
+        console.log('USDT balance account2 post-tx: ', balanceUSDTpost / 10 ** 6);
         assert(Number(balanceUSDTpost) > 1600);
     });
 
