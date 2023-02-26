@@ -28,7 +28,7 @@ contract ozMiddlewareL2 is ozIMiddlewareL2, Initializable {
     }
 
     /*///////////////////////////////////////////////////////////////
-                            Modifiers
+                            Modifiers & Init
     //////////////////////////////////////////////////////////////*/
 
     modifier onlyUser() {
@@ -62,7 +62,7 @@ contract ozMiddlewareL2 is ozIMiddlewareL2, Initializable {
         uint amountToSend_,
         address account_
     ) external payable {
-        (address user,,) = LibCommon.extract(accData_);
+        (address user,,) = accData_.extract();
 
         if (!_verify(user, msg.sender)) revert NotAccount();
 

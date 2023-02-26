@@ -15,7 +15,7 @@ import '../../interfaces/common/IWETH.sol';
 import './ozExecutorFacet.sol';
 import '../../Errors.sol';
 
-import 'hardhat/console.sol';
+
 /**
  * @title Entry L2 contract for swaps 
  * @notice Receiver of the bridge tx from L1 containing the account's ETH. 
@@ -41,7 +41,6 @@ contract OZLFacet is IOZLFacet, ModifiersARB {
         uint amountToSend_,
         address account_
     ) external payable noReentrancy(0) onlyAuthorized { 
-        console.log('hi');
         (address user, address token, uint slippage) = _filter(accData_);
 
         if (msg.value <= 0) revert CantBeZero('msg.value');
