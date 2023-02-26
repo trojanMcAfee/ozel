@@ -2,17 +2,17 @@
 pragma solidity 0.8.14;
 
 
+import "@openzeppelin/contracts/proxy/utils/Initializable.sol";
+import '../../interfaces/arbitrum/ozIMiddlewareL2.sol';
+import { AccData } from '../AppStorage.sol';
+import './facets/ozLoupeFacetV1_1.sol';
+import '../facets/ozLoupeFacet.sol';
 import '../../libraries/LibCommon.sol';
 import '../../Errors.sol';
-// import '../ozDiamond.sol';
-import './ozLoupeFacetV1_1.sol';
-import { AccData } from '../AppStorage.sol';
-import '../facets/ozLoupeFacet.sol';
-import "@openzeppelin/contracts/proxy/utils/Initializable.sol";
 
-// import 'hardhat/console.sol';
 
-contract ozMiddlewareL2 is Initializable {
+
+contract ozMiddlewareL2 is ozIMiddlewareL2, Initializable {
 
     using LibCommon for bytes;
 
@@ -27,7 +27,10 @@ contract ozMiddlewareL2 is Initializable {
         OZL = ozDiamond_;
     }
 
-    //--------
+    /*///////////////////////////////////////////////////////////////
+                            Modifiers
+    //////////////////////////////////////////////////////////////*/
+
     modifier onlyUser() {
         (address user,,) = accData.extract();
         if (msg.sender != user) revert NotAuthorized(msg.sender);
@@ -48,8 +51,12 @@ contract ozMiddlewareL2 is Initializable {
     function initialize(bytes memory accData_) external initializer {
         accData = accData_;
     }
-    //----------
+    
+    /*///////////////////////////////////////////////////////////////
+                            Main functions
+    //////////////////////////////////////////////////////////////*/
 
+    //@inheritdoc ozIMiddlewareL2
     function exchangeToAccountToken(
         bytes memory accData_,
         uint amountToSend_,
@@ -78,8 +85,11 @@ contract ozMiddlewareL2 is Initializable {
     }
 
 
-    //-------
+    /*///////////////////////////////////////////////////////////////
+                            Account methods
+    //////////////////////////////////////////////////////////////*/
 
+    //@inheritdoc ozIMiddlewareL2
     function changeToken(
         address newToken_
     ) external checkToken(newToken_) onlyUser { 
@@ -88,6 +98,7 @@ contract ozMiddlewareL2 is Initializable {
         emit NewToken(newToken_);
     }
 
+    //@inheritdoc ozIMiddlewareL2
     function changeSlippage(
         uint16 newSlippage_
     ) external checkSlippage(newSlippage_) onlyUser { 
@@ -96,6 +107,7 @@ contract ozMiddlewareL2 is Initializable {
         emit NewSlippage(newSlippage_);
     }
 
+    //@inheritdoc ozIMiddlewareL2
     function changeTokenNSlippage( 
         address newToken_, 
         uint16 newSlippage_
@@ -106,6 +118,7 @@ contract ozMiddlewareL2 is Initializable {
         emit NewSlippage(newSlippage_);
     } 
 
+    //@inheritdoc ozIMiddlewareL2
     function getDetails() external view returns(
         address user, 
         address token, 
@@ -114,6 +127,7 @@ contract ozMiddlewareL2 is Initializable {
         (user, token, slippage) = accData.extract();
     }
 
+    //@inheritdoc ozIMiddlewareL2
     function withdrawETH_lastResort() external onlyUser { 
         (bool success, ) = payable(msg.sender).call{value: address(this).balance}('');
         if (!success) revert CallFailed('ozPayMe: withdrawETH_lastResort failed');

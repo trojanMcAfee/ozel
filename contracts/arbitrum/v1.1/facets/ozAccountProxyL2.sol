@@ -4,15 +4,16 @@ pragma solidity 0.8.14;
 
 import '@openzeppelin/contracts/proxy/beacon/BeaconProxy.sol';
 import "@openzeppelin/contracts/proxy/utils/Initializable.sol";
-// import '@openzeppelin/contracts/proxy/Proxy.sol';
 import '@openzeppelin/contracts/utils/Address.sol';
-// import '../../libraries/LibCommon.sol';
-import '../../Errors.sol';
 import './ozLoupeFacetV1_1.sol';
+import '../../../Errors.sol';
 
-import 'hardhat/console.sol';
 
-
+/**
+ * @title Receiver of an user's ETH transfers (aka THE account)
+ * @notice Proxy that users create where they will receive all ETH transfers,
+ * which would be converted to the stablecoin of their choosing.
+ */
 contract ozAccountProxyL2 is BeaconProxy {
 
     bool private _initialized;
@@ -22,7 +23,6 @@ contract ozAccountProxyL2 is BeaconProxy {
 
     address private immutable ops;
     address private immutable OZL;
-
 
     constructor(
         address beacon_,
@@ -34,11 +34,10 @@ contract ozAccountProxyL2 is BeaconProxy {
     }
 
 
-
-    //--------
-
     receive() external payable override {}
 
+
+    /// @dev Gelato checker for autonomous calls
     function checker() external view returns(bool canExec, bytes memory execPayload) { 
         uint amountToSend = address(this).balance;
         if (amountToSend > 0) canExec = true;
@@ -51,8 +50,12 @@ contract ozAccountProxyL2 is BeaconProxy {
         );
     }
 
-
-    //-------
+    /**
+     * @notice Forwards payload to the implementation
+     * @dev Queries between the authorized selectors. If true, keeps the msg.sender via a delegatecall.
+     * If false, it forwards the msg.sender via call. 
+     * @param implementation Address of the implementation connected to each account
+     */
     function _delegate(address implementation) internal override {
         if ( ozLoupeFacetV1_1(OZL).isSelectorAuthorized(bytes4(msg.data)) ) { 
             assembly {
@@ -74,5 +77,4 @@ contract ozAccountProxyL2 is BeaconProxy {
             require(success);
         }
     }
-
 }

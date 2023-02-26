@@ -7,7 +7,7 @@ import '../libraries/LibCommon.sol';
 import '../Errors.sol';
 import './Bits.sol';
 
-import 'hardhat/console.sol';
+
 /**
  * @title Modifiers for the L2 contracts
  */
@@ -18,12 +18,10 @@ abstract contract ModifiersARB is Bits {
      * @param index_ Index of the bit to be flipped 
      */
     modifier noReentrancy(uint index_) { 
-        console.log('sender: ', msg.sender);
         if (!(_getBit(0, index_))) revert NoReentrance();
         _toggleBit(0, index_);
         _;
         _toggleBit(0, index_);
-        console.log(4);
     }
 
     /**
@@ -31,7 +29,6 @@ abstract contract ModifiersARB is Bits {
      * @param index_ Index of the bit to be flipped 
      */
     modifier isAuthorized(uint index_) {
-        console.log(7);
         if (_getBit(1, index_)) revert NotAuthorized(msg.sender);
         _;
         _toggleBit(1, index_);
@@ -49,10 +46,8 @@ abstract contract ModifiersARB is Bits {
      * @dev Checks that the sender can call exchangeToAccountToken
      */
     modifier onlyAuthorized() {
-        console.log(5);
         address l1Address = AddressAliasHelper.undoL1ToL2Alias(msg.sender);
         if (!s.isAuthorized[l1Address]) revert NotAuthorized(msg.sender);
-        console.log(6);
         _;
     }
 

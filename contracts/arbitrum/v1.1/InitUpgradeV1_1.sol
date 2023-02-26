@@ -4,7 +4,9 @@ pragma solidity 0.8.14;
 
 import '../AppStorage.sol';
 
-
+/**
+ * @notice Initializes the storage for the v1.1 upgrade
+ */
 contract InitUpgradeV1_1 {
 
     AppStorage s;

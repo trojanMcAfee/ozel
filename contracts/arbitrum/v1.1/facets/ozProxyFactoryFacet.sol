@@ -3,16 +3,21 @@ pragma solidity 0.8.14;
 
 
 import "@openzeppelin/contracts/utils/Address.sol";
-import { ModifiersARB } from '../Modifiers.sol';
-import '../../interfaces/ethereum/IOps.sol';
+import { AccountConfig, AccData } from '../../AppStorage.sol';
+import { ModifiersARB } from '../../Modifiers.sol';
+import '../../../interfaces/arbitrum/ozIProxyFactoryFacet.sol';
+import '../../../interfaces/ethereum/IOps.sol';
+import '../../../libraries/LibDiamond.sol';
 import './ozAccountProxyL2.sol';
-import { AccountConfig, AccData } from '../AppStorage.sol';
-import '../../Errors.sol';
-import '../../libraries/LibDiamond.sol';
+import '../../../Errors.sol';
 
-import 'hardhat/console.sol';
 
-contract ozProxyFactoryFacet is ModifiersARB {
+/**
+ * @title Factory of user proxies (aka accounts)
+ * @notice Creates the accounts where users will receive their ETH on L2. 
+ * Each account is the proxy (ozAccountProxyL2) connected -through the Beacon- to ozMiddleware (the implementation)
+ */
+contract ozProxyFactoryFacet is ozIProxyFactoryFacet, ModifiersARB {
 
     using Address for address;
 
@@ -26,7 +31,7 @@ contract ozProxyFactoryFacet is ModifiersARB {
         beacon = beacon_;
     }
 
-
+    //@inheritdoc ozIProxyFactoryFacet
     function createNewProxy(
         AccountConfig calldata acc_
     ) external noReentrancy(0) {
@@ -57,9 +62,17 @@ contract ozProxyFactoryFacet is ModifiersARB {
         emit AccountCreated(address(newAccount));
     }
 
+    //@inheritdoc ozIProxyFactoryFacet
+    function authorizeSelector(bytes4 selector_, bool status_) external {
+        LibDiamond.enforceIsContractOwner();
+        s.authorizedSelectors[selector_] = status_;
+    }
 
-    //------
+    /*///////////////////////////////////////////////////////////////
+                                Helpers
+    //////////////////////////////////////////////////////////////*/
 
+    /// @dev Creates the Gelato task of each proxy/account
     function _startTask(address account_) private returns(bytes32 id) {         
         id = IOps(ops).createTaskNoPrepayment( 
             account_, 
@@ -70,6 +83,12 @@ contract ozProxyFactoryFacet is ModifiersARB {
         );
     }
 
+    /**
+     * @dev Saves and connects the address of the account to its details.
+     * @param account_ The account/proxy
+     * @param acc_ Details of the account/proxy
+     * @param taskId_ Gelato's task id
+     */
     function _multiSave(
         bytes20 account_,
         AccountConfig calldata acc_,
@@ -88,10 +107,4 @@ contract ozProxyFactoryFacet is ModifiersARB {
             s.userToData[user].acc_userToTask_name[acc_user] = task_name;
         }
     }
-
-    function authorizeSelector(bytes4 selector_, bool status_) external {
-        LibDiamond.enforceIsContractOwner();
-        s.authorizedSelectors[selector_] = status_;
-    }
-
 }
