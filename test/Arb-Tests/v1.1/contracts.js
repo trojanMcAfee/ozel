@@ -1,32 +1,14 @@
 const { ethers } = require("ethers");
 const assert = require('assert');
-const {
-    parseEther, 
-    formatEther, 
-    hexStripZeros 
-} = ethers.utils;
+const { formatEther } = ethers.utils;
 
 const { err } = require('../../errors'); 
 
 const { 
-    balanceOfOZL, 
-    transferOZL, 
-    withdrawShareOZL, 
     getVarsForHelpers,
-    enableWithdrawals,
     deploy,
-    getOzelIndex,
-    addTokenToDatabase,
-    getRegulatorCounter,
-    getTestingNumber,
-    replaceForModVersion,
-    queryTokenDatabase,
-    removeTokenFromDatabase,
     getAccData,
-    sendETHWithAlias,
-    deployFacet,
     activateProxyLikeOpsL2,
-    getInitSelectors,
     deployV1_1
 } = require('../../../scripts/helpers-arb');
 
@@ -44,33 +26,26 @@ const {
     defaultSlippage,
     nullAddr,
     deadAddr,
-    crvTricrypto,
     diamondABI,
-    usxAddr,
-    dForcePoolAddr,
     ops,
-    protocolFee,
-    tokensDatabaseL1,
     usdcAddr,
-    crv2PoolAddr,
     pokeMeOpsAddr,
     accountL2ABI,
-    fraxAddr,
-    wbtcAddr
+    fraxAddr
 } = require('../../../scripts/state-vars');;
 
 const { MaxUint256 } = ethers.constants;
 
 
-let ozlDiamondAddr, ozlDiamond, newProxyAddr, ozMiddle;
-let ownerAddr, signer, signerAddr;
-let tx, receipt, balance, accData;
+let ozlDiamond, newProxyAddr;
+let signer, signerAddr;
+let tx, balance, accData;
 let usersProxies = [];
 let signers, signerAddr2, beacon, ozMiddleware;
 let facetCut, accounts, names;
-let factory, factoryAddr, constrArgs, beaconAddr;
+let constrArgs;
 
-describe('v1.1 tests', async function () {
+describe('Contracts tests', async function () {
     this.timeout(1000000);
 
     before(async () => {
