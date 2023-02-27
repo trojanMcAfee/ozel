@@ -18,6 +18,7 @@ async function main() {
     const deployer2 = '0xe738696676571D9b74C81716E4aE797c2440d306';
     const [signer] = await hre.ethers.getSigners();
     const signerAddr = await signer.getAddress();
+    const pokeMeOpsAddr = '0xa5f9b728ecEB9A1F6FCC89dcc2eFd810bA4Dec41';
 
     const accountDetails = [
         signerAddr,
@@ -43,21 +44,21 @@ async function main() {
     console.log('acc: ', account);
 
     //-----
-    tx = await signer.sendTransaction({
-        to: account,
-        value: parseEther('1')
-    });
-    receipt = await tx.wait();
-    console.log('eth sent: ', receipt.transactionHash);
+    // tx = await signer.sendTransaction({
+    //     to: account,
+    //     value: parseEther('1')
+    // });
+    // receipt = await tx.wait();
+    // console.log('eth sent: ', receipt.transactionHash);
 
-    let balance = await hre.ethers.provider.getBalance(account);
-    console.log('bal pre: ', formatEther(balance));
+    // let balance = await hre.ethers.provider.getBalance(account);
+    // console.log('bal pre: ', formatEther(balance));
 
-    const accData = getAccData(signerAddr, usdtAddrArb, defaultSlippage);
-    await activateProxyLikeOpsL2(account, factoryAddr, accData);
+    // const accData = getAccData(signerAddr, usdtAddrArb, defaultSlippage);
+    // await activateProxyLikeOpsL2(account, factoryAddr, accData);
 
-    balance = await hre.ethers.provider.getBalance(account);
-    console.log('bal post: ', formatEther(balance));
+    // balance = await hre.ethers.provider.getBalance(account);
+    // console.log('bal post: ', formatEther(balance));
 
 }
 

@@ -292,7 +292,7 @@ async function createAccount() {
         'test'
     ];
 
-    const proxyFactoryAddr = '0xCf51Ff11D2582eA4A65b0aA4C670CB21760A4616';
+    const proxyFactoryAddr = '0xED38F34DA3d19B029d13b575B6bc9B140DA7A92a';
     const factory = await hre.ethers.getContractAt('ozProxyFactoryFacet', proxyFactoryAddr);
     console.log('factory in : ', factory.address);
 
@@ -315,4 +315,16 @@ async function checkImpl() {
     console.log('id: ', id);
 }
 
-checkImpl();
+// checkImpl();
+
+
+async function getTask() {
+    const factoryAddr = '0x773241cbB10a1e789347AA170C2790D2c620593D';
+    const factory = await hre.ethers.getContractAt('ozProxyFactoryTest', factoryAddr);
+    const account = '0x2e54c7c2B5519B1aFe88779fe63B38694EF7C003';
+
+    const id = await factory.getTaskID(account);
+    console.log('id: ', id);
+}
+
+getTask();
