@@ -18,7 +18,7 @@ async function main() {
     const deployer2 = '0xe738696676571D9b74C81716E4aE797c2440d306';
     const [signer] = await hre.ethers.getSigners();
     const signerAddr = await signer.getAddress();
-    const pokeMeOpsAddr = '0xa5f9b728ecEB9A1F6FCC89dcc2eFd810bA4Dec41';
+    // const pokeMeOpsAddr = '0xa5f9b728ecEB9A1F6FCC89dcc2eFd810bA4Dec41';
 
     const accountDetails = [
         signerAddr,

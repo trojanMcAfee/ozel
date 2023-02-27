@@ -136,7 +136,7 @@ const l1Provider = new ethers.providers.JsonRpcProvider(process.env.MAINNET);
 let l1Signer, l2Signer, l1SignerTestnet, l2SignerTestnet;
 let l1ProviderTestnet, l2ProviderTestnet;
 
-let network = 'arbitrum';
+let network = 'arbitrum-goerli';
 switch(network) {
     case 'goerli':
         pokeMeOpsAddr = '0xc1C6805B857Bef1f412519C4A842522431aFed39'; 
@@ -217,6 +217,31 @@ switch(network) {
             mimAddr: '0x99D8a9C45b2ecA8864373A26D1459e3Dff1e17F3',
             usxAddr: '0x0a5E677a6A24b2F1A2Bf4F3bFfC443231d2fDEc8'
         };
+
+        break;
+    case 'arbitrum-goerli':
+        pokeMeOpsAddr = '0xa5f9b728ecEB9A1F6FCC89dcc2eFd810bA4Dec41'; 
+        hopBridge = '0xb8901acB165ed027E32754E0FFe830802919727f'; //mainnet
+        inbox = '0x4Dbd4fc535Ac27206064B68FfCf827b0A60BAB3f';
+
+        usdtAddrArb = '0xfd086bc7cd5c481dcc9c85ebe478a1c0b69fcbb9';
+        tricryptoAddr = '0x960ea3e3C7FB317332d990873d354E18d7645590';
+        crvTricrypto = '0x8e0B8c8BB9db49a46697F3a5Bb8A308e744821D2';
+        wethAddr = '0x82aF49447D8a07e3bd95BD0d56f35241523fBab1';
+        wbtcAddr = '0x2f2a2543B76A4166549F7aaB2e75Bef0aefC5B0f';
+        usdcAddr = '0xFF970A61A04b1cA14834A43f5dE4533eBDDB5CC8';
+        mimAddr = '0xFEa7a6a0B346362BF88A9e4A88416B77a57D6c2A';
+        mimPoolAddr = '0x30dF229cefa463e991e29D42DB0bae2e122B2AC7';
+        crv2PoolAddr = '0x7f90122BF0700F9E7e1F688fe926940E8839F353';
+        yTricryptoPoolAddr = '0x239e14A19DFF93a17339DCC444f74406C17f8E67';
+        fraxPoolAddr = '0xf07d553B195080F84F582e88ecdD54bAa122b279';
+        fraxAddr = '0x17FC002b466eEc40DaE837Fc4bE5c67993ddBd6F';
+        gelatoAddr = '0xF82D64357D9120a760e1E4C75f646C0618eFc2F3';
+        deadAddr = '0x000000000000000000000000000000000000dEaD';
+        chainlinkAggregatorAddr = '0x639fe6ab55c921f74e7fac1ee960c0b6293ba612';
+        swapRouterUniAddr = '0xE592427A0AEce92De3Edee1F18E0157C05861564';
+        usxAddr = '0x641441c631e2F909700d2f41FD87F0aA6A6b4EDb';
+        dForcePoolAddr = '0x2ce5Fd6f6F4a159987eac99FF5158B7B62189Acf';
 } 
 
 
