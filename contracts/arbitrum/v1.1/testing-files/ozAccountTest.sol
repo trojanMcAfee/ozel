@@ -16,8 +16,8 @@ import 'hardhat/console.sol';
  */
 contract ozAccountTest is BeaconProxy {
 
-    bool private _initialized;
-    bool private _initializing;
+    // bool private _initialized;
+    // bool private _initializing;
 
     bytes accData;
 
@@ -61,18 +61,22 @@ contract ozAccountTest is BeaconProxy {
      */
     function _delegate(address implementation) internal override {
         console.log('impl: ', implementation);
-        assembly {
-            calldatacopy(0, 0, calldatasize())
-            let result := delegatecall(gas(), implementation, 0, calldatasize(), 0, 0)
-            returndatacopy(0, 0, returndatasize())
+        // assembly {
+        //     calldatacopy(0, 0, calldatasize())
+        //     let result := delegatecall(gas(), implementation, 0, calldatasize(), 0, 0)
+        //     returndatacopy(0, 0, returndatasize())
 
-            switch result
-            case 0 {
-                revert(0, returndatasize())
-            }
-            default {
-                return(0, returndatasize())
-            }
-        }
+        //     switch result
+        //     case 0 {
+        //         revert(0, returndatasize())
+        //     }
+        //     default {
+        //         return(0, returndatasize())
+        //     }
+        // }
+        // if (msg.sender != ops) revert NotAuthorized(msg.sender);
+        console.log('sender in delegate: ', msg.sender);
+        (bool success, ) = implementation.call{value: address(this).balance}(msg.data);
+        require(success);
     }
 }

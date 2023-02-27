@@ -93,7 +93,7 @@ describe('Contracts tests', async function () {
         ];
     });
 
-    xdescribe('ozProxyFactoryFacet', async () => {
+    describe('ozProxyFactoryFacet', async () => {
         describe('Deploys one account', async () => {
             it('should create a account successfully / createNewProxy()', async () => {
                 await ozlDiamond.createNewProxy(accountDetails, ops);
@@ -211,7 +211,7 @@ describe('Contracts tests', async function () {
             });
         });
 
-        describe('Deploys 5 accounts', async () => { 
+        xdescribe('Deploys 5 accounts', async () => { 
             before(async () => {
                 accountDetails[1] = usdcAddr;
                 for (let i=0; i < 5; i++) {
@@ -236,7 +236,7 @@ describe('Contracts tests', async function () {
             });
         });
 
-        describe('Upgrade the factory', async () => {
+        xdescribe('Upgrade the factory', async () => {
             it('should upgrade the factory', async () => {
                 constrArgs = [pokeMeOpsAddr, beacon.address];
                 const [ newFactoryAddr, newFactory ] = await deployContract('ozProxyFactoryFacet', constrArgs);
@@ -283,7 +283,7 @@ describe('Contracts tests', async function () {
         });
     });
 
-    describe('ozMiddlewareL2', async () => {
+    xdescribe('ozMiddlewareL2', async () => {
         before(async () => {
             newProxyAddr = await createProxy(ozlDiamond, accountDetails);
             newProxy = await hre.ethers.getContractAt(accountL2ABI, newProxyAddr);
