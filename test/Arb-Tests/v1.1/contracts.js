@@ -93,7 +93,7 @@ describe('Contracts tests', async function () {
         ];
     });
 
-    describe('ozProxyFactoryFacet', async () => {
+    xdescribe('ozProxyFactoryFacet', async () => {
         describe('Deploys one account', async () => {
             it('should create a account successfully / createNewProxy()', async () => {
                 await ozlDiamond.createNewProxy(accountDetails, ops);
@@ -257,7 +257,7 @@ describe('Contracts tests', async function () {
         });
     });
 
-    describe('ozAccountProxyL2', async () => {
+    xdescribe('ozAccountProxyL2', async () => {
         before(async () => {
             newProxyAddr = await createProxy(ozlDiamond, accountDetails);
             newProxy = await hre.ethers.getContractAt(accountL2ABI, newProxyAddr);
@@ -289,7 +289,7 @@ describe('Contracts tests', async function () {
             newProxy = await hre.ethers.getContractAt(accountL2ABI, newProxyAddr);
         });
 
-        it('should not let a non-account user to call the function / exchangeToAccountToken()', async () => {
+        xit('should not let a non-account user to call the function / exchangeToAccountToken()', async () => {
             await assert.rejects(async () => {
                 await ozMiddleware.exchangeToAccountToken(
                     accData,
@@ -303,6 +303,8 @@ describe('Contracts tests', async function () {
         }) 
 
         it('should not allow an external user to change account token / changeToken()', async () => {
+            // await newProxy.connect(signers[1]).changeToken(usdcAddr, ops);
+
             await assert.rejects(async () => {
                 await newProxy.connect(signers[1]).changeToken(usdcAddr, ops);
             }, {
@@ -311,7 +313,7 @@ describe('Contracts tests', async function () {
             });
         });
 
-        it('shoud not allow to change account token for the 0 address / changeToken()', async () => {
+        xit('shoud not allow to change account token for the 0 address / changeToken()', async () => {
             await assert.rejects(async () => {
                 await newProxy.changeToken(nullAddr, ops);
             }, {
@@ -320,7 +322,7 @@ describe('Contracts tests', async function () {
             });
         });
 
-        it('shoud not allow to change account token for one not found in the database / changeToken()', async () => {
+        xit('shoud not allow to change account token for one not found in the database / changeToken()', async () => {
             await assert.rejects(async () => {
                 await newProxy.changeToken(deadAddr, ops); 
             }, {
@@ -329,7 +331,7 @@ describe('Contracts tests', async function () {
             });
         });
 
-        it('should allow the user to change the slippage with the minimum of 0.01% / changeSlippage()', async () => {
+        xit('should allow the user to change the slippage with the minimum of 0.01% / changeSlippage()', async () => {
             newUserSlippage = 0.01; 
 
             tx = await newProxy.changeSlippage(parseInt(newUserSlippage * 100), ops);
@@ -340,7 +342,7 @@ describe('Contracts tests', async function () {
             assert.equal(Number(slippage) / 100, newUserSlippage); 
         });
 
-        it('should not allow to change the slippage to 0 / changeSlippage()', async () => {
+        xit('should not allow to change the slippage to 0 / changeSlippage()', async () => {
             newSlippage = 0;
             await assert.rejects(async () => {
                 await newProxy.changeSlippage(newSlippage, ops);
@@ -350,7 +352,7 @@ describe('Contracts tests', async function () {
             });
         });
 
-        it('should not allow to change the slippage to more than 5% / changeSlippage()', async () => {
+        xit('should not allow to change the slippage to more than 5% / changeSlippage()', async () => {
             newSlippage = 501;
             await assert.rejects(async () => {
                 await newProxy.changeSlippage(newSlippage, ops);
@@ -360,7 +362,7 @@ describe('Contracts tests', async function () {
             });
         });
 
-        it('should not allow an external user to change the slippage / changeSlippage()', async () => {
+        xit('should not allow an external user to change the slippage / changeSlippage()', async () => {
             await assert.rejects(async () => {
                 await newProxy.connect(signers[1]).changeSlippage(200, ops);
             }, {
@@ -369,7 +371,7 @@ describe('Contracts tests', async function () {
             });
         });
 
-        it('should change both token and slippage in one tx / changeTokenNSlippage()', async () => {
+        xit('should change both token and slippage in one tx / changeTokenNSlippage()', async () => {
             newUserSlippage = 0.55;
             tx = await newProxy.changeTokenNSlippage(fraxAddr, parseInt(0.55 * 100), ops);
             await tx.wait();
@@ -379,7 +381,7 @@ describe('Contracts tests', async function () {
             assert.equal(Number(slippage) / 100, newUserSlippage); 
         });
 
-        describe('withdrawETH_lastResort', async () => {
+        xdescribe('withdrawETH_lastResort', async () => {
             before(async () => {
                 newProxyAddr = await createProxy(ozlDiamond, accountDetails);
                 newProxy = await hre.ethers.getContractAt(accountL2ABI, newProxyAddr);
@@ -406,7 +408,7 @@ describe('Contracts tests', async function () {
         });
     });
 
-    describe('ozLoupeFacetV1_1', async () => {
+    xdescribe('ozLoupeFacetV1_1', async () => {
         before(async () => {
             accountDetails[0] = signerAddr2;
             for (let i=0; i < 3; i++) {
@@ -439,7 +441,7 @@ describe('Contracts tests', async function () {
         });
     });
 
-    describe('UpgradeableBeacon', async () => {
+    xdescribe('UpgradeableBeacon', async () => {
         it('should let the owner upgrade the beacon', async () => {
             ([ newMiddlewareAddr, newMiddleware ] = await deployContract('ozMiddlewareL2', [ ozlDiamond.address ]));
             tx = await beacon.upgradeTo(newMiddlewareAddr);

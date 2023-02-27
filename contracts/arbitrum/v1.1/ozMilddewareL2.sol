@@ -10,8 +10,7 @@ import '../facets/ozLoupeFacet.sol';
 import '../../libraries/LibCommon.sol';
 import '../../Errors.sol';
 
-
-
+import 'hardhat/console.sol';
 contract ozMiddlewareL2 is ozIMiddlewareL2, Initializable {
 
     using LibCommon for bytes;
