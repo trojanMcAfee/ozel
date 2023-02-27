@@ -44,9 +44,10 @@ async function deployContract(contractName, constrArgs, signer = null) {
     switch(contractName) {
         case 'FakeOZL':
         case 'ozMiddlewareL2':
+        case 'ozMiddlewareTest':
         case 'UpgradeableBeacon':
             ([ var1 ] = constrArgs);
-            contract = await Contract.connect(signer).deploy(var1, opsL2);
+            contract = await Contract.connect(signer).deploy(var1); //opsL2
             break;
         case 'ozUpgradeableBeacon':
         case 'ozERC1967Proxy':
@@ -54,8 +55,9 @@ async function deployContract(contractName, constrArgs, signer = null) {
         case 'ProxyFactory':
         case 'FaultyProxyFactory':
         case 'ozProxyFactoryFacet':
+        case 'ozProxyFactoryTest':
             ([ var1, var2 ] = constrArgs);
-            contract = await Contract.connect(signer).deploy(var1, var2, ops);
+            contract = await Contract.connect(signer).deploy(var1, var2);
             break;
         case 'ozERC1967Proxy':
         case 'ozMiddleware':
@@ -64,16 +66,16 @@ async function deployContract(contractName, constrArgs, signer = null) {
         case 'FaultyOzMiddle2':
         case 'FaultyOzMiddle3':
             ([ var1, var2, var3 ] = constrArgs);
-            contract = await Contract.connect(signer).deploy(var1, var2, var3, ops);
+            contract = await Contract.connect(signer).deploy(var1, var2, var3);
             break;
         case 'StorageBeacon':
         case 'ozPayMe':
         case 'ImplementationMock':
             ([ var1, var2, var3, var4 ] = constrArgs);
-            contract = await Contract.connect(signer).deploy(var1, var2, var3, var4, ops); 
+            contract = await Contract.connect(signer).deploy(var1, var2, var3, var4); 
             break;
         default:
-            contract = await Contract.connect(signer).deploy(ops);
+            contract = await Contract.connect(signer).deploy();
     }
 
     await contract.deployed();
@@ -254,7 +256,7 @@ async function sendETH(receiver, amount) {
 async function createProxy(factory, accountDetails) {
     const tx = await factory.createNewProxy(accountDetails, ops);
     const receipt = await tx.wait();
-    return network !== 'arbitrum' ? receipt.logs[0].address : receipt.events[0].address;;
+    return network !== 'arbitrum' ? receipt.logs[0].address : receipt.events[0].address;
 }
 
 

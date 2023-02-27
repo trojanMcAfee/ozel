@@ -41,7 +41,6 @@ describe('With deployed OZL', async () => {
          */
         ([ ozMiddleware, beacon ] = await deployV1_1(ozlDiamond, deployer2));
 
-        
         /**
          * Internal config so the test succeeds
          */

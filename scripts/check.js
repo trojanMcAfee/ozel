@@ -17,7 +17,8 @@ const {
     opsL2,
     mimAddr,
     wbtcAddr,
-    defaultSlippage
+    defaultSlippage,
+    opsL2_2
 } = require('./state-vars.js');
 
 const { 
@@ -277,4 +278,41 @@ async function fixLast() {
 
 }
 
-fixLast();
+// fixLast();
+
+
+async function createAccount() {
+    const [signer] = await hre.ethers.getSigners();
+    const signerAddr = await signer.getAddress();
+
+    const accountDetails = [
+        signerAddr,
+        usdtAddrArb,
+        defaultSlippage,
+        'test'
+    ];
+
+    const proxyFactoryAddr = '0xCf51Ff11D2582eA4A65b0aA4C670CB21760A4616';
+    const factory = await hre.ethers.getContractAt('ozProxyFactoryFacet', proxyFactoryAddr);
+    console.log('factory in : ', factory.address);
+
+    let tx = await factory.createNewProxy(accountDetails, opsL2_2);
+    let receipt = await tx.wait();
+    console.log('account created: ', receipt.transactionHash);
+    console.log('acc: ', receipt.events[0].address);
+
+}
+
+// createAccount();
+
+
+async function checkImpl() {
+    const factoryAddr = '0x295a2a9e3F9934d8fE11c3b5473B279c0538d56D';
+    const factory = await hre.ethers.getContractAt('ozProxyFactoryTest', factoryAddr);
+    const acc = '0xe4915a94FC428E5a025b887Dfcc3b77899CB1F2E';
+
+    const id = await factory.getTaskID(acc);
+    console.log('id: ', id);
+}
+
+checkImpl();

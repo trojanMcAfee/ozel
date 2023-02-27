@@ -21,7 +21,7 @@ const {
     defaultSlippage,
     diamondABI,
     wbtcAddr
-} = require('../../../scripts/state-vars');;
+} = require('../../../scripts/state-vars');
 
 
 

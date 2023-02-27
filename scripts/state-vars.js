@@ -125,7 +125,7 @@ const opsL2_2 = {
 
 const ops = {
     gasLimit: ethers.BigNumber.from('30000000'),
-    gasPrice: ethers.BigNumber.from('50134698068') 
+    gasPrice: ethers.BigNumber.from('10134698068') 
 };
 
 const signerX = new ethers.Wallet(process.env.PK);
