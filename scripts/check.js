@@ -30,6 +30,8 @@ const {
     activateProxyLikeOps
  } = require('./helpers-eth.js');
 
+const { activateProxyLikeOpsL2, getAccData } = require('./helpers-arb');
+
 const { parseEther, formatEther } = require('ethers/lib/utils');
 
 
@@ -292,7 +294,7 @@ async function createAccount() {
         'test'
     ];
 
-    const proxyFactoryAddr = '0xED38F34DA3d19B029d13b575B6bc9B140DA7A92a';
+    const proxyFactoryAddr = '0x773241cbB10a1e789347AA170C2790D2c620593D';
     const factory = await hre.ethers.getContractAt('ozProxyFactoryFacet', proxyFactoryAddr);
     console.log('factory in : ', factory.address);
 
@@ -327,4 +329,22 @@ async function getTask() {
     console.log('id: ', id);
 }
 
-getTask();
+// getTask();
+
+
+async function debugAcc() {
+    const signerAddr = '0x2B75D8312cA463Dea9E80981b5c690f15E94Bd55';
+    const account = '0x2e54c7c2B5519B1aFe88779fe63B38694EF7C003';
+    const factoryAddr = '0x773241cbB10a1e789347AA170C2790D2c620593D';
+    const accData = getAccData(signerAddr, usdtAddrArb, defaultSlippage);
+
+    let balance = await hre.ethers.provider.getBalance(account);
+    console.log('bal pre: ', formatEther(balance));
+
+    await activateProxyLikeOpsL2(account, factoryAddr, accData)
+
+    balance = await hre.ethers.provider.getBalance(account);
+    console.log('bal post: ', formatEther(balance));
+}
+
+// debugAcc();

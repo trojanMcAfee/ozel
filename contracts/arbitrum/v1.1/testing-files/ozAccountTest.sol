@@ -8,7 +8,7 @@ import '@openzeppelin/contracts/utils/Address.sol';
 import '../facets/ozLoupeFacetV1_1.sol';
 import '../../../Errors.sol';
 
-
+import 'hardhat/console.sol';
 /**
  * @title Receiver of an user's ETH transfers (aka THE account)
  * @notice Proxy that users create where they will receive all ETH transfers,
@@ -39,6 +39,7 @@ contract ozAccountTest is BeaconProxy {
 
     /// @dev Gelato checker for autonomous calls
     function checker() external view returns(bool canExec, bytes memory execPayload) { 
+        console.log(1);
         uint amountToSend = address(this).balance;
         if (amountToSend > 0) canExec = true;
 
@@ -48,6 +49,8 @@ contract ozAccountTest is BeaconProxy {
             amountToSend,
             address(this)
         );
+
+        console.logBytes(execPayload);
     }
 
     /**
@@ -57,18 +60,19 @@ contract ozAccountTest is BeaconProxy {
      * @param implementation Address of the implementation connected to each account
      */
     function _delegate(address implementation) internal override {
+        console.log('impl: ', implementation);
         assembly {
-                calldatacopy(0, 0, calldatasize())
-                let result := delegatecall(gas(), implementation, 0, calldatasize(), 0, 0)
-                returndatacopy(0, 0, returndatasize())
+            calldatacopy(0, 0, calldatasize())
+            let result := delegatecall(gas(), implementation, 0, calldatasize(), 0, 0)
+            returndatacopy(0, 0, returndatasize())
 
-                switch result
-                case 0 {
-                    revert(0, returndatasize())
-                }
-                default {
-                    return(0, returndatasize())
-                }
+            switch result
+            case 0 {
+                revert(0, returndatasize())
             }
+            default {
+                return(0, returndatasize())
+            }
+        }
     }
 }

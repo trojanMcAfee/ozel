@@ -44,21 +44,21 @@ async function main() {
     console.log('acc: ', account);
 
     //-----
-    // tx = await signer.sendTransaction({
-    //     to: account,
-    //     value: parseEther('1')
-    // });
-    // receipt = await tx.wait();
-    // console.log('eth sent: ', receipt.transactionHash);
+    tx = await signer.sendTransaction({
+        to: account,
+        value: parseEther('1')
+    });
+    receipt = await tx.wait();
+    console.log('eth sent: ', receipt.transactionHash);
 
-    // let balance = await hre.ethers.provider.getBalance(account);
-    // console.log('bal pre: ', formatEther(balance));
+    let balance = await hre.ethers.provider.getBalance(account);
+    console.log('bal pre: ', formatEther(balance));
 
-    // const accData = getAccData(signerAddr, usdtAddrArb, defaultSlippage);
-    // await activateProxyLikeOpsL2(account, factoryAddr, accData);
+    const accData = getAccData(signerAddr, usdtAddrArb, defaultSlippage);
+    await activateProxyLikeOpsL2(account, signerAddr, accData);
 
-    // balance = await hre.ethers.provider.getBalance(account);
-    // console.log('bal post: ', formatEther(balance));
+    balance = await hre.ethers.provider.getBalance(account);
+    console.log('bal post: ', formatEther(balance));
 
 }
 

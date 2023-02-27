@@ -21,9 +21,13 @@ module.exports = {
       //   url: process.env.MAINNET,
       //   blockNumber: 15823986 //15823986 - 16669921 - 16685999
       // }
+      // forking: {
+      //   url: process.env.ARBITRUM, 
+      //   blockNumber: 27546149, //57546149 - 27546149 - 64270951      
+      // }
       forking: {
-        url: process.env.ARBITRUM, 
-        blockNumber: 27546149, //57546149 - 27546149 - 64270951      
+        url: process.env.ARB_GOERLI,
+        blockNumber: 9314166 //9314166 - 314166
       }
     },
     goerli: {
