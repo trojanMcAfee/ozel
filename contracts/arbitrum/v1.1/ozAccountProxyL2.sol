@@ -21,15 +21,12 @@ contract ozAccountProxyL2 is BeaconProxy {
 
     bytes accData;
 
-    address private immutable ops;
     address private immutable OZL;
 
     constructor(
         address beacon_,
-        address ops_,
         address ozDiamond_
     ) BeaconProxy(beacon_, new bytes(0)) {
-        ops = ops_;
         OZL = ozDiamond_;
     }
 
@@ -57,10 +54,6 @@ contract ozAccountProxyL2 is BeaconProxy {
                 }
             }
         } else {
-            // if (msg.sender != ops) revert NotAuthorized(msg.sender); //<-------
-            // (bool success, ) = implementation.call{value: address(this).balance}(msg.data);
-            // require(success);
-
             bytes memory payload = abi.encodeWithSignature(
                 'exchangeToAccountToken(bytes,uint256,address)', 
                 accData,

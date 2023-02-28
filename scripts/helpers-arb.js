@@ -385,7 +385,7 @@ async function deployV1_1(ozlDiamond, deployer2) {
     ([ beaconAddr, beacon ] = await deployContract('UpgradeableBeacon', [ ozMiddlewareAddr ]));
 
     //Deploys the ProxyFactory in L2
-    let constrArgs = [pokeMeOpsAddr, beaconAddr];
+    let constrArgs = [beaconAddr];
     ([ factoryAddr, factory ] = await deployContract('ozProxyFactoryFacet', constrArgs));
 
     //Deploys ozLoupeFacetV1_1 in L2

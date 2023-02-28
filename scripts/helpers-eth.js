@@ -46,6 +46,7 @@ async function deployContract(contractName, constrArgs, signer = null) {
         case 'ozMiddlewareL2':
         case 'ozMiddlewareTest':
         case 'UpgradeableBeacon':
+        case 'ozProxyFactoryFacet':
             ([ var1 ] = constrArgs);
             contract = await Contract.connect(signer).deploy(var1); //opsL2
             break;
@@ -54,7 +55,6 @@ async function deployContract(contractName, constrArgs, signer = null) {
         case 'RolesAuthority':
         case 'ProxyFactory':
         case 'FaultyProxyFactory':
-        case 'ozProxyFactoryFacet':
         case 'ozProxyFactoryTest':
             ([ var1, var2 ] = constrArgs);
             contract = await Contract.connect(signer).deploy(var1, var2);

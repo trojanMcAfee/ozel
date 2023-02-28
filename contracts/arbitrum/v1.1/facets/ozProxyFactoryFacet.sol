@@ -6,7 +6,6 @@ import "@openzeppelin/contracts/utils/Address.sol";
 import { AccountConfig, AccData } from '../../AppStorage.sol';
 import { ModifiersARB } from '../../Modifiers.sol';
 import '../../../interfaces/arbitrum/ozIProxyFactoryFacet.sol';
-import '../../../interfaces/ethereum/IOps.sol';
 import '../../../libraries/LibDiamond.sol';
 import '../ozAccountProxyL2.sol';
 import '../../../Errors.sol';
@@ -21,13 +20,11 @@ contract ozProxyFactoryFacet is ozIProxyFactoryFacet, ModifiersARB {
 
     using Address for address;
 
-    address private immutable ops;
     address private immutable beacon;
 
     event AccountCreated(address indexed account);
 
-    constructor(address ops_, address beacon_) {
-        ops = ops_;
+    constructor(address beacon_) {
         beacon = beacon_;
     }
 
@@ -44,7 +41,7 @@ contract ozProxyFactoryFacet is ozIProxyFactoryFacet, ModifiersARB {
         if (acc_.slippage < 1 || acc_.slippage > 500) revert CantBeZero('slippage');
         if (!s.tokenDatabase[token]) revert TokenNotInDatabase(token);
 
-        ozAccountProxyL2 newAccount = new ozAccountProxyL2(beacon, ops, address(this));
+        ozAccountProxyL2 newAccount = new ozAccountProxyL2(beacon, address(this));
 
         bytes2 slippage = bytes2(uint16(acc_.slippage));
         bytes memory accData = bytes.concat(bytes20(acc_.user), bytes20(acc_.token), slippage);
@@ -72,16 +69,6 @@ contract ozProxyFactoryFacet is ozIProxyFactoryFacet, ModifiersARB {
                                 Helpers
     //////////////////////////////////////////////////////////////*/
 
-    /// @dev Creates the Gelato task of each proxy/account
-    // function _startTask(address account_) private returns(bytes32 id) {         
-    //     id = IOps(ops).createTaskNoPrepayment( 
-    //         account_, 
-    //         bytes4(abi.encodeWithSignature('exchangeToAccountToken(bytes,uint256,address)')),
-    //         account_,
-    //         abi.encodeWithSignature('checker()'),
-    //         s.ETH
-    //     );
-    // }
 
     /**
      * @dev Saves and connects the address of the account to its details.
