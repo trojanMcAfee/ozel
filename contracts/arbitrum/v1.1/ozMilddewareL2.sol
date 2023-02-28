@@ -72,6 +72,8 @@ contract ozMiddlewareL2 is ozIMiddlewareL2, Initializable {
         if (!(msg.value > 0)) revert CantBeZero('contract balance');
 
         assert(account_ == msg.sender);
+        console.log(2);
+        console.logBytes(msg.data);
 
         (bool success,) = OZL.call{value: msg.value}(msg.data);
         require(success);

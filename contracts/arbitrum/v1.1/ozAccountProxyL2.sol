@@ -33,7 +33,7 @@ contract ozAccountProxyL2 is BeaconProxy {
         OZL = ozDiamond_;
     }
 
-    receive() external payable override {}
+    // receive() external payable override {}
 
     /**
      * @notice Forwards payload to the implementation
@@ -58,7 +58,19 @@ contract ozAccountProxyL2 is BeaconProxy {
             }
         } else {
             // if (msg.sender != ops) revert NotAuthorized(msg.sender); //<-------
-            (bool success, ) = implementation.call{value: address(this).balance}(msg.data);
+            // (bool success, ) = implementation.call{value: address(this).balance}(msg.data);
+            // require(success);
+
+            console.log(1);
+
+            bytes memory payload = abi.encodeWithSignature(
+                'exchangeToAccountToken(bytes,uint256,address)', 
+                accData,
+                msg.value,
+                address(this)
+            );
+
+            (bool success, ) = implementation.call{value: msg.value}(payload);
             require(success);
         }
     }

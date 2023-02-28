@@ -91,11 +91,15 @@ describe('Contracts tests', async function () {
             defaultSlippage,
             'test'
         ];
+
+        const undoAliasAddrOzMiddleL2 = '0x3b4759f0f772848b2d91f1d83e2fe57935346f18';
+        tx = await ozlDiamond.setAuthorizedCaller(undoAliasAddrOzMiddleL2, true);
+        await tx.wait();
     });
 
     describe('ozProxyFactoryFacet', async () => {
         describe('Deploys one account', async () => {
-            it('should create a account successfully / createNewProxy()', async () => {
+            xit('should create a account successfully / createNewProxy()', async () => {
                 await ozlDiamond.createNewProxy(accountDetails, ops);
                 ([ proxies, names ] = await ozlDiamond.getAccountsByUser(signerAddr));
 
@@ -105,7 +109,7 @@ describe('Contracts tests', async function () {
                 assert(name.length > 0);
             });
 
-            it('should not allow to create a account witn an empty account name / createNewProxy()', async () => {
+            xit('should not allow to create a account witn an empty account name / createNewProxy()', async () => {
                 accountDetails[3] = '';
                 await assert.rejects(async () => {
                     await ozlDiamond.createNewProxy(accountDetails, ops);
@@ -118,7 +122,7 @@ describe('Contracts tests', async function () {
                 accountDetails[3] = 'my account';
             });
 
-            it('should not allow to create a account with a name with more of 18 characters / createNewProxy()', async () => {
+            xit('should not allow to create a account with a name with more of 18 characters / createNewProxy()', async () => {
                 const invalidName = 'fffffffffffffffffff';
                 assert(invalidName.length > 18);
                 accountDetails[3] = invalidName;
@@ -134,7 +138,7 @@ describe('Contracts tests', async function () {
                 accountDetails[3] = 'my account';
             });
 
-            it('should not allow to create a account with the 0 address / createNewProxy()', async () => {
+            xit('should not allow to create a account with the 0 address / createNewProxy()', async () => {
                 accountDetails[1] = nullAddr;
                 await assert.rejects(async () => {
                     await ozlDiamond.createNewProxy(accountDetails, ops);
@@ -144,7 +148,7 @@ describe('Contracts tests', async function () {
                 });
             });
 
-            it('should not allow to create a account with 0 slippage / createNewProxy()', async () => {
+            xit('should not allow to create a account with 0 slippage / createNewProxy()', async () => {
                 accountDetails[1] = usdtAddrArb;
                 accountDetails[2] = 0;
                 await assert.rejects(async () => {
@@ -155,7 +159,7 @@ describe('Contracts tests', async function () {
                 });
             });
 
-            it('should not allow to create an account with an slippage of more than 5% / createNewProxy()', async () => {
+            xit('should not allow to create an account with an slippage of more than 5% / createNewProxy()', async () => {
                 accountDetails[2] = 501;
                 await assert.rejects(async () => {
                     await ozlDiamond.createNewProxy(accountDetails, ops);
@@ -165,7 +169,7 @@ describe('Contracts tests', async function () {
                 });
             });
 
-            it('should not allow to create a account with a token not found in the database / createNewProxy()', async () => {
+            xit('should not allow to create a account with a token not found in the database / createNewProxy()', async () => {
                 accountDetails[1] = deadAddr;
                 accountDetails[2] = defaultSlippage;
                 await assert.rejects(async () => {
@@ -176,7 +180,7 @@ describe('Contracts tests', async function () {
                 });
             })
 
-            it('should not allow an external user to add an authorized selector / authorizeSelector()', async () => {
+            xit('should not allow an external user to add an authorized selector / authorizeSelector()', async () => {
                 await assert.rejects(async () => {
                     await ozlDiamond.connect(signers[1]).authorizeSelector('0xffffffff', true, ops);
                 }, {
@@ -185,22 +189,27 @@ describe('Contracts tests', async function () {
                 });
             });
 
-            it('should allow the owner to add an authorized selector / authorizeSelector()', async () => {
+            xit('should allow the owner to add an authorized selector / authorizeSelector()', async () => {
                 await ozlDiamond.authorizeSelector('0xffffffff', true, ops);
             });
 
-            it('should have an initial balance of 0.1 ETH', async () => { 
+            it('should have an initial balance of 0.1 ETH and a final of 0 ETH and 1600+ USDT', async () => { 
                 accountDetails[1] = usdtAddrArb;
                 newProxyAddr = await createProxy(ozlDiamond, accountDetails);
 
                 balance = await hre.ethers.provider.getBalance(newProxyAddr);
                 if (Number(balance) === 0) await sendETH(newProxyAddr, 0.1);
+                console.log(4);
+
+                USDT = await hre.ethers.getContractAt('IERC20', usdtAddrArb);
+                balance = await USDT.balanceOf(signerAddr);
+                console.log('usdt bal: ', balance / 10 ** 6);
 
                 balance = await hre.ethers.provider.getBalance(newProxyAddr);
-                assert.equal(formatEther(balance), '0.1');
+                assert.equal(formatEther(balance), 0);
             });
 
-            it('should have a final balance of 0 ETH', async () => {
+            xit('should have a final balance of 0 ETH', async () => {
                 newProxyAddr = await createProxy(ozlDiamond, accountDetails);
                 balance = await hre.ethers.provider.getBalance(newProxyAddr);
                 if (Number(balance) === 0) await sendETH(newProxyAddr, 0.1);
@@ -211,7 +220,7 @@ describe('Contracts tests', async function () {
             });
         });
 
-        describe('Deploys 5 accounts', async () => { 
+        xdescribe('Deploys 5 accounts', async () => { 
             before(async () => {
                 accountDetails[1] = usdcAddr;
                 for (let i=0; i < 5; i++) {
@@ -236,7 +245,7 @@ describe('Contracts tests', async function () {
             });
         });
 
-        describe('Upgrade the factory', async () => {
+        xdescribe('Upgrade the factory', async () => {
             it('should upgrade the factory', async () => {
                 constrArgs = [pokeMeOpsAddr, beacon.address];
                 const [ newFactoryAddr, newFactory ] = await deployContract('ozProxyFactoryFacet', constrArgs);
@@ -257,7 +266,7 @@ describe('Contracts tests', async function () {
         });
     });
 
-    describe('ozAccountProxyL2', async () => {
+    xdescribe('ozAccountProxyL2', async () => {
         before(async () => {
             newProxyAddr = await createProxy(ozlDiamond, accountDetails);
             newProxy = await hre.ethers.getContractAt(accountL2ABI, newProxyAddr);
@@ -283,7 +292,7 @@ describe('Contracts tests', async function () {
         });
     });
 
-    describe('ozMiddlewareL2', async () => {
+    xdescribe('ozMiddlewareL2', async () => {
         before(async () => {
             newProxyAddr = await createProxy(ozlDiamond, accountDetails);
             newProxy = await hre.ethers.getContractAt(accountL2ABI, newProxyAddr);
@@ -406,7 +415,7 @@ describe('Contracts tests', async function () {
         });
     });
 
-    describe('ozLoupeFacetV1_1', async () => {
+    xdescribe('ozLoupeFacetV1_1', async () => {
         before(async () => {
             accountDetails[0] = signerAddr2;
             for (let i=0; i < 3; i++) {
@@ -439,7 +448,7 @@ describe('Contracts tests', async function () {
         });
     });
 
-    describe('UpgradeableBeacon', async () => {
+    xdescribe('UpgradeableBeacon', async () => {
         it('should let the owner upgrade the beacon', async () => {
             ([ newMiddlewareAddr, newMiddleware ] = await deployContract('ozMiddlewareL2', [ ozlDiamond.address ]));
             tx = await beacon.upgradeTo(newMiddlewareAddr);

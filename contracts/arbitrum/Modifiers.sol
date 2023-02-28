@@ -7,7 +7,7 @@ import '../libraries/LibCommon.sol';
 import '../Errors.sol';
 import './Bits.sol';
 
-
+import 'hardhat/console.sol';
 /**
  * @title Modifiers for the L2 contracts
  */
@@ -46,8 +46,11 @@ abstract contract ModifiersARB is Bits {
      * @dev Checks that the sender can call exchangeToAccountToken
      */
     modifier onlyAuthorized() {
+        console.log('sender: ', msg.sender);
         address l1Address = AddressAliasHelper.undoL1ToL2Alias(msg.sender);
+        console.log('alias: ', l1Address);
         if (!s.isAuthorized[l1Address]) revert NotAuthorized(msg.sender);
+        console.log('hi');
         _;
     }
 
