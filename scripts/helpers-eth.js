@@ -248,7 +248,8 @@ function getFakeOZLVars() {
 
 async function sendETH(receiver, amount) {
     const [ signer ] = await hre.ethers.getSigners();
-    await signer.sendTransaction({to: receiver, value: parseEther(amount.toString())});
+    const tx = await signer.sendTransaction({to: receiver, value: parseEther(amount.toString())});
+    await tx.wait();
     const balance = await hre.ethers.provider.getBalance(receiver);
     return balance;
 }
