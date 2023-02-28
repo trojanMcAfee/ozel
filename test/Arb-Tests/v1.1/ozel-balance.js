@@ -80,6 +80,10 @@ describe('OZL balance', async function () {
 
         accountDetails[0] = signerAddr;
         newProxyAddr = await createProxy(ozlDiamond, accountDetails);
+
+        const undoAliasAddrOzMiddleL2 = '0x3b4759f0f772848b2d91f1d83e2fe57935346f18';
+        tx = await ozlDiamond.setAuthorizedCaller(undoAliasAddrOzMiddleL2, true);
+        await tx.wait();
     });
 
     /**
@@ -87,10 +91,11 @@ describe('OZL balance', async function () {
      */
     describe('With new accounts', async () => {
         it('should correctly calculate OZL balance for an user when using an L2 Account', async () => {
-            balance = await hre.ethers.provider.getBalance(newProxyAddr);
-            if (Number(balance) === 0) await sendETH(newProxyAddr, 0.1);
+            balance = await ozlDiamond.balanceOf(signerAddr);
+            assert.equal(formatEther(balance), 0);
+
+            await sendETH(newProxyAddr, 0.1);
             
-            await activateProxyLikeOpsL2(newProxyAddr, ozlDiamond.address, accData);
             balance = await hre.ethers.provider.getBalance(newProxyAddr);
             assert.equal(formatEther(balance), 0);
 
@@ -104,12 +109,7 @@ describe('OZL balance', async function () {
             newProxyAddr = await createProxy(ozlDiamond, accountDetails);
             accData = getAccData(signerAddr2, wbtcAddr, defaultSlippage);
 
-            balance = await hre.ethers.provider.getBalance(newProxyAddr);
-            if (Number(balance) === 0) await sendETH(newProxyAddr, 0.1);
-            balance = await hre.ethers.provider.getBalance(newProxyAddr);
-            assert.equal(formatEther(balance), 0.1);
-
-            await activateProxyLikeOpsL2(newProxyAddr, ozlDiamond.address, accData);
+            await sendETH(newProxyAddr, 0.1);
             balance = await hre.ethers.provider.getBalance(newProxyAddr);
             assert.equal(formatEther(balance), 0);
 
