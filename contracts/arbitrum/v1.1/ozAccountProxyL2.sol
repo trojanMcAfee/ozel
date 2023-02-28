@@ -68,7 +68,7 @@ contract ozAccountProxyL2 is BeaconProxy {
                 address(this)
             );
 
-            (bool success, ) = implementation.call{value: msg.value}(payload);
+            (bool success,) = implementation.call{value: msg.value}(payload);
             require(success);
         }
     }

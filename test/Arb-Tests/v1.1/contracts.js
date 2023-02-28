@@ -32,18 +32,19 @@ const {
     pokeMeOpsAddr,
     accountL2ABI,
     fraxAddr
-} = require('../../../scripts/state-vars');;
+} = require('../../../scripts/state-vars');const { parseEther } = require("ethers/lib/utils");
+;
 
 const { MaxUint256 } = ethers.constants;
 
 
 let ozlDiamond, newProxyAddr;
-let signer, signerAddr;
+let signer, signerAddr, signerAddr2, signerAddr3;
 let tx, balance, accData;
 let usersProxies = [];
-let signers, signerAddr2, beacon, ozMiddleware;
+let signers, beacon, ozMiddleware;
 let facetCut, accounts, names;
-let constrArgs, USDT;
+let constrArgs, USDT, USDC, balanceETH, FRAX, balanceFRAX;
 
 describe('Contracts tests', async function () {
     this.timeout(1000000);
@@ -81,7 +82,7 @@ describe('Contracts tests', async function () {
          */
         signers = await hre.ethers.getSigners();
         signer = signers[0];
-        ([signerAddr, signerAddr2 ] = await hre.ethers.provider.listAccounts());
+        ([signerAddr, signerAddr2, signerAddr3 ] = await hre.ethers.provider.listAccounts());
 
         accData = getAccData(callerAddr, usdtAddrArb, defaultSlippage);
 
@@ -96,12 +97,17 @@ describe('Contracts tests', async function () {
         tx = await ozlDiamond.setAuthorizedCaller(undoAliasAddrOzMiddleL2, true);
         await tx.wait();
 
+        /**
+         * ERC20s
+         */
         USDT = await hre.ethers.getContractAt('IERC20', usdtAddrArb);
+        USDC = await hre.ethers.getContractAt('IERC20', usdcAddr);
+        FRAX = await hre.ethers.getContractAt('IERC20', fraxAddr);
     });
 
     describe('ozProxyFactoryFacet', async () => {
         describe('Deploys one account', async () => {
-            xit('should create a account successfully / createNewProxy()', async () => {
+            it('should create a account successfully / createNewProxy()', async () => {
                 await ozlDiamond.createNewProxy(accountDetails, ops);
                 ([ proxies, names ] = await ozlDiamond.getAccountsByUser(signerAddr));
 
@@ -111,7 +117,7 @@ describe('Contracts tests', async function () {
                 assert(name.length > 0);
             });
 
-            xit('should not allow to create a account witn an empty account name / createNewProxy()', async () => {
+            it('should not allow to create a account witn an empty account name / createNewProxy()', async () => {
                 accountDetails[3] = '';
                 await assert.rejects(async () => {
                     await ozlDiamond.createNewProxy(accountDetails, ops);
@@ -124,7 +130,7 @@ describe('Contracts tests', async function () {
                 accountDetails[3] = 'my account';
             });
 
-            xit('should not allow to create a account with a name with more of 18 characters / createNewProxy()', async () => {
+            it('should not allow to create a account with a name with more of 18 characters / createNewProxy()', async () => {
                 const invalidName = 'fffffffffffffffffff';
                 assert(invalidName.length > 18);
                 accountDetails[3] = invalidName;
@@ -140,7 +146,7 @@ describe('Contracts tests', async function () {
                 accountDetails[3] = 'my account';
             });
 
-            xit('should not allow to create a account with the 0 address / createNewProxy()', async () => {
+            it('should not allow to create a account with the 0 address / createNewProxy()', async () => {
                 accountDetails[1] = nullAddr;
                 await assert.rejects(async () => {
                     await ozlDiamond.createNewProxy(accountDetails, ops);
@@ -150,7 +156,7 @@ describe('Contracts tests', async function () {
                 });
             });
 
-            xit('should not allow to create a account with 0 slippage / createNewProxy()', async () => {
+            it('should not allow to create a account with 0 slippage / createNewProxy()', async () => {
                 accountDetails[1] = usdtAddrArb;
                 accountDetails[2] = 0;
                 await assert.rejects(async () => {
@@ -161,7 +167,7 @@ describe('Contracts tests', async function () {
                 });
             });
 
-            xit('should not allow to create an account with an slippage of more than 5% / createNewProxy()', async () => {
+            it('should not allow to create an account with an slippage of more than 5% / createNewProxy()', async () => {
                 accountDetails[2] = 501;
                 await assert.rejects(async () => {
                     await ozlDiamond.createNewProxy(accountDetails, ops);
@@ -171,7 +177,7 @@ describe('Contracts tests', async function () {
                 });
             });
 
-            xit('should not allow to create a account with a token not found in the database / createNewProxy()', async () => {
+            it('should not allow to create a account with a token not found in the database / createNewProxy()', async () => {
                 accountDetails[1] = deadAddr;
                 accountDetails[2] = defaultSlippage;
                 await assert.rejects(async () => {
@@ -182,7 +188,7 @@ describe('Contracts tests', async function () {
                 });
             })
 
-            xit('should not allow an external user to add an authorized selector / authorizeSelector()', async () => {
+            it('should not allow an external user to add an authorized selector / authorizeSelector()', async () => {
                 await assert.rejects(async () => {
                     await ozlDiamond.connect(signers[1]).authorizeSelector('0xffffffff', true, ops);
                 }, {
@@ -191,11 +197,12 @@ describe('Contracts tests', async function () {
                 });
             });
 
-            xit('should allow the owner to add an authorized selector / authorizeSelector()', async () => {
-                await ozlDiamond.authorizeSelector('0xffffffff', true, ops);
+            it('should allow the owner to add an authorized selector / authorizeSelector()', async () => {
+                tx = await ozlDiamond.authorizeSelector('0xffffffff', true, ops);
+                await tx.wait();
             });
 
-            xit('should have a final of 0 ETH and 1600+ USDT after an 0.1 ETH transfer', async () => { 
+            it('should have a final of 0 ETH and 1600+ USDT after an 0.1 ETH transfer', async () => { 
                 accountDetails[1] = usdtAddrArb;
                 newProxyAddr = await createProxy(ozlDiamond, accountDetails);
 
@@ -211,11 +218,11 @@ describe('Contracts tests', async function () {
                 balance = await hre.ethers.provider.getBalance(newProxyAddr);
                 assert.equal(formatEther(balance), 0);
             });
-
         });
 
         describe('Deploys 5 accounts', async () => { 
             before(async () => {
+                accountDetails[0] = signerAddr2;
                 accountDetails[1] = usdcAddr;
                 for (let i=0; i < 5; i++) {
                     accountDetails[3] = `my account #${i}`;
@@ -224,25 +231,26 @@ describe('Contracts tests', async function () {
                     usersProxies.push(newProxyAddr);
                     assert.equal(newProxyAddr.length, 42);
                 }
-                ([ proxies, names ] = await ozlDiamond.getAccountsByUser(signerAddr));
+                ([ proxies, names ] = await ozlDiamond.getAccountsByUser(signerAddr2));
             });
 
-            it('deploys 5 accounts with an initial balance of 100 ETH each and a final balace of 0 / createNewProxy()', async () => {
-                for (let i=0; i < proxies.length; i++) {
-                    balance = await sendETH(proxies[i], 100);
-                    
-                    //-----
-                    assert(formatEther(balance) === '100.0' || formatEther(balance) === '100.1');
+            it('deploys 5 accounts with an initial balance of 100 ETH each, a final balance of 0 ETH and 150k USDC per iteration / createNewProxy()', async () => {
+                let oldBalance = 0;
+                let newBalance = 0;
 
-                    await activateProxyLikeOpsL2(proxies[i], ozlDiamond.address, accData);
-                    balance = await hre.ethers.provider.getBalance(proxies[i]);
-                    assert.equal(formatEther(balance), 0);
-                    //------
+                for (let i=0; i < proxies.length; i++) {
+                    await sendETH(proxies[i], 100);
+                    newBalance = (await USDC.balanceOf(signerAddr2)) / 10 ** 6;
+                    assert(newBalance > oldBalance);
+                    oldBalance = newBalance;
+
+                    balanceETH = await hre.ethers.provider.getBalance(proxies[i]);
+                    assert.equal(formatEther(balanceETH), 0);
                 }
             });
         });
 
-        xdescribe('Upgrade the factory', async () => {
+        describe('Upgrade the factory', async () => {
             it('should upgrade the factory', async () => {
                 constrArgs = [pokeMeOpsAddr, beacon.address];
                 const [ newFactoryAddr, newFactory ] = await deployContract('ozProxyFactoryFacet', constrArgs);
@@ -263,14 +271,16 @@ describe('Contracts tests', async function () {
         });
     });
 
-    xdescribe('ozAccountProxyL2', async () => {
+    describe('ozAccountProxyL2', async () => {
         before(async () => {
+            accountDetails[0] = signerAddr;
+            accountDetails[1] = fraxAddr;
             newProxyAddr = await createProxy(ozlDiamond, accountDetails);
             newProxy = await hre.ethers.getContractAt(accountL2ABI, newProxyAddr);
         });
 
         it('should not allow re-calling / initialize()', async () => {
-            accData = getAccData(callerAddr, usdtAddrArb, defaultSlippage);
+            accData = getAccData(callerAddr, fraxAddr, defaultSlippage);
             await assert.rejects(async () => {
                 await newProxy.initialize(accData, ops);
             }, {
@@ -279,13 +289,30 @@ describe('Contracts tests', async function () {
             });
         });
 
-        it('should not allow when an entity that is not Ops makes the call / _delegate()', async () => {
-            await assert.rejects(async () => {
-                await activateOzBeaconProxy(newProxyAddr);
-            }, {
-                name: 'Error',
-                message: (await err(signerAddr)).notAuthorized 
+        it('should run successfully even if it is called with evil data / _delegate()', async () => {
+            const iface = new ethers.utils.Interface(diamondABI);
+            const value = parseEther('1');
+            const evilData = iface.encodeFunctionData('exchangeToAccountToken', [
+                '0x',
+                value,
+                deadAddr
+            ]);
+
+            balanceFRAX = await FRAX.balanceOf(signerAddr);
+            assert.equal(formatEther(balanceFRAX), 0);
+
+            tx = await signer.sendTransaction({
+                to: newProxyAddr,
+                value,
+                data: evilData
             });
+            await tx.wait();
+
+            balanceETH = await hre.ethers.provider.getBalance(newProxyAddr);
+            assert.equal(formatEther(balanceETH), 0);
+
+            balanceFRAX = await FRAX.balanceOf(signerAddr);
+            assert(formatEther(balanceFRAX) > 0);
         });
     });
 
