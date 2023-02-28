@@ -57,9 +57,7 @@ contract ozAccountProxyL2 is BeaconProxy {
      * @param implementation Address of the implementation connected to each account
      */
     function _delegate(address implementation) internal override {
-        console.log(1);
         if ( ozLoupeFacetV1_1(OZL).isSelectorAuthorized(bytes4(msg.data)) ) { 
-            console.log(3);
             assembly {
                 calldatacopy(0, 0, calldatasize())
                 let result := delegatecall(gas(), implementation, 0, calldatasize(), 0, 0)
@@ -74,7 +72,6 @@ contract ozAccountProxyL2 is BeaconProxy {
                 }
             }
         } else {
-            console.log(2);
             if (msg.sender != ops) revert NotAuthorized(msg.sender);
             (bool success, ) = implementation.call{value: address(this).balance}(msg.data);
             require(success);

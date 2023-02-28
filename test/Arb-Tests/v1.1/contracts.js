@@ -211,7 +211,7 @@ describe('Contracts tests', async function () {
             });
         });
 
-        xdescribe('Deploys 5 accounts', async () => { 
+        describe('Deploys 5 accounts', async () => { 
             before(async () => {
                 accountDetails[1] = usdcAddr;
                 for (let i=0; i < 5; i++) {
@@ -236,7 +236,7 @@ describe('Contracts tests', async function () {
             });
         });
 
-        xdescribe('Upgrade the factory', async () => {
+        describe('Upgrade the factory', async () => {
             it('should upgrade the factory', async () => {
                 constrArgs = [pokeMeOpsAddr, beacon.address];
                 const [ newFactoryAddr, newFactory ] = await deployContract('ozProxyFactoryFacet', constrArgs);
@@ -257,7 +257,7 @@ describe('Contracts tests', async function () {
         });
     });
 
-    xdescribe('ozAccountProxyL2', async () => {
+    describe('ozAccountProxyL2', async () => {
         before(async () => {
             newProxyAddr = await createProxy(ozlDiamond, accountDetails);
             newProxy = await hre.ethers.getContractAt(accountL2ABI, newProxyAddr);
@@ -283,13 +283,13 @@ describe('Contracts tests', async function () {
         });
     });
 
-    xdescribe('ozMiddlewareL2', async () => {
+    describe('ozMiddlewareL2', async () => {
         before(async () => {
             newProxyAddr = await createProxy(ozlDiamond, accountDetails);
             newProxy = await hre.ethers.getContractAt(accountL2ABI, newProxyAddr);
         });
 
-        xit('should not let a non-account user to call the function / exchangeToAccountToken()', async () => {
+        it('should not let a non-account user to call the function / exchangeToAccountToken()', async () => {
             await assert.rejects(async () => {
                 await ozMiddleware.exchangeToAccountToken(
                     accData,
@@ -303,8 +303,6 @@ describe('Contracts tests', async function () {
         }) 
 
         it('should not allow an external user to change account token / changeToken()', async () => {
-            // await newProxy.connect(signers[1]).changeToken(usdcAddr, ops);
-
             await assert.rejects(async () => {
                 await newProxy.connect(signers[1]).changeToken(usdcAddr, ops);
             }, {
@@ -313,7 +311,7 @@ describe('Contracts tests', async function () {
             });
         });
 
-        xit('shoud not allow to change account token for the 0 address / changeToken()', async () => {
+        it('shoud not allow to change account token for the 0 address / changeToken()', async () => {
             await assert.rejects(async () => {
                 await newProxy.changeToken(nullAddr, ops);
             }, {
@@ -322,7 +320,7 @@ describe('Contracts tests', async function () {
             });
         });
 
-        xit('shoud not allow to change account token for one not found in the database / changeToken()', async () => {
+        it('shoud not allow to change account token for one not found in the database / changeToken()', async () => {
             await assert.rejects(async () => {
                 await newProxy.changeToken(deadAddr, ops); 
             }, {
@@ -331,7 +329,7 @@ describe('Contracts tests', async function () {
             });
         });
 
-        xit('should allow the user to change the slippage with the minimum of 0.01% / changeSlippage()', async () => {
+        it('should allow the user to change the slippage with the minimum of 0.01% / changeSlippage()', async () => {
             newUserSlippage = 0.01; 
 
             tx = await newProxy.changeSlippage(parseInt(newUserSlippage * 100), ops);
@@ -342,7 +340,7 @@ describe('Contracts tests', async function () {
             assert.equal(Number(slippage) / 100, newUserSlippage); 
         });
 
-        xit('should not allow to change the slippage to 0 / changeSlippage()', async () => {
+        it('should not allow to change the slippage to 0 / changeSlippage()', async () => {
             newSlippage = 0;
             await assert.rejects(async () => {
                 await newProxy.changeSlippage(newSlippage, ops);
@@ -352,7 +350,7 @@ describe('Contracts tests', async function () {
             });
         });
 
-        xit('should not allow to change the slippage to more than 5% / changeSlippage()', async () => {
+        it('should not allow to change the slippage to more than 5% / changeSlippage()', async () => {
             newSlippage = 501;
             await assert.rejects(async () => {
                 await newProxy.changeSlippage(newSlippage, ops);
@@ -362,7 +360,7 @@ describe('Contracts tests', async function () {
             });
         });
 
-        xit('should not allow an external user to change the slippage / changeSlippage()', async () => {
+        it('should not allow an external user to change the slippage / changeSlippage()', async () => {
             await assert.rejects(async () => {
                 await newProxy.connect(signers[1]).changeSlippage(200, ops);
             }, {
@@ -371,7 +369,7 @@ describe('Contracts tests', async function () {
             });
         });
 
-        xit('should change both token and slippage in one tx / changeTokenNSlippage()', async () => {
+        it('should change both token and slippage in one tx / changeTokenNSlippage()', async () => {
             newUserSlippage = 0.55;
             tx = await newProxy.changeTokenNSlippage(fraxAddr, parseInt(0.55 * 100), ops);
             await tx.wait();
@@ -381,7 +379,7 @@ describe('Contracts tests', async function () {
             assert.equal(Number(slippage) / 100, newUserSlippage); 
         });
 
-        xdescribe('withdrawETH_lastResort', async () => {
+        describe('withdrawETH_lastResort', async () => {
             before(async () => {
                 newProxyAddr = await createProxy(ozlDiamond, accountDetails);
                 newProxy = await hre.ethers.getContractAt(accountL2ABI, newProxyAddr);
@@ -408,7 +406,7 @@ describe('Contracts tests', async function () {
         });
     });
 
-    xdescribe('ozLoupeFacetV1_1', async () => {
+    describe('ozLoupeFacetV1_1', async () => {
         before(async () => {
             accountDetails[0] = signerAddr2;
             for (let i=0; i < 3; i++) {
@@ -441,7 +439,7 @@ describe('Contracts tests', async function () {
         });
     });
 
-    xdescribe('UpgradeableBeacon', async () => {
+    describe('UpgradeableBeacon', async () => {
         it('should let the owner upgrade the beacon', async () => {
             ([ newMiddlewareAddr, newMiddleware ] = await deployContract('ozMiddlewareL2', [ ozlDiamond.address ]));
             tx = await beacon.upgradeTo(newMiddlewareAddr);

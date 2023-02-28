@@ -318,14 +318,11 @@ async function activateProxyLikeOpsL2(proxy, taskCreator, accData, isEvil, evilP
         params: [pokeMeOpsAddr],
     });
 
-    console.log(1);
     const opsSigner = await hre.ethers.provider.getSigner(pokeMeOpsAddr);
     let iface = new ethers.utils.Interface(['function checker()']);
     const resolverData = iface.encodeFunctionData('checker');
     const ops = await hre.ethers.getContractAt('IOps', pokeMeOpsAddr);
-    console.log(2);
     const resolverHash = await ops.connect(opsSigner).getResolverHash(proxy, resolverData);
-    console.log(3);
 
     await hre.network.provider.request({
         method: "hardhat_stopImpersonatingAccount",
