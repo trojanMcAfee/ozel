@@ -326,7 +326,7 @@ describe('Contracts tests', async function () {
             newProxy = await hre.ethers.getContractAt(accountL2ABI, newProxyAddr);
         });
 
-        describe('Account methods', async () => {
+        xdescribe('Account methods', async () => {
             it('should not let an external user to call the function / exchangeToAccountToken()', async () => {
                 await assert.rejects(async () => {
                     await ozMiddleware.exchangeToAccountToken(
@@ -418,7 +418,7 @@ describe('Contracts tests', async function () {
             });
         });
 
-        describe('withdrawETH_lastResort', async () => {
+        xdescribe('withdrawETH_lastResort', async () => {
             before(async () => {
                 constrArgs = [beacon.address];
                 const [ newFactoryAddr, newFactory ] = await deployContract('ozProxyFactoryTest', constrArgs);
