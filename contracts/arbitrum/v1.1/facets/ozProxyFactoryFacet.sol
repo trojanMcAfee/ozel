@@ -52,8 +52,6 @@ contract ozProxyFactoryFacet is ozIProxyFactoryFacet, ModifiersARB {
         );
         address(newAccount).functionCall(createData);
 
-        // bytes32 id = _startTask(address(newAccount));
-
         _multiSave(bytes20(address(newAccount)), acc_);
 
         emit AccountCreated(address(newAccount));
@@ -66,9 +64,8 @@ contract ozProxyFactoryFacet is ozIProxyFactoryFacet, ModifiersARB {
     }
 
     /*///////////////////////////////////////////////////////////////
-                                Helpers
+                                Helper
     //////////////////////////////////////////////////////////////*/
-
 
     /**
      * @dev Saves and connects the address of the account to its details.

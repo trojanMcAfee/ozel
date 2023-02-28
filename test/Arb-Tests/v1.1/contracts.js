@@ -317,14 +317,14 @@ describe('Contracts tests', async function () {
         });
     });
 
-    xdescribe('ozMiddlewareL2', async () => {
+    describe('ozMiddlewareL2', async () => {
         before(async () => {
             accountDetails[0] = signerAddr;
             newProxyAddr = await createProxy(ozlDiamond, accountDetails);
             newProxy = await hre.ethers.getContractAt(accountL2ABI, newProxyAddr);
         });
 
-        describe('account methods', async () => {
+        describe('Account methods', async () => {
             it('should not let a non-account user to call the function / exchangeToAccountToken()', async () => {
                 await assert.rejects(async () => {
                     await ozMiddleware.exchangeToAccountToken(
@@ -416,8 +416,15 @@ describe('Contracts tests', async function () {
             });
         });
 
-        xdescribe('withdrawETH_lastResort', async () => {
+        describe('withdrawETH_lastResort', async () => {
             before(async () => {
+                constrArgs = [beacon.address];
+                const [ newFactoryAddr, newFactory ] = await deployContract('ozProxyFactoryTest', constrArgs);
+
+                facetCut = [ [ newFactoryAddr, 1, getSelectors(newFactory) ] ];
+                tx = await ozlDiamond.diamondCut(facetCut, nullAddr, '0x');
+                await tx.wait();
+
                 newProxyAddr = await createProxy(ozlDiamond, accountDetails);
                 newProxy = await hre.ethers.getContractAt(accountL2ABI, newProxyAddr);
     

@@ -3,39 +3,28 @@ pragma solidity 0.8.14;
 
 
 import "@openzeppelin/contracts/utils/Address.sol";
-import { AccountConfig } from '../../AppStorage.sol';
-import '../../../interfaces/ethereum/IOps.sol';
+import { AccountConfig, AccData } from '../../AppStorage.sol';
+import { ModifiersARB } from '../../Modifiers.sol';
+import '../../../libraries/LibDiamond.sol';
 import './ozAccountTest.sol';
 import '../../../Errors.sol';
 
-import 'hardhat/console.sol';
-/**
- * @title Factory of user proxies (aka accounts)
- * @notice Creates the accounts where users will receive their ETH on L2. 
- * Each account is the proxy (ozAccountProxyL2) connected -through the Beacon- to ozMiddleware (the implementation)
- */
-contract ozProxyFactoryTest {
+
+contract ozProxyFactoryTest is ModifiersARB {
 
     using Address for address;
 
-    address private immutable ops;
     address private immutable beacon;
-    address private constant ETH = 0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE;
-    address private constant OZL = 0xAa5f138691768EDEaD231915eF7AB9370A708d70;
-
-    mapping(address => bytes32) accToTask;
 
     event AccountCreated(address indexed account);
 
-    constructor(address ops_, address beacon_) {
-        ops = ops_;
+    constructor(address beacon_) {
         beacon = beacon_;
     }
 
-    //@inheritdoc ozIProxyFactoryFacet
     function createNewProxy(
         AccountConfig calldata acc_
-    ) external {
+    ) external noReentrancy(0) {
         bytes calldata name = bytes(acc_.name);
         address token = acc_.token;
 
@@ -43,8 +32,9 @@ contract ozProxyFactoryTest {
         if (name.length > 18) revert NameTooLong();
         if (acc_.user == address(0) || token == address(0)) revert CantBeZero('address');
         if (acc_.slippage < 1 || acc_.slippage > 500) revert CantBeZero('slippage');
+        if (!s.tokenDatabase[token]) revert TokenNotInDatabase(token);
 
-        ozAccountTest newAccount = new ozAccountTest(beacon, ops, OZL);
+        ozAccountTest newAccount = new ozAccountTest(beacon, address(this));
 
         bytes2 slippage = bytes2(uint16(acc_.slippage));
         bytes memory accData = bytes.concat(bytes20(acc_.user), bytes20(acc_.token), slippage);
@@ -55,30 +45,31 @@ contract ozProxyFactoryTest {
         );
         address(newAccount).functionCall(createData);
 
-        bytes32 id = _startTask(address(newAccount));
-        
-        accToTask[address(newAccount)] = id;
+        _multiSave(bytes20(address(newAccount)), acc_);
 
         emit AccountCreated(address(newAccount));
     }
 
-    /*///////////////////////////////////////////////////////////////
-                                Helpers
-    //////////////////////////////////////////////////////////////*/
-
-    /// @dev Creates the Gelato task of each proxy/account
-    function _startTask(address account_) private returns(bytes32 id) {         
-        id = IOps(ops).createTaskNoPrepayment( 
-            account_, 
-            bytes4(abi.encodeWithSignature('exchangeToAccountToken(bytes,uint256,address)')),
-            account_,
-            abi.encodeWithSignature('checker()'),
-            ETH
-        );
+    function authorizeSelector(bytes4 selector_, bool status_) external {
+        LibDiamond.enforceIsContractOwner();
+        s.authorizedSelectors[selector_] = status_;
     }
 
-    /// @dev Returns the Gelato Task Id of an Account
-    function getTaskID(address account_) external view returns(bytes32) {
-        return accToTask[account_];
+    function _multiSave(
+        bytes20 account_,
+        AccountConfig calldata acc_
+    ) private { 
+        address user = acc_.user;
+        bytes32 acc_user = bytes32(bytes.concat(account_, bytes12(bytes20(user))));
+        bytes32 nameBytes = bytes32(bytes(acc_.name));
+
+        if (s.userToData[user].accounts.length == 0) {
+            AccData storage data = s.userToData[user];
+            data.accounts.push(address(account_));
+            data.acc_userToName[acc_user] = nameBytes;
+        } else {
+            s.userToData[user].accounts.push(address(account_));
+            s.userToData[user].acc_userToName[acc_user] = nameBytes;
+        }
     }
 }

@@ -30,8 +30,6 @@ contract ozAccountProxyL2 is BeaconProxy {
         OZL = ozDiamond_;
     }
 
-    // receive() external payable override {}
-
     /**
      * @notice Forwards payload to the implementation
      * @dev Queries between the authorized selectors. If true, keeps the msg.sender via a delegatecall.
