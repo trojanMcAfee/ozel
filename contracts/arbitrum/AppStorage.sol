@@ -114,7 +114,7 @@ struct AccountConfig {
 /// @dev Reference to L2 Accounts
 struct AccData {
     address[] accounts;
-    mapping(bytes32 => bytes) acc_userToTask_name;
+    mapping(bytes32 => bytes32) acc_userToName;
 }
 
 

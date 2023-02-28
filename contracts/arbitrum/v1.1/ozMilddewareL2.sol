@@ -79,8 +79,8 @@ contract ozMiddlewareL2 is ozIMiddlewareL2, Initializable {
 
 
     function _verify(address user_, address account_) private view returns(bool) {
-        bytes memory task_name = ozLoupeFacetV1_1(OZL).getTask_Name(user_, account_);
-        return bytes32(task_name) != bytes32(0);
+        bytes32 nameBytes = ozLoupeFacetV1_1(OZL).getTask_Name(user_, account_);
+        return nameBytes != bytes32(0);
     }
 
 

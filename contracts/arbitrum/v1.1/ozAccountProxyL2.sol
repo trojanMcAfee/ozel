@@ -33,22 +33,7 @@ contract ozAccountProxyL2 is BeaconProxy {
         OZL = ozDiamond_;
     }
 
-
     receive() external payable override {}
-
-
-    /// @dev Gelato checker for autonomous calls
-    function checker() external view returns(bool canExec, bytes memory execPayload) { 
-        uint amountToSend = address(this).balance;
-        if (amountToSend > 0) canExec = true;
-
-        execPayload = abi.encodeWithSignature(
-            'exchangeToAccountToken(bytes,uint256,address)', 
-            accData,
-            amountToSend,
-            address(this)
-        );
-    }
 
     /**
      * @notice Forwards payload to the implementation
@@ -72,7 +57,7 @@ contract ozAccountProxyL2 is BeaconProxy {
                 }
             }
         } else {
-            if (msg.sender != ops) revert NotAuthorized(msg.sender);
+            // if (msg.sender != ops) revert NotAuthorized(msg.sender); //<-------
             (bool success, ) = implementation.call{value: address(this).balance}(msg.data);
             require(success);
         }

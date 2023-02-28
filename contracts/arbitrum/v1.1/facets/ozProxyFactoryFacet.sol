@@ -55,9 +55,9 @@ contract ozProxyFactoryFacet is ozIProxyFactoryFacet, ModifiersARB {
         );
         address(newAccount).functionCall(createData);
 
-        bytes32 id = _startTask(address(newAccount));
+        // bytes32 id = _startTask(address(newAccount));
 
-        _multiSave(bytes20(address(newAccount)), acc_, id);
+        _multiSave(bytes20(address(newAccount)), acc_);
 
         emit AccountCreated(address(newAccount));
     }
@@ -73,38 +73,37 @@ contract ozProxyFactoryFacet is ozIProxyFactoryFacet, ModifiersARB {
     //////////////////////////////////////////////////////////////*/
 
     /// @dev Creates the Gelato task of each proxy/account
-    function _startTask(address account_) private returns(bytes32 id) {         
-        id = IOps(ops).createTaskNoPrepayment( 
-            account_, 
-            bytes4(abi.encodeWithSignature('exchangeToAccountToken(bytes,uint256,address)')),
-            account_,
-            abi.encodeWithSignature('checker()'),
-            s.ETH
-        );
-    }
+    // function _startTask(address account_) private returns(bytes32 id) {         
+    //     id = IOps(ops).createTaskNoPrepayment( 
+    //         account_, 
+    //         bytes4(abi.encodeWithSignature('exchangeToAccountToken(bytes,uint256,address)')),
+    //         account_,
+    //         abi.encodeWithSignature('checker()'),
+    //         s.ETH
+    //     );
+    // }
 
     /**
      * @dev Saves and connects the address of the account to its details.
      * @param account_ The account/proxy
      * @param acc_ Details of the account/proxy
-     * @param taskId_ Gelato's task id
      */
     function _multiSave(
         bytes20 account_,
-        AccountConfig calldata acc_,
-        bytes32 taskId_
+        AccountConfig calldata acc_
+        // bytes32 taskId_
     ) private { 
         address user = acc_.user;
         bytes32 acc_user = bytes32(bytes.concat(account_, bytes12(bytes20(user))));
-        bytes memory task_name = bytes.concat(taskId_, bytes32(bytes(acc_.name)));
+        bytes32 nameBytes = bytes32(bytes(acc_.name));
 
         if (s.userToData[user].accounts.length == 0) {
             AccData storage data = s.userToData[user];
             data.accounts.push(address(account_));
-            data.acc_userToTask_name[acc_user] = task_name;
+            data.acc_userToName[acc_user] = nameBytes;
         } else {
             s.userToData[user].accounts.push(address(account_));
-            s.userToData[user].acc_userToTask_name[acc_user] = task_name;
+            s.userToData[user].acc_userToName[acc_user] = nameBytes;
         }
     }
 }
