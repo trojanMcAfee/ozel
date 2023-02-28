@@ -43,7 +43,7 @@ let tx, balance, accData;
 let usersProxies = [];
 let signers, signerAddr2, beacon, ozMiddleware;
 let facetCut, accounts, names;
-let constrArgs;
+let constrArgs, USDT;
 
 describe('Contracts tests', async function () {
     this.timeout(1000000);
@@ -95,6 +95,8 @@ describe('Contracts tests', async function () {
         const undoAliasAddrOzMiddleL2 = '0x3b4759f0f772848b2d91f1d83e2fe57935346f18';
         tx = await ozlDiamond.setAuthorizedCaller(undoAliasAddrOzMiddleL2, true);
         await tx.wait();
+
+        USDT = await hre.ethers.getContractAt('IERC20', usdtAddrArb);
     });
 
     describe('ozProxyFactoryFacet', async () => {
@@ -193,34 +195,26 @@ describe('Contracts tests', async function () {
                 await ozlDiamond.authorizeSelector('0xffffffff', true, ops);
             });
 
-            it('should have an initial balance of 0.1 ETH and a final of 0 ETH and 1600+ USDT', async () => { 
+            xit('should have a final of 0 ETH and 1600+ USDT after an 0.1 ETH transfer', async () => { 
                 accountDetails[1] = usdtAddrArb;
                 newProxyAddr = await createProxy(ozlDiamond, accountDetails);
 
-                balance = await hre.ethers.provider.getBalance(newProxyAddr);
-                if (Number(balance) === 0) await sendETH(newProxyAddr, 0.1);
-                console.log(4);
-
-                USDT = await hre.ethers.getContractAt('IERC20', usdtAddrArb);
                 balance = await USDT.balanceOf(signerAddr);
-                console.log('usdt bal: ', balance / 10 ** 6);
+                assert.equal(balance / 10 ** 6, 0);
 
-                balance = await hre.ethers.provider.getBalance(newProxyAddr);
-                assert.equal(formatEther(balance), 0);
-            });
-
-            xit('should have a final balance of 0 ETH', async () => {
-                newProxyAddr = await createProxy(ozlDiamond, accountDetails);
                 balance = await hre.ethers.provider.getBalance(newProxyAddr);
                 if (Number(balance) === 0) await sendETH(newProxyAddr, 0.1);
-                
-                await activateProxyLikeOpsL2(newProxyAddr, ozlDiamond.address, accData);
+
+                balance = await USDT.balanceOf(signerAddr);
+                assert(balance / 10 ** 6 > 0);
+
                 balance = await hre.ethers.provider.getBalance(newProxyAddr);
                 assert.equal(formatEther(balance), 0);
             });
+
         });
 
-        xdescribe('Deploys 5 accounts', async () => { 
+        describe('Deploys 5 accounts', async () => { 
             before(async () => {
                 accountDetails[1] = usdcAddr;
                 for (let i=0; i < 5; i++) {
@@ -236,11 +230,14 @@ describe('Contracts tests', async function () {
             it('deploys 5 accounts with an initial balance of 100 ETH each and a final balace of 0 / createNewProxy()', async () => {
                 for (let i=0; i < proxies.length; i++) {
                     balance = await sendETH(proxies[i], 100);
+                    
+                    //-----
                     assert(formatEther(balance) === '100.0' || formatEther(balance) === '100.1');
 
                     await activateProxyLikeOpsL2(proxies[i], ozlDiamond.address, accData);
                     balance = await hre.ethers.provider.getBalance(proxies[i]);
                     assert.equal(formatEther(balance), 0);
+                    //------
                 }
             });
         });

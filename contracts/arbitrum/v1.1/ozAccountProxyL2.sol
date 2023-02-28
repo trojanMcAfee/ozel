@@ -61,8 +61,6 @@ contract ozAccountProxyL2 is BeaconProxy {
             // (bool success, ) = implementation.call{value: address(this).balance}(msg.data);
             // require(success);
 
-            console.log(1);
-
             bytes memory payload = abi.encodeWithSignature(
                 'exchangeToAccountToken(bytes,uint256,address)', 
                 accData,
