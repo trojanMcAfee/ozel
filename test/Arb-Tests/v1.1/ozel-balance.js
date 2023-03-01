@@ -6,11 +6,10 @@ const {
     getVarsForHelpers,
     deploy,
     getAccData,
-    activateProxyLikeOpsL2,
     deployV1_1
 } = require('../../../scripts/helpers-arb');
 
-const { getSelectors } = require('../../../scripts/myDiamondUtil');
+
 const { 
     createProxy, 
     sendETH,
@@ -31,6 +30,10 @@ let balance, accData;
 let signers, signerAddr2, beacon, ozMiddleware;
 
 
+/**
+ * Tests that the OZL balance is being successfully re-calculated
+ * between L1 and L2 interactions.
+ */
 describe('OZL balance', async function () {
     this.timeout(1000000);
 

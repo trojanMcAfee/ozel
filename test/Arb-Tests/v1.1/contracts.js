@@ -8,7 +8,6 @@ const {
     getVarsForHelpers,
     deploy,
     getAccData,
-    activateProxyLikeOpsL2,
     deployV1_1
 } = require('../../../scripts/helpers-arb');
 
@@ -16,9 +15,7 @@ const { getSelectors } = require('../../../scripts/myDiamondUtil');
 
 const { 
     createProxy, 
-    sendETH,
-    activateOzBeaconProxy,
-    deployContract
+    sendETH
 } = require('../../../scripts/helpers-eth');
 
 const { 
@@ -29,11 +26,12 @@ const {
     diamondABI,
     ops,
     usdcAddr,
-    pokeMeOpsAddr,
     accountL2ABI,
     fraxAddr
-} = require('../../../scripts/state-vars');const { parseEther } = require("ethers/lib/utils");
-;
+} = require('../../../scripts/state-vars');
+
+const { parseEther } = require("ethers/lib/utils");
+
 
 const { MaxUint256 } = ethers.constants;
 
@@ -46,6 +44,10 @@ let signers, beacon, ozMiddleware;
 let facetCut, accounts, names;
 let constrArgs, USDT, USDC, balanceETH, FRAX, balanceFRAX;
 
+
+/**
+ * Unit tests of the main functions on the v1.1 upgrade
+ */
 describe('Contracts tests', async function () {
     this.timeout(1000000);
 

@@ -7,8 +7,7 @@ const {
     getVarsForHelpers,
     getAccData,
     deployV1_1,
-    sendETHOps,
-    sendETH
+    sendETHOps
 } = require('../../../scripts/helpers-arb');
 
 const { createProxy } = require('../../../scripts/helpers-eth');
@@ -27,6 +26,9 @@ let tx, accData;
 let beacon, ozMiddleware;
 
 
+/**
+ * Tests integration of the upgrade with the deployed contracts in L2.
+ */
 describe('With deployed OZL', async () => {
 
     before(async () => {
