@@ -4,13 +4,18 @@ pragma solidity 0.8.14;
 
 import "@openzeppelin/contracts/proxy/utils/Initializable.sol";
 import '../../interfaces/arbitrum/ozIMiddlewareL2.sol';
-// import { AccData } from '../AppStorage.sol';
 import './facets/ozLoupeFacetV1_1.sol';
 import '../facets/ozLoupeFacet.sol';
 import '../../libraries/LibCommon.sol';
 import '../../Errors.sol';
 
 
+/**
+ * @title Forwarder of transactions
+ * @notice Contract in charge of changing the msg.sender by acting as a 
+ * forwarder of the original tx. This is done to isolate access control
+ * into one caller. 
+ */
 contract ozMiddlewareL2 is ozIMiddlewareL2, Initializable {
 
     using LibCommon for bytes;

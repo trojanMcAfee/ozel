@@ -17,6 +17,12 @@ import '../Errors.sol';
 import '../interfaces/ethereum/ozIMiddleware.sol';
 
 
+/**
+ * @title Forwarder of transactions
+ * @notice Contract in charge of changing the msg.sender by acting as a 
+ * forwarder of the original tx. This is done to isolate access control
+ * into one caller. 
+ */
 contract ozMiddleware is ozIMiddleware, Ownable, ReentrancyGuard {
 
     using FixedPointMathLib for uint;
