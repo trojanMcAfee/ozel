@@ -336,13 +336,10 @@ async function activateProxyLikeOpsL2(proxy, taskCreator, accData, isEvil, evilP
 
     const gelatoSigner = await hre.ethers.provider.getSigner(gelatoAddr); 
     iface = new ethers.utils.Interface([`function exchangeToAccountToken(bytes,uint256,address)`]); 
-    // iface = new ethers.utils.Interface([`function sendToArb(${isEvil ? '(address,address,uint256,string),uint256,uint256,address)' : 'uint256)'}`]); 
     let execData;
     if (isEvil) {
         execData = iface.encodeFunctionData('sendToArb', evilParams);
     } else {
-        // execData = iface.encodeFunctionData('sendToArb', [ethers.FixedNumber.from('0.1')]); 
-        //------
         execData = iface.encodeFunctionData('exchangeToAccountToken', [
             accData,
             ethers.FixedNumber.from('0.1'),
