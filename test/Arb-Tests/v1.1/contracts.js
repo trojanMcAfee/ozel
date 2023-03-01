@@ -138,7 +138,8 @@ describe('Contracts tests', async function () {
                 accountDetails[3] = invalidName;
 
                 await assert.rejects(async () => {
-                    await ozlDiamond.createNewProxy(accountDetails, ops);
+                    tx = await ozlDiamond.createNewProxy(accountDetails, ops);
+                    await tx.wait();
                 }, {
                     name: 'Error',
                     message: (await err()).invalidName 
@@ -151,7 +152,8 @@ describe('Contracts tests', async function () {
             it('should not allow to create a account with the 0 address / createNewProxy()', async () => {
                 accountDetails[1] = nullAddr;
                 await assert.rejects(async () => {
-                    await ozlDiamond.createNewProxy(accountDetails, ops);
+                    tx = await ozlDiamond.createNewProxy(accountDetails, ops);
+                    await tx.wait();
                 }, {
                     name: 'Error',
                     message: (await err()).zeroAddress 
@@ -162,7 +164,8 @@ describe('Contracts tests', async function () {
                 accountDetails[1] = usdtAddrArb;
                 accountDetails[2] = 0;
                 await assert.rejects(async () => {
-                    await ozlDiamond.createNewProxy(accountDetails, ops);
+                    tx = await ozlDiamond.createNewProxy(accountDetails, ops);
+                    await tx.wait();
                 }, {
                     name: 'Error',
                     message: (await err()).zeroSlippage
@@ -172,7 +175,8 @@ describe('Contracts tests', async function () {
             it('should not allow to create an account with an slippage of more than 5% / createNewProxy()', async () => {
                 accountDetails[2] = 501;
                 await assert.rejects(async () => {
-                    await ozlDiamond.createNewProxy(accountDetails, ops);
+                    tx = await ozlDiamond.createNewProxy(accountDetails, ops);
+                    await tx.wait();
                 }, {
                     name: 'Error',
                     message: (await err()).zeroSlippage
@@ -183,7 +187,8 @@ describe('Contracts tests', async function () {
                 accountDetails[1] = deadAddr;
                 accountDetails[2] = defaultSlippage;
                 await assert.rejects(async () => {
-                    await ozlDiamond.createNewProxy(accountDetails, ops);
+                    tx = await ozlDiamond.createNewProxy(accountDetails, ops);
+                    await tx.wait();
                 }, {
                     name: 'Error',
                     message: (await err(deadAddr)).tokenNotFound
@@ -192,7 +197,8 @@ describe('Contracts tests', async function () {
 
             it('should not allow an external user to add an authorized selector / authorizeSelector()', async () => {
                 await assert.rejects(async () => {
-                    await ozlDiamond.connect(signers[1]).authorizeSelector('0xffffffff', true, ops);
+                    tx = await ozlDiamond.connect(signers[1]).authorizeSelector('0xffffffff', true, ops);
+                    await tx.wait();
                 }, {
                     name: 'Error',
                     message: (await err(2)).notAuthorized
@@ -326,7 +332,7 @@ describe('Contracts tests', async function () {
             newProxy = await hre.ethers.getContractAt(accountL2ABI, newProxyAddr);
         });
 
-        xdescribe('Account methods', async () => {
+        describe('Account methods', async () => {
             it('should not let an external user to call the function / exchangeToAccountToken()', async () => {
                 await assert.rejects(async () => {
                     await ozMiddleware.exchangeToAccountToken(
@@ -418,7 +424,7 @@ describe('Contracts tests', async function () {
             });
         });
 
-        xdescribe('withdrawETH_lastResort', async () => {
+        describe('withdrawETH_lastResort', async () => {
             before(async () => {
                 constrArgs = [beacon.address];
                 const [ newFactoryAddr, newFactory ] = await deployContract('ozProxyFactoryTest', constrArgs);

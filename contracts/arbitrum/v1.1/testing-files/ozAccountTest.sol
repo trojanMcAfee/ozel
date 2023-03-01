@@ -3,8 +3,6 @@ pragma solidity 0.8.14;
 
 
 import '@openzeppelin/contracts/proxy/beacon/BeaconProxy.sol';
-import "@openzeppelin/contracts/proxy/utils/Initializable.sol";
-import '@openzeppelin/contracts/utils/Address.sol';
 import '../facets/ozLoupeFacetV1_1.sol';
 
 

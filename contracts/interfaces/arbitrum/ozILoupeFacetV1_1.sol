@@ -17,20 +17,12 @@ interface ozILoupeFacetV1_1 {
     ) external view returns(address[] memory, string[] memory);
 
     /**
-     * @dev Gets the Gelato task of an account/proxy
-     * @param account_ Account
-     * @param owner_ Owner of the task
-     * @return bytes32 Gelato Task ID
-     */
-    function getTaskID(address account_, address owner_) external view returns(bytes32);
-
-    /**
-     * @dev Gets the 32-bytes + 32-bytes merged together of the Gelato task id and name of the Account
+     * @dev Gets the 32-bytes representation of the name of an Account
      * @param user_ The owner of the Account
      * @param account_ Account to get the task id and name of
-     * @return bytes The bytes that include the Gelato task and name of account_
+     * @return bytes32 The 32 bytes of the name
      */
-    function getTask_Name(address user_, address account_) external view returns(bytes memory);
+    function getNameBytes(address user_, address account_) external view returns(bytes32);
 
     /**
      * @dev Queries if a function is authorized for a specific call

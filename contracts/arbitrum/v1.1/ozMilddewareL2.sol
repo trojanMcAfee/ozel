@@ -4,13 +4,13 @@ pragma solidity 0.8.14;
 
 import "@openzeppelin/contracts/proxy/utils/Initializable.sol";
 import '../../interfaces/arbitrum/ozIMiddlewareL2.sol';
-import { AccData } from '../AppStorage.sol';
+// import { AccData } from '../AppStorage.sol';
 import './facets/ozLoupeFacetV1_1.sol';
 import '../facets/ozLoupeFacet.sol';
 import '../../libraries/LibCommon.sol';
 import '../../Errors.sol';
 
-import 'hardhat/console.sol';
+
 contract ozMiddlewareL2 is ozIMiddlewareL2, Initializable {
 
     using LibCommon for bytes;
@@ -77,9 +77,14 @@ contract ozMiddlewareL2 is ozIMiddlewareL2, Initializable {
         require(success);
     }
 
-
+    /**
+     * @dev Verifies that an Account was created in Ozel
+     * @param user_ Owner of the Account to query
+     * @param account_ Account to query
+     * @return bool If the Account was created in Ozel
+     */
     function _verify(address user_, address account_) private view returns(bool) {
-        bytes32 nameBytes = ozLoupeFacetV1_1(OZL).getTask_Name(user_, account_);
+        bytes32 nameBytes = ozLoupeFacetV1_1(OZL).getNameBytes(user_, account_);
         return nameBytes != bytes32(0);
     }
 
@@ -129,6 +134,6 @@ contract ozMiddlewareL2 is ozIMiddlewareL2, Initializable {
     //@inheritdoc ozIMiddlewareL2
     function withdrawETH_lastResort() external onlyUser { 
         (bool success, ) = payable(msg.sender).call{value: address(this).balance}('');
-        if (!success) revert CallFailed('ozPayMe: withdrawETH_lastResort failed');
+        if (!success) revert CallFailed('withdrawETH_lastResort failed');
     }
 }
