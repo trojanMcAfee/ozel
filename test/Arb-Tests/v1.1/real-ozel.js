@@ -7,8 +7,11 @@ const {
     getVarsForHelpers,
     getAccData,
     deployV1_1,
-    sendETHOps
+    sendETHOps,
+    sendETH
 } = require('../../../scripts/helpers-arb');
+
+const { createProxy } = require('../../../scripts/helpers-eth');
 
 const { 
     usdtAddrArb,
@@ -48,22 +51,29 @@ describe('With deployed OZL', async () => {
         getVarsForHelpers(ozlDiamond, '');
         await sendETHOps('11', deployer2);
 
+        accountDetails = [
+            signerAddr,
+            usdtAddrArb,
+            defaultSlippage,
+            'test'
+        ];
+
         /**
          * Sets Hardhat's msg.sender as authorized in order to simulate Gelato's sender. 
          */
-        await hre.network.provider.request({
-            method: "hardhat_impersonateAccount",
-            params: [deployer2],
-        });
+        // await hre.network.provider.request({
+        //     method: "hardhat_impersonateAccount",
+        //     params: [deployer2],
+        // });
 
-        const depSigner = await hre.ethers.provider.getSigner(deployer2);
-        const signerAddrUndoAlias = '0xe28ed6e51aad88f6f4ce6ab8827279cfffb91155';
-        await ozlDiamond.connect(depSigner).setAuthorizedCaller(signerAddrUndoAlias, true, ops);
+        // const depSigner = await hre.ethers.provider.getSigner(deployer2);
+        // const undoAliasAddrOzMiddleL2 = '0x842f1dc811bb5740090279ba06cfa8fcf6112667';
+        // await ozlDiamond.connect(depSigner).setAuthorizedCaller(undoAliasAddrOzMiddleL2, true, ops);
 
-        await hre.network.provider.request({
-            method: "hardhat_stopImpersonatingAccount",
-            params: [deployer2],
-        });
+        // await hre.network.provider.request({
+        //     method: "hardhat_stopImpersonatingAccount",
+        //     params: [deployer2],
+        // });
     });
 
     it('should properly calculate new Ozel balances in an L1 user after having used an L2 Account', async () => {
@@ -93,17 +103,17 @@ describe('With deployed OZL', async () => {
         /**
          * Sends tx to ozDiamond that will trigger a re-calculation of OZL balances
          */
+        newProxyAddr = await createProxy(ozlDiamond, accountDetails);
         const value = parseEther('1');
-        const iface = new ethers.utils.Interface(diamondABI);
-        const encodedData = iface.encodeFunctionData('exchangeToAccountToken', [
-            accData,
-            value,
-            account
-        ]);
+        // const iface = new ethers.utils.Interface(diamondABI);
+        // const encodedData = iface.encodeFunctionData('exchangeToAccountToken', [
+        //     accData,
+        //     value,
+        //     account
+        // ]);
 
         ops.value = value;
-        ops.to = ozlDiamond.address;
-        ops.data = encodedData;
+        ops.to = newProxyAddr;
         tx = await signer.sendTransaction(ops);
         await tx.wait();
 
@@ -123,6 +133,7 @@ describe('With deployed OZL', async () => {
 
         const balanceUSDTpost = await USDT.balanceOf(testAcc);
         console.log('USDT balance account2 post-tx: ', balanceUSDTpost / 10 ** 6);
+        console.log('balanceUSDTpost: ', Number(balanceUSDTpost));
         assert(Number(balanceUSDTpost) > 1600);
     });
 });

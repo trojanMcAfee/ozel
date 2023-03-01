@@ -401,7 +401,7 @@ async function deployV1_1(ozlDiamond, deployer2) {
         [ newLoupe.address, 0, getSelectors(newLoupe) ]
     ];
 
-    const undoAliasAddrOzMiddleL2 = '0x73d974d481ee0a5332c457a4d796187f6ba66eda';
+    const undoAliasAddrOzMiddleL2 = '0x842f1dc811bb5740090279ba06cfa8fcf6112667';
 
     if (!deployer2) {
         await ozlDiamond.diamondCut(facetCut, innitAddr, functionCall, ops);
