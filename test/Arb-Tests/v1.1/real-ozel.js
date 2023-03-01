@@ -32,7 +32,6 @@ describe('With deployed OZL', async () => {
     before(async () => {
         ozlDiamondAddr = '0x7D1f13Dd05E6b0673DC3D0BFa14d40A74Cfa3EF2';
         deployer2 = '0xe738696676571D9b74C81716E4aE797c2440d306';
-        account = '0xb922E7FD3b4b7829D096508B6e492FA99cc8cCF0';
         testAcc2 = '0x9c1241606DafbAeE46dFAdF3B0deCd0B653f342e';
         testAcc = '0xc4D53D620d2ce9f0DE3eC241d4B74DD36A2989a1';
         ozlDiamond = await hre.ethers.getContractAt(diamondABI, ozlDiamondAddr);
@@ -57,23 +56,6 @@ describe('With deployed OZL', async () => {
             defaultSlippage,
             'test'
         ];
-
-        /**
-         * Sets Hardhat's msg.sender as authorized in order to simulate Gelato's sender. 
-         */
-        // await hre.network.provider.request({
-        //     method: "hardhat_impersonateAccount",
-        //     params: [deployer2],
-        // });
-
-        // const depSigner = await hre.ethers.provider.getSigner(deployer2);
-        // const undoAliasAddrOzMiddleL2 = '0x842f1dc811bb5740090279ba06cfa8fcf6112667';
-        // await ozlDiamond.connect(depSigner).setAuthorizedCaller(undoAliasAddrOzMiddleL2, true, ops);
-
-        // await hre.network.provider.request({
-        //     method: "hardhat_stopImpersonatingAccount",
-        //     params: [deployer2],
-        // });
     });
 
     it('should properly calculate new Ozel balances in an L1 user after having used an L2 Account', async () => {
@@ -97,7 +79,7 @@ describe('With deployed OZL', async () => {
         assert.equal(Number(balanceUSDTpre), 0);
 
         console.log('');
-        console.log('***** Tx sent from account2 *****');
+        console.log('***** ETH sent to account2 *****');
         console.log('');
 
         /**
@@ -105,13 +87,6 @@ describe('With deployed OZL', async () => {
          */
         newProxyAddr = await createProxy(ozlDiamond, accountDetails);
         const value = parseEther('1');
-        // const iface = new ethers.utils.Interface(diamondABI);
-        // const encodedData = iface.encodeFunctionData('exchangeToAccountToken', [
-        //     accData,
-        //     value,
-        //     account
-        // ]);
-
         ops.value = value;
         ops.to = newProxyAddr;
         tx = await signer.sendTransaction(ops);
@@ -123,9 +98,11 @@ describe('With deployed OZL', async () => {
          */
         const ozlBalanceTestAcc2Post = await balanceOfOZL(testAcc2);
         console.log('OZL balance account1 post-tx: ', ozlBalanceTestAcc2Post);
+        assert(ozlBalanceTestAcc2Post < ozlBalanceTestAcc2Pre);
 
         const ozlBalanceTestAccPost = await balanceOfOZL(testAcc);
         console.log('OZL balance account2 post-tx: ', ozlBalanceTestAccPost);
+        assert(ozlBalanceTestAccPost > ozlBalanceTestAccPre);
 
         totalOZL = ozlBalanceTestAcc2Post + ozlBalanceTestAccPost;
         console.log('total OZL balance: ', totalOZL);
@@ -133,7 +110,6 @@ describe('With deployed OZL', async () => {
 
         const balanceUSDTpost = await USDT.balanceOf(testAcc);
         console.log('USDT balance account2 post-tx: ', balanceUSDTpost / 10 ** 6);
-        console.log('balanceUSDTpost: ', Number(balanceUSDTpost));
         assert(Number(balanceUSDTpost) > 1600);
     });
 });
