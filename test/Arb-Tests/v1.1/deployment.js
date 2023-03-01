@@ -1,10 +1,12 @@
-const { diamondABI } = require("../../../scripts/state-vars");
+const { diamondABI, usdcAddr, defaultSlippage } = require("../../../scripts/state-vars");
 
 const {
     deployContract
 } = require('../../../scripts/helpers-eth');
 
-const { getInitSelectors } = require('../../../scripts/helpers-arb');
+const { getInitSelectors, deployFacet } = require('../../../scripts/helpers-arb');
+
+const { getSelectors } = require('../../../scripts/myDiamondUtil');
 
 
 async function main() {
@@ -34,4 +36,31 @@ async function main() {
 }
 
 
-main();
+// main();
+
+
+async function create() {
+    const ozlDiamondAddr = '0x7D1f13Dd05E6b0673DC3D0BFa14d40A74Cfa3EF2';
+    const ozlDiamond = await hre.ethers.getContractAt(diamondABI, ozlDiamondAddr);
+    const [signer] = await hre.ethers.getSigners();
+    const signerAddr = await signer.getAddress();
+
+    const accountDetails = [
+        signerAddr,
+        usdcAddr,
+        defaultSlippage,
+        'arbAcc'
+    ];
+
+    let tx = await ozlDiamond.createNewProxy(accountDetails);
+    let receipt = await tx.wait();
+    console.log('acc created: ', receipt.transactionHash);
+
+    const [ proxies, names ] = await ozlDiamond.getAccountsByUser(signerAddr);
+    console.log('accs: ', proxies);
+    
+
+}
+
+create();
+
