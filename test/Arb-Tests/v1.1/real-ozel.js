@@ -17,7 +17,7 @@ const {
     defaultSlippage,
     diamondABI,
     ops
-} = require('../../../scripts/state-vars');;
+} = require('../../../scripts/state-vars');
 
 
 let ozlDiamondAddr, ozlDiamond;
@@ -30,6 +30,7 @@ let beacon, ozMiddleware;
  * Tests integration of the upgrade with the deployed contracts in L2.
  */
 describe('With deployed OZL', async () => {
+    this.timeout(1000000);
 
     before(async () => {
         ozlDiamondAddr = '0x7D1f13Dd05E6b0673DC3D0BFa14d40A74Cfa3EF2';

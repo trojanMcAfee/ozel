@@ -111,11 +111,48 @@ async function addTokenToDatabase(tokenSwap, token, signerIndex = 0) {
     await OZLDiamond.connect(signer).addTokenToDatabase(tokenSwap, token, ops);
 }
 
+async function addTokenToDatabaseAsOwner(tokenSwap, token) {
+    const deployer2 = '0xe738696676571D9b74C81716E4aE797c2440d306';
+    await sendETHOps('3', deployer2);
+
+    await hre.network.provider.request({
+        method: "hardhat_impersonateAccount",
+        params: [deployer2],
+    });
+
+    const deployerSigner = await hre.ethers.provider.getSigner(deployer2);
+    await ozlDiamond.connect(deployerSigner).addTokenToDatabase(tokenSwap, token, ops);
+
+    await hre.network.provider.request({
+        method: "hardhat_stopImpersonatingAccount",
+        params: [deployer2],
+    });
+}
+
 async function removeTokenFromDatabase(tokenSwap, token, signerIndex = 0) {
     const signers = await hre.ethers.getSigners();
     const signer = signers[signerIndex];
     if (ops.value) delete ops.value;
     await OZLDiamond.connect(signer).removeTokenFromDatabase(tokenSwap, token, ops);
+}
+
+
+async function removeTokenFromDatabaseAsOwner(tokenSwap, token) {
+    const deployer2 = '0xe738696676571D9b74C81716E4aE797c2440d306';
+    await sendETHOps('3', deployer2);
+
+    await hre.network.provider.request({
+        method: "hardhat_impersonateAccount",
+        params: [deployer2],
+    });
+
+    const deployerSigner = await hre.ethers.provider.getSigner(deployer2);
+    await ozlDiamond.connect(deployerSigner).removeTokenFromDatabase(tokenSwap, token, ops);
+
+    await hre.network.provider.request({
+        method: "hardhat_stopImpersonatingAccount",
+        params: [deployer2],
+    });
 }
 
 
@@ -421,11 +458,64 @@ async function deployV1_1(ozlDiamond, deployer2) {
         });
     }
 
-    //Set authorized caller
-    // await ozlDiamond.setAuthorizedCaller(undoAliasAddrOzMiddleL2, true, ops);
     console.log('done setup...');
 
     return [ ozMiddleware, beacon ];
+}
+
+
+async function deployV1_2(ozlDiamond, isDeployer) {
+    const deployer2 = '0xe738696676571D9b74C81716E4aE797c2440d306';
+    let tx;
+
+    //Deploys ozLoupeFacetV1_2
+    const newLoupe = await deployFacet('ozLoupeFacetV1_2');
+
+    //Deploys OZLFacetV1_2
+    const newOZLFacet = await deployFacet('OZLFacetV1_2')
+
+    //Deploys init upgrade
+    const tokensDatabase = [
+        usdtAddrArb,
+        usdcAddr,
+        mimAddr,
+        fraxAddr,
+        wbtcAddr
+    ];
+
+    const [ innitAddr, init ] = await deployContract('InitUpgradeV1_2');
+    const functionCall = init.interface.encodeFunctionData('init', [tokensDatabase]);
+
+    //Adds new facets to ozDiamond
+    const facetCut = [
+        [ newLoupe.address, 0, getSelectors(newLoupe) ],
+        [ newOZLFacet.address, 1, getSelectors(newOZLFacet) ]
+    ];
+
+    if (isDeployer) {
+        tx = await ozlDiamond.diamondCut(facetCut, innitAddr, functionCall);
+        await tx.wait();
+        console.log('done with deployer');
+    } else {
+        await sendETHOps('3', deployer2);
+
+        await hre.network.provider.request({
+            method: "hardhat_impersonateAccount",
+            params: [deployer2],
+        });
+
+        const deployerSigner = await hre.ethers.provider.getSigner(deployer2);
+        await ozlDiamond.connect(deployerSigner).diamondCut(facetCut, innitAddr, functionCall, ops);
+
+        await hre.network.provider.request({
+            method: "hardhat_stopImpersonatingAccount",
+            params: [deployer2],
+        });
+
+        console.log ('done with impersonation');
+    }
+
+
 }
  
 
@@ -591,5 +681,8 @@ module.exports = {
     activateProxyLikeOpsL2,
     getInitSelectors,
     deployV1_1,
-    sendETHOps
+    sendETHOps,
+    deployV1_2,
+    addTokenToDatabaseAsOwner,
+    removeTokenFromDatabaseAsOwner
 };

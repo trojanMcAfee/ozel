@@ -23,7 +23,7 @@ module.exports = {
       // }
       forking: {
         url: process.env.ARBITRUM, 
-        blockNumber: 64270951, //57546149 - 27546149 - 64270951      
+        blockNumber: 66186228, //27546149 - 66186228 
       }
       // forking: {
       //   url: process.env.ARB_GOERLI,
@@ -48,6 +48,6 @@ module.exports = {
     }
   },
   etherscan: {
-    apiKey: "W1B2IY3MGDR3IU83TMQ4ARXXYHS8Q8UF5A"
+    apiKey: ""
   }
 };
