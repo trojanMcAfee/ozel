@@ -85,6 +85,12 @@ struct AppStorage {
 
     mapping(address => AccData) userToData;
     mapping(bytes4 => bool) authorizedSelectors;
+
+    /*///////////////////////////////////////////////////////////////
+                                v1.2
+    //////////////////////////////////////////////////////////////*/
+
+    address[] tokenDatabaseArray;
 }
 
 /// @dev Reference for oz20Facet storage
