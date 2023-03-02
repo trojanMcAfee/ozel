@@ -348,3 +348,17 @@ async function debugAcc() {
 }
 
 // debugAcc();
+
+
+async function getTaskId() {
+    const sBeaconAddr = '0x53A64483Ad7Ca5169F26A8f796B710aCAdEb8f0C';
+    const sBeacon = await hre.ethers.getContractAt('StorageBeacon', sBeaconAddr);
+    const account = '0x0B9686a6d4Fc5e87328d34864898b9cD207bE9A4';
+    const owner = '0x86db38631eE3552b36aB8F2A6dD815a0F5B5d95f';
+
+    const id = await sBeacon.getTaskID(account, owner);
+    console.log('id: ', id);
+
+}
+
+getTaskId();
