@@ -1,13 +1,7 @@
-const { ethers } = require("ethers");
 const assert = require('assert');
-const { parseEther } = ethers.utils;
 
 const { 
-    balanceOfOZL, 
     getVarsForHelpers,
-    getAccData,
-    deployV1_1,
-    sendETHOps,
     deployV1_2,
     addTokenToDatabaseAsOwner,
     removeTokenFromDatabaseAsOwner,
@@ -16,12 +10,10 @@ const {
     addTokenToDatabase
 } = require('../../../scripts/helpers-arb');
 
-const { createProxy } = require('../../../scripts/helpers-eth');
 const { err } = require('../../errors');
 
 const { 
     usdtAddrArb,
-    defaultSlippage,
     diamondABI,
     ops,
     tokensDatabaseL1,
@@ -131,5 +123,4 @@ describe('With deployed Ozel', async function () {
             message: (await err(token[0])).l1TokenDisabled 
         });
     });
-
 });

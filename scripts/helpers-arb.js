@@ -534,8 +534,6 @@ async function deployV1_2(ozlDiamond, isDeployer) {
 
         console.log ('done with impersonation');
     }
-
-
 }
  
 
