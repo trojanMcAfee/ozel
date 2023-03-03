@@ -2,19 +2,23 @@
 pragma solidity 0.8.14;
 
 
+import { ModifiersARB } from '../../Modifiers.sol';
 import '../../../libraries/LibDiamond.sol';
 import '../../../libraries/LibCommon.sol';
-// import '../../AppStorage.sol';
 import '../../../Errors.sol';
-import { ModifiersARB } from '../../Modifiers.sol';
 
 
+/**
+ * @title Upgraded OZLFacet for account methods
+ * @notice It adds the ability to add/remove tokens from the token database array,
+ * which is used in the front end. 
+ */
 contract OZLFacetV1_2 is ModifiersARB {
 
     event NewToken(address token);
     event TokenRemoved(address token);
 
-
+    
     function addTokenToDatabase(
         TradeOps calldata newSwap_, 
         LibDiamond.Token calldata token_

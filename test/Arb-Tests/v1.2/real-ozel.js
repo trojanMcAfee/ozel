@@ -23,10 +23,11 @@ const {
     usdcAddr,
     crv2PoolAddr
 } = require('../../../scripts/state-vars');
+const { ethers } = require('hardhat');
 
 
 let tokens, tokenSwap, token;
-let signer, signerAddr;
+let signer, signerAddr, newOzlFacet;
 
 
 describe('With deployed Ozel', async function () {
@@ -40,7 +41,7 @@ describe('With deployed Ozel', async function () {
         ([ signer ] = await hre.ethers.getSigners());
         signerAddr = await signer.getAddress();
 
-        await deployV1_2(ozlDiamond);
+        newOzlFacet = await deployV1_2(ozlDiamond);
 
         getVarsForHelpers(ozlDiamond, '');
 
@@ -122,5 +123,17 @@ describe('With deployed Ozel', async function () {
             name: 'Error',
             message: (await err(token[0])).l1TokenDisabled 
         });
+    });
+
+    it('checks that the OZLFacet methods were successfully replaced', async () => {
+        const iface = new ethers.utils.Interface(diamondABI);
+        const selecAdd = iface.getSighash('addTokenToDatabase');
+        const selecRemove = iface.getSighash('removeTokenFromDatabase');
+        const newOzlFacetLower = newOzlFacet.toLowerCase();
+        
+        const facet1 = (await ozlDiamond.facetAddress(selecAdd)).toLowerCase();
+        const facet2 = (await ozlDiamond.facetAddress(selecRemove)).toLowerCase();
+
+        assert(newOzlFacetLower == facet1 && newOzlFacetLower == facet2);
     });
 });
