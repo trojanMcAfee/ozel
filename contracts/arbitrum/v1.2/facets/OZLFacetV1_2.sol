@@ -3,6 +3,7 @@ pragma solidity 0.8.14;
 
 
 import { ModifiersARB } from '../../Modifiers.sol';
+import '../../../interfaces/arbitrum/IOZLFacetV1_2.sol';
 import '../../../libraries/LibDiamond.sol';
 import '../../../libraries/LibCommon.sol';
 import '../../../Errors.sol';
@@ -13,12 +14,12 @@ import '../../../Errors.sol';
  * @notice It adds the ability to add/remove tokens from the token database array,
  * which is used in the front end. 
  */
-contract OZLFacetV1_2 is ModifiersARB {
+contract OZLFacetV1_2 is IOZLFacetV1_2, ModifiersARB {
 
     event NewToken(address token);
     event TokenRemoved(address token);
 
-    
+    //@inheritdoc IOZLFacetV1_2
     function addTokenToDatabase(
         TradeOps calldata newSwap_, 
         LibDiamond.Token calldata token_
@@ -38,6 +39,7 @@ contract OZLFacetV1_2 is ModifiersARB {
         emit NewToken(l2Address);
     }
 
+    //@inheritdoc IOZLFacetV1_2
     function removeTokenFromDatabase(
         TradeOps calldata swapToRemove_, 
         LibDiamond.Token calldata token_
@@ -54,7 +56,7 @@ contract OZLFacetV1_2 is ModifiersARB {
         emit TokenRemoved(l2Address);
     }
 
-
+    /// @dev Removes a specific address from the tokenDatabase array
     function _removeFromArr(address l2Address_) private {
         for (uint i=0; i < s.tokenDatabaseArray.length; i++) {
             if (s.tokenDatabaseArray[i] == l2Address_) {
