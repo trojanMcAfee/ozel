@@ -10,10 +10,13 @@ const {
     sendETHOps,
     deployV1_2,
     addTokenToDatabaseAsOwner,
-    removeTokenFromDatabaseAsOwner
+    removeTokenFromDatabaseAsOwner,
+    removeTokenFromDatabase,
+    changeL1CheckAsOwner
 } = require('../../../scripts/helpers-arb');
 
 const { createProxy } = require('../../../scripts/helpers-eth');
+const { err } = require('../../errors');
 
 const { 
     usdtAddrArb,
@@ -23,7 +26,9 @@ const {
     tokensDatabaseL1,
     usxAddr,
     dForcePoolAddr,
-    nullAddr
+    nullAddr,
+    usdcAddr,
+    crv2PoolAddr
 } = require('../../../scripts/state-vars');
 
 
@@ -44,6 +49,8 @@ describe('With deployed Ozel', async function () {
 
         await deployV1_2(ozlDiamond);
 
+        getVarsForHelpers(ozlDiamond, '');
+
         //dForcePool --> USX: 0 / USDT: 2 / USDC: 1
         tokenSwap = [
             2,
@@ -56,12 +63,12 @@ describe('With deployed Ozel', async function () {
         token = [ nullAddr, usxAddr ];
     });
 
-    xit('should get the tokens database array / getTokenDatabase()', async () => {
+    it('should get the tokens database array / getTokenDatabase()', async () => {
         tokens = await ozlDiamond.getTokenDatabase();
         assert.equal(tokens.length, 5);
     });
 
-    xit('should add a new token to the database and check the array of L2 addresses / addTokenToDatabase()', async () => {
+    it('should add a new token to the database and check the array of L2 addresses / addTokenToDatabase()', async () => {
         tokens = await ozlDiamond.getTokenDatabase();
         assert.equal(tokens.length, 5);
        
@@ -71,7 +78,7 @@ describe('With deployed Ozel', async function () {
         assert.equal(tokens.length, 6);
     });
 
-    xit('should remove a token from the database and chek the array of L2 addresses / removeTokenFromDatabase()', async () => {
+    it('should remove a token from the database and chek the array of L2 addresses / removeTokenFromDatabase()', async () => {
         tokens = await ozlDiamond.getTokenDatabase();
         if (tokens.length === 5) {
             await addTokenToDatabaseAsOwner(tokenSwap, token);
@@ -85,6 +92,34 @@ describe('With deployed Ozel', async function () {
         assert.equal(tokens.length, 5);
     });
 
-    //doing the should not tests
+    it('should not allow an unauthorized user to remove a token (USX) from the database / removeTokenFromDatabase()', async () => {
+        await assert.rejects(async () => {
+            await removeTokenFromDatabase(tokenSwap, token, 1);
+        }, {
+            name: 'Error',
+            message: (await err(2)).notAuthorized 
+        });
+    });
+
+    it('should not allow to add a new token with an L1 address when the l1Check has been disabled / addTokenToDatabase() - changeL1Check()', async () => {
+        await changeL1CheckAsOwner(false);
+
+        tokenSwap = [
+            1,
+            0,
+            usdtAddrArb,
+            usdcAddr,
+            crv2PoolAddr
+        ];
+        token = [ tokensDatabaseL1.usdcAddr, usdcAddr ];
+        await removeTokenFromDatabaseAsOwner(tokenSwap, token, ops);
+        
+        await assert.rejects(async () => {
+            await addTokenToDatabaseAsOwner(tokenSwap, token);
+        }, {
+            name: 'Error',
+            message: (await err(token[0])).l1TokenDisabled 
+        });
+    });
 
 });

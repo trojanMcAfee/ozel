@@ -156,6 +156,26 @@ async function removeTokenFromDatabaseAsOwner(tokenSwap, token) {
 }
 
 
+async function changeL1CheckAsOwner(state) {
+    const deployer2 = '0xe738696676571D9b74C81716E4aE797c2440d306';
+    await sendETHOps('3', deployer2);
+
+    await hre.network.provider.request({
+        method: "hardhat_impersonateAccount",
+        params: [deployer2],
+    });
+
+    const deployerSigner = await hre.ethers.provider.getSigner(deployer2);
+    const tx = await ozlDiamond.connect(deployerSigner).changeL1Check(state, ops);
+    await tx.wait();
+
+    await hre.network.provider.request({
+        method: "hardhat_stopImpersonatingAccount",
+        params: [deployer2],
+    });
+}
+
+
 async function getRegulatorCounter() {
     return await OZLDiamond.getRegulatorCounter();
 }
@@ -684,5 +704,6 @@ module.exports = {
     sendETHOps,
     deployV1_2,
     addTokenToDatabaseAsOwner,
-    removeTokenFromDatabaseAsOwner
+    removeTokenFromDatabaseAsOwner,
+    changeL1CheckAsOwner
 };
