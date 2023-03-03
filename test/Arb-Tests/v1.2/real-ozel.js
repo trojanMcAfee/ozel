@@ -12,7 +12,8 @@ const {
     addTokenToDatabaseAsOwner,
     removeTokenFromDatabaseAsOwner,
     removeTokenFromDatabase,
-    changeL1CheckAsOwner
+    changeL1CheckAsOwner,
+    addTokenToDatabase
 } = require('../../../scripts/helpers-arb');
 
 const { createProxy } = require('../../../scripts/helpers-eth');
@@ -95,6 +96,15 @@ describe('With deployed Ozel', async function () {
     it('should not allow an unauthorized user to remove a token (USX) from the database / removeTokenFromDatabase()', async () => {
         await assert.rejects(async () => {
             await removeTokenFromDatabase(tokenSwap, token, 1);
+        }, {
+            name: 'Error',
+            message: (await err(2)).notAuthorized 
+        });
+    });
+
+    it('should not allow an external user add a new token to the database / addTokenToDatabase()', async () => {
+        await assert.rejects(async () => {
+            await addTokenToDatabase(tokenSwap, token);
         }, {
             name: 'Error',
             message: (await err(2)).notAuthorized 
