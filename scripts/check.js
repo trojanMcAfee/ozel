@@ -18,7 +18,8 @@ const {
     mimAddr,
     wbtcAddr,
     defaultSlippage,
-    opsL2_2
+    opsL2_2,
+    diamondABI
 } = require('./state-vars.js');
 
 const { 
@@ -30,7 +31,11 @@ const {
     activateProxyLikeOps
  } = require('./helpers-eth.js');
 
-const { activateProxyLikeOpsL2, getAccData } = require('./helpers-arb');
+const { 
+    activateProxyLikeOpsL2, 
+    getAccData,
+    deployV1_2
+} = require('./helpers-arb');
 
 const { parseEther, formatEther } = require('ethers/lib/utils');
 
@@ -362,3 +367,13 @@ async function getTaskId() {
 }
 
 // getTaskId();
+
+
+async function deployUpgrade() {
+    const ozlDiamondAddr = '0x7D1f13Dd05E6b0673DC3D0BFa14d40A74Cfa3EF2';
+    const ozlDiamond = await hre.ethers.getContractAt(diamondABI, ozlDiamondAddr);
+
+    await deployV1_2(ozlDiamond, true);
+}
+
+deployUpgrade();
