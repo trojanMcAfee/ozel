@@ -19,7 +19,7 @@ interface ozILoupeFacetV1_1 {
     /**
      * @dev Gets the 32-bytes representation of the name of an Account
      * @param user_ The owner of the Account
-     * @param account_ Account to get the task id and name of
+     * @param account_ Account to get the name of
      * @return bytes32 The 32 bytes of the name
      */
     function getNameBytes(address user_, address account_) external view returns(bytes32);

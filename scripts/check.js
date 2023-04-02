@@ -372,8 +372,91 @@ async function getTaskId() {
 async function deployUpgrade() {
     const ozlDiamondAddr = '0x7D1f13Dd05E6b0673DC3D0BFa14d40A74Cfa3EF2';
     const ozlDiamond = await hre.ethers.getContractAt(diamondABI, ozlDiamondAddr);
+    const testAcc2 = '0x1bCda80Ec23bd4fC14E13960123E6f652Ff726E3';
 
-    await deployV1_2(ozlDiamond, true);
+    // await deployV1_2(ozlDiamond, true);
+
+    const tokens = await ozlDiamond.getAccountsByUser(testAcc2);
+    console.log('accs: ', tokens);
 }
 
-deployUpgrade();
+// deployUpgrade();
+
+
+async function getAccDetails() {
+    const accountAddr = '0x4d55f73a64b1d9f096a598f60e8D4eCb5bCE18A8';
+    const account = await hre.ethers.getContractAt('ozMiddlewareL2', accountAddr);
+
+    const deets = await account.getDetails();
+    console.log('deets: ', deets);
+
+}
+
+// getAccDetails();
+
+
+async function modifyRevenue() {
+    const ozlDiamondAddr = '0x7D1f13Dd05E6b0673DC3D0BFa14d40A74Cfa3EF2';
+    const ozlDiamond = await hre.ethers.getContractAt(diamondABI, ozlDiamondAddr);
+
+
+}
+
+
+async function checkAirdrop() {
+    const abi = ['function claimableTokens(address) external view returns(uint256)'];
+    const arbAddr = '0x67a24CE4321aB3aF51c2D0a4801c3E111D88C9d9';
+    const arb = await hre.ethers.getContractAt(abi, arbAddr);
+    const addr = '0x9c1241606DafbAeE46dFAdF3B0deCd0B653f342e';
+
+    const addrs = [
+        '0xC486c3013241cC11fc05B2e023BA74E12758Cec5',
+        '0xbe22F29504bFf7Dda16d1751aEAbCC5678b0D36B',
+        '0xe738696676571D9b74C81716E4aE797c2440d306',
+        '0xc4D53D620d2ce9f0DE3eC241d4B74DD36A2989a1',
+        '0x9c1241606DafbAeE46dFAdF3B0deCd0B653f342e',
+        '0x8f3e65A14999Ad0F26b65ad695749e3Ccf3261b2',
+        '0x366D9C2cf28A2A5A4d80879964AF1EBb7D7dB086',
+        '0x1bCda80Ec23bd4fC14E13960123E6f652Ff726E3',
+        '0x86db38631eE3552b36aB8F2A6dD815a0F5B5d95f',
+        '0x10267C823D2410DBC6b39ecC9EfB4e8564F78f8f',
+        '0x7D1f13Dd05E6b0673DC3D0BFa14d40A74Cfa3EF2'
+    ];
+
+    for (let i=0; i < addrs.length; i++) {
+        let bal = await arb.claimableTokens(addr);
+        console.log('bal: ', bal);
+    }
+  
+  }
+  
+//   checkAirdrop();
+
+
+async function getOzelIndex() {
+    const ozDiamondAddr = '0x7D1f13Dd05E6b0673DC3D0BFa14d40A74Cfa3EF2';
+    const ozDiamond = await hre.ethers.getContractAt(diamondABI, ozDiamondAddr);
+
+    const index = await ozDiamond.getOzelIndex();
+    console.log('index: ', formatEther(index));
+}
+
+// getOzelIndex();
+
+
+async function testFront() {
+    const accountAddr = '0x6f7c26E52247C0075DbBaf59e05658784fb69984';
+    const acc = await hre.ethers.getContractAt('ozMiddlewareL2', accountAddr);
+    
+    const [user, token, slippage] = await acc.getDetails();
+    console.log('user: ', user);
+    console.log('token: ', token);
+    console.log('slippage: ', slippage);
+
+}
+
+testFront();
+
+
+
+
