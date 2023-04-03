@@ -20,12 +20,21 @@ Tests are containerized in order to isolate specific environments for the correc
 * ### Ethereum:
   * `ozel-test-mainnet:0.0.2` --> For optimistic and pessimistic (aka failing) scenarios.
 * ### Arbitrum:
+  V1
   * `ozel-test-arb-all-tests:0.0.1` --> Encompass all the Arbitrum tests from below in one file.
   * `ozel-test-arb-anti-slippage:0.0.1` --> For the anti-slippage strategy, using try/catch blocks, implemented on L2 swaps.
   * `ozel-test-arb-intr-testing:0.0.1` --> Optimistic scenario of the standard flow of usage in L2.
   * `ozel-test-arb-my-revenue:0.0.2` --> For the distribution of the owner's revenue.
   * `ozel-test-arb-ozel-index:0.0.1` --> Tests the profiency of the Ozel Index, its continuous calculation, equilibrium mechanism and rebalancing.
   * `ozel-test-arb-unit-testing:0.0.2` --> Unit tests for key functions.
+
+  V1.1
+  * `ozel-test-arb-v1.1-contracts:0.0.5` --> Unit tests of the main functions of this upgrade.
+  * `ozel-test-arb-v1.1-ozel-balance:0.0.5` --> Tests that the OZL balance is being successfully re-calculated after the upgrade with L1 and L2 interactions.
+  * `ozel-test-arb-v1.1-real-ozel:0.0.3` --> Tests integration of the upgrade with the deployed contracts in L2.
+
+  V1.2
+  * `ozel-test-arb-v1.2-real-ozel:0.0.2` --> Unit tests and tests the integration of the upgrade with the deployed contracts in L2
 
 # Running them
 
