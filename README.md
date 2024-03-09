@@ -1,5 +1,9 @@
 <img width="1323" alt="image" src="https://user-images.githubusercontent.com/59457858/217074677-2cc7a464-3045-4a7a-ab8d-da44376d28b5.png">
 
+# Main
+- https://ozelprotocol.xyz/
+- https://docs.ozelprotocol.xyz/
+
 # Tests
 
 This file explains how to run all the tests done to the contracts in both Mainnet and Arbitrum. The types that were applied are:
