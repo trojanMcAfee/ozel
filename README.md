@@ -27,7 +27,7 @@ Tests are containerized in order to isolate specific environments for the correc
   V1
   * `ozel-test-arb-all-tests:0.0.2` --> Encompass all the Arbitrum tests from below in one file.
   * `ozel-test-arb-anti-slippage:0.0.2` --> For the anti-slippage strategy, using try/catch blocks, implemented on L2 swaps.
-  * `ozel-test-arb-intr-testing:0.0.1` --> Optimistic scenario of the standard flow of usage in L2.
+  * `ozel-test-arb-intr-testing:0.0.2` --> Optimistic scenario of the standard flow of usage in L2.
   * `ozel-test-arb-my-revenue:0.0.2` --> For the distribution of the owner's revenue.
   * `ozel-test-arb-ozel-index:0.0.1` --> Tests the profiency of the Ozel Index, its continuous calculation, equilibrium mechanism and rebalancing.
   * `ozel-test-arb-unit-testing:0.0.2` --> Unit tests for key functions.
