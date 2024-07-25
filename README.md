@@ -22,7 +22,7 @@ Used tools:
 
 Tests are containerized in order to isolate specific environments for the correct functioning of each scenario, such as fork, block number, state variables, accounts, among others. These are divided as:
 * ### Ethereum:
-  * `ozel-test-mainnet:0.0.2` --> For optimistic and pessimistic (aka failing) scenarios.
+  * `ozel-test-mainnet:0.0.4` --> For optimistic and pessimistic (aka failing) scenarios.
 * ### Arbitrum:
   V1
   * `ozel-test-arb-all-tests:0.0.1` --> Encompass all the Arbitrum tests from below in one file.
