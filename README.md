@@ -30,7 +30,7 @@ Tests are containerized in order to isolate specific environments for the correc
   * `ozel-test-arb-intr-testing:0.0.2` --> Optimistic scenario of the standard flow of usage in L2.
   * `ozel-test-arb-my-revenue:0.0.2` --> For the distribution of the owner's revenue.
   * `ozel-test-arb-ozel-index:0.0.2` --> Tests the profiency of the Ozel Index, its continuous calculation, equilibrium mechanism and rebalancing.
-  * `ozel-test-arb-unit-testing:0.0.2` --> Unit tests for key functions.
+  * `ozel-test-arb-unit-testing:0.0.3` --> Unit tests for key functions.
 
   V1.1
   * `ozel-test-arb-v1.1-contracts:0.0.5` --> Unit tests of the main functions of this upgrade.
