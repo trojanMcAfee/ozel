@@ -25,7 +25,7 @@ Tests are containerized in order to isolate specific environments for the correc
   * `ozel-test-mainnet:0.0.4` --> For optimistic and pessimistic (aka failing) scenarios.
 * ### Arbitrum:
   V1
-  * `ozel-test-arb-all-tests:0.0.1` --> Encompass all the Arbitrum tests from below in one file.
+  * `ozel-test-arb-all-tests:0.0.2` --> Encompass all the Arbitrum tests from below in one file.
   * `ozel-test-arb-anti-slippage:0.0.1` --> For the anti-slippage strategy, using try/catch blocks, implemented on L2 swaps.
   * `ozel-test-arb-intr-testing:0.0.1` --> Optimistic scenario of the standard flow of usage in L2.
   * `ozel-test-arb-my-revenue:0.0.2` --> For the distribution of the owner's revenue.
