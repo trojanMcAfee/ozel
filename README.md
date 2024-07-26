@@ -55,7 +55,7 @@ For running each one, pull the image of the test you'd like to run from DockerHu
 
 The name of each image represents the JS file of the test. They can be found on the `tests` folder. 
 
-# Goerli
+# Goerli (deprecated section since Goerli itself has been deprecated)
 
 It tests the purpose of the Akash deployments, by reviewing every transfer done to an Account and checking if they were auto-redeemed or not. 
 
