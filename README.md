@@ -35,7 +35,7 @@ Tests are containerized in order to isolate specific environments for the correc
   V1.1
   * `ozel-test-arb-v1.1-contracts:0.0.6` --> Unit tests of the main functions of this upgrade.
   * `ozel-test-arb-v1.1-ozel-balance:0.0.6` --> Tests that the OZL balance is being successfully re-calculated after the upgrade with L1 and L2 interactions.
-  * `ozel-test-arb-v1.1-real-ozel:0.0.3` --> Tests integration of the upgrade with the deployed contracts in L2.
+  * `ozel-test-arb-v1.1-real-ozel:0.0.4` --> Tests integration of the upgrade with the deployed contracts in L2.
 
   V1.2
   * `ozel-test-arb-v1.2-real-ozel:0.0.2` --> Unit tests and tests the integration of the upgrade with the deployed contracts in L2
