@@ -38,7 +38,7 @@ Tests are containerized in order to isolate specific environments for the correc
   * `ozel-test-arb-v1.1-real-ozel:0.0.4` --> Tests integration of the upgrade with the deployed contracts in L2.
 
   V1.2
-  * `ozel-test-arb-v1.2-real-ozel:0.0.2` --> Unit tests and tests the integration of the upgrade with the deployed contracts in L2
+  * `ozel-test-arb-v1.2-real-ozel:0.0.3` --> Unit tests and tests the integration of the upgrade with the deployed contracts in L2
 
 # Running them
 
